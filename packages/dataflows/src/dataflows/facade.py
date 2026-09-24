@@ -28,10 +28,13 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.FXCM_DAILY.value: "FXCM_24X5",
     Dataset.USDCNH_DAILY.value: "FXCM_24X5",
     Dataset.US_REAL_YIELD_DAILY.value: "US_GOVERNMENT",
+    Dataset.US_NOMINAL_YIELD_DAILY.value: "US_GOVERNMENT",
     Dataset.GLOBAL_INDEX_DAILY.value: "US_MARKET",
     Dataset.VIX_DAILY.value: "US_MARKET",
     Dataset.CN_CPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.US_CPI_RELEASE.value: "US_BLS_EASTERN",
+    Dataset.US_ISM_PMI_RELEASE.value: "TUSHARE_ECO_CAL_DATE",
+    Dataset.US_FEDERAL_BUDGET_RELEASE.value: "TUSHARE_ECO_CAL_DATE",
     Dataset.CN_PPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.CN_MONEY_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.SGE_GOLD_DAILY.value: "SGE",
@@ -88,6 +91,9 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.US_REAL_YIELD_DAILY.value: (
         {"Date", "RealYield5YPercent", "RealYield10YPercent"},
         {"RealYield5YPercent", "RealYield10YPercent"},
+    ),
+    Dataset.US_NOMINAL_YIELD_DAILY.value: (
+        {"Date", "NominalYield10YPercent"}, {"NominalYield10YPercent"}
     ),
     Dataset.USDCNH_DAILY.value: (
         {
@@ -191,6 +197,14 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.US_CPI_RELEASE.value: (
         {"Date", "ReleaseAt", "AvailableDate", "YoYPercent"},
         {"YoYPercent"},
+    ),
+    Dataset.US_ISM_PMI_RELEASE.value: (
+        {"Date", "AvailableDate", "PmiIndex", "SourceClock", "SourceEvent"},
+        {"PmiIndex"},
+    ),
+    Dataset.US_FEDERAL_BUDGET_RELEASE.value: (
+        {"Date", "AvailableDate", "BudgetBalanceBillionUSD", "SourceClock", "SourceEvent"},
+        {"BudgetBalanceBillionUSD"},
     ),
     Dataset.CN_PPI_MONTHLY.value: (
         {"Date", "ProducerYoYPercent", "ProducerMoMPercent"},
@@ -329,6 +343,21 @@ def _validate_provider_output(
         )
         if invalid.any():
             raise DataContractError("US CPI release timing is causally invalid")
+    if dataset in {
+        Dataset.US_ISM_PMI_RELEASE.value,
+        Dataset.US_FEDERAL_BUDGET_RELEASE.value,
+    }:
+        if (
+            metadata.get("source_time_field") != "Date"
+            or metadata.get("source_calendar") != "TUSHARE_ECO_CAL_DATE"
+            or metadata.get("available_at")
+            != "first SSE open day strictly after source calendar date"
+        ):
+            raise DataContractError("US monthly release lineage contract is incomplete")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        if dates.isna().any() or available.isna().any() or available.le(dates).any():
+            raise DataContractError("US monthly release timing is causally invalid")
     if dataset in {Dataset.SGE_GOLD_DAILY.value, Dataset.DOMESTIC_INDEX_DAILY.value}:
         open_values = pd.to_numeric(dataframe["Open"])
         high_values = pd.to_numeric(dataframe["High"])
@@ -638,6 +667,9 @@ def _default_providers() -> dict[str, Provider]:
     )
     from .tushare_strategy_data import (
         fetch_cn_cpi_monthly,
+        fetch_us_federal_budget_release,
+        fetch_us_ism_pmi_release,
+        fetch_us_nominal_yield_daily,
         fetch_us_cpi_release,
         fetch_cn_money_monthly,
         fetch_cn_ppi_monthly,
@@ -700,6 +732,11 @@ def _default_providers() -> dict[str, Provider]:
             request.start, request.end, env_file=_env_file(request)
         )
 
+    def us_nominal_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_nominal_yield_daily(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
     def usdcnh(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_usdcnh_daily(request.start, request.end, env_file=_env_file(request))
 
@@ -758,6 +795,16 @@ def _default_providers() -> dict[str, Provider]:
 
     def us_cpi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_us_cpi_release(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
+    def us_ism_pmi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_ism_pmi_release(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
+    def us_federal_budget_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_federal_budget_release(
             request.start, request.end, env_file=_env_file(request)
         )
 
@@ -846,6 +893,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,
         Dataset.SHIBOR_DAILY.value: shibor,
         Dataset.US_REAL_YIELD_DAILY.value: us_real_yield,
+        Dataset.US_NOMINAL_YIELD_DAILY.value: us_nominal_yield,
         Dataset.USDCNH_DAILY.value: usdcnh,
         Dataset.FXCM_DAILY.value: fxcm,
         Dataset.SGE_GOLD_DAILY.value: sge_gold,
@@ -855,6 +903,8 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
         Dataset.US_CPI_RELEASE.value: us_cpi_release,
+        Dataset.US_ISM_PMI_RELEASE.value: us_ism_pmi_release,
+        Dataset.US_FEDERAL_BUDGET_RELEASE.value: us_federal_budget_release,
         Dataset.CN_PPI_MONTHLY.value: cn_ppi,
         Dataset.CN_MONEY_MONTHLY.value: cn_money,
         Dataset.INDEX_DAILY_BASIC.value: index_basic,
