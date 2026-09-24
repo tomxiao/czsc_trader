@@ -34,6 +34,9 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.CN_PPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.CN_MONEY_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.SGE_GOLD_DAILY.value: "SGE",
+    Dataset.FUTURES_SHFE_GOLD_DAILY.value: "SHFE",
+    Dataset.FUTURES_SHFE_GOLD_MAPPING.value: "SHFE",
+    Dataset.FUTURES_SHFE_GOLD_HOLDING.value: "SHFE",
     Dataset.STRATEGY_FEATURE_EVIDENCE.value: "REPOSITORY",
 }
 
@@ -138,6 +141,43 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.SGE_GOLD_DAILY.value: (
         {"Date", "Open", "High", "Low", "Close", "Volume", "Amount"},
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
+    ),
+    Dataset.FUTURES_SHFE_GOLD_DAILY.value: (
+        {
+            "Date",
+            "Contract",
+            "MaturityDate",
+            "Close",
+            "Settle",
+            "Volume",
+            "Amount",
+            "OpenInterest",
+        },
+        {
+            "Close",
+            "Settle",
+            "Volume",
+            "Amount",
+            "OpenInterest",
+        },
+    ),
+    Dataset.FUTURES_SHFE_GOLD_MAPPING.value: (
+        {"Date", "ContinuousSymbol", "Contract"},
+        set(),
+    ),
+    Dataset.FUTURES_SHFE_GOLD_HOLDING.value: (
+        {
+            "Date",
+            "Contract",
+            "Broker",
+            "Volume",
+            "VolumeChange",
+            "LongHolding",
+            "LongChange",
+            "ShortHolding",
+            "ShortChange",
+        },
+        set(),
     ),
     Dataset.DOMESTIC_INDEX_DAILY.value: (
         {"Date", "Open", "High", "Low", "Close", "Volume", "Amount"},
@@ -281,6 +321,60 @@ def _validate_provider_output(
             raise DataContractError(
                 "provider output contains invalid daily price bars",
                 dataset=dataset,
+                invalid_rows=int(invalid.sum()),
+            )
+    if dataset == Dataset.FUTURES_SHFE_GOLD_DAILY.value:
+        close_values = pd.to_numeric(dataframe["Close"])
+        settle_values = pd.to_numeric(dataframe["Settle"])
+        volume_values = pd.to_numeric(dataframe["Volume"])
+        amount_values = pd.to_numeric(dataframe["Amount"])
+        interest_values = pd.to_numeric(dataframe["OpenInterest"])
+        maturity = pd.to_datetime(dataframe["MaturityDate"], errors="coerce")
+        source_date = pd.to_datetime(dataframe["Date"], errors="coerce")
+        invalid = (
+            (close_values <= 0)
+            | (settle_values <= 0)
+            | (volume_values < 0)
+            | (amount_values < 0)
+            | (interest_values < 0)
+            | maturity.isna()
+            | source_date.isna()
+            | (maturity < source_date)
+        )
+        if invalid.any():
+            raise DataContractError(
+                "provider output contains invalid SHFE gold futures bars",
+                invalid_rows=int(invalid.sum()),
+            )
+    if dataset == Dataset.FUTURES_SHFE_GOLD_MAPPING.value:
+        if (
+            dataframe["ContinuousSymbol"].astype(str).str.strip().eq("").any()
+            or dataframe["Contract"].astype(str).str.strip().eq("").any()
+        ):
+            raise DataContractError("futures mapping contains an empty symbol")
+    if dataset == Dataset.FUTURES_SHFE_GOLD_HOLDING.value:
+        numeric_columns = (
+            "Volume",
+            "VolumeChange",
+            "LongHolding",
+            "LongChange",
+            "ShortHolding",
+            "ShortChange",
+        )
+        numeric = dataframe.loc[:, numeric_columns].apply(pd.to_numeric, errors="coerce")
+        invalid_text = dataframe["Contract"].astype(str).str.strip().eq("") | dataframe[
+            "Broker"
+        ].astype(str).str.strip().eq("")
+        missing_all_rankings = numeric[["Volume", "LongHolding", "ShortHolding"]].isna().all(axis=1)
+        negative_rankings = (numeric[["Volume", "LongHolding", "ShortHolding"]] < 0).any(axis=1)
+        invalid_numeric = pd.Series(False, index=dataframe.index)
+        for column in numeric_columns:
+            original_present = dataframe[column].notna()
+            invalid_numeric |= original_present & numeric[column].isna()
+        invalid = invalid_text | missing_all_rankings | negative_rankings | invalid_numeric
+        if invalid.any():
+            raise DataContractError(
+                "provider output contains invalid SHFE gold holding rankings",
                 invalid_rows=int(invalid.sum()),
             )
     if dataset == Dataset.VIX_DAILY.value:
@@ -508,6 +602,11 @@ class Dataflows:
 def _default_providers() -> dict[str, Provider]:
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
+    from .tushare_futures import (
+        fetch_shfe_gold_daily,
+        fetch_shfe_gold_holding,
+        fetch_shfe_gold_mapping,
+    )
     from .tushare_strategy_data import (
         fetch_cn_cpi_monthly,
         fetch_cn_money_monthly,
@@ -592,6 +691,30 @@ def _default_providers() -> dict[str, Provider]:
 
     def domestic_index(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_domestic_index_daily(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def shfe_gold_daily(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_daily(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def shfe_gold_mapping(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_mapping(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def shfe_gold_holding(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_holding(
             _required_symbol(request),
             request.start,
             request.end,
@@ -691,6 +814,9 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.USDCNH_DAILY.value: usdcnh,
         Dataset.FXCM_DAILY.value: fxcm,
         Dataset.SGE_GOLD_DAILY.value: sge_gold,
+        Dataset.FUTURES_SHFE_GOLD_DAILY.value: shfe_gold_daily,
+        Dataset.FUTURES_SHFE_GOLD_MAPPING.value: shfe_gold_mapping,
+        Dataset.FUTURES_SHFE_GOLD_HOLDING.value: shfe_gold_holding,
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
         Dataset.CN_PPI_MONTHLY.value: cn_ppi,
