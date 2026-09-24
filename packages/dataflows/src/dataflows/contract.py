@@ -37,6 +37,7 @@ class Dataset(StrEnum):
     FUTURES_SHFE_GOLD_HOLDING = "futures.shfe_gold.holding"
     DOMESTIC_INDEX_DAILY = "index.domestic_daily"
     CN_CPI_MONTHLY = "macro.cn_cpi_monthly"
+    US_CPI_RELEASE = "macro.us_cpi_release"
     CN_PPI_MONTHLY = "macro.cn_ppi_monthly"
     CN_MONEY_MONTHLY = "macro.cn_money_monthly"
     INDEX_DAILY_BASIC = "index.daily_basic"

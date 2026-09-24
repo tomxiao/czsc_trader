@@ -31,6 +31,7 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.GLOBAL_INDEX_DAILY.value: "US_MARKET",
     Dataset.VIX_DAILY.value: "US_MARKET",
     Dataset.CN_CPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
+    Dataset.US_CPI_RELEASE.value: "US_BLS_EASTERN",
     Dataset.CN_PPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.CN_MONEY_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.SGE_GOLD_DAILY.value: "SGE",
@@ -187,6 +188,10 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Date", "NationalYoYPercent", "NationalMoMPercent"},
         {"NationalYoYPercent", "NationalMoMPercent"},
     ),
+    Dataset.US_CPI_RELEASE.value: (
+        {"Date", "ReleaseAt", "AvailableDate", "YoYPercent"},
+        {"YoYPercent"},
+    ),
     Dataset.CN_PPI_MONTHLY.value: (
         {"Date", "ProducerYoYPercent", "ProducerMoMPercent"},
         {"ProducerYoYPercent", "ProducerMoMPercent"},
@@ -300,6 +305,30 @@ def _validate_provider_output(
                 dataset=dataset,
                 field=column,
             )
+    if dataset == Dataset.US_CPI_RELEASE.value:
+        if (
+            metadata.get("source_time_field") != "ReleaseAt"
+            or metadata.get("source_calendar") != "US_BLS_EASTERN"
+            or metadata.get("available_at")
+            != "first SSE open day strictly after Shanghai release date"
+        ):
+            raise DataContractError("US CPI release lineage contract is incomplete")
+        release_at = dataframe["ReleaseAt"]
+        if not isinstance(release_at.dtype, pd.DatetimeTZDtype) or str(release_at.dt.tz) != "Asia/Shanghai":
+            raise DataContractError("US CPI release time must use Asia/Shanghai timezone")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        eastern = release_at.dt.tz_convert("America/New_York")
+        invalid = (
+            dates.isna()
+            | available.isna()
+            | dates.ne(release_at.dt.tz_localize(None).dt.normalize())
+            | available.le(dates)
+            | eastern.dt.strftime("%H:%M").ne("08:30")
+            | eastern.dt.date.ne(release_at.dt.date)
+        )
+        if invalid.any():
+            raise DataContractError("US CPI release timing is causally invalid")
     if dataset in {Dataset.SGE_GOLD_DAILY.value, Dataset.DOMESTIC_INDEX_DAILY.value}:
         open_values = pd.to_numeric(dataframe["Open"])
         high_values = pd.to_numeric(dataframe["High"])
@@ -609,6 +638,7 @@ def _default_providers() -> dict[str, Provider]:
     )
     from .tushare_strategy_data import (
         fetch_cn_cpi_monthly,
+        fetch_us_cpi_release,
         fetch_cn_money_monthly,
         fetch_cn_ppi_monthly,
         fetch_domestic_index_daily,
@@ -726,6 +756,11 @@ def _default_providers() -> dict[str, Provider]:
             request.start, request.end, env_file=_env_file(request)
         )
 
+    def us_cpi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_cpi_release(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
     def cn_ppi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_cn_ppi_monthly(
             request.start, request.end, env_file=_env_file(request)
@@ -819,6 +854,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.FUTURES_SHFE_GOLD_HOLDING.value: shfe_gold_holding,
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
+        Dataset.US_CPI_RELEASE.value: us_cpi_release,
         Dataset.CN_PPI_MONTHLY.value: cn_ppi,
         Dataset.CN_MONEY_MONTHLY.value: cn_money,
         Dataset.INDEX_DAILY_BASIC.value: index_basic,
