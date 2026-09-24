@@ -1,0 +1,3 @@
+# S008 EX83 执行
+
+REX receipt=`71dc30ae352cfdd7d096d3ca5eb359e6f7792604afac66f7197ce36295807e54`；EX82 前序 receipt=`9c6483465fea3ac2fdcd8d7315de7acf91f1cce78f836be608c7c338ed007689`。先检查合成时滞及阈值、DFLS 内容身份与执行价清单，再读取开发期目标收益。所有条件比较和完整因果面板已归档；未读取密封验证。
