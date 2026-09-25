@@ -1,0 +1,3 @@
+# S009 EX05 执行
+
+REX receipt=`bea365ffd49f5d7ab860546771a526bbc412e10439e66ab661d3e6fc4b574248`；EX04前序receipt=`f920ee1275018fbd5672f29fe4dabff31371636215b85570c50bcfcc6a4c0f38`。两只宽基ETF份额仅经DFLS读取；未读取518880收益或封存验证。

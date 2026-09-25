@@ -30,6 +30,7 @@ class Dataset(StrEnum):
     SHIBOR_DAILY = "macro.shibor_daily"
     US_REAL_YIELD_DAILY = "macro.us_real_yield_daily"
     US_NOMINAL_YIELD_DAILY = "macro.us_nominal_yield_daily"
+    US_POLICY_UNCERTAINTY_DAILY = "macro.us_policy_uncertainty_daily"
     USDCNH_DAILY = "fx.usdcnh_daily"
     FXCM_DAILY = "fx.fxcm_daily"
     SGE_GOLD_DAILY = "metal.sge_gold_daily"

@@ -37,6 +37,7 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.USDCNH_DAILY.value: "FXCM_24X5",
     Dataset.US_REAL_YIELD_DAILY.value: "US_GOVERNMENT",
     Dataset.US_NOMINAL_YIELD_DAILY.value: "US_GOVERNMENT",
+    Dataset.US_POLICY_UNCERTAINTY_DAILY.value: "FRED_CALENDAR_DAY",
     Dataset.GLOBAL_INDEX_DAILY.value: "US_MARKET",
     Dataset.VIX_DAILY.value: "US_MARKET",
     Dataset.CN_CPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
@@ -131,6 +132,10 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.US_NOMINAL_YIELD_DAILY.value: (
         {"Date", "NominalYield10YPercent"},
         {"NominalYield10YPercent"},
+    ),
+    Dataset.US_POLICY_UNCERTAINTY_DAILY.value: (
+        {"Date", "AvailableDate", "PolicyUncertaintyIndex"},
+        {"PolicyUncertaintyIndex"},
     ),
     Dataset.USDCNH_DAILY.value: (
         {
@@ -401,6 +406,26 @@ def _validate_provider_output(
         available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
         if dates.isna().any() or available.isna().any() or available.le(dates).any():
             raise DataContractError("US monthly release timing is causally invalid")
+    if dataset == Dataset.US_POLICY_UNCERTAINTY_DAILY.value:
+        if (
+            metadata.get("series_id") != "USEPUINDXD"
+            or metadata.get("vintage_mode") != "INITIAL_RELEASE_ONLY"
+            or metadata.get("fred_output_type") != 4
+            or metadata.get("source_time_field") != "Date"
+            or metadata.get("availability_time_field") != "AvailableDate"
+            or metadata.get("source_calendar") != "FRED_CALENDAR_DAY"
+            or metadata.get("available_at") != "initial release date reported by ALFRED"
+        ):
+            raise DataContractError("FRED policy-uncertainty lineage contract is incomplete")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        values = pd.to_numeric(dataframe["PolicyUncertaintyIndex"], errors="coerce")
+        invalid = dates.isna() | available.isna() | available.lt(dates) | values.le(0)
+        if invalid.any():
+            raise DataContractError(
+                "FRED policy-uncertainty observations are causally invalid",
+                invalid_rows=int(invalid.sum()),
+            )
     if dataset in {Dataset.SGE_GOLD_DAILY.value, Dataset.DOMESTIC_INDEX_DAILY.value}:
         open_values = pd.to_numeric(dataframe["Open"])
         high_values = pd.to_numeric(dataframe["High"])
@@ -709,6 +734,7 @@ class Dataflows:
 
 
 def _default_providers() -> dict[str, Provider]:
+    from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
     from .tushare_futures import (
@@ -783,6 +809,17 @@ def _default_providers() -> dict[str, Provider]:
 
     def us_nominal_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_us_nominal_yield_daily(request.start, request.end, env_file=_env_file(request))
+
+    def us_policy_uncertainty(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        if request.symbol is not None:
+            raise DataContractError(
+                "U.S. policy uncertainty uses the fixed USEPUINDXD series and accepts no symbol"
+            )
+        return fetch_us_policy_uncertainty_daily(
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
 
     def usdcnh(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_usdcnh_daily(request.start, request.end, env_file=_env_file(request))
@@ -931,6 +968,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.SHIBOR_DAILY.value: shibor,
         Dataset.US_REAL_YIELD_DAILY.value: us_real_yield,
         Dataset.US_NOMINAL_YIELD_DAILY.value: us_nominal_yield,
+        Dataset.US_POLICY_UNCERTAINTY_DAILY.value: us_policy_uncertainty,
         Dataset.USDCNH_DAILY.value: usdcnh,
         Dataset.FXCM_DAILY.value: fxcm,
         Dataset.SGE_GOLD_DAILY.value: sge_gold,

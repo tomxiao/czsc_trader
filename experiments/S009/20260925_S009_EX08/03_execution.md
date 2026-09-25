@@ -1,0 +1,3 @@
+# S009 EX08 执行
+
+REX receipt=`472088fa4cc6992a1aaa00b0294e288e4b2ae7c7b019a124c5ce8a880fd173ba`；EX07前序receipt=`a70a22bc624017354fed4ad43df5fbf779232aeb20d6226164b9403b7be0c349`。完成159915两项预注册比较，并与哈希固定的EX06账本执行2/3多数门。未读取封存验证。

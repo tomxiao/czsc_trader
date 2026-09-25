@@ -1,0 +1,3 @@
+# S009 EX06 执行
+
+REX receipt=`3db5a251dcf76af9a6affa5cf017de681f21fe4b56425eca1de0164b16fe1a57`；EX05前序receipt=`bea365ffd49f5d7ab860546771a526bbc412e10439e66ab661d3e6fc4b574248`。完成4项预注册年度向前比较；未读取2025年以后封存验证，未形成交易规则。
