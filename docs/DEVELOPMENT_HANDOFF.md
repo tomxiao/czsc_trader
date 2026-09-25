@@ -1,6 +1,7 @@
-# 开发运维交接
+# 开发运维交接（DEV）
 
-> 本文是跨机器、跨会话继续开发的入口，只记录系统全貌、关键边界、恢复方法和开发规则。
+> 本文面向平台开发者（DEV），用于跨机器、跨会话继续开发与运维，只记录系统全貌、关键边界、
+> 恢复方法和开发规则。各子包`README.md`面向RSCH/CIO说明公共能力的使用，不承担内部维护手册。
 > 研究资料导航见`research/README.md`，具体批次结论见`research/SXX/HANDOFF.md`，RSCH与CIO
 > 执行契约分别见`research/RSCH_AGENT.md`和`research/CIO_AGENT.md`；本文维护系统架构、
 > 开发环境、测试规则和PTE运维。历史设计与实施过程见`docs/superpowers/`。
@@ -13,6 +14,7 @@
 | DFLS | Dataflows | Tushare数据获取、复权、多频处理和数据发布 |
 | FSC | Factor & Signal Catalog | 项目级信息族、因子和信号定义目录 |
 | STC | Strategy Template Catalog | 策略函数模板、输入角色和参数边界目录 |
+| REX | Research Experiment | 可执行实验声明、能力与回执合同 |
 | SM | Strategy Manager | 策略身份、版本、资格、证据和治理审计 |
 | SE | Strategy Evaluator | 候选筛选、排名和统计稳健性数值计算 |
 | SRT | Strategy Runtime | 候选与冻结策略共用的数据契约、决策计算、执行计划和运行身份 |
@@ -20,37 +22,24 @@
 | PTE | Paper Trading Engine | 虚拟账户、模拟交易执行、运行审计和观测 |
 | WDG | PTE Watchdog | PTE进程开机自启、探活和故障拉起 |
 
-后续开发、文档和讨论统一使用以上名称。DFLS、FSC、STC、SM、SE、SRT、TXE和PTE
+后续开发、文档和讨论统一使用以上名称。DFLS、FSC、STC、REX、SM、SE、SRT、TXE和PTE
 均为仓库内独立包，只通过明确契约协作。研究脚本可以直接使用Optuna、特征提取库及其他研究
 依赖；仓库不再维护通用Search和Feature Mining运行模块。`news_events`仍是TDR内的受控抽取
 能力。用户授权RSCH Agent交付候选包，授权CIO Agent通过TDR完成候选审查、体检、冻结和SRT部署。
 
-## 当前交付状态
+## 接手时核对的状态
 
-- 默认及当前集成分支：`master`；开始工作前现场确认分支和远端同步状态。截至2026-09-23，
-  策略治理与运行时边界重构、发布迁移修复及配套文档形成`v0.5.15`；随后`v0.5.16`恢复历史
-  决策缺少观察事实时的PTE前瞻观察图，并补充强制刷新及对应测试。
-- Python：3.12。
-- 正式策略：`S001-v1`、`S001-v2`、`S002-v1`、`S003-v1`和`S007-v1`均为
-  `PAPER_READY`。S002使用`czsc_event_hold`事件持有型运行时，S003使用成分资金流宽度
-  日内轮转运行时，S007使用多源机会风险门控运行时。
-- PTE虚拟账户：每个账户持有独立策略发布、标的和资产类型；现有五个账户各10万元。
-  S001与S007账户交易588080.SH，S002与S003账户交易510500.SH；左侧入口按交易标的代码、
-  策略编号和版本依次排序。
-- 新候选冻结必须绑定不可变候选快照、最终EvaluationMandate、TDR裁判报告、人工冻结决议和
-  SRT运行时验收；任一身份或哈希不一致时拒绝冻结。历史五个版本以
-  `LEGACY_GOVERNANCE_ACCEPTED`事件保留当时治理事实。
-- SRT/PTE机器契约：普通决策为`advice.v4`，原子时点计划为`advice.v5`。TDR回测图由冻结
-  发布包中的策略图表实现消费`strategy_chart.v1`并生成；PTE消费SRT输出的
-  `strategy_observation.v1`事实，独立获取DFLS行情并按`pte_forward_chart.v1`异步生成统一
-  前瞻观察图。PTE不读取未冻结候选包或策略专属前瞻图代码。
-- PTE控制台：<http://127.0.0.1:8080>。
-- WDG Windows服务：`CZSC-PTE-Watchdog`。
-- 当前唯一交易渠道：Futu中国市场模拟交易。
-- 仓库当前最新tag为`v0.5.16`。PTE生产活动版本与运行状态必须在每次运维前通过健康接口和
-  发布清单重新只读核验，本文不把
-  历史检查结果作为当前事实。PTE采用附注tag构建和独立生产环境发布，生产版本目录不可变，
-  账户、SRT准备数据、配置和日志集中在共享运行目录。
+项目使用Python 3.12，默认集成分支为`master`。分支、远端、最新tag、冻结版本、账户资金及
+PTE生产活动版本都可能变化，必须在接手时按任务范围分别只读核对，不能从本文推断当前值。
+版本发布使用附注tag；PTE生产版本目录不可变，账户、SRT准备数据、配置和日志位于共享运行
+目录。PTE控制台仅监听localhost，WDG服务名为`CZSC-PTE-Watchdog`，当前实现的交易渠道是
+Futu中国市场模拟交易；实际服务与渠道健康以运行环境状态为准。
+
+新候选冻结必须绑定不可变候选快照、最终EvaluationMandate、TDR裁判报告、人工冻结决议和
+SRT运行时验收，身份或哈希不一致时拒绝冻结。普通SRT决策使用`advice.v4`，原子时点计划
+使用`advice.v5`；TDR回测图消费`strategy_chart.v1`，PTE以独立DFLS行情和SRT输出的
+`strategy_observation.v1`生成`pte_forward_chart.v1`前瞻图。PTE不读取未冻结候选包或
+策略专属前瞻图代码。
 
 每次接手先执行：
 
@@ -97,7 +86,10 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
 - **STC**位于`packages/strategy_template_catalog/`，定义数据位于`strategy_templates/`。它记录
   策略函数模板、输入职责、参数边界和实现复杂度，并生成确定性实例身份；不读取行情、不搜索
   参数、不回测、不评价候选。TDR只读引用STC，负责交叉核对FSC输入，并在具体研究实现中落实
-  模板语义。
+   模板语义。
+- **REX**位于`packages/research_experiment/`。它定义可执行研究实验的声明、能力、输入与
+  回执合同，并隔离加载经过源码哈希校验的实验实现；TDR的`research_tools`提供平台上下文、
+  受控数据访问及执行适配。REX不替研究员判断机制或改变实验档案。
 - **SM**位于`packages/strategy_manager/`。它持久化`StrategyFamily`、追加式
   `StrategyGovernanceCredential`、冻结版本、资格和生命周期事件；候选快照、最终
   `EvaluationMandate`、裁判报告和人工批准均作为同一凭据链上的印章内容保存。它不计算绩效，
@@ -120,10 +112,14 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
   `StrategyInstance`，调用`prepare_data()`后再调用`plan_at(...)`，管理账户分账、决策、订单
   意图、Futu回报、调度、SQLite审计和控制台。前瞻图服务在独立守护线程读取DFLS行情、组装
   决策及账户事实、渲染并缓存HTML，Web请求和PTE主调度线程不等待这些工作。PTE不解析SRT
-  私有数据清单，也不导入TDR、SM或SE。
+  私有数据清单，也不导入TDR、SM或SE。策略账户按模型费用记账；经核实的Futu实际费用与模型
+  费用差额记入零初始资金的渠道平账账户，不混入策略绩效。未知费用或订单结果不得推断入账。
 - **WDG**位于PTE包内。它只负责PTE子进程生命周期和HTTP探活，不包含交易业务逻辑。
 - **DFLS**负责单项数据请求的获取、规范化、统一校验、按“供应商＋标的”修复和失败阻断。
   SRT只处理`DataResult`；多输入策略的范围推导、组合认证和实例级数据身份由SRT负责。
+  Tushare股票与ETF适配、源时间元数据和历史补丁分别在`packages/dataflows/src/dataflows/`
+  的供应商模块、`facade.py`及`history_patches/`维护；补丁只匹配已登记的异常签名，修复后
+  必须重新校验，未知异常明确失败。研究正式输入优先走DFLS公共门面。
 - **新闻事件抽取**位于TDR的`news_events`独立内部包。dataflows或实验脚本负责缓存原文，
   TDR逐篇调用单一MaaS模型并执行严格结构校验、原文证据回查、断点复用和审计落盘；SE、
   SM和PTE不直接调用模型。MaaS凭据只从进程环境或Git忽略的根目录`.env`读取。
@@ -131,8 +127,9 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
 正式实验档案按`experiments/<策略ID>/<实验ID>/`保存。实验ID全局唯一，TDR按ID定位
 嵌套档案；历史SM证据中的旧路径字符串保持不变，并由兼容解析器映射到当前目录。
 
-依赖方向保持为：`TDR → FSC/STC/SM/SE/TXE/SRT/DFLS`、`TXE → SRT`、`SRT → DFLS`、`PTE → SRT`、
-`WDG → PTE进程`。TXE与DFLS同层，TDR和研究脚本可以调用；PTE的账户事实仍以渠道回报为准。
+依赖方向保持为：`TDR → REX/FSC/STC/SM/SE/TXE/SRT/DFLS`、`REX → SRT`、`TXE → SRT`、
+`SRT → DFLS`、`PTE → SRT`、`WDG → PTE进程`。TXE与DFLS同层，TDR和研究脚本可以调用；
+PTE的账户事实仍以渠道回报为准。
 
 ## 跨模块硬约束
 
@@ -211,12 +208,17 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_manager[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_evaluator[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_runtime[test]"
+.\.venv\Scripts\python.exe -m pip install -e ".\packages\research_experiment[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\trading_execution_engine[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".[research,test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\paper_trading_engine[test]"
 .\.venv\Scripts\czsc-trader.exe --help
 .\.venv\Scripts\pte.exe --help
 ```
+
+从`.env.example`复制出Git忽略的根目录`.env`，仅在本机填写获授权的数据源凭据；不要将Token
+写入源码、测试夹具或实验档案。进程环境变量优先于显式凭据文件。DFLS从调用方指定的位置
+读取凭据，不假定包自身所在目录就是仓库根目录。
 
 根目录`.venv`是平台开发和策略研究共用的唯一开发环境；`research` extra提供Optuna、tsfresh
 等仅在研究阶段使用的依赖，不创建第二套本地虚拟环境。PTE构建不安装该extra，研究依赖不得
@@ -249,7 +251,7 @@ SRT准备数据及配置组成的完整生产`shared/`，并与Futu活动订单�
 
 PTE生产写入、服务控制和账户变更均须先取得明确授权。生产根目录以
 `scripts/pte-publish.ps1`内置的`$ProductionRoot`为唯一配置来源；以下命令中的`$PteRoot`
-取该值。PTE业务语义和对象关系见[PTE包级说明](../packages/paper_trading_engine/README.md)。
+ 取该值。PTE向RSCH/CIO展示的观察事实及其边界见[PTE使用说明](../packages/paper_trading_engine/README.md)。
 
 ### 构建与发布
 
@@ -388,12 +390,18 @@ Get-Content (Join-Path $PteRoot 'shared\logs\pte.log') -Tail 100
 配置。历史实验只保证档案校验和人工查看，不承诺旧脚本回放。完整命令及版本验收边界见
 [测试用例治理](TEST_GOVERNANCE.md)；任何生产部署仍需独立授权。
 
-最近一次仓库级全量回归完成于2026-09-23：276个Python测试项和3个Node测试项全部通过，
-Ruff通过；三条并行通道汇总耗时133.34秒。分项结果、
-治理记录、保留理由和未覆盖在线检查统一维护在
-[测试用例治理](TEST_GOVERNANCE.md)的“最近一次治理记录”章节；后续治理以该记录为比较基线。
+最近一次仓库级全量回归结果、治理记录和未覆盖在线检查以
+[测试用例治理](TEST_GOVERNANCE.md)的“最近一次治理记录”章节为准，不在本文复制快照。
 完整离线回归默认运行`.\scripts\test-all.ps1`，三条模块通道全部结束后统一汇总退出码并运行
-Ruff；通道日志位于`.tmp/test-regression/`。单模块失败定位命令继续以测试治理文档为准。
+Ruff；通道日志位于`.tmp/test-regression/`。子包聚焦验证可从仓库根目录运行：
+
+```powershell
+$PackageName = "dataflows"  # 按需改为目标子包名
+.\.venv\Scripts\python.exe -m pytest -q -c pyproject.toml "packages/$PackageName/tests"
+.\.venv\Scripts\python.exe -m ruff check "packages/$PackageName/src" "packages/$PackageName/tests"
+```
+
+PTE控制台另有Node测试；完整命令、版本验收边界及单模块失败定位见测试治理文档。
 
 仓库内临时文件统一进入根目录`.tmp/`并按用途分区。业务代码通过
 `czsc_trader.temp_workspace`创建临时目录；测试与Ruff分别使用`.tmp/pytest`和
@@ -407,7 +415,7 @@ Ruff；通道日志位于`.tmp/test-regression/`。单模块失败定位命令�
 - 分支内可以自主提交；合并`master`和推送远端前取得用户确认。
 - 修改研究角色规则时同步`research/RSCH_AGENT.md`或`research/CIO_AGENT.md`；修改具体批次时
   同步对应`research/SXX/HANDOFF.md`和新实验档案；资料入口变化时同步`research/README.md`。
-- 修改运行边界、契约或安装方式时同步本文及对应包`README.md`。
+- 修改公共使用方式时同步对应包`README.md`；修改内部运行边界、开发环境或发布方式时同步本文。
 - 根目录`README.md`只维护项目介绍和文档索引；`research/README.md`只维护研究资料导航，
   批次状态以各自`HANDOFF.md`为准；两份Agent描述维护角色工作流；本文维护架构、开发环境、
   运行边界和PTE运维。调试流水及已完成任务不进入这些文档。
@@ -432,8 +440,9 @@ Ruff；通道日志位于`.tmp/test-regression/`。单模块失败定位命令�
 ## 详细资料入口
 
 - 项目介绍与文档索引：`README.md`
-- 各子包契约：`packages/dataflows/README.md`、`packages/factor_signal_catalog/README.md`、
-  `packages/strategy_template_catalog/README.md`、`packages/strategy_manager/README.md`、
+- 各子包面向RSCH/CIO的使用说明：`packages/dataflows/README.md`、
+  `packages/factor_signal_catalog/README.md`、`packages/strategy_template_catalog/README.md`、
+  `packages/research_experiment/README.md`、`packages/strategy_manager/README.md`、
   `packages/strategy_evaluator/README.md`、`packages/strategy_runtime/README.md`、
   `packages/trading_execution_engine/README.md`、`packages/paper_trading_engine/README.md`
 - 研究资料导航：`research/README.md`；批次状态：`research/SXX/HANDOFF.md`

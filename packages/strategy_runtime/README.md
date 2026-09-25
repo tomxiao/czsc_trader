@@ -1,14 +1,17 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+本文面向策略研究员（RSCH）和首席投资官（CIO）。安装、源码维护及包级验证见
+[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+
 SRT 是研究、回测、模拟交易及未来实盘共用的策略计算锚点。它把一个候选或冻结策略转换为
 `StrategyInstance`，由实例自主准备计算数据、执行策略计算，并输出与渠道无关的执行计划。
 
 SRT 不管理策略生命周期，不评价策略优劣，也不记录成交和账户账本。SM 管理策略身份与治理，
 SE 负责数值评估，TXE 和 PTE 分别负责历史执行与模拟交易执行。
 
-SRT包只保存策略无关的运行框架。候选实现随候选包位于`research/`，冻结实现及其源码闭包位于
-`strategies/SXX/releases/vN/`；`strategy deploy`验证冻结发布包并在`strategies/deployments/`
-写入部署凭据，SRT据此从策略治理区加载实现，不把策略代码复制进SRT源码树。
+RSCH在候选包中实现策略并复用同一实例进行研究评价；CIO通过TDR体检和部署冻结版本，不手工
+修改SRT源码或治理区。候选与冻结代码的提交位置及binding要求见
+[候选包契约](../../research/CANDIDATE_PACKAGE.md)。
 
 ## 公共门面
 
@@ -35,9 +38,10 @@ from pathlib import Path
 
 from strategy_runtime import StrategyInit, StrategyRuntime, TradableWindow
 
+# source 是已校验的 StrategyCandidate 或 StrategyRelease。
 instance = StrategyRuntime().create(
     StrategyInit(
-        source=release,
+        source=source,
         tradable_window=TradableWindow(date(2026, 9, 21), date(2026, 9, 21)),
         data_dir=Path("state/srt/S007-v1/2026-09-21"),
     )
@@ -77,12 +81,10 @@ prepared = instance.prepare_data()
 - 实现与身份：`StrategyImplementation`、`StrategyCandidate`和`implementation_sha256`；
 - 运行错误：`RuntimeContractError`和`RuntimeCompatibilityError`。
 
-`StrategyLoader`及`strategy_runtime.models`、`strategy_runtime.calculation`、
-`strategy_runtime.implementation_identity`等子模块属于实现细节，候选代码不得直接依赖。候选由
-`StrategyRuntime.create(StrategyInit(...))`加载和运行。
+候选代码只从`strategy_runtime`顶层导入公共符号，不依赖`StrategyLoader`或各内部子模块。
+候选由`StrategyRuntime.create(StrategyInit(...))`加载和运行。
 
-策略实现负责自身的因果滞后、特征构造、预热、状态推导和目标仓位。平台层不维护按策略 ID
-分支的历史规则解码器，也不为旧制品提供兼容路径。
+策略实现负责自身的因果滞后、特征构造、预热、状态推导和目标仓位。
 
 跨市场或跨频率输入应在`InputRequirement.alignment`声明源时间列、源日历、决策日历、最大
 陈旧天数和同日值规则，再调用`align_input_history(...)`。`STRICT_PRIOR`对每个决策时点选择
@@ -98,16 +100,10 @@ prepared = instance.prepare_data()
 2. 调用策略实现推导计算日期、信号日期和每项输入范围；
 3. 通过 DFLS 获取并验证所有声明输入；
 4. 生成覆盖策略身份、运行身份、窗口和全部输入身份的 `data_identity`；
-5. 在实例数据目录原子写入 `prepared-data.json` 和压缩数据文件。
+5. 保存可验证的实例准备结果。
 
-再次使用同一目录时，SRT 会校验策略、窗口、文件哈希和内容身份后加载。目录属于私有持久化格式，
-PTE、TDR 和其他主调方不得解析其中的数据集和清单字段。
-
-PTE 的外部准备进程可使用：
-
-PTE日调度直接为每个账户创建`StrategyInstance`并显式调用`prepare_data()`。PTE只提供账户隔离的
-数据目录、交易窗口和业务参数；策略依赖、初始信号日及回看范围仍由实例和策略实现推导。
-`srt-prepare`仅用于人工诊断或独立准备，不是PTE日常运行的前置任务。
+再次使用同一目录时，SRT校验身份与内容后才加载。实例目录属于SRT私有格式，调用方不得
+解析其内部文件。`prepare_data()`成功证明已声明输入完整可用，仍不代表策略有效或订单已成交。
 
 ## 执行计划
 
@@ -141,12 +137,4 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 SRT决策需要输出的展示无关观察序列。SRT只负责校验并物化观察事实；PTE使用自己的统一渲染器
 生成前瞻观察图，不调用策略回测图代码，也不读取未冻结候选包。
 
-当前已迁移并完成等价验证的冻结版本为：S001-v1、S001-v2、S002-v1、S003-v1 和 S007-v1。
-
-## 包级验证
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_runtime\tests -q
-.\.venv\Scripts\python.exe -m ruff check `
-  packages\strategy_runtime\src packages\strategy_runtime\tests
-```
+冻结版本的可用性以当前治理事实和`strategy info`查询为准，不以本说明中的历史版本清单判断。

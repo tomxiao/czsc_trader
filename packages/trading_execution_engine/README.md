@@ -1,5 +1,8 @@
 # 交易执行引擎（Trading Execution Engine，TXE）
 
+本文面向策略研究员（RSCH）和首席投资官（CIO）。平台实现与测试入口见
+[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+
 TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT决策及执行计划，生成可审计的
 订单、成交、费用、现金、持仓和净值事实，供研究复算、候选回测和 TDR 冻结体检共同使用。
 
@@ -22,7 +25,11 @@ TXE 不负责：
 PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究、回测和冻结复核的统一执行口径，
 不能替代Futu订单与成交对账。
 
-## 当前接口
+## 使用入口与结果
+
+RSCH正式比较策略时，优先调用TDR研究评价入口，由SRT生成逐日计划、TXE生成完整账户事实；
+CIO通过`candidate evaluate`取得独立复算结果。只有需要自行组织合成或专门回放场景时，才
+直接使用TXE公共接口：
 
 - `HistoricalExecutor`：实现SRT的`WindowExecutor`协议，向SRT提供逐日账户快照，接收
   `ExecutionPlan`并管理历史订单、成交、费用、账户状态和完整账本；研究参数搜索、候选/冻结
@@ -36,11 +43,6 @@ PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究、�
 和生效时点，TXE根据历史行情完成触发、成交、滑点和记账。TDR只指定评价窗口、初始资金和
 执行数据，并负责审计、报告与图表。
 
-限价触碰默认采用保守的严格穿越规则，以保持现有正式回测口径；如调用方明确需要“触价即成交”，
-必须显式传入`inclusive_touch=True`并在证据中记录。
-
-## 验证
-
-```powershell
-.\.venv\Scripts\python.exe -B -m pytest -c pyproject.toml packages/trading_execution_engine/tests -q
-```
+结果应同时核对订单、成交、费用、现金、持仓和逐日净值；只看信号收益或最终净值不足以判断
+执行可行性。限价触碰默认采用保守的严格穿越规则；如研究协议明确要求“触价即成交”，必须
+显式传入`inclusive_touch=True`并在证据中记录。PTE模拟账户仍以Futu成交回报为准。
