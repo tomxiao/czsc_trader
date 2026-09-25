@@ -1,0 +1,3 @@
+# S009 EX11 执行
+
+REX receipt=`450a242f5f60ea1a0040aba0b27a9831df3b840db6ba82a24c021cf8a1eb01bb`；EX10前序receipt=`5e283dd9cddfb894103507f9b991762df7b7f63eecb75642eb4fdb339896abeb`。固化四个低自由度原型与统一执行契约，并以完整布尔真值表验证规则分离。未读取真实收益、未搜索参数、未选择优胜者、未创建候选。
