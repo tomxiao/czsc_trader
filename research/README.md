@@ -63,7 +63,7 @@ SXX策略族 → SGC研究批次 → 不可变实验 → SXX-CXXX候选包
 | S005 | 588080中频增强策略 | 588080.SH | `TERMINATED_NO_CANDIDATE` | [S005](S005/HANDOFF.md) |
 | S006 | 588080全量信息策略研究 | 588080.SH | `TERMINATED_NO_CANDIDATE` | [S006](S006/HANDOFF.md) |
 | S007 | 科创50多源机会风险门控策略 | 588080.SH | `PAPER_READY`，v1在PTE观察 | [S007](S007/HANDOFF.md) |
-| S008 | 黄金ETF中期趋势突破策略 | 518880.SH | `RESEARCH_PAUSED`，等待新实验复验数据门 | [S008](S008/HANDOFF.md) |
+| S008 | 黄金ETF中期趋势突破策略 | 518880.SH | `TERMINATED_NO_CANDIDATE`，研究注册已终止 | [S008](S008/HANDOFF.md) |
 
 策略族名称以`strategies/SXX/family.json`为准。研究批次由SGC区分；候选工作名称和冻结版本名称
 分别由候选快照、HANDOFF和正式版本记录维护。
@@ -78,10 +78,9 @@ SXX策略族 → SGC研究批次 → 不可变实验 → SXX-CXXX候选包
 | S003-v1 | `s003-v1` | [S003-v1](S003/candidates/S003-C001_MONITORING.md) |
 | S007-v1 | `s007-v1` | [S007-v1](S007/candidates/S007-C001_MONITORING.md) |
 
-当前主研究方向为S008。S007-v1保持冻结并在PTE前瞻观察，固定v1收益归因批次已经收口，不继续
-使用既有开发池搜索S007-v2。S008的518880.SH数据门已由`20260923_S008_EX02`机器裁决通过，
-`20260923_S008_EX03`的趋势机制筛选证据为`MIXED`，当前等待人工评审是否授权同类黄金ETF机制
-复制；518880.SH封存验证池仍不可读取。准确状态、最近权威实验和禁止事项始终以各策略
+S008已于2026-09-25无候选终止，当前没有活跃的S008研究任务；最终证据与重启边界见
+[S008研究交接](S008/HANDOFF.md)。S007-v1保持冻结并在PTE前瞻观察，固定v1收益归因批次已经
+收口，不继续使用既有开发池搜索S007-v2。准确状态、最近权威实验和禁止事项始终以各策略
 `HANDOFF.md`为准。
 
 ## 共享研究模型

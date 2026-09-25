@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
-from .errors import DataContractError, EmptyDataError
+from .errors import DataContractError, EmptyDataError, IncompleteDataError
 from .tushare_common import get_tushare_pro
 
 
@@ -162,6 +163,37 @@ def fetch_us_real_yield_daily(
         "primary_key": ["Date"],
         "unit": "percent",
         "availability_rule": "source date no later than prior China trading day",
+    }
+
+
+def fetch_us_nominal_yield_daily(
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    dataframe = _canonicalize(
+        _fetch_yearly(
+            lambda start, end: _client(pro, env_file).us_tycr(
+                start_date=start, end_date=end, fields="date,y10"
+            ),
+            start_date,
+            end_date,
+        ),
+        dataset="US nominal Treasury yield daily",
+        date_column="date",
+        columns={"y10": "NominalYield10YPercent"},
+        numeric_columns=("NominalYield10YPercent",),
+    )
+    return dataframe, {
+        "vendor": "tushare",
+        "vendor_interface": "us_tycr",
+        "frequency": "daily",
+        "primary_key": ["Date"],
+        "unit": "percent",
+        "availability_rule": "source date strictly earlier than China decision session",
+        "maximum_start_lag_days": 10,
     }
 
 
@@ -387,6 +419,266 @@ def fetch_cn_cpi_monthly(
         ),
     )
     return dataframe, _monthly_metadata("cn_cpi")
+
+
+def fetch_us_cpi_release(
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Publish US unadjusted CPI YoY events after their first SSE session.
+
+    Tushare's CPI calendar clock is interpreted as Asia/Shanghai only when it
+    converts to the BLS 08:30 America/New_York release clock. Unexpected source
+    clocks fail closed instead of silently shifting an event across sessions.
+    """
+
+    client = _client(pro, env_file)
+    raw = _fetch_yearly(
+        lambda start, end: client.eco_cal(
+            start_date=start,
+            end_date=end,
+            country="美国",
+            event="*未季调CPI年率*",
+            fields="date,time,country,event,value",
+        ),
+        start_date,
+        end_date,
+    )
+    required = {"date", "time", "event", "value"}
+    if raw.empty:
+        raise EmptyDataError("Tushare returned no US CPI release events")
+    missing = sorted(required.difference(raw.columns))
+    if missing:
+        raise DataContractError("US CPI release fields are missing", missing_fields=missing)
+    events = raw.loc[
+        raw["event"].astype(str).str.startswith("美国未季调CPI年率")
+    ].copy()
+    if events.empty:
+        raise EmptyDataError("Tushare returned no matching US CPI release events")
+    times = events["time"].astype(str).str.strip()
+    if not times.str.fullmatch(r"\d{2}:\d{2}").all():
+        raise DataContractError("US CPI release clock is invalid")
+    try:
+        release_at = pd.to_datetime(
+            events["date"].astype(str) + " " + times,
+            format="%Y%m%d %H:%M",
+            errors="raise",
+        ).dt.tz_localize("Asia/Shanghai")
+        yoy = pd.to_numeric(
+            events["value"].astype(str).str.strip().str.removesuffix("%"),
+            errors="raise",
+        )
+    except (TypeError, ValueError) as exc:
+        raise DataContractError("US CPI release date or actual value is invalid") from exc
+    eastern = release_at.dt.tz_convert("America/New_York")
+    if not (
+        eastern.dt.strftime("%H:%M").eq("08:30")
+        & eastern.dt.date.eq(release_at.dt.date)
+    ).all():
+        raise DataContractError("US CPI calendar clock conflicts with BLS Eastern release")
+
+    frame = pd.DataFrame(
+        {
+            "Date": release_at.dt.tz_localize(None).dt.normalize(),
+            "ReleaseAt": release_at,
+            "YoYPercent": yoy,
+        }
+    ).sort_values("Date").reset_index(drop=True)
+    if frame["Date"].duplicated().any():
+        raise DataContractError("US CPI has duplicate release dates")
+    if frame["Date"].diff().dt.days.gt(45).any():
+        raise IncompleteDataError("US CPI release history has a gap over 45 days")
+
+    calendar_start = frame["Date"].min()
+    calendar_end = frame["Date"].max() + pd.Timedelta(days=14)
+    calendar_raw = pd.DataFrame(
+        client.trade_cal(
+            exchange="SSE",
+            start_date=calendar_start.strftime("%Y%m%d"),
+            end_date=calendar_end.strftime("%Y%m%d"),
+            fields="cal_date,is_open",
+        )
+    )
+    if calendar_raw.empty or not {"cal_date", "is_open"}.issubset(calendar_raw.columns):
+        raise IncompleteDataError("SSE calendar is unavailable for US CPI availability")
+    try:
+        calendar_dates = pd.to_datetime(
+            calendar_raw["cal_date"].astype(str), format="%Y%m%d", errors="raise"
+        ).dt.normalize()
+        open_flags = pd.to_numeric(calendar_raw["is_open"], errors="raise")
+    except (TypeError, ValueError) as exc:
+        raise DataContractError("SSE calendar contains invalid dates or open flags") from exc
+    calendar = pd.DataFrame({"Date": calendar_dates, "IsOpen": open_flags})
+    if calendar["Date"].duplicated().any() or not calendar["IsOpen"].isin([0, 1]).all():
+        raise DataContractError("SSE calendar contains duplicate or invalid sessions")
+    expected_days = pd.date_range(calendar_start, calendar_end, freq="D")
+    if not pd.DatetimeIndex(calendar["Date"].sort_values()).equals(expected_days):
+        raise IncompleteDataError("SSE calendar does not cover US CPI release dates")
+    open_days = sorted(calendar.loc[calendar["IsOpen"] == 1, "Date"])
+    available = []
+    for release_day in frame["Date"]:
+        next_index = bisect_right(open_days, release_day)
+        if next_index == len(open_days):
+            raise IncompleteDataError("no later SSE session for US CPI release")
+        available.append(open_days[next_index])
+    frame.insert(2, "AvailableDate", pd.to_datetime(available))
+    return frame, {
+        "vendor": "tushare",
+        "vendor_interface": "eco_cal",
+        "frequency": "monthly_event",
+        "primary_key": ["Date"],
+        "source_time_field": "ReleaseAt",
+        "source_calendar": "US_BLS_EASTERN",
+        "source_timezone": "Asia/Shanghai",
+        "official_release_timezone": "America/New_York",
+        "available_at": "first SSE open day strictly after Shanghai release date",
+        "maximum_start_lag_days": 45,
+    }
+
+
+def _fetch_us_calendar_release(
+    start_date: str,
+    end_date: str,
+    *,
+    query: str,
+    event_prefix: str,
+    value_column: str,
+    unit_suffix: str,
+    maximum_gap_days: int,
+    env_file: str | Path | None,
+    pro: object | None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Publish monthly US events at a conservative next-SSE-session boundary.
+
+    Tushare does not document a verified timezone for every eco_cal event, and
+    one historical budget clock is unknown. The source date is therefore the
+    precision of this contract; no event can become usable on that date.
+    """
+
+    client = _client(pro, env_file)
+    raw = _fetch_yearly(
+        lambda start, end: client.eco_cal(
+            start_date=start,
+            end_date=end,
+            country="美国",
+            event=query,
+            fields="date,time,country,event,value",
+        ),
+        start_date,
+        end_date,
+    )
+    required = {"date", "time", "event", "value"}
+    if raw.empty:
+        raise EmptyDataError(f"Tushare returned no {value_column} release events")
+    missing = sorted(required.difference(raw.columns))
+    if missing:
+        raise DataContractError("US calendar release fields are missing", missing_fields=missing)
+    events = raw.loc[raw["event"].astype(str).str.startswith(event_prefix)].copy()
+    if events.empty:
+        raise EmptyDataError(f"Tushare returned no matching {value_column} events")
+    values = events["value"].astype(str).str.strip().str.replace(",", "", regex=False)
+    pattern = r"[+-]?\d+(?:\.\d+)?" + unit_suffix
+    if not values.str.fullmatch(pattern).all():
+        raise DataContractError(f"{value_column} actual value or unit is invalid")
+    clocks = events["time"].astype(str).str.strip()
+    valid_clocks = clocks.str.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d")
+    if value_column == "PmiIndex" and not valid_clocks.all():
+        raise DataContractError("US ISM PMI source clock is invalid")
+    if value_column == "PmiIndex" and clocks.lt("15:00").any():
+        raise DataContractError("US ISM PMI source clock precedes China close")
+    try:
+        dates = pd.to_datetime(events["date"].astype(str), format="%Y%m%d", errors="raise")
+        numeric = pd.to_numeric(values.str.removesuffix(unit_suffix), errors="raise")
+    except (TypeError, ValueError) as exc:
+        raise DataContractError(f"{value_column} release date or value is invalid") from exc
+    frame = pd.DataFrame({
+        "Date": dates.dt.normalize(),
+        value_column: numeric,
+        "SourceClock": clocks,
+        "SourceEvent": events["event"].astype(str),
+    }).sort_values("Date").reset_index(drop=True)
+    if frame["Date"].duplicated().any():
+        raise DataContractError(f"{value_column} has duplicate release dates")
+    if frame["Date"].diff().dt.days.gt(maximum_gap_days).any():
+        raise IncompleteDataError(f"{value_column} release history has a gap")
+
+    calendar_start = frame["Date"].min()
+    calendar_end = frame["Date"].max() + pd.Timedelta(days=14)
+    calendar_raw = pd.DataFrame(client.trade_cal(
+        exchange="SSE",
+        start_date=calendar_start.strftime("%Y%m%d"),
+        end_date=calendar_end.strftime("%Y%m%d"),
+        fields="cal_date,is_open",
+    ))
+    if calendar_raw.empty or not {"cal_date", "is_open"}.issubset(calendar_raw.columns):
+        raise IncompleteDataError("SSE calendar is unavailable for US release availability")
+    try:
+        calendar_dates = pd.to_datetime(
+            calendar_raw["cal_date"].astype(str), format="%Y%m%d", errors="raise"
+        ).dt.normalize()
+        open_flags = pd.to_numeric(calendar_raw["is_open"], errors="raise")
+    except (TypeError, ValueError) as exc:
+        raise DataContractError("SSE calendar contains invalid dates or open flags") from exc
+    calendar = pd.DataFrame({"Date": calendar_dates, "IsOpen": open_flags})
+    if calendar["Date"].duplicated().any() or not calendar["IsOpen"].isin([0, 1]).all():
+        raise DataContractError("SSE calendar contains duplicate or invalid sessions")
+    expected_days = pd.date_range(calendar_start, calendar_end, freq="D")
+    if not pd.DatetimeIndex(calendar["Date"].sort_values()).equals(expected_days):
+        raise IncompleteDataError("SSE calendar does not cover US release dates")
+    open_days = sorted(calendar.loc[calendar["IsOpen"] == 1, "Date"])
+    available = []
+    for release_day in frame["Date"]:
+        next_index = bisect_right(open_days, release_day)
+        if next_index == len(open_days):
+            raise IncompleteDataError("no later SSE session for US release")
+        available.append(open_days[next_index])
+    frame.insert(1, "AvailableDate", pd.to_datetime(available))
+    return frame, {
+        "vendor": "tushare",
+        "vendor_interface": "eco_cal",
+        "frequency": "monthly_event",
+        "primary_key": ["Date"],
+        "source_time_field": "Date",
+        "source_calendar": "TUSHARE_ECO_CAL_DATE",
+        "source_timezone_assumption": "Asia/Shanghai",
+        "source_time_precision": "date_only",
+        "unverified_source_clock_rows": int((~valid_clocks).sum()),
+        "available_at": "first SSE open day strictly after source calendar date",
+        "maximum_start_lag_days": maximum_gap_days,
+    }
+
+
+def fetch_us_ism_pmi_release(
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    return _fetch_us_calendar_release(
+        start_date, end_date,
+        query="*ISM制造业PMI*", event_prefix="美国ISM制造业PMI",
+        value_column="PmiIndex", unit_suffix="", maximum_gap_days=40,
+        env_file=env_file, pro=pro,
+    )
+
+
+def fetch_us_federal_budget_release(
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    return _fetch_us_calendar_release(
+        start_date, end_date,
+        query="*政府预算*", event_prefix="美国政府预算(美元)",
+        value_column="BudgetBalanceBillionUSD", unit_suffix="B", maximum_gap_days=70,
+        env_file=env_file, pro=pro,
+    )
 
 
 def fetch_cn_ppi_monthly(

@@ -28,12 +28,19 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.FXCM_DAILY.value: "FXCM_24X5",
     Dataset.USDCNH_DAILY.value: "FXCM_24X5",
     Dataset.US_REAL_YIELD_DAILY.value: "US_GOVERNMENT",
+    Dataset.US_NOMINAL_YIELD_DAILY.value: "US_GOVERNMENT",
     Dataset.GLOBAL_INDEX_DAILY.value: "US_MARKET",
     Dataset.VIX_DAILY.value: "US_MARKET",
     Dataset.CN_CPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
+    Dataset.US_CPI_RELEASE.value: "US_BLS_EASTERN",
+    Dataset.US_ISM_PMI_RELEASE.value: "TUSHARE_ECO_CAL_DATE",
+    Dataset.US_FEDERAL_BUDGET_RELEASE.value: "TUSHARE_ECO_CAL_DATE",
     Dataset.CN_PPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.CN_MONEY_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.SGE_GOLD_DAILY.value: "SGE",
+    Dataset.FUTURES_SHFE_GOLD_DAILY.value: "SHFE",
+    Dataset.FUTURES_SHFE_GOLD_MAPPING.value: "SHFE",
+    Dataset.FUTURES_SHFE_GOLD_HOLDING.value: "SHFE",
     Dataset.STRATEGY_FEATURE_EVIDENCE.value: "REPOSITORY",
 }
 
@@ -84,6 +91,9 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.US_REAL_YIELD_DAILY.value: (
         {"Date", "RealYield5YPercent", "RealYield10YPercent"},
         {"RealYield5YPercent", "RealYield10YPercent"},
+    ),
+    Dataset.US_NOMINAL_YIELD_DAILY.value: (
+        {"Date", "NominalYield10YPercent"}, {"NominalYield10YPercent"}
     ),
     Dataset.USDCNH_DAILY.value: (
         {
@@ -139,6 +149,43 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Date", "Open", "High", "Low", "Close", "Volume", "Amount"},
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
     ),
+    Dataset.FUTURES_SHFE_GOLD_DAILY.value: (
+        {
+            "Date",
+            "Contract",
+            "MaturityDate",
+            "Close",
+            "Settle",
+            "Volume",
+            "Amount",
+            "OpenInterest",
+        },
+        {
+            "Close",
+            "Settle",
+            "Volume",
+            "Amount",
+            "OpenInterest",
+        },
+    ),
+    Dataset.FUTURES_SHFE_GOLD_MAPPING.value: (
+        {"Date", "ContinuousSymbol", "Contract"},
+        set(),
+    ),
+    Dataset.FUTURES_SHFE_GOLD_HOLDING.value: (
+        {
+            "Date",
+            "Contract",
+            "Broker",
+            "Volume",
+            "VolumeChange",
+            "LongHolding",
+            "LongChange",
+            "ShortHolding",
+            "ShortChange",
+        },
+        set(),
+    ),
     Dataset.DOMESTIC_INDEX_DAILY.value: (
         {"Date", "Open", "High", "Low", "Close", "Volume", "Amount"},
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
@@ -146,6 +193,18 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.CN_CPI_MONTHLY.value: (
         {"Date", "NationalYoYPercent", "NationalMoMPercent"},
         {"NationalYoYPercent", "NationalMoMPercent"},
+    ),
+    Dataset.US_CPI_RELEASE.value: (
+        {"Date", "ReleaseAt", "AvailableDate", "YoYPercent"},
+        {"YoYPercent"},
+    ),
+    Dataset.US_ISM_PMI_RELEASE.value: (
+        {"Date", "AvailableDate", "PmiIndex", "SourceClock", "SourceEvent"},
+        {"PmiIndex"},
+    ),
+    Dataset.US_FEDERAL_BUDGET_RELEASE.value: (
+        {"Date", "AvailableDate", "BudgetBalanceBillionUSD", "SourceClock", "SourceEvent"},
+        {"BudgetBalanceBillionUSD"},
     ),
     Dataset.CN_PPI_MONTHLY.value: (
         {"Date", "ProducerYoYPercent", "ProducerMoMPercent"},
@@ -260,6 +319,45 @@ def _validate_provider_output(
                 dataset=dataset,
                 field=column,
             )
+    if dataset == Dataset.US_CPI_RELEASE.value:
+        if (
+            metadata.get("source_time_field") != "ReleaseAt"
+            or metadata.get("source_calendar") != "US_BLS_EASTERN"
+            or metadata.get("available_at")
+            != "first SSE open day strictly after Shanghai release date"
+        ):
+            raise DataContractError("US CPI release lineage contract is incomplete")
+        release_at = dataframe["ReleaseAt"]
+        if not isinstance(release_at.dtype, pd.DatetimeTZDtype) or str(release_at.dt.tz) != "Asia/Shanghai":
+            raise DataContractError("US CPI release time must use Asia/Shanghai timezone")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        eastern = release_at.dt.tz_convert("America/New_York")
+        invalid = (
+            dates.isna()
+            | available.isna()
+            | dates.ne(release_at.dt.tz_localize(None).dt.normalize())
+            | available.le(dates)
+            | eastern.dt.strftime("%H:%M").ne("08:30")
+            | eastern.dt.date.ne(release_at.dt.date)
+        )
+        if invalid.any():
+            raise DataContractError("US CPI release timing is causally invalid")
+    if dataset in {
+        Dataset.US_ISM_PMI_RELEASE.value,
+        Dataset.US_FEDERAL_BUDGET_RELEASE.value,
+    }:
+        if (
+            metadata.get("source_time_field") != "Date"
+            or metadata.get("source_calendar") != "TUSHARE_ECO_CAL_DATE"
+            or metadata.get("available_at")
+            != "first SSE open day strictly after source calendar date"
+        ):
+            raise DataContractError("US monthly release lineage contract is incomplete")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        if dates.isna().any() or available.isna().any() or available.le(dates).any():
+            raise DataContractError("US monthly release timing is causally invalid")
     if dataset in {Dataset.SGE_GOLD_DAILY.value, Dataset.DOMESTIC_INDEX_DAILY.value}:
         open_values = pd.to_numeric(dataframe["Open"])
         high_values = pd.to_numeric(dataframe["High"])
@@ -281,6 +379,60 @@ def _validate_provider_output(
             raise DataContractError(
                 "provider output contains invalid daily price bars",
                 dataset=dataset,
+                invalid_rows=int(invalid.sum()),
+            )
+    if dataset == Dataset.FUTURES_SHFE_GOLD_DAILY.value:
+        close_values = pd.to_numeric(dataframe["Close"])
+        settle_values = pd.to_numeric(dataframe["Settle"])
+        volume_values = pd.to_numeric(dataframe["Volume"])
+        amount_values = pd.to_numeric(dataframe["Amount"])
+        interest_values = pd.to_numeric(dataframe["OpenInterest"])
+        maturity = pd.to_datetime(dataframe["MaturityDate"], errors="coerce")
+        source_date = pd.to_datetime(dataframe["Date"], errors="coerce")
+        invalid = (
+            (close_values <= 0)
+            | (settle_values <= 0)
+            | (volume_values < 0)
+            | (amount_values < 0)
+            | (interest_values < 0)
+            | maturity.isna()
+            | source_date.isna()
+            | (maturity < source_date)
+        )
+        if invalid.any():
+            raise DataContractError(
+                "provider output contains invalid SHFE gold futures bars",
+                invalid_rows=int(invalid.sum()),
+            )
+    if dataset == Dataset.FUTURES_SHFE_GOLD_MAPPING.value:
+        if (
+            dataframe["ContinuousSymbol"].astype(str).str.strip().eq("").any()
+            or dataframe["Contract"].astype(str).str.strip().eq("").any()
+        ):
+            raise DataContractError("futures mapping contains an empty symbol")
+    if dataset == Dataset.FUTURES_SHFE_GOLD_HOLDING.value:
+        numeric_columns = (
+            "Volume",
+            "VolumeChange",
+            "LongHolding",
+            "LongChange",
+            "ShortHolding",
+            "ShortChange",
+        )
+        numeric = dataframe.loc[:, numeric_columns].apply(pd.to_numeric, errors="coerce")
+        invalid_text = dataframe["Contract"].astype(str).str.strip().eq("") | dataframe[
+            "Broker"
+        ].astype(str).str.strip().eq("")
+        missing_all_rankings = numeric[["Volume", "LongHolding", "ShortHolding"]].isna().all(axis=1)
+        negative_rankings = (numeric[["Volume", "LongHolding", "ShortHolding"]] < 0).any(axis=1)
+        invalid_numeric = pd.Series(False, index=dataframe.index)
+        for column in numeric_columns:
+            original_present = dataframe[column].notna()
+            invalid_numeric |= original_present & numeric[column].isna()
+        invalid = invalid_text | missing_all_rankings | negative_rankings | invalid_numeric
+        if invalid.any():
+            raise DataContractError(
+                "provider output contains invalid SHFE gold holding rankings",
                 invalid_rows=int(invalid.sum()),
             )
     if dataset == Dataset.VIX_DAILY.value:
@@ -508,8 +660,17 @@ class Dataflows:
 def _default_providers() -> dict[str, Provider]:
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
+    from .tushare_futures import (
+        fetch_shfe_gold_daily,
+        fetch_shfe_gold_holding,
+        fetch_shfe_gold_mapping,
+    )
     from .tushare_strategy_data import (
         fetch_cn_cpi_monthly,
+        fetch_us_federal_budget_release,
+        fetch_us_ism_pmi_release,
+        fetch_us_nominal_yield_daily,
+        fetch_us_cpi_release,
         fetch_cn_money_monthly,
         fetch_cn_ppi_monthly,
         fetch_domestic_index_daily,
@@ -571,6 +732,11 @@ def _default_providers() -> dict[str, Provider]:
             request.start, request.end, env_file=_env_file(request)
         )
 
+    def us_nominal_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_nominal_yield_daily(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
     def usdcnh(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_usdcnh_daily(request.start, request.end, env_file=_env_file(request))
 
@@ -598,8 +764,47 @@ def _default_providers() -> dict[str, Provider]:
             env_file=_env_file(request),
         )
 
+    def shfe_gold_daily(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_daily(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def shfe_gold_mapping(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_mapping(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def shfe_gold_holding(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_shfe_gold_holding(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
     def cn_cpi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_cn_cpi_monthly(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
+    def us_cpi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_cpi_release(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
+    def us_ism_pmi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_ism_pmi_release(
+            request.start, request.end, env_file=_env_file(request)
+        )
+
+    def us_federal_budget_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_us_federal_budget_release(
             request.start, request.end, env_file=_env_file(request)
         )
 
@@ -688,11 +893,18 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,
         Dataset.SHIBOR_DAILY.value: shibor,
         Dataset.US_REAL_YIELD_DAILY.value: us_real_yield,
+        Dataset.US_NOMINAL_YIELD_DAILY.value: us_nominal_yield,
         Dataset.USDCNH_DAILY.value: usdcnh,
         Dataset.FXCM_DAILY.value: fxcm,
         Dataset.SGE_GOLD_DAILY.value: sge_gold,
+        Dataset.FUTURES_SHFE_GOLD_DAILY.value: shfe_gold_daily,
+        Dataset.FUTURES_SHFE_GOLD_MAPPING.value: shfe_gold_mapping,
+        Dataset.FUTURES_SHFE_GOLD_HOLDING.value: shfe_gold_holding,
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
+        Dataset.US_CPI_RELEASE.value: us_cpi_release,
+        Dataset.US_ISM_PMI_RELEASE.value: us_ism_pmi_release,
+        Dataset.US_FEDERAL_BUDGET_RELEASE.value: us_federal_budget_release,
         Dataset.CN_PPI_MONTHLY.value: cn_ppi,
         Dataset.CN_MONEY_MONTHLY.value: cn_money,
         Dataset.INDEX_DAILY_BASIC.value: index_basic,
