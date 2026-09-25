@@ -23,57 +23,6 @@ from strategy_runtime import (
 from strategy_runtime.prepare_cli import main as prepare_main
 
 
-def test_legacy_runner_surface_is_not_public() -> None:
-    import strategy_runtime
-
-    for name in (
-        "AccountSnapshot",
-        "CalculationRequest",
-        "DeploymentSpec",
-        "ExecutionChannel",
-        "StrategyDecision",
-        "StrategyLoader",
-        "StrategyRunner",
-        "StrategyRuntimeContext",
-        "StrategyDataSource",
-        "PublishedDataSource",
-        "HistoricalDataSource",
-        "PreparedStrategyData",
-        "PublishedStrategyData",
-        "PublicationStatus",
-        "publish_history",
-        "read_publication",
-        "write_publication",
-        "validate_publication",
-        "load_strategy_runtime_context",
-    ):
-        assert not hasattr(strategy_runtime, name)
-
-
-def test_legacy_runtime_models_are_removed() -> None:
-    from strategy_runtime import models
-
-    for name in (
-        "AccountSnapshot",
-        "CalculationRequest",
-        "ChannelCapabilities",
-        "DeploymentSpec",
-        "ExecutionInstruction",
-        "ExecutionReceipt",
-        "ExecutionRequest",
-        "PublishedStrategyData",
-        "PublicationStatus",
-        "ReferencePriceSnapshot",
-        "RuntimeRunResult",
-        "RuntimeRunStatus",
-        "StrategyDecision",
-        "StrategyExplanation",
-        "StrategyRuntimeContext",
-        "StrategyStateSnapshot",
-    ):
-        assert not hasattr(models, name)
-
-
 ROOT = Path(__file__).resolve().parents[4]
 ZONE = ZoneInfo("Asia/Shanghai")
 

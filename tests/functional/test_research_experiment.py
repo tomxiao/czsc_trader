@@ -113,9 +113,9 @@ class Experiment(ResearchExperiment):
 
 
 def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    passing_root = _write_v3_experiment(functional_repo / ".tmp" / "S009" / "20260925_S009_EX99")
+    passing_root = _write_v3_experiment(tmp_path / ".tmp" / "S009" / "20260925_S009_EX99")
     passing = load_experiment(passing_root)
     resources = ExperimentResources(max_workers=1, random_seed=99)
 
@@ -131,7 +131,7 @@ def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
     }
 
     failing_root = _write_v3_experiment(
-        functional_repo / ".tmp" / "missing-precheck" / "20260925_S009_EX99",
+        tmp_path / ".tmp" / "missing-precheck" / "20260925_S009_EX99",
         explicit_precheck=False,
     )
     failing = preflight_experiment(load_experiment(failing_root), resources=resources)
@@ -142,9 +142,9 @@ def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
     failing_loaded = load_experiment(failing_root)
     failing_context = create_experiment_context(
         failing_loaded.definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "v3-preflight-blocked"),
+        workspace=_workspace(tmp_path, "v3-preflight-blocked"),
         resources=resources,
     )
     with pytest.raises(ValueError, match="SYNTHETIC_PRECHECK"):
@@ -213,8 +213,8 @@ def _flows(calls: list[DataRequest] | None = None) -> Dataflows:
     return Dataflows({"etf.ohlcv": provider})
 
 
-def _workspace(functional_repo: Path, name: str) -> ExperimentWorkspace:
-    return ExperimentWorkspace(functional_repo / ".tmp" / name, functional_repo)
+def _workspace(tmp_path: Path, name: str) -> ExperimentWorkspace:
+    return ExperimentWorkspace(tmp_path / ".tmp" / name, tmp_path)
 
 
 def _candidate() -> StrategyCandidate:
@@ -225,13 +225,13 @@ def _candidate() -> StrategyCandidate:
     )
 
 
-def _execute_fixture(functional_repo: Path, workspace_name: str):
+def _execute_fixture(tmp_path: Path, workspace_name: str):
     experiment = load_experiment(FIXTURE_ROOT)
     context = create_experiment_context(
         experiment.definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, workspace_name),
+        workspace=_workspace(tmp_path, workspace_name),
         resources=ExperimentResources(
             max_workers=4,
             max_evaluations=8,
@@ -242,9 +242,9 @@ def _execute_fixture(functional_repo: Path, workspace_name: str):
 
 
 def test_s008_fixture_loads_and_executes_through_public_context(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    experiment, context, result = _execute_fixture(functional_repo, "experiment-fixture")
+    experiment, context, result = _execute_fixture(tmp_path, "experiment-fixture")
 
     assert result.outcome is ExperimentOutcome.PASS
     assert result.facts == {"rows": 2, "mean_close": 10.25, "max_workers": 4}
@@ -285,9 +285,9 @@ def test_s008_fixture_loads_and_executes_through_public_context(
 
 
 def test_execution_envelope_rejects_result_and_artifact_tampering(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    _, context, result = _execute_fixture(functional_repo, "tampered-envelope")
+    _, context, result = _execute_fixture(tmp_path, "tampered-envelope")
     envelope_path = context.workspace.path("execution_envelope.json")
     original = envelope_path.read_text(encoding="utf-8")
     envelope = json.loads(original)
@@ -312,9 +312,9 @@ def test_execution_envelope_rejects_result_and_artifact_tampering(
 
 
 def test_execution_envelope_requires_expected_receipt_identity(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    _, context, _ = _execute_fixture(functional_repo, "unexpected-receipt")
+    _, context, _ = _execute_fixture(tmp_path, "unexpected-receipt")
 
     with pytest.raises(ValueError, match="differs from expected identity"):
         load_experiment_input(
@@ -323,8 +323,8 @@ def test_execution_envelope_requires_expected_receipt_identity(
         )
 
 
-def test_loader_rejects_source_tampering(functional_repo: Path) -> None:
-    target = functional_repo / ".tmp" / "tampered" / FIXTURE_ROOT.name
+def test_loader_rejects_source_tampering(tmp_path: Path) -> None:
+    target = tmp_path / ".tmp" / "tampered" / FIXTURE_ROOT.name
     target.parent.mkdir(parents=True)
     shutil.copytree(FIXTURE_ROOT, target)
     source = target / "experiment.py"
@@ -334,16 +334,16 @@ def test_loader_rejects_source_tampering(functional_repo: Path) -> None:
         load_experiment(target)
 
 
-def test_executor_rechecks_source_after_loading(functional_repo: Path) -> None:
-    target = functional_repo / ".tmp" / "post-load-tampered" / FIXTURE_ROOT.name
+def test_executor_rechecks_source_after_loading(tmp_path: Path) -> None:
+    target = tmp_path / ".tmp" / "post-load-tampered" / FIXTURE_ROOT.name
     target.parent.mkdir(parents=True)
     shutil.copytree(FIXTURE_ROOT, target)
     experiment = load_experiment(target)
     context = create_experiment_context(
         experiment.definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "post-load-tampered"),
+        workspace=_workspace(tmp_path, "post-load-tampered"),
         resources=ExperimentResources(
             max_workers=1,
             random_seed=experiment.definition.random_seed,
@@ -364,7 +364,7 @@ def test_executor_rejects_non_platform_context() -> None:
         execute_experiment(experiment, object())
 
 
-def test_formal_mode_requires_platform_owned_context(functional_repo: Path) -> None:
+def test_formal_mode_requires_platform_owned_context(tmp_path: Path) -> None:
     definition = _definition(
         mode=ExperimentMode.FORMAL,
         validation_cutoff=date(2026, 9, 18),
@@ -378,17 +378,17 @@ def test_formal_mode_requires_platform_owned_context(functional_repo: Path) -> N
     with pytest.raises(ValueError, match="create_formal_experiment_context"):
         create_experiment_context(
             definition,
-            repository_root=functional_repo,
+            repository_root=tmp_path,
             dataflows=_flows(),
-            workspace=_workspace(functional_repo, "fake-formal"),
+            workspace=_workspace(tmp_path, "fake-formal"),
             resources=resources,
             evaluator=lambda request: EvaluationResult(runs=()),
         )
 
     context = create_formal_experiment_context(
         definition,
-        repository_root=functional_repo,
-        workspace=_workspace(functional_repo, "formal"),
+        repository_root=tmp_path,
+        workspace=_workspace(tmp_path, "formal"),
         resources=resources,
     )
     assert context.definition.mode is ExperimentMode.FORMAL
@@ -407,13 +407,13 @@ def test_formal_definition_rejects_parameter_search() -> None:
         )
 
 
-def test_context_requires_exact_receipted_predecessors(functional_repo: Path) -> None:
+def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
     predecessor = load_experiment(FIXTURE_ROOT)
     predecessor_context = create_experiment_context(
         predecessor.definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "predecessor"),
+        workspace=_workspace(tmp_path, "predecessor"),
         resources=ExperimentResources(
             max_workers=1,
             max_evaluations=1,
@@ -436,17 +436,17 @@ def test_context_requires_exact_receipted_predecessors(functional_repo: Path) ->
     with pytest.raises(ValueError, match="predecessor inputs differ"):
         create_experiment_context(
             successor,
-            repository_root=functional_repo,
+            repository_root=tmp_path,
             dataflows=_flows(),
-            workspace=_workspace(functional_repo, "missing-predecessor"),
+            workspace=_workspace(tmp_path, "missing-predecessor"),
             resources=ExperimentResources(max_workers=1, random_seed=98),
         )
 
     context = create_experiment_context(
         successor,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "with-predecessor"),
+        workspace=_workspace(tmp_path, "with-predecessor"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         predecessors=(predecessor_input,),
     )
@@ -458,15 +458,15 @@ def test_context_requires_exact_receipted_predecessors(functional_repo: Path) ->
 
 
 def test_data_adapter_blocks_undeclared_dataset_before_provider(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
     calls: list[DataRequest] = []
     definition = _definition()
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(calls),
-        workspace=_workspace(functional_repo, "undeclared-dataset"),
+        workspace=_workspace(tmp_path, "undeclared-dataset"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
@@ -484,14 +484,14 @@ def test_data_adapter_blocks_undeclared_dataset_before_provider(
     assert calls == []
 
 
-def test_data_adapter_blocks_future_data_before_provider(functional_repo: Path) -> None:
+def test_data_adapter_blocks_future_data_before_provider(tmp_path: Path) -> None:
     calls: list[DataRequest] = []
     definition = _definition()
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(calls),
-        workspace=_workspace(functional_repo, "future-data"),
+        workspace=_workspace(tmp_path, "future-data"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
@@ -517,7 +517,7 @@ def test_data_adapter_blocks_future_data_before_provider(functional_repo: Path) 
     ],
 )
 def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
-    functional_repo: Path,
+    tmp_path: Path,
     real_returns: bool,
     sealed_validation: bool,
     missing: str,
@@ -526,9 +526,9 @@ def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
     definition = _definition()
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(calls),
-        workspace=_workspace(functional_repo, f"missing-{missing}"),
+        workspace=_workspace(tmp_path, f"missing-{missing}"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         real_returns=real_returns,
         sealed_validation=sealed_validation,
@@ -549,7 +549,7 @@ def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
 
 
 def test_context_tracks_runtime_and_evaluation_public_adapters(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
     candidate = _candidate()
     runtime_calls: list[str] = []
@@ -568,16 +568,16 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
     definition = _definition(capabilities=ExperimentCapabilities(reads_real_returns=True))
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "platform-adapters"),
+        workspace=_workspace(tmp_path, "platform-adapters"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         runtime=FakeRuntime(),
         evaluator=evaluator,
         real_returns=True,
     )
     request = EvaluationRequest(
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         experiment_id=definition.experiment_id,
         strategy=candidate,
         runtime_binding={},
@@ -599,7 +599,7 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
 
 
 def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
     calls: list[str] = []
 
@@ -610,9 +610,9 @@ def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
     definition = _definition()
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "resource-budget"),
+        workspace=_workspace(tmp_path, "resource-budget"),
         resources=ExperimentResources(
             max_workers=1,
             max_evaluations=1,
@@ -621,7 +621,7 @@ def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
         evaluator=evaluator,
     )
     request = EvaluationRequest(
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         experiment_id=definition.experiment_id,
         strategy=_candidate(),
         runtime_binding={},
@@ -660,13 +660,13 @@ class _CandidateExperiment(ResearchExperiment):
         )
 
 
-def test_execute_rejects_unbound_experiment(functional_repo: Path) -> None:
+def test_execute_rejects_unbound_experiment(tmp_path: Path) -> None:
     definition = _definition()
     context = create_experiment_context(
         definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "unbound-experiment"),
+        workspace=_workspace(tmp_path, "unbound-experiment"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
@@ -675,9 +675,9 @@ def test_execute_rejects_unbound_experiment(functional_repo: Path) -> None:
 
 
 def test_bound_candidate_result_requires_declared_capability(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    root = functional_repo / ".tmp" / "bound-candidate" / "S008" / "20260924_S008_EX98"
+    root = tmp_path / ".tmp" / "bound-candidate" / "S008" / "20260924_S008_EX98"
     root.mkdir(parents=True)
     source = root / "experiment.py"
     source.write_text(
@@ -742,9 +742,9 @@ class Experiment(ResearchExperiment):
     experiment = load_experiment(root)
     context = create_experiment_context(
         experiment.definition,
-        repository_root=functional_repo,
+        repository_root=tmp_path,
         dataflows=_flows(),
-        workspace=_workspace(functional_repo, "candidate-capability"),
+        workspace=_workspace(tmp_path, "candidate-capability"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
@@ -753,9 +753,9 @@ class Experiment(ResearchExperiment):
 
 
 def test_workspace_rejects_escape_and_detects_artifact_change(
-    functional_repo: Path,
+    tmp_path: Path,
 ) -> None:
-    workspace = _workspace(functional_repo, "workspace-boundary")
+    workspace = _workspace(tmp_path, "workspace-boundary")
     with pytest.raises(ValueError, match="experiment workspace"):
         workspace.path("../outside.json")
     target = workspace.path("facts/result.json")

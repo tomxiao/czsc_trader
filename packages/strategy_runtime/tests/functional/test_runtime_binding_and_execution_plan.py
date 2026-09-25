@@ -13,6 +13,8 @@ from strategy_runtime import (
     RuntimeCompatibilityError,
     RuntimeContractError,
     StrategyRelease,
+    StrategyRuntime,
+    canonical_sha256,
 )
 from strategy_runtime.loader import StrategyLoader
 from strategy_runtime.execution_planner import build_execution_plan
@@ -91,7 +93,30 @@ def test_every_active_frozen_release_has_a_matching_source_binding() -> None:
         strategy = StrategyLoader(ROOT / "strategies").load(
             StrategyRelease.from_mapping(payload)
         )
+        assert strategy.definition.release_id == f"{strategy_id}-{version}"
         assert strategy.definition.implementation.source_sha256
+        assert strategy.definition.runtime_sha256
+
+
+def test_runtime_rejects_release_without_deployed_implementation() -> None:
+    raw = {
+        "strategy_id": "S999",
+        "version": "v1",
+        "release_id": "S999-v1",
+        "strategy_payload": {"kind": "test"},
+    }
+    raw["release_hash"] = canonical_sha256(raw)
+
+    with pytest.raises(RuntimeCompatibilityError, match="deployment file"):
+        StrategyRuntime(ROOT / "strategies").describe(StrategyRelease.from_mapping(raw))
+
+
+def test_strategy_release_rejects_payload_with_a_borrowed_hash() -> None:
+    raw = json.loads((ROOT / "strategies/S002/versions/v1.json").read_text(encoding="utf-8"))
+    raw["strategy_payload"]["rule"]["portfolio_rule"]["holding_sessions"] = 6
+
+    with pytest.raises(RuntimeContractError, match="complete frozen record"):
+        StrategyRelease.from_mapping(raw)
 
 
 def test_loader_rejects_source_that_differs_from_frozen_binding(monkeypatch) -> None:

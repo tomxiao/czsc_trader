@@ -185,67 +185,12 @@ def test_account_reuses_its_strategy_space_across_trading_dates(
     assert client.tradable_date("s002-v1", "S002", "v1") == date(2026, 9, 4)
 
 
-def test_account_replaces_unversioned_prepared_space_without_mutating_it(
-    tmp_path, monkeypatch,
-):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
-    moments = iter(
-        (
-            datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            datetime(2026, 9, 3, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-        )
-    )
-    client = SrtAdviceClient(
-        repo_root=ROOT,
-        data_dir=tmp_path,
-        now=lambda: next(moments),
-        session_resolver=lambda signal_date: signal_date.replace(day=signal_date.day + 1),
-    )
-    assert client.prepare_account_data(
-        account_id="s002-v1",
-        strategy_id="S002",
-        strategy_version="v1",
-        symbol="510500.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 2),
-    ) is not None
-    account_root = tmp_path / "accounts/s002-v1"
-    old_space = next((account_root / "spaces").iterdir())
-    old_manifest = next(old_space.glob("preparations/*/prepared-data.json"))
-    old_manifest_bytes = old_manifest.read_bytes()
-    current = account_root / "current.json"
-    index = json.loads(current.read_text(encoding="utf-8"))
-    index.pop("index_sha256")
-    index.pop("prepared_storage_revision")
-    index["index_sha256"] = canonical_sha256(index)
-    current.write_text(
-        json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-    assert client.prepare_account_data(
-        account_id="s002-v1",
-        strategy_id="S002",
-        strategy_version="v1",
-        symbol="510500.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 3),
-    ) is not None
-
-    spaces = sorted(path.name for path in (account_root / "spaces").iterdir())
-    assert spaces == [
-        "s002-v1_20260902T220000000000",
-        "s002-v1_20260903T220000000000",
-    ]
-    assert old_manifest.read_bytes() == old_manifest_bytes
-    published = json.loads(current.read_text(encoding="utf-8"))
-    assert published["prepared_storage_revision"] == 1
-    assert published["trading_date"] == "2026-09-04"
-
-
-@pytest.mark.parametrize("indexed_runtime", (None, "0" * 64))
-def test_account_replaces_space_when_runtime_identity_is_missing_or_changed(
-    tmp_path, monkeypatch, indexed_runtime,
+@pytest.mark.parametrize(
+    "change",
+    ["unversioned-storage", "missing-runtime", "changed-runtime", "changed-symbol"],
+)
+def test_account_replaces_incompatible_space_without_mutating_old_data(
+    tmp_path, monkeypatch, change,
 ):
     monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     moments = iter(
@@ -278,10 +223,15 @@ def test_account_replaces_space_when_runtime_identity_is_missing_or_changed(
     entry = index["releases"]["S002-v1"]
     assert entry["runtime_sha256"] == first.strategy.runtime_sha256
     index.pop("index_sha256")
-    if indexed_runtime is None:
+    symbol = "510500.SH"
+    if change == "unversioned-storage":
+        index.pop("prepared_storage_revision")
+    elif change == "missing-runtime":
         entry.pop("runtime_sha256")
-    else:
-        entry["runtime_sha256"] = indexed_runtime
+    elif change == "changed-runtime":
+        entry["runtime_sha256"] = "0" * 64
+    elif change == "changed-symbol":
+        symbol = "588080.SH"
     index["index_sha256"] = canonical_sha256(index)
     current.write_text(
         json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
@@ -292,7 +242,7 @@ def test_account_replaces_space_when_runtime_identity_is_missing_or_changed(
         account_id="s002-v1",
         strategy_id="S002",
         strategy_version="v1",
-        symbol="510500.SH",
+        symbol=symbol,
         asset="etf",
         signal_date=date(2026, 9, 3),
     )
@@ -303,44 +253,13 @@ def test_account_replaces_space_when_runtime_identity_is_missing_or_changed(
     ]
     assert old_manifest.read_bytes() == old_manifest_bytes
     published = json.loads(current.read_text(encoding="utf-8"))
+    assert published["prepared_storage_revision"] == 1
+    assert published["symbol"] == second.strategy.symbol == symbol
+    assert published["releases"]["S002-v1"]["release_hash"] == first.strategy.release_hash
     assert published["releases"]["S002-v1"]["runtime_sha256"] == (
         second.strategy.runtime_sha256
     )
     assert published["trading_date"] == "2026-09-04"
-
-
-def test_account_binding_change_creates_a_new_strategy_space(tmp_path, monkeypatch):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
-    moments = iter(
-        (
-            datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            datetime(2026, 9, 2, 22, 1, tzinfo=ZoneInfo("Asia/Shanghai")),
-        )
-    )
-    client = SrtAdviceClient(
-        repo_root=ROOT,
-        data_dir=tmp_path,
-        now=lambda: next(moments),
-        session_resolver=lambda _signal_date: date(2026, 9, 3),
-    )
-
-    for symbol in ("510500.SH", "588080.SH"):
-        assert client.prepare_account_data(
-            account_id="strategy-account",
-            strategy_id="S002",
-            strategy_version="v1",
-            symbol=symbol,
-            asset="etf",
-            signal_date=date(2026, 9, 2),
-        ) is not None
-
-    assert sorted(
-        path.name
-        for path in (tmp_path / "accounts/strategy-account/spaces").iterdir()
-    ) == [
-        "strategy-account_20260902T220000000000",
-        "strategy-account_20260902T220100000000",
-    ]
 
 
 def test_failed_preparation_does_not_switch_the_account_space(tmp_path, monkeypatch):

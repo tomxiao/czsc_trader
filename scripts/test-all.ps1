@@ -48,7 +48,9 @@ try {
                 $Steps.Add([pscustomobject]@{
                     Label = 'TDR'
                     Executable = $Python
-                    Arguments = @('-m', 'pytest', '-c', 'pyproject.toml', 'tests', '-q')
+                    Arguments = @(
+                        '-m', 'pytest', '-c', 'pyproject.toml', 'tests', '-q', '--durations=5'
+                    )
                 })
             }
             elseif ($LaneName -eq 'PTE') {
@@ -57,7 +59,7 @@ try {
                     Executable = $Python
                     Arguments = @(
                         '-m', 'pytest', '-c', 'pyproject.toml',
-                        'packages\paper_trading_engine\tests', '-q'
+                        'packages\paper_trading_engine\tests', '-q', '--durations=5'
                     )
                 })
                 $Steps.Add([pscustomobject]@{
@@ -84,7 +86,8 @@ try {
                         Label = $Suite.Label
                         Executable = $Python
                         Arguments = @(
-                            '-m', 'pytest', '-c', 'pyproject.toml', $Suite.Path, '-q'
+                            '-m', 'pytest', '-c', 'pyproject.toml', $Suite.Path, '-q',
+                            '--durations=5'
                         )
                     })
                 }
@@ -156,7 +159,6 @@ finally {
     foreach ($Target in @(
         (Join-Path $PytestRoot "run-$RunId-TDR"),
         (Join-Path $PytestRoot "run-$RunId-PTE"),
-        (Join-Path $PytestRoot "pte-run-$RunId-PTE"),
         (Join-Path $PytestRoot "run-$RunId-PACKAGES")
     )) {
         $ResolvedTarget = [System.IO.Path]::GetFullPath($Target)
