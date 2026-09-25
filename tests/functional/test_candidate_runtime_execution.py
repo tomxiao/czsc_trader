@@ -155,6 +155,16 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         strategy=loaded, signals=signals, execution_data=execution_data,
         initial_cash=100_000,
     )
+    stress = replay_srt_account(
+        strategy=loaded, signals=signals, execution_data=execution_data,
+        initial_cash=100_000, fee_rate_override=0.003,
+    )
+    assert stress.fills["fees"].tolist() == pytest.approx(
+        (stress.fills["quantity"] * stress.fills["price"] * 0.003).tolist()
+    )
+    assert stress.orders.loc[stress.orders["side"].eq("BUY"), "quantity"].sum() <= (
+        replay.orders.loc[replay.orders["side"].eq("BUY"), "quantity"].sum()
+    )
     _, direct = _execute(candidate, tmp_path / "direct", monkeypatch)
     assert_frame_equal(replay.account_daily, direct.account_daily, check_exact=True)
     assert len(replay.fills) == 3
@@ -350,15 +360,14 @@ def test_candidate_load_fails_closed_on_source_and_parameter_identity_errors(
     )
     for changes, reason in (
         ({"initial_cash": float("nan")}, "positive and finite"),
-        ({"fee_rate_override": float("nan")}, "fee_rate_override"),
-        ({"fee_rate_override": -0.01}, "fee_rate_override"),
-        ({"fee_rate_override": 1.0}, "fee_rate_override"),
         ({"execution_daily": pd.concat([daily, daily])}, "unique"),
         ({"execution_daily": daily.assign(close=float("nan"))}, "positive and finite"),
         ({"evaluation_end": pd.Timestamp("2026-09-18")}, "do not cover"),
     ):
         with pytest.raises(RuntimeContractError, match=reason):
             HistoricalExecutor(**{**execution, **changes})
+    with pytest.raises(TypeError, match="fee_rate_override"):
+        HistoricalExecutor(**execution, fee_rate_override=0.003)
     bad_parameters = deepcopy(payload)
     bad_parameters["parameters"]["threshold"] = 0.9
     factory = type(valid)

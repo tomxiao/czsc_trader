@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from math import isfinite
 import pandas as pd
@@ -74,7 +74,6 @@ class HistoricalExecutor:
         checkpoints: tuple[str, ...] = (),
         account_id: str = "backtest-account",
         execution_five_minute: pd.DataFrame | None = None,
-        fee_rate_override: float | None = None,
     ) -> None:
         if not account_id.strip():
             raise RuntimeContractError("backtest account_id must be non-empty")
@@ -95,17 +94,17 @@ class HistoricalExecutor:
             raise RuntimeContractError("backtest symbol must be non-empty")
         self._strategy_symbol = symbol.strip().upper()
         self._policy = execution_policy
-        # A declared evaluation cost scenario changes costs, never the SRT identity.
-        self._effective_policy = execution_policy
-        if fee_rate_override is not None:
-            if not isfinite(fee_rate_override) or not 0 <= fee_rate_override < 1:
-                raise RuntimeContractError("fee_rate_override must be finite and in [0, 1)")
-            settings = dict(execution_policy.settings)
-            if execution_policy.policy_type == "FROZEN_RULE":
-                settings["capital"] = {**settings["capital"], "fee_rate": float(fee_rate_override)}
-            else:
-                settings["one_way_cost"] = float(fee_rate_override)
-            self._effective_policy = ExecutionPolicy(execution_policy.policy_type, settings)
+        try:
+            configured_fee = (
+                execution_policy.settings["capital"]["fee_rate"]
+                if execution_policy.policy_type == "FROZEN_RULE"
+                else execution_policy.settings["one_way_cost"]
+            )
+            self._configured_fee_rate = Decimal(str(configured_fee))
+        except (InvalidOperation, KeyError, TypeError, ValueError) as exc:
+            raise RuntimeContractError("historical execution policy has no valid fee rate") from exc
+        if not self._configured_fee_rate.is_finite() or not 0 <= self._configured_fee_rate < 1:
+            raise RuntimeContractError("historical execution policy fee rate must be in [0, 1)")
         self._initial_cash = float(initial_cash)
         self._daily = _prices(execution_daily, "execution daily", ("open", "close"))
         self._intraday = _prices(execution_intraday, "execution intraday", ("high", "low"))
@@ -148,11 +147,6 @@ class HistoricalExecutor:
     @property
     def capabilities(self) -> ExecutionCapabilities:
         return self._capabilities
-
-    @property
-    def effective_policy(self) -> ExecutionPolicy:
-        """Expose the exact policy used for sizing, fees and ledger audit."""
-        return self._effective_policy
 
     def snapshot(self, point: TradingPoint) -> tuple[PortfolioSnapshot, ExecutionState]:
         """Return the confirmed ledger and strategy state for one signal point."""
@@ -327,6 +321,10 @@ class HistoricalExecutor:
         return "DEC-" + plan.plan_identity[:20].upper()
 
     def _validate_plan(self, plan: ExecutionPlan) -> None:
+        if plan.fee_rate != self._configured_fee_rate:
+            raise RuntimeContractError(
+                "historical plan fee rate differs from execution policy"
+            )
         execution_date = pd.Timestamp(plan.trading_date).normalize()
         signal_date = pd.Timestamp(plan.signal_date).normalize()
         if signal_date >= execution_date:
