@@ -1,9 +1,9 @@
 # 开发运维交接
 
 > 本文是跨机器、跨会话继续开发的入口，只记录系统全貌、关键边界、恢复方法和开发规则。
-> 研究共享事实和当前结论见`research/README.md`，RSCH与CIO执行契约分别见
-> `research/RSCH_AGENT.md`和`research/CIO_AGENT.md`；本文维护系统架构、开发环境、测试规则和
-> PTE运维。历史设计与实施过程见`docs/superpowers/`。
+> 研究资料导航见`research/README.md`，具体批次结论见`research/SXX/HANDOFF.md`，RSCH与CIO
+> 执行契约分别见`research/RSCH_AGENT.md`和`research/CIO_AGENT.md`；本文维护系统架构、
+> 开发环境、测试规则和PTE运维。历史设计与实施过程见`docs/superpowers/`。
 
 ## 模块与简称
 
@@ -155,11 +155,13 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
 7. WDG只负责PTE进程启动、探活和故障拉起，不包含交易、数据发布或账户状态判断。
 8. 批处理只有全部目标完成才可更新成功日期或成功状态。部分策略数据准备成功、部分账户决策成功、
    渠道仅受理委托或外部结果未知，都不能汇总成全局成功；失败事实必须进入审计、告警和退避。
-9. 新版`StrategyVersion`同时维护运行身份和治理身份：`release_hash`覆盖SRT执行所需的版本号
-   与`strategy_payload`；`governance_hash`覆盖SGC凭据、候选、评价合同、裁判报告和人工批准
-   印章引用。部署时SM必须验证完整SGC哈希链、最终冻结印章、版本记录、正式证据和生命周期
-   事件。历史版本继续保留原release hash，并以唯一的`LEGACY_GOVERNANCE_ACCEPTED`事件证明
-   已完成治理迁移。
+ 9. 新版`StrategyVersion`同时维护运行身份和治理身份：`release_hash`覆盖SRT执行所需的版本号
+    与`strategy_payload`；`governance_hash`覆盖SGC凭据、候选、评价合同、裁判报告和人工批准
+    印章引用。部署时SM必须验证完整SGC哈希链、最终冻结印章、版本记录、正式证据和生命周期
+    事件。历史版本继续保留原release hash，并以唯一的`LEGACY_GOVERNANCE_ACCEPTED`事件证明
+    已完成治理迁移。
+10. 跨机器文件身份统一复用`src/czsc_trader/identity.py`：普通文本归一化换行为LF，JSON按语义
+    计算SHA-256，原始行情与二进制按字节计算SHA-256；既有实验档案保持原样。
 
 ### RSCH与CIO Agent的治理协同
 
@@ -403,12 +405,29 @@ Ruff；通道日志位于`.tmp/test-regression/`。单模块失败定位命令�
 - 普通改动使用`master`；重量级开发和研究任务先确认是否新建`codex/`分支。
 - 不使用本地Git worktree；保留用户的无关修改。
 - 分支内可以自主提交；合并`master`和推送远端前取得用户确认。
-- 修改共享研究规则时同步`research/README.md`；修改角色流程时同步`research/RSCH_AGENT.md`或
-  `research/CIO_AGENT.md`；修改具体批次时同步对应`research/SXX/HANDOFF.md`和新实验档案。
+- 修改研究角色规则时同步`research/RSCH_AGENT.md`或`research/CIO_AGENT.md`；修改具体批次时
+  同步对应`research/SXX/HANDOFF.md`和新实验档案；资料入口变化时同步`research/README.md`。
 - 修改运行边界、契约或安装方式时同步本文及对应包`README.md`。
-- 根目录`README.md`只维护项目介绍和文档索引；`research/README.md`维护共享研究事实和当前
-  状态；两份Agent描述维护角色工作流；本文维护架构、开发环境、运行边界和PTE运维。调试流水
-  及已完成任务不进入这些文档。
+- 根目录`README.md`只维护项目介绍和文档索引；`research/README.md`只维护研究资料导航，
+  批次状态以各自`HANDOFF.md`为准；两份Agent描述维护角色工作流；本文维护架构、开发环境、
+  运行边界和PTE运维。调试流水及已完成任务不进入这些文档。
+
+## 研究平台待评审事项
+
+以下是S008工具需求与当前实现对照后保留的缺口，不是DEV实施授权或既定优先级。SRT顶层策略
+编写API、跨市场时间对齐和基础`evaluate_strategy`评价接口已有实现；新研究应先复用现有公共
+能力，再根据重复出现的失败或效率瓶颈决定是否扩展。S008实验档案及结论保持不变。
+
+| 议题 | 当前缺口与启动条件 | 最小验收 |
+| --- | --- | --- |
+| 正式实验技术预检 | 已有REX实验合同与`research evaluate`，尚无统一的`experiment check`；新正式实验若仍被纯技术错误阻断，再评审预检入口 | 合成夹具在读取真实收益前发现数据集/字段、时间差和评价起点错误（S008 C01/C02/C04/C05）；不写实验或受管数据 |
+| 评价路径等价 | 研究与候选侧已复用评价Harness，尚无公开的加速/完整路径逐日等价检查；仅在下一批研究需要加速评价时实施 | 固定参数下逐日对齐目标仓位、账户净值与指标，并保存两侧结果身份（C05/C06） |
+| 联合搜索执行器 | 当前没有公共`run_search`；只有重复的大规模搜索确实产生并发、复现或账本问题时再建设 | 固定种子下1与多worker的trial编号、参数和裁决一致；失败trial进入账本（C06） |
+| 研究状态与数据能力查询 | `research status`及`data capabilities`入口尚不存在；出现反复的状态误读或数据合同试错时分别评审 | 只读派生权威实验状态或合法数据集/时间语义，不泄露凭据、不改数据 |
+| `expr_codegen`研究依赖 | 根`research` extra未声明该库；新机制确需表达式生成时由RSCH给出可复现用途，再确认distribution、版本和兼容性 | 生成代码与研究表达式逐值一致，冻结运行时不依赖该库 |
+
+原S008的C01-C03已有部分合成夹具和测试；C04-C06应随对应议题补齐，不为维持历史清单单独
+开发。断点恢复、worker共享和环境快照仅在出现明确成本或故障证据时另行立项。
 
 ## 详细资料入口
 
@@ -417,7 +436,7 @@ Ruff；通道日志位于`.tmp/test-regression/`。单模块失败定位命令�
   `packages/strategy_template_catalog/README.md`、`packages/strategy_manager/README.md`、
   `packages/strategy_evaluator/README.md`、`packages/strategy_runtime/README.md`、
   `packages/trading_execution_engine/README.md`、`packages/paper_trading_engine/README.md`
-- 研究共享事实与当前状态：`research/README.md`
+- 研究资料导航：`research/README.md`；批次状态：`research/SXX/HANDOFF.md`
 - RSCH与CIO执行契约：`research/RSCH_AGENT.md`、`research/CIO_AGENT.md`
 - 已批准设计与实施计划：`docs/superpowers/specs/`、`docs/superpowers/plans/`
 

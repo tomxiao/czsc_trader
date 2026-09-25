@@ -80,7 +80,7 @@ CIO按当前任务授权：strategy deploy → SRT从策略治理区加载冻结
 
 - [RSCH Agent描述](research/RSCH_AGENT.md)：策略研究员Agent的身份、授权边界、研究工作流和
   候选交付要求。
-- [策略研究总入口](research/README.md)：共享角色关系、S001—S008批次状态、证据规则和恢复入口。
+- [策略研究导航](research/README.md)：查找角色契约、各策略交接、实验与治理资料。
 - [策略候选包](research/CANDIDATE_PACKAGE.md)：候选实现、binding、回测图代码、前瞻观察语义和
   提交清单的完整契约。
 
@@ -92,11 +92,11 @@ CIO按当前任务授权：strategy deploy → SRT从策略治理区加载冻结
   SRT部署规则。
 - [策略候选包](research/CANDIDATE_PACKAGE.md)：通过`candidate review/evaluate/freeze`完成体检与
   冻结，再通过`strategy deploy/list/info`管理SRT已部署策略。
-- [策略研究总入口](research/README.md)：了解候选来源、评价目标、研究证据和冻结后的监测边界。
+- [策略研究导航](research/README.md)：定位候选来源、批次结论和研究证据。
 
 ### 平台开发者必看
 
-- [策略研究总入口](research/README.md)：理解平台所服务的角色关系、策略状态和证据边界。
+- [策略研究导航](research/README.md)：定位研究角色、批次资料和证据权威来源。
 - [开发运维交接](docs/DEVELOPMENT_HANDOFF.md)：掌握架构契约、环境恢复、开发规则和PTE发布运维。
 - [测试用例治理](docs/TEST_GOVERNANCE.md)：遵循测试分层、边界覆盖和周期性治理规则。
 - [DFLS技术说明](packages/dataflows/README.md)：数据包接口和使用方式。
