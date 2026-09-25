@@ -1,0 +1,3 @@
+# S009 EX07 执行
+
+REX receipt=`a70a22bc624017354fed4ad43df5fbf779232aeb20d6226164b9403b7be0c349`；EX06前序receipt=`3db5a251dcf76af9a6affa5cf017de681f21fe4b56425eca1de0164b16fe1a57`。仅经DFLS读取159915与参考日历份额，未读取目标收益。
