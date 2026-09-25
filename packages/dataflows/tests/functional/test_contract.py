@@ -31,16 +31,12 @@ def _frame() -> pd.DataFrame:
 
 
 def _request(dataset: str | Dataset = Dataset.ETF_OHLCV) -> DataRequest:
-    return DataRequest(
-        dataset, "588080.SH", "2026-09-14", "2026-09-15", "2026-09-15"
-    )
+    return DataRequest(dataset, "588080.SH", "2026-09-14", "2026-09-15", "2026-09-15")
 
 
 def test_ready_result_has_stable_identity_and_detached_data() -> None:
     source = _frame()
-    dataflows = Dataflows(
-        {Dataset.ETF_OHLCV.value: lambda request: (source, {"vendor": "test"})}
-    )
+    dataflows = Dataflows({Dataset.ETF_OHLCV.value: lambda request: (source, {"vendor": "test"})})
 
     first = dataflows.fetch(_request())
     second = dataflows.fetch(_request())
@@ -51,8 +47,10 @@ def test_ready_result_has_stable_identity_and_detached_data() -> None:
     assert first.identity.source == "test"
     assert first.identity.data_cutoff == "2026-09-15T00:00:00"
     assert first.identity.metadata["source_time_field"] == "Date"
+    assert first.identity.metadata["availability_time_field"] == "Date"
     assert first.identity.metadata["source_calendar"] == "SOURCE_NATIVE"
     assert first.identity.metadata["available_at"] == "SOURCE_PERIOD_CLOSE"
+    assert first.identity.metadata["request_range_policy"] == "EXACT"
     assert first.identity.content_sha256 == second.identity.content_sha256
     first.dataframe.loc[0, "Close"] = 99
     assert source.loc[0, "Close"] == 1.1
@@ -106,9 +104,7 @@ def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:
     monkeypatch.setattr(
         tushare_common.ts,
         "set_token",
-        lambda token: (_ for _ in ()).throw(
-            AssertionError("Pro client must not persist tk.csv")
-        ),
+        lambda token: (_ for _ in ()).throw(AssertionError("Pro client must not persist tk.csv")),
     )
     monkeypatch.setattr(
         tushare_common.ts,
@@ -218,9 +214,7 @@ def test_facade_blocks_semantically_invalid_ohlcv_before_ready() -> None:
 
 
 def test_facade_blocks_invalid_calendar_before_ready() -> None:
-    calendar = pd.DataFrame(
-        {"Date": ["2026-09-14", "2026-09-15"], "IsOpen": [1, 2]}
-    )
+    calendar = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"], "IsOpen": [1, 2]})
     request = DataRequest(
         Dataset.TRADING_CALENDAR,
         "SSE",

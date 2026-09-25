@@ -41,17 +41,15 @@ class ExperimentBinding:
     dependencies: tuple[ExperimentDependency, ...]
 
     def __post_init__(self) -> None:
-        if self.schema_version != 2:
-            raise ValueError("experiment binding schema_version must be 2")
+        if self.schema_version not in {2, 3}:
+            raise ValueError("experiment binding schema_version must be 2 or 3")
         module = _nonempty_text(self.module, "binding module")
         qualname = _nonempty_text(self.qualname, "binding qualname")
         if not all(part.isidentifier() for part in module.split(".")):
             raise ValueError("binding module must be a dotted Python identifier")
         if not all(part.isidentifier() for part in qualname.split(".")):
             raise ValueError("binding qualname must be a dotted Python identifier")
-        source_files = tuple(
-            _safe_relative_path(item).as_posix() for item in self.source_files
-        )
+        source_files = tuple(_safe_relative_path(item).as_posix() for item in self.source_files)
         if not source_files or len(source_files) != len(set(source_files)):
             raise ValueError("binding source_files must be non-empty and unique")
         expected_module = f"{module.replace('.', '/')}.py"
@@ -168,9 +166,7 @@ def _validate_dependencies(dependencies: tuple[ExperimentDependency, ...]) -> No
         try:
             installed = distribution_version(dependency.name)
         except PackageNotFoundError as exc:
-            raise ValueError(
-                f"experiment dependency is not installed: {dependency.name}"
-            ) from exc
+            raise ValueError(f"experiment dependency is not installed: {dependency.name}") from exc
         if installed != dependency.version:
             raise ValueError(
                 "experiment dependency version differs: "
@@ -205,9 +201,7 @@ def load_experiment(root: Path) -> LoadedExperiment:
         package = ModuleType(namespace)
         package.__path__ = [str(root)]
         package.__package__ = namespace
-        package.__spec__ = importlib.machinery.ModuleSpec(
-            namespace, loader=None, is_package=True
-        )
+        package.__spec__ = importlib.machinery.ModuleSpec(namespace, loader=None, is_package=True)
         sys.modules[namespace] = package
         try:
             module = importlib.import_module(full_module)
@@ -228,8 +222,7 @@ def load_experiment(root: Path) -> LoadedExperiment:
             undeclared = loaded_sources - declared
             if undeclared:
                 raise ValueError(
-                    "experiment loaded undeclared source files: "
-                    + ", ".join(sorted(undeclared))
+                    "experiment loaded undeclared source files: " + ", ".join(sorted(undeclared))
                 )
             implementation: Any = module
             for part in binding.qualname.split("."):
@@ -246,9 +239,7 @@ def load_experiment(root: Path) -> LoadedExperiment:
         raise TypeError("bound experiment definition must be ExperimentDefinition")
     if definition.experiment_id != root.name:
         raise ValueError("experiment definition id differs from its directory")
-    if _STRATEGY_ID.fullmatch(root.parent.name) and (
-        definition.strategy_id != root.parent.name
-    ):
+    if _STRATEGY_ID.fullmatch(root.parent.name) and (definition.strategy_id != root.parent.name):
         raise ValueError("experiment definition strategy differs from its directory")
     if definition.dependencies != binding.dependencies:
         raise ValueError("experiment definition dependencies differ from binding")

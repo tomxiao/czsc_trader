@@ -155,13 +155,30 @@ def _validate_strategy_experiment_identity(
         raise ValueError("strategy experiment must declare development_cutoff") from exc
 
 
+def validate_experiment_manifest_metadata(
+    experiment_dir: Path, metadata: dict[str, object]
+) -> None:
+    """Validate static archive metadata without writing a manifest."""
+
+    experiment_dir = Path(experiment_dir).resolve()
+    if not isinstance(metadata, dict):
+        raise TypeError("experiment manifest metadata must be a dict")
+    try:
+        serialized = json.dumps(metadata, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("experiment manifest metadata must be JSON-safe") from exc
+    if "outputs/" in serialized or re.search(r"_R\d{2}", serialized):
+        raise ValueError("experiment manifest must not reference outputs revisions")
+    _validate_strategy_experiment_identity(experiment_dir, metadata)
+
+
 def build_experiment_manifest(
     experiment_dir: Path,
     metadata: dict[str, object],
 ) -> dict[str, object]:
     """Write a deterministic manifest for every managed file in an archive."""
     experiment_dir = Path(experiment_dir).resolve()
-    _validate_strategy_experiment_identity(experiment_dir, metadata)
+    validate_experiment_manifest_metadata(experiment_dir, metadata)
     files = {
         path.relative_to(experiment_dir).as_posix(): _file_record(path)
         for path in sorted(experiment_dir.rglob("*"))
@@ -220,7 +237,10 @@ def _validate_integrity_repair(
     if not isinstance(original, dict) or not isinstance(repair, dict):
         raise ValueError("integrity repair chain files must contain JSON objects")
     experiment_id = manifest.get("experiment_id")
-    if original.get("experiment_id") != experiment_id or repair.get("experiment_id") != experiment_id:
+    if (
+        original.get("experiment_id") != experiment_id
+        or repair.get("experiment_id") != experiment_id
+    ):
         raise ValueError("integrity repair experiment identity differs")
     if repair.get("decision") != "PRESERVE_ORIGINAL_MANIFEST_AND_RESEAL_CURRENT_ARCHIVE":
         raise ValueError("integrity repair decision is invalid")
@@ -231,10 +251,9 @@ def _validate_integrity_repair(
     if original_identity.get("path") != original_name:
         raise ValueError("integrity repair original manifest path differs")
     original_record = files[original_name]
-    if (
-        original_identity.get("bytes") != original_record.get("bytes")
-        or original_identity.get("sha256") != original_record.get("sha256")
-    ):
+    if original_identity.get("bytes") != original_record.get("bytes") or original_identity.get(
+        "sha256"
+    ) != original_record.get("sha256"):
         raise ValueError("integrity repair original manifest identity differs")
 
     original_files = original.get("files")
@@ -251,9 +270,7 @@ def _validate_integrity_repair(
         correction_records[name] = item
 
     changed_names = {
-        name
-        for name, old_record in original_files.items()
-        if files.get(name) != old_record
+        name for name, old_record in original_files.items() if files.get(name) != old_record
     }
     if set(correction_records) != changed_names:
         raise ValueError("integrity repair does not exactly explain manifest differences")

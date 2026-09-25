@@ -121,16 +121,10 @@ class FakeGoldPro:
 
 def test_gold_research_inputs_are_canonical_and_causal() -> None:
     pro = FakeGoldPro()
-    real_yield, real_meta = fetch_us_real_yield_daily(
-        "2026-09-15", "2026-09-15", pro=pro
-    )
+    real_yield, real_meta = fetch_us_real_yield_daily("2026-09-15", "2026-09-15", pro=pro)
     fx, fx_meta = fetch_usdcnh_daily("2026-09-15", "2026-09-15", pro=pro)
-    gold, gold_meta = fetch_sge_gold_daily(
-        "Au99.99", "2026-09-15", "2026-09-15", pro=pro
-    )
-    index, index_meta = fetch_domestic_index_daily(
-        "000001.SH", "2026-09-15", "2026-09-15", pro=pro
-    )
+    gold, gold_meta = fetch_sge_gold_daily("Au99.99", "2026-09-15", "2026-09-15", pro=pro)
+    index, index_meta = fetch_domestic_index_daily("000001.SH", "2026-09-15", "2026-09-15", pro=pro)
 
     assert real_yield.loc[0, "RealYield10YPercent"] == pytest.approx(1.2)
     assert "prior China trading day" in real_meta["availability_rule"]
@@ -143,9 +137,7 @@ def test_gold_research_inputs_are_canonical_and_causal() -> None:
 
 
 def test_generic_fxcm_daily_preserves_symbol_and_strict_causality() -> None:
-    frame, metadata = fetch_fxcm_daily(
-        "XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro()
-    )
+    frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
 
     assert frame.loc[0, "BidClose"] == pytest.approx(7.11)
     assert metadata["vendor_symbol"] == "XAUUSD.FXCM"
@@ -162,12 +154,14 @@ def test_monthly_inputs_use_reference_month_end_and_conservative_availability() 
     money, money_meta = fetch_cn_money_monthly("2026-09-01", "2026-09-30", pro=pro)
 
     assert cpi.loc[0, "Date"] == pd.Timestamp("2026-09-30")
+    assert cpi.loc[0, "AvailableDate"] == pd.Timestamp("2026-11-01")
     assert cpi.loc[0, "NationalYoYPercent"] == pytest.approx(1.0)
     assert ppi.loc[0, "ProducerYoYPercent"] == pytest.approx(-1.0)
     assert money.loc[0, "M2YoYPercent"] == pytest.approx(6.0)
     for metadata in (cpi_meta, ppi_meta, money_meta):
         assert metadata["frequency"] == "monthly"
         assert metadata["availability_rule"].endswith("M+2")
+        assert metadata["availability_time_field"] == "AvailableDate"
 
 
 def test_long_vendor_histories_are_split_by_calendar_year() -> None:

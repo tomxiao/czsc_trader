@@ -37,15 +37,119 @@ from czsc_trader.research_tools import (
     create_experiment_context,
     create_formal_experiment_context,
     execute_experiment,
+    preflight_experiment,
 )
 
 
 FIXTURE_ROOT = (
-    Path(__file__).resolve().parents[1]
-    / "fixtures"
-    / "s008_research_cases"
-    / "20260924_S008_EX99"
+    Path(__file__).resolve().parents[1] / "fixtures" / "s008_research_cases" / "20260924_S008_EX99"
 )
+
+
+def _write_v3_experiment(root: Path, *, explicit_precheck: bool = True) -> Path:
+    root.mkdir(parents=True)
+    precheck = (
+        "    def synthetic_precheck(self):\n        assert 1 + 1 == 2\n\n"
+        if explicit_precheck
+        else ""
+    )
+    source = root / "experiment.py"
+    source.write_text(
+        """from datetime import date
+from research_experiment import (
+    ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
+    ExperimentOutcome, ExperimentProtocol, ExperimentResult,
+    ExperimentStage, ResearchExperiment,
+)
+
+class Experiment(ResearchExperiment):
+    @property
+    def definition(self):
+        return ExperimentDefinition(
+            schema_version=1,
+            experiment_id='20260925_S009_EX99',
+            strategy_id='S009',
+            mode=ExperimentMode.DISCOVERY,
+            research_question='Can preflight block technical friction?',
+            hypothesis='All static and synthetic checks pass before execution.',
+            falsification_conditions=('A preflight check fails',),
+            development_cutoff=date(2026, 9, 24),
+            random_seed=99,
+            allowed_datasets=('etf.ohlcv',),
+            protocol=ExperimentProtocol(
+                stage=ExperimentStage.PROTOTYPE,
+                first_principles=('Preflight precedes formal execution',),
+                information_paths=('Source binding -> synthetic check',),
+                stage_objectives=('Reject technical failures early',),
+                observation_metrics=('preflight status',),
+                methodology=('Run deterministic checks',),
+            ),
+            subjects=('518880.SH',),
+            capabilities=ExperimentCapabilities(),
+        )
+
+"""
+        + precheck
+        + """    def execute(self, context):
+        del context
+        return ExperimentResult(
+            outcome=ExperimentOutcome.PASS,
+            facts={'executed': True},
+            diagnostics={},
+        )
+""",
+        encoding="utf-8",
+    )
+    binding = {
+        "schema_version": 3,
+        "module": "experiment",
+        "qualname": "Experiment",
+        "source_files": ["experiment.py"],
+        "source_sha256": experiment_source_sha256(root, ("experiment.py",)),
+        "dependencies": [],
+    }
+    (root / "experiment_binding.json").write_text(json.dumps(binding), encoding="utf-8")
+    return root
+
+
+def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
+    functional_repo: Path,
+) -> None:
+    passing_root = _write_v3_experiment(functional_repo / ".tmp" / "S009" / "20260925_S009_EX99")
+    passing = load_experiment(passing_root)
+    resources = ExperimentResources(max_workers=1, random_seed=99)
+
+    report = preflight_experiment(passing, resources=resources)
+
+    assert report.passed
+    assert report.to_dict()["passed"] is True
+    assert {item.code for item in report.checks} >= {
+        "SOURCE_BOUND",
+        "ARCHIVE_IDENTITY",
+        "SYNTHETIC_PRECHECK",
+        "PREFLIGHT_ENFORCEMENT",
+    }
+
+    failing_root = _write_v3_experiment(
+        functional_repo / ".tmp" / "missing-precheck" / "20260925_S009_EX99",
+        explicit_precheck=False,
+    )
+    failing = preflight_experiment(load_experiment(failing_root), resources=resources)
+    assert not failing.passed
+    with pytest.raises(ValueError, match="SYNTHETIC_PRECHECK"):
+        failing.require_pass()
+
+    failing_loaded = load_experiment(failing_root)
+    failing_context = create_experiment_context(
+        failing_loaded.definition,
+        repository_root=functional_repo,
+        dataflows=_flows(),
+        workspace=_workspace(functional_repo, "v3-preflight-blocked"),
+        resources=resources,
+    )
+    with pytest.raises(ValueError, match="SYNTHETIC_PRECHECK"):
+        execute_experiment(failing_loaded, failing_context)
+    assert not failing_context.workspace.path("execution_envelope.json").exists()
 
 
 def _definition(
@@ -140,9 +244,7 @@ def _execute_fixture(functional_repo: Path, workspace_name: str):
 def test_s008_fixture_loads_and_executes_through_public_context(
     functional_repo: Path,
 ) -> None:
-    experiment, context, result = _execute_fixture(
-        functional_repo, "experiment-fixture"
-    )
+    experiment, context, result = _execute_fixture(functional_repo, "experiment-fixture")
 
     assert result.outcome is ExperimentOutcome.PASS
     assert result.facts == {"rows": 2, "mean_close": 10.25, "max_workers": 4}
@@ -155,6 +257,14 @@ def test_s008_fixture_loads_and_executes_through_public_context(
     assert context.trace.capabilities == (ExperimentCapability.SEARCH_PARAMETERS,)
     assert context.trace.operations == ("data.fetch",)
     assert context.trace.data_requests[0]["identity"]["dataset"] == "etf.ohlcv"
+    assert context.trace.data_requests[0]["identity"]["temporal_contract"] == {
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "request_range_policy": "EXACT",
+    }
+    assert context.trace.data_requests[0]["coverage"] is None
     assert result.receipt is not None
     assert result.receipt.experiment_id == experiment.definition.experiment_id
     receipt_payload = json.loads(
@@ -455,9 +565,7 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
         evaluation_calls.append(request.experiment_id)
         return EvaluationResult(runs=())
 
-    definition = _definition(
-        capabilities=ExperimentCapabilities(reads_real_returns=True)
-    )
+    definition = _definition(capabilities=ExperimentCapabilities(reads_real_returns=True))
     context = create_experiment_context(
         definition,
         repository_root=functional_repo,
@@ -569,13 +677,7 @@ def test_execute_rejects_unbound_experiment(functional_repo: Path) -> None:
 def test_bound_candidate_result_requires_declared_capability(
     functional_repo: Path,
 ) -> None:
-    root = (
-        functional_repo
-        / ".tmp"
-        / "bound-candidate"
-        / "S008"
-        / "20260924_S008_EX98"
-    )
+    root = functional_repo / ".tmp" / "bound-candidate" / "S008" / "20260924_S008_EX98"
     root.mkdir(parents=True)
     source = root / "experiment.py"
     source.write_text(
@@ -636,9 +738,7 @@ class Experiment(ResearchExperiment):
         "source_sha256": experiment_source_sha256(root, ("experiment.py",)),
         "dependencies": [],
     }
-    (root / "experiment_binding.json").write_text(
-        json.dumps(binding), encoding="utf-8"
-    )
+    (root / "experiment_binding.json").write_text(json.dumps(binding), encoding="utf-8")
     experiment = load_experiment(root)
     context = create_experiment_context(
         experiment.definition,

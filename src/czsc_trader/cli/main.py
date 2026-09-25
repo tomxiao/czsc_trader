@@ -30,9 +30,7 @@ def _add_repository_root(parser: argparse.ArgumentParser) -> None:
 
 
 def _context(args: argparse.Namespace) -> RepositoryContext:
-    context = RepositoryContext.discover(
-        Path.cwd(), explicit_root=getattr(args, "repo_root", None)
-    )
+    context = RepositoryContext.discover(Path.cwd(), explicit_root=getattr(args, "repo_root", None))
     load_dotenv(context.root / ".env", override=False)
     return context
 
@@ -84,6 +82,37 @@ def _archive_validate(args: argparse.Namespace):
     context = _context(args)
     archive = _repository_path(context, args.archive) if args.archive else None
     return validate_archives(context, archive, all_archives=args.all)
+
+
+def _experiment_preflight(args: argparse.Namespace):
+    from czsc_trader.application.experiment_service import (
+        PredecessorEvidence,
+        preflight_experiment_archive,
+    )
+
+    context = _context(args)
+    predecessors: list[PredecessorEvidence] = []
+    for value in args.predecessor:
+        path, separator, receipt = value.rpartition("=")
+        if not separator or not path or not receipt:
+            raise UsageError(
+                "invalid_predecessor_evidence",
+                "--predecessor must use WORKSPACE=RECEIPT_SHA256",
+            )
+        predecessors.append(
+            PredecessorEvidence(
+                workspace=_repository_path(context, Path(path)),
+                receipt_sha256=receipt,
+            )
+        )
+    return preflight_experiment_archive(
+        context,
+        _repository_path(context, args.experiment),
+        max_workers=args.max_workers,
+        native_threads_per_worker=args.native_threads_per_worker,
+        max_evaluations=args.max_evaluations,
+        predecessors=tuple(predecessors),
+    )
 
 
 def _strategy_command(args: argparse.Namespace):
@@ -173,14 +202,10 @@ def _template_instantiate(args: argparse.Namespace):
 
 def build_parser() -> argparse.ArgumentParser:
     parser = CommandParser(prog="czsc-trader")
-    resources = parser.add_subparsers(
-        dest="resource", required=True, parser_class=CommandParser
-    )
+    resources = parser.add_subparsers(dest="resource", required=True, parser_class=CommandParser)
 
     data = resources.add_parser("data")
-    data_actions = data.add_subparsers(
-        dest="action", required=True, parser_class=CommandParser
-    )
+    data_actions = data.add_subparsers(dest="action", required=True, parser_class=CommandParser)
     data_prepare = data_actions.add_parser("prepare")
     data_prepare.add_argument("--symbol", required=True)
     data_prepare.add_argument("--asset", required=True, choices=("stock", "etf"))
@@ -204,9 +229,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_strategy_parser(resources, _add_repository_root, _strategy_command)
 
     news = resources.add_parser("news")
-    news_actions = news.add_subparsers(
-        dest="action", required=True, parser_class=CommandParser
-    )
+    news_actions = news.add_subparsers(dest="action", required=True, parser_class=CommandParser)
     news_extract = news_actions.add_parser("extract")
     news_extract.add_argument("--input", required=True, type=Path)
     news_extract.add_argument("--scope", required=True, type=Path)
@@ -307,6 +330,28 @@ def build_parser() -> argparse.ArgumentParser:
         command_handler=_backtest_run,
         command_name="backtest.run",
     )
+
+    experiment = resources.add_parser("experiment")
+    experiment_actions = experiment.add_subparsers(
+        dest="action", required=True, parser_class=CommandParser
+    )
+    experiment_preflight = experiment_actions.add_parser("preflight")
+    experiment_preflight.add_argument("--experiment", required=True, type=Path)
+    experiment_preflight.add_argument(
+        "--predecessor",
+        action="append",
+        default=[],
+        metavar="WORKSPACE=RECEIPT_SHA256",
+    )
+    experiment_preflight.add_argument("--max-workers", type=int, default=1)
+    experiment_preflight.add_argument("--native-threads-per-worker", type=int, default=1)
+    experiment_preflight.add_argument("--max-evaluations", type=int)
+    _add_repository_root(experiment_preflight)
+    experiment_preflight.set_defaults(
+        command_handler=_experiment_preflight,
+        command_name="experiment.preflight",
+    )
+
     archive = resources.add_parser("archive")
     archive_actions = archive.add_subparsers(
         dest="action", required=True, parser_class=CommandParser

@@ -116,6 +116,80 @@ class ExperimentStage(StrEnum):
     CANDIDATE = "CANDIDATE"
 
 
+class ExperimentPreflightStatus(StrEnum):
+    """Outcome of one pre-execution platform check."""
+
+    PASS = "PASS"
+    WARNING = "WARNING"
+    FAIL = "FAIL"
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentPreflightCheck:
+    """One machine-readable check performed before formal execution starts."""
+
+    code: str
+    status: ExperimentPreflightStatus
+    message: str
+
+    def __post_init__(self) -> None:
+        code = _text(self.code, "preflight check code")
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]*", code):
+            raise ValueError("preflight check code must be upper snake case")
+        if not isinstance(self.status, ExperimentPreflightStatus):
+            raise ValueError("preflight check status must be ExperimentPreflightStatus")
+        object.__setattr__(self, "code", code)
+        object.__setattr__(self, "message", _text(self.message, "preflight check message"))
+
+    def to_dict(self) -> dict[str, str]:
+        return {"code": self.code, "status": self.status.value, "message": self.message}
+
+
+@dataclass(frozen=True, slots=True)
+class ExperimentPreflightReport:
+    """Source-bound result of platform preflight without formal experiment output."""
+
+    experiment_id: str
+    definition_sha256: str
+    source_sha256: str
+    resources_sha256: str
+    checks: tuple[ExperimentPreflightCheck, ...]
+
+    def __post_init__(self) -> None:
+        if _EXPERIMENT_ID.fullmatch(self.experiment_id) is None:
+            raise ValueError("preflight experiment_id is invalid")
+        for field_name in ("definition_sha256", "source_sha256", "resources_sha256"):
+            if _SHA256.fullmatch(getattr(self, field_name)) is None:
+                raise ValueError(f"preflight {field_name} must be lowercase SHA-256")
+        checks = tuple(self.checks)
+        if not checks or not all(isinstance(item, ExperimentPreflightCheck) for item in checks):
+            raise ValueError("preflight checks must contain typed check results")
+        codes = tuple(item.code for item in checks)
+        if len(codes) != len(set(codes)):
+            raise ValueError("preflight check codes must be unique")
+        object.__setattr__(self, "checks", checks)
+
+    @property
+    def passed(self) -> bool:
+        return all(item.status is not ExperimentPreflightStatus.FAIL for item in self.checks)
+
+    def require_pass(self) -> None:
+        failed = [item for item in self.checks if item.status is ExperimentPreflightStatus.FAIL]
+        if failed:
+            details = "; ".join(f"{item.code}: {item.message}" for item in failed)
+            raise ValueError(f"experiment preflight failed: {details}")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "experiment_id": self.experiment_id,
+            "definition_sha256": self.definition_sha256,
+            "source_sha256": self.source_sha256,
+            "resources_sha256": self.resources_sha256,
+            "passed": self.passed,
+            "checks": [item.to_dict() for item in self.checks],
+        }
+
+
 class ExperimentCapability(StrEnum):
     """Sensitive research actions that must be declared before execution."""
 
@@ -189,9 +263,7 @@ class ExperimentProtocol:
             if not values:
                 raise ValueError(f"{field_name} must not be empty")
             object.__setattr__(self, field_name, values)
-        predecessors = _unique_text(
-            self.predecessor_experiment_ids, "predecessor_experiment_ids"
-        )
+        predecessors = _unique_text(self.predecessor_experiment_ids, "predecessor_experiment_ids")
         if any(_EXPERIMENT_ID.fullmatch(item) is None for item in predecessors):
             raise ValueError("predecessor_experiment_ids contain an invalid experiment id")
         object.__setattr__(self, "predecessor_experiment_ids", predecessors)
@@ -223,6 +295,7 @@ class ExperimentDefinition:
     random_seed: int
     allowed_datasets: tuple[str, ...]
     protocol: ExperimentProtocol
+    subjects: tuple[str, ...] = ()
     validation_cutoff: date | None = None
     dependencies: tuple[ExperimentDependency, ...] = ()
     capabilities: ExperimentCapabilities = ExperimentCapabilities()
@@ -241,17 +314,13 @@ class ExperimentDefinition:
             raise ValueError("mode must be an ExperimentMode")
         if not isinstance(self.development_cutoff, date):
             raise ValueError("development_cutoff must be a date")
-        if self.validation_cutoff is not None and not isinstance(
-            self.validation_cutoff, date
-        ):
+        if self.validation_cutoff is not None and not isinstance(self.validation_cutoff, date):
             raise ValueError("validation_cutoff must be a date or None")
         if isinstance(self.random_seed, bool) or not isinstance(self.random_seed, int):
             raise ValueError("random_seed must be an integer")
         if self.random_seed < 0:
             raise ValueError("random_seed must be non-negative")
-        falsification = _unique_text(
-            self.falsification_conditions, "falsification_conditions"
-        )
+        falsification = _unique_text(self.falsification_conditions, "falsification_conditions")
         if not falsification:
             raise ValueError("falsification_conditions must not be empty")
         datasets = _unique_text(self.allowed_datasets, "allowed_datasets")
@@ -267,30 +336,24 @@ class ExperimentDefinition:
             raise ValueError("capabilities must be ExperimentCapabilities")
         if not isinstance(self.protocol, ExperimentProtocol):
             raise ValueError("protocol must be an ExperimentProtocol")
+        subjects = _unique_text(self.subjects, "subjects")
         predecessors = self.protocol.predecessor_experiment_ids
         if experiment_id in predecessors:
             raise ValueError("an experiment cannot depend on itself")
         if any(_EXPERIMENT_ID.fullmatch(item).group(1) != strategy_id for item in predecessors):
             raise ValueError("predecessor experiments must belong to the same strategy")
         if self.mode is ExperimentMode.FORMAL:
-            if (
-                self.validation_cutoff is None
-                or self.validation_cutoff <= self.development_cutoff
-            ):
+            if self.validation_cutoff is None or self.validation_cutoff <= self.development_cutoff:
                 raise ValueError(
                     "FORMAL experiments require validation_cutoff after development_cutoff"
                 )
             if not (
-                self.capabilities.reads_real_returns
-                and self.capabilities.reads_sealed_validation
+                self.capabilities.reads_real_returns and self.capabilities.reads_sealed_validation
             ):
                 raise ValueError(
                     "FORMAL experiments require real-return and sealed-validation capabilities"
                 )
-            if (
-                self.capabilities.searches_parameters
-                or self.capabilities.selects_parameters
-            ):
+            if self.capabilities.searches_parameters or self.capabilities.selects_parameters:
                 raise ValueError("FORMAL experiments cannot search or select parameters")
         elif self.validation_cutoff is not None:
             raise ValueError("DISCOVERY experiments cannot declare validation_cutoff")
@@ -302,36 +365,36 @@ class ExperimentDefinition:
         object.__setattr__(self, "hypothesis", _text(self.hypothesis, "hypothesis"))
         object.__setattr__(self, "falsification_conditions", falsification)
         object.__setattr__(self, "allowed_datasets", datasets)
+        object.__setattr__(self, "subjects", subjects)
         object.__setattr__(self, "dependencies", dependencies)
 
     @property
     def sha256(self) -> str:
-        return _canonical_sha256(
-            {
-                "schema_version": self.schema_version,
-                "experiment_id": self.experiment_id,
-                "strategy_id": self.strategy_id,
-                "mode": self.mode.value,
-                "research_question": self.research_question,
-                "hypothesis": self.hypothesis,
-                "falsification_conditions": self.falsification_conditions,
-                "development_cutoff": self.development_cutoff.isoformat(),
-                "validation_cutoff": None
-                if self.validation_cutoff is None
-                else self.validation_cutoff.isoformat(),
-                "random_seed": self.random_seed,
-                "allowed_datasets": self.allowed_datasets,
-                "protocol": self.protocol.to_dict(),
-                "dependencies": tuple(
-                    {"name": item.name, "version": item.version}
-                    for item in self.dependencies
-                ),
-                "capabilities": {
-                    item.value: self.capabilities.allows(item)
-                    for item in ExperimentCapability
-                },
-            }
-        )
+        payload = {
+            "schema_version": self.schema_version,
+            "experiment_id": self.experiment_id,
+            "strategy_id": self.strategy_id,
+            "mode": self.mode.value,
+            "research_question": self.research_question,
+            "hypothesis": self.hypothesis,
+            "falsification_conditions": self.falsification_conditions,
+            "development_cutoff": self.development_cutoff.isoformat(),
+            "validation_cutoff": None
+            if self.validation_cutoff is None
+            else self.validation_cutoff.isoformat(),
+            "random_seed": self.random_seed,
+            "allowed_datasets": self.allowed_datasets,
+            "protocol": self.protocol.to_dict(),
+            "dependencies": tuple(
+                {"name": item.name, "version": item.version} for item in self.dependencies
+            ),
+            "capabilities": {
+                item.value: self.capabilities.allows(item) for item in ExperimentCapability
+            },
+        }
+        if self.subjects:
+            payload["subjects"] = self.subjects
+        return _canonical_sha256(payload)
 
 
 @dataclass(frozen=True, slots=True)
@@ -404,12 +467,8 @@ class ExperimentTrace:
         if len(capabilities) != len(set(capabilities)):
             raise ValueError("trace capabilities must be unique")
         operations = tuple(_text(item, "trace operation") for item in self.operations)
-        requests = tuple(
-            _freeze_json(item, "trace data request") for item in self.data_requests
-        )
-        evaluations = tuple(
-            _freeze_json(item, "trace evaluation") for item in self.evaluations
-        )
+        requests = tuple(_freeze_json(item, "trace data request") for item in self.data_requests)
+        evaluations = tuple(_freeze_json(item, "trace evaluation") for item in self.evaluations)
         object.__setattr__(self, "capabilities", capabilities)
         object.__setattr__(self, "operations", operations)
         object.__setattr__(self, "data_requests", requests)
@@ -477,8 +536,7 @@ class ExperimentReceipt:
         if any(_SHA256.fullmatch(value) is None for value in predecessors.values()):
             raise ValueError("predecessor receipt identity must be lowercase SHA-256")
         artifacts = {
-            _safe_relative_path(key).as_posix(): value
-            for key, value in artifact_sha256.items()
+            _safe_relative_path(key).as_posix(): value for key, value in artifact_sha256.items()
         }
         if any(_SHA256.fullmatch(value) is None for value in artifacts.values()):
             raise ValueError("receipt artifact identity must be lowercase SHA-256")
@@ -489,9 +547,7 @@ class ExperimentReceipt:
         object.__setattr__(instance, "experiment_id", experiment_id)
         for name, value in identities.items():
             object.__setattr__(instance, name, value)
-        object.__setattr__(
-            instance, "predecessor_receipts", MappingProxyType(predecessors)
-        )
+        object.__setattr__(instance, "predecessor_receipts", MappingProxyType(predecessors))
         object.__setattr__(instance, "artifact_sha256", MappingProxyType(artifacts))
         object.__setattr__(instance, "trace", trace)
         return instance
@@ -729,6 +785,11 @@ class ResearchExperiment(ABC):
     def definition(self) -> ExperimentDefinition:
         """Return the immutable pre-execution definition."""
 
+    def synthetic_precheck(self) -> None:
+        """Exercise technical boundaries without reading formal experiment outcomes."""
+
+        return None
+
     @abstractmethod
     def execute(self, context: ExperimentContext) -> ExperimentResult:
         """Execute only through the supplied, capability-tracked context."""
@@ -747,6 +808,9 @@ __all__ = [
     "ExperimentMode",
     "ExperimentOutcome",
     "ExperimentProtocol",
+    "ExperimentPreflightCheck",
+    "ExperimentPreflightReport",
+    "ExperimentPreflightStatus",
     "ExperimentReceipt",
     "ExperimentResources",
     "ExperimentResult",

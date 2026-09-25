@@ -53,6 +53,88 @@ class Dataset(StrEnum):
     STRATEGY_FEATURE_EVIDENCE = "strategy.feature_evidence"
 
 
+class TemporalAlignment(StrEnum):
+    """How source availability is aligned to a decision timestamp."""
+
+    EXACT_SESSION = "EXACT_SESSION"
+    STRICT_PRIOR = "STRICT_PRIOR"
+    LATEST_AVAILABLE = "LATEST_AVAILABLE"
+
+
+class RequestRangePolicy(StrEnum):
+    """Provider interpretation of the requested start/end range."""
+
+    EXACT = "EXACT"
+    CALENDAR_MONTH = "CALENDAR_MONTH"
+
+
+@dataclass(frozen=True, slots=True)
+class DataTemporalContract:
+    """Typed time semantics published with a READY dataset."""
+
+    source_time_field: str
+    availability_time_field: str
+    source_calendar: str
+    available_at: str
+    request_range_policy: RequestRangePolicy
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "source_time_field",
+            "availability_time_field",
+            "source_calendar",
+            "available_at",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be a non-empty string")
+            object.__setattr__(self, field_name, value.strip())
+        if not isinstance(self.request_range_policy, RequestRangePolicy):
+            object.__setattr__(
+                self,
+                "request_range_policy",
+                RequestRangePolicy(self.request_range_policy),
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class DataTemporalRequirement:
+    """Causal alignment requested by research code."""
+
+    alignment: TemporalAlignment
+    decision_time: str
+    max_staleness_days: int | None = None
+    warmup_sessions: int = 0
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.alignment, TemporalAlignment):
+            object.__setattr__(self, "alignment", TemporalAlignment(self.alignment))
+        if not isinstance(self.decision_time, str) or not self.decision_time.strip():
+            raise ValueError("decision_time must be a non-empty string")
+        object.__setattr__(self, "decision_time", self.decision_time.strip())
+        for field_name in ("max_staleness_days", "warmup_sessions"):
+            value = getattr(self, field_name)
+            if value is None and field_name == "max_staleness_days":
+                continue
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{field_name} must be a non-negative integer")
+
+
+@dataclass(frozen=True, slots=True)
+class DataCoverageRequirement:
+    """Minimum history coverage required before DFLS may return READY."""
+
+    maximum_start_lag_days: int = 0
+    minimum_rows: int = 1
+
+    def __post_init__(self) -> None:
+        for field_name in ("maximum_start_lag_days", "minimum_rows"):
+            value = getattr(self, field_name)
+            minimum = 0 if field_name == "maximum_start_lag_days" else 1
+            if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
+                raise ValueError(f"{field_name} must be an integer >= {minimum}")
+
+
 @dataclass(frozen=True, slots=True)
 class DataRequest:
     """A bounded, auditable request for one published dataset."""
@@ -64,6 +146,7 @@ class DataRequest:
     required_cutoff: str | None
     frequency: str = "daily"
     options: Mapping[str, Any] = field(default_factory=dict)
+    coverage: DataCoverageRequirement | None = None
 
     def __post_init__(self) -> None:
         dataset = str(self.dataset)
@@ -82,6 +165,8 @@ class DataRequest:
             required_cutoff = pd.Timestamp(self.required_cutoff)
             if pd.isna(required_cutoff) or not start <= required_cutoff <= end:
                 raise ValueError("required_cutoff must fall within start and end")
+        if self.coverage is not None and not isinstance(self.coverage, DataCoverageRequirement):
+            raise TypeError("coverage must be DataCoverageRequirement or None")
         object.__setattr__(self, "dataset", dataset)
         object.__setattr__(self, "symbol", symbol)
         object.__setattr__(self, "options", MappingProxyType(dict(self.options)))
@@ -114,12 +199,28 @@ class DataIdentity:
 
     def __post_init__(self) -> None:
         metadata = dict(self.metadata)
-        for field_name in ("source_time_field", "source_calendar", "available_at"):
+        for field_name in (
+            "source_time_field",
+            "availability_time_field",
+            "source_calendar",
+            "available_at",
+            "request_range_policy",
+        ):
             value = metadata.get(field_name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"data identity metadata requires non-empty {field_name}")
             metadata[field_name] = value.strip()
         object.__setattr__(self, "metadata", MappingProxyType(metadata))
+
+    @property
+    def temporal_contract(self) -> DataTemporalContract:
+        return DataTemporalContract(
+            source_time_field=self.metadata["source_time_field"],
+            availability_time_field=self.metadata["availability_time_field"],
+            source_calendar=self.metadata["source_calendar"],
+            available_at=self.metadata["available_at"],
+            request_range_policy=RequestRangePolicy(self.metadata["request_range_policy"]),
+        )
 
 
 @dataclass(frozen=True, slots=True)

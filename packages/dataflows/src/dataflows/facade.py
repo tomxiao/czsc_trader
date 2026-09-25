@@ -11,7 +11,15 @@ from typing import Any
 import pandas as pd
 import numpy as np
 
-from .contract import DataError, DataIdentity, DataRequest, DataResult, Dataset, DataStatus
+from .contract import (
+    DataError,
+    DataIdentity,
+    DataRequest,
+    DataResult,
+    Dataset,
+    DataStatus,
+    RequestRangePolicy,
+)
 from .errors import (
     DataContractError,
     DataflowError,
@@ -44,6 +52,12 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.STRATEGY_FEATURE_EVIDENCE.value: "REPOSITORY",
 }
 
+_CALENDAR_MONTH_DATASETS = {
+    Dataset.CN_CPI_MONTHLY.value,
+    Dataset.CN_PPI_MONTHLY.value,
+    Dataset.CN_MONEY_MONTHLY.value,
+}
+
 
 def _lineage_metadata(
     request: DataRequest,
@@ -66,15 +80,37 @@ def _lineage_metadata(
         source_calendar = str(result.get("exchange") or "SOURCE_NATIVE").strip()
     available_at = str(result.get("available_at", "")).strip()
     if not available_at:
-        available_at = str(
-            result.get("availability_rule") or "SOURCE_PERIOD_CLOSE"
-        ).strip()
+        available_at = str(result.get("availability_rule") or "SOURCE_PERIOD_CLOSE").strip()
     if not source_calendar or not available_at:
         raise DataContractError("provider source-time metadata is incomplete")
+    availability_time_field = str(
+        result.get(
+            "availability_time_field",
+            "AvailableDate" if "AvailableDate" in dataframe.columns else source_time_field,
+        )
+    ).strip()
+    if not availability_time_field or availability_time_field not in dataframe.columns:
+        raise DataContractError(
+            "provider availability time field is unavailable",
+            availability_time_field=availability_time_field,
+        )
+    default_range_policy = (
+        RequestRangePolicy.CALENDAR_MONTH
+        if str(request.dataset) in _CALENDAR_MONTH_DATASETS
+        else RequestRangePolicy.EXACT
+    )
+    try:
+        request_range_policy = RequestRangePolicy(
+            result.get("request_range_policy", default_range_policy)
+        )
+    except ValueError as exc:
+        raise DataContractError("provider request range policy is invalid") from exc
     result.update(
         source_time_field=source_time_field,
+        availability_time_field=availability_time_field,
         source_calendar=source_calendar,
         available_at=available_at,
+        request_range_policy=request_range_policy.value,
     )
     return result
 
@@ -93,7 +129,8 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"RealYield5YPercent", "RealYield10YPercent"},
     ),
     Dataset.US_NOMINAL_YIELD_DAILY.value: (
-        {"Date", "NominalYield10YPercent"}, {"NominalYield10YPercent"}
+        {"Date", "NominalYield10YPercent"},
+        {"NominalYield10YPercent"},
     ),
     Dataset.USDCNH_DAILY.value: (
         {
@@ -191,7 +228,7 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
     ),
     Dataset.CN_CPI_MONTHLY.value: (
-        {"Date", "NationalYoYPercent", "NationalMoMPercent"},
+        {"Date", "AvailableDate", "NationalYoYPercent", "NationalMoMPercent"},
         {"NationalYoYPercent", "NationalMoMPercent"},
     ),
     Dataset.US_CPI_RELEASE.value: (
@@ -207,11 +244,11 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"BudgetBalanceBillionUSD"},
     ),
     Dataset.CN_PPI_MONTHLY.value: (
-        {"Date", "ProducerYoYPercent", "ProducerMoMPercent"},
+        {"Date", "AvailableDate", "ProducerYoYPercent", "ProducerMoMPercent"},
         {"ProducerYoYPercent", "ProducerMoMPercent"},
     ),
     Dataset.CN_MONEY_MONTHLY.value: (
-        {"Date", "M1YoYPercent", "M2YoYPercent"},
+        {"Date", "AvailableDate", "M1YoYPercent", "M2YoYPercent"},
         {"M1YoYPercent", "M2YoYPercent"},
     ),
     Dataset.INDEX_DAILY_BASIC.value: (
@@ -266,8 +303,7 @@ def _validate_provider_output(
     if dataset in _OHLCV_DATASETS:
         frequency = (
             "daily"
-            if dataset
-            in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.STOCK_UNADJUSTED_DAILY.value}
+            if dataset in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.STOCK_UNADJUSTED_DAILY.value}
             else request.frequency
         )
         declared_period = metadata.get("period")
@@ -285,10 +321,14 @@ def _validate_provider_output(
                 expected_asset_type=expected_asset,
                 provider_asset_type=str(declared_asset),
             )
-        if dataset in {
-            Dataset.ETF_UNADJUSTED_DAILY.value,
-            Dataset.STOCK_UNADJUSTED_DAILY.value,
-        } and metadata.get("adjustment") != "none":
+        if (
+            dataset
+            in {
+                Dataset.ETF_UNADJUSTED_DAILY.value,
+                Dataset.STOCK_UNADJUSTED_DAILY.value,
+            }
+            and metadata.get("adjustment") != "none"
+        ):
             raise DataContractError(
                 "unadjusted dataset provider did not declare adjustment=none",
                 dataset=dataset,
@@ -328,7 +368,10 @@ def _validate_provider_output(
         ):
             raise DataContractError("US CPI release lineage contract is incomplete")
         release_at = dataframe["ReleaseAt"]
-        if not isinstance(release_at.dtype, pd.DatetimeTZDtype) or str(release_at.dt.tz) != "Asia/Shanghai":
+        if (
+            not isinstance(release_at.dtype, pd.DatetimeTZDtype)
+            or str(release_at.dt.tz) != "Asia/Shanghai"
+        ):
             raise DataContractError("US CPI release time must use Asia/Shanghai timezone")
         dates = pd.to_datetime(dataframe["Date"], errors="coerce")
         available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
@@ -474,12 +517,10 @@ def _validate_provider_output(
             raise DataContractError(
                 "trading calendar does not cover every requested calendar date",
                 missing_dates=[
-                    item.date().isoformat()
-                    for item in expected_dates.difference(observed_dates)
+                    item.date().isoformat() for item in expected_dates.difference(observed_dates)
                 ],
                 unexpected_dates=[
-                    item.date().isoformat()
-                    for item in observed_dates.difference(expected_dates)
+                    item.date().isoformat() for item in observed_dates.difference(expected_dates)
                 ],
             )
 
@@ -523,7 +564,11 @@ def _date_bounds(
             actual_start=str(actual_start),
             actual_end=str(actual_end),
         )
-    maximum_start_lag_days = metadata.get("maximum_start_lag_days")
+    maximum_start_lag_days = (
+        request.coverage.maximum_start_lag_days
+        if request.coverage is not None
+        else metadata.get("maximum_start_lag_days")
+    )
     if maximum_start_lag_days is not None:
         try:
             maximum_start_lag_days = int(maximum_start_lag_days)
@@ -590,6 +635,12 @@ class Dataflows:
             if dataframe is None or dataframe.empty:
                 raise EmptyDataError("provider returned no rows")
             frame = dataframe.copy()
+            if request.coverage is not None and len(frame) < request.coverage.minimum_rows:
+                raise IncompleteDataError(
+                    "published dataframe has fewer rows than required",
+                    minimum_rows=request.coverage.minimum_rows,
+                    actual_rows=len(frame),
+                )
             metadata = _lineage_metadata(request, frame, metadata)
             _validate_provider_output(frame, request, metadata)
             data_start, data_cutoff = _date_bounds(frame, request, metadata)
@@ -728,14 +779,10 @@ def _default_providers() -> dict[str, Provider]:
         return fetch_shibor_daily(request.start, request.end, env_file=_env_file(request))
 
     def us_real_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_real_yield_daily(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_us_real_yield_daily(request.start, request.end, env_file=_env_file(request))
 
     def us_nominal_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_nominal_yield_daily(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_us_nominal_yield_daily(request.start, request.end, env_file=_env_file(request))
 
     def usdcnh(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_usdcnh_daily(request.start, request.end, env_file=_env_file(request))
@@ -789,19 +836,13 @@ def _default_providers() -> dict[str, Provider]:
         )
 
     def cn_cpi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_cpi_monthly(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_cn_cpi_monthly(request.start, request.end, env_file=_env_file(request))
 
     def us_cpi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_cpi_release(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_us_cpi_release(request.start, request.end, env_file=_env_file(request))
 
     def us_ism_pmi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_ism_pmi_release(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_us_ism_pmi_release(request.start, request.end, env_file=_env_file(request))
 
     def us_federal_budget_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_us_federal_budget_release(
@@ -809,14 +850,10 @@ def _default_providers() -> dict[str, Provider]:
         )
 
     def cn_ppi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_ppi_monthly(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_cn_ppi_monthly(request.start, request.end, env_file=_env_file(request))
 
     def cn_money(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_money_monthly(
-            request.start, request.end, env_file=_env_file(request)
-        )
+        return fetch_cn_money_monthly(request.start, request.end, env_file=_env_file(request))
 
     def index_basic(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_index_daily_basic(

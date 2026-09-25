@@ -20,6 +20,7 @@ EXPECTED_ACTIONS = {
         "deploy",
     },
     "backtest": {"run"},
+    "experiment": {"preflight"},
     "archive": {"validate"},
     "news": {"extract"},
     "catalog": {"validate", "list", "show"},
@@ -28,7 +29,8 @@ EXPECTED_ACTIONS = {
 
 
 def test_repository_context_loads_dotenv_without_overriding_process_environment(
-    functional_repo: Path, monkeypatch,
+    functional_repo: Path,
+    monkeypatch,
 ) -> None:
     (functional_repo / ".env").write_text(
         "TUSHARE_TOKEN=repository-token\nSRT_TEST_SETTING=repository-value\n",
@@ -161,6 +163,30 @@ def test_ft_t08_candidate_and_srt_commands_parse() -> None:
         "candidate.freeze",
         "strategy.info",
     ]
+
+
+def test_experiment_preflight_cli_reports_legacy_warning(capsys) -> None:
+    repo = Path(__file__).resolve().parents[2]
+    fixture = repo / "tests" / "fixtures" / "s008_research_cases" / "20260924_S008_EX99"
+
+    exit_code = main(
+        [
+            "experiment",
+            "preflight",
+            "--experiment",
+            str(fixture),
+            "--max-evaluations",
+            "1",
+            "--repo-root",
+            str(repo),
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["status"] == "PASS"
+    assert payload["command"] == "experiment.preflight"
+    assert payload["warnings"]
 
 
 def test_research_evaluate_reports_contract_errors_as_validation_failures(

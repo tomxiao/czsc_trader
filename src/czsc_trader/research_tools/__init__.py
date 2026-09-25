@@ -16,6 +16,7 @@ from .experiment import (
     create_experiment_context,
     create_formal_experiment_context,
     execute_experiment,
+    preflight_experiment,
 )
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "create_experiment_context",
     "create_formal_experiment_context",
     "execute_experiment",
+    "preflight_experiment",
     "evaluate_strategy",
 ]

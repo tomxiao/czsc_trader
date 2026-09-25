@@ -32,6 +32,7 @@ from threadpoolctl import threadpool_limits
 
 from ..temp_workspace import create_temporary_directory
 from .evaluation import EvaluationRequest, EvaluationResult, evaluate_strategy
+from .preflight import preflight_experiment
 
 
 def _freeze_trace_json(value: Any, field_name: str) -> Any:
@@ -134,6 +135,7 @@ class _ExperimentDataAccess:
         result = self._dataflows.fetch(request)
         identity = None
         if result.identity is not None:
+            temporal = result.identity.temporal_contract
             identity = {
                 "dataset": result.identity.dataset,
                 "source": result.identity.source,
@@ -141,6 +143,13 @@ class _ExperimentDataAccess:
                 "data_start": result.identity.data_start,
                 "data_cutoff": result.identity.data_cutoff,
                 "content_sha256": result.identity.content_sha256,
+                "temporal_contract": {
+                    "source_time_field": temporal.source_time_field,
+                    "availability_time_field": temporal.availability_time_field,
+                    "source_calendar": temporal.source_calendar,
+                    "available_at": temporal.available_at,
+                    "request_range_policy": temporal.request_range_policy.value,
+                },
             }
         self._recorder.record_operation("data.fetch")
         self._recorder.record_data_request(
@@ -151,6 +160,12 @@ class _ExperimentDataAccess:
                 "end": request.end,
                 "required_cutoff": request.required_cutoff,
                 "frequency": request.frequency,
+                "coverage": None
+                if request.coverage is None
+                else {
+                    "maximum_start_lag_days": request.coverage.maximum_start_lag_days,
+                    "minimum_rows": request.coverage.minimum_rows,
+                },
                 "status": result.status.value,
                 "identity": identity,
             }
@@ -452,9 +467,7 @@ def execute_experiment(
         raise TypeError("experiment must be loaded by load_experiment")
     if not isinstance(context, _PlatformExperimentContext):
         raise TypeError("context must be created by a platform experiment context factory")
-    actual_hash = experiment_source_sha256(
-        experiment.root, experiment.binding.source_files
-    )
+    actual_hash = experiment_source_sha256(experiment.root, experiment.binding.source_files)
     if actual_hash != experiment.binding.source_sha256:
         raise ValueError("experiment source SHA-256 differs from binding")
     if experiment.implementation.definition.sha256 != experiment.definition.sha256:
@@ -463,6 +476,12 @@ def execute_experiment(
         raise ValueError("experiment and context definitions differ")
     if context._formal != (experiment.definition.mode is ExperimentMode.FORMAL):
         raise ValueError("experiment mode and context assurance differ")
+    if experiment.binding.schema_version >= 3:
+        preflight_experiment(
+            experiment,
+            resources=context.resources,
+            predecessors=tuple(context.predecessors.values()),
+        ).require_pass()
     with threadpool_limits(limits=context.resources.native_threads_per_worker):
         result = experiment.implementation.execute(context)
     if not isinstance(result, ExperimentResult):
@@ -520,4 +539,5 @@ __all__ = [
     "create_experiment_context",
     "create_formal_experiment_context",
     "execute_experiment",
+    "preflight_experiment",
 ]

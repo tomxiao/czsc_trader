@@ -84,12 +84,19 @@ def _canonicalize_monthly(
             missing_fields=missing,
         )
     output = frame[["month", *columns]].rename(columns=columns)
-    output["Date"] = pd.PeriodIndex(
-        output.pop("month").astype(str), freq="M"
-    ).to_timestamp(how="end").normalize()
+    output["Date"] = (
+        pd.PeriodIndex(output.pop("month").astype(str), freq="M")
+        .to_timestamp(how="end")
+        .normalize()
+    )
+    output["AvailableDate"] = (output["Date"].dt.to_period("M") + 2).dt.to_timestamp(how="start")
     for column in numeric_columns:
         output[column] = pd.to_numeric(output[column], errors="raise")
-    return output[["Date", *columns.values()]].sort_values("Date").reset_index(drop=True)
+    return (
+        output[["Date", "AvailableDate", *columns.values()]]
+        .sort_values("Date")
+        .reset_index(drop=True)
+    )
 
 
 def fetch_shibor_daily(
@@ -294,8 +301,7 @@ def fetch_sge_gold_daily(
                 start_date=start,
                 end_date=end,
                 fields=(
-                    "ts_code,trade_date,close,open,high,low,price_avg,change,"
-                    "pct_change,vol,amount"
+                    "ts_code,trade_date,close,open,high,low,price_avg,change,pct_change,vol,amount"
                 ),
             ),
             start_date,
@@ -352,10 +358,7 @@ def fetch_domestic_index_daily(
             ts_code=symbol,
             start_date=start_date.replace("-", ""),
             end_date=end_date.replace("-", ""),
-            fields=(
-                "ts_code,trade_date,close,open,high,low,pre_close,change,"
-                "pct_chg,vol,amount"
-            ),
+            fields=("ts_code,trade_date,close,open,high,low,pre_close,change,pct_chg,vol,amount"),
         ),
         dataset=f"domestic index daily {symbol}",
         date_column="trade_date",
@@ -453,9 +456,7 @@ def fetch_us_cpi_release(
     missing = sorted(required.difference(raw.columns))
     if missing:
         raise DataContractError("US CPI release fields are missing", missing_fields=missing)
-    events = raw.loc[
-        raw["event"].astype(str).str.startswith("美国未季调CPI年率")
-    ].copy()
+    events = raw.loc[raw["event"].astype(str).str.startswith("美国未季调CPI年率")].copy()
     if events.empty:
         raise EmptyDataError("Tushare returned no matching US CPI release events")
     times = events["time"].astype(str).str.strip()
@@ -475,18 +476,21 @@ def fetch_us_cpi_release(
         raise DataContractError("US CPI release date or actual value is invalid") from exc
     eastern = release_at.dt.tz_convert("America/New_York")
     if not (
-        eastern.dt.strftime("%H:%M").eq("08:30")
-        & eastern.dt.date.eq(release_at.dt.date)
+        eastern.dt.strftime("%H:%M").eq("08:30") & eastern.dt.date.eq(release_at.dt.date)
     ).all():
         raise DataContractError("US CPI calendar clock conflicts with BLS Eastern release")
 
-    frame = pd.DataFrame(
-        {
-            "Date": release_at.dt.tz_localize(None).dt.normalize(),
-            "ReleaseAt": release_at,
-            "YoYPercent": yoy,
-        }
-    ).sort_values("Date").reset_index(drop=True)
+    frame = (
+        pd.DataFrame(
+            {
+                "Date": release_at.dt.tz_localize(None).dt.normalize(),
+                "ReleaseAt": release_at,
+                "YoYPercent": yoy,
+            }
+        )
+        .sort_values("Date")
+        .reset_index(drop=True)
+    )
     if frame["Date"].duplicated().any():
         raise DataContractError("US CPI has duplicate release dates")
     if frame["Date"].diff().dt.days.gt(45).any():
@@ -594,12 +598,18 @@ def _fetch_us_calendar_release(
         numeric = pd.to_numeric(values.str.removesuffix(unit_suffix), errors="raise")
     except (TypeError, ValueError) as exc:
         raise DataContractError(f"{value_column} release date or value is invalid") from exc
-    frame = pd.DataFrame({
-        "Date": dates.dt.normalize(),
-        value_column: numeric,
-        "SourceClock": clocks,
-        "SourceEvent": events["event"].astype(str),
-    }).sort_values("Date").reset_index(drop=True)
+    frame = (
+        pd.DataFrame(
+            {
+                "Date": dates.dt.normalize(),
+                value_column: numeric,
+                "SourceClock": clocks,
+                "SourceEvent": events["event"].astype(str),
+            }
+        )
+        .sort_values("Date")
+        .reset_index(drop=True)
+    )
     if frame["Date"].duplicated().any():
         raise DataContractError(f"{value_column} has duplicate release dates")
     if frame["Date"].diff().dt.days.gt(maximum_gap_days).any():
@@ -607,12 +617,14 @@ def _fetch_us_calendar_release(
 
     calendar_start = frame["Date"].min()
     calendar_end = frame["Date"].max() + pd.Timedelta(days=14)
-    calendar_raw = pd.DataFrame(client.trade_cal(
-        exchange="SSE",
-        start_date=calendar_start.strftime("%Y%m%d"),
-        end_date=calendar_end.strftime("%Y%m%d"),
-        fields="cal_date,is_open",
-    ))
+    calendar_raw = pd.DataFrame(
+        client.trade_cal(
+            exchange="SSE",
+            start_date=calendar_start.strftime("%Y%m%d"),
+            end_date=calendar_end.strftime("%Y%m%d"),
+            fields="cal_date,is_open",
+        )
+    )
     if calendar_raw.empty or not {"cal_date", "is_open"}.issubset(calendar_raw.columns):
         raise IncompleteDataError("SSE calendar is unavailable for US release availability")
     try:
@@ -659,10 +671,15 @@ def fetch_us_ism_pmi_release(
     pro: object | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     return _fetch_us_calendar_release(
-        start_date, end_date,
-        query="*ISM制造业PMI*", event_prefix="美国ISM制造业PMI",
-        value_column="PmiIndex", unit_suffix="", maximum_gap_days=40,
-        env_file=env_file, pro=pro,
+        start_date,
+        end_date,
+        query="*ISM制造业PMI*",
+        event_prefix="美国ISM制造业PMI",
+        value_column="PmiIndex",
+        unit_suffix="",
+        maximum_gap_days=40,
+        env_file=env_file,
+        pro=pro,
     )
 
 
@@ -674,10 +691,15 @@ def fetch_us_federal_budget_release(
     pro: object | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     return _fetch_us_calendar_release(
-        start_date, end_date,
-        query="*政府预算*", event_prefix="美国政府预算(美元)",
-        value_column="BudgetBalanceBillionUSD", unit_suffix="B", maximum_gap_days=70,
-        env_file=env_file, pro=pro,
+        start_date,
+        end_date,
+        query="*政府预算*",
+        event_prefix="美国政府预算(美元)",
+        value_column="BudgetBalanceBillionUSD",
+        unit_suffix="B",
+        maximum_gap_days=70,
+        env_file=env_file,
+        pro=pro,
     )
 
 
@@ -753,6 +775,7 @@ def _monthly_metadata(vendor_interface: str) -> dict[str, Any]:
         "primary_key": ["Date"],
         "reference_date_rule": "calendar month end",
         "availability_rule": "reference month M usable from first China session of M+2",
+        "availability_time_field": "AvailableDate",
     }
 
 
