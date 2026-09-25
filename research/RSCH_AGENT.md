@@ -213,6 +213,34 @@ STC是经过治理的结构基线，不是原型全集。探索初期保留机�
 [EX56](../experiments/S008/20260923_S008_EX56/04_conclusion.md)和
 [EX65](../experiments/S008/20260923_S008_EX65/04_conclusion.md)只暴露技术错误，不构成机制证据。
 
+#### 平台preflight使用
+
+新建实验使用`experiment_binding.json`的schema v3，在`ExperimentDefinition.subjects`中声明唯一
+研究标的，并显式实现无真实结果读取的`synthetic_precheck()`。该方法只验证实现、合成输入、
+时间对齐和接口边界；不得读取正式收益、选择参数或产生研究结论。
+
+冻结实验源码后、首次正式执行前运行：
+
+```powershell
+czsc-trader experiment preflight `
+  --experiment experiments/SXXX/YYYYMMDD_SXXX_EXNN `
+  --max-workers 1 `
+  --max-evaluations 100
+```
+
+只有声明参数搜索的实验需要`--max-evaluations`。存在前序实验时，为每项前序证据追加已独立保留的
+receipt身份：
+
+```powershell
+--predecessor experiments/SXXX/YYYYMMDD_SXXX_EXNN/artifacts=<receipt_sha256>
+```
+
+preflight统一核对源码绑定、定义稳定性、资源种子和搜索预算、前序receipt、归档身份及合成预检。
+全部检查通过后才进入正式执行。失败发生在正式执行边界之前，研究员应在原地修正代码或声明并
+重复运行preflight；此时不建立实验结果、receipt、manifest或技术失败档案。schema v2历史实验仅
+用于兼容读取，会报告未强制执行preflight的警告。preflight通过只证明技术执行路径满足合同，
+不构成金融机制、收益或候选资格证据。
+
 ### 4.6 联合搜索与代表点
 
 用Optuna联合搜索相互影响的参数；单维扫描只能作诊断。无需断点恢复时默认
