@@ -1,0 +1,470 @@
+{
+  "S003": {
+    "train_count": 660,
+    "evaluate_count": 650,
+    "train_last_exit": "2023-12-29",
+    "eval_last_exit": "2026-09-08",
+    "source_check": {
+      "frozen_event_count": 276,
+      "max_price_return_error": 9.974659986866641e-17
+    },
+    "source_sha256": {
+      "experiments/S003/20260911_S003_EX44/artifacts/moneyflow_breadth_features.csv.gz": "57b8e662627a0995d053b6807f15fb4f57cc42f876dd93ca98e80ddcf920de0e",
+      "data/raw/510500_5m_2021.csv": "ab22901e7fe8c5cca7e5c61e6d11b0d30f7f299239f374df922bafaf9335faaa",
+      "data/raw/510500_5m_2022.csv": "8254ac2caf224753395934c09560af2916f84b52cf2c1370b69da995085861f0",
+      "data/raw/510500_5m_2023.csv": "f677e0a0372acd957af1ce081a41c31a84c39f180da6cbcd41336d551334d13e",
+      "data/raw/510500_5m_2024.csv": "fa01cde97a8ec5743a3b56d776d6dd8a29b01af53536cf45879310d32990b1b7",
+      "data/raw/510500_5m_2025.csv": "b4f8afd1f3aba4622ad82202f0c0b1fab9b97b2f9f70f632ad2b32834d349fc4",
+      "data/raw/510500_5m_2026.csv": "1ea2c5f4fb0e5f85757fea1d629bfed0428bd453f08721f46cb16164b8cb801d",
+      "experiments/S003/20260911_S003_EX44/artifacts/mechanism_events.csv": "d60067510c731d7df8bf8034bea4142017f055f23791ceb97687fe27be89a553",
+      "experiments/S003/20260911_S003_EX45/artifacts/episodes.csv.gz": "c9de5143786b65361c0fe3d052e2e4d36d2839186109b9a251de376c2aa58f6e"
+    },
+    "selected_equation": "(x0 + (x1 * x1)) * 6.4142876",
+    "selected_complexity": 7,
+    "search_seconds": 18.969000000040978,
+    "shifted_search_seconds": 7.546999999962281,
+    "shifted_label_offset": 220,
+    "training": {
+      "linear": {
+        "observations": 660,
+        "mse_bp2": 5468.779296875,
+        "rankic": 0.029938368125060757,
+        "annual_rankic": {
+          "2021": 0.07552457540555046,
+          "2022": 0.05218802761696951,
+          "2023": 0.048817352117845186
+        }
+      },
+      "pysr": {
+        "observations": 660,
+        "mse_bp2": 5439.070703502791,
+        "rankic": 0.09115570401344629,
+        "annual_rankic": {
+          "2021": -0.0031465867973199915,
+          "2022": 0.10975531278972075,
+          "2023": 0.057852966687736394
+        }
+      }
+    },
+    "evaluation": {
+      "linear": {
+        "observations": 650,
+        "mse_bp2": 11473.1376953125,
+        "rankic": -0.03716487755505859,
+        "annual_rankic": {
+          "2024": -0.03473437479162692,
+          "2025": -0.008502819637694375,
+          "2026": -0.07678123365830905
+        }
+      },
+      "pysr": {
+        "observations": 650,
+        "mse_bp2": 11602.84393382104,
+        "rankic": -0.04248629328257594,
+        "annual_rankic": {
+          "2024": -0.02030786516996685,
+          "2025": -0.007606289427051278,
+          "2026": -0.0821174379006928
+        }
+      },
+      "shifted": {
+        "observations": 650,
+        "mse_bp2": 11570.843873347225,
+        "rankic": -0.024788792120032783,
+        "annual_rankic": {
+          "2024": 0.044407432295082795,
+          "2025": -0.03548230818922596,
+          "2026": -0.05153735108662029
+        }
+      },
+      "prediction_correlation_linear_pysr": 0.8128158555495898,
+      "different_position_days": 132
+    },
+    "accounts": {
+      "base": {
+        "frozen": {
+          "events": 135,
+          "mean_net_bp": 23.42122332496346,
+          "overlay_terminal_proxy": 1.1676778620012154,
+          "exposure_fraction": 0.2076923076923077,
+          "annual": {
+            "2024": {
+              "events": 48,
+              "mean_net_bp": 28.31305407120149
+            },
+            "2025": {
+              "events": 51,
+              "mean_net_bp": 19.18786145422605
+            },
+            "2026": {
+              "events": 36,
+              "mean_net_bp": 22.896044980190762
+            }
+          }
+        },
+        "linear": {
+          "events": 209,
+          "mean_net_bp": 15.161802394516235,
+          "overlay_terminal_proxy": 1.1671816100343135,
+          "exposure_fraction": 0.32153846153846155,
+          "annual": {
+            "2024": {
+              "events": 78,
+              "mean_net_bp": 14.640789333379715
+            },
+            "2025": {
+              "events": 73,
+              "mean_net_bp": 18.329161090655152
+            },
+            "2026": {
+              "events": 58,
+              "mean_net_bp": 11.875971945387054
+            }
+          }
+        },
+        "pysr": {
+          "events": 163,
+          "mean_net_bp": 9.527415391117318,
+          "overlay_terminal_proxy": 1.0771067929600908,
+          "exposure_fraction": 0.25076923076923074,
+          "annual": {
+            "2024": {
+              "events": 74,
+              "mean_net_bp": 14.881625493092985
+            },
+            "2025": {
+              "events": 27,
+              "mean_net_bp": 35.714796436080526
+            },
+            "2026": {
+              "events": 62,
+              "mean_net_bp": -8.26727550824086
+            }
+          }
+        }
+      },
+      "stress": {
+        "frozen": {
+          "events": 135,
+          "mean_net_bp": 13.821223324963464,
+          "overlay_terminal_proxy": 1.0944746312400375,
+          "exposure_fraction": 0.2076923076923077,
+          "annual": {
+            "2024": {
+              "events": 48,
+              "mean_net_bp": 18.713054071201487
+            },
+            "2025": {
+              "events": 51,
+              "mean_net_bp": 9.587861454226054
+            },
+            "2026": {
+              "events": 36,
+              "mean_net_bp": 13.29604498019077
+            }
+          }
+        },
+        "linear": {
+          "events": 209,
+          "mean_net_bp": 5.561802394516239,
+          "overlay_terminal_proxy": 1.055822701723573,
+          "exposure_fraction": 0.32153846153846155,
+          "annual": {
+            "2024": {
+              "events": 78,
+              "mean_net_bp": 5.04078933337972
+            },
+            "2025": {
+              "events": 73,
+              "mean_net_bp": 8.729161090655156
+            },
+            "2026": {
+              "events": 58,
+              "mean_net_bp": 2.2759719453870613
+            }
+          }
+        },
+        "pysr": {
+          "events": 163,
+          "mean_net_bp": -0.07258460888268006,
+          "overlay_terminal_proxy": 0.9960616007992069,
+          "exposure_fraction": 0.25076923076923074,
+          "annual": {
+            "2024": {
+              "events": 74,
+              "mean_net_bp": 5.281625493092994
+            },
+            "2025": {
+              "events": 27,
+              "mean_net_bp": 26.114796436080535
+            },
+            "2026": {
+              "events": 62,
+              "mean_net_bp": -17.867275508240855
+            }
+          }
+        }
+      }
+    }
+  },
+  "S007": {
+    "train_count": 965,
+    "evaluate_count": 401,
+    "train_last_exit": "2024-12-31",
+    "eval_last_exit": "2026-09-02",
+    "source_check": {},
+    "source_sha256": {
+      "experiments/S007/20260915_S007_EX04/artifacts/causal_feature_panel.csv.gz": "29e2717dc9deb5f8184906782c816dae21027dd4c86654ffa517670dd5d0672d",
+      "data/raw/588080_execution_daily_2021.csv": "24f2ace23811ca32e935236c605230eb00f8e74eacf5e88e8b670c3bccd006a4",
+      "data/raw/588080_execution_daily_2022.csv": "7c7b8c91eff9c9fa546359f4b5b87b6c14b74243a1e327761a309621d8bea18a",
+      "data/raw/588080_execution_daily_2023.csv": "ae964cfb3ec985c54daf112672b7044efe36773e05d8fc77d50b81b6def88bde",
+      "data/raw/588080_execution_daily_2024.csv": "51e90a0fb986522c42ce7b5bc1128efd74492beae2fa36af98a1b78ac2ed42c6",
+      "data/raw/588080_execution_daily_2025.csv": "cc057ba56d7f5c065550b654b701cb27eb6b1f9a2607becb6f322b20699bad50",
+      "data/raw/588080_execution_daily_2026.csv": "c660424ded33f1f21b2fd7f09565187fc2243eac1a2114176002da009c54ad5e"
+    },
+    "selected_equation": "(((x1 - x4) * (x4 + x6)) * x4) * -19.680485",
+    "selected_complexity": 11,
+    "search_seconds": 8.297000000020489,
+    "shifted_search_seconds": 8.53100000001723,
+    "shifted_label_offset": 321,
+    "training": {
+      "linear": {
+        "observations": 965,
+        "mse_bp2": 154980.4375,
+        "rankic": 0.08804734428524717,
+        "annual_rankic": {
+          "2021": 0.01726990413948768,
+          "2022": 0.19373711125251428,
+          "2023": 0.13615961240428964,
+          "2024": 0.004436906929773941
+        }
+      },
+      "pysr": {
+        "observations": 965,
+        "mse_bp2": 146239.51753597945,
+        "rankic": 0.05424437863164571,
+        "annual_rankic": {
+          "2021": -0.04345450770632978,
+          "2022": 0.1366525813904162,
+          "2023": 0.11021658562385217,
+          "2024": 0.014593413714550882
+        }
+      }
+    },
+    "evaluation": {
+      "linear": {
+        "observations": 401,
+        "mse_bp2": 152684.625,
+        "rankic": 0.14587735905810847,
+        "annual_rankic": {
+          "2025": 0.1065697487101065,
+          "2026": 0.18507543062466625
+        }
+      },
+      "pysr": {
+        "observations": 401,
+        "mse_bp2": 155483.2733568513,
+        "rankic": 0.10028841623426793,
+        "annual_rankic": {
+          "2025": -0.012074322630532361,
+          "2026": 0.20423695423657393
+        }
+      },
+      "shifted": {
+        "observations": 401,
+        "mse_bp2": 155971.1078392518,
+        "rankic": -0.000316280356900883,
+        "annual_rankic": {
+          "2025": -0.054355150676190817,
+          "2026": 0.09600690033908411
+        }
+      },
+      "prediction_correlation_linear_pysr": 0.59881657795809,
+      "different_position_days": 130
+    },
+    "accounts": {
+      "linear": {
+        "annualized": 0.3202239266581708,
+        "terminal_equity": 1.5559043183301864,
+        "max_drawdown": -0.22972418926630644,
+        "calmar": 1.3939495343564061,
+        "closed_trades_including_final_liquidation": 60,
+        "one_way_turnovers_including_final_liquidation": 120,
+        "exposure_fraction": 0.5586034912718204,
+        "annual_returns": {
+          "2025": 0.07682337639695347,
+          "2026": 0.4449020632670848
+        }
+      },
+      "pysr": {
+        "annualized": 0.12489332678878995,
+        "terminal_equity": 1.2059573105045696,
+        "max_drawdown": -0.3256100637372713,
+        "calmar": 0.38356715807642866,
+        "closed_trades_including_final_liquidation": 75,
+        "one_way_turnovers_including_final_liquidation": 150,
+        "exposure_fraction": 0.5536159600997507,
+        "annual_returns": {
+          "2025": -0.07357716606694698,
+          "2026": 0.3017353052329008
+        }
+      },
+      "buyhold": {
+        "annualized": 0.39438865345598617,
+        "terminal_equity": 1.6972806122448996,
+        "max_drawdown": -0.29947460595446584,
+        "calmar": 1.3169352112477668,
+        "closed_trades_including_final_liquidation": 1,
+        "one_way_turnovers_including_final_liquidation": 2,
+        "exposure_fraction": 1.0,
+        "annual_returns": {
+          "2025": 0.45874387755102153,
+          "2026": 0.16352201257861787
+        }
+      }
+    }
+  },
+  "S008": {
+    "train_count": 1791,
+    "evaluate_count": 948,
+    "train_last_exit": "2020-12-31",
+    "eval_last_exit": "2024-12-31",
+    "source_check": {},
+    "source_sha256": {
+      "experiments/S008/20260923_S008_EX16/artifacts/causal_feature_panel.csv.gz": "a757cafd1eb1322f4aebe3d68fc5a6792eab9aae8b13eed8f7b83618be2139b4",
+      "data/raw/518880_execution_daily_2013.csv": "d7364ab6d09c9012a9d97d0a571a42ef826bdcd897020fb66691b56dba6f8dcb",
+      "data/raw/518880_execution_daily_2014.csv": "4b78bb07ce4df0fdd9a4fa901f37386aa3607df50d7ae68c9f7c0c5523d8c0ae",
+      "data/raw/518880_execution_daily_2015.csv": "2cd9ae5eeda01cec9069e7dad8db38e538ca1c912e96ddbe49f6df51b44ebfbe",
+      "data/raw/518880_execution_daily_2016.csv": "937bf29e6855d54d05d512c44457fd3bef4c67570a463a14e24834710b9ffe05",
+      "data/raw/518880_execution_daily_2017.csv": "b3cadc6feafc905c99fa6d16a4bdb9384bed15c9eee04a39ec073bdf6710b196",
+      "data/raw/518880_execution_daily_2018.csv": "8069b234e560c163d5bf7121ffa2efb00792d4b79e3fda04a8adec8f4e64a027",
+      "data/raw/518880_execution_daily_2019.csv": "5574306a9663337627d1ab2f653c375c7dfdc15ce12dc4f84c621e07a2f673bd",
+      "data/raw/518880_execution_daily_2020.csv": "abb5b0233c5480185a6f04c4c70a7a1a06815a03bc5b662e60d4086159c69b5c",
+      "data/raw/518880_execution_daily_2021.csv": "4a7924b50727a3f9001cbe51fecfd5006e3be3b976b0876d41e53f375cc435c2",
+      "data/raw/518880_execution_daily_2022.csv": "2cb55b13fe18d91f0c94f6f27cf7b95ebecae7e5ccd6c159b04c63c8b3db119a",
+      "data/raw/518880_execution_daily_2023.csv": "8aa26b5e9394b648b2815fa2989914e32a6eea5baf095dc2d3e0f1b573ca4faf",
+      "data/raw/518880_execution_daily_2024.csv": "8b0a962a9cc27e9bc5460790a55f41edfd8153c392b07714fadc0468e8c95f37"
+    },
+    "selected_equation": "(((x1 + -2.0523188) * x1) * (x1 - -0.6599677)) * -51.740623",
+    "selected_complexity": 11,
+    "search_seconds": 11.703000000037719,
+    "shifted_search_seconds": 7.671999999962281,
+    "shifted_label_offset": 597,
+    "training": {
+      "linear": {
+        "observations": 1791,
+        "mse_bp2": 137777.734375,
+        "rankic": 0.11452139015797588,
+        "annual_rankic": {
+          "2013": 0.4368773008824501,
+          "2014": 0.06479204236672678,
+          "2015": 0.35821055805443,
+          "2016": -0.04199026469546373,
+          "2017": 0.22642088465585014,
+          "2018": 0.027329976917711264,
+          "2019": 0.08763370532847743,
+          "2020": 0.23077142438788445
+        }
+      },
+      "pysr": {
+        "observations": 1791,
+        "mse_bp2": 128770.36590132724,
+        "rankic": 0.27862202935711355,
+        "annual_rankic": {
+          "2013": null,
+          "2014": 0.211747343680814,
+          "2015": 0.5993132430668221,
+          "2016": -0.024423760421516012,
+          "2017": 0.1731816081899032,
+          "2018": 0.3168316127852595,
+          "2019": 0.3985529649164087,
+          "2020": 0.23794675100399187
+        }
+      }
+    },
+    "evaluation": {
+      "linear": {
+        "observations": 948,
+        "mse_bp2": 91641.46875,
+        "rankic": 0.12613043759424966,
+        "annual_rankic": {
+          "2021": 0.3755362868626654,
+          "2022": 0.030100252324264783,
+          "2023": 0.2664120280748845,
+          "2024": -0.1477080947669183
+        }
+      },
+      "pysr": {
+        "observations": 948,
+        "mse_bp2": 105184.17501936234,
+        "rankic": 0.044532998382725494,
+        "annual_rankic": {
+          "2021": 0.19728753784064323,
+          "2022": -0.3685349038405241,
+          "2023": -0.17748429323804849,
+          "2024": -0.006783441021780038
+        }
+      },
+      "shifted": {
+        "observations": 948,
+        "mse_bp2": 93098.05841863979,
+        "rankic": 0.08051649368562198,
+        "annual_rankic": {
+          "2021": 0.3639566722030706,
+          "2022": -0.030070917722245693,
+          "2023": 0.19323691336677223,
+          "2024": -0.26134257586857956
+        }
+      },
+      "prediction_correlation_linear_pysr": 0.1431743424982183,
+      "different_position_days": 275
+    },
+    "accounts": {
+      "linear": {
+        "annualized": 0.10493818256191645,
+        "terminal_equity": 1.4555708806570287,
+        "max_drawdown": -0.11572229644620624,
+        "calmar": 0.9068104054666526,
+        "closed_trades_including_final_liquidation": 29,
+        "one_way_turnovers_including_final_liquidation": 58,
+        "exposure_fraction": 0.8132911392405063,
+        "annual_returns": {
+          "2021": -0.07871967129538382,
+          "2022": 0.09382095439225169,
+          "2023": 0.17016152137434637,
+          "2024": 0.23438179680863347
+        }
+      },
+      "pysr": {
+        "annualized": 0.10298120239216635,
+        "terminal_equity": 1.4458964104330054,
+        "max_drawdown": -0.11074487043925474,
+        "calmar": 0.9298959128644528,
+        "closed_trades_including_final_liquidation": 38,
+        "one_way_turnovers_including_final_liquidation": 76,
+        "exposure_fraction": 0.7805907172995781,
+        "annual_returns": {
+          "2021": -0.01617851087210742,
+          "2022": 0.011156954537926644,
+          "2023": 0.13908926120097242,
+          "2024": 0.27598198960303355
+        }
+      },
+      "buyhold": {
+        "annualized": 0.1150398434613622,
+        "terminal_equity": 1.5062668875860317,
+        "max_drawdown": -0.11803612312388667,
+        "calmar": 0.9746155703590867,
+        "closed_trades_including_final_liquidation": 1,
+        "one_way_turnovers_including_final_liquidation": 2,
+        "exposure_fraction": 1.0,
+        "annual_returns": {
+          "2021": -0.07510374713229695,
+          "2022": 0.10132158590308427,
+          "2023": 0.16450000000000076,
+          "2024": 0.26985830828681934
+        }
+      }
+    }
+  }
+}
