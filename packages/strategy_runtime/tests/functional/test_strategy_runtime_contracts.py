@@ -59,6 +59,7 @@ def _definition() -> RuntimeDefinition:
         execution=ExecutionPolicy("MARKETABLE_LIMIT", {"limit_ratio": 0.2}),
         monitoring=MonitoringPolicy("ROLLING", {"window_sessions": 60}),
         capabilities=RequiredCapabilities(("etf.ohlcv",), ("LIMIT",)),
+        tradable_symbol="588080.SH",
     )
 
 
@@ -77,6 +78,28 @@ def test_runtime_definition_is_family_version_scoped_and_immutable() -> None:
     assert nested.values["windows"] == (20, 60)
 
 
+def test_runtime_definition_binds_and_validates_tradable_symbol() -> None:
+    definition = _definition()
+
+    assert definition.tradable_symbol == "588080.SH"
+    with pytest.raises(RuntimeContractError, match="tradable_symbol"):
+        RuntimeDefinition(
+            schema_version=1,
+            strategy_family_id="S007",
+            version="v1",
+            release_id="S007-v1",
+            release_hash=RELEASE_HASH,
+            implementation=ImplementationRef("runtime", "Strategy", 1, "b" * 64),
+            parameters=ParameterSet({}),
+            inputs=InputContract((_requirement(),)),
+            decision=DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION"),
+            execution=ExecutionPolicy("LIMIT", {}),
+            monitoring=MonitoringPolicy("ROLLING", {}),
+            capabilities=RequiredCapabilities(("etf.ohlcv",), ("LIMIT",)),
+            tradable_symbol="SPX",
+        )
+
+
 def test_runtime_definition_requires_input_capabilities() -> None:
     with pytest.raises(RuntimeContractError, match="input datasets"):
         RuntimeDefinition(
@@ -92,4 +115,5 @@ def test_runtime_definition_requires_input_capabilities() -> None:
             execution=ExecutionPolicy("LIMIT", {}),
             monitoring=MonitoringPolicy("ROLLING", {}),
             capabilities=RequiredCapabilities(("macro.shibor_daily",), ("LIMIT",)),
+            tradable_symbol="588080.SH",
         )

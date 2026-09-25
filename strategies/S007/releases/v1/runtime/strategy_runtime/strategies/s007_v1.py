@@ -342,6 +342,7 @@ class S007V1(StrategyImplementation):
                     )
                 ),
             ),
+            tradable_symbol=self._symbol,
             history=HistoryPolicy("CANONICAL_REPLAY", "2021-01-04", "2020-12-01"),
         )
 

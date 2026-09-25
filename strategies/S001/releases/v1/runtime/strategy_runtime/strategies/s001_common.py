@@ -449,6 +449,7 @@ class S001Base(StrategyImplementation):
             ExecutionPolicy("FROZEN_RULE", execution),
             MonitoringPolicy("FORWARD_OBSERVATION", {"frozen": True}),
             RequiredCapabilities(datasets, order_types),
+            tradable_symbol=symbol,
             history=HistoryPolicy(
                 "CANONICAL_REPLAY",
                 _HISTORY_START.isoformat(),

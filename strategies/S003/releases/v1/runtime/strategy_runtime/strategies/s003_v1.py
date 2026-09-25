@@ -278,6 +278,7 @@ class S003V1(StrategyImplementation):
                 ("LIMIT", "MARKET"),
                 ("OPEN", "11:30_CLOSE"),
             ),
+            tradable_symbol=self._symbol,
         )
 
     @classmethod

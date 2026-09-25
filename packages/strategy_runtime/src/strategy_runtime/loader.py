@@ -13,22 +13,6 @@ from .models import ImplementationRef, StrategyCandidate, StrategyRelease, canon
 from .algorithm import StrategyImplementation
 
 
-def _release_symbol(release: StrategyRelease) -> str | None:
-    payload = release.payload
-    rule = payload.get("rule")
-    if isinstance(rule, Mapping):
-        execution = rule.get("execution")
-        if isinstance(execution, Mapping):
-            instrument = execution.get("instrument")
-            if isinstance(instrument, Mapping) and isinstance(instrument.get("symbol"), str):
-                return str(instrument["symbol"]).upper()
-        if isinstance(rule.get("symbol"), str):
-            return str(rule["symbol"]).upper()
-    if isinstance(payload.get("symbol"), str):
-        return str(payload["symbol"]).upper()
-    return None
-
-
 class StrategyLoader:
     """Load one strategy without a central release switch or registry patch."""
 
@@ -337,12 +321,7 @@ class StrategyLoader:
             strategy = self.load(
                 release, source_root=root, runtime_binding=binding,
             )
-            subjects = {
-                item.subject.upper()
-                for item in strategy.definition.inputs.requirements
-                if item.subject and item.dataset.startswith("etf.")
-            }
-            if subjects == {symbol.upper()} or _release_symbol(release) == symbol.upper():
+            if strategy.definition.tradable_symbol == symbol.upper():
                 return strategy
             raise RuntimeCompatibilityError(
                 f"{release.release_id} does not support deployment symbol rebinding"

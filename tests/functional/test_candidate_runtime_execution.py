@@ -47,12 +47,21 @@ def _install_candidate_dataflows(monkeypatch, flow, daily):
             return pd.DataFrame(
                 {"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}
             ), {"vendor": "test"}
-        frame = flow.copy() if dataset == "etf.share" else market.copy()
+        if dataset == "etf.share":
+            frame = flow.copy()
+        elif dataset == Dataset.ETF_SHARE_SIZE.value:
+            frame = pd.DataFrame(
+                {"Date": market["Date"], "TotalShare": range(1, len(market) + 1)}
+            )
+        else:
+            frame = market.copy()
         values = pd.to_datetime(frame["Date"])
         frame = frame.loc[
             values.between(pd.Timestamp(request.start), pd.Timestamp(request.end))
         ].reset_index(drop=True)
         metadata = {"vendor": "test"}
+        if dataset == Dataset.ETF_SHARE_SIZE.value:
+            metadata["vendor_symbol"] = request.symbol
         if dataset == Dataset.ETF_UNADJUSTED_DAILY.value:
             metadata["adjustment"] = "none"
         return frame, metadata
@@ -60,6 +69,7 @@ def _install_candidate_dataflows(monkeypatch, flow, daily):
     flows = Dataflows(
         {
             "etf.share": fetch,
+            Dataset.ETF_SHARE_SIZE.value: fetch,
             Dataset.ETF_OHLCV.value: fetch,
             Dataset.ETF_UNADJUSTED_DAILY.value: fetch,
             Dataset.TRADING_CALENDAR.value: fetch,
@@ -224,6 +234,35 @@ def _execute(
     )
     history = strategy.inspect_signals()
     return history, strategy.run_window(executor=channel)
+
+
+def test_candidate_runtime_keeps_reference_etfs_out_of_tradable_identity(
+    candidate_payload, tmp_path, monkeypatch,
+):
+    payload, package = candidate_payload
+    payload["parameters"]["reference_symbols"] = [
+        "510050.SH",
+        "510300.SH",
+        "159915.SZ",
+    ]
+    candidate = StrategyCandidate("S900", "MULTIREF", payload, package)
+    sessions = pd.bdate_range("2026-09-14", periods=5)
+    flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.2, 0.9, 0.0]})
+    daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
+    _install_candidate_dataflows(monkeypatch, flow, daily)
+
+    strategy = StrategyRuntime().create(
+        StrategyInit(
+            candidate,
+            TradableWindow(sessions[1].date(), sessions[-1].date()),
+            tmp_path / "multi-reference",
+        )
+    )
+    strategy.prepare_data()
+
+    assert strategy.identity.symbol == "588080.SH"
+    assert strategy.definition.tradable_symbol == "588080.SH"
+    assert len(strategy.definition.inputs.requirements) == 7
 
 
 def test_parameter_search_and_release_use_one_implementation_and_isolated_txe(

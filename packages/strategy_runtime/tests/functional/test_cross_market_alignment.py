@@ -136,6 +136,7 @@ def test_c03_alignment_contract_participates_in_input_identity() -> None:
         "execution": ExecutionPolicy("LIMIT", {}),
         "monitoring": MonitoringPolicy("ROLLING", {}),
         "capabilities": RequiredCapabilities(("fx.fxcm_daily",), ("LIMIT",)),
+        "tradable_symbol": "518880.SH",
         "identity_kind": "CANDIDATE",
         "candidate_id": "EX64INPUT",
     }

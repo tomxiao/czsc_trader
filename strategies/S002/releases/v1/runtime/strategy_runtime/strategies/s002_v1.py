@@ -244,6 +244,7 @@ class S002V1(StrategyImplementation):
                 ),
                 order_types,
             ),
+            tradable_symbol=symbol,
         )
 
     @classmethod

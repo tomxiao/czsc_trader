@@ -22,6 +22,7 @@ from .alignment import InputAlignment
 _FAMILY_ID = re.compile(r"S\d{3,}")
 _VERSION = re.compile(r"v\d+")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
+_A_SHARE_SYMBOL = re.compile(r"\d{6}\.(?:SH|SZ|BJ)")
 
 
 def canonical_sha256(value: Any) -> str:
@@ -297,6 +298,7 @@ class RuntimeDefinition:
     execution: ExecutionPolicy
     monitoring: MonitoringPolicy
     capabilities: RequiredCapabilities
+    tradable_symbol: str
     state_mode: str = "STATELESS"
     identity_kind: str = "RELEASE"
     candidate_id: str | None = None
@@ -328,6 +330,12 @@ class RuntimeDefinition:
             raise RuntimeContractError("runtime identity_kind must be RELEASE or CANDIDATE")
         if not _SHA256.fullmatch(self.release_hash):
             raise RuntimeContractError("release_hash must be lowercase SHA-256")
+        tradable_symbol = _text(self.tradable_symbol, "tradable_symbol").upper()
+        if _A_SHARE_SYMBOL.fullmatch(tradable_symbol) is None:
+            raise RuntimeContractError(
+                "tradable_symbol must be a canonical A-share instrument"
+            )
+        object.__setattr__(self, "tradable_symbol", tradable_symbol)
         required_datasets = {item.dataset for item in self.inputs.requirements}
         if not required_datasets.issubset(self.capabilities.datasets):
             raise RuntimeContractError("input datasets must be declared as required capabilities")
@@ -339,6 +347,7 @@ class RuntimeDefinition:
         identity = {
             "release_id": self.release_id,
             "release_hash": self.release_hash,
+            "tradable_symbol": self.tradable_symbol,
             "implementation": {
                 "module": self.implementation.module,
                 "qualname": self.implementation.qualname,

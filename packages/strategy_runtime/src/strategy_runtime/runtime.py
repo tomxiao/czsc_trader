@@ -5,25 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Mapping
 from pathlib import Path
-import re
 
 from .contracts import StrategyIdentity, TradableWindow
 from .loader import StrategyLoader
 from .models import ExecutionPolicy, StrategyCandidate, StrategyRelease
 from .strategy import StrategyInstance
-
-
-def _definition_symbol(definition) -> str:
-    subjects = {
-        str(requirement.subject).upper()
-        for requirement in definition.inputs.requirements
-        if requirement.subject
-        and requirement.dataset.startswith(("etf.", "stock."))
-        and re.fullmatch(r"\d{6}\.(?:SH|SZ)", str(requirement.subject).upper())
-    }
-    if len(subjects) != 1:
-        raise ValueError("strategy must declare exactly one A-share instrument")
-    return next(iter(subjects))
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,7 +85,7 @@ class StrategyRuntime:
             and request.execution_policy.policy_type != definition.execution.policy_type
         ):
             raise ValueError("execution policy override must preserve the strategy policy type")
-        symbol = _definition_symbol(definition)
+        symbol = definition.tradable_symbol
         identity = StrategyIdentity(
             strategy_id=definition.strategy_family_id,
             reference_id=definition.release_id,

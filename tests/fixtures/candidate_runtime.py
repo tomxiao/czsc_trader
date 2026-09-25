@@ -34,6 +34,52 @@ class CandidateFixture(StrategyImplementation):
         candidate = isinstance(identity, StrategyCandidate)
         payload = identity.payload
         ref = payload["runtime"]
+        reference_symbols = tuple(payload["parameters"].get("reference_symbols", ()))
+        requirements = [
+            InputRequirement(
+                "flow",
+                "etf.share",
+                "588080.SH",
+                "daily",
+                1,
+                CutoffRule.SIGNAL_SESSION,
+            ),
+            InputRequirement(
+                "market",
+                Dataset.ETF_OHLCV.value,
+                "588080.SH",
+                "daily",
+                1,
+                CutoffRule.SIGNAL_SESSION,
+            ),
+            InputRequirement(
+                "execution",
+                Dataset.ETF_UNADJUSTED_DAILY.value,
+                "588080.SH",
+                "daily",
+                1,
+                CutoffRule.SIGNAL_SESSION,
+            ),
+            InputRequirement(
+                "calendar",
+                Dataset.TRADING_CALENDAR.value,
+                "SSE",
+                "daily",
+                0,
+                CutoffRule.LATEST_AVAILABLE,
+            ),
+        ]
+        requirements.extend(
+            InputRequirement(
+                f"reference_{index}",
+                Dataset.ETF_SHARE_SIZE.value,
+                symbol,
+                "daily",
+                1,
+                CutoffRule.SIGNAL_SESSION,
+            )
+            for index, symbol in enumerate(reference_symbols, start=1)
+        )
         self._definition = RuntimeDefinition(
             schema_version=2,
             strategy_family_id=identity.strategy_family_id,
@@ -47,42 +93,7 @@ class CandidateFixture(StrategyImplementation):
                 ref["source_sha256"],
             ),
             parameters=ParameterSet(payload["parameters"]),
-            inputs=InputContract(
-                (
-                    InputRequirement(
-                        "flow",
-                        "etf.share",
-                        "588080.SH",
-                        "daily",
-                        1,
-                        CutoffRule.SIGNAL_SESSION,
-                    ),
-                    InputRequirement(
-                        "market",
-                        Dataset.ETF_OHLCV.value,
-                        "588080.SH",
-                        "daily",
-                        1,
-                        CutoffRule.SIGNAL_SESSION,
-                    ),
-                    InputRequirement(
-                        "execution",
-                        Dataset.ETF_UNADJUSTED_DAILY.value,
-                        "588080.SH",
-                        "daily",
-                        1,
-                        CutoffRule.SIGNAL_SESSION,
-                    ),
-                    InputRequirement(
-                        "calendar",
-                        Dataset.TRADING_CALENDAR.value,
-                        "SSE",
-                        "daily",
-                        0,
-                        CutoffRule.LATEST_AVAILABLE,
-                    ),
-                )
-            ),
+            inputs=InputContract(tuple(requirements)),
             decision=DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION"),
             execution=ExecutionPolicy(
                 "FROZEN_RULE",
@@ -109,12 +120,14 @@ class CandidateFixture(StrategyImplementation):
             capabilities=RequiredCapabilities(
                 (
                     "etf.share",
+                    Dataset.ETF_SHARE_SIZE.value,
                     Dataset.ETF_OHLCV.value,
                     Dataset.ETF_UNADJUSTED_DAILY.value,
                     Dataset.TRADING_CALENDAR.value,
                 ),
                 ("LIMIT", "MARKET"),
             ),
+            tradable_symbol="588080.SH",
             identity_kind="CANDIDATE" if candidate else "RELEASE",
             candidate_id=identity.candidate_id if candidate else None,
         )

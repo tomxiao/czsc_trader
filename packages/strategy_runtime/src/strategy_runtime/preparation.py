@@ -47,19 +47,6 @@ class PreparedInputs:
         }
 
 
-def _declared_symbol(definition: RuntimeDefinition) -> str:
-    subjects = {
-        item.subject.upper()
-        for item in definition.inputs.requirements
-        if item.subject and item.dataset.startswith("etf.")
-    }
-    if len(subjects) != 1:
-        raise RuntimeContractError(
-            "strategy data preparation requires exactly one ETF instrument"
-        )
-    return next(iter(subjects))
-
-
 def _request_options(
     definition: RuntimeDefinition,
     requirement,
@@ -168,7 +155,7 @@ def prepare_inputs(
     definition = algorithm.definition
     root = Path(data_dir).resolve()
     root.mkdir(parents=True, exist_ok=True)
-    symbol = _declared_symbol(definition)
+    symbol = definition.tradable_symbol
     if symbol != strategy.symbol:
         raise RuntimeContractError("prepared-data symbol differs from strategy")
     requirements = {item.name: item for item in definition.inputs.requirements}
