@@ -373,6 +373,11 @@ class SrtAdviceClient:
             or entry.get("release_hash") != release.release_hash
         ):
             return None
+        runtime_sha256 = StrategyRuntime(self.repo_root / "strategies").describe(
+            release, symbol=symbol.upper()
+        ).runtime_sha256
+        if entry.get("runtime_sha256") != runtime_sha256:
+            return None
         relative = Path(str(entry.get("data_dir", "")))
         directory = (root / relative).resolve()
         spaces_root = (root / "spaces").resolve()
@@ -482,6 +487,7 @@ class SrtAdviceClient:
                 "releases": {
                     release.release_id: {
                         "release_hash": release.release_hash,
+                        "runtime_sha256": strategy.identity.runtime_sha256,
                         "data_dir": directory.relative_to(root).as_posix(),
                         "data_identity": prepared.data_identity,
                         "observation": observation,
