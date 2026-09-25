@@ -1,0 +1,48 @@
+{
+  "created_at": "2026-09-25T16:44:26+08:00",
+  "created_by": "RSCH",
+  "name": "黄金ETF机会参与策略研究",
+  "research_intent": {
+    "asset_type": "黄金商品ETF",
+    "competing_explanation_policy": "每条主假设必须同时登记最强竞争解释、零假设、反转状态和可推翻观察",
+    "data_source_boundary": "默认优先使用Tushare及当前已授权本地受管数据；引入其他外部数据源前必须取得用户授权",
+    "evaluation_objective": {
+      "comparison_policy": "候选与BuyHold使用相同标的、评价窗口、初始权益、执行时点和成本口径",
+      "hard_gates": {
+        "annualized_return": "候选同口径年化收益 >= BuyHold同口径年化收益 * 1.5",
+        "maximum_drawdown": "候选最大回撤幅度 < BuyHold同口径最大回撤幅度"
+      },
+      "observations": {
+        "calmar_ratio": "观察指标，不参与机器阻断",
+        "closed_trade_frequency": "观察闭合交易的数量、滚动频率与证据积累速度，不参与机器阻断",
+        "downside_avoidance_and_false_defense": "拆解规避下跌与错误避险",
+        "market_exposure": "观察持仓暴露及收益对黄金大行情的依赖",
+        "profit_factor": "观察指标，不参与机器阻断",
+        "return_concentration": "观察收益是否集中于少数交易、年份或市场状态",
+        "statistical_diagnostics": "PBO、DSR、区块Bootstrap和参数邻域仅作为诊断，除非后续由用户或EvaluationMandate明确升级为硬门",
+        "turnover_and_cost_sensitivity": "观察换手、费用和滑点压力下的表现变化",
+        "upside_capture_and_missed_upside": "拆解已捕获上涨与漏涨",
+        "yearly_consistency": "观察年度和滚动窗口的一致性，不自动作为硬门"
+      }
+    },
+    "first_experiment": "只核验新研究所需数据、因果可用时间、执行数据和身份边界，不读取目标收益、不选择信号或参数",
+    "governance_boundary": "RSCH可在研究区建立实验和候选；冻结、SRT部署、PTE账户及生产操作均需独立授权",
+    "portfolio_role": "研究518880.SH单标的策略如何识别并参与可交易机会，同时改善同期BuyHold的回撤",
+    "prior_evidence_policy": "S008的EX01至EX90及其失败档案均视为已见且不可变的先验研究证据；不得把相同数据、价格规则、多源信息路径或已拒绝参数空间的重复搜索包装成独立验证。新路径必须说明新增机制、新增信息或实质不同的策略结构及其证伪价值",
+    "research_method": "从黄金定价锚、参与者行为和可交易机会出发，依次完成先验知识审计、数据与因果门、低成本证伪、信息增量、原型实现门、完整账户评价、差距诊断和候选判断",
+    "research_symbol": "518880.SH",
+    "unconfirmed_terms": {
+      "development_and_validation_windows": "开发窗口、密封验证或外部复现边界须在首次读取收益前冻结",
+      "execution": "决策时点、成交时点、订单类型、初始资金、基准成本和压力成本待正式实验前冻结",
+      "minimum_trade_frequency": "闭合交易频率当前仅为观察指标，不设置最低门槛",
+      "position_and_leverage": "做多/空仓、仓位粒度、杠杆和做空边界待确认"
+    }
+  },
+  "research_state": "RESEARCHING",
+  "schema_version": 2,
+  "scope": [
+    "518880.SH"
+  ],
+  "strategy_id": "S009",
+  "updated_at": "2026-09-25T16:44:26+08:00"
+}
