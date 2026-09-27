@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, time
 from decimal import Decimal
 from types import MappingProxyType, SimpleNamespace
@@ -162,6 +163,26 @@ def test_txe_historical_executor_refuses_to_finish_with_missing_session_plan() -
         channel.finish()
 
 
+@pytest.mark.parametrize("fee_rate", [-0.01, 1.0, "invalid"])
+def test_txe_historical_executor_rejects_invalid_policy_fee_rate(fee_rate) -> None:
+    daily = pd.DataFrame(
+        [{"dt": pd.Timestamp("2026-09-18"), "open": 1.0, "close": 1.0}]
+    )
+    policy = ExecutionPolicy("FROZEN_RULE", {"capital": {"fee_rate": fee_rate}})
+    with pytest.raises(RuntimeContractError, match="policy .*fee rate"):
+        HistoricalExecutor(
+            strategy_reference="S001-v1",
+            symbol="588080.SH",
+            execution_daily=daily,
+            execution_intraday=pd.DataFrame(columns=["dt", "high", "low"]),
+            evaluation_start=pd.Timestamp("2026-09-18"),
+            evaluation_end=pd.Timestamp("2026-09-18"),
+            initial_cash=100_000,
+            execution_policy=policy,
+            order_types=("LIMIT",),
+        )
+
+
 def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger() -> None:
     daily = pd.DataFrame(
         [
@@ -260,6 +281,10 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
             cycle_target_quantity=99_900,
             orders=(order,),
         )
+        if revision == 0:
+            with pytest.raises(RuntimeContractError, match="fee rate differs"):
+                channel.execute(replace(plan, fee_rate=Decimal("0.003")))
+            assert channel.snapshot(point)[0].revision == 0
         outcomes.append(channel.execute(plan))
 
     result = channel.finish()
@@ -270,8 +295,8 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
     assert result.account_daily.iloc[-1]["cash"] > 109_000
 
 
-@pytest.mark.parametrize("fee_override", [None, 0.002])
-def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) -> None:
+@pytest.mark.parametrize("fee_rate", [0.00012, 0.002])
+def test_txe_historical_executor_executes_intraday_overlay_plan(fee_rate) -> None:
     daily = pd.DataFrame(
         [
             {"dt": pd.Timestamp("2026-09-16"), "open": 10.0, "close": 10.0},
@@ -325,7 +350,7 @@ def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) ->
             "core_fraction": 0.5,
             "event_fraction": 0.5,
             "lot_size": 100,
-            "one_way_cost": 0.00012,
+            "one_way_cost": fee_rate,
         },
     )
     channel = HistoricalExecutor(
@@ -340,7 +365,6 @@ def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) ->
         execution_policy=policy,
         order_types=("LIMIT", "MARKET"),
         checkpoints=("OPEN", "11:30_CLOSE"),
-        fee_rate_override=fee_override,
     )
     zone = ZoneInfo("Asia/Shanghai")
     generated_at = datetime.fromisoformat("2026-09-16T20:30:00").replace(tzinfo=zone)
@@ -361,9 +385,12 @@ def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) ->
         target_quantity=4_900,
         cycle_target_quantity=4_900,
         plan_mode="CORE_SETUP",
-        fee_rate=float(channel.effective_policy.settings["one_way_cost"]),
+        fee_rate=fee_rate,
         legs=(PlanLeg(0, "CORE_SETUP", "OPEN", time(9, 30), time(9, 35), core),),
     )
+    with pytest.raises(RuntimeContractError, match="fee rate differs"):
+        channel.execute(replace(core_plan, fee_rate=Decimal("0.003")))
+    assert channel.snapshot(point)[0].revision == 0
     core_outcome = channel.execute(core_plan)
     assert core_outcome.status == "SETTLED"
     assert core_outcome.portfolio.position_quantity == 4_900
@@ -386,7 +413,7 @@ def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) ->
         target_quantity=4_900,
         cycle_target_quantity=4_900,
         plan_mode="CORE_EVENT_INTRADAY_ROTATION",
-        fee_rate=float(channel.effective_policy.settings["one_way_cost"]),
+        fee_rate=fee_rate,
         legs=(
             PlanLeg(1, "OPEN_ROTATION_BUY", "OPEN", time(9, 15), time(10), buy),
             PlanLeg(
@@ -419,18 +446,19 @@ def test_txe_historical_executor_executes_intraday_overlay_plan(fee_override) ->
     assert result.fills["price"].tolist() == [10.0, 10.0, 10.2]
     assert result.account_daily["quantity"].tolist() == [4_900, 4_900]
     assert result.trades["status"].tolist() == ["CLOSED"]
-    rate = 0.00012 if fee_override is None else fee_override
-    assert channel.effective_policy.settings["one_way_cost"] == rate
-    assert policy.settings["one_way_cost"] == 0.00012
+    assert policy.settings["one_way_cost"] == fee_rate
     assert result.account_daily.iloc[0]["cash_before"] == pytest.approx(100_000)
     assert result.account_daily.iloc[0]["quantity_before"] == 0
     assert result.account_daily.iloc[1]["cash_before"] == pytest.approx(
-        100_000 - 49_000 * (1 + rate)
+        100_000 - 49_000 * (1 + fee_rate)
     )
     assert result.account_daily.iloc[1]["quantity_before"] == 4_900
     # Event sizing reserves cash against its limit price; it need not equal the core lot.
     assert result.fills["quantity"].tolist() == [4_900, 4_600, 4_600]
     assert result.fills["fees"].tolist() == pytest.approx(
-        [49_000 * rate, 46_000 * rate, 46_920 * rate]
+        [49_000 * fee_rate, 46_000 * fee_rate, 46_920 * fee_rate]
     )
-    assert result.account_daily.iloc[-1]["cash"] == pytest.approx(100_000 - 49_000 * (1 + rate) - 46_000 * (1 + rate) + 46_920 * (1 - rate))
+    assert result.account_daily.iloc[-1]["cash"] == pytest.approx(
+        100_000 - 49_000 * (1 + fee_rate) - 46_000 * (1 + fee_rate)
+        + 46_920 * (1 - fee_rate)
+    )
