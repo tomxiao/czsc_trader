@@ -49,6 +49,7 @@ class Dataset(StrEnum):
     GLOBAL_INDEX_DAILY = "index.global_daily"
     VIX_DAILY = "index.vix_daily"
     INDEX_CONSTITUENT_WEIGHT = "index.constituent_weight"
+    SELL_SIDE_FORECAST = "stock.sell_side_forecast"
     STOCK_MONEYFLOW = "stock.moneyflow"
     TRADING_CALENDAR = "calendar.trading_sessions"
     STRATEGY_FEATURE_EVIDENCE = "strategy.feature_evidence"

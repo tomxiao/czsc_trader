@@ -50,6 +50,7 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.FUTURES_SHFE_GOLD_DAILY.value: "SHFE",
     Dataset.FUTURES_SHFE_GOLD_MAPPING.value: "SHFE",
     Dataset.FUTURES_SHFE_GOLD_HOLDING.value: "SHFE",
+    Dataset.SELL_SIDE_FORECAST.value: "SSE",
     Dataset.STRATEGY_FEATURE_EVIDENCE.value: "REPOSITORY",
 }
 
@@ -270,6 +271,21 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Date", "ConstituentSymbol", "Weight"},
         {"Weight"},
     ),
+    Dataset.SELL_SIDE_FORECAST.value: (
+        {
+            "Date",
+            "AvailableDate",
+            "VendorCreatedAt",
+            "Symbol",
+            "ReportTitle",
+            "Institution",
+            "ForecastPeriod",
+            "NetProfitForecast",
+            "EarningsPerShareForecast",
+            "Rating",
+        },
+        set(),
+    ),
     Dataset.STOCK_MONEYFLOW.value: (
         {"Date", "Symbol", "NetMoneyflowAmount"},
         {"NetMoneyflowAmount"},
@@ -426,6 +442,61 @@ def _validate_provider_output(
                 "FRED policy-uncertainty observations are causally invalid",
                 invalid_rows=int(invalid.sum()),
             )
+    if dataset == Dataset.SELL_SIDE_FORECAST.value:
+        if (
+            metadata.get("vendor_interface") != "report_rc"
+            or metadata.get("source_time_field") != "Date"
+            or metadata.get("availability_time_field") != "AvailableDate"
+            or metadata.get("source_calendar") != "SSE"
+            or metadata.get("available_at")
+            != "first SSE open day strictly after report date and vendor create date"
+            or metadata.get("point_in_time_mode") != "CURRENT_VENDOR_SNAPSHOT"
+            or metadata.get("historical_revision_identity") != "unavailable_from_vendor"
+        ):
+            raise DataContractError("sell-side forecast lineage contract is incomplete")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        vendor_created = pd.to_datetime(dataframe["VendorCreatedAt"], errors="coerce")
+        symbols = dataframe["Symbol"].astype("string")
+        availability_anchor = pd.concat(
+            [dates, vendor_created.dt.normalize()], axis=1
+        ).max(axis=1)
+        if (
+            dates.isna().any()
+            or available.isna().any()
+            or vendor_created.isna().any()
+            or available.le(availability_anchor).any()
+            or request.symbol is None
+            or symbols.isna().any()
+            or not symbols.eq(request.symbol).all()
+        ):
+            raise DataContractError("sell-side forecast identity or timing is invalid")
+        forecast_fields = (
+            "OperatingRevenueForecast",
+            "OperatingProfitForecast",
+            "TotalProfitForecast",
+            "NetProfitForecast",
+            "EarningsPerShareForecast",
+            "PriceEarningsRatio",
+            "DividendYieldPercent",
+            "ReturnOnEquityPercent",
+            "EnterpriseValueToEbitda",
+            "TargetPriceMax",
+            "TargetPriceMin",
+        )
+        for field in forecast_fields:
+            if field not in dataframe.columns:
+                raise DataContractError(
+                    "sell-side forecast field is missing", field=field
+                )
+            numeric = pd.to_numeric(dataframe[field], errors="coerce")
+            present = dataframe[field].notna()
+            if (present & numeric.isna()).any() or np.isinf(
+                numeric.dropna().to_numpy(dtype=float)
+            ).any():
+                raise DataContractError(
+                    "sell-side forecast field contains invalid values", field=field
+                )
     if dataset in {Dataset.SGE_GOLD_DAILY.value, Dataset.DOMESTIC_INDEX_DAILY.value}:
         open_values = pd.to_numeric(dataframe["Open"])
         high_values = pd.to_numeric(dataframe["High"])
@@ -766,6 +837,7 @@ def _default_providers() -> dict[str, Provider]:
         fetch_vix_daily,
     )
     from .tushare_stock import fetch_stock_ohlcv, fetch_stock_unadjusted_daily
+    from .tushare_sell_side import fetch_sell_side_forecast
 
     def etf_ohlcv(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_etf_ohlcv(
@@ -952,6 +1024,14 @@ def _default_providers() -> dict[str, Provider]:
             env_file=_env_file(request),
         )
 
+    def sell_side_forecast(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_sell_side_forecast(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
     def trading_calendar(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_trading_calendar(
             _required_symbol(request),
@@ -987,6 +1067,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.GLOBAL_INDEX_DAILY.value: global_index,
         Dataset.VIX_DAILY.value: vix,
         Dataset.INDEX_CONSTITUENT_WEIGHT.value: index_weights,
+        Dataset.SELL_SIDE_FORECAST.value: sell_side_forecast,
         Dataset.STOCK_MONEYFLOW.value: stock_moneyflow,
         Dataset.TRADING_CALENDAR.value: trading_calendar,
         Dataset.STRATEGY_FEATURE_EVIDENCE.value: fetch_strategy_feature_evidence,
