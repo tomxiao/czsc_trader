@@ -1,0 +1,3 @@
+# S011 EX02 执行
+
+EX01 receipt=`b086702fda537d0129a437d9013e75dd2b5e942ea7aef1d9d5fb4be1013da4e8`；EX02 receipt=`5c820f80a763596a80b8faa8340f986372fb252c2684a7c6aed600e0e124c931`。六项DFLS输入均READY，人工与外围tsfresh四个面板共9533项因子列。逐列账本、原始面板和输入身份见artifacts/。没有读取未来收益、搜索策略参数或创建候选。
