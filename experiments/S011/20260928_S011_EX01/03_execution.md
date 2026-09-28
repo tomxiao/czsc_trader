@@ -1,0 +1,3 @@
+# S011 EX01 执行
+
+REX receipt=`b086702fda537d0129a437d9013e75dd2b5e942ea7aef1d9d5fb4be1013da4e8`。两项DFLS输入均READY，完整tsfresh设置共788个原始序列参数组合；六个窗口产出16443项因子列。逐列账本与原始面板见artifacts/。没有读取未来收益、搜索策略参数或创建候选。
