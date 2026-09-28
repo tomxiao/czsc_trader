@@ -1,0 +1,43 @@
+{
+  "decision": "STOP_FROZEN_INTRADAY_STATE_SET",
+  "checks": {
+    "evaluation_rows": true,
+    "positive_loss_improvement": false,
+    "bootstrap_pvalue": false,
+    "positive_overall_rank_ic": false,
+    "positive_rank_ic_2025": false,
+    "positive_rank_ic_2026": true,
+    "quintile_spread_clears_hurdle": false,
+    "positive_high_quintile_raw_return": true
+  },
+  "evaluation_rows": 244,
+  "horizon_sessions": 5,
+  "minimum_training_rows": 160,
+  "ridge_penalty": 1.0,
+  "loss_improvement": {
+    "mean": -5.64689957018614e-06,
+    "ci95_lower": -9.480796773364945e-06,
+    "ci95_upper": -1.6687771516438942e-06,
+    "one_sided_pvalue": 0.9995002498750625
+  },
+  "overall_rank_ic": -0.05263249197675427,
+  "annual_rank_ic": {
+    "2025": -0.1678886102000129,
+    "2026": 0.02838525268676463
+  },
+  "quintiles": {
+    "group_size": 48,
+    "low_theme_excess_mean": 0.001138223418870617,
+    "high_theme_excess_mean": -0.0003518944648535106,
+    "theme_excess_spread": -0.0014901178837241277,
+    "high_raw_etf_mean": 0.008530745175924141
+  },
+  "roundtrip_hurdle": 0.002,
+  "reference_sessions": 120,
+  "minimum_reference_sessions": 60,
+  "state_quantile": 0.2,
+  "reads_real_returns": true,
+  "reads_sealed_validation": false,
+  "candidate_created": false,
+  "strategy_rule_created": false
+}
