@@ -1,0 +1,120 @@
+{
+  "decision": "PROCEED_TO_SINGLE_INFORMATION_INCREMENT_TEST",
+  "checks": {
+    "no_fatal_dfls_status": true,
+    "comparable_rows": true,
+    "revised_members": true,
+    "median_weight_coverage": true,
+    "rolling_60_distinct_members_p10": true,
+    "temperature_sessions": true,
+    "temperature_changed_sessions": true,
+    "positive_broker_company_days": true,
+    "negative_broker_company_days": true
+  },
+  "thresholds": {
+    "comparable_rows": 3000,
+    "revised_members": 40,
+    "median_weight_coverage": 0.75,
+    "rolling_60_distinct_members_p10": 20.0,
+    "temperature_sessions": 300,
+    "temperature_changed_sessions": 250,
+    "positive_broker_company_days": 100,
+    "negative_broker_company_days": 100
+  },
+  "reads_etf_prices": false,
+  "reads_real_returns": false,
+  "reads_sealed_validation": false,
+  "candidate_created": false,
+  "historical_member_union": 106,
+  "sell_side_ready_symbols": 82,
+  "sell_side_empty_symbols": 24,
+  "fatal_dfls_statuses": [],
+  "report_rows_in_window": 7741,
+  "comparable_rows": 4079,
+  "revised_members": 54,
+  "positive_broker_company_days": 294,
+  "neutral_broker_company_days": 716,
+  "negative_broker_company_days": 583,
+  "weight_coverage": {
+    "median": 0.8809940497024852,
+    "p10": 0.8687404218484371,
+    "minimum": 0.863183159157958
+  },
+  "rolling_60_distinct_members": {
+    "median": 35.0,
+    "p10": 27.0,
+    "minimum": 24.0
+  },
+  "temperature": {
+    "sessions": 477,
+    "changed_sessions": 429,
+    "minimum": -0.5080568681799496,
+    "p10": -0.2550035268709301,
+    "median": -0.021586450614862064,
+    "p90": 0.20880907504097457,
+    "maximum": 1.0
+  },
+  "company_concentration": {
+    "count": 54,
+    "top1_share": 0.19531930371874934,
+    "top5_share": 0.6046782016301397
+  },
+  "institution_concentration": {
+    "count": 62,
+    "top1_share": 0.09438213185791783,
+    "top5_share": 0.36273967093079934
+  },
+  "diagnostic_behavior": {
+    "entries": 8,
+    "closed_episodes": 8,
+    "holding_sessions_median": 21.0,
+    "rolling_60_closed_median": 1.0,
+    "rolling_60_closed_p10": 0.0,
+    "episodes": [
+      {
+        "entry_date": "2025-07-16",
+        "exit_date": "2025-07-18",
+        "holding_sessions": 2
+      },
+      {
+        "entry_date": "2025-07-24",
+        "exit_date": "2025-08-21",
+        "holding_sessions": 20
+      },
+      {
+        "entry_date": "2025-10-20",
+        "exit_date": "2025-11-25",
+        "holding_sessions": 26
+      },
+      {
+        "entry_date": "2026-01-21",
+        "exit_date": "2026-03-02",
+        "holding_sessions": 22
+      },
+      {
+        "entry_date": "2026-03-06",
+        "exit_date": "2026-04-08",
+        "holding_sessions": 22
+      },
+      {
+        "entry_date": "2026-05-12",
+        "exit_date": "2026-06-12",
+        "holding_sessions": 23
+      },
+      {
+        "entry_date": "2026-06-15",
+        "exit_date": "2026-07-14",
+        "holding_sessions": 20
+      },
+      {
+        "entry_date": "2026-07-21",
+        "exit_date": "2026-07-29",
+        "holding_sessions": 6
+      }
+    ],
+    "boundary": "diagnostic state changes only; not orders or account trades"
+  },
+  "snapshot_lag_days": 35,
+  "vendor_history_mode": "CURRENT_VENDOR_SNAPSHOT",
+  "snapshot_publication_time_verified": false
+}
