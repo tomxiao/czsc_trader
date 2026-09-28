@@ -1,0 +1,36 @@
+{
+  "decision": "PROCEED_TO_FIXED_INTRADAY_INFORMATION_TEST",
+  "checks": {
+    "intraday_source_quality": true,
+    "feature_quality": true,
+    "minimum_selected_features": true,
+    "minimum_dense_features": true
+  },
+  "coverage": {
+    "DailySessions": 496,
+    "IntradaySessions": 496,
+    "CoveredSessions": 496,
+    "CalendarCoverage": 1.0,
+    "UnexpectedSessions": 0,
+    "Bars": 3968,
+    "BarsPerSessionMinimum": 8,
+    "BarsPerSessionMaximum": 8
+  },
+  "eligible_rows": 476,
+  "complete_rows": 476,
+  "selected_features": [
+    "OpeningHourReturn",
+    "AfternoonReturn",
+    "TailAcceleration",
+    "OpeningHourVolumeShare",
+    "TailVolumeShare",
+    "DownVolumeShare",
+    "RealizedVolatilityRatio20",
+    "CloseLocation"
+  ],
+  "removed_features": {},
+  "dense_feature_count": 8,
+  "reads_post_state_returns": false,
+  "candidate_created": false,
+  "strategy_rule_created": false
+}
