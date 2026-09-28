@@ -8,6 +8,14 @@ from dataflows.errors import DataContractError, IncompleteDataError
 from dataflows.tushare_sell_side import fetch_sell_side_forecast
 
 
+@pytest.fixture(autouse=True)
+def _disable_vendor_wait(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "dataflows.tushare_sell_side._MIN_REQUEST_INTERVAL_SECONDS", 0.0
+    )
+    monkeypatch.setattr("dataflows.tushare_sell_side.time.sleep", lambda ignored: None)
+
+
 def _row(
     report_date: str,
     *,
@@ -49,13 +57,18 @@ class FakePro:
         rows: list[dict[str, object]],
         *,
         calendar_gap: str | None = None,
+        transient_report_failures: int = 0,
     ) -> None:
         self.rows = rows
         self.calendar_gap = calendar_gap
+        self.transient_report_failures = transient_report_failures
         self.report_calls: list[dict[str, str]] = []
 
     def report_rc(self, **kwargs):
         self.report_calls.append(kwargs)
+        if self.transient_report_failures:
+            self.transient_report_failures -= 1
+            raise RuntimeError("temporary vendor throttle")
         frame = pd.DataFrame(
             row
             for row in self.rows
@@ -118,6 +131,17 @@ def test_sell_side_forecast_waits_past_late_vendor_creation() -> None:
     )
 
     assert frame.loc[0, "AvailableDate"] == pd.Timestamp("2025-02-11")
+
+
+def test_sell_side_forecast_retries_transient_vendor_failure() -> None:
+    pro = FakePro([_row("20250103")], transient_report_failures=1)
+
+    frame, _ = fetch_sell_side_forecast(
+        "600406.SH", "2025-01-03", "2025-01-03", pro=pro
+    )
+
+    assert len(frame) == 1
+    assert len(pro.report_calls) == 2
 
 
 def test_default_facade_publishes_sell_side_forecast_with_identity(monkeypatch) -> None:

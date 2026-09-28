@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from bisect import bisect_right
 from pathlib import Path
+from threading import Lock
+import time
 from typing import Any
 
 import numpy as np
@@ -20,6 +22,10 @@ _FIELDS = (
 )
 
 _PAGE_LIMIT = 3000
+_MIN_REQUEST_INTERVAL_SECONDS = 0.22
+_RETRY_DELAYS_SECONDS = (1.0, 3.0, 8.0)
+_REQUEST_LOCK = Lock()
+_LAST_REQUEST_AT = 0.0
 
 _COLUMN_NAMES = {
     "ts_code": "Symbol",
@@ -87,6 +93,26 @@ def _client(pro: object | None, env_file: str | Path | None) -> object:
     return pro if pro is not None else get_tushare_pro(env_file)
 
 
+def _vendor_request(method, **kwargs):
+    global _LAST_REQUEST_AT
+
+    error: Exception | None = None
+    for attempt in range(len(_RETRY_DELAYS_SECONDS) + 1):
+        with _REQUEST_LOCK:
+            delay = _MIN_REQUEST_INTERVAL_SECONDS - (time.monotonic() - _LAST_REQUEST_AT)
+            if delay > 0:
+                time.sleep(delay)
+            _LAST_REQUEST_AT = time.monotonic()
+        try:
+            return method(**kwargs)
+        except Exception as exc:
+            error = exc
+            if attempt < len(_RETRY_DELAYS_SECONDS):
+                time.sleep(_RETRY_DELAYS_SECONDS[attempt])
+    assert error is not None
+    raise error
+
+
 def _fetch_yearly(client: object, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
     start = pd.Timestamp(start_date)
     end = pd.Timestamp(end_date)
@@ -97,7 +123,8 @@ def _fetch_yearly(client: object, symbol: str, start_date: str, end_date: str) -
         offset = 0
         seen_pages: set[bytes] = set()
         while True:
-            value = client.report_rc(
+            value = _vendor_request(
+                client.report_rc,
                 ts_code=symbol,
                 start_date=chunk_start.strftime("%Y%m%d"),
                 end_date=chunk_end.strftime("%Y%m%d"),
@@ -188,7 +215,8 @@ def _attach_availability(frame: pd.DataFrame, client: object) -> pd.DataFrame:
     calendar_start = availability_anchor.min() + pd.Timedelta(days=1)
     calendar_end = availability_anchor.max() + pd.Timedelta(days=40)
     raw = pd.DataFrame(
-        client.trade_cal(
+        _vendor_request(
+            client.trade_cal,
             exchange="SSE",
             start_date=calendar_start.strftime("%Y%m%d"),
             end_date=calendar_end.strftime("%Y%m%d"),
