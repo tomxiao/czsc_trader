@@ -145,6 +145,55 @@ def test_rebuilt_intraday_is_revalidated_against_daily() -> None:
     assert rebuilt[["Open", "High", "Low", "Close"]].eq(10.0).all().all()
 
 
+def _159326_open_mismatch(
+    trade_date: str,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    daily = _daily([trade_date])
+    daily.loc[0, "High"] = 10.02
+    daily.loc[0, "Low"] = 9.98
+    one_minute = _one_minute_day(trade_date)
+    first_regular = pd.to_datetime(one_minute["Date"]).dt.strftime("%H:%M:%S").eq("09:31:00")
+    one_minute.loc[first_regular, "High"] = 10.02
+    one_minute.loc[first_regular, "Low"] = 9.98
+    frame = rebuild_intraday_from_1m(one_minute, daily, "30m", dates=[trade_date])
+    frame.loc[0, "Open"] = 10.01
+    return frame, one_minute, daily
+
+
+def test_159326_rebuilds_registered_open_mismatch() -> None:
+    trade_date = "2024-10-16"
+    frame, one_minute, daily = _159326_open_mismatch(trade_date)
+    findings = inspect_intraday_against_daily(frame, daily, "30m").findings
+    series = SeriesKey("tushare", "etf_mins", "159326.SZ", "etf.ohlcv", "30m", "none")
+
+    repaired, records = apply_repairs_once(
+        frame,
+        series,
+        findings,
+        references={"1m": one_minute, "daily": daily},
+    )
+
+    assert [item.code for item in findings] == ["CROSS_FREQUENCY_MISMATCH"]
+    assert records[0].patch_id == "TUSHARE_159326_V1"
+    assert records[0].affected_dates == (trade_date,)
+    assert inspect_intraday_against_daily(repaired, daily, "30m").passed
+
+
+def test_159326_unknown_open_mismatch_is_blocked() -> None:
+    trade_date = "2024-10-18"
+    frame, one_minute, daily = _159326_open_mismatch(trade_date)
+    findings = inspect_intraday_against_daily(frame, daily, "30m").findings
+    series = SeriesKey("tushare", "etf_mins", "159326.SZ", "etf.ohlcv", "30m", "none")
+
+    with pytest.raises(DataRepairError, match="no repair patch matched"):
+        apply_repairs_once(
+            frame,
+            series,
+            findings,
+            references={"1m": one_minute, "daily": daily},
+        )
+
+
 def test_518880_rebuild_is_limited_to_registered_dates() -> None:
     registered_date = "2015-07-16"
     ordinary_date = "2015-07-17"
@@ -393,6 +442,7 @@ def test_repair_registry_is_managed_by_vendor_and_symbol() -> None:
     assert {
         (patch.vendor, patch.symbol): patch.patch_id for patch in REPAIR_PATCHES
     } == {
+        ("tushare", "159326.SZ"): "TUSHARE_159326_V1",
         ("tushare", "510500.SH"): "TUSHARE_510500_V1",
         ("tushare", "512100.SH"): "TUSHARE_512100_V1",
         ("tushare", "515050.SH"): "TUSHARE_515050_V1",

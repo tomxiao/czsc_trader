@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from ..errors import DataRepairError
 from .model import RepairPatch, SeriesKey
+from .tushare_159326 import PATCH as TUSHARE_159326
 from .tushare_510500 import PATCH as TUSHARE_510500
 from .tushare_512100 import PATCH as TUSHARE_512100
 from .tushare_515050 import PATCH as TUSHARE_515050
@@ -13,6 +14,7 @@ from .tushare_588080 import PATCH as TUSHARE_588080
 
 
 REPAIR_PATCHES: tuple[RepairPatch, ...] = (
+    TUSHARE_159326,
     TUSHARE_510500,
     TUSHARE_512100,
     TUSHARE_515050,
