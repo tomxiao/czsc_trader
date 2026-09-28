@@ -1,0 +1,42 @@
+{
+  "decision": "STOP_SELL_SIDE_EXPECTATION_PATH",
+  "checks": {
+    "evaluation_rows": true,
+    "positive_loss_improvement": false,
+    "bootstrap_pvalue": false,
+    "positive_rank_ic_2025": false,
+    "positive_rank_ic_2026": false,
+    "positive_residual_rank_ic": false,
+    "quintile_spread_clears_hurdle": false,
+    "positive_high_quintile_raw_return": false,
+    "extended_rank_ic_improves": true
+  },
+  "evaluation_rows": 242,
+  "horizon_sessions": 20,
+  "minimum_training_rows": 126,
+  "loss_improvement": {
+    "mean": -0.00014051864628871456,
+    "ci95_lower": -0.0007451307427167767,
+    "ci95_upper": 0.0003430480046850875,
+    "one_sided_pvalue": 0.7346326836581709
+  },
+  "annual_rank_ic": {
+    "2025": -0.34566827577982195,
+    "2026": -0.2158561620637788
+  },
+  "baseline_rank_ic": -0.37919451863875353,
+  "extended_rank_ic": -0.33986497270792504,
+  "residual_rank_ic": -0.3362661201343751,
+  "quintiles": {
+    "group_size": 48,
+    "low_market_excess_mean": 0.0788270656687439,
+    "high_market_excess_mean": 0.004279587564423521,
+    "market_excess_spread": -0.07454747810432037,
+    "high_raw_etf_mean": -0.009992593715351243
+  },
+  "roundtrip_hurdle": 0.002,
+  "reads_real_returns": true,
+  "reads_sealed_validation": false,
+  "candidate_created": false,
+  "strategy_rule_created": false
+}
