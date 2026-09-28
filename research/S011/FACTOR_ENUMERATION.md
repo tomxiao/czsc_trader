@@ -1,8 +1,11 @@
 # S011 阶段二：因子普查候选范围
 
-状态：`ENUMERATED / PARTIAL_CENSUS`。本文先按研究目标枚举值得普查的观测量，未按当前数据源、
-工具或计算成本筛掉候选；[重启 EX01](../../experiments/S011/20260928_S011_EX01/04_conclusion.md)
-现已完成日线与30分钟线的首轮形态统计，尚未选择策略假设或读取本轮策略收益。旧序列
+状态：`ENUMERATED / PARTIAL_CENSUS / RELATION_SCANNED`。本文先按研究目标枚举值得普查的观测量，
+未按当前数据源、工具或计算成本筛掉候选；[重启 EX01](../../experiments/S011/20260928_S011_EX01/04_conclusion.md)
+与[EX02](../../experiments/S011/20260928_S011_EX02/04_conclusion.md)已完成首轮可得因子普查，
+[EX03](../../experiments/S011/20260928_S011_EX03/04_conclusion.md)及
+[EX04](../../experiments/S011/20260928_S011_EX04/04_conclusion.md)已读取开发池收益并形成
+[唯一待评审假设H01](HYPOTHESIS_REVIEW_01.md)，尚未进入策略开发。旧序列
 EX01—EX12已由用户废弃，不作为当前因子结果。用户确认的目标与交易口径见[当前交接](HANDOFF.md)。
 
 研究问题：在单标的、只做多、全样本折算每60交易日闭合4—6笔、单边成本10 bp的条件下，
