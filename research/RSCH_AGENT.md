@@ -113,7 +113,7 @@ preflight核对源码绑定、定义稳定性、资源种子、搜索预算、�
 
 ### 3.4 历史证据示例
 
-- [S011 EX11](../experiments/S011/20260928_S011_EX11/04_conclusion.md)只盘点人工选定因子的可得性；[S011 EX12](../experiments/S011/20260928_S011_EX12/04_conclusion.md)补充了`tsfresh`时序形态。两者均不构成Alpha证据，提示阶段二应披露普查范围与工具覆盖。
+- 因子普查须披露人工定义与`tsfresh`实际覆盖的集合、遗漏范围及筛选次数；可计算性和形态统计不构成Alpha证据。
 - [S008 EX15](../experiments/S008/20260923_S008_EX15/04_conclusion.md)发现数据返回截断，说明数据完整性必须先于收益检验。
 - [S008 EX66](../experiments/S008/20260923_S008_EX66/04_conclusion.md)在冻结搜索空间内无合格点；[S008 EX87](../experiments/S008/20260925_S008_EX87/04_conclusion.md)的漏涨归因只是事后观察。两者分别说明完整账户评价和因果可用信息的边界。
 
