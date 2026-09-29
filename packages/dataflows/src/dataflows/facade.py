@@ -233,6 +233,7 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Date", "Open", "High", "Low", "Close", "Volume", "Amount"},
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
     ),
+    Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: ({"Date", "Close"}, {"Close"}),
     Dataset.CN_CPI_MONTHLY.value: (
         {"Date", "AvailableDate", "NationalYoYPercent", "NationalMoMPercent"},
         {"NationalYoYPercent", "NationalMoMPercent"},
@@ -380,6 +381,12 @@ def _validate_provider_output(
                 dataset=dataset,
                 field=column,
             )
+    if dataset == Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value:
+        if set(dataframe.columns) != {"Date", "Close"} or metadata.get("price_scope") != "CLOSE_ONLY":
+            raise DataContractError("domestic index close-only contract differs")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        if dates.isna().any() or dates.duplicated().any() or dataframe["Close"].le(0).any():
+            raise DataContractError("domestic index close-only dates or prices are invalid")
     if dataset == Dataset.US_CPI_RELEASE.value:
         if (
             metadata.get("source_time_field") != "ReleaseAt"
@@ -822,6 +829,7 @@ def _default_providers() -> dict[str, Provider]:
         fetch_cn_money_monthly,
         fetch_cn_ppi_monthly,
         fetch_domestic_index_daily,
+        fetch_domestic_index_close_daily,
         fetch_etf_share_size,
         fetch_fxcm_daily,
         fetch_global_index_daily,
@@ -914,6 +922,14 @@ def _default_providers() -> dict[str, Provider]:
 
     def domestic_index(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_domestic_index_daily(
+            _required_symbol(request),
+            request.start,
+            request.end,
+            env_file=_env_file(request),
+        )
+
+    def domestic_index_close(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_domestic_index_close_daily(
             _required_symbol(request),
             request.start,
             request.end,
@@ -1056,6 +1072,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.FUTURES_SHFE_GOLD_MAPPING.value: shfe_gold_mapping,
         Dataset.FUTURES_SHFE_GOLD_HOLDING.value: shfe_gold_holding,
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
+        Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: domestic_index_close,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
         Dataset.US_CPI_RELEASE.value: us_cpi_release,
         Dataset.US_ISM_PMI_RELEASE.value: us_ism_pmi_release,

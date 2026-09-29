@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from .errors import DataContractError, EmptyDataError, IncompleteDataError
@@ -392,6 +393,75 @@ def fetch_domestic_index_daily(
         "frequency": "daily",
         "primary_key": ["Date"],
         "percent_change_unit": "decimal_return",
+        "availability_rule": "current session after market close",
+    }
+
+
+def fetch_domestic_index_close_daily(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Publish verified index closes when the vendor has no historical OHLC."""
+
+    client = _client(pro, env_file)
+    frame = _canonicalize(
+        _fetch_yearly(
+            lambda start, end: client.index_daily(
+                ts_code=symbol,
+                start_date=start,
+                end_date=end,
+                fields="ts_code,trade_date,close,pre_close,change,pct_chg",
+            ),
+            start_date,
+            end_date,
+        ),
+        dataset=f"domestic index close daily {symbol}",
+        date_column="trade_date",
+        columns={
+            "close": "Close",
+            "pre_close": "PreviousClose",
+            "change": "Change",
+            "pct_chg": "PercentChange",
+        },
+        numeric_columns=("Close", "PreviousClose", "Change", "PercentChange"),
+    )
+    if frame["Date"].duplicated().any():
+        raise DataContractError("domestic index close has duplicate dates")
+    values = frame[["Close", "PreviousClose", "Change", "PercentChange"]].to_numpy(
+        dtype=float
+    )
+    invalid = (
+        ~np.isfinite(values).all(axis=1)
+        | (frame["Close"] <= 0).to_numpy()
+        | (frame["PreviousClose"] <= 0).to_numpy()
+        | ~np.isclose(
+            frame["Close"] - frame["PreviousClose"],
+            frame["Change"],
+            rtol=0,
+            atol=0.0001,
+        )
+        | ~np.isclose(
+            (frame["Close"] / frame["PreviousClose"] - 1) * 100,
+            frame["PercentChange"],
+            rtol=0,
+            atol=0.0001,
+        )
+    )
+    if invalid.any():
+        raise DataContractError(
+            "domestic index close fails vendor change checks",
+            invalid_rows=int(invalid.sum()),
+        )
+    return frame[["Date", "Close"]].copy(), {
+        "vendor": "tushare",
+        "vendor_symbol": symbol,
+        "frequency": "daily",
+        "primary_key": ["Date"],
+        "price_scope": "CLOSE_ONLY",
         "availability_rule": "current session after market close",
     }
 
