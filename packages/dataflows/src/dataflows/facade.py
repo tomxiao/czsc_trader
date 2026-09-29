@@ -33,6 +33,7 @@ Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
 
 
 _SOURCE_CALENDAR_BY_DATASET = {
+    Dataset.ETF_CREATION_REDEMPTION_BASKET.value: "SZSE",
     Dataset.FXCM_DAILY.value: "FXCM_24X5",
     Dataset.USDCNH_DAILY.value: "FXCM_24X5",
     Dataset.US_REAL_YIELD_DAILY.value: "US_GOVERNMENT",
@@ -125,6 +126,19 @@ _OHLCV_DATASETS = {
 }
 
 _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
+    Dataset.ETF_CREATION_REDEMPTION_BASKET.value: (
+        {
+            "Date", "AvailableDate", "ConstituentSymbol", "Quantity",
+            "CashSubstitutionFlag", "CreationSubstitutionRatePercent",
+            "RedemptionSubstitutionRatePercent", "CreationSubstitutionAmountYuan",
+            "RedemptionSubstitutionAmountYuan", "Exchange",
+        },
+        {
+            "Quantity", "CreationSubstitutionRatePercent",
+            "RedemptionSubstitutionRatePercent", "CreationSubstitutionAmountYuan",
+            "RedemptionSubstitutionAmountYuan",
+        },
+    ),
     Dataset.SHIBOR_DAILY.value: ({"Date", "OvernightRate"}, {"OvernightRate"}),
     Dataset.US_REAL_YIELD_DAILY.value: (
         {"Date", "RealYield5YPercent", "RealYield10YPercent"},
@@ -381,6 +395,23 @@ def _validate_provider_output(
                 dataset=dataset,
                 field=column,
             )
+    if dataset == Dataset.ETF_CREATION_REDEMPTION_BASKET.value:
+        source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        available_dates = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        if (
+            source_dates.isna().any()
+            or available_dates.isna().any()
+            or (available_dates.dt.normalize() <= source_dates.dt.normalize()).any()
+            or available_dates.dt.strftime("%H:%M:%S").ne("09:30:00").any()
+            or (pd.to_numeric(dataframe["Quantity"]) < 0).any()
+            or dataframe[["ConstituentSymbol", "CashSubstitutionFlag", "Exchange"]]
+            .astype(str).apply(lambda column: column.str.strip().eq("")).any().any()
+            or metadata.get("source_time_field") != "Date"
+            or metadata.get("availability_time_field") != "AvailableDate"
+            or metadata.get("source_calendar") != "SZSE"
+            or metadata.get("available_at") != "next SZSE trading session 09:30 Asia/Shanghai"
+        ):
+            raise DataContractError("ETF creation/redemption basket contract differs")
     if dataset == Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value:
         if set(dataframe.columns) != {"Date", "Close"} or metadata.get("price_scope") != "CLOSE_ONLY":
             raise DataContractError("domestic index close-only contract differs")
@@ -815,6 +846,7 @@ def _default_providers() -> dict[str, Provider]:
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
+    from .tushare_pcf import fetch_etf_creation_redemption_basket
     from .tushare_futures import (
         fetch_shfe_gold_daily,
         fetch_shfe_gold_holding,
@@ -861,6 +893,16 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
+            env_file=_env_file(request),
+        )
+
+    def etf_creation_redemption_basket(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        if request.frequency != "daily":
+            raise DataContractError("ETF creation/redemption basket requires daily frequency")
+        if set(request.options) - {"env_file"}:
+            raise DataContractError("ETF creation/redemption basket received unsupported options")
+        return fetch_etf_creation_redemption_basket(
+            _required_symbol(request), request.start, request.end,
             env_file=_env_file(request),
         )
 
@@ -1059,6 +1101,7 @@ def _default_providers() -> dict[str, Provider]:
     return {
         Dataset.ETF_OHLCV.value: etf_ohlcv,
         Dataset.ETF_UNADJUSTED_DAILY.value: etf_unadjusted,
+        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: etf_creation_redemption_basket,
         Dataset.STOCK_OHLCV.value: stock_ohlcv,
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,
         Dataset.SHIBOR_DAILY.value: shibor,

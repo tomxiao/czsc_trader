@@ -1,0 +1,194 @@
+"""SZSE ETF creation/redemption baskets have explicit completeness and time semantics."""
+
+from __future__ import annotations
+
+import pandas as pd
+import pytest
+
+from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import tushare_pcf
+from dataflows.errors import DataContractError, IncompleteDataError
+
+
+def _row(day: str, code: str = "600089.SH", **changes) -> dict:
+    row = {
+        "trade_date": day, "ts_code": "159326.SZ", "con_code": code,
+        "con_name": "成份股", "qty": 100, "sub_flag": "允许", "cpr": 10.0,
+        "rdr": 0.0, "sub_cc": 0.0, "red_cc": 0.0, "exchange": "SH",
+    }
+    row.update(changes)
+    return row
+
+
+class FakePro:
+    def __init__(self, rows: list[dict], open_dates: tuple[str, ...]) -> None:
+        self.rows = rows
+        self.open_dates = open_dates
+        self.basket_calls: list[dict] = []
+
+    def etf_sz_cons(self, **kwargs):
+        self.basket_calls.append(kwargs)
+        return pd.DataFrame([
+            row for row in self.rows
+            if kwargs["start_date"] <= row["trade_date"] <= kwargs["end_date"]
+        ])
+
+    def trade_cal(self, **kwargs):
+        return pd.DataFrame({"cal_date": list(self.open_dates),
+                             "is_open": [1] * len(self.open_dates)})
+
+
+def test_basket_is_registered_and_available_next_szse_session(monkeypatch) -> None:
+    pro = FakePro(
+        [_row("20250303"), _row("20250303", "159900.SZ", qty=0,
+                                      sub_flag="必须", exchange="SZ", sub_cc=120.0)],
+        ("20250303", "20250304"),
+    )
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
+    facade = Dataflows()
+
+    assert Dataset.ETF_CREATION_REDEMPTION_BASKET.value in facade.datasets
+    result = facade.fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", "2025-03-03", "daily",
+    ))
+
+    assert result.status is DataStatus.READY
+    assert result.dataframe["AvailableDate"].unique().tolist() == ["2025-03-04 09:30:00"]
+    assert result.dataframe.loc[
+        result.dataframe["ConstituentSymbol"].eq("159900.SZ"), "Quantity"
+    ].tolist() == [0]
+    assert result.identity is not None
+    assert result.identity.metadata["availability_time_field"] == "AvailableDate"
+    assert result.identity.metadata["source_publication_timestamp_verified"] is False
+    assert pro.basket_calls == [{
+        "ts_code": "159326.SZ", "start_date": "20250303", "end_date": "20250303",
+    }]
+
+
+def test_basket_splits_months_and_rejects_missing_trading_sessions() -> None:
+    pro = FakePro(
+        [_row("20250331"), _row("20250401")],
+        ("20250331", "20250401", "20250402"),
+    )
+
+    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
+        "159326.SZ", "2025-03-31", "2025-04-01", pro=pro,
+    )
+
+    assert frame["Date"].tolist() == ["2025-03-31", "2025-04-01"]
+    assert frame["AvailableDate"].tolist() == [
+        "2025-04-01 09:30:00", "2025-04-02 09:30:00",
+    ]
+    assert [call["start_date"] for call in pro.basket_calls] == ["20250331", "20250401"]
+    assert metadata["primary_key"] == ["Date", "ConstituentSymbol"]
+
+    missing = FakePro([_row("20250331")], ("20250331", "20250401", "20250402"))
+    with pytest.raises(IncompleteDataError, match="missing SZSE trading sessions"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-31", "2025-04-01", pro=missing,
+        )
+
+
+@pytest.mark.parametrize("symbol", ["600089.SH", "159326.SH", "000400.SZ"])
+def test_basket_rejects_non_szse_etf_symbols(symbol: str) -> None:
+    with pytest.raises(DataContractError, match="six-digit"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            symbol, "2025-03-03", "2025-03-03", pro=object(),
+        )
+
+
+def test_basket_rejects_duplicate_member_and_invalid_quantity() -> None:
+    duplicate = FakePro([_row("20250303"), _row("20250303")],
+                        ("20250303", "20250304"))
+    with pytest.raises(DataContractError, match="duplicate constituents"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=duplicate,
+        )
+
+    invalid = FakePro([_row("20250303", qty=-1)], ("20250303", "20250304"))
+    with pytest.raises(DataContractError, match="non-negative integers"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=invalid,
+        )
+
+
+def test_basket_rejects_wrong_source_symbol_and_non_trading_date() -> None:
+    wrong_symbol = FakePro([_row("20250303", ts_code="159327.SZ")],
+                           ("20250303", "20250304"))
+    with pytest.raises(DataContractError, match="another ETF symbol"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=wrong_symbol,
+        )
+
+    non_trading = FakePro([_row("20250303"), _row("20250304")],
+                          ("20250303", "20250305"))
+    with pytest.raises(DataContractError, match="non-trading dates"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-04", pro=non_trading,
+        )
+
+
+def test_basket_rejects_missing_or_non_numeric_source_fields() -> None:
+    missing_field = FakePro([_row("20250303")], ("20250303", "20250304"))
+    missing_field.rows[0].pop("sub_cc")
+    with pytest.raises(DataContractError, match="source fields are missing"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=missing_field,
+        )
+
+    malformed = FakePro([_row("20250303", cpr="unknown")],
+                        ("20250303", "20250304"))
+    with pytest.raises(DataContractError, match="invalid numeric values"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=malformed,
+        )
+
+    missing_identifier = FakePro([_row("20250303", sub_flag=None)],
+                                 ("20250303", "20250304"))
+    with pytest.raises(DataContractError, match="empty identifiers"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=missing_identifier,
+        )
+
+
+def test_basket_row_limit_and_invalid_request_do_not_report_ready(monkeypatch) -> None:
+    pro = FakePro([_row("20250303", f"{i:06d}.SZ") for i in range(3000)],
+                  ("20250303", "20250304"))
+    with pytest.raises(IncompleteDataError, match="vendor row limit"):
+        tushare_pcf.fetch_etf_creation_redemption_basket(
+            "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
+        )
+
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
+    facade = Dataflows()
+    wrong_frequency = facade.fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None, "5m",
+    ))
+    wrong_option = facade.fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None, "daily", {"unknown": True},
+    ))
+    for result in (wrong_frequency, wrong_option):
+        assert result.status is DataStatus.FAILED
+        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+def test_facade_rejects_basket_available_on_source_day() -> None:
+    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
+    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
+        "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
+    )
+    frame.loc[:, "AvailableDate"] = "2025-03-03 09:30:00"
+    facade = Dataflows({
+        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda request: (frame, metadata)
+    })
+
+    result = facade.fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None,
+    ))
+
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"

@@ -25,6 +25,7 @@ class Dataset(StrEnum):
 
     ETF_OHLCV = "etf.ohlcv"
     ETF_UNADJUSTED_DAILY = "etf.unadjusted_daily"
+    ETF_CREATION_REDEMPTION_BASKET = "etf.creation_redemption_basket"
     STOCK_OHLCV = "stock.ohlcv"
     STOCK_UNADJUSTED_DAILY = "stock.unadjusted_daily"
     SHIBOR_DAILY = "macro.shibor_daily"

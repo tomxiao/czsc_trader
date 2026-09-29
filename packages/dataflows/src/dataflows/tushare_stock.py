@@ -66,6 +66,10 @@ def _resample_weekly(dataframe: pd.DataFrame) -> pd.DataFrame:
 def _standardize_a_share_tushare_ohlcv(dataframe: pd.DataFrame, *, intraday: bool) -> pd.DataFrame:
     """Normalize Tushare A-share bars to shares and yuan."""
 
+    if intraday and "trade_time" in dataframe.columns and "trade_date" in dataframe.columns:
+        # pro_bar adds a derived trade_date to stk_mins rows. The bar-close
+        # trade_time is authoritative; both aliases would otherwise become Date.
+        dataframe = dataframe.drop(columns="trade_date")
     normalized = standardize_vendor_ohlcv(dataframe, intraday=intraday)
     if not intraday:
         normalized["Volume"] = normalized["Volume"] * 100
