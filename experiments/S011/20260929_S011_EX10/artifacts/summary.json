@@ -1,0 +1,212 @@
+{
+  "decision": "ROLE_EVIDENCE_REVIEW_REQUIRED",
+  "feature_count": 185,
+  "label_count": 7,
+  "comparison_count": 1295,
+  "described_paths": 1246,
+  "insufficient_paths": 49,
+  "forecast_folds": 3738,
+  "tsfresh_new_features": 60,
+  "source_identities": {
+    "etf": {
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "rows": 497,
+      "content_sha256": "f5ff4cb1b90e58dc3daa282464f937bd7230bbbe0ea20163ac4e7a3e831a6e6c",
+      "metadata": {
+        "vendor": "tushare",
+        "market": "a_share",
+        "vendor_symbol": "159326.SZ",
+        "period": "daily",
+        "asset_type": "etf",
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "a5314d53d0162a12518d3a14e913406aa3c74a757d377cd25421026e5d71a1be",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false,
+        "availability_time_field": "AvailableDate",
+        "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+        "validation": {
+          "status": "PASS",
+          "findings": [],
+          "row_count": 497
+        },
+        "reference_daily_sha256": "81e4f671fc56d2e68354d9f6d1e364408672f994b4100ab16f7ae61d3fc9857b",
+        "source_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "large": {
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000300.SH",
+      "rows": 566,
+      "content_sha256": "bee91816f1f3354a88a854782a46333c8011dcb5fe5ffdd1be8d7b9a5ae1445a",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "000300.SH",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "price_scope": "CLOSE_AND_INDEX_TURNOVER",
+        "volume_unit": "hand",
+        "amount_unit": "thousand_cny",
+        "availability_rule": "current session after market close",
+        "vendor_update_window": "trading day 15:00-17:00 Asia/Shanghai",
+        "source_publication_timestamp_verified": false,
+        "historical_revision_history_verified": false,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "small": {
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "000905.SH",
+      "rows": 566,
+      "content_sha256": "97c3e10ceb030c62e7da5e4764a8e7be6fd625db50686463ebd7a08282b595b3",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "000905.SH",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "price_scope": "CLOSE_AND_INDEX_TURNOVER",
+        "volume_unit": "hand",
+        "amount_unit": "thousand_cny",
+        "availability_rule": "current session after market close",
+        "vendor_update_window": "trading day 15:00-17:00 Asia/Shanghai",
+        "source_publication_timestamp_verified": false,
+        "historical_revision_history_verified": false,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "growth": {
+      "dataset": "index.domestic_close_turnover_daily",
+      "symbol": "399006.SZ",
+      "rows": 566,
+      "content_sha256": "d3c13f9384bc7caa3456b065ab8dd1e1ad72ab64d3542191b5253dbe7b253a77",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "399006.SZ",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "price_scope": "CLOSE_AND_INDEX_TURNOVER",
+        "volume_unit": "hand",
+        "amount_unit": "thousand_cny",
+        "availability_rule": "current session after market close",
+        "vendor_update_window": "trading day 15:00-17:00 Asia/Shanghai",
+        "source_publication_timestamp_verified": false,
+        "historical_revision_history_verified": false,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "spx": {
+      "dataset": "index.global_daily",
+      "symbol": "SPX",
+      "rows": 582,
+      "content_sha256": "72a8435f255762900e3d8fa3232a7f350942860a6ad010d6bb1d7a1725f772eb",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "SPX",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "unit": "decimal_return",
+        "availability_rule": "US close date must be strictly earlier than China decision session",
+        "maximum_start_lag_days": 10,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "US_MARKET",
+        "available_at": "US close date must be strictly earlier than China decision session",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "ixic": {
+      "dataset": "index.global_daily",
+      "symbol": "IXIC",
+      "rows": 582,
+      "content_sha256": "ed898588ad70eae95b93a337103ae353183bf4c225621936826b57315dfcc78d",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "IXIC",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "unit": "decimal_return",
+        "availability_rule": "US close date must be strictly earlier than China decision session",
+        "maximum_start_lag_days": 10,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "US_MARKET",
+        "available_at": "US close date must be strictly earlier than China decision session",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "shibor": {
+      "dataset": "macro.shibor_daily",
+      "symbol": null,
+      "rows": 579,
+      "content_sha256": "82a2ed733b0fab7700af541aeab45c4c074f53c59eef45909caff9b04137553d",
+      "metadata": {
+        "vendor": "tushare",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "maximum_start_lag_days": 10,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "calendar": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "rows": 750,
+      "content_sha256": "93c1ed5abcb4aa921b6533fca67d9b75af0d92df072762eafb0f36b3cde1bda5",
+      "metadata": {
+        "vendor": "tushare",
+        "exchange": "SSE",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SSE",
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "request_range_policy": "EXACT"
+      }
+    }
+  },
+  "predecessor_receipts": {
+    "20260929_S011_EX01": "2cfdb869fe0c2b41b1048b58655e423c53cf2e7618d154a26491db9d42633473",
+    "20260929_S011_EX02": "d3bb256adbcb32cd09cdc7eca5a03c813c7741de2b9c2d49a71d7018c497c96e",
+    "20260929_S011_EX04": "23c60187b0f7d94f0c54f513d6942e94b55f9a37d55db6443f0b8d2e7f072985",
+    "20260929_S011_EX06": "b4b23abbca57b32e33be1f3de4111b0e31215c0caefc651e4ffb9323f3ff1b27",
+    "20260929_S011_EX07": "18f9ba9232e5a8379573151ff151ba7fd2427ee98cd5c77c88d9a8f36018c395",
+    "20260929_S011_EX08": "a71f701ef6a7a418081f91067d9f826315bbcf70ebc23961631b365c8932b6bb"
+  },
+  "component_promotion_performed": false,
+  "account_replay_performed": false
+}

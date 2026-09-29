@@ -1,0 +1,69 @@
+{
+  "decision": "ROLE_REVIEW_READY",
+  "review_features": 9,
+  "review_paths": 63,
+  "forecast_folds": 189,
+  "leave_month_paths": 945,
+  "full_screened_fields": 185,
+  "intraday_identity": {
+    "content_sha256": "f387fa9af789adbf83f8718868b37d68e8395e48e3d5032cc7642ef5ecd1e52b",
+    "metadata": {
+      "vendor": "tushare",
+      "market": "a_share",
+      "vendor_symbol": "159326.SZ",
+      "period": "30m",
+      "asset_type": "etf",
+      "adjustment": "hfq",
+      "adjustment_factor_source": "fund_adj",
+      "adjustment_factor_sha256": "4c204ff824dfbd25df25f25497e189295395dbad8bb2ba2f3cf602782297d78b",
+      "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+      "adjustment_factor_publication_timestamp_verified": false,
+      "adjustment_factor_revision_history_verified": false,
+      "availability_time_field": "AvailableDate",
+      "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+      "validation": {
+        "status": "PASS",
+        "findings": [],
+        "row_count": 3408,
+        "complete_day_count": 426,
+        "expected_bars_per_day": 8,
+        "session_times": [
+          "10:00:00",
+          "10:30:00",
+          "11:00:00",
+          "11:30:00",
+          "13:30:00",
+          "14:00:00",
+          "14:30:00",
+          "15:00:00"
+        ]
+      },
+      "reference_daily_sha256": "1fb3c79a8877cd0c1545960fcf4dbd20d7da93166f37a589e1c7b5ab3b9b79a9",
+      "repair_records": [
+        {
+          "patch_id": "TUSHARE_159326_V1",
+          "patch_version": 1,
+          "findings_before": [
+            "CROSS_FREQUENCY_MISMATCH"
+          ],
+          "affected_date_count": 1,
+          "affected_date_first": "2025-04-10",
+          "affected_date_last": "2025-04-10",
+          "raw_content_sha256": "f00335f57d2af090cfe7ee8fdd2b4bc437b8e495eb2baa6ed0df7805792647ec",
+          "repaired_content_sha256": "9b91fe8f568856acfc4f82d30646667cded1b4bb9c94c0d08381ee99a2a713ff",
+          "affected_dates": [
+            "2025-04-10"
+          ]
+        }
+      ],
+      "source_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "request_range_policy": "EXACT"
+    }
+  },
+  "predecessor_receipts": {
+    "20260929_S011_EX10": "e4a532e7cc888cd5d770bb4c0e2cf41ce37cff0a731792197922d2e85bd9e78c"
+  },
+  "component_promotion_performed": false,
+  "account_replay_performed": false
+}
