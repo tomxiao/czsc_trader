@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import tushare as ts
 
 from .bar_utils import (
     INTRADAY_PERIOD_MINUTES,
@@ -32,7 +33,7 @@ from .market_resolver import (
     detect_market,
     normalize_symbol_for_vendor,
 )
-from .tushare_common import get_tushare_module, get_tushare_pro
+from .tushare_common import get_tushare_pro
 
 
 def _intraday_boundary(value: str, *, end: bool) -> str:
@@ -127,14 +128,15 @@ def _fetch_tushare_ohlcv(
                 "A-share ETFs are not supported by tushare_stock; "
                 "use dataflows.tushare_etf.get_etf instead"
             )
-        module = get_tushare_module(env_file)
+        api = get_tushare_pro(env_file)
         intraday = period in INTRADAY_PERIOD_MINUTES
         fetch_frequency = {
             "daily": "D",
             "weekly": "W",
             **{item: f"{minutes}min" for item, minutes in INTRADAY_PERIOD_MINUTES.items()},
         }[period]
-        dataframe = module.pro_bar(
+        dataframe = ts.pro_bar(
+            api=api,
             ts_code=ts_code,
             start_date=(
                 _intraday_boundary(start_date, end=False)
