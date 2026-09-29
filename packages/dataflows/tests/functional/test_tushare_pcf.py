@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from types import SimpleNamespace
 
 from dataflows import DataRequest, DataStatus, Dataflows, Dataset
-from dataflows import tushare_pcf
+from dataflows import chinaamc_pcf, tushare_pcf
 from dataflows.errors import DataContractError, IncompleteDataError
 
 
@@ -210,5 +211,124 @@ def test_facade_rejects_basket_falsely_claiming_verified_source_time() -> None:
         "2025-03-03", "2025-03-03", None,
     ))
 
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+def _official_xml(quantity: int = 100, day: str = "20250303") -> bytes:
+    return (
+        "<PCFFile><SecurityID>159326</SecurityID><TradingDay>" + day +
+        "</TradingDay><RecordNum>0</RecordNum><TotalRecordNum>1</TotalRecordNum>"
+        "<Components><Component><UnderlyingSecurityID>600089"
+        "</UnderlyingSecurityID><UnderlyingSecurityIDSource>101"
+        "</UnderlyingSecurityIDSource><ComponentShare>" + str(quantity) +
+        "</ComponentShare></Component></Components></PCFFile>"
+    ).encode()
+
+
+def test_optional_official_pcf_check_verifies_content_without_claiming_vintage(monkeypatch) -> None:
+    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
+    calls = []
+
+    def fake_post(path, data):
+        calls.append((path, data))
+        if path == "tradeList":
+            return SimpleNamespace(json=lambda: {
+                "status": 1, "data": {
+                    "fileName": "pcf_159326_20250303.xml", "year": None,
+                },
+            })
+        return SimpleNamespace(content=_official_xml())
+
+    monkeypatch.setattr(chinaamc_pcf, "_post", fake_post)
+    result = Dataflows().fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None, "daily",
+        {"verify_official_pcf_components": True},
+    ))
+
+    assert result.status is DataStatus.READY
+    assert result.identity is not None
+    metadata = result.identity.metadata
+    assert metadata["official_pcf_code_quantity_verified"] is True
+    assert metadata["official_pcf_component_count"] == 1
+    assert metadata["official_pcf_publication_timestamp_verified"] is False
+    assert metadata["official_pcf_historical_revisions_verified"] is False
+    assert metadata["source_publication_timestamp_verified"] is False
+    assert metadata["historical_revision_history_verified"] is False
+    assert [path for path, _ in calls] == ["tradeList", "query/etfDownload"]
+    assert calls[1][1]["fileName"] == "pcf_159326_20250303.xml"
+
+
+@pytest.mark.parametrize("payload", [_official_xml(quantity=99), _official_xml(day="20250304"), b"bad xml"])
+def test_official_pcf_check_fails_closed_on_mismatch(monkeypatch, payload) -> None:
+    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
+
+    def fake_post(path, _data):
+        if path == "tradeList":
+            return SimpleNamespace(json=lambda: {
+                "status": 1, "data": {"fileName": "pcf_159326_20250303.xml"},
+            })
+        return SimpleNamespace(content=payload)
+
+    monkeypatch.setattr(chinaamc_pcf, "_post", fake_post)
+    result = Dataflows().fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None, "daily",
+        {"verify_official_pcf_components": True},
+    ))
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+@pytest.mark.parametrize("option", [1, "true", None])
+def test_official_pcf_check_requires_boolean_option(monkeypatch, option) -> None:
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: object())
+    result = Dataflows().fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None, "daily",
+        {"verify_official_pcf_components": option},
+    ))
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+def test_official_pcf_check_rejects_multiday_request_before_source_call(monkeypatch) -> None:
+    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: object())
+    result = Dataflows().fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-04", None, "daily",
+        {"verify_official_pcf_components": True},
+    ))
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+def test_official_pcf_check_rejects_wrong_file_identity(monkeypatch) -> None:
+    basket = pd.DataFrame({
+        "Date": ["2025-03-03"], "ConstituentSymbol": ["600089.SH"],
+        "Quantity": [100],
+    })
+    monkeypatch.setattr(chinaamc_pcf, "_post", lambda _path, _data: SimpleNamespace(
+        json=lambda: {"status": 1, "data": {"fileName": "pcf_159326_20250304.xml"}},
+    ))
+    with pytest.raises(DataContractError, match="file date differs"):
+        chinaamc_pcf.verify_chinaamc_pcf_components("159326.SZ", "2025-03-03", basket)
+
+
+def test_facade_rejects_forged_official_pcf_verification() -> None:
+    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
+    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
+        "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
+    )
+    metadata["official_pcf_code_quantity_verified"] = True
+    result = Dataflows({
+        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda ignored: (frame, metadata)
+    }).fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None,
+    ))
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"

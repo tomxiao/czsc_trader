@@ -456,6 +456,21 @@ def _validate_provider_output(
             or metadata.get("historical_revision_history_verified") is not False
         ):
             raise DataContractError("ETF creation/redemption basket contract differs")
+        official_claim = metadata.get("official_pcf_code_quantity_verified")
+        if official_claim is not None and (
+            official_claim is not True
+            or request.symbol != "159326.SZ"
+            or request.start != request.end
+            or metadata.get("official_pcf_source") != "ChinaAMC historical PCF XML"
+            or metadata.get("official_pcf_file_name")
+            != f"pcf_159326_{request.start.replace('-', '')}.xml"
+            or not isinstance(metadata.get("official_pcf_sha256"), str)
+            or re.fullmatch(r"[0-9a-f]{64}", metadata["official_pcf_sha256"]) is None
+            or metadata.get("official_pcf_component_count") != len(dataframe)
+            or metadata.get("official_pcf_publication_timestamp_verified") is not False
+            or metadata.get("official_pcf_historical_revisions_verified") is not False
+        ):
+            raise DataContractError("official PCF component verification claim differs")
     if dataset == Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value:
         if set(dataframe.columns) != {"Date", "Close"} or metadata.get("price_scope") != "CLOSE_ONLY":
             raise DataContractError("domestic index close-only contract differs")
@@ -887,6 +902,7 @@ class Dataflows:
 
 
 def _default_providers() -> dict[str, Provider]:
+    from .chinaamc_pcf import verify_chinaamc_pcf_components
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
@@ -943,12 +959,22 @@ def _default_providers() -> dict[str, Provider]:
     def etf_creation_redemption_basket(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         if request.frequency != "daily":
             raise DataContractError("ETF creation/redemption basket requires daily frequency")
-        if set(request.options) - {"env_file"}:
+        if set(request.options) - {"env_file", "verify_official_pcf_components"}:
             raise DataContractError("ETF creation/redemption basket received unsupported options")
-        return fetch_etf_creation_redemption_basket(
+        verify = request.options.get("verify_official_pcf_components", False)
+        if type(verify) is not bool:
+            raise DataContractError("verify_official_pcf_components must be a boolean")
+        if verify and (request.symbol != "159326.SZ" or request.start != request.end):
+            raise DataContractError("official PCF check requires one 159326.SZ trade date")
+        frame, metadata = fetch_etf_creation_redemption_basket(
             _required_symbol(request), request.start, request.end,
             env_file=_env_file(request),
         )
+        if verify:
+            metadata.update(verify_chinaamc_pcf_components(
+                request.symbol, request.start, frame,
+            ))
+        return frame, metadata
 
     def stock_ohlcv(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_stock_ohlcv(
