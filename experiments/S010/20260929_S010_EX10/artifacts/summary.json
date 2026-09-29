@@ -1,0 +1,28 @@
+{
+  "decision": "EXIT_RISK_SURVEY_COMPLETE",
+  "input_identity": {
+    "etf": {
+      "dataset": "etf.ohlcv",
+      "source": "tushare",
+      "rows": 497,
+      "start": "2024-09-09T00:00:00",
+      "cutoff": "2026-09-28T00:00:00",
+      "sha256": "727085dab698e770ef1afd82eefbc460d4b68a2bb72820ba3d3ef86b4dab7212",
+      "available_at": "SOURCE_PERIOD_CLOSE"
+    },
+    "vix": {
+      "dataset": "index.vix_daily",
+      "source": "tushare",
+      "rows": 535,
+      "start": "2024-08-01T00:00:00",
+      "cutoff": "2026-09-28T00:00:00",
+      "sha256": "a105589a1b18816ce98fc2cbd156681d3bc681f7a2bc5ba3eb5bc8c16f2dbb3b",
+      "available_at": "US close date must be strictly earlier than China decision session"
+    }
+  },
+  "factor_count": 20,
+  "comparison_count": 72,
+  "near_duplicate_pairs": 1,
+  "sealed_date_rows_read": 0,
+  "account_replay_performed": false
+}

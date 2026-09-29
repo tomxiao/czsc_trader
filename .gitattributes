@@ -4,6 +4,9 @@
 # Raw market data hashes preserve the exact published bytes.
 data/raw/*.csv -text
 
+# Immutable S010 experiment manifests hash the published file bytes.
+experiments/S010/** -text -eol
+
 # Binary artifacts always retain exact bytes.
 *.png binary
 *.jpg binary
