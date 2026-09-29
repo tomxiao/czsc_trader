@@ -1,0 +1,126 @@
+{
+  "decision": "SURVEY_COMPLETE",
+  "etf_sessions": 497,
+  "factor_count": 2,
+  "comparison_count": 8,
+  "evaluated_folds": 24,
+  "insufficient_folds": 0,
+  "redundant_pairs": 0,
+  "source_identities": {
+    "etf": {
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "content_sha256": "f5ff4cb1b90e58dc3daa282464f937bd7230bbbe0ea20163ac4e7a3e831a6e6c",
+      "metadata": {
+        "vendor": "tushare",
+        "market": "a_share",
+        "vendor_symbol": "159326.SZ",
+        "period": "daily",
+        "asset_type": "etf",
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "a5314d53d0162a12518d3a14e913406aa3c74a757d377cd25421026e5d71a1be",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false,
+        "availability_time_field": "AvailableDate",
+        "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+        "validation": {
+          "status": "PASS",
+          "findings": [],
+          "row_count": 497
+        },
+        "reference_daily_sha256": "81e4f671fc56d2e68354d9f6d1e364408672f994b4100ab16f7ae61d3fc9857b",
+        "source_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "request_range_policy": "EXACT"
+      },
+      "rows": 497
+    },
+    "index": {
+      "dataset": "index.domestic_close_daily",
+      "symbol": "931994.CSI",
+      "content_sha256": "0bbb9753ed0cc250cdabceef6864541c45cc14b305848de3dcc6e815a9f2d8fe",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "931994.CSI",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "price_scope": "CLOSE_ONLY",
+        "availability_rule": "current session after market close",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      },
+      "rows": 965
+    },
+    "ixic": {
+      "dataset": "index.global_daily",
+      "symbol": "IXIC",
+      "content_sha256": "3bbc357380b03b0881a306f129dcd96d8e5422be4a420a867e2582c3193d5b9d",
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "IXIC",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "unit": "decimal_return",
+        "availability_rule": "US close date must be strictly earlier than China decision session",
+        "maximum_start_lag_days": 10,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "US_MARKET",
+        "available_at": "US close date must be strictly earlier than China decision session",
+        "request_range_policy": "EXACT"
+      },
+      "rows": 541
+    },
+    "shibor": {
+      "dataset": "macro.shibor_daily",
+      "symbol": null,
+      "content_sha256": "7d48dc8c12114bf9a0f76d08743801f81603fa360ce78174bd1b67f00b38fa8b",
+      "metadata": {
+        "vendor": "tushare",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "maximum_start_lag_days": 10,
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "request_range_policy": "EXACT"
+      },
+      "rows": 537
+    },
+    "calendar": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "content_sha256": "baf4bbb372c6330932f15facf6beeb6ee7cb8949139b8536584fec0f832dcc29",
+      "metadata": {
+        "vendor": "tushare",
+        "exchange": "SSE",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SSE",
+        "available_at": "SOURCE_PERIOD_CLOSE",
+        "request_range_policy": "EXACT"
+      },
+      "rows": 1449
+    }
+  },
+  "s011_prior_experiments_share_development_pool": true,
+  "other_batch_material_previously_seen_not_used_for_selection": true,
+  "historical_source_publication_verified": false,
+  "account_replay_performed": false
+}
