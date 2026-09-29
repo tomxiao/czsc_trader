@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import tushare as ts
@@ -16,6 +17,7 @@ from .bar_utils import (
     normalize_adjustment_factors,
     normalize_period,
     standardize_vendor_ohlcv,
+    with_scheduled_hfq_availability,
     validate_a_share_intraday_bars,
 )
 from .formatting import format_dataframe_report
@@ -218,7 +220,7 @@ def fetch_stock_ohlcv(
     period: str = "daily",
     *,
     env_file: str | Path | None = None,
-) -> tuple[pd.DataFrame, dict[str, str]]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Return normalized Tushare stock bars and machine-readable metadata."""
     normalized_period = normalize_period(period)
     fetch_period = (
@@ -268,6 +270,14 @@ def fetch_stock_ohlcv(
                 "adjustment": "hfq",
                 "adjustment_factor_source": "adj_factor",
                 "adjustment_factor_sha256": adjustment_factor_sha256(factors),
+                "adjustment_factor_publication_schedule": "trade day 09:15-09:20 Asia/Shanghai",
+                "adjustment_factor_publication_timestamp_verified": False,
+                "adjustment_factor_revision_history_verified": False,
+                "availability_time_field": "AvailableDate",
+                "available_at": (
+                    "intraday bar close or daily 17:00 Asia/Shanghai conservative; "
+                    "historical publication unverified"
+                ),
             }
         )
     validation = inspect_ohlcv_frame(
@@ -276,6 +286,10 @@ def fetch_stock_ohlcv(
         require_complete_days=normalized_period in INTRADAY_PERIOD_MINUTES,
     )
     validation.require_pass()
+    if market == MARKET_A_SHARE:
+        dataframe = with_scheduled_hfq_availability(
+            dataframe, factor_source="adj_factor", period=normalized_period
+        )
     metadata["validation"] = validation.to_dict()
     return dataframe.copy(), metadata
 
@@ -286,7 +300,7 @@ def fetch_stock_unadjusted_daily(
     end_date: str,
     *,
     env_file: str | Path | None = None,
-) -> tuple[pd.DataFrame, dict[str, str]]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Return unadjusted daily A-share prices for executable order pricing."""
     dataframe, market, ts_code = _fetch_tushare_ohlcv(
         symbol,

@@ -61,6 +61,9 @@ def test_basket_is_registered_and_available_next_szse_session(monkeypatch) -> No
     assert result.identity is not None
     assert result.identity.metadata["availability_time_field"] == "AvailableDate"
     assert result.identity.metadata["source_publication_timestamp_verified"] is False
+    assert result.identity.metadata["historical_revision_history_verified"] is False
+    assert result.identity.metadata["availability_basis"] == "CONSERVATIVE_NEXT_SESSION"
+    assert result.identity.metadata["source_disclosure_schedule"].startswith("trade-date premarket")
     assert pro.basket_calls == [{
         "ts_code": "159326.SZ", "start_date": "20250303", "end_date": "20250303",
     }]
@@ -186,6 +189,23 @@ def test_facade_rejects_basket_available_on_source_day() -> None:
     })
 
     result = facade.fetch(DataRequest(
+        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
+        "2025-03-03", "2025-03-03", None,
+    ))
+
+    assert result.status is DataStatus.FAILED
+    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+def test_facade_rejects_basket_falsely_claiming_verified_source_time() -> None:
+    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
+    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
+        "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
+    )
+    metadata["source_publication_timestamp_verified"] = True
+    result = Dataflows({
+        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda ignored: (frame, metadata)
+    }).fetch(DataRequest(
         Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
         "2025-03-03", "2025-03-03", None,
     ))

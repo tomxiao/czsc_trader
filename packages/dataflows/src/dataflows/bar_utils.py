@@ -173,6 +173,20 @@ def apply_hfq_adjustment(dataframe: pd.DataFrame, factors: pd.DataFrame) -> pd.D
     return frame.drop(columns=["_trade_date", "AdjFactor"])[dataframe.columns]
 
 
+def with_scheduled_hfq_availability(
+    dataframe: pd.DataFrame, *, factor_source: str, period: str
+) -> pd.DataFrame:
+    """Attach a scheduled earliest-use time, not verified historical publication."""
+    if factor_source not in {"fund_adj", "adj_factor"}:
+        raise ValueError("unsupported HFQ factor source")
+    timestamps = pd.to_datetime(dataframe["Date"], errors="raise")
+    if factor_source == "fund_adj" or period not in INTRADAY_PERIOD_MINUTES:
+        available = timestamps.dt.normalize() + pd.Timedelta(hours=17)
+    else:
+        available = timestamps
+    return dataframe.assign(AvailableDate=available)
+
+
 def drop_incomplete_intraday_bar(
     dataframe: pd.DataFrame, *, now: pd.Timestamp | str | None = None
 ) -> pd.DataFrame:

@@ -16,6 +16,7 @@ from .bar_utils import (
     normalize_adjustment_factors,
     normalize_period,
     standardize_vendor_ohlcv,
+    with_scheduled_hfq_availability,
 )
 from .errors import EmptyDataError
 from .formatting import format_dataframe_report
@@ -376,6 +377,9 @@ def fetch_etf_ohlcv(
         require_complete_days=normalized_period in INTRADAY_PERIOD_MINUTES,
     )
     validation.require_pass()
+    dataframe = with_scheduled_hfq_availability(
+        dataframe, factor_source="fund_adj", period=normalized_period
+    )
     metadata = {
         "vendor": "tushare",
         "market": market,
@@ -385,6 +389,11 @@ def fetch_etf_ohlcv(
         "adjustment": "hfq",
         "adjustment_factor_source": "fund_adj",
         "adjustment_factor_sha256": adjustment_factor_sha256(factors),
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": False,
+        "adjustment_factor_revision_history_verified": False,
+        "availability_time_field": "AvailableDate",
+        "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
         "validation": validation.to_dict(),
     }
     if reference_daily_sha256:

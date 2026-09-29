@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from dataflows import DataRequest, DataStatus, Dataflows, Dataset
 from dataflows import tushare_etf
 
 
@@ -43,3 +44,26 @@ def test_etf_long_history_fetch_segments_adjustment_factors(monkeypatch) -> None
     ]
     assert bars["Close"].tolist() == [1.0, 4.0]
     assert metadata["adjustment_factor_source"] == "fund_adj"
+    assert bars["AvailableDate"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist() == [
+        "2013-03-15 17:00:00", "2026-09-08 17:00:00",
+    ]
+    assert metadata["adjustment_factor_publication_timestamp_verified"] is False
+    assert metadata["adjustment_factor_revision_history_verified"] is False
+
+    request = DataRequest(
+        Dataset.ETF_OHLCV, "510500.SH", "2013-03-15", "2026-09-08", "2026-09-08"
+    )
+    ready = Dataflows({Dataset.ETF_OHLCV.value: lambda ignored: (bars, metadata)}).fetch(request)
+    assert ready.status is DataStatus.READY
+    assert ready.identity is not None
+    assert ready.identity.temporal_contract.availability_time_field == "AvailableDate"
+    for changed_frame, changed_metadata in (
+        (bars, {**metadata, "adjustment": "none"}),
+        (bars, {**metadata, "adjustment_factor_publication_timestamp_verified": True}),
+        (bars.assign(AvailableDate=bars["AvailableDate"] - pd.Timedelta(hours=7)), metadata),
+    ):
+        failed = Dataflows({
+            Dataset.ETF_OHLCV.value: lambda ignored: (changed_frame, changed_metadata)
+        }).fetch(request)
+        assert failed.status is DataStatus.FAILED
+        assert failed.error is not None and failed.error.code == "DATA_CONTRACT_MISMATCH"

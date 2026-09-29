@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ from .errors import (
     SourceNotReadyError,
 )
 from .history_validation import inspect_ohlcv_frame
+from .market_resolver import MARKET_A_SHARE
 
 Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
 
@@ -369,6 +371,42 @@ def _validate_provider_output(
                 "unadjusted dataset provider did not declare adjustment=none",
                 dataset=dataset,
             )
+        if metadata.get("vendor") == "tushare" and dataset in {
+            Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value,
+        } and (dataset == Dataset.ETF_OHLCV.value or metadata.get("market") == MARKET_A_SHARE):
+            factor_source = "fund_adj" if dataset == Dataset.ETF_OHLCV.value else "adj_factor"
+            expected_schedule = (
+                "daily 17:00 Asia/Shanghai" if factor_source == "fund_adj"
+                else "trade day 09:15-09:20 Asia/Shanghai"
+            )
+            expected_availability = (
+                "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified"
+                if factor_source == "fund_adj" else
+                "intraday bar close or daily 17:00 Asia/Shanghai conservative; "
+                "historical publication unverified"
+            )
+            if (
+                metadata.get("adjustment") != "hfq"
+                or metadata.get("adjustment_factor_source") != factor_source
+                or not isinstance(metadata.get("adjustment_factor_sha256"), str)
+                or re.fullmatch(r"[0-9a-f]{64}", metadata["adjustment_factor_sha256"]) is None
+                or metadata.get("adjustment_factor_publication_schedule") != expected_schedule
+                or metadata.get("adjustment_factor_publication_timestamp_verified") is not False
+                or metadata.get("adjustment_factor_revision_history_verified") is not False
+                or metadata.get("availability_time_field") != "AvailableDate"
+                or metadata.get("available_at") != expected_availability
+            ):
+                raise DataContractError("HFQ source or availability evidence contract differs")
+            available = pd.to_datetime(dataframe.get("AvailableDate"), errors="coerce")
+            source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+            if not isinstance(available, pd.Series) or available.isna().any():
+                raise DataContractError("HFQ scheduled availability is missing")
+            if factor_source == "fund_adj" or frequency not in {"1m", "5m", "15m", "30m"}:
+                expected_available = source_dates.dt.normalize() + pd.Timedelta(hours=17)
+            else:
+                expected_available = source_dates
+            if not available.equals(expected_available):
+                raise DataContractError("HFQ scheduled availability differs from bar and factor timing")
         inspect_ohlcv_frame(
             dataframe,
             frequency,
@@ -409,7 +447,13 @@ def _validate_provider_output(
             or metadata.get("source_time_field") != "Date"
             or metadata.get("availability_time_field") != "AvailableDate"
             or metadata.get("source_calendar") != "SZSE"
-            or metadata.get("available_at") != "next SZSE trading session 09:30 Asia/Shanghai"
+            or metadata.get("available_at")
+            != "conservative next SZSE trading session 09:30 Asia/Shanghai"
+            or metadata.get("availability_basis") != "CONSERVATIVE_NEXT_SESSION"
+            or metadata.get("source_disclosure_schedule")
+            != "trade-date premarket; exact timestamp unavailable"
+            or metadata.get("source_publication_timestamp_verified") is not False
+            or metadata.get("historical_revision_history_verified") is not False
         ):
             raise DataContractError("ETF creation/redemption basket contract differs")
     if dataset == Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value:
