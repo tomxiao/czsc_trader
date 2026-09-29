@@ -1,0 +1,147 @@
+{
+  "decision": "SURVEY_COMPLETE",
+  "sessions": 426,
+  "factor_count": 12,
+  "comparison_count": 36,
+  "evaluated_folds": 108,
+  "insufficient_folds": 0,
+  "source_identities": {
+    "etf": {
+      "dataset": "etf.ohlcv",
+      "symbol": "159326.SZ",
+      "content_sha256": "c8583faffc9ddca2e5a2bf74a7288e833f3780ef04539e5e2c7a940e15df8d31",
+      "rows": 426,
+      "metadata": {
+        "vendor": "tushare",
+        "market": "a_share",
+        "vendor_symbol": "159326.SZ",
+        "period": "daily",
+        "asset_type": "etf",
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "4c204ff824dfbd25df25f25497e189295395dbad8bb2ba2f3cf602782297d78b",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false,
+        "availability_time_field": "AvailableDate",
+        "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+        "validation": {
+          "status": "PASS",
+          "findings": [],
+          "row_count": 426
+        },
+        "reference_daily_sha256": "1fb3c79a8877cd0c1545960fcf4dbd20d7da93166f37a589e1c7b5ab3b9b79a9",
+        "source_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "shares": {
+      "dataset": "etf.share_size",
+      "symbol": "159326.SZ",
+      "content_sha256": "24fef5884f98e728e3fe04a176f682859770e9fbb173f71273e07ff5a601a8ea",
+      "rows": 432,
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "159326.SZ",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "availability_rule": "T+1 08:30 Asia/Shanghai",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "T+1 08:30 Asia/Shanghai",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "csi300": {
+      "dataset": "index.domestic_daily",
+      "symbol": "000300.SH",
+      "content_sha256": "405ad2f08068073380fa5762aa7dfbd73f8da2cb151e19b7bb746dfb160785fc",
+      "rows": 426,
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "000300.SH",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "percent_change_unit": "decimal_return",
+        "availability_rule": "current session after market close",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "csi500": {
+      "dataset": "index.domestic_daily",
+      "symbol": "000905.SH",
+      "content_sha256": "74c7149715cb7f2d848a2de13cb220e6ea4fbe6130bd76587575e36b60765c3b",
+      "rows": 426,
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "000905.SH",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "percent_change_unit": "decimal_return",
+        "availability_rule": "current session after market close",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "chinext": {
+      "dataset": "index.domestic_daily",
+      "symbol": "399006.SZ",
+      "content_sha256": "6a136d0c2c5ccfd8c96af9c8dab1ea83ba6ce67521b1c78f449729a335dc2c45",
+      "rows": 426,
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "399006.SZ",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "percent_change_unit": "decimal_return",
+        "availability_rule": "current session after market close",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    },
+    "theme": {
+      "dataset": "index.domestic_close_daily",
+      "symbol": "931994.CSI",
+      "content_sha256": "3196ff1e2e30d5b40765aaa7c3c84b12ed7cea914bd60de297b1ebb5ede6f9f9",
+      "rows": 426,
+      "metadata": {
+        "vendor": "tushare",
+        "vendor_symbol": "931994.CSI",
+        "frequency": "daily",
+        "primary_key": [
+          "Date"
+        ],
+        "price_scope": "CLOSE_ONLY",
+        "availability_rule": "current session after market close",
+        "source_time_field": "Date",
+        "availability_time_field": "Date",
+        "source_calendar": "SOURCE_NATIVE",
+        "available_at": "current session after market close",
+        "request_range_policy": "EXACT"
+      }
+    }
+  },
+  "mechanism_4_status": "PUBLICATION_TIME_UNVERIFIED",
+  "old_evidence_overlap_is_development_pool": true,
+  "account_replay_performed": false
+}
