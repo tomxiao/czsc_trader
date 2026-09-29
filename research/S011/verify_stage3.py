@@ -1,10 +1,11 @@
-"""Read-only audit of sealed EX14 accounts plus a fresh public SRT/TXE replay.
+"""Read-only audit of sealed stage-three accounts and fresh public SRT/TXE replay.
 
 Writes only disposable audit output below .tmp; never changes source archives.
 """
 from __future__ import annotations
 from pathlib import Path
 from datetime import date
+from decimal import Decimal, ROUND_FLOOR
 import json
 import os
 import sys
@@ -17,7 +18,7 @@ from research_experiment import load_experiment,load_experiment_input
 from czsc_trader.experiment_archive import validate_experiment_archive
 
 REPO=Path(__file__).resolve().parents[2]
-EXPERIMENT=sys.argv[1] if len(sys.argv)>1 else '20260930_S011_EX14'
+EXPERIMENT=sys.argv[1] if len(sys.argv)>1 else '20260930_S011_EX15'
 if EXPERIMENT not in {'20260930_S011_EX14','20260930_S011_EX15'}:
     raise ValueError('unsupported audit experiment')
 ARCHIVE=REPO/'experiments/S011'/EXPERIMENT
@@ -58,6 +59,26 @@ def audit():
         assert orders.loc[orders.side.eq('BUY'),'order_type'].eq('LIMIT').all()
         assert orders.loc[orders.side.eq('SELL'),'order_type'].eq('MARKET').all()
         assert fills.order_id.isin(orders.order_id).all()
+        assert fills.order_id.is_unique and orders.order_id.is_unique
+        # Re-resolve every order, including misses, from prices and available cash.
+        balances=acc.set_index('date').cash_before.to_dict()
+        fill_ids=set(fills.order_id)
+        for order in orders.itertuples():
+            op=float(prices.loc[order.execution_date,'open'])
+            if order.side=='BUY':
+                prior=float(prices.loc[order.signal_date,'close'])
+                expected_limit=float((Decimal(str(prior*(1+parameters[row.trial]['premium'])))/Decimal('.001')).to_integral_value(rounding=ROUND_FLOOR)*Decimal('.001'))
+                assert abs(order.limit_price-expected_limit)<1e-12
+                touch=intraday.loc[intraday.day.eq(order.execution_date),'low']
+                possible=op<=order.limit_price or bool(touch.lt(order.limit_price).any())
+                price=op if op<=order.limit_price else order.limit_price
+                possible=possible and order.quantity*price*1.001<=balances[order.execution_date]+1e-8
+                if possible:balances[order.execution_date]-=order.quantity*price*1.001
+            else:
+                possible=True
+                balances[order.execution_date]+=order.quantity*op*.999
+            assert (order.order_id in fill_ids)==possible
+            assert order.status==('FILLED' if possible else 'UNFILLED')
         assert (pd.to_datetime(fills.signal_date)<pd.to_datetime(fills.fill_time).dt.normalize()).all()
         filled=orders.merge(fills,on='order_id',suffixes=('_order','_fill'))
         for fill in filled.itertuples():
@@ -156,6 +177,7 @@ def audit():
     report={'status':'PASS','archive_receipt':receipt,'source_sha256':loaded.binding.source_sha256,
             'audited_accounts':len(rebuilt),'qualified':summary['qualified'],'fresh_replay_trial':anchor,
             'fresh_data_identity':prepared.data_identity,'full_ledger_equivalence':True,
+            'all_order_fills_and_misses_reconstructed':True,
             'pnl_attribution_reconciled':True,'anchor_attribution':{
                 'overnight_pnl':float(decomposition.overnight_pnl.sum()),'daytime_pnl':float(decomposition.daytime_pnl.sum()),
                 'execution_effect':float(decomposition.execution_effect.sum()),'fees':float(decomposition.fees.sum()),

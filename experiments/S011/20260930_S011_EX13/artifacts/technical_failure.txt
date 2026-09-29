@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\experiments\S011\20260930_S011_EX13\run_experiment.py", line 27, in main
+    try:result=execute_experiment(loaded,context)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 486, in execute_experiment
+    result = experiment.implementation.execute(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20260930_S011_EX13\experiment.py", line 170, in execute
+    result=context.evaluation.evaluate(EvaluationRequest(repository_root=repo,experiment_id=ID,strategy=candidate,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 255, in evaluate
+    result = self._evaluator(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\evaluation.py", line 771, in evaluate_strategy
+    name: build_srt_signal_replay(
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\backtesting\srt_bridge.py", line 262, in build_srt_signal_replay
+    prepared = strategy.prepare_data()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\packages\strategy_runtime\src\strategy_runtime\strategy.py", line 168, in prepare_data
+    inputs = prepare_inputs(
+             ^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\packages\strategy_runtime\src\strategy_runtime\preparation.py", line 184, in prepare_inputs
+    calendar_result = _ready(
+                      ^^^^^^^
+  File "D:\CodeBase\czsc_trader\packages\strategy_runtime\src\strategy_runtime\preparation.py", line 108, in _ready
+    raise RuntimeExecutionError(f"data preparation failed for {name}: {detail}")
+strategy_runtime.errors.RuntimeExecutionError: data preparation failed for calendar: TUSHARE_TOKEN is not configured. Set the environment variable or fill an explicit env file.
