@@ -466,6 +466,82 @@ def fetch_domestic_index_close_daily(
     }
 
 
+def fetch_domestic_index_close_turnover_daily(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    *,
+    env_file: str | Path | None = None,
+    pro: object | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Publish index close and constituent turnover without requiring absent OHLC."""
+
+    client = _client(pro, env_file)
+    frame = _canonicalize(
+        _fetch_yearly(
+            lambda start, end: client.index_daily(
+                ts_code=symbol,
+                start_date=start,
+                end_date=end,
+                fields="ts_code,trade_date,close,pre_close,change,pct_chg,vol,amount",
+            ),
+            start_date,
+            end_date,
+        ),
+        dataset=f"domestic index close turnover daily {symbol}",
+        date_column="trade_date",
+        columns={
+            "close": "Close",
+            "pre_close": "PreviousClose",
+            "change": "Change",
+            "pct_chg": "PercentChange",
+            "vol": "Volume",
+            "amount": "Amount",
+        },
+        numeric_columns=(
+            "Close", "PreviousClose", "Change", "PercentChange", "Volume", "Amount",
+        ),
+    )
+    if frame["Date"].duplicated().any():
+        raise DataContractError("domestic index close turnover has duplicate dates")
+    values = frame[[
+        "Close", "PreviousClose", "Change", "PercentChange", "Volume", "Amount",
+    ]].to_numpy(dtype=float)
+    invalid = (
+        ~np.isfinite(values).all(axis=1)
+        | (frame["Close"] <= 0).to_numpy()
+        | (frame["PreviousClose"] <= 0).to_numpy()
+        | (frame["Volume"] < 0).to_numpy()
+        | (frame["Amount"] < 0).to_numpy()
+        | ~np.isclose(
+            frame["Close"] - frame["PreviousClose"], frame["Change"],
+            rtol=0, atol=0.0001,
+        )
+        | ~np.isclose(
+            (frame["Close"] / frame["PreviousClose"] - 1) * 100,
+            frame["PercentChange"], rtol=0, atol=0.0001,
+        )
+    )
+    if invalid.any():
+        raise DataContractError(
+            "domestic index close turnover fails vendor checks",
+            invalid_rows=int(invalid.sum()),
+        )
+    return frame[["Date", "Close", "Volume", "Amount"]].copy(), {
+        "vendor": "tushare",
+        "vendor_symbol": symbol,
+        "frequency": "daily",
+        "primary_key": ["Date"],
+        "price_scope": "CLOSE_AND_INDEX_TURNOVER",
+        "volume_unit": "hand",
+        "amount_unit": "thousand_cny",
+        "availability_rule": "current session after market close",
+        "vendor_update_window": "trading day 15:00-17:00 Asia/Shanghai",
+        "source_publication_timestamp_verified": False,
+        "historical_revision_history_verified": False,
+    }
+
+
 def fetch_cn_cpi_monthly(
     start_date: str,
     end_date: str,

@@ -250,6 +250,9 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Open", "High", "Low", "Close", "Volume", "Amount"},
     ),
     Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: ({"Date", "Close"}, {"Close"}),
+    Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: (
+        {"Date", "Close", "Volume", "Amount"}, {"Close", "Volume", "Amount"},
+    ),
     Dataset.CN_CPI_MONTHLY.value: (
         {"Date", "AvailableDate", "NationalYoYPercent", "NationalMoMPercent"},
         {"NationalYoYPercent", "NationalMoMPercent"},
@@ -477,6 +480,27 @@ def _validate_provider_output(
         dates = pd.to_datetime(dataframe["Date"], errors="coerce")
         if dates.isna().any() or dates.duplicated().any() or dataframe["Close"].le(0).any():
             raise DataContractError("domestic index close-only dates or prices are invalid")
+    if dataset == Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value:
+        if (
+            set(dataframe.columns) != {"Date", "Close", "Volume", "Amount"}
+            or metadata.get("price_scope") != "CLOSE_AND_INDEX_TURNOVER"
+            or metadata.get("volume_unit") != "hand"
+            or metadata.get("amount_unit") != "thousand_cny"
+            or metadata.get("frequency") != "daily"
+            or metadata.get("available_at") != "current session after market close"
+            or metadata.get("vendor_update_window")
+            != "trading day 15:00-17:00 Asia/Shanghai"
+            or metadata.get("source_publication_timestamp_verified") is not False
+            or metadata.get("historical_revision_history_verified") is not False
+        ):
+            raise DataContractError("domestic index close-turnover contract differs")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        if (
+            dates.isna().any() or dates.duplicated().any()
+            or dataframe["Close"].le(0).any()
+            or dataframe[["Volume", "Amount"]].lt(0).any().any()
+        ):
+            raise DataContractError("domestic index close-turnover values are invalid")
     if dataset == Dataset.US_CPI_RELEASE.value:
         if (
             metadata.get("source_time_field") != "ReleaseAt"
@@ -922,6 +946,7 @@ def _default_providers() -> dict[str, Provider]:
         fetch_cn_ppi_monthly,
         fetch_domestic_index_daily,
         fetch_domestic_index_close_daily,
+        fetch_domestic_index_close_turnover_daily,
         fetch_etf_share_size,
         fetch_fxcm_daily,
         fetch_global_index_daily,
@@ -1045,6 +1070,14 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
+            env_file=_env_file(request),
+        )
+
+    def domestic_index_close_turnover(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        if request.frequency != "daily" or set(request.options) - {"env_file"}:
+            raise DataContractError("domestic index close-turnover requires daily frequency and env_file only")
+        return fetch_domestic_index_close_turnover_daily(
+            _required_symbol(request), request.start, request.end,
             env_file=_env_file(request),
         )
 
@@ -1186,6 +1219,7 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.FUTURES_SHFE_GOLD_HOLDING.value: shfe_gold_holding,
         Dataset.DOMESTIC_INDEX_DAILY.value: domestic_index,
         Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: domestic_index_close,
+        Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: domestic_index_close_turnover,
         Dataset.CN_CPI_MONTHLY.value: cn_cpi,
         Dataset.US_CPI_RELEASE.value: us_cpi_release,
         Dataset.US_ISM_PMI_RELEASE.value: us_ism_pmi_release,
