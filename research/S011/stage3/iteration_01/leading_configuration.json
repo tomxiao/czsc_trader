@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "status": "LEADING_CONFIGURATION_SEARCH_INCOMPLETE",
+  "identity": "S011-EX19T054",
+  "strategy_id": "S011",
+  "candidate_id": "EX19T054",
+  "path_base": "repository_root",
+  "source_root": "experiments/S011/20260930_S011_EX19/runtime/strategy_runtime",
+  "strategy_payload": {
+    "strategy_kind": "s011_short_pressure_reversal",
+    "symbol": "159326.SZ",
+    "parameters": {
+      "tail_weight": 0.575,
+      "spx_weight": 0.05,
+      "entry": 0.335,
+      "exit": 0.025,
+      "lookback": 130,
+      "max_days": 2,
+      "premium": 0.005
+    },
+    "runtime": {
+      "module": "strategy_runtime.strategies.s011_reversal",
+      "qualname": "S011Reversal",
+      "contract_version": 1,
+      "source_files": [
+        "strategies/s011_reversal.py"
+      ],
+      "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+    }
+  },
+  "metrics": {
+    "trial": 54,
+    "tail_weight": 0.575,
+    "spx_weight": 0.05,
+    "entry": 0.335,
+    "exit": 0.025,
+    "lookback": 130,
+    "max_days": 2,
+    "premium": 0.005,
+    "cagr": 0.4268585090742474,
+    "drawdown": -0.07235127587824985,
+    "closed_trades": 40,
+    "sessions": 403,
+    "frequency": 5.955334987593052,
+    "buyhold_cagr": 0.2677652073856076,
+    "buyhold_drawdown": -0.310919408097985,
+    "qualified": true,
+    "return_pass": true,
+    "drawdown_pass": true,
+    "frequency_pass": true,
+    "fees": 111688.2105,
+    "orders": 94,
+    "fills": 92,
+    "duplicate_parameter_of": -1,
+    "same_account_as": -1,
+    "cagr_delta_T040": 0.01140953808844647,
+    "drawdown_improvement_T040": 0.00015823505614263877,
+    "dominates_T040": true
+  },
+  "strategy_identity": {
+    "result_hash": "1f0f400066a24653fc0a26be23ab64d2d7a4746eb001c63d0485be3bfd39b770",
+    "request_hash": "52c823dde31a6793e0b040461e528851514ab873682b155e3222611b3f970d78",
+    "strategy_identity": "98ee775f38a2c0cb0c42f22a388b0ae72c91cd44357985f1e2308ca1579283bb",
+    "data_identity": "a8ff93b965b6abc222b543d31306d34f8baa3b89f9b1f6bad89f28b57d23287b",
+    "runtime_binding_hash": "844f716a9b513980509a91f5ae84799e6813e956fb6c5b745ade22adbb4387fd"
+  },
+  "evidence": {
+    "original_experiment": "experiments/S011/20260930_S011_EX19",
+    "original_status": "TECHNICAL_FAILURE",
+    "original_manifest_sha256": "07cb6e1f8eaff47a364810cf1255b61aaa6b5b3c4df830b5ff0bb70c0d4f95b2",
+    "continuation_experiment": "experiments/S011/20260930_S011_EX21",
+    "continuation_status": "TECHNICAL_FAILURE",
+    "continuation_manifest_sha256": "2d68abcd26b2d1db4f239c0babf9ef5f240c1d5134613f8b5efd58c31f47b6ab",
+    "trace_audit_experiment": "experiments/S011/20260930_S011_EX20",
+    "trace_audit_receipt": "3689ecb8e4fbc9f6f59cad52f099db7bf09dc3bc24c775751ed274e2675f1799",
+    "verification": "research/S011/stage3/iteration_01/verification.json",
+    "benchmark_receipt": "8df1748c63ac7ef1601203a161968351214ddf10b4fa7e83673946bf5924622e"
+  },
+  "search_progress": {
+    "planned": 384,
+    "completed": 380,
+    "remaining": 4,
+    "qualified": 4,
+    "dominates_T040": 2,
+    "unique_parameters_current": 380,
+    "distinct_accounts_current": 376,
+    "unique_parameters_including_prior96": 475,
+    "boundary_round_planned": 42,
+    "boundary_round_executed": 0
+  },
+  "account_contract": {
+    "start": "2025-02-06",
+    "end": "2026-09-28",
+    "sessions": 403,
+    "initial_cash": 1000000,
+    "one_way_cost": 0.001,
+    "lot_size": 100
+  },
+  "development_only": true,
+  "stage_three_iteration_complete": false,
+  "stage_four_complete": false,
+  "cio_candidate_package_created": false,
+  "freeze_or_deployment_authorized": false
+}

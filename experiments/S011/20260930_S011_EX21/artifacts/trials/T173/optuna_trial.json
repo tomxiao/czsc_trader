@@ -1,0 +1,51 @@
+{
+  "number": 173,
+  "state": "COMPLETE",
+  "parameters": {
+    "tail_weight": 0.275,
+    "spx_weight": 0.175,
+    "entry": 0.07,
+    "exit": -0.075,
+    "lookback": 20,
+    "max_days": 3,
+    "premium": 0.0045
+  },
+  "sampler_parameters": {
+    "tail_weight": 0.275,
+    "spx_weight": 0.17500000000000002,
+    "entry": 0.07,
+    "exit": -0.07499999999999998,
+    "lookback": 20,
+    "max_days": 3,
+    "premium": 0.0045000000000000005
+  },
+  "values": [
+    0.3744892542815039,
+    -0.15235747748441109
+  ],
+  "user_attrs": {
+    "constraints": [
+      0.027158556796907485,
+      -0.15856193061357388,
+      -9.69727047146402,
+      7.697270471464019
+    ]
+  },
+  "system_attrs": {
+    "constraints": [
+      0.027158556796907485,
+      -0.15856193061357388,
+      -9.69727047146402,
+      7.697270471464019
+    ]
+  },
+  "distributions": {
+    "tail_weight": "{\"name\": \"FloatDistribution\", \"attributes\": {\"step\": 0.025, \"low\": 0.0, \"high\": 1.0, \"log\": false}}",
+    "spx_weight": "{\"name\": \"FloatDistribution\", \"attributes\": {\"step\": 0.025, \"low\": 0.0, \"high\": 0.5, \"log\": false}}",
+    "entry": "{\"name\": \"FloatDistribution\", \"attributes\": {\"step\": 0.005, \"low\": 0.05, \"high\": 0.45, \"log\": false}}",
+    "exit": "{\"name\": \"FloatDistribution\", \"attributes\": {\"step\": 0.025, \"low\": -0.3, \"high\": 0.025, \"log\": false}}",
+    "lookback": "{\"name\": \"IntDistribution\", \"attributes\": {\"log\": false, \"step\": 10, \"low\": 20, \"high\": 240}}",
+    "max_days": "{\"name\": \"IntDistribution\", \"attributes\": {\"log\": false, \"step\": 1, \"low\": 1, \"high\": 3}}",
+    "premium": "{\"name\": \"FloatDistribution\", \"attributes\": {\"step\": 0.0005, \"low\": 0.0, \"high\": 0.01, \"log\": false}}"
+  }
+}
