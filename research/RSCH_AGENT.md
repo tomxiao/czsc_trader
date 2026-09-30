@@ -118,36 +118,42 @@ czsc-trader experiment preflight `
 
 ### 3.2 阶段二：发现可用于策略决策的信息组件
 
-自主探索收益与风险机制，识别具有增量信息、明确决策用途和可复算证据的组件，为阶段三构建策略提供输入。
+本阶段自主探索收益与风险机制，识别具有增量信息、明确决策用途和可复算证据的组件，为阶段三构建策略提供输入。
 
-#### 交付产物
+建议路径：从标的收益与损失的可能来源出发，提出相互竞争、可被证伪的机制，广泛构造并检验候选信息，形成有证据支持的组件面板。
 
-- 机器产物：组件面板及其定义、职责、检验证据、适用边界；附研究台账、复算代码和收口判断。
+#### 必须交付的产物
+
+- 机器产物：组件面板及其定义、职责、检验证据、适用边界；附完整研究台账、复算代码和收口判断。空面板须附原因证据和后续建议。
 - 人工报告：主要发现、组件用途、最强反证、未解决问题及阶段三建议；与机器产物使用同一组事实。
+- 产物抽象契约与组装API：**待实现（CAP-01、CAP-02），名称和公共导出路径待填；平台实现后启用**。届时由研究员实现产物契约，平台组装机器产物和人工报告；当前由研究代码显式生成。
+- 拟议契约内容：组件职责、标签、期限、对照、数据可用时点、价格口径，以及全部已执行检验的结果、状态、原因和证据引用。标签、期限和对照先进入实验定义，交付产物引用其版本；结果状态区分信息无效、方法不适用、数据不足、技术失败及重复信息。
+- 责任边界：平台约束交付结构与可追溯性；研究员负责方法适用性、证据解释和结论质量。
 
-#### 详见
+#### 自主使用的资源
 
-优先从以下公共导出读取代码契约，沿导入定位类型和实现：
-
-- 实验抽象契约：`ResearchExperiment`、`ExperimentDefinition`、`ExperimentResult`，见[REX __init__.py](../packages/research_experiment/src/research_experiment/__init__.py)。实现`definition`、`synthetic_precheck()`、`execute(context)`，声明结构化结果与产物。
-- TDR公共API：`create_formal_experiment_context`、`execute_experiment`，见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)；正式执行前按第2.3节完成预检。
-- 阶段二产物抽象契约及统一组装API：**待实现（CAP-01、CAP-02），名称和公共导出路径待填**。实现类提交组件、证据和研究解释；平台约束产物完备性、格式合法性、身份一致性和可追溯性，按统一结构组装机器产物和人工报告。现有实验契约尚不提供统一组装能力，当前由研究实现显式生成双产物。
-
-#### 可用资源
-
-- 数据：DFLS的`DataRequest`、`DataTemporalContract`、`Dataflows`，见[DFLS __init__.py](../packages/dataflows/src/dataflows/__init__.py)；正式实验通过`ExperimentContext`的数据接口访问。
+- 市场数据：DFLS的`DataRequest`、`DataTemporalContract`、`Dataflows`，见[DFLS __init__.py](../packages/dataflows/src/dataflows/__init__.py)；正式实验通过`ExperimentContext`的数据接口访问。
 - 信息定义：FSC的`InformationFamily`、`FactorDefinition`、`SignalDefinition`、`CatalogRegistry`，见[FSC __init__.py](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)。
-- 第三方库：`tsfresh`用于时序特征提取，`expr_codegen`用于表达式生成，pandas／NumPy用于数据计算；按需选择，使用约定见第4.3节。资源清单不限制研究方向。
+- 实验契约：实现抽象基类`ResearchExperiment`的`definition`、`synthetic_precheck()`、`execute(context)`；定义与结果分别使用数据类型`ExperimentDefinition`、`ExperimentResult`，见[REX __init__.py](../packages/research_experiment/src/research_experiment/__init__.py)。
+- 执行入口：探索上下文`create_experiment_context`、正式上下文`create_formal_experiment_context`、执行API `execute_experiment`，见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)。
+- 第三方库：`tsfresh`用于时序特征提取，`expr_codegen`用于表达式生成，pandas／NumPy用于数据计算。使用约定见第4.3节。
+- 公开信息：可自主检索互联网公开资料，用于提出和解释研究机制。
 
-#### 必要约束
+#### 必须遵守的约束
 
-- 研究员负责研究设计、方法选择、证据解释及结论质量；平台校验通过不代表组件有效、研究充分或结论正确。
-- 在已授权的数据、工具和预算内自主研究；新增资源按权限申请。
-- 组件须声明决策职责，使用匹配的标签、期限和对照；因果时间与价格口径遵循第2.2节。
-- 保留支持与反证，区分信息无效、方法不适用、数据不足、技术失败及重复信息；不得事后挑选有利指标授予组件资格。
-- 主动检验有依据的互补或改进方向；不以首个有效组件或固定检验次数收口，未检验方向说明原因。
-- 允许交付空面板，但须给出原因证据和后续建议；组件有效不等于完整策略绩效达标，策略组合留在阶段三。
-- 完成交付后请求用户审批；获准后才能进入阶段三。
+- 每轮实验按REX实验契约实现。
+- 每轮实验使用与实验模式匹配的TDR上下文。
+- 每轮实验通过`execute_experiment`执行。
+- 正式实验首次执行前须按第2.3节通过预检。
+- 使用新增资源前须取得相应授权。
+- 外部数据纳入正式实验时须遵循第2.2节的数据管理要求。
+- 根据已见结果调整检验设计时，须记录调整依据。
+- 调整后的检验设计须通过后继实验验证。
+- 研究解释不得隐去不利证据。
+- 必须积极主动检验有依据的互补或改进方向。
+- 不得以首个有效组件或固定检验次数作为充分收口依据。
+- 完成交付后须主动向用户呈现人工报告。
+- 进入阶段三前须取得用户明确批准。
 
 ### 3.3 阶段三：构建并优化可执行策略
 
