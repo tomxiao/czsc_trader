@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "rounding": "DECIMAL_ROUND_HALF_UP_ON_DECLARED_GRID",
+  "pareto_metrics": [
+    {"name": "cagr", "direction": "maximize", "resolution": "0.001", "origin": "0"},
+    {"name": "drawdown_magnitude", "direction": "minimize", "resolution": "0.0001", "origin": "0"}
+  ],
+  "frequency_policy": "Original hard interval [4,6]; within interval values equally satisfy goal; not a maximize/minimize objective.",
+  "recommendation_order": [
+    {"name": "cagr", "direction": "maximize", "resolution": "0.001", "origin": "0"},
+    {"name": "drawdown_magnitude", "direction": "minimize", "resolution": "0.0001", "origin": "0"},
+    {"name": "parameter_cagr_loss", "direction": "minimize", "resolution": "0.001", "origin": "0"},
+    {"name": "parameter_drawdown_increase", "direction": "minimize", "resolution": "0.0001", "origin": "0"},
+    {"name": "rolling60_excess_q10", "direction": "maximize", "resolution": "0.001", "origin": "0"},
+    {"name": "pressure_cagr_loss", "direction": "minimize", "resolution": "0.001", "origin": "0"},
+    {"name": "top10pct_positive_pnl_share", "direction": "minimize", "resolution": "0.01", "origin": "0"}
+  ],
+  "precision_reason": "Return/return-loss steps0.001 mean0.1 percentage point; drawdown steps0.0001 mean0.01 percentage point; concentration step0.01 means1 percentage point of positive net PnL. These are declared comparison granularity, not statistical error bounds.",
+  "comparison": "Lower Pareto layer first. Within layer compare declared binned metrics lexicographically; first unequal known metric decides. Missing value at an earlier tied prefix makes that pair incomparable; never skip or impute it.",
+  "ties": "All seven binned values known and equal means economic display tie; config ID is display-only.",
+  "partial_ranks": "Minimum possible ordinal position = strict ancestors+1; maximum = layer size-strict descendants. Exact rank only if bounds coincide; tied entries share their minimum position. Missing metrics may be disclosed even when an earlier metric decides a pair.",
+  "sensitivity": ["fine_10dec", "finer_half_steps", "coarser_double_steps", "half_cell_shift", "adjacent_priority_swaps"],
+  "no_composite_score": true,
+  "preference": "RETURN_FIRST_ONLY",
+  "statistics_in_comparison": false,
+  "automatic_promotion": false
+}

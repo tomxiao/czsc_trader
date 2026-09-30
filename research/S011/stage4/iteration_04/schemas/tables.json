@@ -1,0 +1,787 @@
+{
+  "account_audit.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "account_metrics",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "cash_inventory_equity",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "original_three_goals",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "closed_and_open_pnl_reconciliation",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "standard_evidence",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "bootstrap.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "block",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "lower",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "median",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "upper",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "repetitions",
+      "type": "int64",
+      "nullable": true
+    }
+  ],
+  "closed_trade_pnl.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "cycle_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "net_pnl",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "comparisons.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "other_config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "kind",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "distance",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "changed_dimensions",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "in_knn20",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "in_local_radius",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "other_qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "cagr_delta",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_delta",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "same_behavior",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "coverage_role",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "center_config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "probe",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "design_id",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "offset",
+      "type": "list<element: int64>",
+      "nullable": true
+    },
+    {
+      "name": "perturbed_config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "optuna_trial",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "tail_weight",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "spx_weight",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "entry",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "exit",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "lookback",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "premium",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "max_days",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "sessions",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "return_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "frequency_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "fees",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "unfilled_orders",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "behavior_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "same_center_account",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "failed_original_goals",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "cost_evaluations.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evaluation_ids",
+      "type": "list<element: string>",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "diagnostics.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "domain",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "metric",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "value",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "unit",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "base_value",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "lower",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "upper",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "repetitions",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "legacy_diagnostics.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "metric",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "value",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "unit",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "lower",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "upper",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "rankings.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "pareto_layer",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "recommendation_rank",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "rank_min",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "rank_max",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "comparison_status",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "missing_metrics",
+      "type": "list<element: string>",
+      "nullable": true
+    },
+    {
+      "name": "incomparable_with",
+      "type": "list<element: string>",
+      "nullable": true
+    },
+    {
+      "name": "tied_with",
+      "type": "list<element: null>",
+      "nullable": true
+    },
+    {
+      "name": "strictly_before",
+      "type": "list<element: string>",
+      "nullable": true
+    },
+    {
+      "name": "strictly_after",
+      "type": "list<element: string>",
+      "nullable": true
+    },
+    {
+      "name": "config_fingerprint",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "first_reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "behavior_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "standard_evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "pressure_evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "parameter_cagr_loss",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "parameter_drawdown_increase",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "rolling60_excess_q10",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "pressure_cagr_loss",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "top_count",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "top10pct_positive_pnl_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_pnl_sum",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_net_pnl",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "open_cycle_count",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "open_net_cash_flow",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "open_marked_pnl",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "fee20_cagr",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "ranking_metrics.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "config_fingerprint",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "first_reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "behavior_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "standard_evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "pressure_evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "parameter_cagr_loss",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "parameter_drawdown_increase",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "rolling60_excess_q10",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "pressure_cagr_loss",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "top_count",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "top10pct_positive_pnl_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_pnl_sum",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_net_pnl",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "open_cycle_count",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "open_net_cash_flow",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "open_marked_pnl",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "fee20_cagr",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "rolling_windows.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "end_date",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "sessions",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "excess",
+      "type": "double",
+      "nullable": true
+    }
+  ]
+}
