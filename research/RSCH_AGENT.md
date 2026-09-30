@@ -131,7 +131,7 @@ czsc-trader experiment preflight `
 
 - 实验抽象契约：`ResearchExperiment`、`ExperimentDefinition`、`ExperimentResult`，见[REX __init__.py](../packages/research_experiment/src/research_experiment/__init__.py)。实现`definition`、`synthetic_precheck()`、`execute(context)`，声明结构化结果与产物。
 - TDR公共API：`create_formal_experiment_context`、`execute_experiment`，见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)；正式执行前按第2.3节完成预检。
-- 阶段二产物抽象契约及统一组装API：**待实现（CAP-01、CAP-02），名称和公共导出路径待填**。目标是由实现类提供组件与证据，平台统一校验并生成机器产物和人工报告；现有实验契约尚不提供此能力，当前由研究实现显式生成双产物。
+- 阶段二产物抽象契约及统一组装API：**待实现（CAP-01、CAP-02），名称和公共导出路径待填**。实现类提交组件、证据和研究解释；平台约束产物完备性、格式合法性、身份一致性和可追溯性，按统一结构组装机器产物和人工报告。现有实验契约尚不提供统一组装能力，当前由研究实现显式生成双产物。
 
 #### 可用资源
 
@@ -141,6 +141,7 @@ czsc-trader experiment preflight `
 
 #### 必要约束
 
+- 研究员负责研究设计、方法选择、证据解释及结论质量；平台校验通过不代表组件有效、研究充分或结论正确。
 - 在已授权的数据、工具和预算内自主研究；新增资源按权限申请。
 - 组件须声明决策职责，使用匹配的标签、期限和对照；因果时间与价格口径遵循第2.2节。
 - 保留支持与反证，区分信息无效、方法不适用、数据不足、技术失败及重复信息；不得事后挑选有利指标授予组件资格。
