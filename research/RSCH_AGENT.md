@@ -134,16 +134,14 @@ czsc-trader experiment preflight `
 
 - 市场数据：DFLS的`DataRequest`、`DataTemporalContract`、`Dataflows`，见[DFLS __init__.py](../packages/dataflows/src/dataflows/__init__.py)；正式实验通过`ExperimentContext`的数据接口访问。
 - 信息定义：FSC的`InformationFamily`、`FactorDefinition`、`SignalDefinition`、`CatalogRegistry`，见[FSC __init__.py](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)。
-- 实验契约：实现抽象基类`ResearchExperiment`的`definition`、`synthetic_precheck()`、`execute(context)`；定义与结果分别使用数据类型`ExperimentDefinition`、`ExperimentResult`，见[REX __init__.py](../packages/research_experiment/src/research_experiment/__init__.py)。
-- 执行入口：探索上下文`create_experiment_context`、正式上下文`create_formal_experiment_context`、执行API `execute_experiment`，见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)。
 - 第三方库：`tsfresh`用于时序特征提取，`expr_codegen`用于表达式生成，pandas／NumPy用于数据计算。使用约定见第4.3节。
 - 公开信息：可自主检索互联网公开资料，用于提出和解释研究机制。
 
 #### 必须遵守的约束
 
-- 每轮实验按REX实验契约实现。
-- 每轮实验使用与实验模式匹配的TDR上下文。
-- 每轮实验通过`execute_experiment`执行。
+- 每轮实验必须实现`ResearchExperiment`抽象契约：`definition`返回`ExperimentDefinition`，`synthetic_precheck()`执行合成预检，`execute(context)`返回`ExperimentResult`；契约见[REX __init__.py](../packages/research_experiment/src/research_experiment/__init__.py)。
+- 每轮实验必须使用与模式匹配的TDR上下文：探索实验使用`create_experiment_context`，正式实验使用`create_formal_experiment_context`；入口见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)。
+- 每轮实验必须通过TDR公共API `execute_experiment`执行。
 - 正式实验首次执行前须按第2.3节通过预检。
 - 使用新增资源前须取得相应授权。
 - 外部数据纳入正式实验时须遵循第2.2节的数据管理要求。
