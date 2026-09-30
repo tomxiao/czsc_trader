@@ -1,0 +1,7 @@
+# EX26 执行
+
+账户计算已完成216/216，全部27个基准/候选的标准费用账本与封存原件逐表一致。7项preflight通过，max_workers=8，公开评价接口按成本场景8线程并行，内部原生线程1。平台已生成有效receipt：`15d21ed0b8f17b4a5b004f5f17a5cdd6b3b796a73fe38d30265128361de787b1`，结果为INCONCLUSIVE，表示诊断完成后仍待RSCH判断。
+
+原run_experiment.py在成功执行与复制全部artifacts之后，对嵌套只读facts执行json.dumps时发生`TypeError: Object of type mappingproxy is not JSON serializable`，尚未写出本文件、结论文档或manifest。原进程日志保存在[execution_process.log](execution_process.log)。这属于研究编排的归档后处理错误，不是行情、账户或平台评价失败。
+
+独立封存步骤先通过load_experiment核对原源码绑定、通过load_experiment_input核验receipt和全部产物hash，确认216条评价完整；随后新增本执行说明及结论文档并首次生成manifest。没有修改原源码、binding、任何artifacts或receipt，没有重跑账户，没有平台改动。后继EX27使用公共result.to_dict导出facts，在首次执行前冻结其新源码。

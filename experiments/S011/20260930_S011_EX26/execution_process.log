@@ -1,0 +1,47 @@
+{"experiment_id": "20260930_S011_EX26", "definition_sha256": "55d788c470c66dd375b2c49b2f198cb3ddd849e731ed67f31d755195d86e0a00", "source_sha256": "f5c036023815cc017e9eb0f34c1e09836162a43467d8e4506b999d3a38c12674", "resources_sha256": "49bb971e7ca44a021a9912de7e921e897e5293a8d83126418b3d408306ccae72", "passed": true, "checks": [{"code": "SOURCE_BOUND", "status": "PASS", "message": "source closure matches binding"}, {"code": "DEFINITION_BOUND", "status": "PASS", "message": "definition is stable"}, {"code": "RESOURCE_CONTRACT", "status": "PASS", "message": "resources match definition"}, {"code": "PREDECESSOR_CONTRACT", "status": "PASS", "message": "predecessor identities match"}, {"code": "ARCHIVE_IDENTITY", "status": "PASS", "message": "static archive identity is valid"}, {"code": "SYNTHETIC_PRECHECK", "status": "PASS", "message": "synthetic precheck passed"}, {"code": "PREFLIGHT_ENFORCEMENT", "status": "PASS", "message": "binding schema v3 requires preflight at execution entry"}]}
+{"completed_candidates": 1, "reference": "EX16BH", "completed_accounts": 8}
+{"completed_candidates": 2, "reference": "EX15T040", "completed_accounts": 16}
+{"completed_candidates": 3, "reference": "EX23T011", "completed_accounts": 24}
+{"completed_candidates": 4, "reference": "EX23T051", "completed_accounts": 32}
+{"completed_candidates": 5, "reference": "EX23T054", "completed_accounts": 40}
+{"completed_candidates": 6, "reference": "EX22T015", "completed_accounts": 48}
+{"completed_candidates": 7, "reference": "EX24T002", "completed_accounts": 56}
+{"completed_candidates": 8, "reference": "EX24T003", "completed_accounts": 64}
+{"completed_candidates": 9, "reference": "EX24T006", "completed_accounts": 72}
+{"completed_candidates": 10, "reference": "EX24T007", "completed_accounts": 80}
+{"completed_candidates": 11, "reference": "EX24T010", "completed_accounts": 88}
+{"completed_candidates": 12, "reference": "EX24T011", "completed_accounts": 96}
+{"completed_candidates": 13, "reference": "EX24T014", "completed_accounts": 104}
+{"completed_candidates": 14, "reference": "EX24T015", "completed_accounts": 112}
+{"completed_candidates": 15, "reference": "EX24T019", "completed_accounts": 120}
+{"completed_candidates": 16, "reference": "EX24T020", "completed_accounts": 128}
+{"completed_candidates": 17, "reference": "EX25T008", "completed_accounts": 136}
+{"completed_candidates": 18, "reference": "EX25T010", "completed_accounts": 144}
+{"completed_candidates": 19, "reference": "EX25T012", "completed_accounts": 152}
+{"completed_candidates": 20, "reference": "EX25T014", "completed_accounts": 160}
+{"completed_candidates": 21, "reference": "EX25T016", "completed_accounts": 168}
+{"completed_candidates": 22, "reference": "EX25T017", "completed_accounts": 176}
+{"completed_candidates": 23, "reference": "EX25T018", "completed_accounts": 184}
+{"completed_candidates": 24, "reference": "EX25T020", "completed_accounts": 192}
+{"completed_candidates": 25, "reference": "EX25T022", "completed_accounts": 200}
+{"completed_candidates": 26, "reference": "EX25T023", "completed_accounts": 208}
+{"completed_candidates": 27, "reference": "EX25T024", "completed_accounts": 216}
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\experiments\S011\20260930_S011_EX26\run_experiment.py", line 56, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20260930_S011_EX26\run_experiment.py", line 42, in main
+    ('����ʧ�ܼ�artifacts/technical_failure.txt�����������·�������ʵ��нӡ�\n' if failure else json.dumps(facts,ensure_ascii=False)+'\n'),encoding='utf-8')
+                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomxiao\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "C:\Users\tomxiao\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomxiao\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\tomxiao\AppData\Local\Programs\Python\Python312\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type mappingproxy is not JSON serializable

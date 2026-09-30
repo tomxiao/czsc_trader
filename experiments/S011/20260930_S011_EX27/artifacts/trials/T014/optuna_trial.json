@@ -1,0 +1,46 @@
+{
+  "number": 14,
+  "state": "COMPLETE",
+  "parameters": {
+    "axis": "premium",
+    "direction": -1
+  },
+  "values": [
+    0.47334286375491197,
+    -0.07256534108773505
+  ],
+  "user_attrs": {
+    "actual_parameters": {
+      "tail_weight": 0.575,
+      "spx_weight": 0.05,
+      "entry": 0.325,
+      "exit": 0.025,
+      "max_days": 2,
+      "lookback": 130,
+      "premium": 0.002
+    },
+    "standard_qualified": true
+  },
+  "system_attrs": {
+    "search_space": {
+      "axis": [
+        "tail_weight",
+        "spx_weight",
+        "entry",
+        "exit",
+        "max_days",
+        "lookback",
+        "premium"
+      ],
+      "direction": [
+        -1,
+        1
+      ]
+    },
+    "grid_id": 0
+  },
+  "distributions": {
+    "axis": "{\"name\": \"CategoricalDistribution\", \"attributes\": {\"choices\": [\"tail_weight\", \"spx_weight\", \"entry\", \"exit\", \"max_days\", \"lookback\", \"premium\"]}}",
+    "direction": "{\"name\": \"IntDistribution\", \"attributes\": {\"log\": false, \"step\": 1, \"low\": -1, \"high\": 1}}"
+  }
+}
