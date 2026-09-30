@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "strategy_id": {
+      "const": "S011"
+    },
+    "fingerprint_version": {
+      "const": "S011_TYPED_CANONICAL_JSON_V1"
+    },
+    "configurations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "config_id": {
+            "type": "string",
+            "pattern": "^S011-CFG-[0-9]{6}$"
+          },
+          "config_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "definition": {
+            "type": "object",
+            "properties": {
+              "strategy_kind": {
+                "const": "s011_short_pressure_reversal"
+              },
+              "symbol": {
+                "const": "159326.SZ"
+              },
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tail_weight": {
+                    "type": "number"
+                  },
+                  "spx_weight": {
+                    "type": "number"
+                  },
+                  "entry": {
+                    "type": "number"
+                  },
+                  "exit": {
+                    "type": "number"
+                  },
+                  "premium": {
+                    "type": "number"
+                  },
+                  "max_days": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3
+                  },
+                  "lookback": {
+                    "type": "integer",
+                    "minimum": 20,
+                    "maximum": 240
+                  }
+                },
+                "required": [
+                  "tail_weight",
+                  "spx_weight",
+                  "entry",
+                  "exit",
+                  "premium",
+                  "max_days",
+                  "lookback"
+                ],
+                "additionalProperties": false
+              },
+              "runtime": {
+                "type": "object",
+                "properties": {
+                  "module": {
+                    "type": "string"
+                  },
+                  "qualname": {
+                    "type": "string"
+                  },
+                  "contract_version": {
+                    "type": "integer"
+                  },
+                  "source_files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "module",
+                  "qualname",
+                  "contract_version",
+                  "source_files",
+                  "source_sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "strategy_kind",
+              "symbol",
+              "parameters",
+              "runtime"
+            ],
+            "additionalProperties": false
+          },
+          "source_root": {
+            "type": "string"
+          },
+          "first_reference": {
+            "type": "string"
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "enum": [
+              "COMPARABLE_DEVELOPMENT",
+              "NONCOMPARABLE_LEGACY"
+            ]
+          }
+        },
+        "required": [
+          "config_id",
+          "config_fingerprint",
+          "definition",
+          "source_root",
+          "first_reference",
+          "references",
+          "scope"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "strategy_id",
+    "fingerprint_version",
+    "configurations"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "implementations": [
+    [
+      "acf2376d4474b069ed7c7ed65ec907837d88a75c4ff639192dd6d17bf38ea98e",
+      "experiments/S011/20260930_S011_EX14/runtime/strategy_runtime"
+    ],
+    [
+      "a09e474ad1697615637fe126ddb214e80b3118bc25a2d16589e1fe2d8fd06b09",
+      "experiments/S011/20260930_S011_EX15/runtime/strategy_runtime"
+    ],
+    [
+      "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e",
+      "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime"
+    ]
+  ],
+  "parameter_contract": "src/contracts.py:Definition",
+  "source_closure_rule": "Each configuration references its exact immutable runtime; execution/input rules are fixed by source closure",
+  "replay_entry": "src/replay.py",
+  "search_evidence": "Original immutable run_experiment.py, experiment.py and per-trial artifacts are referenced by input hashes; launching a new search requires a successor experiment, not an in-place rerun"
+}

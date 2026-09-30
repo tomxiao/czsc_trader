@@ -1,0 +1,1231 @@
+{
+  "schema_version": 1,
+  "status": "SELF_CHECK_COMPLETE_PENDING_USER_DECISION",
+  "development_only": true,
+  "new_hard_gates": false,
+  "automatic_promotion": false,
+  "stage_five_started": false,
+  "scope": "Read-only recomputation; no new parameter proposals or account executions; no platform modifications",
+  "summary": {
+    "registered_configurations": 666,
+    "comparable_configurations": 570,
+    "qualified_configurations": 36,
+    "distinct_comparable_behaviors": 530,
+    "layer_sizes": [
+      27,
+      7,
+      1
+    ],
+    "unranked": {
+      "S011-CFG-000193": "MISSING_OR_NONFINITE_COMPARISON_METRIC"
+    },
+    "pbo": {
+      "8": 0.6285714285714286,
+      "10": 0.5357142857142857
+    },
+    "effective_trial_count": 3.015925668239868
+  },
+  "sorting_limits": [
+    "Exact Pareto after declared rounding; display by config ID does not rank within layer",
+    "kNN is conditional on nonuniform adaptive samples; inspect radius and ranking-without-kNN sensitivity",
+    "No ranking metric proves future profitability; PBO is research-family evidence, not individual eligibility"
+  ],
+  "unmeasured": [
+    "New balanced joint perturbations are not run; only observed joint changes and full-ledger neighbors are measured",
+    "Order queue, market impact, capacity, latency and missed-touch perturbations",
+    "New cross-symbol replication",
+    "New component ablation",
+    "Independent forward data"
+  ],
+  "configuration_assessments": [
+    {
+      "config_id": "S011-CFG-000137",
+      "pareto_layer": 2,
+      "first_reference": "EX15T040",
+      "metrics": {
+        "cagr": 0.41544897098580114,
+        "drawdown_magnitude": 0.07250951093439262,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.15,
+        "knn20_radius": 6.999999999999999,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.2817935769439086,
+        "top3_positive_pnl_share": 0.32661418316518587,
+        "fee20_cagr_loss": 0.0685765058865373
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000193",
+      "pareto_layer": null,
+      "first_reference": "EX23T000",
+      "metrics": {
+        "cagr": 0.41544897098580114,
+        "drawdown_magnitude": 0.07250951093439262,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.15,
+        "knn20_radius": 6.999999999999999,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.2817935769439086,
+        "top3_positive_pnl_share": 0.32661418316518587,
+        "fee20_cagr_loss": null
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Same-source-version 20bp account missing; no cross-version imputation",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000204",
+      "pareto_layer": 2,
+      "first_reference": "EX23T011",
+      "metrics": {
+        "cagr": 0.41706153047914296,
+        "drawdown_magnitude": 0.07242659828715625,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.15,
+        "knn20_radius": 7.0,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.2828062826917348,
+        "top3_positive_pnl_share": 0.3274824025940099,
+        "fee20_cagr_loss": 0.06860518530970028
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000244",
+      "pareto_layer": 1,
+      "first_reference": "EX23T051",
+      "metrics": {
+        "cagr": 0.40220891396468494,
+        "drawdown_magnitude": 0.08222112854693808,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "knn20_qualified_share": 0.1,
+        "knn20_radius": 7.0,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.3071690520952386,
+        "top3_positive_pnl_share": 0.34350240396483456,
+        "fee20_cagr_loss": 0.0645300592260607
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000247",
+      "pareto_layer": 1,
+      "first_reference": "EX23T054",
+      "metrics": {
+        "cagr": 0.4268585090742474,
+        "drawdown_magnitude": 0.07235127587824985,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.1,
+        "knn20_radius": 3.0000000000000027,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.2559142537043517,
+        "top3_positive_pnl_share": 0.3502539562350847,
+        "fee20_cagr_loss": 0.06908806438539283
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000590",
+      "pareto_layer": 1,
+      "first_reference": "EX22T015",
+      "metrics": {
+        "cagr": 0.410650083923912,
+        "drawdown_magnitude": 0.07235132473435757,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.1,
+        "knn20_radius": 4.0,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.2559129227214829,
+        "top3_positive_pnl_share": 0.3504394266364721,
+        "fee20_cagr_loss": 0.06829129879661378
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000617",
+      "pareto_layer": 2,
+      "first_reference": "EX24T002",
+      "metrics": {
+        "cagr": 0.47334286375491197,
+        "drawdown_magnitude": 0.07256534108773505,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 12,
+        "worst_rolling60_excess": -0.26901703022817136,
+        "top3_positive_pnl_share": 0.33844373272604716,
+        "fee20_cagr_loss": 0.06970809276806866
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000618",
+      "pareto_layer": 2,
+      "first_reference": "EX24T003",
+      "metrics": {
+        "cagr": 0.49806063332693906,
+        "drawdown_magnitude": 0.07250640712455592,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.75,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 12,
+        "worst_rolling60_excess": -0.2518229281243394,
+        "top3_positive_pnl_share": 0.3268852398617556,
+        "fee20_cagr_loss": 0.07259235703852629
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000620",
+      "pareto_layer": 1,
+      "first_reference": "EX24T006",
+      "metrics": {
+        "cagr": 0.42116155736689453,
+        "drawdown_magnitude": 0.06159849060257927,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 4.0,
+        "joint_observed_count": 2,
+        "worst_rolling60_excess": -0.2690198905189105,
+        "top3_positive_pnl_share": 0.31278809057637247,
+        "fee20_cagr_loss": 0.06722784691137007
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000621",
+      "pareto_layer": 2,
+      "first_reference": "EX24T007",
+      "metrics": {
+        "cagr": 0.4310672583807367,
+        "drawdown_magnitude": 0.06154830526516941,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.45,
+        "knn20_radius": 2.999999999999999,
+        "joint_observed_count": 2,
+        "worst_rolling60_excess": -0.261189704556545,
+        "top3_positive_pnl_share": 0.30730172320872556,
+        "fee20_cagr_loss": 0.06934107270400514
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000623",
+      "pareto_layer": 1,
+      "first_reference": "EX24T010",
+      "metrics": {
+        "cagr": 0.47334286375491197,
+        "drawdown_magnitude": 0.07256534108773505,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.85,
+        "knn20_radius": 3.0000000000000004,
+        "joint_observed_count": 11,
+        "worst_rolling60_excess": -0.26901703022817136,
+        "top3_positive_pnl_share": 0.33844373272604716,
+        "fee20_cagr_loss": 0.06970809276806866
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000624",
+      "pareto_layer": 1,
+      "first_reference": "EX24T011",
+      "metrics": {
+        "cagr": 0.49806063332693906,
+        "drawdown_magnitude": 0.07250640712455592,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0,
+        "joint_observed_count": 11,
+        "worst_rolling60_excess": -0.2518229281243394,
+        "top3_positive_pnl_share": 0.3268852398617556,
+        "fee20_cagr_loss": 0.07259235703852629
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000627",
+      "pareto_layer": 1,
+      "first_reference": "EX24T014",
+      "metrics": {
+        "cagr": 0.42116155736689453,
+        "drawdown_magnitude": 0.06159849060257927,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 4.0,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.2690198905189105,
+        "top3_positive_pnl_share": 0.31278809057637247,
+        "fee20_cagr_loss": 0.06722784691137007
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000628",
+      "pareto_layer": 1,
+      "first_reference": "EX24T015",
+      "metrics": {
+        "cagr": 0.4310672583807367,
+        "drawdown_magnitude": 0.06154830526516941,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 3.0000000000000027,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.261189704556545,
+        "top3_positive_pnl_share": 0.30730172320872556,
+        "fee20_cagr_loss": 0.06934107270400514
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000632",
+      "pareto_layer": 1,
+      "first_reference": "EX24T019",
+      "metrics": {
+        "cagr": 0.4135720019998106,
+        "drawdown_magnitude": 0.07250805477753697,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.2802618794888432,
+        "top3_positive_pnl_share": 0.36279110353144967,
+        "fee20_cagr_loss": 0.06516829562552862
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000633",
+      "pareto_layer": 1,
+      "first_reference": "EX24T020",
+      "metrics": {
+        "cagr": 0.41278193526677076,
+        "drawdown_magnitude": 0.07242301248271366,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.35,
+        "knn20_radius": 3.0,
+        "joint_observed_count": 0,
+        "worst_rolling60_excess": -0.2811719491414282,
+        "top3_positive_pnl_share": 0.3608556711596208,
+        "fee20_cagr_loss": 0.06675734273322753
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "No joint neighbor within the registered local radius",
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000643",
+      "pareto_layer": 1,
+      "first_reference": "EX25T008",
+      "metrics": {
+        "cagr": 0.4738866228995984,
+        "drawdown_magnitude": 0.07252300637048703,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.75,
+        "knn20_radius": 3.0,
+        "joint_observed_count": 13,
+        "worst_rolling60_excess": -0.26910856803665095,
+        "top3_positive_pnl_share": 0.3378381067060739,
+        "fee20_cagr_loss": 0.071428192924196
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000645",
+      "pareto_layer": 1,
+      "first_reference": "EX25T010",
+      "metrics": {
+        "cagr": 0.44152453663146796,
+        "drawdown_magnitude": 0.0725228591285898,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.6,
+        "knn20_radius": 3.0,
+        "joint_observed_count": 2,
+        "worst_rolling60_excess": -0.2691136466688333,
+        "top3_positive_pnl_share": 0.3164121308910323,
+        "fee20_cagr_loss": 0.06985657505003173
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000647",
+      "pareto_layer": 1,
+      "first_reference": "EX25T012",
+      "metrics": {
+        "cagr": 0.42172043923695357,
+        "drawdown_magnitude": 0.06155922629808752,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 3.0000000000000027,
+        "joint_observed_count": 3,
+        "worst_rolling60_excess": -0.2691200728187626,
+        "top3_positive_pnl_share": 0.3121486271367527,
+        "fee20_cagr_loss": 0.06888695216607754
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000649",
+      "pareto_layer": 1,
+      "first_reference": "EX25T014",
+      "metrics": {
+        "cagr": 0.47047882514523165,
+        "drawdown_magnitude": 0.07252440152534889,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 3,
+        "worst_rolling60_excess": -0.2691213366810721,
+        "top3_positive_pnl_share": 0.33903708580762354,
+        "fee20_cagr_loss": 0.06953481220898916
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000650",
+      "pareto_layer": 3,
+      "first_reference": "EX25T016",
+      "metrics": {
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.6,
+        "knn20_radius": 2.999999999999999,
+        "joint_observed_count": 2,
+        "worst_rolling60_excess": -0.2691199700538578,
+        "top3_positive_pnl_share": 0.3176189029586816,
+        "fee20_cagr_loss": 0.06799353657493601
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000651",
+      "pareto_layer": 2,
+      "first_reference": "EX25T017",
+      "metrics": {
+        "cagr": 0.4509653844642496,
+        "drawdown_magnitude": 0.07250646569812602,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.5,
+        "knn20_radius": 2.999999999999999,
+        "joint_observed_count": 2,
+        "worst_rolling60_excess": -0.2636609150177367,
+        "top3_positive_pnl_share": 0.3115210314386645,
+        "fee20_cagr_loss": 0.0703104392190097
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000652",
+      "pareto_layer": 1,
+      "first_reference": "EX25T018",
+      "metrics": {
+        "cagr": 0.4184385560487076,
+        "drawdown_magnitude": 0.06156253741816464,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 3.0,
+        "joint_observed_count": 3,
+        "worst_rolling60_excess": -0.2691142256819561,
+        "top3_positive_pnl_share": 0.3133762527825339,
+        "fee20_cagr_loss": 0.06707896830244953
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000653",
+      "pareto_layer": 1,
+      "first_reference": "EX25T020",
+      "metrics": {
+        "cagr": 0.47047882514523165,
+        "drawdown_magnitude": 0.07252440152534889,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 3.0,
+        "joint_observed_count": 14,
+        "worst_rolling60_excess": -0.2691213366810721,
+        "top3_positive_pnl_share": 0.33903708580762354,
+        "fee20_cagr_loss": 0.06953481220898916
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000654",
+      "pareto_layer": 2,
+      "first_reference": "EX25T022",
+      "metrics": {
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.65,
+        "knn20_radius": 3.0000000000000004,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.2691199700538578,
+        "top3_positive_pnl_share": 0.3176189029586816,
+        "fee20_cagr_loss": 0.06799353657493601
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000655",
+      "pareto_layer": 1,
+      "first_reference": "EX25T023",
+      "metrics": {
+        "cagr": 0.4509653844642496,
+        "drawdown_magnitude": 0.07250646569812602,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.65,
+        "knn20_radius": 3.0000000000000004,
+        "joint_observed_count": 1,
+        "worst_rolling60_excess": -0.2636609150177367,
+        "top3_positive_pnl_share": 0.3115210314386645,
+        "fee20_cagr_loss": 0.0703104392190097
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000656",
+      "pareto_layer": 1,
+      "first_reference": "EX25T024",
+      "metrics": {
+        "cagr": 0.4184385560487076,
+        "drawdown_magnitude": 0.06156253741816464,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 3.0000000000000027,
+        "joint_observed_count": 4,
+        "worst_rolling60_excess": -0.2691142256819561,
+        "top3_positive_pnl_share": 0.3133762527825339,
+        "fee20_cagr_loss": 0.06707896830244953
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000657",
+      "pareto_layer": 1,
+      "first_reference": "EX27T001",
+      "metrics": {
+        "cagr": 0.45710369307079146,
+        "drawdown_magnitude": 0.07252268134358608,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.26911303013965315,
+        "top3_positive_pnl_share": 0.3377178434630821,
+        "fee20_cagr_loss": 0.07061232677198892
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000658",
+      "pareto_layer": 1,
+      "first_reference": "EX27T002",
+      "metrics": {
+        "cagr": 0.41195801292709566,
+        "drawdown_magnitude": 0.07252490695718816,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.3165888181303258,
+        "top3_positive_pnl_share": 0.33211414865069766,
+        "fee20_cagr_loss": 0.06512352642775632
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000659",
+      "pareto_layer": 1,
+      "first_reference": "EX27T003",
+      "metrics": {
+        "cagr": 0.432052505187827,
+        "drawdown_magnitude": 0.07252285561505534,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.2691132141544821,
+        "top3_positive_pnl_share": 0.31391086005428925,
+        "fee20_cagr_loss": 0.06772049339742581
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000660",
+      "pareto_layer": 1,
+      "first_reference": "EX27T004",
+      "metrics": {
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.85,
+        "knn20_radius": 2.0,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.269119970053858,
+        "top3_positive_pnl_share": 0.3176189029586816,
+        "fee20_cagr_loss": 0.06799353657493601
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000661",
+      "pareto_layer": 1,
+      "first_reference": "EX27T005",
+      "metrics": {
+        "cagr": 0.40347956466447665,
+        "drawdown_magnitude": 0.07327741445601677,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.26911303013965315,
+        "top3_positive_pnl_share": 0.36277573919045814,
+        "fee20_cagr_loss": 0.06801079958943368
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000662",
+      "pareto_layer": 1,
+      "first_reference": "EX27T006",
+      "metrics": {
+        "cagr": 0.4365336591366591,
+        "drawdown_magnitude": 0.07252332855568921,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.269119970053858,
+        "top3_positive_pnl_share": 0.3188029840051114,
+        "fee20_cagr_loss": 0.06788227144434433
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000663",
+      "pareto_layer": 1,
+      "first_reference": "EX27T008",
+      "metrics": {
+        "cagr": 0.4537417961292467,
+        "drawdown_magnitude": 0.0725238816078162,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.2691132141544821,
+        "top3_positive_pnl_share": 0.3389220896329063,
+        "fee20_cagr_loss": 0.0687519456048391
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000664",
+      "pareto_layer": 1,
+      "first_reference": "EX27T009",
+      "metrics": {
+        "cagr": 0.4300043659449446,
+        "drawdown_magnitude": 0.09888679865398886,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.2691213366810721,
+        "top3_positive_pnl_share": 0.3231115735129836,
+        "fee20_cagr_loss": 0.06762036708748509
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    },
+    {
+      "config_id": "S011-CFG-000665",
+      "pareto_layer": 1,
+      "first_reference": "EX27T011",
+      "metrics": {
+        "cagr": 0.40723963633601534,
+        "drawdown_magnitude": 0.07252391788622836,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 15,
+        "worst_rolling60_excess": -0.26911396718871083,
+        "top3_positive_pnl_share": 0.3575606007476088,
+        "fee20_cagr_loss": 0.06487114676961148
+      },
+      "tradeoff": "Compare all six dimensions and the without-kNN sensitivity; same-layer options have no forced ordering",
+      "risks": [
+        "Twenty-neighbor set extends beyond the local diagnostic radius; its qualification share is not local-box coverage",
+        "Development-only evidence with material search selection uncertainty",
+        "Real queue, capacity and execution delay untested"
+      ],
+      "evidence": [
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "ranking_metrics.parquet",
+        "family_statistics.json"
+      ]
+    }
+  ],
+  "review_options": [
+    {
+      "config_id": "S011-CFG-000244",
+      "first_reference": "EX23T051",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000247",
+      "first_reference": "EX23T054",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000590",
+      "first_reference": "EX22T015",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000620",
+      "first_reference": "EX24T006",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000623",
+      "first_reference": "EX24T010",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000624",
+      "first_reference": "EX24T011",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000627",
+      "first_reference": "EX24T014",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000628",
+      "first_reference": "EX24T015",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000632",
+      "first_reference": "EX24T019",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000633",
+      "first_reference": "EX24T020",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000643",
+      "first_reference": "EX25T008",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000645",
+      "first_reference": "EX25T010",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000647",
+      "first_reference": "EX25T012",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000649",
+      "first_reference": "EX25T014",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000652",
+      "first_reference": "EX25T018",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000653",
+      "first_reference": "EX25T020",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000655",
+      "first_reference": "EX25T023",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000656",
+      "first_reference": "EX25T024",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000657",
+      "first_reference": "EX27T001",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000658",
+      "first_reference": "EX27T002",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000659",
+      "first_reference": "EX27T003",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000660",
+      "first_reference": "EX27T004",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000661",
+      "first_reference": "EX27T005",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000662",
+      "first_reference": "EX27T006",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000663",
+      "first_reference": "EX27T008",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000664",
+      "first_reference": "EX27T009",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    },
+    {
+      "config_id": "S011-CFG-000665",
+      "first_reference": "EX27T011",
+      "reason": "Non-dominated under declared diagnostic axes; inspect complete tradeoffs, not automatic selection"
+    }
+  ],
+  "historical_status": "Prior stage4 report selected a representative under superseded rules; immutable prior evidence preserved. Current decision is pending user selection."
+}

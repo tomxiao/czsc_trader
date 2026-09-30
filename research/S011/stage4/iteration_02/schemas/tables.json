@@ -1,0 +1,3391 @@
+{
+  "bootstrap.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "block",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "lower",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "median",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "upper",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "positive_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "repetitions",
+      "type": "int64",
+      "nullable": true
+    }
+  ],
+  "comparisons.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "other_config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "kind",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "distance",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "changed_dimensions",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "in_knn20",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "in_local_radius",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "other_qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "cagr_delta",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_delta",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "same_behavior",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "concentration.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "wins",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "top3_positive_pnl_share",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "cost_evaluations.parquet": [
+    {
+      "name": "evaluation_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "one_way_cost",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "is_benchmark",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "sessions",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "buyhold_cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "buyhold_drawdown",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "original_gates_under_scenario",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "fees",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "unfilled_orders",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "trial",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "axis",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "direction",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "tail_weight",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "spx_weight",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "entry",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "exit",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "max_days",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "lookback",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "premium",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "fee",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "qualified",
+      "type": "bool",
+      "nullable": true
+    }
+  ],
+  "diagnostics.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "metric",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "value",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "unit",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "status",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "lower",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "upper",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "evaluations.parquet": [
+    {
+      "name": "evaluation_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "source_candidate_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "source_experiment",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scope",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "state",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "original_reported_qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "raw_behavior_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "data_identity",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "request_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "result_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "return_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "frequency_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "payload_path",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "failure_reason",
+      "type": "null",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "behavior_id",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "period_returns.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "unit",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "period",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "sessions",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "strategy_return",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "buyhold_return",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "excess",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "ranking_metrics.parquet": [
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "first_reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "behavior_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "knn20_qualified_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "knn20_radius",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "joint_observed_count",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "worst_rolling60_excess",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "top3_positive_pnl_share",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "fee20_cagr_loss",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "returns.parquet": [
+    {
+      "name": "date",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000097",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000098",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000099",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000100",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000101",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000102",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000103",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000104",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000105",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000106",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000107",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000108",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000109",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000110",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000111",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000112",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000113",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000114",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000115",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000116",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000117",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000118",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000119",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000120",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000121",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000122",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000123",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000124",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000125",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000127",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000128",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000129",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000130",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000131",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000132",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000133",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000134",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000135",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000136",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000137",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000138",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000139",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000140",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000141",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000142",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000143",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000144",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000145",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000146",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000147",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000148",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000149",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000150",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000151",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000152",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000153",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000154",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000156",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000157",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000158",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000159",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000160",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000161",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000162",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000163",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000164",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000165",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000166",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000167",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000168",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000170",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000171",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000172",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000173",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000174",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000175",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000177",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000178",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000179",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000180",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000181",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000182",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000183",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000184",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000185",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000186",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000187",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000188",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000189",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000190",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000191",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000192",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000194",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000195",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000196",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000197",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000198",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000199",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000200",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000201",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000202",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000203",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000204",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000205",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000206",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000207",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000208",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000209",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000210",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000211",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000212",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000213",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000214",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000215",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000216",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000217",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000218",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000219",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000220",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000221",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000222",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000223",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000224",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000225",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000226",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000227",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000228",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000229",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000230",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000231",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000232",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000233",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000234",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000235",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000236",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000237",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000238",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000239",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000240",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000241",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000242",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000243",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000244",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000245",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000246",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000247",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000248",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000249",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000250",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000251",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000252",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000253",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000254",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000255",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000256",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000257",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000258",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000259",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000260",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000261",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000262",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000263",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000264",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000265",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000266",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000267",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000268",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000269",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000271",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000272",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000273",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000274",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000275",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000276",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000277",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000278",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000279",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000280",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000281",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000282",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000283",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000284",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000285",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000286",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000287",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000288",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000289",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000290",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000291",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000292",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000293",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000294",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000295",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000296",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000297",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000298",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000299",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000300",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000301",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000302",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000303",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000304",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000305",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000306",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000307",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000308",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000309",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000310",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000311",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000312",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000313",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000314",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000315",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000316",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000317",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000318",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000319",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000320",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000321",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000322",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000323",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000324",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000325",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000326",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000327",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000328",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000329",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000330",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000331",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000332",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000333",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000334",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000335",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000336",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000337",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000338",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000339",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000340",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000342",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000343",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000344",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000345",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000346",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000347",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000348",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000349",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000350",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000351",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000352",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000353",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000355",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000356",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000357",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000358",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000359",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000360",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000361",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000362",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000363",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000364",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000365",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000366",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000367",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000368",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000369",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000370",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000371",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000372",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000373",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000374",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000375",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000376",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000377",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000378",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000379",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000380",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000381",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000382",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000383",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000384",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000385",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000386",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000387",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000388",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000389",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000390",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000391",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000392",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000393",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000394",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000395",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000396",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000397",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000398",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000399",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000400",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000401",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000402",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000403",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000404",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000405",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000406",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000407",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000408",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000409",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000410",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000411",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000412",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000413",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000414",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000415",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000416",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000417",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000418",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000419",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000420",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000421",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000422",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000423",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000424",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000425",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000426",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000428",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000429",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000430",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000431",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000432",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000433",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000434",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000435",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000436",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000437",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000438",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000439",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000440",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000441",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000442",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000443",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000444",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000445",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000446",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000447",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000448",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000449",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000450",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000451",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000452",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000453",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000454",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000455",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000456",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000457",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000458",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000459",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000460",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000461",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000462",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000463",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000464",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000465",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000466",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000467",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000468",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000470",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000471",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000472",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000473",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000474",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000475",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000476",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000477",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000478",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000479",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000480",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000481",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000482",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000483",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000484",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000485",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000486",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000487",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000488",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000489",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000490",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000491",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000492",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000493",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000494",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000495",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000496",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000497",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000498",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000499",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000500",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000501",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000502",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000503",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000504",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000505",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000506",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000507",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000508",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000509",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000510",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000511",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000512",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000513",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000514",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000515",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000516",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000517",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000518",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000519",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000520",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000521",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000522",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000523",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000524",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000525",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000526",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000527",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000528",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000529",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000530",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000531",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000532",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000533",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000534",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000535",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000536",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000537",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000538",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000539",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000540",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000541",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000542",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000543",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000544",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000545",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000546",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000547",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000548",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000549",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000550",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000551",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000552",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000553",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000554",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000555",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000556",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000557",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000558",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000559",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000560",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000561",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000562",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000563",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000564",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000565",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000566",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000567",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000568",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000569",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000570",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000571",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000572",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000573",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000574",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000575",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000576",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000577",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000578",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000579",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000582",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000583",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000584",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000588",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000589",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000590",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000591",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000594",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000595",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000596",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000600",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000601",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000603",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000604",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000605",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000608",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000609",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000610",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000614",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000617",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000618",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000619",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000620",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000621",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000622",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000631",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000632",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000633",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000634",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000635",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000636",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000637",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000638",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000639",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000640",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000641",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000642",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000643",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000644",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000645",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000646",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000647",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000648",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000649",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000650",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000651",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000652",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000657",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000658",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000659",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000661",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000662",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000663",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000664",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000665",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "S011-CFG-000666",
+      "type": "double",
+      "nullable": true
+    }
+  ],
+  "stage3_input/attribution.parquet": [
+    {
+      "name": "kind",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "stage3_input/evaluations.parquet": [
+    {
+      "name": "evaluation_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "source_candidate_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "source_experiment",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scenario",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "scope",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "state",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "original_reported_qualified",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "raw_behavior_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "data_identity",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "request_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "result_hash",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "return_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "frequency_pass",
+      "type": "bool",
+      "nullable": true
+    },
+    {
+      "name": "payload_path",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "failure_reason",
+      "type": "null",
+      "nullable": true
+    },
+    {
+      "name": "cagr",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "drawdown_magnitude",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "closed_trades",
+      "type": "int64",
+      "nullable": true
+    },
+    {
+      "name": "frequency",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "end_equity",
+      "type": "double",
+      "nullable": true
+    },
+    {
+      "name": "behavior_id",
+      "type": "large_string",
+      "nullable": true
+    }
+  ],
+  "trial_events.parquet": [
+    {
+      "name": "evaluation_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "config_id",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "reference",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "state",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "evidence",
+      "type": "large_string",
+      "nullable": true
+    },
+    {
+      "name": "failure_reason",
+      "type": "large_string",
+      "nullable": true
+    }
+  ]
+}

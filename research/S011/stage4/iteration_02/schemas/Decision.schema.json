@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "status": {
+      "const": "PENDING_USER_DECISION"
+    },
+    "selected_config_ids": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "user_approval": {
+      "type": "null"
+    },
+    "stage_five_started": {
+      "const": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "selected_config_ids",
+    "user_approval",
+    "stage_five_started"
+  ],
+  "additionalProperties": false
+}
