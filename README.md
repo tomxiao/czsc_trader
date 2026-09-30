@@ -5,8 +5,8 @@ CZSC Trader 是面向个人量化团队的可审计策略研发与模拟交易�
 分别保存；数据不完整、执行结果未知或批次部分成功不得被解释为整体成功。
 
 项目由 TDR 主应用、九个独立 Python 子包及研究、实验、策略治理目录组成。策略研究员（RSCH）
-提出并检验假设、实现候选；首席投资官（CIO）使用平台工具独立体检和裁决。冻结版本部署到 SRT、
-创建 PTE 账户和生产写入各有独立授权边界。
+负责研究、自检、技术检验及获批冻结；用户负责阶段审批、候选选择和冻结决定。新流程所需平台
+能力按RSCH文档占位，不代表已经实现。冻结版本部署到 SRT、创建 PTE 账户和生产写入各有独立授权边界。
 
 ## 关键文档
 
@@ -14,14 +14,14 @@ CZSC Trader 是面向个人量化团队的可审计策略研发与模拟交易�
 | --- | --- |
 | 研究资料与各策略批次 | [研究导航](research/README.md)；具体状态见各策略`HANDOFF.md` |
 | RSCH 研究方法、权限和交付 | [研究员 Agent](research/RSCH_AGENT.md) |
-| CIO 体检、裁决、冻结和部署 | [首席投资官 Agent](research/CIO_AGENT.md) |
-| 候选提交包格式 | [候选包契约](research/CANDIDATE_PACKAGE.md) |
+| TDR实验、候选评价、回测及证据工具 | [TDR使用说明](src/czsc_trader/README.md) |
+| 旧流程与历史材料参考 | [旧CIO契约](research/CIO_AGENT.md)、[旧候选包契约](research/CANDIDATE_PACKAGE.md)；不作为新研究流程入口 |
 | 不可变实验档案 | [实验档案说明](experiments/README.md) |
 | DEV 跨机跨会话恢复、架构、测试与发布 | [开发运维交接](docs/DEVELOPMENT_HANDOFF.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
 
 ## 子包使用说明
 
-以下 README 面向 RSCH、CIO，说明各公共能力的适用场景、入口和边界；平台开发、环境恢复、
+以下 README 面向研究员，说明各公共能力的适用场景、入口和边界；旧治理描述按新旧流程边界阅读。平台开发、环境恢复、
 包级验证与 PTE 运维统一查阅[开发运维交接](docs/DEVELOPMENT_HANDOFF.md)。
 
 | 研究与治理能力 | 执行与观察能力 |
