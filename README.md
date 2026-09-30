@@ -15,7 +15,6 @@ CZSC Trader 是面向个人量化团队的可审计策略研发与模拟交易�
 | 研究资料与各策略批次 | [研究导航](research/README.md)；具体状态见各策略`HANDOFF.md` |
 | RSCH 研究方法、权限和交付 | [研究员 Agent](research/RSCH_AGENT.md) |
 | TDR实验、候选评价、回测及证据工具 | [TDR使用说明](src/czsc_trader/README.md) |
-| 旧流程与历史材料参考 | [旧CIO契约](research/CIO_AGENT.md)、[旧候选包契约](research/CANDIDATE_PACKAGE.md)；不作为新研究流程入口 |
 | 不可变实验档案 | [实验档案说明](experiments/README.md) |
 | DEV 跨机跨会话恢复、架构、测试与发布 | [开发运维交接](docs/DEVELOPMENT_HANDOFF.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
 

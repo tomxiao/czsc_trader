@@ -1,38 +1,12 @@
-# 策略评估器（Strategy Evaluator，SE）
+# 策略评估器（SE）
 
-本文面向策略研究员（RSCH）。平台实现、安装及包级验证见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
 
-新研究流程按[RSCH契约](../../research/RSCH_AGENT.md)执行。下文涉及CIO、`candidate evaluate`及EvaluationMandate的冻结体检描述保留为旧治理实现参考，不构成新流程授权；新冻结能力仍待CAP-07增强。
+研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
 
-SE是确定性、渠道无关的数值评估包。它接收结构化候选、收益序列、交易账本和评价策略，输出
-可复现的筛选、排名与稳健性数值证据。SE没有语义理解能力，也不读取仓库、加载行情、运行策略、
-管理StrategyFamily/SGC/StrategyVersion或连接PTE。
+`validate_protocol`、`screen_candidates`、`rank_candidates`保留已有协议驱动的比较计算；它们不等同于RSCH阶段四的完整排序政策。阶段四按已批准协议调用`pareto_layers`及所需诊断，不自行新增经济硬门。统计风险标签不等于冻结决定或未来成功概率。
 
-## 如何使用评价证据
-
-RSCH优先通过TDR的`research evaluate`及`czsc_trader.research_tools.evaluate_strategy`取得
-同一SRT/TXE账户口径的研究评价，再用SE数值结果解释候选差异；CIO通过`candidate evaluate`
-独立体检。直接调用SE纯函数适用于已经持有合格输入账本的分析，不负责补齐数据和执行事实。
-
-SE公开的纯函数链为`validate_protocol`→`screen_candidates`→`rank_candidates`→
-`finalize_evaluation`→`render_summary`。筛选只执行评价协议中已声明的硬目标；卡玛、盈亏比、
-稳健性统计等未被协议明确指定为门槛时只能用于观察或诊断。
-
-在筛选和排名后，SE可对TDR提供的事实执行PBO、DSR、绝对及配对区块Bootstrap、参数邻域、
-成本压力和外部复现等确定性计算。`FAVORABLE`、`MIXED`、`WEAK`、`ADVERSE`是数值证据标签，
-不等于人工投资判断或正式冻结裁决。
-
-完整冻结体检由TDR依据EvaluationMandate组织：TDR指定评价窗口并调用SRT准备和认证策略数据，
-再核验TXE成交账本、证据身份、SRT运行时、监测方案及所有必需审计项，并把SE的数值结果纳入
-AdjudicationReport。
-
-评价协议由 TDR 根据已批准的研究协议和 `EvaluationMandate` 显式传入。SE 只执行协议中声明的
-硬门槛；PBO、DSR、Bootstrap、参数邻域和成本压力等结果在未被协议指定为门槛时属于诊断证据，
-不能自行升级为冻结否决条件。
-
-数值标签和完整账户目标应一同阅读；若缺少交易账本、成本情景或封存数据，SE输出不能证明
-候选达到冻结资格。
+平台只校验结构、计算和证据一致性，研究员解释结果，用户决定选型。新冻结工具仍待实现，见[RSCH契约](../../research/RSCH_AGENT.md)。
 
 ## `pareto_layers`：输入适配
 

@@ -6,13 +6,13 @@
 > 执行契约见`research/RSCH_AGENT.md`；本文维护系统架构、
 > 开发环境、测试规则和PTE运维。历史设计与实施过程见`docs/superpowers/`。
 
-> 流程迁移边界：新流程已废弃CIO角色和独立候选包对象。本文下述CIO、候选包、EvaluationMandate及裁决链描述保留为现有旧治理实现参考，不作为新研究的角色授权或交付要求。新候选检验与冻结能力仍按RSCH附录“平台能力占位清单”的CAP-07占位，尚未实现时不得调用旧流程冒充新流程。本文不声明平台改造已经完成。
+> 当前边界：研究员统一使用公开Python API，用户CLI仅保留`backtest run`。新闻抽取、CIO、候选包及旧裁定／冻结写入已删除。历史治理只保留读取与校验；新冻结能力待CAP-07实现。冻结记录、源码和部署凭据不因接口重构而重签。
 
 ## 模块与简称
 
 | 简称 | 全称 | 核心职责 |
 | --- | --- | --- |
-| TDR | CZSC Trader | 正式策略结论的可信裁判员和策略生命周期维护入口 |
+| TDR | CZSC Trader | 研究执行、评价、回测及跨模块公共API |
 | DFLS | Dataflows | Tushare数据获取、复权、多频处理和数据发布 |
 | FSC | Factor & Signal Catalog | 项目级信息族、因子和信号定义目录 |
 | STC | Strategy Template Catalog | 策略函数模板、输入角色和参数边界目录 |
@@ -26,8 +26,7 @@
 
 后续开发、文档和讨论统一使用以上名称。DFLS、FSC、STC、REX、SM、SE、SRT、TXE和PTE
 均为仓库内独立包，只通过明确契约协作。研究脚本可以直接使用Optuna、特征提取库及其他研究
-依赖；仓库不再维护通用Search和Feature Mining运行模块。`news_events`仍是TDR内的受控抽取
-能力。新流程由RSCH执行研究、自检、技术检验及获批冻结；用户保留阶段审批、候选选择及冻结决定权。部署须另行授权。
+依赖；仓库不再维护通用Search、Feature Mining和新闻抽取运行模块。新流程由RSCH执行研究、自检、技术检验及获批冻结；用户保留阶段审批、候选选择及冻结决定权。部署须另行授权。
 
 ## 接手时核对的状态
 
@@ -37,8 +36,7 @@ PTE生产活动版本都可能变化，必须在接手时按任务范围分别�
 目录。PTE控制台仅监听localhost，WDG服务名为`CZSC-PTE-Watchdog`，当前实现的交易渠道是
 Futu中国市场模拟交易；实际服务与渠道健康以运行环境状态为准。
 
-新候选冻结必须绑定不可变候选快照、最终EvaluationMandate、TDR裁判报告、人工冻结决议和
-SRT运行时验收，身份或哈希不一致时拒绝冻结。普通SRT决策使用`advice.v4`，原子时点计划
+新冻结入口尚未提供；后续实现必须绑定候选身份、技术检验和用户明确批准。普通SRT决策使用`advice.v4`，原子时点计划
 使用`advice.v5`；TDR回测图消费`strategy_chart.v1`，PTE以独立DFLS行情和SRT输出的
 `strategy_observation.v1`生成`pte_forward_chart.v1`前瞻图。PTE不读取未冻结候选包或
 策略专属前瞻图代码。
@@ -54,34 +52,16 @@ git rev-list --left-right --count origin/master...master
 ## 总体架构
 
 ```text
-Tushare → DFLS（获取、校验、按供应商与标的修复）
-                    ↓ DataResult
-策略研究员 → 候选实现 + binding + 回测图代码 + 观察语义 → 候选提交包
-CIO Agent → candidate review/evaluate → TDR
-    TDR → SRT → DFLS → data/review（不可变审核快照）
-        → SRT + TXE → 独立复算账本 → SE数值审计 → SGC裁判印章
-        → CIO形成裁决并按当前任务授权冻结 → SM冻结发布包（同一实现及参数）
-
-候选包/治理区冻结发布包 → StrategyRuntime.create → StrategyInstance
-                                      ├─ prepare_data → DFLS
-                                      └─ run_window → TXE HistoricalExecutor → 历史执行账本
-
-CIO授权范围包含部署 → strategy deploy → strategies/deployments/部署凭据 → SRT加载冻结发布包
-                                                                  ↓
-                PTE → prepare_data/plan_at → PTE Futu渠道 → Futu模拟账户
-                 └→ 独立DFLS行情 + SRT观察事实 → 异步前瞻观察图
-                 ↑
-            WDG进程托管
+研究员 → 公共API → REX受管实验 → SRT + DFLS → TXE账户 → SE数值证据
+用户 → backtest run → 同一回测API → 账户、审计、报告
+冻结版本 → 获批部署API → SRT部署凭据 → PTE独立运行
+历史版本／批准／凭据 → SM只读验证
+新候选检验与冻结：尚未提供
 ```
 
 ### 模块边界
 
-- **TDR**位于`src/czsc_trader/`。它向CIO Agent提供候选审查、体检和冻结入口，负责核实
-  研究主张、组织完整体检、签发裁判报告并维护策略生命周期。实验脚本可自由使用新数据与
-  算法库；只有提交冻结流程的结论才进入TDR强约束。平台当前不识别或鉴权用户及Agent身份，
-  治理印章中的操作者身份保证级别记录为`UNVERIFIED`。TDR维护正式
-  工作流编排、报告和图表；历史渠道、成交、费用与账户账本统一由TXE的`HistoricalExecutor`维护，
-  不再保留`BacktestChannel`包装层。
+- **TDR**位于`src/czsc_trader/`。`application`公开完整业务操作，`research_tools`承载实验上下文及评价，`backtesting`承载共同回放。CLI只做用户回测适配。平台校验完备性、一致性与可追溯性，不认证研究结论正确。操作者声明不等于身份鉴权，现有凭据中的身份保证级别仍为`UNVERIFIED`。
 - **FSC**位于`packages/factor_signal_catalog/`，定义数据位于`catalog/`。它记录项目级信息族、
   因子和信号的稳定语义、实现入口、参数及因果可用时间；不保存标的计算值、收益证据、实验
   结论或运行状态。TDR只读引用FSC，各研究线拥有自己的物化缓存与证据。
@@ -92,14 +72,11 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
 - **REX**位于`packages/research_experiment/`。它定义可执行研究实验的声明、能力、输入与
   回执合同，并隔离加载经过源码哈希校验的实验实现；TDR的`research_tools`提供平台上下文、
   受控数据访问及执行适配。REX不替研究员判断机制或改变实验档案。
-- **SM**位于`packages/strategy_manager/`。它持久化`StrategyFamily`、追加式
-  `StrategyGovernanceCredential`、冻结版本、资格和生命周期事件；候选快照、最终
-  `EvaluationMandate`、裁判报告和人工批准均作为同一凭据链上的印章内容保存。它不计算绩效，
-  不管理策略进程与账户运行状态。
+- **SM**位于`packages/strategy_manager/`。保留策略族登记、既有版本、证据、生命周期及治理验证。旧送审、裁定与冻结写入已删除，历史凭据类型由内部只读模块解析；新冻结工具待实现。
 - **SE**位于`packages/strategy_evaluator/`。它接收TDR提供的结构化事实，执行筛劣、Pareto
   排名、PBO、DSR、Bootstrap、参数邻域和成本压力等确定性数值计算；它不读取仓库、不理解
   金融语义，也不签发TDR裁决或改变SM、PTE状态。
-- **SRT**位于`packages/strategy_runtime/`。包内只保存策略无关运行框架；候选实现来自候选包，
+- **SRT**位于`packages/strategy_runtime/`。包内只保存策略无关运行框架；候选实现来自显式绑定的研究源码，
   冻结实现及其源码闭包保存在`strategies/SXX/releases/vN/`，部署凭据保存在
   `strategies/deployments/`。`StrategyRuntime`校验候选或已部署冻结版本并创建
   `StrategyInstance`；实例根据交易窗口自主推导信号日、历史范围和全部数据依赖，通过DFLS
@@ -122,10 +99,6 @@ CIO授权范围包含部署 → strategy deploy → strategies/deployments/部�
   Tushare股票与ETF适配、源时间元数据和历史补丁分别在`packages/dataflows/src/dataflows/`
   的供应商模块、`facade.py`及`history_patches/`维护；补丁只匹配已登记的异常签名，修复后
   必须重新校验，未知异常明确失败。研究正式输入优先走DFLS公共门面。
-- **新闻事件抽取**位于TDR的`news_events`独立内部包。dataflows或实验脚本负责缓存原文，
-  TDR逐篇调用单一MaaS模型并执行严格结构校验、原文证据回查、断点复用和审计落盘；SE、
-  SM和PTE不直接调用模型。MaaS凭据只从进程环境或Git忽略的根目录`.env`读取。
-
 正式实验档案按`experiments/<策略ID>/<实验ID>/`保存。实验ID全局唯一，TDR按ID定位
 嵌套档案；历史SM证据中的旧路径字符串保持不变，并由兼容解析器映射到当前目录。
 
@@ -162,31 +135,17 @@ PTE的账户事实仍以渠道回报为准。
 10. 跨机器文件身份统一复用`src/czsc_trader/identity.py`：普通文本归一化换行为LF，JSON按语义
     计算SHA-256，原始行情与二进制按字节计算SHA-256；既有实验档案保持原样。
 
-### RSCH与CIO Agent的治理协同
+### 研究API与治理边界
 
-1. RSCH Agent通过`research create`创建研究身份和首条预注册SGC，并在研究区完成实验、策略
-   实现、binding、回测图代码、观察语义及候选提交包；同一策略族启动后续批次时必须显式给出
-   新的`credential_id`，原SGC保持不可变。
-2. CIO Agent通过`candidate review/evaluate`锁定候选包和最终EvaluationMandate。TDR禁用缓存复用，
-   按截止日完整数据、候选真实执行规则和`TXE-v1`语义独立复算，并阻断任何缺项或口径漂移。
-3. CIO Agent阅读体检结果并形成裁决建议；当前任务授权包含冻结时，CIO执行`candidate freeze`，
-   平台重新校验证据文件、SRT输入、执行契约及整条SGC，再原子创建StrategyVersion和治理区
-   冻结发布包。
-4. 当前任务授权包含部署时，CIO执行`strategy deploy`，平台验证发布包并写入SRT部署凭据；
-   PTE账户启用仍需要单独授权。
+1. 研究立项和意图更新使用TDR `create_research_batch/update_research_intent`，保留研究批次凭据与授权记录。
+2. 正式实验使用REX绑定、预检、受管上下文和执行回执；评价通过`context.evaluation.evaluate`保留预算与追踪。
+3. `run_backtest(context, strategy, request)`接受`StrategyCandidate`或`StrategyVersion`，共用SRT/TXE回放；用户CLI当前解析已登记版本。候选持久化CLI解析尚未提供。
+4. 已登记版本回测仍使用现有SRT部署凭据，缺少时明确失败，不自动部署。
+5. `deploy_strategy`仅在独立授权后调用；PTE账户、服务和生产状态不随研究授权开放。
+6. 旧CIO、候选包、裁定及冻结执行路径已删除，不提供回退。历史版本、发布清单、批准和凭据保持不可变；内部历史解析器只读验证。
+7. 新候选检验、批准绑定和冻结工具仍待CAP-07实现，当前不可冻结。
 
-送审前必须完成候选SRT，声明模块、类、源码闭包及其哈希、参数和完整输入契约；研究者宜在
-搜索前完成实现，以复用同一SRT与TXE。旧`rule`字典不能绕过候选运行身份校验。
-
-复算由TDR的`application/review_data.py`组织：TDR把显式哈希绑定的执行行情封存到
-`data/review/<凭据ID>/<送审哈希>/`，每个候选或冻结版本再在该快照内获得独立的SRT数据空间，
-并由`StrategyInstance.prepare_data()`准备策略依赖。任何执行数据、策略输入或运行身份校验失败
-都不产生可用快照；审核过程离线运行，无隐式联网补数。评估制品写入快照目录下独立实验副本，
-不覆盖原实验。重复读取已通过报告和正式冻结都重新验证封存证据，不能让缓存掩盖证据漂移。
-
-候选与冻结回测共同通过`backtesting/srt_bridge.py`接入SRT与TXE。旧策略解析器和`baseline`
-命令入口均已退出当前路径，历史baseline文件只作为冻结策略的不可变身份依据保留。历史实验
-按档案规则供人工审阅，不承诺旧脚本可在新架构重放；已有冻结版本的身份与执行行为继续维护。
+研究员直接使用所属模块API或TDR公共业务入口，不拼装CLI。历史实验仅保证原件保留和档案校验，不要求旧研究脚本兼容新接口。
 
 ## 新机器恢复
 
@@ -224,7 +183,7 @@ python -m venv .venv
 
 根目录`.venv`是平台开发和策略研究共用的唯一开发环境；`research` extra提供Optuna、tsfresh
 等仅在研究阶段使用的依赖，不创建第二套本地虚拟环境。PTE构建不安装该extra，研究依赖不得
-进入PTE生产发布闭包。Tushare与新闻MaaS凭据写入由Git忽略的`.env`；使用Futu模拟交易前
+进入PTE生产发布闭包。Tushare凭据写入由Git忽略的`.env`；使用Futu模拟交易前
 启动Futu OpenD。开发环境恢复后按[测试用例治理](TEST_GOVERNANCE.md)运行相应回归。WDG只
 绑定独立PTE生产根目录，不引用开发仓库；迁移开发仓库无需重装WDG。
 
@@ -253,7 +212,7 @@ SRT准备数据及配置组成的完整生产`shared/`，并与Futu活动订单�
 
 PTE生产写入、服务控制和账户变更均须先取得明确授权。生产根目录以
 `scripts/pte-publish.ps1`内置的`$ProductionRoot`为唯一配置来源；以下命令中的`$PteRoot`
- 取该值。PTE向RSCH/CIO展示的观察事实及其边界见[PTE使用说明](../packages/paper_trading_engine/README.md)。
+ 取该值。PTE向RSCH展示的观察事实及其边界见[PTE使用说明](../packages/paper_trading_engine/README.md)。
 
 ### 构建与发布
 
@@ -317,7 +276,7 @@ Content-Type: application/json
 `DECISION_SUPERSEDED`或`DECISION_AND_INTENTS_SUPERSEDED`。只有尚未提交渠道且没有
 `channel_order_id`的订单意图可以随旧决策失效；已有渠道订单或结果未知时返回冲突。
 
-冻结策略不会自动进入SRT或PTE；CIO按当前任务授权通过`strategy deploy`写入SRT部署凭据，创建PTE账户
+冻结策略不会自动进入SRT或PTE；获准的DEV通过`deploy_strategy` API写入SRT部署凭据，创建PTE账户
 仍是独立授权动作。暂停只阻止新单，已有订单继续对账。PTE日调度为每个账户创建隔离的SRT
 实例并调用`prepare_data()`，准备成功后才执行账户决策；`srt-prepare`只用于人工诊断或独立准备。
 准备异常必须先于账户决策明确暴露。
@@ -329,8 +288,8 @@ Content-Type: application/json
   --start 2026-09-03 --end 2026-12-03 --output .tmp\paper-forward.json
 ```
 
-日常净值保留在PTE数据库；导出的里程碑证据须先经过人工复核。`strategy`命令仅覆盖SRT，
-当前不提供通过该命令登记策略生命周期证据的入口。
+日常净值保留在PTE数据库；导出的里程碑证据须先经过人工复核。获准后通过SM的
+`StrategyRegistry.record_evidence`登记生命周期证据；TDR不提供对应CLI。
 
 ### WDG、健康检查与故障处理
 
@@ -387,7 +346,7 @@ Get-Content (Join-Path $PteRoot 'shared\logs\pte.log') -Tail 100
 用例准入、收敛与删除条件、分级回归命令、月度及触发式审查流程统一见
 [测试用例治理](TEST_GOVERNANCE.md)。该文档是后续周期性治理的唯一操作规范。
 
-治理和执行链路由根目录及各独立包的长期功能场景验收：TDR覆盖候选审查、体检、冻结、证据
+治理和执行链路由根目录及各独立包的长期功能场景验收：TDR覆盖公共API、唯一回测CLI、证据
 漂移与失败语义，SRT/TXE覆盖候选和冻结版本的同路径执行，PTE覆盖准备结果、账户、订单、账本与服务
 配置。历史实验只保证档案校验和人工查看，不承诺旧脚本回放。完整命令及版本验收边界见
 [测试用例治理](TEST_GOVERNANCE.md)；任何生产部署仍需独立授权。
@@ -415,11 +374,11 @@ PTE控制台另有Node测试；完整命令、版本验收边界及单模块失�
 - 普通改动使用`master`；重量级开发和研究任务先确认是否新建`codex/`分支。
 - 不使用本地Git worktree；保留用户的无关修改。
 - 分支内可以自主提交；合并`master`和推送远端前取得用户确认。
-- 修改研究角色规则时同步`research/RSCH_AGENT.md`或`research/CIO_AGENT.md`；修改具体批次时
+- 修改研究角色规则时同步`research/RSCH_AGENT.md`；修改具体批次时
   同步对应`research/SXX/HANDOFF.md`和新实验档案；资料入口变化时同步`research/README.md`。
 - 修改公共使用方式时同步对应包`README.md`；修改内部运行边界、开发环境或发布方式时同步本文。
 - 根目录`README.md`只维护项目介绍和文档索引；`research/README.md`只维护研究资料导航，
-  批次状态以各自`HANDOFF.md`为准；两份Agent描述维护角色工作流；本文维护架构、开发环境、
+  批次状态以各自`HANDOFF.md`为准；RSCH Agent描述维护研究工作流；本文维护架构、开发环境、
   运行边界和PTE运维。调试流水及已完成任务不进入这些文档。
 
 ## 研究平台待评审事项
@@ -430,7 +389,7 @@ PTE控制台另有Node测试；完整命令、版本验收边界及单模块失�
 
 | 议题 | 当前缺口与启动条件 | 最小验收 |
 | --- | --- | --- |
-| 正式实验技术预检 | 已有REX实验合同与`research evaluate`，尚无统一的`experiment check`；新正式实验若仍被纯技术错误阻断，再评审预检入口 | 合成夹具在读取真实收益前发现数据集/字段、时间差和评价起点错误（S008 C01/C02/C04/C05）；不写实验或受管数据 |
+| 正式实验技术预检 | 已有REX实验合同及`preflight_experiment_archive`、`evaluate_research_request` API；优先复用，新增检查范围另行评审 | 合成夹具在读取真实收益前发现数据集/字段、时间差和评价起点错误；预检输出写入指定实验档案，不替代正式研究证据 |
 | 评价路径等价 | 研究与候选侧已复用评价Harness，尚无公开的加速/完整路径逐日等价检查；仅在下一批研究需要加速评价时实施 | 固定参数下逐日对齐目标仓位、账户净值与指标，并保存两侧结果身份（C05/C06） |
 | 联合搜索执行器 | 当前没有公共`run_search`；只有重复的大规模搜索确实产生并发、复现或账本问题时再建设 | 固定种子下1与多worker的trial编号、参数和裁决一致；失败trial进入账本（C06） |
 | 研究状态与数据能力查询 | `research status`及`data capabilities`入口尚不存在；出现反复的状态误读或数据合同试错时分别评审 | 只读派生权威实验状态或合法数据集/时间语义，不泄露凭据、不改数据 |
@@ -442,13 +401,13 @@ PTE控制台另有Node测试；完整命令、版本验收边界及单模块失�
 ## 详细资料入口
 
 - 项目介绍与文档索引：`README.md`
-- 各子包面向RSCH/CIO的使用说明：`packages/dataflows/README.md`、
+- 各子包面向RSCH的使用说明：`packages/dataflows/README.md`、
   `packages/factor_signal_catalog/README.md`、`packages/strategy_template_catalog/README.md`、
   `packages/research_experiment/README.md`、`packages/strategy_manager/README.md`、
   `packages/strategy_evaluator/README.md`、`packages/strategy_runtime/README.md`、
   `packages/trading_execution_engine/README.md`、`packages/paper_trading_engine/README.md`
 - 研究资料导航：`research/README.md`；批次状态：`research/SXX/HANDOFF.md`
-- RSCH与CIO执行契约：`research/RSCH_AGENT.md`、`research/CIO_AGENT.md`
+- RSCH执行契约：`research/RSCH_AGENT.md`
 - 已批准设计与实施计划：`docs/superpowers/specs/`、`docs/superpowers/plans/`
 
 当前限制：PTE只实现Futu模拟交易渠道；控制台只监听localhost；同一观察序列的SQLite

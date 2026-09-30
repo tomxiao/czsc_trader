@@ -18,8 +18,10 @@ from .experiment import (
     execute_experiment,
     preflight_experiment,
 )
+from .audit_evidence import build_champion_audit_request
 
 __all__ = [
+    "build_champion_audit_request",
     "METRIC_SEMANTICS_VERSION",
     "BuyHoldReplay",
     "CandidateEvaluationContext",

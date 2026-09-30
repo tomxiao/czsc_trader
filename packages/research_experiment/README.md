@@ -44,21 +44,9 @@
 - 预检通过前不得读取正式结果。
 - DFLS的`READY`状态不得替代历史可得性或研究合同核验。
 
-### CLI入口
+### API入口
 
-源码与定义冻结后、首次正式执行前调用下列命令。示例路径和资源数须替换为实际值；CLI参数以[当前实现](../../src/czsc_trader/cli/main.py)为准。
-
-```powershell
-czsc-trader experiment preflight `
-  --experiment experiments/SXXX/YYYYMMDD_SXXX_EXNN `
-  --max-workers 1
-```
-
-| 参数 | 使用方式 |
-| --- | --- |
-| `--max-workers` | 声明实际工作进程预算；示例中的1不是参数搜索默认值 |
-| `--max-evaluations` | 搜索实验填写冻结的评价预算 |
-| `--predecessor` | 每项成功前序证据分别追加`experiments/SXXX/YYYYMMDD_SXXX_EXNN/artifacts=<receipt_sha256>` |
+源码与定义冻结后、首次正式执行前调用TDR公共`preflight_experiment_archive(context, experiment, ...)`，见[公共导出](../../src/czsc_trader/application/__init__.py)。显式提供`max_workers`、搜索预算`max_evaluations`及`PredecessorEvidence`序列；前驱绑定工作空间与回执哈希。示例见[TDR说明](../../src/czsc_trader/README.md)。用户CLI仅保留回测，研究员不得通过CLI执行预检。
 
 - 技术失败档案必须按实际档案身份引用。
 - 不得伪造成功receipt。

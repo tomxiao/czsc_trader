@@ -2,22 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Mapping
-
-if TYPE_CHECKING:
-    from .audit_models import ChampionAuditResult
+from typing import Any, Mapping
 
 
 class ValidationError(ValueError):
     def __init__(self, message: str, code: str = "INVALID_INPUT") -> None:
         super().__init__(message)
         self.code = code
-
-
-class Decision(str, Enum):
-    RECOMMEND_FREEZE = "RECOMMEND_FREEZE"
-    KEEP_INCUMBENT = "KEEP_INCUMBENT"
-    INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
 
 
 class MetricStatus(str, Enum):
@@ -27,12 +18,6 @@ class MetricStatus(str, Enum):
     NO_WINS = "NO_WINS"
     NO_LOSSES = "NO_LOSSES"
     UNAVAILABLE = "UNAVAILABLE"
-
-
-class HealthStatus(str, Enum):
-    PASS = "PASS"
-    FAIL = "FAIL"
-    INSUFFICIENT = "INSUFFICIENT"
 
 
 def _exact(data: Mapping[str, Any], required: set[str], optional: set[str] = set()) -> None:
@@ -61,7 +46,11 @@ def _json_value(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
     if is_dataclass(value):
-        return value.to_dict() if isinstance(value, Record) else {field.name: _json_value(getattr(value, field.name)) for field in fields(value)}
+        return (
+            value.to_dict()
+            if isinstance(value, Record)
+            else {field.name: _json_value(getattr(value, field.name)) for field in fields(value)}
+        )
     if isinstance(value, tuple):
         return [_json_value(item) for item in value]
     return value
@@ -111,14 +100,37 @@ class EvaluationProtocol(Record):
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> EvaluationProtocol:
-        required = {"schema_version", "standard_version", "experiment_id", "research_objective", "development_cutoff", "incumbent_id", "incumbent_hash", "decision_windows", "target_windows", "execution_policy_hash", "tightened_margins", "shortlist_limit", "target_requirements", "candidate_manifest"}
+        required = {
+            "schema_version",
+            "standard_version",
+            "experiment_id",
+            "research_objective",
+            "development_cutoff",
+            "incumbent_id",
+            "incumbent_hash",
+            "decision_windows",
+            "target_windows",
+            "execution_policy_hash",
+            "tightened_margins",
+            "shortlist_limit",
+            "target_requirements",
+            "candidate_manifest",
+        }
         _exact(data, required)
         return cls(
-            int(data["schema_version"]), str(data["standard_version"]), str(data["experiment_id"]),
-            str(data["research_objective"]), str(data["development_cutoff"]), str(data["incumbent_id"]),
-            str(data["incumbent_hash"]), tuple(map(str, data["decision_windows"])), tuple(map(str, data["target_windows"])),
-            str(data["execution_policy_hash"]), _pairs(data["tightened_margins"], "tightened_margins"),
-            int(data["shortlist_limit"]), tuple(TargetRequirement.from_dict(x) for x in data["target_requirements"]),
+            int(data["schema_version"]),
+            str(data["standard_version"]),
+            str(data["experiment_id"]),
+            str(data["research_objective"]),
+            str(data["development_cutoff"]),
+            str(data["incumbent_id"]),
+            str(data["incumbent_hash"]),
+            tuple(map(str, data["decision_windows"])),
+            tuple(map(str, data["target_windows"])),
+            str(data["execution_policy_hash"]),
+            _pairs(data["tightened_margins"], "tightened_margins"),
+            int(data["shortlist_limit"]),
+            tuple(TargetRequirement.from_dict(x) for x in data["target_requirements"]),
             str(data["candidate_manifest"]),
         )
 
@@ -141,13 +153,28 @@ class CandidateDescriptor(Record):
         _exact(
             data,
             {"candidate_id", "candidate_hash", "execution_policy_hash"},
-            {"is_incumbent", "behavior_hash", "parameter_distance", "family", "generation_stage", "parent_candidate_id", "parameter_group"},
+            {
+                "is_incumbent",
+                "behavior_hash",
+                "parameter_distance",
+                "family",
+                "generation_stage",
+                "parent_candidate_id",
+                "parameter_group",
+            },
         )
         parent = data.get("parent_candidate_id")
         return cls(
-            str(data["candidate_id"]), str(data["candidate_hash"]), str(data["execution_policy_hash"]),
-            bool(data.get("is_incumbent", False)), str(data.get("behavior_hash", "")), float(data.get("parameter_distance", 0.0)),
-            str(data.get("family", "")), str(data.get("generation_stage", "")), None if parent is None else str(parent), str(data.get("parameter_group", "")),
+            str(data["candidate_id"]),
+            str(data["candidate_hash"]),
+            str(data["execution_policy_hash"]),
+            bool(data.get("is_incumbent", False)),
+            str(data.get("behavior_hash", "")),
+            float(data.get("parameter_distance", 0.0)),
+            str(data.get("family", "")),
+            str(data.get("generation_stage", "")),
+            None if parent is None else str(parent),
+            str(data.get("parameter_group", "")),
         )
 
 
@@ -176,7 +203,20 @@ class MetricObservation(Record):
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> MetricObservation:
-        required = {"candidate_id", "window_id", "scenario_id", "measurement_tier", "net_cagr", "total_return", "max_drawdown", "calmar", "calmar_status", "profit_factor", "profit_factor_status", "closed_trades"}
+        required = {
+            "candidate_id",
+            "window_id",
+            "scenario_id",
+            "measurement_tier",
+            "net_cagr",
+            "total_return",
+            "max_drawdown",
+            "calmar",
+            "calmar_status",
+            "profit_factor",
+            "profit_factor_status",
+            "closed_trades",
+        }
         _exact(
             data,
             required,
@@ -192,15 +232,33 @@ class MetricObservation(Record):
             },
         )
         return cls(
-            str(data["candidate_id"]), str(data["window_id"]), str(data["scenario_id"]), str(data["measurement_tier"]),
-            float(data["net_cagr"]), float(data["total_return"]), float(data["max_drawdown"]), None if data["calmar"] is None else float(data["calmar"]),
-            _enum(MetricStatus, data["calmar_status"], "calmar_status"), None if data["profit_factor"] is None else float(data["profit_factor"]),
-            _enum(MetricStatus, data["profit_factor_status"], "profit_factor_status"), int(data["closed_trades"]),
-            None if data.get("turnover") is None else float(data["turnover"]), None if data.get("cost_drag") is None else float(data["cost_drag"]),
-            tuple((key, float(value)) for key, value in _pairs(data.get("objective_values", {}), "objective_values")),
-            None if data.get("frequency_window_days") is None else int(data["frequency_window_days"]),
-            None if data.get("rolling_closed_trades_median") is None else float(data["rolling_closed_trades_median"]),
-            None if data.get("rolling_closed_trades_p10") is None else float(data["rolling_closed_trades_p10"]),
+            str(data["candidate_id"]),
+            str(data["window_id"]),
+            str(data["scenario_id"]),
+            str(data["measurement_tier"]),
+            float(data["net_cagr"]),
+            float(data["total_return"]),
+            float(data["max_drawdown"]),
+            None if data["calmar"] is None else float(data["calmar"]),
+            _enum(MetricStatus, data["calmar_status"], "calmar_status"),
+            None if data["profit_factor"] is None else float(data["profit_factor"]),
+            _enum(MetricStatus, data["profit_factor_status"], "profit_factor_status"),
+            int(data["closed_trades"]),
+            None if data.get("turnover") is None else float(data["turnover"]),
+            None if data.get("cost_drag") is None else float(data["cost_drag"]),
+            tuple(
+                (key, float(value))
+                for key, value in _pairs(data.get("objective_values", {}), "objective_values")
+            ),
+            None
+            if data.get("frequency_window_days") is None
+            else int(data["frequency_window_days"]),
+            None
+            if data.get("rolling_closed_trades_median") is None
+            else float(data["rolling_closed_trades_median"]),
+            None
+            if data.get("rolling_closed_trades_p10") is None
+            else float(data["rolling_closed_trades_p10"]),
             None if data.get("win_loss_ratio") is None else float(data["win_loss_ratio"]),
             _enum(
                 MetricStatus,
@@ -221,24 +279,12 @@ class TrialRecord(Record):
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> TrialRecord:
         _exact(data, {"trial_id", "candidate_id", "strategy_hash", "behavior_hash", "status"})
-        return cls(*(str(data[name]) for name in ("trial_id", "candidate_id", "strategy_hash", "behavior_hash", "status")))
-
-
-@dataclass(frozen=True)
-class HealthEvidence(Record):
-    candidate_id: str
-    execution_audit: HealthStatus
-    reproducibility: HealthStatus
-    neighborhood: HealthStatus
-    stress: HealthStatus
-    ledger: HealthStatus
-    notes: tuple[str, ...] = ()
-
-    @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> HealthEvidence:
-        required = {"candidate_id", "execution_audit", "reproducibility", "neighborhood", "stress", "ledger"}
-        _exact(data, required, {"notes"})
-        return cls(str(data["candidate_id"]), *(_enum(HealthStatus, data[name], name) for name in ("execution_audit", "reproducibility", "neighborhood", "stress", "ledger")), tuple(map(str, data.get("notes", ()))))
+        return cls(
+            *(
+                str(data[name])
+                for name in ("trial_id", "candidate_id", "strategy_hash", "behavior_hash", "status")
+            )
+        )
 
 
 @dataclass(frozen=True)
@@ -279,15 +325,3 @@ class RankingResult(Record):
     profiles: tuple[CandidateProfile, ...]
     champion_id: str | None
     tied_champion_ids: tuple[str, ...] = ()
-
-
-@dataclass(frozen=True)
-class EvaluationResult(Record):
-    experiment_id: str
-    incumbent_id: str
-    decision: Decision
-    recommended_candidate_id: str | None
-    reason_codes: tuple[str, ...]
-    ranking: RankingResult
-    health: HealthEvidence | None = None
-    audit: ChampionAuditResult | None = None

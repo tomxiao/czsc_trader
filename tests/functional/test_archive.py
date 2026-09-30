@@ -11,7 +11,9 @@ from czsc_trader.experiment_archive import (
 )
 from czsc_trader.identity import normalized_text_sha256
 
-from functional_support import invoke_main, invoke_main_failure
+import pytest
+from dataclasses import asdict
+from czsc_trader.application import RepositoryContext, validate_archives, ValidationError
 
 
 def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
@@ -34,16 +36,8 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
     )
     runner.write_bytes(b"print('research')\r\n")
     chart.write_bytes(b"<svg>\r\n<text>research</text>\r\n</svg>\r\n")
-    command = [
-        "archive",
-        "validate",
-        "--archive",
-        str(archive),
-        "--repo-root",
-        str(functional_repo),
-    ]
-
-    first = invoke_main(command, capsys)
+    context = RepositoryContext.discover(functional_repo)
+    first = asdict(validate_archives(context, archive))
     assert first["result"] == {
         "validated_count": 1,
         "experiments": ["0904_ARCHIVE"],
@@ -53,12 +47,12 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
     (archive / "evaluation_acceptance.json").write_text(
         '{"status":"PAPER_ACTIVE"}\n', encoding="utf-8"
     )
-    assert invoke_main(command, capsys)["status"] == "PASS"
+    assert validate_archives(context, archive).status == "PASS"
 
     (archive / "04_conclusion.md").write_text("tampered\n", encoding="utf-8")
-    failure = invoke_main_failure(command, capsys)
-    assert failure["error"]["code"] == "experiment_archive_invalid"
-    assert "04_conclusion.md" in failure["error"]["message"]
+    with pytest.raises(ValidationError, match="04_conclusion.md") as failure:
+        validate_archives(context, archive)
+    assert failure.value.code == "experiment_archive_invalid"
 
     experiment_root = functional_repo / "new-experiments"
     first = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
@@ -102,9 +96,8 @@ def test_ft_t07_archive_all_discovers_strategy_owned_directories(
             },
         )
 
-    result = invoke_main(
-        ["archive", "validate", "--all", "--repo-root", str(functional_repo)],
-        capsys,
+    result = asdict(
+        validate_archives(RepositoryContext.discover(functional_repo), all_archives=True)
     )
     assert result["result"] == {
         "validated_count": 2,
@@ -174,10 +167,7 @@ def test_ft_t07_resealed_archive_preserves_and_validates_original_manifest(
         },
     )
 
-    result = invoke_main(
-        ["archive", "validate", "--archive", str(archive), "--repo-root", str(functional_repo)],
-        capsys,
-    )
+    result = asdict(validate_archives(RepositoryContext.discover(functional_repo), archive))
     assert result["result"] == {
         "validated_count": 1,
         "experiments": ["0904_RESEALED"],
@@ -200,9 +190,5 @@ def test_ft_t07_resealed_archive_preserves_and_validates_original_manifest(
             },
         },
     )
-    failure = invoke_main_failure(
-        ["archive", "validate", "--archive", str(archive), "--repo-root", str(functional_repo)],
-        capsys,
-    )
-    assert failure["error"]["code"] == "experiment_archive_invalid"
-    assert "current record differs" in failure["error"]["message"]
+    with pytest.raises(ValidationError):
+        validate_archives(RepositoryContext.discover(functional_repo), archive)

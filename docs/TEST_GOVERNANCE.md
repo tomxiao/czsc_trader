@@ -258,9 +258,9 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 重大版本验收采用三层证据，日常小改按风险运行受影响范围：
 
-- **离线功能回归**：根目录`tests/functional/`覆盖TDR候选审查、体检、冻结、证据漂移、回测与失败语义；
+- **离线功能回归**：根目录`tests/functional/`覆盖TDR公开API、实验评价、证据漂移、统一回测与失败语义；
   各包`tests/functional/`覆盖模块契约、候选与冻结SRT、TXE账本、PTE发布代次和服务配置。
-- **档案完整性**：运行`czsc-trader archive validate --all`，验证历史实验的受管文件、结构和
+- **档案完整性**：调用公开API `validate_archives(context, all_archives=True)`，验证历史实验的受管文件、结构和
   哈希。该检查只保证档案可审计及人工查看，不承诺旧实验脚本可在当前架构回放。
 - **发布验收**：PTE构建验证附注tag、提交、策略快照和制品身份；发布前置检查验证目标版本及
   数据库兼容性。取得生产写入授权后，再检查服务、健康接口、活动版本和关键账户读取。
@@ -271,6 +271,8 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 保留独立人工验收脚本。任何PTE部署或运行状态变更需要独立授权。
 
 ## 11. 最近一次治理记录
+
+以下保留当时的测试治理记录。2026-10-01接口收敛已删除旧三道治理闸门及专属测试，当前验收范围见[研究平台接口收敛验收](RESEARCH_PLATFORM_REFACTOR_ACCEPTANCE.md)。
 
 - 日期：2026-09-22
 - 范围：TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE（含WDG）

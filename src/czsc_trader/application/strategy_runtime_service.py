@@ -14,7 +14,6 @@ from strategy_runtime import (
     validate_observation_descriptor,
 )
 
-from .candidate_package import validate_chart_contract
 from .context import RepositoryContext
 from .errors import ValidationError
 from .results import CommandResult
@@ -51,7 +50,13 @@ def _safe_relative(value: object, field: str) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError(f"{field} must be a non-empty relative path")
     path = PurePosixPath(value)
-    if path.is_absolute() or ".." in path.parts or str(path) != value or "\\" in value or ":" in value:
+    if (
+        path.is_absolute()
+        or ".." in path.parts
+        or str(path) != value
+        or "\\" in value
+        or ":" in value
+    ):
         raise ValueError(f"{field} contains an unsafe path")
     return value
 
@@ -79,9 +84,15 @@ def validate_release_package(
     root = context.strategy_root / strategy_id / "releases" / version
     manifest = _read_object(root / "release_manifest.json")
     expected_fields = {
-        "schema_version", "strategy_version_id", "strategy_version_hash",
-        "source_candidate_id", "candidate_package_hash", "runtime_root",
-        "runtime_binding", "files", "package_hash",
+        "schema_version",
+        "strategy_version_id",
+        "strategy_version_hash",
+        "source_candidate_id",
+        "candidate_package_hash",
+        "runtime_root",
+        "runtime_binding",
+        "files",
+        "package_hash",
     }
     if set(manifest) != expected_fields or manifest["schema_version"] != 1:
         raise ValueError("strategy version package manifest is invalid")
@@ -97,7 +108,11 @@ def validate_release_package(
         safe_name = _safe_relative(name, "files")
         relative = PurePosixPath(safe_name)
         path = root.joinpath(*relative.parts)
-        if not isinstance(expected_hash, str) or not path.is_file() or _file_sha256(path) != expected_hash:
+        if (
+            not isinstance(expected_hash, str)
+            or not path.is_file()
+            or _file_sha256(path) != expected_hash
+        ):
             raise ValueError(f"strategy version package file differs: {name}")
         normalized_files.add(safe_name)
     actual_files = {
@@ -108,12 +123,16 @@ def validate_release_package(
     if normalized_files != actual_files:
         raise ValueError("strategy version package contains untracked or missing files")
     runtime_root = root / _safe_relative(manifest["runtime_root"], "runtime_root")
-    binding = _read_object(
-        root / _safe_relative(manifest["runtime_binding"], "runtime_binding")
-    )
+    binding = _read_object(root / _safe_relative(manifest["runtime_binding"], "runtime_binding"))
     expected_binding = {
-        "schema_version", "release_id", "release_hash", "source_files",
-        "implementation_sha256", "install_files", "charts", "observation",
+        "schema_version",
+        "release_id",
+        "release_hash",
+        "source_files",
+        "implementation_sha256",
+        "install_files",
+        "charts",
+        "observation",
     }
     if set(binding) != expected_binding or binding["schema_version"] != 1:
         raise ValueError("strategy version runtime binding fields are invalid")
@@ -130,7 +149,13 @@ def validate_release_package(
     )
     if len(normalized_install_files) != len(set(normalized_install_files)):
         raise ValueError("strategy version runtime binding repeats install files")
-    validate_chart_contract(runtime_root, binding.get("charts"), normalized_install_files)
+    from strategy_runtime import ChartRuntime
+
+    ChartRuntime().validate_descriptor(
+        binding.get("charts"),
+        source_root=runtime_root,
+        install_files=normalized_install_files,
+    )
     validate_observation_descriptor(binding.get("observation"))
     release = expected_release
     if release is None:
@@ -140,8 +165,7 @@ def validate_release_package(
             raise ValueError("strategy version package differs from frozen registry identity")
         release = prospective_release(stored)
     elif (
-        release.release_id != reference
-        or release.release_hash != manifest["strategy_version_hash"]
+        release.release_id != reference or release.release_hash != manifest["strategy_version_hash"]
     ):
         raise ValueError("strategy version package differs from expected release identity")
     StrategyRuntime().describe(
@@ -230,7 +254,10 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
     stored = registry.get_version(strategy_id, version)
     family = registry.get_family(strategy_id)
     release = prospective_release(stored)
-    if binding.get("release_id") != reference or binding.get("release_hash") != release.release_hash:
+    if (
+        binding.get("release_id") != reference
+        or binding.get("release_hash") != release.release_hash
+    ):
         raise ValueError("SRT binding differs from frozen strategy version")
     definition = StrategyRuntime(context.strategy_root).describe(release)
     candidate = stored.source_candidate
@@ -264,7 +291,8 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
 
 
 def list_installed_strategies(
-    context: RepositoryContext, strategy_id: str | None = None,
+    context: RepositoryContext,
+    strategy_id: str | None = None,
 ) -> CommandResult:
     try:
         if strategy_id is not None and (
@@ -274,9 +302,7 @@ def list_installed_strategies(
         bindings = context.strategy_root / "deployments"
         references = sorted(
             (path.stem for path in bindings.glob("S*-v*.json")),
-            key=lambda reference: tuple(
-                int(part[1:]) for part in _version_parts(reference)
-            ),
+            key=lambda reference: tuple(int(part[1:]) for part in _version_parts(reference)),
         )
         rows = []
         for reference in references:

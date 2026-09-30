@@ -9,7 +9,15 @@ from dataflows import Dataflows, Dataset
 
 from czsc_trader import market_data_prep
 from czsc_trader.data import load_execution_prices
-from functional_support import invoke_main, vendor_frame
+from functional_support import vendor_frame
+from dataclasses import asdict
+from czsc_trader.application import (
+    RepositoryContext,
+    PrepareDataCommand,
+    prepare_data,
+    validate_data,
+)
+
 
 def test_ft_t01_data_prepare_validate_and_tamper_detection(
     functional_repo: Path, capsys, monkeypatch
@@ -64,9 +72,7 @@ def test_ft_t01_data_prepare_validate_and_tamper_detection(
 
         def calendar(request):
             days = pd.date_range(request.start, request.end)
-            return pd.DataFrame(
-                {"Date": days, "IsOpen": (days.dayofweek < 5).astype(int)}
-            ), {
+            return pd.DataFrame({"Date": days, "IsOpen": (days.dayofweek < 5).astype(int)}), {
                 "vendor": "functional-test",
                 "exchange": "SSE",
                 "primary_key": ["Date"],
@@ -89,26 +95,19 @@ def test_ft_t01_data_prepare_validate_and_tamper_detection(
         )
 
     monkeypatch.setattr(market_data_prep, "prepare_market_data", offline_prepare)
-    root = ["--repo-root", str(functional_repo)]
-    prepared = invoke_main(
-        [
-            "data",
-            "prepare",
-            "--symbol",
-            "588080.SH",
-            "--asset",
-            "etf",
-            "--start",
-            day,
-            "--end",
-            day,
-            *root,
-        ],
-        capsys,
+    context = RepositoryContext.discover(functional_repo)
+    prepared = asdict(
+        prepare_data(
+            context,
+            PrepareDataCommand(
+                "588080.SH",
+                "etf",
+                date.fromisoformat(day),
+                date.fromisoformat(day),
+            ),
+        )
     )
-    validated = invoke_main(
-        ["data", "validate", "--symbol", "588080.SH", *root], capsys
-    )
+    validated = asdict(validate_data(context, "588080.SH"))
 
     execution_manifest = functional_repo / "data" / "raw" / "588080_execution_manifest.json"
     assert Path(prepared["result"]["execution_price_manifest"]) == execution_manifest
@@ -118,7 +117,10 @@ def test_ft_t01_data_prepare_validate_and_tamper_detection(
     assert validated["result"]["frequencies"] == ["30m", "daily", "weekly"]
     with pytest.raises(ValueError, match="DFLS returned INCOMPLETE"):
         offline_prepare(
-            "588080.SH", "etf", date(2026, 9, 1), date(2026, 9, 2),
+            "588080.SH",
+            "etf",
+            date(2026, 9, 1),
+            date(2026, 9, 2),
             functional_repo / "state" / "stale-data",
         )
     execution_csv = functional_repo / "data" / "raw" / "588080_execution_daily_2026.csv"

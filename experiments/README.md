@@ -31,8 +31,10 @@ experiments/
 
 验证全部实验：
 
-```powershell
-.\.venv\Scripts\czsc-trader.exe archive validate --all --repo-root .
+```python
+from pathlib import Path
+from czsc_trader.application import RepositoryContext, validate_archives
+validate_archives(RepositoryContext.discover(Path.cwd()), all_archives=True)
 ```
 
 历史SM版本和证据可能保留迁移前的`experiments/<实验ID>/...`来源字符串，以维持发布哈希

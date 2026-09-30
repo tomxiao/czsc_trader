@@ -82,8 +82,8 @@ def _handoff_text(family: StrategyFamily) -> str:
         "```json\n"
         f"{intent}\n"
         "```\n\n"
-        "研究意图是可演化的人类语义。准确评价目标只在候选进入冻结流程时，"
-        "通过EvaluationMandate正式确定。\n"
+        "研究意图是可演化的人类语义。阶段目标由用户确认，"
+        "新冻结流程尚未提供。\n"
     )
 
 
@@ -98,7 +98,7 @@ def _batch_text(family: StrategyFamily, credential_id: str, reason: str) -> str:
         "```json\n"
         f"{json.dumps(family.research_intent, ensure_ascii=False, indent=2)}\n"
         "```\n\n"
-        "本文件只记录本批次立项事实。准确评价目标在候选送审时由EvaluationMandate锁定。\n"
+        "本文件只记录本批次立项事实。阶段目标由用户确认；该记录不授予冻结权限。\n"
     )
 
 
@@ -123,19 +123,14 @@ def create_research_batch(
             new_research_directory = not destination.exists()
             raw_credential = raw.get("credential_id")
             if new_research_directory:
-                credential_id = str(
-                    raw_credential or f"SGC-{family.strategy_id}-001"
-                )
+                credential_id = str(raw_credential or f"SGC-{family.strategy_id}-001")
             elif not isinstance(raw_credential, str) or not raw_credential.strip():
                 raise ValueError(
                     "an existing research directory requires an explicit credential_id"
                 )
             else:
                 credential_id = raw_credential.strip()
-            if (
-                new_research_directory
-                and credential_id != f"SGC-{family.strategy_id}-001"
-            ):
+            if new_research_directory and credential_id != f"SGC-{family.strategy_id}-001":
                 raise ValueError("the first research batch credential must end with -001")
             if new_research_directory:
                 document = destination / "HANDOFF.md"
@@ -162,14 +157,10 @@ def create_research_batch(
                         "reason": reason,
                     },
                     credential_artifact_hashes={
-                        artifact_name: hashlib.sha256(
-                            document_text.encode("utf-8")
-                        ).hexdigest()
+                        artifact_name: hashlib.sha256(document_text.encode("utf-8")).hexdigest()
                     },
                 )
-                credential = registry.get_governance_credential(
-                    family.strategy_id, credential_id
-                )
+                credential = registry.get_governance_credential(family.strategy_id, credential_id)
             except Exception:
                 document.unlink(missing_ok=True)
                 if new_research_directory:
@@ -212,9 +203,7 @@ def create_research_batch(
                         "reason": reason,
                     },
                     credential_artifact_hashes={
-                        "research_batch": hashlib.sha256(
-                            batch_text.encode("utf-8")
-                        ).hexdigest()
+                        "research_batch": hashlib.sha256(batch_text.encode("utf-8")).hexdigest()
                     },
                 )
             except Exception:

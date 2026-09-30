@@ -7,8 +7,8 @@ from dataclasses import asdict, replace
 import json
 from pathlib import Path
 
-from strategy_manager import CandidateSnapshot, StrategyVersion, canonical_sha256
-from strategy_runtime import StrategyCandidate, StrategyRelease, StrategyRuntime
+from strategy_manager import StrategyVersion, canonical_sha256
+from strategy_runtime import StrategyRelease, StrategyRuntime
 
 
 def _plain(value):
@@ -64,15 +64,19 @@ def _runtime_report(definition) -> dict[str, object]:
         },
         "state_mode": definition.state_mode,
         "capabilities_sha256": canonical_sha256(asdict(definition.capabilities)),
-        "monitoring_sha256": canonical_sha256({
-            "policy_type": definition.monitoring.policy_type,
-            "rules": _plain(definition.monitoring.rules),
-        }),
+        "monitoring_sha256": canonical_sha256(
+            {
+                "policy_type": definition.monitoring.policy_type,
+                "rules": _plain(definition.monitoring.rules),
+            }
+        ),
     }
 
 
 def validate_runtime_readiness(
-    version: StrategyVersion, *, source_root: Path | None = None,
+    version: StrategyVersion,
+    *,
+    source_root: Path | None = None,
 ) -> dict[str, object]:
     """Load the exact prospective release without changing SM state."""
     binding = None
@@ -92,27 +96,21 @@ def validate_runtime_readiness(
     )
 
 
-def validate_candidate_readiness(
-    snapshot: CandidateSnapshot, *, source_root: Path | None = None,
-) -> dict[str, object]:
-    """Gate 2 binds a candidate implementation, never a prospective vN wrapper."""
-    candidate = StrategyCandidate(
-        snapshot.strategy_id, snapshot.candidate_id, snapshot.strategy_payload, source_root,
-    )
-    report = _runtime_report(StrategyRuntime().describe(candidate))
-    report["strategy_payload_hash"] = canonical_sha256(snapshot.strategy_payload)
-    return report
-
-
 def require_same_runtime_content(candidate: dict, release: dict) -> None:
     """Only lifecycle identity may change when a reviewed candidate is frozen."""
     if candidate.get("identity_kind") != "CANDIDATE" or release.get("identity_kind") != "RELEASE":
         raise ValueError("freeze requires candidate-to-release runtime identities")
     for key in (
-        "implementation", "parameters_sha256", "strategy_payload_hash",
-        "input_contract_sha256", "decision_contract_sha256", "execution_policy_sha256",
+        "implementation",
+        "parameters_sha256",
+        "strategy_payload_hash",
+        "input_contract_sha256",
+        "decision_contract_sha256",
+        "execution_policy_sha256",
         "history_policy_sha256",
-        "state_mode", "capabilities_sha256", "monitoring_sha256",
+        "state_mode",
+        "capabilities_sha256",
+        "monitoring_sha256",
     ):
         if key not in candidate or candidate[key] != release.get(key):
             raise ValueError(f"frozen runtime differs from reviewed candidate: {key}")

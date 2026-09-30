@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Any
+
+from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
+from strategy_runtime import StrategyCandidate
 
 from czsc_trader.backtesting import (
     BacktestRequestV2,
+    resolve_candidate_snapshot,
     resolve_registered_strategy,
     run_backtest_v2,
 )
@@ -15,38 +19,55 @@ from czsc_trader.backtesting.execution_data import (
 from .context import RepositoryContext
 from .errors import ExecutionError
 from .results import CommandResult
-
-
-@dataclass(frozen=True)
-class BacktestCommand:
-    strategy_id: str
-    strategy_version: str
-    symbol: str
-    asset_type: str
-    start: date
-    end: date
-    init_cash: float
+from .runtime_acceptance import _plain
 
 
 def run_backtest(
     context: RepositoryContext,
-    request: BacktestCommand,
+    strategy: StrategyCandidate | StrategyVersion,
+    request: BacktestRequestV2,
     *,
     run_date: date | None = None,
+    chart_descriptor: dict[str, Any] | None = None,
 ) -> CommandResult:
+    """Replay a candidate or an authenticated frozen version through one engine.
+
+    Candidate charts must be explicitly supplied by the caller. Version charts
+    come from the authenticated deployment; overriding frozen content is refused.
+    This operation does not register, freeze or deploy the supplied strategy.
+    """
+    if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
+        raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
+    if not isinstance(request, BacktestRequestV2):
+        raise TypeError("backtest request must be BacktestRequestV2")
+    reference = (
+        strategy.reference_id if isinstance(strategy, StrategyCandidate) else strategy.release_id
+    )
     try:
-        snapshot = resolve_registered_strategy(
-            context, request.strategy_id, request.strategy_version
-        )
+        if isinstance(strategy, StrategyCandidate):
+            payload = _plain(strategy.payload)
+            snapshot = resolve_candidate_snapshot(
+                context,
+                strategy.reference_id,
+                payload,
+                canonical_sha256(payload),
+                f"candidate:{strategy.reference_id}",
+                runtime_root=strategy.source_root,
+                chart_descriptor=chart_descriptor,
+            )
+        else:
+            if chart_descriptor is not None:
+                raise ValueError("frozen version chart override is not allowed")
+            stored = StrategyRegistry(context.strategy_root).get_version(
+                strategy.strategy_id,
+                strategy.version,
+            )
+            if stored.to_dict() != strategy.to_dict():
+                raise ValueError("backtest version differs from the frozen registry record")
+            snapshot = resolve_registered_strategy(context, strategy.strategy_id, strategy.version)
         summary = run_backtest_v2(
             snapshot=snapshot,
-            request=BacktestRequestV2(
-                symbol=request.symbol,
-                asset_type=request.asset_type,
-                start=request.start,
-                end=request.end,
-                initial_cash=request.init_cash,
-            ),
+            request=request,
             srt_data_root=context.tdr_srt_root,
             outputs_root=context.outputs_root,
             run_date=run_date or datetime.now().astimezone().date(),
@@ -57,7 +78,7 @@ def run_backtest(
             "backtest_data_not_ready",
             str(exc),
             context={
-                "strategy": f"{request.strategy_id}-{request.strategy_version}",
+                "strategy": reference,
                 "symbol": request.symbol,
                 "requested_cutoff": exc.requested_cutoff.isoformat(),
                 "published_cutoff": exc.published_cutoff.isoformat(),
@@ -69,7 +90,7 @@ def run_backtest(
             "backtest_failed",
             str(exc),
             context={
-                "strategy": f"{request.strategy_id}-{request.strategy_version}",
+                "strategy": reference,
                 "symbol": request.symbol,
             },
         ) from exc

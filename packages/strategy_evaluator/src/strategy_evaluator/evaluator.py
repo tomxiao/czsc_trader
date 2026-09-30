@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from statistics import median
 
-from .audit_models import AuditStatus, ChampionAuditResult
-from .models import CandidateDescriptor, CandidateProfile, Decision, EvaluationProtocol, EvaluationResult, HealthEvidence, HealthStatus, MetricObservation, RankingResult, ShortlistResult
+from .models import (
+    CandidateDescriptor,
+    CandidateProfile,
+    EvaluationProtocol,
+    MetricObservation,
+    RankingResult,
+    ShortlistResult,
+)
 from .noninferiority import compare_observation
 from .pareto import pareto_layers
 from .standards import resolve_margins
@@ -16,7 +22,11 @@ def _protocol_comparisons(protocol, candidate, incumbent, margins):
     return tuple(item for item in comparisons if item.metric != "profit_factor")
 
 
-def screen_candidates(protocol: EvaluationProtocol, candidates: tuple[CandidateDescriptor, ...], observations: tuple[MetricObservation, ...]) -> ShortlistResult:
+def screen_candidates(
+    protocol: EvaluationProtocol,
+    candidates: tuple[CandidateDescriptor, ...],
+    observations: tuple[MetricObservation, ...],
+) -> ShortlistResult:
     representatives: dict[str, CandidateDescriptor] = {}
     rejected: list[str] = []
     reason_codes: list[str] = []
@@ -31,7 +41,11 @@ def screen_candidates(protocol: EvaluationProtocol, candidates: tuple[CandidateD
     screening_profiles: list[CandidateProfile] = []
     if observations:
         margins = resolve_margins(protocol)
-        by_key = {(item.candidate_id, item.window_id): item for item in observations if item.scenario_id == "standard"}
+        by_key = {
+            (item.candidate_id, item.window_id): item
+            for item in observations
+            if item.scenario_id == "standard"
+        }
         for item in representatives.values():
             comparisons = []
             for window in protocol.decision_windows:
@@ -40,18 +54,37 @@ def screen_candidates(protocol: EvaluationProtocol, candidates: tuple[CandidateD
                 if candidate is None or incumbent is None:
                     continue
                 comparisons.extend(_protocol_comparisons(protocol, candidate, incumbent, margins))
-            expected = sum(4 if window == "full" or window in protocol.target_windows else 3 for window in protocol.decision_windows)
+            expected = sum(
+                4 if window == "full" or window in protocol.target_windows else 3
+                for window in protocol.decision_windows
+            )
             if len(comparisons) != expected or any(not value.passed for value in comparisons):
                 rejected.append(item.candidate_id)
                 reason_codes.append("SCREENING_NONINFERIORITY")
                 continue
             worst = tuple(
-                (metric, min(value.normalized_score for value in comparisons if value.metric == metric and value.normalized_score is not None))
+                (
+                    metric,
+                    min(
+                        value.normalized_score
+                        for value in comparisons
+                        if value.metric == metric and value.normalized_score is not None
+                    ),
+                )
                 for metric in ("net_cagr", "max_drawdown", "calmar", "profit_factor")
             )
             score = median(value for _, value in worst)
             ranked.append((score, item))
-            screening_profiles.append(CandidateProfile(item.candidate_id, True, True, worst, median_score=score, parameter_distance=item.parameter_distance))
+            screening_profiles.append(
+                CandidateProfile(
+                    item.candidate_id,
+                    True,
+                    True,
+                    worst,
+                    median_score=score,
+                    parameter_distance=item.parameter_distance,
+                )
+            )
     else:
         ranked = [(0.0, item) for item in representatives.values()]
     ranked.sort(key=lambda pair: (-pair[0], pair[1].parameter_distance, pair[1].candidate_id))
@@ -70,10 +103,16 @@ def screen_candidates(protocol: EvaluationProtocol, candidates: tuple[CandidateD
     rejected.extend(item.candidate_id for item in dropped)
     if dropped:
         reason_codes.append("SHORTLIST_LIMIT")
-    return ShortlistResult(selected, tuple(sorted(set(rejected))), tuple(dict.fromkeys(reason_codes)))
+    return ShortlistResult(
+        selected, tuple(sorted(set(rejected))), tuple(dict.fromkeys(reason_codes))
+    )
 
 
-def _target_achieved(protocol: EvaluationProtocol, candidate_id: str, by_key: dict[tuple[str, str], MetricObservation]) -> bool:
+def _target_achieved(
+    protocol: EvaluationProtocol,
+    candidate_id: str,
+    by_key: dict[tuple[str, str], MetricObservation],
+) -> bool:
     if not protocol.target_requirements:
         return True
     for requirement in protocol.target_requirements:
@@ -83,8 +122,14 @@ def _target_achieved(protocol: EvaluationProtocol, candidate_id: str, by_key: di
             incumbent = by_key.get((protocol.incumbent_id, window))
             if candidate is None or incumbent is None:
                 continue
-            candidate_values, incumbent_values = dict(candidate.objective_values), dict(incumbent.objective_values)
-            if requirement.metric not in candidate_values or requirement.metric not in incumbent_values:
+            candidate_values, incumbent_values = (
+                dict(candidate.objective_values),
+                dict(incumbent.objective_values),
+            )
+            if (
+                requirement.metric not in candidate_values
+                or requirement.metric not in incumbent_values
+            ):
                 continue
             difference = candidate_values[requirement.metric] - incumbent_values[requirement.metric]
             if requirement.direction == "minimize":
@@ -115,7 +160,11 @@ def rank_candidates(
     candidates: tuple[CandidateDescriptor, ...] = (),
 ) -> RankingResult:
     margins = resolve_margins(protocol)
-    by_key = {(item.candidate_id, item.window_id): item for item in observations if item.scenario_id == "standard"}
+    by_key = {
+        (item.candidate_id, item.window_id): item
+        for item in observations
+        if item.scenario_id == "standard"
+    }
     descriptors = {item.candidate_id: item for item in candidates}
     profiles: list[CandidateProfile] = []
     for candidate_id in shortlist.candidate_ids:
@@ -131,12 +180,42 @@ def rank_candidates(
         for item in comparisons:
             if not item.passed:
                 reasons.append(item.reason_code)
-        worst = tuple((metric, min(item.normalized_score for item in comparisons if item.metric == metric and item.normalized_score is not None)) for metric in ("net_cagr", "max_drawdown", "calmar", "profit_factor") if any(item.metric == metric and item.normalized_score is not None for item in comparisons))
+        worst = tuple(
+            (
+                metric,
+                min(
+                    item.normalized_score
+                    for item in comparisons
+                    if item.metric == metric and item.normalized_score is not None
+                ),
+            )
+            for metric in ("net_cagr", "max_drawdown", "calmar", "profit_factor")
+            if any(
+                item.metric == metric and item.normalized_score is not None for item in comparisons
+            )
+        )
         scores = [value for _, value in worst]
         descriptor = descriptors.get(candidate_id)
-        candidate_observations = [item for item in observations if item.candidate_id == candidate_id]
-        turnover = max((item.turnover for item in candidate_observations if item.turnover is not None), default=None)
-        profiles.append(CandidateProfile(candidate_id, not reasons and len(worst) == 4, _target_achieved(protocol, candidate_id, by_key), worst, None, median(scores) if scores else float("-inf"), turnover, descriptor.parameter_distance if descriptor else 0.0, tuple(reasons)))
+        candidate_observations = [
+            item for item in observations if item.candidate_id == candidate_id
+        ]
+        turnover = max(
+            (item.turnover for item in candidate_observations if item.turnover is not None),
+            default=None,
+        )
+        profiles.append(
+            CandidateProfile(
+                candidate_id,
+                not reasons and len(worst) == 4,
+                _target_achieved(protocol, candidate_id, by_key),
+                worst,
+                None,
+                median(scores) if scores else float("-inf"),
+                turnover,
+                descriptor.parameter_distance if descriptor else 0.0,
+                tuple(reasons),
+            )
+        )
     eligible = tuple(item for item in profiles if item.eligible and item.target_achieved)
     layered = {item.candidate_id: item for item in pareto_layers(eligible)}
     profiles = [layered.get(item.candidate_id, item) for item in profiles]
@@ -151,49 +230,3 @@ def rank_candidates(
         if len(tied) == 1:
             champion = best.candidate_id
     return RankingResult(protocol.incumbent_id, ordered, champion, tied)
-
-
-def finalize_evaluation(
-    ranking: RankingResult,
-    health: HealthEvidence | None,
-    experiment_id: str = "",
-    *,
-    audit: ChampionAuditResult | None = None,
-    standard_version: str = "opc-v1",
-) -> EvaluationResult:
-    if ranking.champion_id is None:
-        decision = Decision.INSUFFICIENT_EVIDENCE if len(ranking.tied_champion_ids) > 1 else Decision.KEEP_INCUMBENT
-        code = "CHAMPION_TIE" if len(ranking.tied_champion_ids) > 1 else "NO_ELIGIBLE_CHALLENGER"
-        return EvaluationResult(experiment_id, ranking.incumbent_id, decision, None, (code,), ranking)
-    if standard_version == "opc-v3":
-        if audit is None or audit.candidate_id != ranking.champion_id:
-            return EvaluationResult(
-                experiment_id, ranking.incumbent_id, Decision.INSUFFICIENT_EVIDENCE,
-                None, ("MISSING_CHAMPION_AUDIT",), ranking, audit=audit,
-            )
-        if audit.status is AuditStatus.INSUFFICIENT:
-            return EvaluationResult(
-                experiment_id, ranking.incumbent_id, Decision.INSUFFICIENT_EVIDENCE,
-                None, ("INCOMPLETE_CHAMPION_AUDIT", *audit.reason_codes), ranking,
-                audit=audit,
-            )
-        if audit.status is AuditStatus.FAIL:
-            return EvaluationResult(
-                experiment_id, ranking.incumbent_id, Decision.KEEP_INCUMBENT,
-                None, ("CHAMPION_AUDIT_FAILED", *audit.reason_codes), ranking,
-                audit=audit,
-            )
-        return EvaluationResult(
-            experiment_id, ranking.incumbent_id, Decision.RECOMMEND_FREEZE,
-            ranking.champion_id,
-            ("NONINFERIOR", "TARGET_ACHIEVED", "CHAMPION_AUDIT_COMPLETE"),
-            ranking, audit=audit,
-        )
-    if health is None or health.candidate_id != ranking.champion_id:
-        return EvaluationResult(experiment_id, ranking.incumbent_id, Decision.INSUFFICIENT_EVIDENCE, None, ("MISSING_HEALTH_EVIDENCE",), ranking, health)
-    statuses = (health.execution_audit, health.reproducibility, health.neighborhood, health.stress, health.ledger)
-    if HealthStatus.INSUFFICIENT in statuses:
-        return EvaluationResult(experiment_id, ranking.incumbent_id, Decision.INSUFFICIENT_EVIDENCE, None, ("INCOMPLETE_HEALTH_CHECK",), ranking, health)
-    if HealthStatus.FAIL in statuses:
-        return EvaluationResult(experiment_id, ranking.incumbent_id, Decision.KEEP_INCUMBENT, None, ("HEALTH_CHECK_FAILED",), ranking, health)
-    return EvaluationResult(experiment_id, ranking.incumbent_id, Decision.RECOMMEND_FREEZE, ranking.champion_id, ("NONINFERIOR", "TARGET_ACHIEVED", "HEALTH_CHECK_PASSED"), ranking, health)

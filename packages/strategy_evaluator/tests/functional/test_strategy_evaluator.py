@@ -9,22 +9,13 @@ import pytest
 from strategy_evaluator import (
     AuditIdentity,
     AuditStatus,
-    CandidateReadinessDecision,
-    CandidateReadinessRequest,
     CandidateDescriptor,
     CandidateProfile,
     ChampionAuditRequest,
-    CheckStatus,
-    Decision,
     EvaluationProtocol,
     ExecutionEvidence,
     ExecutionOrder,
     FactorEvent,
-    HealthEvidence,
-    HealthStatus,
-    MachineEvaluationCase,
-    MachineEvaluationPolicy,
-    MachineVerdict,
     MetricObservation,
     MetricStatus,
     ParameterPoint,
@@ -34,16 +25,12 @@ from strategy_evaluator import (
     StressScenarioResult,
     TrialRecord,
     ValidationError,
-    assess_research_candidate,
     audit_provisional_champion,
-    evaluate_machine_eligibility,
-    finalize_evaluation,
     hash_audit_data,
     hash_candidate_pool,
     hash_execution_evidence,
     hash_return_matrix,
     rank_candidates,
-    render_summary,
     required_stress_scenarios,
     screen_candidates,
     stationary_bootstrap_performance,
@@ -116,15 +103,9 @@ def _ranking() -> RankingResult:
 def _complete_audit_request(
     *, champion_edge: float = 0.0002, execution_invalid: bool = False
 ) -> ChampionAuditRequest:
-    dates = tuple(
-        f"2025-{month:02d}-{day:02d}"
-        for month in range(1, 6)
-        for day in range(1, 7)
-    )
+    dates = tuple(f"2025-{month:02d}-{day:02d}" for month in range(1, 6) for day in range(1, 7))
     base = np.tile([0.001, -0.0008, 0.0004], 10)
-    search_ids = tuple(
-        ["R1102", "R0539", *[f"R{index:04d}" for index in range(10)]]
-    )
+    search_ids = tuple(["R1102", "R0539", *[f"R{index:04d}" for index in range(10)]])
     search_values = np.column_stack(
         [
             base + champion_edge,
@@ -217,9 +198,7 @@ def _complete_audit_request(
         ),
         "",
     )
-    execution = replace(
-        execution, content_hash=hash_execution_evidence(execution)
-    )
+    execution = replace(execution, content_hash=hash_execution_evidence(execution))
 
     def observation(candidate_id: str, scenario: str = "standard"):
         edge = champion_edge if candidate_id == "R1102" else 0.0
@@ -325,31 +304,17 @@ def test_ft_se01_candidate_funnel_selects_the_robust_pareto_champion() -> None:
     validate_protocol(protocol, candidates, observations_tuple, trials)
     shortlist = screen_candidates(protocol, candidates, observations_tuple)
     ranking = rank_candidates(protocol, shortlist, observations_tuple, candidates)
-    health = HealthEvidence(
-        "winner",
-        HealthStatus.PASS,
-        HealthStatus.PASS,
-        HealthStatus.PASS,
-        HealthStatus.PASS,
-        HealthStatus.PASS,
-    )
-    result = finalize_evaluation(ranking, health, "0904_TEST")
 
     assert shortlist.candidate_ids == ("winner",)
     assert set(shortlist.rejected_ids) == {"z-duplicate", "inferior"}
     assert ranking.champion_id == "winner"
     assert ranking.tied_champion_ids == ("winner",)
     assert ranking.profiles[0].pareto_layer == 1
-    assert result.decision is Decision.RECOMMEND_FREEZE
-    assert result.recommended_candidate_id == "winner"
 
 
 def test_ft_se02_champion_audit_combines_statistical_and_engineering_evidence() -> None:
     request = _complete_audit_request()
     audit = audit_provisional_champion(request)
-    result = finalize_evaluation(
-        _ranking(), None, "0904_TEST", audit=audit, standard_version="opc-v3"
-    )
 
     assert audit.status is AuditStatus.PASS
     assert audit.risk_label in {
@@ -362,18 +327,17 @@ def test_ft_se02_champion_audit_combines_statistical_and_engineering_evidence() 
     assert audit.dsr is not None
     assert len(audit.bootstrap) == 6
     assert audit.neighborhood is not None
-    finding_statuses = {
-        finding.audit_id: finding.status for finding in audit.findings
-    }
-    assert finding_statuses.items() >= {
-        "execution": AuditStatus.PASS,
-        "reproducibility": AuditStatus.PASS,
-        "trial_ledger": AuditStatus.PASS,
-        "stress": AuditStatus.PASS,
-    }.items()
+    finding_statuses = {finding.audit_id: finding.status for finding in audit.findings}
+    assert (
+        finding_statuses.items()
+        >= {
+            "execution": AuditStatus.PASS,
+            "reproducibility": AuditStatus.PASS,
+            "trial_ledger": AuditStatus.PASS,
+            "stress": AuditStatus.PASS,
+        }.items()
+    )
     assert audit.stress.status is AuditStatus.PASS
-    assert result.decision is Decision.RECOMMEND_FREEZE
-    assert result.audit == audit
 
     absolute = stationary_bootstrap_performance(
         np.asarray(request.search_returns.returns, dtype=float)[:, 0],
@@ -388,85 +352,8 @@ def test_ft_se02_champion_audit_combines_statistical_and_engineering_evidence() 
     assert absolute.max_drawdown.lower_95 <= absolute.max_drawdown.upper_95
     assert 0.0 <= absolute.calmar.probability_above_zero <= 1.0
 
-    invalid = audit_provisional_champion(
-        _complete_audit_request(execution_invalid=True)
-    )
+    invalid = audit_provisional_champion(_complete_audit_request(execution_invalid=True))
     assert invalid.status is AuditStatus.FAIL
-    assert finalize_evaluation(
-        _ranking(), None, "0904_TEST", audit=invalid, standard_version="opc-v3"
-    ).decision is Decision.KEEP_INCUMBENT
-
-
-def test_ft_se02b_machine_eligibility_is_calculated_from_audit_evidence() -> None:
-    request = _complete_audit_request()
-    candidate_hash = next(
-        item.candidate_hash
-        for item in request.candidates
-        if item.candidate_id == request.champion_id
-    )
-    policy = MachineEvaluationPolicy(
-        "OPC-MACHINE-ELIGIBILITY",
-        "v1",
-        (RiskLabel.FAVORABLE, RiskLabel.MIXED, RiskLabel.WEAK),
-        blocking_stress_scenarios=("total_cost_15bp",),
-    )
-    report = evaluate_machine_eligibility(MachineEvaluationCase(
-        "SE-0904_TEST-R1102", candidate_hash, policy, request,
-    ))
-
-    assert report.machine_verdict is MachineVerdict.ELIGIBLE_FOR_FREEZE_REVIEW
-    assert {item.check_id: item.status.value for item in report.checks} == {
-        "evidence_integrity": "PASS",
-        "candidate_screening": "PASS",
-        "benchmark_challenge": "PASS",
-        "statistical_robustness": "PASS",
-        "parameter_robustness": "PASS",
-        "cost_stress": "PASS",
-        "external_reproduction": "NOT_APPLICABLE",
-        "technical_consistency": "PASS",
-    }
-    assert len(report.report_hash) == 64
-
-    mismatched = evaluate_machine_eligibility(MachineEvaluationCase(
-        "SE-0904_TEST-R1102", "f" * 64, policy, request,
-    ))
-    assert mismatched.machine_verdict is MachineVerdict.NOT_ELIGIBLE
-    assert "CANDIDATE_HASH_MISMATCH" in mismatched.reason_codes
-
-    external_required = evaluate_machine_eligibility(MachineEvaluationCase(
-        "SE-0904_TEST-R1102",
-        candidate_hash,
-        replace(policy, required_external_replays=1),
-        request,
-    ))
-    assert external_required.machine_verdict is MachineVerdict.INSUFFICIENT_EVIDENCE
-    assert "MISSING_REQUIRED_EXTERNAL_REPLAY" in external_required.reason_codes
-
-    def stressed_request(scenario_id: str) -> ChampionAuditRequest:
-        results = []
-        for scenario in request.stress_results:
-            observations = tuple(
-                replace(item, net_cagr=-0.1, max_drawdown=-0.5, calmar=-0.2)
-                if scenario.scenario_id == scenario_id and item.candidate_id == request.champion_id
-                else item
-                for item in scenario.observations
-            )
-            results.append(replace(scenario, observations=observations))
-        return replace(request, stress_results=tuple(results))
-
-    diagnostic_failure = evaluate_machine_eligibility(MachineEvaluationCase(
-        "SE-0904_TEST-R1102", candidate_hash, policy, stressed_request("total_cost_50bp"),
-    ))
-    assert {
-        item.check_id: item.status for item in diagnostic_failure.checks
-    }["cost_stress"] is CheckStatus.PASS
-
-    blocking_failure = evaluate_machine_eligibility(MachineEvaluationCase(
-        "SE-0904_TEST-R1102", candidate_hash, policy, stressed_request("total_cost_15bp"),
-    ))
-    assert {
-        item.check_id: item.status for item in blocking_failure.checks
-    }["cost_stress"] is CheckStatus.FAIL
 
 
 def test_ft_se03_governance_validation_and_report_are_complete() -> None:
@@ -496,9 +383,7 @@ def test_ft_se03_governance_validation_and_report_are_complete() -> None:
     loosened = deepcopy(PROTOCOL)
     loosened["tightened_margins"] = {"net_cagr_retention": 0.80}
     with pytest.raises(ValidationError, match="cannot loosen"):
-        validate_protocol(
-            EvaluationProtocol.from_dict(loosened), candidates, observations, trials
-        )
+        validate_protocol(EvaluationProtocol.from_dict(loosened), candidates, observations, trials)
     with pytest.raises(ValidationError, match="exactly one incumbent"):
         validate_protocol(
             protocol,
@@ -509,151 +394,6 @@ def test_ft_se03_governance_validation_and_report_are_complete() -> None:
     with pytest.raises(ValidationError, match="duplicate observation"):
         validate_protocol(protocol, candidates, observations + (observations[0],), trials)
 
-    insufficient = finalize_evaluation(
-        _ranking(), None, "0904_TEST", standard_version="opc-v3"
-    )
-    assert insufficient.decision is Decision.INSUFFICIENT_EVIDENCE
     audit = audit_provisional_champion(_complete_audit_request(champion_edge=-0.0002))
-    complete = finalize_evaluation(
-        _ranking(), None, "0904_TEST", audit=audit, standard_version="opc-v3"
-    )
-    report = render_summary(complete)
-    assert "统计稳健性审计" in report
-    assert "审计完整性：PASS" in report
-    assert f"统计风险：{audit.risk_label.value}" in report
-    assert "统计审计完成不等于统计优势已经得到证明" in report
-    assert len(report.splitlines()) <= 80
-
-
-def test_ft_se04_first_research_candidate_has_no_synthetic_incumbent() -> None:
-    request = CandidateReadinessRequest(
-        candidate_id="S002-C001",
-        candidate_hash="d" * 64,
-        integrity=AuditStatus.PASS,
-        reproducibility=AuditStatus.PASS,
-        mechanism_evidence=RiskLabel.MIXED,
-        statistical_evidence=RiskLabel.MIXED,
-        external_validation=RiskLabel.MIXED,
-        primary_closed_trades=25,
-        minimum_closed_trades=20,
-    )
-
-    result = assess_research_candidate(request)
-    assert result.decision is CandidateReadinessDecision.RECOMMEND_REGISTRATION
-    assert result.risk_label is RiskLabel.MIXED
-
-    insufficient = assess_research_candidate(
-        replace(request, primary_closed_trades=19)
-    )
-    assert insufficient.decision is CandidateReadinessDecision.INSUFFICIENT_EVIDENCE
-
-    rejected = assess_research_candidate(
-        replace(request, external_validation=RiskLabel.WEAK)
-    )
-    assert rejected.decision is CandidateReadinessDecision.REJECT
-
-    from strategy_evaluator import (
-        BenchmarkChallengeDecision,
-        BenchmarkChallengeRequest,
-        BootstrapComparison,
-        BootstrapMetric,
-        PerformanceMetrics,
-        assess_benchmark_challenge,
-    )
-
-    bootstrap = BootstrapComparison(
-        "S002-C001",
-        "BuyHold-510500",
-        10_000,
-        21,
-        BootstrapMetric("cagr", "higher_is_better", 0.02, -0.01, 0.05, 0.59),
-        BootstrapMetric("max_drawdown", "higher_is_better", 0.42, 0.30, 0.50, 1.0),
-        BootstrapMetric("calmar", "higher_is_better", 0.75, 0.10, 1.20, 0.92),
-    )
-    challenge = BenchmarkChallengeRequest(
-        candidate_id="S002-C001",
-        candidate_hash="d" * 64,
-        benchmark_id="BuyHold-510500",
-        integrity=AuditStatus.PASS,
-        reproducibility=AuditStatus.PASS,
-        technical_replay=AuditStatus.PASS,
-        monitoring_plan=AuditStatus.PASS,
-        candidate_performance=PerformanceMetrics(0.04, -0.05, 0.79),
-        benchmark_performance=PerformanceMetrics(0.02, -0.47, 0.04),
-        bootstrap=bootstrap,
-        statistical_evidence=RiskLabel.MIXED,
-        external_validation=RiskLabel.MIXED,
-        execution_evidence=RiskLabel.MIXED,
-    )
-    assessed = assess_benchmark_challenge(challenge)
-    assert assessed.decision is BenchmarkChallengeDecision.RECOMMEND_HEALTH_CHECK
-    assert assessed.risk_label is RiskLabel.MIXED
-    assert assess_benchmark_challenge(
-        replace(
-            challenge,
-            candidate_performance=PerformanceMetrics(0.01, -0.05, 0.79),
-        )
-    ).decision is BenchmarkChallengeDecision.KEEP_BENCHMARK
-
-    from strategy_evaluator import MandateChallengeRequest, assess_mandate_challenge
-
-    mandate = MandateChallengeRequest(
-        candidate_id="S001-C001",
-        candidate_hash="e" * 64,
-        incumbent_id="S001-v2",
-        integrity=AuditStatus.PASS,
-        reproducibility=AuditStatus.PASS,
-        technical_replay=AuditStatus.PASS,
-        candidate_performance=PerformanceMetrics(0.162, -0.135, 1.201),
-        incumbent_performance=PerformanceMetrics(0.268, -0.215, 1.242),
-        minimum_cagr=0.043,
-        maximum_drawdown_floor=-0.15,
-    )
-    mandate_result = assess_mandate_challenge(mandate)
-    assert mandate_result.decision is BenchmarkChallengeDecision.RECOMMEND_HEALTH_CHECK
-    assert mandate_result.candidate_mandate_passed is True
-    assert mandate_result.incumbent_mandate_passed is False
-    assert assess_mandate_challenge(
-        replace(
-            mandate,
-            candidate_performance=PerformanceMetrics(0.162, -0.16, 1.01),
-        )
-    ).decision is BenchmarkChallengeDecision.KEEP_BENCHMARK
-    assert assess_mandate_challenge(
-        replace(
-            mandate,
-            incumbent_performance=PerformanceMetrics(0.20, -0.14, 1.43),
-        )
-    ).decision is BenchmarkChallengeDecision.INSUFFICIENT_EVIDENCE
-
-    from strategy_evaluator import (
-        FreezeHealthDecision,
-        FreezeHealthRequest,
-        assess_freeze_health,
-    )
-
-    health_request = FreezeHealthRequest(
-        candidate_id="S002-C001",
-        candidate_hash="d" * 64,
-        candidate_readiness=AuditStatus.PASS,
-        benchmark_challenge=BenchmarkChallengeDecision.RECOMMEND_HEALTH_CHECK,
-        evidence_integrity=AuditStatus.PASS,
-        reproducibility=AuditStatus.PASS,
-        technical_replay=AuditStatus.PASS,
-        cost_stress=AuditStatus.PASS,
-        monitoring_plan=AuditStatus.PASS,
-        mechanism_evidence=RiskLabel.FAVORABLE,
-        statistical_evidence=RiskLabel.MIXED,
-        parameter_robustness=RiskLabel.FAVORABLE,
-        external_validation=RiskLabel.MIXED,
-        execution_evidence=RiskLabel.MIXED,
-    )
-    health = assess_freeze_health(health_request)
-    assert health.decision is FreezeHealthDecision.RECOMMEND_FREEZE
-    assert health.risk_label is RiskLabel.MIXED
-    assert assess_freeze_health(
-        replace(
-            health_request,
-            benchmark_challenge=BenchmarkChallengeDecision.KEEP_BENCHMARK,
-        )
-    ).decision is FreezeHealthDecision.KEEP_RESEARCHING
+    assert audit.status is AuditStatus.PASS
+    assert audit.risk_label in {RiskLabel.FAVORABLE, RiskLabel.MIXED, RiskLabel.WEAK}

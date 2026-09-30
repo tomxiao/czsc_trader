@@ -10,22 +10,7 @@ import sys
 from czsc_trader.cli.main import _context, build_parser, main
 
 
-EXPECTED_ACTIONS = {
-    "data": {"prepare", "validate"},
-    "research": {"create", "evaluate", "intent"},
-    "candidate": {"review", "evaluate", "freeze"},
-    "strategy": {
-        "list",
-        "info",
-        "deploy",
-    },
-    "backtest": {"run"},
-    "experiment": {"preflight"},
-    "archive": {"validate"},
-    "news": {"extract"},
-    "catalog": {"validate", "list", "show"},
-    "template": {"validate", "list", "show", "instantiate"},
-}
+EXPECTED_ACTIONS = {"backtest": {"run"}}
 
 
 def test_repository_context_loads_dotenv_without_overriding_process_environment(
@@ -39,7 +24,8 @@ def test_repository_context_loads_dotenv_without_overriding_process_environment(
     monkeypatch.setenv("TUSHARE_TOKEN", "process-token")
     monkeypatch.delenv("SRT_TEST_SETTING", raising=False)
 
-    context = _context(argparse.Namespace(repo_root=functional_repo))
+    monkeypatch.chdir(functional_repo)
+    context = _context(argparse.Namespace())
 
     assert context.root == functional_repo.resolve()
     assert os.environ["TUSHARE_TOKEN"] == "process-token"
@@ -90,183 +76,96 @@ def test_ft_t08_installed_cli_exposes_supported_command_surface() -> None:
     assert "--repo-root" not in run_options
 
 
-def test_ft_t08_strategy_cli_does_not_require_research_evaluator() -> None:
-    code = """
-import importlib.abc
-import sys
-
-class BlockStrategyEvaluator(importlib.abc.MetaPathFinder):
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "strategy_evaluator" or fullname.startswith("strategy_evaluator."):
-            raise ModuleNotFoundError("blocked research-only dependency")
-        return None
-
-sys.meta_path.insert(0, BlockStrategyEvaluator())
-from czsc_trader.cli.main import build_parser
-parsed = build_parser().parse_args(["strategy", "list"])
-assert parsed.command_name == "strategy.list"
-"""
-    completed = subprocess.run(
-        [sys.executable, "-c", code],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-
-    assert completed.returncode == 0, completed.stdout + completed.stderr
-
-
-def test_ft_t08_candidate_and_srt_commands_parse() -> None:
-    parser = build_parser()
-    documented_commands = (
-        [
-            "research",
-            "create",
-            "--input",
-            "research-intent.json",
-            "--actor",
-            "tomxiao",
-            "--reason",
-            "批准研究立项",
-        ],
-        [
-            "candidate",
-            "review",
-            "--package",
-            "research/S008/candidates/S008-C001",
-            "--mandate",
-            "evaluation-mandate.json",
-        ],
-        [
-            "research",
-            "evaluate",
-            "--input",
-            "experiments/S008/20260924_S008_EX67/evaluation_request.json",
-        ],
-        [
-            "candidate",
-            "freeze",
-            "S008-C001",
-            "--change-summary",
-            "首个冻结版本",
-        ],
-        ["strategy", "info", "S008-v1"],
-    )
-
-    parsed = [parser.parse_args(command) for command in documented_commands]
-
-    assert [item.command_name for item in parsed] == [
-        "research.create",
-        "candidate.review",
-        "research.evaluate",
-        "candidate.freeze",
-        "strategy.info",
-    ]
-
-
-def test_experiment_preflight_cli_reports_legacy_warning(capsys) -> None:
-    repo = Path(__file__).resolve().parents[2]
-    fixture = repo / "tests" / "fixtures" / "s008_research_cases" / "20260924_S008_EX99"
-
-    exit_code = main(
-        [
-            "experiment",
-            "preflight",
-            "--experiment",
-            str(fixture),
-            "--max-evaluations",
-            "1",
-            "--repo-root",
-            str(repo),
-        ]
-    )
-
-    payload = json.loads(capsys.readouterr().out)
-    assert exit_code == 0
-    assert payload["status"] == "PASS"
-    assert payload["command"] == "experiment.preflight"
-    assert payload["warnings"]
-
-
-def test_research_evaluate_reports_contract_errors_as_validation_failures(
-    functional_repo: Path, capsys
-) -> None:
-    exit_code = main(
-        [
-            "research",
-            "evaluate",
-            "--input",
-            "experiments/S008/EX67/evaluation_request.json",
-            "--repo-root",
-            str(functional_repo),
-        ]
-    )
-
-    payload = json.loads(capsys.readouterr().out)
-    assert exit_code == 3
-    assert payload["status"] == "FAIL"
-    assert payload["command"] == "research.evaluate"
-    assert payload["error"]["code"] == "research_evaluation_failed"
-
-
-def test_ft_t08_catalog_cli_validates_lists_and_shows(capsys) -> None:
-    repo = Path(__file__).resolve().parents[2]
-    root = ["--repo-root", str(repo)]
-    for arguments in (
-        ["catalog", "validate", *root],
-        ["catalog", "list", "--kind", "factor", "--status", "READY", *root],
-        ["catalog", "show", "--id", "F-PROJECT-ER60", *root],
+def test_removed_cli_commands_fail_without_running_handlers(capsys) -> None:
+    for command in (
+        "data",
+        "research",
+        "candidate",
+        "strategy",
+        "experiment",
+        "archive",
+        "news",
+        "catalog",
+        "template",
     ):
-        assert main(arguments) == 0
-        payload = json.loads(capsys.readouterr().out)
-        assert payload["status"] == "PASS"
-    assert payload["result"]["definition"]["factor_id"] == "F-PROJECT-ER60"
+        assert main([command, "--format", "json"]) != 0
+        result = json.loads(capsys.readouterr().out)
+        assert result["status"] == "FAIL"
+        assert result["error"]["code"] == "invalid_arguments"
 
 
-def test_ft_t08_template_cli_validates_lists_shows_and_instantiates(capsys, tmp_path: Path) -> None:
+def test_public_business_exports_resolve_existing_implementations() -> None:
+    from importlib import import_module
+    import czsc_trader.application as api
+
+    for name, module in api._EXPORTS.items():
+        assert getattr(api, name) is getattr(
+            import_module("czsc_trader.application." + module), name
+        )
+    assert "freeze_candidate" not in api.__all__
+    assert "extract_news" not in api.__all__
+
+
+def test_public_research_apis_preserve_validation(functional_repo, tmp_path) -> None:
+    import pytest
+    from czsc_trader.application import (
+        RepositoryContext,
+        ValidationError,
+        evaluate_research_request,
+        preflight_experiment_archive,
+        validate_catalog,
+        list_catalog,
+        show_catalog,
+        validate_templates,
+        list_templates,
+        show_template,
+        instantiate_template,
+    )
+
     repo = Path(__file__).resolve().parents[2]
-    root = ["--repo-root", str(repo)]
-    for arguments in (
-        ["template", "validate", *root],
-        ["template", "list", "--status", "READY", *root],
-        ["template", "show", "--id", "STC-T04-EVENT-HOLD", *root],
-    ):
-        assert main(arguments) == 0
-        payload = json.loads(capsys.readouterr().out)
-        assert payload["status"] == "PASS"
-    assert payload["result"]["template"]["operator"] == "EVENT_HOLD"
-
+    context = RepositoryContext.discover(repo)
+    report = preflight_experiment_archive(
+        context,
+        repo / "tests/fixtures/s008_research_cases/20260924_S008_EX99",
+        max_evaluations=1,
+    )
+    assert report.status == "PASS" and report.warnings
+    with pytest.raises(ValidationError) as error:
+        evaluate_research_request(RepositoryContext.discover(functional_repo), Path("missing.json"))
+    assert error.value.code == "research_evaluation_failed"
+    assert validate_catalog(context).status == "PASS"
+    assert (
+        list_catalog(context, kind="factor", family=None, status="READY", query=None).status
+        == "PASS"
+    )
+    assert (
+        show_catalog(context, "F-PROJECT-ER60").result["definition"]["factor_id"]
+        == "F-PROJECT-ER60"
+    )
+    assert validate_templates(context).status == "PASS"
+    assert list_templates(context, operator=None, status="READY", query=None).status == "PASS"
+    assert (
+        show_template(context, "STC-T04-EVENT-HOLD").result["template"]["operator"] == "EVENT_HOLD"
+    )
     spec = tmp_path / "prototype.json"
-    spec.write_text(
-        json.dumps(
+    payload = {
+        "schema_version": 1,
+        "template_id": "STC-T04-EVENT-HOLD",
+        "bindings": [
             {
-                "schema_version": 1,
-                "template_id": "STC-T04-EVENT-HOLD",
-                "bindings": [
-                    {
-                        "slot": "entry_events",
-                        "source_id": "SIG-CZSC-cxt_bi_base_V230228",
-                        "source_kind": "SIGNAL",
-                        "state": "满足",
-                        "weight": None,
-                    }
-                ],
-                "parameters": {"holding_sessions": 5},
-            },
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-    assert main(["template", "instantiate", "--spec", str(spec), *root]) == 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "PASS"
-    assert payload["result"]["instance"]["instance_id"].startswith("STI-")
-
-    invalid = json.loads(spec.read_text(encoding="utf-8"))
-    invalid["bindings"][0]["source_id"] = "SIG-NOT-IN-FSC"
-    spec.write_text(json.dumps(invalid), encoding="utf-8")
-    assert main(["template", "instantiate", "--spec", str(spec), *root]) != 0
-    payload = json.loads(capsys.readouterr().out)
-    assert payload["status"] == "FAIL"
-    assert payload["error"]["code"] == "strategy_template_binding_invalid"
+                "slot": "entry_events",
+                "source_id": "SIG-CZSC-cxt_bi_base_V230228",
+                "source_kind": "SIGNAL",
+                "state": "满足",
+                "weight": None,
+            }
+        ],
+        "parameters": {"holding_sessions": 5},
+    }
+    spec.write_text(json.dumps(payload), encoding="utf-8")
+    assert instantiate_template(context, spec).result["instance"]["instance_id"].startswith("STI-")
+    payload["bindings"][0]["source_id"] = "SIG-NOT-IN-FSC"
+    spec.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValidationError) as error:
+        instantiate_template(context, spec)
+    assert error.value.code == "strategy_template_binding_invalid"

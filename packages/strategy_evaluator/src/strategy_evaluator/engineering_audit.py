@@ -15,16 +15,10 @@ from .audit_models import (
 from .models import (
     CandidateDescriptor,
     CandidateProfile,
-    EvaluationProtocol,
-    HealthEvidence,
-    HealthStatus,
     MetricObservation,
-    RankingResult,
     Record,
     TrialRecord,
 )
-from .noninferiority import compare_observation
-from .standards import resolve_margins
 
 
 @dataclass(frozen=True)
@@ -91,9 +85,14 @@ def audit_execution(evidence: ExecutionEvidence) -> AuditFinding:
         if allowed is None:
             return _finding("execution", AuditStatus.FAIL, "INVALID_ORDER_SIDE")
         matches = [
-            event for event in evidence.events
+            event
+            for event in evidence.events
             if (order.event_id and event.event_id == order.event_id)
-            or (not order.event_id and event.signal_date == order.signal_date and event.event_type in allowed)
+            or (
+                not order.event_id
+                and event.signal_date == order.signal_date
+                and event.event_type in allowed
+            )
         ]
         if len(matches) != 1:
             return _finding("execution", AuditStatus.FAIL, "ORDER_EVENT_NOT_UNIQUE")
@@ -113,8 +112,11 @@ def audit_execution(evidence: ExecutionEvidence) -> AuditFinding:
         if event.factor_score is not None and abs(event.factor_score - scores[location]) > 1e-12:
             return _finding("execution", AuditStatus.FAIL, "EVENT_SCORE_MISMATCH")
     return _finding(
-        "execution", AuditStatus.PASS, windows_checked=evidence.window_count,
-        orders_checked=len(evidence.orders), positions_checked=len(evidence.dates),
+        "execution",
+        AuditStatus.PASS,
+        windows_checked=evidence.window_count,
+        orders_checked=len(evidence.orders),
+        positions_checked=len(evidence.dates),
     )
 
 
@@ -136,8 +138,13 @@ def audit_reproducibility(
     if set(expected) != set(actual):
         return _finding("reproducibility", AuditStatus.INSUFFICIENT, "RECOMPUTE_KEY_MISMATCH")
     numeric = (
-        "net_cagr", "total_return", "max_drawdown", "calmar", "profit_factor",
-        "turnover", "cost_drag",
+        "net_cagr",
+        "total_return",
+        "max_drawdown",
+        "calmar",
+        "profit_factor",
+        "turnover",
+        "cost_drag",
     )
     exact = ("calmar_status", "profit_factor_status", "closed_trades")
     for key, left in expected.items():
@@ -183,7 +190,9 @@ def audit_trial_ledger(
     if len(champion_profiles) != 1 or not champion_profiles[0].eligible:
         return _finding("trial_ledger", AuditStatus.FAIL, "CHAMPION_NOT_ELIGIBLE")
     return _finding(
-        "trial_ledger", AuditStatus.PASS, candidates_checked=len(candidates),
+        "trial_ledger",
+        AuditStatus.PASS,
+        candidates_checked=len(candidates),
         trials_checked=len(trials),
     )
 
@@ -225,8 +234,7 @@ def audit_stress_results(
     rows: list[StressComparison] = []
     metrics = ("net_cagr", "max_drawdown", "calmar", "profit_factor")
     windows = {
-        item.window_id for item in standard
-        if item.candidate_id in {champion_id, incumbent_id}
+        item.window_id for item in standard if item.candidate_id in {champion_id, incumbent_id}
     }
     for result in results:
         by_key = {(item.candidate_id, item.window_id): item for item in result.observations}
@@ -236,7 +244,9 @@ def audit_stress_results(
             standard_champion = standard_by_key.get((champion_id, window))
             standard_incumbent = standard_by_key.get((incumbent_id, window))
             if None in (champion, incumbent, standard_champion, standard_incumbent):
-                return StressAudit(AuditStatus.INSUFFICIENT, tuple(rows), ("MISSING_STRESS_OBSERVATION",))
+                return StressAudit(
+                    AuditStatus.INSUFFICIENT, tuple(rows), ("MISSING_STRESS_OBSERVATION",)
+                )
             for metric in metrics:
                 left, right = _metric_value(champion, metric), _metric_value(incumbent, metric)
                 base_left = _metric_value(standard_champion, metric)
@@ -244,62 +254,20 @@ def audit_stress_results(
                 if None in (left, right):
                     continue
                 stress_advantage = float(left - right)
-                standard_advantage = None if None in (base_left, base_right) else float(base_left - base_right)
+                standard_advantage = (
+                    None if None in (base_left, base_right) else float(base_left - base_right)
+                )
                 shrinkage = None
                 if standard_advantage is not None and standard_advantage > 0.0:
                     shrinkage = 1.0 - stress_advantage / standard_advantage
-                rows.append(StressComparison(
-                    result.scenario_id, window, metric, standard_advantage,
-                    stress_advantage, shrinkage,
-                ))
+                rows.append(
+                    StressComparison(
+                        result.scenario_id,
+                        window,
+                        metric,
+                        standard_advantage,
+                        stress_advantage,
+                        shrinkage,
+                    )
+                )
     return StressAudit(AuditStatus.PASS, tuple(rows))
-
-
-def legacy_health_evidence(
-    protocol: EvaluationProtocol,
-    ranking: RankingResult,
-    formal: tuple[MetricObservation, ...],
-    stress: tuple[MetricObservation, ...],
-    repeated: tuple[MetricObservation, ...],
-    candidates: tuple[CandidateDescriptor, ...],
-) -> HealthEvidence | None:
-    """Preserve OPC-v1/v2 health semantics inside SE during migration."""
-    champion = ranking.champion_id
-    if champion is None:
-        return None
-    expected = tuple(item for item in formal if item.candidate_id == champion)
-    reproducibility = audit_reproducibility(expected, repeated)
-    margins = resolve_margins(protocol)
-    stress_by_key = {
-        (item.candidate_id, item.window_id, item.scenario_id): item for item in stress
-    }
-    stress_ok = bool(stress)
-    for scenario in {item.scenario_id for item in stress}:
-        for window in protocol.decision_windows:
-            challenger = stress_by_key.get((champion, window, scenario))
-            incumbent = stress_by_key.get((protocol.incumbent_id, window, scenario))
-            comparisons = () if challenger is None or incumbent is None else compare_observation(
-                challenger, incumbent, margins,
-            )
-            if window != "full" and window not in protocol.target_windows:
-                comparisons = tuple(item for item in comparisons if item.metric != "profit_factor")
-            if not comparisons or not all(item.passed for item in comparisons):
-                stress_ok = False
-    champion_descriptor = next(item for item in candidates if item.candidate_id == champion)
-    robust_ids = {item.candidate_id for item in ranking.profiles if item.eligible}
-    neighbor_count = sum(
-        item.candidate_id not in {champion, protocol.incumbent_id}
-        and item.candidate_id in robust_ids
-        and bool(champion_descriptor.parameter_group)
-        and item.parameter_group == champion_descriptor.parameter_group
-        and item.family == champion_descriptor.family
-        for item in candidates
-    )
-    return HealthEvidence(
-        champion,
-        HealthStatus.PASS,
-        HealthStatus(reproducibility.status.value),
-        HealthStatus.PASS if neighbor_count else HealthStatus.INSUFFICIENT,
-        HealthStatus.PASS if stress_ok else HealthStatus.FAIL,
-        HealthStatus.PASS,
-    )
