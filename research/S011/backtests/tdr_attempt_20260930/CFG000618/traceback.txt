@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\research\S011\backtests\tdr_attempt_20260930\src\run.py", line 41, in main
+    result=run_backtest_v2(snapshot=snapshot,request=BacktestRequestV2('159326.SZ','etf',date(2025,2,6),date(2026,9,28),1e6),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\backtesting\service.py", line 218, in run_backtest_v2
+    render_backtest_chart_html(signals, execution_data, result, request.initial_cash),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\backtesting\chart.py", line 23, in render_backtest_chart_html
+    return ChartRuntime().render_backtest(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\packages\strategy_runtime\src\strategy_runtime\charting.py", line 283, in render_backtest
+    return self._render(
+           ^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\packages\strategy_runtime\src\strategy_runtime\charting.py", line 248, in _render
+    raise RuntimeCompatibilityError(
+strategy_runtime.errors.RuntimeCompatibilityError: strategy deployment root is required for S011-EX24T003
