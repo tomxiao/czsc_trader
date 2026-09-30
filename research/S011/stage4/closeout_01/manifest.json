@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "package_kind": "STAGE_FOUR_USER_DECISION_CLOSEOUT",
+  "files": {
+    "decision.json": "5408984f80e0bebd4c4fd17597038debd54dea623b9155e98ec0120eac2e8d1e",
+    "README.md": "b2b9f40e7d02ec52b6cbc01c2393b573eb81617c6c8feb47498d33a6845b4bb2",
+    "src/validate.py": "726c23db94c7ebd7689ec3d623c740dd8d47eb751c6151ae7e95d34c4d635bf0"
+  },
+  "inputs": {
+    "research/S011/stage4/iteration_04/manifest.json": "2cea1f6992413e1b1a6e15cce58442cec6082e3131ada549a17d11721032f753",
+    "research/S011/stage4/recommendation_01/manifest.json": "cf6b905203d53fce4c16ab6f53729bfa9635b321b4b1ef4788f9f62ad4fcc843",
+    "research/S011/backtests/devpool_20260930_618_621/manifest.json": "1b397a409ed6744cd83b1b1b7bbc534feb847be83ad5ede16db7d3abd4a24423",
+    "research/S011/backtests/tdr_run_20260930/README.md": "76fa3af29e88adb1683c9e37150a540c33ebeaacc7c51f1fbbe43bc48cba572c",
+    "research/S011/backtests/tdr_run_20260930/src/run.py": "eea093fd130a10327af7b5885d2acffda7321ebcd2cb5e57dd4cee8a90422d29",
+    "research/S011/backtests/tdr_run_20260930/receipts/CFG000618.json": "f7827cc686c7cad7161b0aa90d35a2eea1df14aee7c8d745afc9416ac994b365",
+    "research/S011/backtests/tdr_run_20260930/receipts/CFG000621.json": "9af0af9846883f03ea2279b865915662cf8c33537f9497983a3501c48d3df63f",
+    "research/S011/backtests/tdr_ytd_20260930/README.md": "0648dddcbe1bec592064402c3a9117a643b0d9b54637f076723cf3b15f5adef6",
+    "research/S011/backtests/tdr_ytd_20260930/src/run.py": "e9fe09e411794c723e19d85c51b6bdf325d230d8a8ada149436ee5c3ae4e5300",
+    "research/S011/backtests/tdr_ytd_20260930/receipts/CFG000618.json": "3347ba8079621dda4c293fc094578c0f4824f3ade0147ad58f58688ab3652683",
+    "research/S011/backtests/tdr_ytd_20260930/receipts/CFG000621.json": "8eadf524f9d006747696ba505033829f9e9d84325cfd2fb75c9ee415b55d7466",
+    "research/S011/backtests/tdr_20260701_20260928/README.md": "6b850100a2a91f0bdb85a783f251b11e4f763dbfab96ef64e70daeaa8eb4a218",
+    "research/S011/backtests/tdr_20260701_20260928/src/run.py": "df4e1ac05d034b67fc48ddd6624947149a43c3dd338a978f8d638460f27a9a6c",
+    "research/S011/backtests/tdr_20260701_20260928/receipts/CFG000618.json": "591b500b4eed5c065d74397fb00edf47fc72b553e1be3241b748c4f523a550d6",
+    "research/S011/backtests/tdr_20260701_20260928/receipts/CFG000621.json": "ffcdd9038a024fb6368a6867c19ae3d0950ede7cc09a75ce007e0920416b60c0"
+  },
+  "entrypoint": "src/validate.py",
+  "dependencies": "Repository .venv; immutable iteration_04 and named TDR backtest packages and outputs",
+  "evidence_policy": "Append-only decision successor; original rankings, goals, archives and pending-decision snapshot preserved",
+  "new_backtests": 0,
+  "stage_five_started": false
+}

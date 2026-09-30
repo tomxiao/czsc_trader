@@ -5,10 +5,13 @@
 - 策略族：`S011 / 电网设备ETF单标的收益型策略研究（S011）`；
 - 初始范围：`["159326.SZ"]`；
 - 研究状态：`RESEARCHING`；
-- 当前阶段四入口：[迭代04阅读视图](stage4/iteration_04/README.md)、[结构化推荐](stage4/iteration_04/recommendations.json)、[全配置排序](stage4/iteration_04/rankings.parquet)、[补测需求](stage4/iteration_04/additional_checks.json)、[用户决定](stage4/iteration_04/decision.json)。按新版五项自检与收益优先规则，复核原36配置收益/回撤/频率全部达标，按标准年化和回撤幅度形成16层，层大小依次为4/3/6/3/2/3/2/3/1/1/3/1/1/1/1/1；频率区间内不额外优化。
+- 当前阶段四已收尾：2026-09-30用户明确“同意晋升621，请你先收尾阶段四”。当前有效[用户决定](stage4/closeout_01/decision.json)、[收尾阅读视图](stage4/closeout_01/README.md)、[收尾清单](stage4/closeout_01/manifest.json)批准`S011-CFG-000621`晋升为开发池策略候选，来源`S011-EX24T007`，配置指纹`594d2c76a1c328b370c3a3acbb66281c1bdedc096b636ad00366162229ea7914`。阶段四状态为`CLOSED_WITH_DISCLOSED_LIMITATIONS`；阶段五尚未启动、候选ID未分配，未制作候选包、未提交CIO、未冻结或部署。
+- 原证据入口：[迭代04阅读视图](stage4/iteration_04/README.md)、[结构化推荐](stage4/iteration_04/recommendations.json)、[全配置排序](stage4/iteration_04/rankings.parquet)、[补测需求](stage4/iteration_04/additional_checks.json)、[历史待决定快照](stage4/iteration_04/decision.json)。按新版五项自检与收益优先规则，复核原36配置收益/回撤/频率全部达标，按标准年化和回撤幅度形成16层，层大小依次为4/3/6/3/2/3/2/3/1/1/3/1/1/1/1/1；频率区间内不额外优化。
 - 第一层同层推荐顺序为`000618 → 000624 → 000621 → 000628`：两组间由标准年化决定，同组由同设计联合年化退化决定；不新增回撤优先榜、不生成综合评分。四种精度/分箱敏感性中顺序不变；交换收益与回撤、联合收益退化与回撤恶化优先级会换位，属于偏好依赖，不表示统计显著优势。
 - 复用封存账户补算36配置60日滚动累计超额Q10及盈利闭合交易前10%贡献；闭合与未平仓损益对账。四中心具备EX28固定2天16点联合证据，其余32配置该主模块缺失。全36配置中21配置已有确定同层序位，15配置涉及9对不可比关系，保留可能名次区间，禁止跳过缺失指标。000193可参加标准绩效第11层；其同源码20bp缺口仍单列。未新增回测或参数提议，EX28扰动点不自动扩大排序集合。
-- 旧配置区块重抽样、旧族PBO/DSR与不利自检原样保留并锁定哈希；[搜索台账](stage4/iteration_04/search_ledger.json)追加EX28范围，旧统计不宣称覆盖扩大后的搜索。身份登记沿用838条追加式快照。当前状态为`SELF_CHECK_AND_PARTIAL_RANKING_COMPLETE_PENDING_USER_DECISION`；第一层已有足够证据排序。用户明确批准具体配置后才进入阶段五；平台修改继续后置。
+- 旧配置区块重抽样、旧族PBO/DSR与不利自检原样保留并锁定哈希；[搜索台账](stage4/iteration_04/search_ledger.json)追加EX28范围，旧统计不宣称覆盖扩大后的搜索。身份登记沿用838条追加式快照。迭代04历史状态`SELF_CHECK_AND_PARTIAL_RANKING_COMPLETE_PENDING_USER_DECISION`由本轮收尾决定承接；第一层已有足够证据供用户选择，其余覆盖缺口及9对不可比关系保留。
+- 选择依据：用户更重视621低回撤、近期窗口表现及较小联合年化退化，接受完整开发池年化低于618的机会成本。补充TDR证据为[完整开发池](backtests/tdr_run_20260930/README.md)、[2026 YTD](backtests/tdr_ytd_20260930/README.md)、[7月起窗口](backtests/tdr_20260701_20260928/README.md)；三窗口相互重叠，均为已见开发池。621联合邻域仅1/16达原目标、滚动超额Q10及联合回撤恶化较弱、近期仍亏损等不利证据继续披露，未把用户选择改写为原排序第一。
+- 下一步：按用户推进指令制作已获批621的阶段五开发池候选包；本轮先完成阶段四收尾。平台修改继续后置，冻结、部署及生产操作仍需独立授权。
 
 ## 历史阶段四记录（迭代04前，保留原结论及证明范围）
 

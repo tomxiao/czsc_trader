@@ -1,0 +1,145 @@
+{
+  "config_id": "S011-CFG-000621",
+  "config_fingerprint": "594d2c76a1c328b370c3a3acbb66281c1bdedc096b636ad00366162229ea7914",
+  "reference_id": "S011-EX24T007",
+  "entrypoint": "czsc_trader.backtesting.run_backtest_v2",
+  "requested_window": [
+    "2026-07-01",
+    "2026-09-28"
+  ],
+  "initial_cash": 1000000.0,
+  "initial_quantity": 0,
+  "one_way_cost": 0.001,
+  "strategy_source_unchanged": true,
+  "original_full_window_preserved": true,
+  "platform_modified": false,
+  "candidate_promoted": false,
+  "source_hashes": {
+    "research/S011/backtests/tdr_run_20260930/chart_binding.json": "30d2ac27fe2d708ab9b13cdd010bd1808d55322de9e3ae93be3fa52517e8bb10",
+    "research/S011/backtests/tdr_run_20260930/runtime/strategy_runtime/charts/common.py": "420304fc5becca91393b791f19568b4744c6c86aa90703b104827657c398af9a",
+    "research/S011/backtests/tdr_run_20260930/runtime/strategy_runtime/charts/s011_development.py": "907765e309a89a7f302ba37b876118ddeaf092e8b8debca5a6eef42ec5dc9a50",
+    "research/S011/backtests/tdr_run_20260930/runtime/strategy_runtime/strategies/s011_reversal.py": "0f339773909416f29bafda29ac540797d665c8763b9614046f9f90e159b0ad8b",
+    "experiments/S011/20260930_S011_EX15/artifacts/execution_data_gate.json": "a8d019a8b922e893ec06a2fc0d345a044d1aee874bca114a467173fe80babece",
+    "experiments/S011/20260930_S011_EX15/artifacts/execution_daily.csv.gz": "47c1453e749f590a92c6a8d713cbfb492237d109f7b2c3c7d91fc571c717ab3b",
+    "experiments/S011/20260930_S011_EX15/artifacts/execution_intraday.csv.gz": "d58dd65eaaea26e56d7029dd0dd268be9b918b1dff65d250b95dbc5d5bf35317",
+    "experiments/S011/20260930_S011_EX15/artifacts/adjusted_daily.csv.gz": "f0aa76e1308d975018548ce1eddee55082c5fe9f5ffacdeb0533c7c798957eb3"
+  },
+  "status": "COMPLETE",
+  "engine": "TDR_BACKTEST_V2",
+  "output_dir": "outputs/S011EX24T007_159326_0930_BT03",
+  "evaluation_window": [
+    "2026-07-01",
+    "2026-09-28"
+  ],
+  "audit": {
+    "status": "PASS",
+    "evidence_hash": "8bdb412bb834bb784cf626679d781ba167675e0b85400343cbb2a89d4d737b5a",
+    "checks": [
+      "EVALUATION_SESSION_COVERAGE",
+      "ORDER_AND_FILL_CAUSALITY",
+      "ACCOUNT_LEDGER",
+      "TRADE_PAIRING",
+      "METRICS"
+    ],
+    "reason_codes": [],
+    "benchmarks": {
+      "buyhold": {
+        "status": "PASS",
+        "evidence_hash": "75e7ae988e27c2e51ba46fd161cd1ad042b89423267b7d28b7e68a445c9fa9e7",
+        "checks": [
+          "BENCHMARK_SESSIONS",
+          "BENCHMARK_DEFINITION",
+          "BENCHMARK_LEDGER",
+          "BENCHMARK_ORDERS",
+          "BENCHMARK_TRADE_PAIRING",
+          "BENCHMARK_METRICS"
+        ],
+        "reason_codes": []
+      },
+      "ma5_ma20": {
+        "status": "PASS",
+        "evidence_hash": "63973f5f6182a4b07f56702fe81cf7187a66443b53ebdeb320a9589a4238e222",
+        "checks": [
+          "BENCHMARK_SESSIONS",
+          "BENCHMARK_DEFINITION",
+          "BENCHMARK_LEDGER",
+          "BENCHMARK_ORDERS",
+          "BENCHMARK_TRADE_PAIRING",
+          "BENCHMARK_METRICS"
+        ],
+        "reason_codes": []
+      }
+    }
+  },
+  "metrics": {
+    "total_return": -0.013045088499999857,
+    "annualized_return_252": -0.05116815879384695,
+    "max_drawdown_magnitude": 0.06154484547063166,
+    "ending_equity": 986954.9115000002,
+    "closed_trades": 6,
+    "trades_per_60_sessions": 5.714285714285714,
+    "closed_trade_win_rate": 0.5,
+    "total_fees": 11971.1885,
+    "ending_quantity": 0,
+    "sessions": 63
+  },
+  "tdr_metrics": {
+    "strategy": {
+      "reference": "S011-EX24T007",
+      "metrics": {
+        "max_drawdown": -0.06154484547063166,
+        "calmar": -0.8313963322608988,
+        "win_loss_ratio": 0.7982517192364524,
+        "win_loss_ratio_status": "VALID",
+        "return": -0.013045088499999857,
+        "sharpe": -0.30319299562729346,
+        "closed_trades": 6
+      }
+    },
+    "benchmarks": {
+      "buyhold": {
+        "metrics": {
+          "max_drawdown": -0.25565570031310336,
+          "calmar": -2.7107955316049015,
+          "win_loss_ratio": null,
+          "win_loss_ratio_status": "NO_CLOSED_TRADES",
+          "return": -0.25565570031310336,
+          "sharpe": -3.0777688681481057,
+          "closed_trades": 0
+        }
+      },
+      "ma5_ma20": {
+        "metrics": {
+          "max_drawdown": -0.11774126953205966,
+          "calmar": -3.317513867777536,
+          "win_loss_ratio": null,
+          "win_loss_ratio_status": "NO_WINS",
+          "return": -0.11646423398864503,
+          "sharpe": -2.6313892633542744,
+          "closed_trades": 2
+        }
+      }
+    }
+  },
+  "initial_state_check": "PASS",
+  "cash_inventory_check": "PASS",
+  "cost_check": "PASS",
+  "files": {
+    "account_daily.csv": "c7696999ea559c5277d4ab01635c4f3770173ebb1aa42b32a9803ecae6f5c461",
+    "audit.json": "cf31a0e3a9c7b541043c471d6d176afbcb7c04b02b6fb8973fa1100c7b7b73c0",
+    "buyhold_account_daily.csv": "1866c90bb7a19823357c042c1d60aee19319b50d17c71aa4753330e1629c6571",
+    "chart.html": "224d3037fbae7dcfd395f9d6462136d5eeb4833b567d8a951292b6cab3b8f557",
+    "decisions.csv": "51cde8261625f72de20de51e4e7fe820597b4a267804a598a40e527c70bc5b74",
+    "fills.csv": "c8202a3bde375c537d9701451773bfa1ad5b88aa295f51ac88833341eb047257",
+    "manifest.json": "7db0a506af25a14a9c96ada33ebdff3eed0d0c8eb7ad4833ac56b017ec2a8d66",
+    "ma_account_daily.csv": "64628f24e668b737f27951cde75cb97994173eafe4716b270fb39cea648fe23f",
+    "ma_chart.html": "fb7a1686f5987647857ab16c19baeab9efe03183215a05fa9a946d4d3cd24228",
+    "ma_orders.csv": "1f9211e8999ffbab7d71ddcd2ecbd4bd8d0c512bf481c397dce86296238d8842",
+    "ma_signals.csv": "e60f44ada39189a7edd4bdfbaef21e3818b1debb3495e22f33ad18e93f06b9fe",
+    "ma_trades.csv": "837113ead7377ee4600a0a7fd6c01fe2bd32b6d3793691c7bc8016471f866979",
+    "metrics.json": "1382197aa77143c3703bad40248eabfc7abf2b4d2459843b9f42c33607be74de",
+    "orders.csv": "ea943c029e08ff6cc70f85b45c329324ac6717afbefffd12fda95701846d0310",
+    "report.md": "edf23ba456f5bb726dcb875771d060c45547c8c493006cf63bae31654598a92c",
+    "trades.csv": "1b244b993c26e6e75b84de25fd49d85bd6cd24e668a62eee729d29f96de6d2e8"
+  }
+}
