@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "run_id": "S011-STAGE4-ITERATION03",
+  "files": {
+    "assessment.json": "6ba75d2140ef8ede8bc80bfe88f0e7599828bebee9af95dec5442c5a141649e8",
+    "behavior_groups.json": "eb26872c639a786b55eb1dd52984a7dbd9bca135d65eda45a680a99a0f6a0600",
+    "comparisons.parquet": "f863eaf6666cf7e47e6eab3efcec973e8bc631a91cf0fba34860e52e822848a0",
+    "configurations.json": "dcc161fd007200c8306d1f0af210e2704125dd82ee2da3ca3d1b8c857aa719ed",
+    "decision.json": "647d46170707e0bb308c2992c57a69f399a45fa2cec8985992dddf959cbe7563",
+    "diagnostics.parquet": "0a442db99225a22cb772c1a3384d7f9f468667ce35024bcbae9aa78c3ffe9ebe",
+    "evidence_catalog.json": "4593842901acca418a192678207b5b1c1d5b4ae289e1686cf6f96e389c125647",
+    "family_statistics.json": "07e60ec5a633c24f61a2fed6c67aecbfc4c63087c9de1d240ac3c4c85a9c1242",
+    "inputs/previous_RSCH_AGENT.md": "56d8e8e376c5a3294e41a9de497df7171b90cc4130acab66c6fccd2fd2ab85cc",
+    "inputs/RSCH_AGENT.md": "4439e5fd686dc1fff445afa0d75d6efd061e7429410e1a211bafd025cb80b785",
+    "layer_changes.parquet": "e985e59ee6cdba6995dcacc624fe00554e125f29f05e7fe8a3da47fdc1b9da47",
+    "pareto.json": "76ef9fc5c37871c2fcce16a8c92fe8602152d350af80b81a0345bebc66d9e90a",
+    "protocol.json": "7b89263d1a65383966f63454a875660fdfdbb1709c43df086685bb738be5033d",
+    "ranking_metrics.parquet": "e747aa1d73e92e333cb6602bc06894f0ac275ab2702b4d2c6274ac40f314aa60",
+    "ranking_sensitivity.json": "610b501a03c974e252e5fef0e4acfb93d7d59ac237904380b154d8c4b16ce705",
+    "README.md": "3cc1b5dd6705032d3042f000f3652e63d201537201b9bc8b7f5edb75c6dd2b3a",
+    "recommendations.json": "b21a1deed2aa4787d467a1161186654902cfe7f7a30f454d44fa61e14da6ffeb",
+    "schemas/documents.json": "a1db06848cbd824f0105ca48a13cacc11f613c9da9c2bf9885256f7d9292b855",
+    "schemas/tables.json": "d9eae150f4c5c37ab24b050f243a6a50616017a7241ddf7ccb767377d45767c1",
+    "src/build.py": "d3fda41d11ec29d0a90721dd2464f3d42f14119686f04337a8ee11b90d0040af",
+    "src/ranking.py": "8efa5592ddfc353363543f3c6e14ddc9061383e8822b3b9ef23732f6441acf72",
+    "src/replay.py": "8ee75c9a42e4851810d4ec110cfb9069eb536b0be98202defc16151eaaf01840",
+    "src/verify.py": "8d00a1679d69e7ae397d5b4f940d814bc9b1b2458563e1f46df18c23a1b1545f",
+    "tests/test_ranking.py": "604154f1acf0d9c37818de116fe3efbc6af6984fdc155a59bb8efc525aa48399"
+  },
+  "upstream": "research/S011/stage4/iteration_02",
+  "upstream_manifest_sha256": "9b3d452d33d47d9b81b18b3f40efc9bf42e3dc2fc8cd197e051cbb22e6bc0d7b",
+  "hash_policy": "Package and upstream files raw SHA256; upstream inputs use original manifest policy with explicit archived-document substitution only.",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "environment": {
+    "pandas": "3.0.5",
+    "numpy": "2.5.2",
+    "pyarrow": "25.0.1"
+  },
+  "entrypoints": {
+    "build": "src/build.py build --output <new .tmp directory>",
+    "validate": "src/build.py validate --package <package>",
+    "independent_verify": "src/verify.py --package <package>",
+    "replay": "src/replay.py --config-id <id> --data-dir <same-candidate-managed-data> --output <new .tmp directory>"
+  },
+  "dependencies": "Existing project .venv and hash-verified upstream evidence/code; no new dependency or implicit temporary cache.",
+  "decision_authority": "USER_ONLY",
+  "stage_five_started": false
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "run_id": "S011-STAGE4-ITERATION03",
+  "mode": "SEALED_EVIDENCE_RERANKING_NO_NEW_SEARCH",
+  "upstream": "research/S011/stage4/iteration_02",
+  "upstream_manifest_sha256": "9b3d452d33d47d9b81b18b3f40efc9bf42e3dc2fc8cd197e051cbb22e6bc0d7b",
+  "development_only": true,
+  "new_hard_gates": false,
+  "automatic_promotion": false,
+  "selection_disclosure": "User approved this revision after viewing the six-objective front and metric-ablation results. Precision choices are economic display judgments, not blind preregistration or statistical significance. No target front size is specified.",
+  "metrics": [
+    {"name": "cagr", "direction": "maximize", "resolution": "0.001", "origin": "0", "reason": "Net annual return at the original 10bp one-way cost; 0.1 percentage point equals 1000 yuan annualized per 1 million yuan capital."},
+    {"name": "drawdown_magnitude", "direction": "minimize", "resolution": "0.0001", "origin": "0", "reason": "Peak-to-trough loss; 0.01 percentage point equals 100 yuan per 1 million yuan peak equity. This is decision granularity, not an uncertainty bound."},
+    {"name": "fee20_cagr", "direction": "maximize", "resolution": "0.001", "origin": "0", "reason": "Net annual return at double one-way cost, read from same-source full-account evaluation. Captures achieved stress outcome rather than rewarding a smaller loss from a lower baseline. Report correlation and omission sensitivity versus standard return."}
+  ],
+  "rounding": "DECIMAL_NEAREST_HALF_UP_ON_ZERO_OR_DECLARED_ORIGIN_GRID",
+  "sensitivity": [
+    {"name": "fine_10dec", "resolutions": ["0.0000000001", "0.0000000001", "0.0000000001"], "half_cell_shift": false},
+    {"name": "finer", "resolutions": ["0.0001", "0.00001", "0.0001"], "half_cell_shift": false},
+    {"name": "coarser", "resolutions": ["0.005", "0.0005", "0.005"], "half_cell_shift": false},
+    {"name": "half_cell_shift", "resolutions": ["0.001", "0.0001", "0.001"], "half_cell_shift": true}
+  ],
+  "diagnostic_only": ["knn20_qualified_share", "knn20_radius", "joint_observed_count", "worst_rolling60_excess", "top3_positive_pnl_share", "fee20_cagr_loss", "time_periods", "bootstrap", "PBO", "DSR", "boundary_dependence"],
+  "missing": "UNRANKED_NO_IMPUTATION_NO_CROSS_SOURCE_COST_BORROWING",
+  "grouping": "Same standard-scenario behavior_id only; rank configurations first, retain every member, layer, source identity, parameter differences and pressure-scenario range/missingness. No general cross-scenario equivalence claim.",
+  "representative_policy": "Researcher describes observed core-front return/drawdown tradeoffs and retains the previous representative as a continuity comparison. Within identical observed outcomes, use documented nearest-neighbor diagnostics only as a provisional comparison, not a robustness certificate or automatic tie-break score. No fixed quota or automatic nomination.",
+  "resources": {"parameter_search": false, "new_backtests": false, "statistics_reused_by_hash": true, "workers": 1, "reason": "Small deterministic reranking of 36 rows; no new Optuna search or CPU-intensive account evaluation."},
+  "decision_authority": "USER_ONLY",
+  "unmeasured": ["Balanced joint perturbation experiment", "Independent forward data", "Order queue, impact, capacity and latency", "New cross-symbol replication", "New component ablation"]
+}

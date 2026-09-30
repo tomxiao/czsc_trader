@@ -1,0 +1,151 @@
+{
+  "status": "RESEARCHER_COMPARISON_ONLY",
+  "automatic_promotion": false,
+  "items": [
+    {
+      "config_id": "S011-CFG-000624",
+      "role": "收益优先对照",
+      "core_layer": 1,
+      "parameters": {
+        "tail_weight": 0.575,
+        "spx_weight": 0.05,
+        "entry": 0.33,
+        "exit": 0.025,
+        "max_days": 2,
+        "lookback": 130,
+        "premium": 0.003
+      },
+      "same_standard_behavior_config_ids": [
+        "S011-CFG-000618",
+        "S011-CFG-000624"
+      ],
+      "representative_reason": "同标准账户成员000618/000624中，000624已观测20近邻比例80%，000618为75%，半径同为2；联合邻点数分别11/12。不均匀采样支持暂选阅读代表，尚不能证明参数更稳健。",
+      "metrics": {
+        "cagr": 0.49806063332693906,
+        "drawdown_magnitude": 0.07250640712455592,
+        "fee20_cagr": 0.4254682762884128,
+        "worst_rolling60_excess": -0.2518229281243394,
+        "top3_positive_pnl_share": 0.3268852398617556,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0,
+        "joint_observed_count": 11.0
+      },
+      "opportunity_cost_vs_return_reference": {
+        "standard_cagr_gap": 0.0,
+        "stress_cagr_gap": 0.0
+      },
+      "tradeoff": "较高开发池收益，回撤高于低回撤组。",
+      "adverse_evidence": [
+        "最差60日仍明显落后同期买入持有",
+        "已见开发池与反复搜索偏差未消除",
+        "未完成均衡联合扰动、容量/延迟及独立前瞻验证"
+      ],
+      "evidence": [
+        "ranking_metrics.parquet",
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "behavior_groups.json",
+        "evidence_catalog.json"
+      ],
+      "approved": false
+    },
+    {
+      "config_id": "S011-CFG-000628",
+      "role": "回撤优先对照",
+      "core_layer": 1,
+      "parameters": {
+        "tail_weight": 0.575,
+        "spx_weight": 0.05,
+        "entry": 0.33,
+        "exit": 0.175,
+        "max_days": 2,
+        "lookback": 130,
+        "premium": 0.003
+      },
+      "same_standard_behavior_config_ids": [
+        "S011-CFG-000621",
+        "S011-CFG-000628"
+      ],
+      "representative_reason": "同标准账户成员000621/000628中，000628已观测20近邻比例55%，000621为45%，半径同为3；联合邻点数分别1/2。联合覆盖稀疏，代表性选择保留争议。",
+      "metrics": {
+        "cagr": 0.4310672583807367,
+        "drawdown_magnitude": 0.06154830526516941,
+        "fee20_cagr": 0.36172618567673154,
+        "worst_rolling60_excess": -0.261189704556545,
+        "top3_positive_pnl_share": 0.30730172320872556,
+        "knn20_qualified_share": 0.55,
+        "knn20_radius": 3.0000000000000027,
+        "joint_observed_count": 1.0
+      },
+      "opportunity_cost_vs_return_reference": {
+        "standard_cagr_gap": 0.06699337494620239,
+        "stress_cagr_gap": 0.06374209061168123
+      },
+      "tradeoff": "较低开发池回撤，标准与成本压力收益较低。",
+      "adverse_evidence": [
+        "最差60日仍明显落后同期买入持有",
+        "已见开发池与反复搜索偏差未消除",
+        "未完成均衡联合扰动、容量/延迟及独立前瞻验证"
+      ],
+      "evidence": [
+        "ranking_metrics.parquet",
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "behavior_groups.json",
+        "evidence_catalog.json"
+      ],
+      "approved": false
+    },
+    {
+      "config_id": "S011-CFG-000649",
+      "role": "历史代表连续性对照",
+      "core_layer": 3,
+      "parameters": {
+        "tail_weight": 0.575,
+        "spx_weight": 0.05,
+        "entry": 0.325,
+        "exit": 0.025,
+        "max_days": 2,
+        "lookback": 130,
+        "premium": 0.0025
+      },
+      "same_standard_behavior_config_ids": [
+        "S011-CFG-000649",
+        "S011-CFG-000653"
+      ],
+      "representative_reason": "保留原EX25T014及既有公共SRT/TXE重放证据；同标准账户000653近邻比例同为80%，但半径3而本配置为2、联合邻点数14而本配置为3，不能据此宣称任一配置全面更稳健。",
+      "metrics": {
+        "cagr": 0.47047882514523165,
+        "drawdown_magnitude": 0.07252440152534889,
+        "fee20_cagr": 0.4009440129362425,
+        "worst_rolling60_excess": -0.2691213366810721,
+        "top3_positive_pnl_share": 0.33903708580762354,
+        "knn20_qualified_share": 0.8,
+        "knn20_radius": 2.0000000000000018,
+        "joint_observed_count": 3.0
+      },
+      "opportunity_cost_vs_return_reference": {
+        "standard_cagr_gap": 0.027581808181707412,
+        "stress_cagr_gap": 0.024524263352170284
+      },
+      "tradeoff": "保留连续性；核心绩效被收益组支配，既有重放不构成经济优势。",
+      "adverse_evidence": [
+        "最差60日仍明显落后同期买入持有",
+        "已见开发池与反复搜索偏差未消除",
+        "未完成均衡联合扰动、容量/延迟及独立前瞻验证"
+      ],
+      "evidence": [
+        "ranking_metrics.parquet",
+        "diagnostics.parquet",
+        "comparisons.parquet",
+        "behavior_groups.json",
+        "evidence_catalog.json"
+      ],
+      "approved": false
+    }
+  ],
+  "additional_core_front_behavior_ids": [],
+  "selection_rule": "Two observed return/drawdown tradeoff roles plus historical continuity; no forced quota, all other front groups explicitly retained.",
+  "all_configurations_remain_selectable": true,
+  "warning": "Recommendations and rounding are retrospective research judgments, not confirmed robustness or user promotion."
+}
