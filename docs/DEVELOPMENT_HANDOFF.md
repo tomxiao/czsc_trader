@@ -1,10 +1,12 @@
 # 开发运维交接（DEV）
 
 > 本文面向平台开发者（DEV），用于跨机器、跨会话继续开发与运维，只记录系统全貌、关键边界、
-> 恢复方法和开发规则。各子包`README.md`面向RSCH/CIO说明公共能力的使用，不承担内部维护手册。
-> 研究资料导航见`research/README.md`，具体批次结论见`research/SXX/HANDOFF.md`，RSCH与CIO
-> 执行契约分别见`research/RSCH_AGENT.md`和`research/CIO_AGENT.md`；本文维护系统架构、
+> 恢复方法和开发规则。各子包`README.md`说明公共能力的使用，不承担内部维护手册。
+> 研究资料导航见`research/README.md`，具体批次结论见`research/SXX/HANDOFF.md`，新研究流程
+> 执行契约见`research/RSCH_AGENT.md`；本文维护系统架构、
 > 开发环境、测试规则和PTE运维。历史设计与实施过程见`docs/superpowers/`。
+
+> 流程迁移边界：新流程已废弃CIO角色和独立候选包对象。本文下述CIO、候选包、EvaluationMandate及裁决链描述保留为现有旧治理实现参考，不作为新研究的角色授权或交付要求。新候选检验与冻结能力仍按RSCH附录C的CAP-07占位，尚未实现时不得调用旧流程冒充新流程。本文不声明平台改造已经完成。
 
 ## 模块与简称
 
@@ -25,7 +27,7 @@
 后续开发、文档和讨论统一使用以上名称。DFLS、FSC、STC、REX、SM、SE、SRT、TXE和PTE
 均为仓库内独立包，只通过明确契约协作。研究脚本可以直接使用Optuna、特征提取库及其他研究
 依赖；仓库不再维护通用Search和Feature Mining运行模块。`news_events`仍是TDR内的受控抽取
-能力。用户授权RSCH Agent交付候选包，授权CIO Agent通过TDR完成候选审查、体检、冻结和SRT部署。
+能力。新流程由RSCH执行研究、自检、技术检验及获批冻结；用户保留阶段审批、候选选择及冻结决定权。部署须另行授权。
 
 ## 接手时核对的状态
 

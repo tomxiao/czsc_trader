@@ -1,6 +1,6 @@
 # 研究实验（Research Experiment，REX）
 
-本文面向策略研究员（RSCH）和首席投资官（CIO）。REX给一个可证伪实验提供可执行锚点、
+本文面向策略研究员（RSCH）。REX给一个可证伪实验提供可执行锚点、
 能力边界和结果身份；研究问题、金融机制与是否继续研究仍由研究员判断。安装、源码维护及
 测试见[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
 
@@ -24,7 +24,46 @@
 归档。目录和manifest要求见[实验档案说明](../../experiments/README.md)，研究判断与污染边界见
 [RSCH Agent](../../research/RSCH_AGENT.md)。
 
-## CIO：阅读实验来源
+## 正式实验预检
 
-CIO核对候选所指向的实验问题、数据门、源码绑定、执行回执和结果身份，再通过TDR独立体检。
+先阅读[公共导出](src/research_experiment/__init__.py)，沿导入核对绑定、定义和预检契约。
+
+### 契约版本与实现
+
+| 对象 | 当前要求 | 代码入口 |
+| --- | --- | --- |
+| `experiment_binding.json` / `ExperimentBinding` | 新正式实验使用`schema_version=3`；加载器仍支持历史版本2 | [loader.py](src/research_experiment/loader.py) |
+| `ExperimentDefinition` | 当前`schema_version=1`；在`subjects`中声明唯一研究标的 | [contracts.py](src/research_experiment/contracts.py) |
+| `ResearchExperiment.synthetic_precheck()` | 实现不读取真实研究结果的合成预检 | [contracts.py](src/research_experiment/contracts.py) |
+
+两个对象的版本号独立，不得把绑定版本3填写到`ExperimentDefinition.schema_version`。
+
+- 合成预检必须覆盖输入结构、边界、时间对齐和实际计算路径。
+- 合成预检不得使用真实收益筛选参数。
+- 预检未通过时必须修正并重新执行。
+- 预检通过前不得读取正式结果。
+- DFLS的`READY`状态不得替代历史可得性或研究合同核验。
+
+### CLI入口
+
+源码与定义冻结后、首次正式执行前调用下列命令。示例路径和资源数须替换为实际值；CLI参数以[当前实现](../../src/czsc_trader/cli/main.py)为准。
+
+```powershell
+czsc-trader experiment preflight `
+  --experiment experiments/SXXX/YYYYMMDD_SXXX_EXNN `
+  --max-workers 1
+```
+
+| 参数 | 使用方式 |
+| --- | --- |
+| `--max-workers` | 声明实际工作进程预算；示例中的1不是参数搜索默认值 |
+| `--max-evaluations` | 搜索实验填写冻结的评价预算 |
+| `--predecessor` | 每项成功前序证据分别追加`experiments/SXXX/YYYYMMDD_SXXX_EXNN/artifacts=<receipt_sha256>` |
+
+- 技术失败档案必须按实际档案身份引用。
+- 不得伪造成功receipt。
+
+## 阅读实验来源
+
+研究员核对候选所指向的实验问题、数据门、源码绑定、执行回执和结果身份。
 REX执行成功只证明实验按声明运行；其结果不自动成为可交易Alpha、候选资格或冻结授权。
