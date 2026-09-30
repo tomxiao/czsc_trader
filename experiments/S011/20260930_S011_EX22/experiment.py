@@ -24,7 +24,10 @@ SEED=2026093022
 BUDGET=42
 START=date(2025,2,6)
 CUTOFF=date(2026,9,28)
-PREDECESSORS={}
+PREDECESSORS={'20260930_S011_EX15':'de2edb5fcd83395ec3b3f68ae9cabe2acb933c4ad36332dc708f33c6639d8014',
+              '20260930_S011_EX16':'8df1748c63ac7ef1601203a161968351214ddf10b4fa7e83673946bf5924622e',
+              '20260930_S011_EX20':'3689ecb8e4fbc9f6f59cad52f099db7bf09dc3bc24c775751ed274e2675f1799',
+              '20260930_S011_EX23':'f9bfa2035bdb96eea6ddc8abc426301cf1ae78f437a91b43fa06f1e2c458a827'}
 SOURCE=('strategies/s011_reversal.py',)
 ROOT=Path(__file__).resolve().parent
 RUNTIME=ROOT/'runtime/strategy_runtime'
@@ -190,15 +193,15 @@ class Experiment(ResearchExperiment):
         bc=float((be.iloc[-1]/1e6)**(252/len(be))-1)
         bd=float((be/be.cummax().clip(lower=1e6)-1).min())
         anchor=pd.read_csv(ROOT.parent/'20260930_S011_EX16/artifacts/qualification.csv').set_index('trial').loc[40]
-        previous=json.loads((ROOT.parent/'20260930_S011_EX21/artifacts/trials/T054/metrics.json').read_text())
-        assert json.loads((ROOT.parent/'20260930_S011_EX21/artifacts/trials/T054/payload.json').read_text())['parameters']==ANCHOR
+        previous=json.loads((ROOT.parent/'20260930_S011_EX23/artifacts/trials/T054/metrics.json').read_text())
+        assert json.loads((ROOT.parent/'20260930_S011_EX23/artifacts/trials/T054/payload.json').read_text())['parameters']==ANCHOR
         js('search_contract.json',{'seed':SEED,'budget':BUDGET,'entry_values':ENTRY_VALUES,'exit_values':EXIT_VALUES,
             'configurations':configurations(),'directions':['maximize_cagr','maximize_negative_drawdown'],
             'benchmark_cagr':bc,'benchmark_drawdown':bd,'predecessors':PREDECESSORS,
             'warmup_policy':'unchanged 2024-12-26; min20 observations; capped expanding until lookback full'})
         rows=[];parameters=[];seen={};behaviors={}
         for i,p in enumerate(configurations()):
-            if i:time.sleep(3)
+            if i:time.sleep(10 if i%6 else 30)
             parameters.append(p)
             js(f'trials/T{i:03}/payload.json',payload(p))
             candidate=StrategyCandidate('S011',f'EX22T{i:03}',payload(p),RUNTIME)
@@ -218,7 +221,7 @@ class Experiment(ResearchExperiment):
                 save(f'trials/T{i:03}/{name}.csv.gz',frame)
                 if i in (0,1):
                     original_path=(prior/f'trials/T040/{name}.csv.gz' if i==0 else
-                                   ROOT.parent/f'20260930_S011_EX21/artifacts/trials/T054/{name}.csv.gz')
+                                   ROOT.parent/f'20260930_S011_EX23/artifacts/trials/T054/{name}.csv.gz')
                     originals[name]=pd.read_csv(original_path)
                     from io import StringIO
                     observations[name]=pd.read_csv(StringIO(frame.to_csv(index=False)))
@@ -251,6 +254,8 @@ class Experiment(ResearchExperiment):
                  'dominates_T040':bool(qualified and c>=anchor.cagr and d>=anchor.drawdown and (c>anchor.cagr or d>anchor.drawdown))}
             rows.append(row);seen.setdefault(key,i);behaviors.setdefault(behavior,i)
             js(f'trials/T{i:03}/metrics.json',row)
+            if (i+1)%6==0:
+                js(f'checkpoints/through_{i+1:03}.json',{'completed':i+1,'next_index':i+1,'metrics':rows,'parameters':parameters})
             print(json.dumps(row),flush=True)
         table=pd.DataFrame(rows);save('trials.csv',table);js('trial_parameters.json',parameters)
         context.require_capability(ExperimentCapability.SELECT_PARAMETERS)
