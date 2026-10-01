@@ -14,6 +14,13 @@ from types import UnionType
 from typing import Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from strategy_manager import CandidateKey
+from strategy_evaluator import (
+    CandidateAssessmentRequest,
+    AssessmentPanel,
+    CandidateComparisonRequest,
+    CandidateComparison,
+    ResearchMetric,
+)
 
 
 def _text(value: str, name: str) -> None:
@@ -89,6 +96,7 @@ class DeliveryStage(StrEnum):
     MANDATE = "MANDATE"
     COMPONENTS = "COMPONENTS"
     CANDIDATES = "CANDIDATES"
+    ASSESSMENT = "ASSESSMENT"
 
 
 class DeliveryStatus(StrEnum):
@@ -602,7 +610,47 @@ class ReproductionSpec(_Record):
             _text(getattr(self, name), name)
 
 
-StageContent = ResearchMandate | ComponentPanel | CandidateSet
+@dataclass(frozen=True, slots=True)
+class TargetMandateBinding(_Record):
+    metric: ResearchMetric
+    mandate_item_id: str
+
+    def _validate(self):
+        _text(self.mandate_item_id, "mandate_item_id")
+
+
+@dataclass(frozen=True, slots=True)
+class CandidateAssessmentDelivery(_Record):
+    source_candidates: DeliveryReference
+    source_mandate: DeliveryReference
+    assessment_request: CandidateAssessmentRequest
+    assessment: AssessmentPanel
+    comparison_request: CandidateComparisonRequest
+    comparison: CandidateComparison
+    target_bindings: tuple[TargetMandateBinding, ...]
+    frequency_window_item_id: str | None
+    recommendation: str
+    contrary_evidence: tuple[EvidenceRef, ...]
+    pending_decisions: tuple[str, ...]
+
+    def _validate(self):
+        if (
+            self.source_candidates.stage is not DeliveryStage.CANDIDATES
+            or self.source_mandate.stage is not DeliveryStage.MANDATE
+        ):
+            raise ValueError("assessment requires candidate-set and mandate deliveries")
+        if self.comparison_request.panel != self.assessment:
+            raise ValueError("comparison must use the supplied assessment panel")
+        _unique((x.metric for x in self.target_bindings), "target binding")
+        _unique((x.mandate_item_id for x in self.target_bindings), "bound mandate item")
+        _text(self.recommendation, "recommendation")
+        if not self.pending_decisions:
+            raise ValueError("assessment delivery must identify pending user decisions")
+        for item in self.pending_decisions:
+            _text(item, "pending decision")
+
+
+StageContent = ResearchMandate | ComponentPanel | CandidateSet | CandidateAssessmentDelivery
 T = TypeVar("T", bound=StageContent)
 
 

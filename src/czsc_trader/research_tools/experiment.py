@@ -423,7 +423,7 @@ class _ExperimentEvaluationAccess:
                 raise ValueError("candidate content changed during evaluation")
             completed_count = len(result.runs)
             evaluation_ids = tuple(run.identity.evaluation_id for run in result.runs)
-            artifact = evidence.result(result)
+            artifact = evidence.result(result, request)
             self._artifacts.append(artifact)
             terminal = replace(
                 record,

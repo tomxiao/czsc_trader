@@ -40,7 +40,12 @@ class _CallEvidence:
         name = "started" if record.status.value == "STARTED" else "record"
         return self.write(name, record.to_dict(), "evaluation_record")
 
-    def result(self, result) -> ExperimentArtifact:
+    def result(self, result, request) -> ExperimentArtifact:
+        from dataclasses import replace
+        from .assessment import build_assessment_evidence
+
+        assessment = build_assessment_evidence(request, replace(result, attempt_id=self.attempt_id))
+
         def frame(value):
             return json.loads(
                 value.to_json(
@@ -61,6 +66,12 @@ class _CallEvidence:
                 "candidate_id": run.candidate_id,
                 "signals": frame(run.signals.decisions),
                 "signal_data_identity": run.signals.data_identity,
+                "signal_support": run.signals.support_data,
+                "signal_window": {
+                    "calculation_start": run.signals.calculation_start.isoformat(),
+                    "evaluation_start": run.signals.evaluation_start.isoformat(),
+                    "evaluation_end": run.signals.evaluation_end.isoformat(),
+                },
                 "observation": run.observation.to_dict(),
                 "ledgers": {
                     name: frame(getattr(run.execution, name))
@@ -78,10 +89,11 @@ class _CallEvidence:
         return self.write(
             "result",
             {
-                "schema_version": 1,
+                "schema_version": 2,
                 "request_hash": result.request_hash,
                 "result_hash": result.result_hash,
                 "runs": runs,
+                "assessment_evidence": [item.to_dict() for item in assessment],
             },
             "evaluation_result",
         )

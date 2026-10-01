@@ -7,6 +7,13 @@ from pathlib import Path
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from research_experiment import EvaluationRecord, load_experiment_input
+from strategy_evaluator import (
+    AssessmentEvidence,
+    assess_candidates,
+    compare_candidates,
+    ResearchMetric,
+    IncompleteEvaluationStatus,
+)
 
 from .context import RepositoryContext
 from ..research_tools import delivery as d
@@ -124,11 +131,12 @@ def _check_evaluation(ref, candidate, experiments):
         _fail("EVALUATION_REFERENCE", ref.attempt_id, "evaluation ID is absent from this attempt")
 
 
-def _validate_content(definition, content, root, experiments):
+def _validate_content(definition, content, root, experiments, context):
     expected = {
         d.DeliveryStage.MANDATE: d.ResearchMandate,
         d.DeliveryStage.COMPONENTS: d.ComponentPanel,
         d.DeliveryStage.CANDIDATES: d.CandidateSet,
+        d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
     }
     if type(content.payload) is not expected[definition.stage]:
         _fail("STAGE_CONTENT", "content.payload", "stage and content type differ")
@@ -217,6 +225,165 @@ def _validate_content(definition, content, root, experiments):
             for trial in search.trials:
                 for ref in trial.evaluations:
                     _check_evaluation(ref, trial.candidate, experiments)
+    if isinstance(content.payload, d.CandidateAssessmentDelivery):
+        _validate_assessment_delivery(definition, content.payload, experiments, context)
+
+
+def _validate_assessment_delivery(definition, payload, experiments, context):
+    for ref in (payload.source_candidates, payload.source_mandate):
+        if ref not in definition.predecessors:
+            _fail(
+                "ASSESSMENT_SOURCE",
+                "predecessors",
+                "assessment sources must be declared predecessors",
+            )
+
+    def source(ref):
+        document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
+        return d.DeliveryContent.from_dict(document["content"]).payload
+
+    candidates = source(payload.source_candidates)
+    mandate = source(payload.source_mandate)
+    expected = {
+        f"{key.strategy_id}-{key.candidate_id}": next(
+            x.identity.content_sha256 for x in candidates.candidates if x.identity.key == key
+        )
+        for key in candidates.handoff
+    }
+    actual = {x.candidate_id: x.content_sha256 for x in payload.assessment_request.centers}
+    if expected != actual:
+        _fail("ASSESSMENT_SCOPE", "centers", "assessment centers differ from stage-three handoff")
+    declarations = {x.item_id: x for x in mandate.items}
+    targets = {x.metric: x for x in payload.comparison_request.targets.requirements}
+    if {x.metric for x in payload.target_bindings} != set(targets):
+        _fail(
+            "TARGET_BINDING",
+            "target_bindings",
+            "each target requires one confirmed mandate binding",
+        )
+    expected_items = {
+        x.item_id
+        for x in mandate.items
+        if x.kind in (d.MandateItemKind.OBJECTIVE, d.MandateItemKind.CONSTRAINT)
+        and x.requirement is not None
+        and x.confirmation.status is d.ConfirmationStatus.CONFIRMED
+    }
+    if expected_items != {x.mandate_item_id for x in payload.target_bindings}:
+        _fail(
+            "TARGET_BINDING",
+            "target_bindings",
+            "confirmed numeric research targets must be preserved",
+        )
+    for binding in payload.target_bindings:
+        item = declarations.get(binding.mandate_item_id)
+        target = targets[binding.metric]
+        unit = (
+            "closed_cycles_per_window"
+            if binding.metric in (ResearchMetric.FREQUENCY_MEDIAN, ResearchMetric.FREQUENCY_Q10)
+            else "ratio"
+        )
+        if (
+            item is None
+            or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
+            or item.requirement is None
+            or (
+                item.requirement.metric.upper(),
+                item.requirement.unit.lower(),
+                item.requirement.lower,
+                item.requirement.upper,
+            )
+            != (binding.metric.value, unit, target.lower, target.upper)
+        ):
+            _fail(
+                "TARGET_BINDING",
+                binding.mandate_item_id,
+                "target differs from confirmed mandate value/unit",
+            )
+    if any(x in targets for x in (ResearchMetric.FREQUENCY_MEDIAN, ResearchMetric.FREQUENCY_Q10)):
+        item = declarations.get(payload.frequency_window_item_id)
+        days = payload.comparison_request.targets.frequency_window_days
+        if (
+            item is None
+            or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
+            or item.requirement is None
+            or (
+                item.requirement.metric,
+                item.requirement.unit,
+                item.requirement.lower,
+                item.requirement.upper,
+            )
+            != ("frequency_window_days", "sessions", float(days), float(days))
+        ):
+            _fail(
+                "TARGET_BINDING",
+                "frequency_window",
+                "frequency window requires a confirmed exact session count",
+            )
+    saved = {}
+    attempts = {}
+    for experiment_id, (root, _, _, records) in experiments.items():
+        for record in records:
+            attempts[(experiment_id, record.attempt_id)] = record
+            if record.result_artifact is None:
+                continue
+            result = _read_json(_resolve(root, record.result_artifact.path))
+            if result.get("schema_version") != 2:
+                continue
+            for item in result["assessment_evidence"]:
+                evidence = AssessmentEvidence.from_dict(item)
+                if (
+                    evidence.experiment_id,
+                    evidence.attempt_id,
+                    evidence.result_sha256,
+                    evidence.request_sha256,
+                    evidence.candidate.candidate_id,
+                    evidence.candidate.content_sha256,
+                ) != (
+                    experiment_id,
+                    record.attempt_id,
+                    record.result_hash,
+                    record.request_hash,
+                    record.candidate_id,
+                    record.content_sha256,
+                ) or evidence.evaluation_id not in record.evaluation_ids:
+                    _fail(
+                        "ASSESSMENT_EVIDENCE",
+                        evidence.evaluation_id,
+                        "projection differs from receipted evaluation identity",
+                    )
+                saved[(experiment_id, record.attempt_id, evidence.evaluation_id)] = evidence
+    for evidence in payload.assessment_request.evidence:
+        if (
+            saved.get((evidence.experiment_id, evidence.attempt_id, evidence.evaluation_id))
+            != evidence
+        ):
+            _fail(
+                "ASSESSMENT_EVIDENCE",
+                evidence.evaluation_id,
+                "assessment input differs from saved evaluation facts",
+            )
+    for missing in payload.assessment_request.incomplete:
+        if missing.status is IncompleteEvaluationStatus.NOT_RUN:
+            continue
+        record = attempts.get((missing.experiment_id, missing.attempt_id))
+        if record is None or (record.status.value, record.candidate_id, record.content_sha256) != (
+            missing.status.value,
+            missing.candidate.candidate_id,
+            missing.candidate.content_sha256,
+        ):
+            _fail(
+                "ASSESSMENT_EVIDENCE",
+                "incomplete",
+                "failed evaluation differs from experiment receipt",
+            )
+    if assess_candidates(payload.assessment_request) != payload.assessment:
+        _fail(
+            "ASSESSMENT_RESULT", "assessment", "assessment differs from deterministic recomputation"
+        )
+    if compare_candidates(payload.comparison_request) != payload.comparison:
+        _fail(
+            "COMPARISON_RESULT", "comparison", "comparison differs from deterministic recomputation"
+        )
 
 
 def _report(definition, content) -> bytes:
@@ -303,6 +470,73 @@ def _report(definition, content) -> bytes:
             for test in component.tests:
                 lines.append(f"- {safe(test.test_id)}：{test.status.value}；{test.explanation}")
                 lines.extend(f"  - 证据：[{safe(ref.path)}](<{ref.path}>)" for ref in test.evidence)
+    elif isinstance(payload, d.CandidateAssessmentDelivery):
+        lines.extend(
+            [
+                payload.recommendation,
+                "",
+                "| 候选 | 状态 | 绩效层 | 层内名次 | 原因 |",
+                "| --- | --- | --- | --- | --- |",
+            ]
+        )
+        for row in payload.comparison.rows:
+            lines.append(
+                "| "
+                + " | ".join(
+                    safe(x)
+                    for x in (
+                        row.candidate.candidate_id,
+                        row.status.value,
+                        row.pareto_layer,
+                        row.rank_in_layer,
+                        "; ".join(row.reasons),
+                    )
+                )
+                + " |"
+            )
+        for row in payload.assessment.rows:
+            lines.extend(
+                [
+                    "",
+                    f"### {safe(row.candidate.candidate_id)} 自检",
+                    "",
+                    "| 指标 | 值 | 单位 | 状态 | 原因 |",
+                    "| --- | --- | --- | --- | --- |",
+                ]
+            )
+            for metric in row.diagnostics:
+                lines.append(
+                    "| "
+                    + " | ".join(
+                        safe(x)
+                        for x in (
+                            metric.metric.value,
+                            metric.value,
+                            metric.unit.value,
+                            metric.status.value,
+                            metric.reason or "—",
+                        )
+                    )
+                    + " |"
+                )
+            lines.extend(
+                [
+                    "",
+                    f"超额年化95%区间：{row.uncertainty.lower_95} 至 {row.uncertainty.upper_95}；"
+                    f"{row.uncertainty.status.value}；{row.uncertainty.reason or '—'}",
+                    "",
+                ]
+            )
+            lines.extend(f"- 覆盖缺口：{safe(x)}" for x in row.coverage_gaps)
+        lines.extend(["", "统计限制与研究族诊断：", ""])
+        lines.extend(
+            f"- {safe(x.name)}：{x.status.value}；{x.value}；{safe(x.reason or '—')}"
+            for x in payload.assessment.family_diagnostics
+        )
+        lines.extend(f"- {safe(x)}" for x in payload.assessment.family_limitations)
+        lines.extend(["", "不利证据：", ""])
+        lines.extend(f"- [{safe(x.path)}](<{x.path}>)" for x in payload.contrary_evidence)
+        lines.extend(["", "待用户决定：", "", *[f"- {safe(x)}" for x in payload.pending_decisions]])
     else:
         lines.extend(
             [
@@ -457,7 +691,7 @@ def _read_delivery(context, reference, root, visited):
     if (definition.strategy_id, definition.stage, definition.revision) != identity:
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
     experiments = _load_experiments(definition, root, published=True)
-    _validate_content(definition, content, root, experiments)
+    _validate_content(definition, content, root, experiments, context)
     if _resolve(root, "report.md").read_bytes() != _report(definition, content):
         _fail("REPORT_FACTS", "report.md", "report differs from machine content")
     for predecessor in definition.predecessors:
@@ -543,7 +777,7 @@ def assemble_delivery(
             for artifact in result.artifacts:
                 copy(_resolve(source, artifact.path), f"{prefix}/{artifact.path}", artifact.sha256)
         verified = _load_experiments(definition, staging, published=True)
-        _validate_content(definition, content, staging, verified)
+        _validate_content(definition, content, staging, verified, context)
         document = {"schema_version": 1, "definition": definition, "content": content}
         (staging / "delivery.json").write_bytes(d._canonical(document))
         (staging / "report.md").write_bytes(_report(definition, content))

@@ -65,6 +65,18 @@ def test_strict_and_economic_comparison_preserve_original_evidence():
     assert (left.to_dict(), right.to_dict()) == originals
 
 
+def test_economic_fingerprint_requires_exact_comparison_and_normalizes_ids_and_numbers():
+    left, right = _evidence(), replace(_evidence("b"), initial_cash=100.0)
+    first = compare_ledgers(LedgerComparisonRequest(left, left, Mode.ECONOMIC))
+    second = compare_ledgers(LedgerComparisonRequest(right, right, Mode.ECONOMIC))
+    assert first.economic_sha256 == second.economic_sha256
+    assert first.economic_sha256 is not None
+    assert compare_ledgers(LedgerComparisonRequest(left, right, Mode.ECONOMIC, .001)).economic_sha256 is None
+    assert compare_ledgers(LedgerComparisonRequest(left, left, Mode.STRICT)).economic_sha256 is None
+    changed = replace(right, metrics={"return": .1001})
+    assert compare_ledgers(LedgerComparisonRequest(left, changed, Mode.ECONOMIC)).economic_sha256 is None
+
+
 @pytest.mark.parametrize(
     "change",
     [

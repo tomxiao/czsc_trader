@@ -2,6 +2,9 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from dataclasses import replace
+from decimal import Decimal
+from hashlib import sha256
 from datetime import date
 from enum import StrEnum
 import math
@@ -56,6 +59,7 @@ class LedgerComparisonResult(Record):
     left_hash: str | None
     right_hash: str | None
     differences: tuple[LedgerDifference, ...]
+    economic_sha256: str | None = None
 
 
 _TABLES = ("decisions", "orders", "fills", "account_daily", "trades")
@@ -191,7 +195,24 @@ def compare_ledgers(request: LedgerComparisonRequest) -> LedgerComparisonResult:
             _normalize(payload)
     differences = []
     _differences(*payloads, "replay", request.tolerance, differences)
-    return result(
+    compared = result(
         LedgerComparisonStatus.DIFFERENT if differences else LedgerComparisonStatus.EQUIVALENT,
         differences,
     )
+    if request.mode is LedgerComparisonMode.ECONOMIC and not differences and request.tolerance == 0:
+        def canonical(value):
+            if isinstance(value, Mapping):
+                return ["object", [[key, canonical(value[key])] for key in sorted(value)]]
+            if isinstance(value, (tuple, list)):
+                return ["array", [canonical(item) for item in value]]
+            if type(value) in (int, float):
+                number = Decimal(str(value))
+                text = format(number, "f")
+                if "." in text:
+                    text = text.rstrip("0").rstrip(".")
+                return ["number", "0" if number == 0 else text]
+            return [type(value).__name__, value]
+        digest = sha256(json.dumps(canonical(payloads[0]), sort_keys=True, ensure_ascii=False,
+                                  separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+        compared = replace(compared, economic_sha256=digest)
+    return compared

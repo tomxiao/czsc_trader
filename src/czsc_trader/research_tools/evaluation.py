@@ -711,20 +711,12 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
     ):
         raise ValueError("evaluation window identities must be nonblank and unique")
     sessions = pd.DatetimeIndex(pd.to_datetime(data.execution_daily["dt"])).normalize()
-    windows: list[dict[str, str]] = []
     for item in request.windows:
         start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
         if start > end or start not in sessions or end not in sessions:
             raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
         if end.date() > request.data_cutoff or not (sessions < start).any():
             raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
-        windows.append(
-            {
-                "window_id": item.window_id,
-                "start": item.start.isoformat(),
-                "end": item.end.isoformat(),
-            }
-        )
 
     if not request.costs:
         raise ValueError("evaluation costs must not be empty")
@@ -738,7 +730,6 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         or len(scenario_ids) != len(set(scenario_ids))
     ):
         raise ValueError("evaluation costs require one unique standard scenario")
-    costs: list[dict[str, object]] = []
     standard_cost = next(
         item.one_way_cost for item in request.costs if item.scenario_id == "standard"
     )
@@ -753,29 +744,36 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
             item.measurement_tier != "STRESS" or item.one_way_cost <= standard_cost
         ):
             raise ValueError("pressure costs must exceed standard cost and use STRESS tier")
-        costs.append(
-            {
-                "scenario_id": item.scenario_id,
-                "one_way_cost": item.one_way_cost,
-                "measurement_tier": item.measurement_tier,
-            }
-        )
 
-    contract = {
+    return _request_identity_payload(request, identity.content_sha256, binding_hash), binding_hash
+
+
+def _request_identity_payload(
+    request: EvaluationRequest, content_sha256: str, binding_hash: str,
+) -> dict[str, object]:
+    """Project already authenticated request values without loading mutable source files."""
+    return {
         "schema_version": 2,
-        "content_sha256": identity.content_sha256,
+        "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "experiment_id": request.experiment_id,
-        "strategy_reference": candidate.reference_id,
-        "strategy_identity": candidate.runtime_identity_sha256,
+        "strategy_reference": request.strategy.reference_id,
+        "strategy_identity": request.strategy.runtime_identity_sha256,
         "runtime_binding_hash": binding_hash,
-        "symbol": symbol,
-        "asset_type": asset_type,
-        "windows": windows,
+        "symbol": request.symbol,
+        "asset_type": request.asset_type.lower(),
+        "windows": [
+            {"window_id": x.window_id, "start": x.start.isoformat(), "end": x.end.isoformat()}
+            for x in request.windows
+        ],
         "data_cutoff": request.data_cutoff.isoformat(),
         "initial_cash": request.initial_cash,
-        "costs": costs,
-        "data_identity": data.fingerprint,
+        "costs": [
+            {"scenario_id": x.scenario_id, "one_way_cost": x.one_way_cost,
+             "measurement_tier": x.measurement_tier}
+            for x in request.costs
+        ],
+        "data_identity": request.execution_data.fingerprint,
         "benchmark": {
             "benchmark_id": request.benchmark.benchmark_id,
             "kind": request.benchmark.kind,
@@ -784,7 +782,6 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         "execution_mode": request.execution_mode,
         "metric_semantics_version": METRIC_SEMANTICS_VERSION,
     }
-    return contract, binding_hash
 
 
 def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) -> str:
@@ -798,6 +795,12 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
                 "scenario_id": run.scenario_id,
                 "identity": None if run.identity is None else run.identity.to_dict(),
                 "signal_data_identity": run.signals.data_identity,
+                "signal_support": run.signals.support_data,
+                "signal_window": {
+                    "calculation_start": run.signals.calculation_start.isoformat(),
+                    "evaluation_start": run.signals.evaluation_start.isoformat(),
+                    "evaluation_end": run.signals.evaluation_end.isoformat(),
+                },
                 "signals": _frame_hash(run.signals.decisions),
                 "decisions": _frame_hash(run.execution.decisions),
                 "orders": _frame_hash(run.execution.orders),
