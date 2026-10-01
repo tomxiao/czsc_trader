@@ -114,6 +114,12 @@ Optuna继续作为独立第三方库使用，研究员组织study、sampler、tr
 执行回执。技术检验须在正式执行尚未封存时完成，已存在回执或失败终态的空间拒绝追加检验。
 REX记录实际执行事实；阶段报告由TDR的`assemble_delivery`另行验证和发布。
 
+新TDR评价结果产物使用schema 3，REX执行回执仍使用schema 2，两个版本号独立。
+`EvaluationRecord.result_artifact`绑定评价产物路径与哈希；封存后可由TDR
+`EvaluationEvidenceReference`绑定回执、尝试与完整评价ID，在后续正式执行中恢复检验基线。
+原执行保留封存状态，新的复算和检验证据进入本次执行。构造与历史证据限制见
+[TDR归档检验说明](../../src/czsc_trader/README.md#8-技术检验用户决定与冻结)。
+
 ## 阅读实验来源
 
 研究员核对候选所指向的实验问题、数据门、源码绑定、执行回执和结果身份。

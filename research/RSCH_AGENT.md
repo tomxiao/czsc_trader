@@ -187,7 +187,10 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 以`CandidateRegistrationOrigin`绑定实验定义、源码绑定及预检证据；通过`load_candidate`读取
 已保存的源码和载荷。同键同记录幂等，内容变更使用新身份。评价端口不自动登记每个trial。
 `CandidateSet.handoff`列出阶段四要自检的全部达标候选；研究员须核对完整性，平台只核验
-已声明身份和证据，不能据此证明搜索记录没有遗漏或全部达标候选均已纳入。
+已声明身份和证据。发布时`assemble_delivery`核验交接候选已登记、内容一致且源码／依赖证据
+完整、可加载；缺失或冲突以`HANDOFF_REGISTRATION`拒绝交付。此检查只覆盖`handoff`集合，
+不能据此证明搜索记录没有遗漏或全部达标候选均已纳入。已发布候选交付按自身证据校验，
+后续清理原工作目录或登记区不改写原交付结论；继续检验或冻结仍需有效的候选登记。
 
 #### 自主使用的资源
 
@@ -258,6 +261,11 @@ TDR `build_assessment_evidence(request, result)`核验受管请求与结果，�
 `AssessmentEvidence`；SE据此核验参数扰动关系。登记与证据引用的接口见
 [TDR说明](../src/czsc_trader/README.md#6-候选登记与自检)。
 
+`AssessmentEvidence.scenario_context`使用`EvaluationScenarioContext`绑定实际单边费用、计量
+层级、基准ID和基准类型，研究员须按既定协议解释这些口径。候选比较同时核对公共上下文及
+标准／压力场景；同名场景费用不同也会标为`INCOMPARABLE`，不能只比`context_sha256`。
+参数邻域和研究族标准场景须保持一致；标准与压力场景允许协议声明的费用变化，其余口径须一致。
+
 #### 执行步骤
 
 先读下表入口的公共导出，沿导入核对类型、签名及契约测试。研究员按已冻结协议组合调用，
@@ -324,7 +332,7 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 - 机器产物：自检协议、来源候选身份、结果面板、排序及解释、研究建议、覆盖缺口、用户决定和复算入口；决定在审批前标记为待决定。
 - 人工报告：核心对比表、推荐理由、选择代价、最强反证、统计限制及待决定事项；与机器产物使用同一组事实。
 - `CandidateAssessmentDelivery`包含自检／比较请求与结果、目标绑定、推荐、不利证据和待决定事项；`assemble_delivery`生成报告，`validate_delivery`核验引用与计算结果。
-- 研究员须将目标达标依据、排序敏感性、行为分组、选择代价及统计限制呈现给用户。默认报告未展开的信息，应通过`DeliveryContent.facts/explanations/attachments`补充，不只提供机器JSON链接。
+- 默认报告已展开逐项目标检查、排序敏感性和行为分组。研究员须结合这些结果解释目标达标依据、选择代价及统计限制，必要时通过`DeliveryContent.facts/explanations/attachments`补充，不只提供机器JSON链接。
 
 交付须覆盖输入与文件哈希、方法及公式版本、全部评价状态、闭合交易与账户对账、未平仓损益、
 反事实标识、未测执行范围和排序验证。复算代码及必要边界测试随产物交付；用户决定以独立
@@ -347,15 +355,22 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 | 5. 核验冻结结果 | `get_freeze_result(context, FreezeRequestId(...))`查询状态，核对提交版本、内容来源与批准计划 | `COMMITTED`时的`FrozenVersionReference`及版本核验 |
 | 6. 交付成果 | 以`CandidateInspectionDelivery`调用统一交付API，呈现版本身份、检验结论及后续边界 | 机器产物和人工报告 |
 
-以上业务API及`CandidateInspectionRequest/InspectionReplay`从`czsc_trader.application`导入；
+以上业务API及`CandidateInspectionRequest/InspectionReplay/EvaluationEvidenceReference`
+从`czsc_trader.application`导入；
 检验协议、决定及冻结契约从`strategy_manager`导入。请求须显式提供待检验窗口／场景、版本及
 父版本、选择截止日、前瞻起始日、运行绑定模板和必要发布文件，完整输入见
 [TDR技术检验与冻结](../src/czsc_trader/README.md#8-技术检验用户决定与冻结)。
 
-`InspectionReplay`当前要求原`EvaluationRequest`、`EvaluationResult`、原证据工作空间以及
-本次复算请求。准备阶段五时须保留或通过研究复算代码重建这些强类型输入，并核对其与阶段四
-原记录一致；当前没有从评价ID自动恢复这些对象的公共加载API。缺少必要输入时报告受阻，
-不得调用私有反序列化接口或以新结果冒充原证据。
+`InspectionReplay(reference, reproduction_request)`以`EvaluationEvidenceReference`引用原评价，
+以新的`EvaluationRequest`表达本次复算。原评价引用绑定`ExperimentEvidenceRef`、`attempt_id`、
+完整有序的`evaluation_ids`和`EvaluationRecord.result_artifact`对应的`CandidateEvidence`；
+研究员须在原正式执行封存后保存该引用的`to_dict()`结果，跨会话通过`from_dict()`恢复。
+实验路径相对仓库，可指向已发布交付内的实验副本；结果产物路径相对该实验工作空间。
+
+平台从已封存归档鉴证并读取基线，无需保留原Python请求和结果对象；研究员仍须组织本次
+复算输入及正式执行。引用须与用户选中的阶段四证据一致，回执、评价身份或产物哈希不符时
+拒绝检验。新入口要求TDR评价产物schema 3；旧产物缺少字段时，保留原件，新建正式实验和
+交付修订重新生成证据。不得调用私有反序列化接口、补写旧字段或以新结果冒充原证据。
 
 平台核验源码／依赖、运行兼容性、覆盖、关键结果复算、独立账本审计、信号及经济账本等价性、
 发布文件闭包；候选与拟冻结版本均实际回放。报告状态为`PASS/FAIL/INCOMPLETE`。
@@ -373,6 +388,7 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 - 机器产物：候选身份、证据索引、技术检验记录、用户决定、冻结回执及冻结版本引用。未冻结时显式记录当前状态和原因。
 - 人工报告：技术检验结论、剩余风险、用户决定、冻结结果及使用边界。
 - `CandidateInspectionDelivery`引用阶段四交付、完整检验报告、证据、用户决定、可选冻结回执及待决定事项。冻结前可发布待批准报告；冻结后另建修订，保留原待批准版本。
+- 默认报告展示用户决定、理由及确认材料链接；冻结失败或结果不确定时展示具体原因，研究员据此说明后续处理与待批准事项。
 - 新冻结版本使用schema 4的`StrategyVersion`，通过`CandidateOrigin`与`FreezeGovernance`绑定登记记录、内容、检验、选择、批准和冻结请求。提交标记决定版本可见性；历史schema 1/2/3保持原件和哈希。契约与状态定义见[SM说明](../packages/strategy_manager/README.md)。
 - 核对人工报告完整呈现用户决定、冻结状态及失败／未完成原因；默认渲染未展开的字段通过交付事实、解释和证据补齐。
 
@@ -472,12 +488,13 @@ Optuna独立使用，TDR/REX不接管study、trial或搜索预算；当前也未
 | CAP-03／按独立搜索边界落实 | 独立Optuna；TDR受管评价留证、`SearchRecord/SearchTrial`；REX `ExperimentResources` | 研究员管理搜索预算、调度与接续；TDR/REX未集成Optuna，无共享正式上下文的跨进程搜索入口 |
 | CAP-04／本地缓存与身份核验已实现 | DFLS `LocalCacheConfig/CachePolicy`；正式上下文`cache`配置；SRT输入准备 | 使用现有fetch入口，不增加snapshot接口；缓存命中不证明因果可得或源实时可达 |
 | CAP-05／账户评价、审计与账本比较已实现 | TDR `context.evaluation.evaluate/run_backtest`；SRT/TXE执行；SE `audit_replay/compare_ledgers` | 自主组织对照归因；加速路径需验证信号与完整账本；回测显式传入`lot_size` |
-| CAP-06／自检与比较已实现 | SE `assess_candidates/compare_candidates`；TDR `build_assessment_evidence`、`CandidateAssessmentDelivery` | 固定协议、登记扰动、解释差异并呈现完整比较；平台不替用户选型 |
-| CAP-07／登记、检验与获批冻结已实现 | TDR `register_candidate/load_candidate`、`inspect_candidate`、`record_research_decision`、`freeze_candidate/get_freeze_result` | 明确选型与冻结批准；保留原评价复算输入；仅`COMMITTED`视为完成 |
+| CAP-06／自检与比较已实现 | SE `EvaluationScenarioContext`、`assess_candidates/compare_candidates`；TDR `build_assessment_evidence`、`CandidateAssessmentDelivery` | 固定实际费用及基准口径、登记扰动、解释差异并呈现完整比较；平台不替用户选型 |
+| CAP-07／登记、归档检验与获批冻结已实现 | TDR `register_candidate/load_candidate`、`EvaluationEvidenceReference`、`inspect_candidate`、`record_research_decision`、`freeze_candidate/get_freeze_result` | 交接前完成登记；保存原评价归档引用并准备本次复算输入；明确选型与冻结批准，仅`COMMITTED`视为完成 |
 | CAP-08／模块导航与说明已更新 | 第4节、各模块README及公共导出 | 调用前核对安装版本、签名和最小闭环；历史研究库说明中的待办不代表当前能力 |
 
-当前契约版本分别为：新REX绑定3、定义2、执行回执2；阶段交付回执1；新冻结版本4。
-各版本号独立管理，历史证据按原格式读取，不补写旧字段、不重签历史原件。
+当前契约版本分别为：新REX绑定3、定义2、执行回执2；新TDR评价产物3；阶段交付回执1；新冻结版本4。
+各版本号独立管理，历史证据保持原格式和哈希，不补写旧字段、不重签历史原件；
+新公共契约要求的字段必须由相应版本的新执行产生。
 
 平台提供结构、证据和执行一致性约束；研究员承担研究解释、技术检验及获批冻结责任，用户
 保留阶段审批和冻结决定权。能力完善不得新增未经确认的经济硬门，也不得限制研究机制与方法选择。

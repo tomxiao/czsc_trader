@@ -166,6 +166,8 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 尝试身份；每个窗口／场景的`EvaluationIdentity`绑定候选键、内容、输入、协议与环境哈希。
 `research_tools.build_assessment_evidence(request, result)`核验请求与结果后返回
 `tuple[AssessmentEvidence, ...]`，供SE `assess_candidates`与`compare_candidates`使用。
+每条证据的`scenario_context: EvaluationScenarioContext`绑定实际单边费用、计量层级及基准定义；
+比较须同时核对公共上下文与场景口径，不能仅凭相同`scenario_id`或`context_sha256`认定可比。
 自检、排序和不确定性结果的口径见[SE说明](../../packages/strategy_evaluator/README.md)。
 
 ## 7. 五阶段交付
@@ -182,7 +184,7 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 | --- | --- |
 | `MANDATE` | `ResearchMandate`：研究目标、约束及逐项确认记录 |
 | `COMPONENTS` | `ComponentPanel`：组件角色、定义哈希、实验与事实引用 |
-| `CANDIDATES` | `CandidateSet`：已登记候选、评价证据和描述性的`SearchRecord` |
+| `CANDIDATES` | `CandidateSet`：候选、评价证据、描述性的`SearchRecord`及必须已登记的`handoff`集合 |
 | `ASSESSMENT` | `CandidateAssessmentDelivery`：自检／比较请求与结果、目标绑定、反面证据及待决事项 |
 | `INSPECTION` | `CandidateInspectionDelivery`：技术检验、用户决定、可选冻结回执及待决事项 |
 
@@ -191,13 +193,21 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 交付目录，文件哈希必须匹配。先在`.tmp/delivery/`组装，再原子发布；同修订同内容可重复调用，
 不同内容必须使用新修订。`COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
 
+发布`CandidateSet`时，`assemble_delivery`逐项检查`handoff`候选已登记、内容哈希一致、
+登记源码及依赖证据完整且可由`load_candidate`加载。缺失或冲突返回`DeliveryValidationError`，
+问题码为`HANDOFF_REGISTRATION`；平台不自动登记搜索trial。已发布的候选交付校验依赖其自身
+证据，不因原登记区或工作目录清理而改变原交付的验证结果。
+
 阶段四发布和验证都会按记录的请求复算SE结果，并绑定阶段一已确认的数值目标。阶段五复制
 检验、登记、源码、决定和确认材料闭包；可先交付待批准报告，冻结后用新修订记录实际冻结结果。
+阶段四报告展开逐项目标检查、排序敏感性和行为分组；阶段五报告展示用户决定、确认材料链接
+及冻结失败／结果不确定的具体原因。研究员继续补充选择代价、研究解释及待决定事项。
 技术验证不自动推进研究阶段，也不替用户选型。
 
 ## 8. 技术检验、用户决定与冻结
 
-业务函数、`CandidateInspectionRequest`和`InspectionReplay`从`czsc_trader.application`导入；
+业务函数、`CandidateInspectionRequest`、`InspectionReplay`和`EvaluationEvidenceReference`
+从`czsc_trader.application`导入；
 决定、检验协议、冻结请求及回执等强类型契约从`strategy_manager`导入。
 
 | API | 请求与返回 |
@@ -212,13 +222,54 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 1. 留存用户对阶段四交付中候选的选择，以`CandidateSelectionSubject`绑定交付、候选键和内容哈希。
 2. `CandidateInspectionRequest`传入选择记录、`InspectionProtocol`、正在执行的正式REX上下文、
    `InspectionReplay`元组、明确的版本／父版本、选择截止日、前瞻起始日和运行绑定模板。
-   每个回放项同时携带原受管评价请求、结果、证据工作空间和本次复算请求。
+   每个回放项为`InspectionReplay(reference, reproduction_request)`：原评价使用已封存归档引用，
+   本次复算使用新的`EvaluationRequest`，无需保留原Python请求或结果对象。
 3. `inspect_candidate`核验候选及依赖、覆盖、运行定义、复算、独立账本审计、候选与拟冻结版本的
    信号／账本等价性和发布文件闭包，生成`FreezePlan`及`PASS/FAIL/INCOMPLETE`报告。
    检验证据同时归入本次REX执行回执；已封存执行空间拒绝追加。
 4. 用户明确批准冻结后，以`FreezeSubject`绑定候选内容、检验报告、计划哈希和版本，留存
    `DecisionAction.APPROVE`决定，再传入`freeze_candidate`。
 5. 读取回执状态；不确定时用同一`FreezeRequestId`查询，完整状态定义见[SM说明](../../packages/strategy_manager/README.md)。
+
+归档引用使用以下强类型字段：
+
+| `EvaluationEvidenceReference`字段 | 类型及含义 |
+| --- | --- |
+| `experiment` | `ExperimentEvidenceRef(experiment_id, workspace_path, receipt_sha256)`；工作空间路径相对仓库，可指向已发布交付中的实验副本 |
+| `attempt_id` | 原成功评价的尝试ID |
+| `evaluation_ids` | 该次评价的完整、有序窗口／场景ID元组 |
+| `result` | `CandidateEvidence(path, sha256)`；对应`EvaluationRecord.result_artifact`，路径相对上述实验工作空间 |
+
+在原正式执行封存后构造引用并保存`to_dict()`结果。以下`record`是原成功评价的`EvaluationRecord`，
+`source_execution`及`source_receipt`属于同一次已封存执行，`reproduction_request`为本次复算请求：
+
+```python
+from czsc_trader.application import EvaluationEvidenceReference, InspectionReplay
+from czsc_trader.research_tools import ExperimentEvidenceRef
+from strategy_manager import CandidateEvidence
+
+reference = EvaluationEvidenceReference(
+    experiment=ExperimentEvidenceRef(
+        record.experiment_id,
+        source_execution.workspace.root.relative_to(context.root).as_posix(),
+        source_receipt.sha256,
+    ),
+    attempt_id=record.attempt_id,
+    evaluation_ids=record.evaluation_ids,
+    result=CandidateEvidence(record.result_artifact.path, record.result_artifact.sha256),
+)
+saved_reference = reference.to_dict()  # 作为研究交接资料持久保存。
+restored = EvaluationEvidenceReference.from_dict(saved_reference)
+replay = InspectionReplay(reference=restored, reproduction_request=reproduction_request)
+```
+
+`result`引用评价结果产物；`EvaluationResult.record`引用尝试记录，二者不能混用。
+`inspect_candidate`核验执行回执、尝试、完整评价ID、产物哈希和阶段四选型证据，从归档读取
+复算基线，再通过当前正式上下文执行新评价。引用不符或原件被改动时拒绝检验。
+
+新TDR评价产物采用schema 3，保存请求身份、SE场景证据、复算账本输入及信号列类型；
+REX执行回执仍为schema 2。新归档检验要求评价产物schema 3，旧产物缺少字段时须新建正式
+实验及交付修订重新生成证据，保留旧原件。新契约不自动迁移或补写历史结果。
 
 `ResearchDecision.subject`还支持阶段推进的`StageAdvanceSubject`；`action`使用
 `APPROVE/REJECT/DEFER`。宿主负责取得和核验真实用户授权，平台校验确认材料及其引用，

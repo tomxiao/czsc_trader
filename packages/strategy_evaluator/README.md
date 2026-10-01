@@ -22,6 +22,17 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 `build_assessment_evidence(EvaluationRequest, EvaluationResult)`先认证受管评价，再适配为
 `AssessmentEvidence`。SE只计算传入事实，不读取仓库、调度搜索或代替执行证据认证。
 
+`AssessmentEvidence.scenario_context`必须使用`EvaluationScenarioContext`，字段为
+`one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str`和`benchmark_kind: str`。
+费率须有限且满足`0 <= one_way_cost < 1`，其余字段须非空；由TDR从实际评价请求提取，
+相同场景名称不能代替实际口径一致性。
+
+`CandidateAssessment.baseline_scenario/stress_scenario`保留标准／压力场景的强类型口径；
+证据缺失时相应字段可为`None`，缺少场景口径的诊断不能标为可用。标准候选之间比较同时核对
+公共上下文、指标版本、频率窗口和两类场景口径；不一致返回`INCOMPARABLE`及
+`EVALUATION_CONTEXTS_DIFFER`。参数邻域要求与中心标准场景一致；研究族收益矩阵要求成员的
+标准场景一致。标准与压力场景之间允许协议指定的费用变化，其余场景字段和公共上下文须一致。
+
 `CandidateAssessmentRequest`显式指定中心候选、账户／成交／基准证据、参数扰动关系、
 未完成评价和`SelfCheckProtocol`。协议指定场景、窗口、覆盖、分位数算法、Bootstrap种子及
 容差。参数邻域仅接纳真实`PARAMETERS`派生；缺失或不可比诊断保留状态和原因，失败与取消
