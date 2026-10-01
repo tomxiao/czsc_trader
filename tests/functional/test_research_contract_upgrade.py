@@ -474,3 +474,133 @@ def test_assessment_adapter_binds_actual_fees_for_identically_named_scenarios(ma
     assert first.scenario_context.one_way_cost == 0.001
     assert second.scenario_context.one_way_cost == 0.002
     assert first.scenario_context != second.scenario_context
+
+
+@pytest.mark.parametrize("tier", ["FORMAL", "SCREENING"])
+def test_managed_standard_and_stress_evaluations_reach_se_ranking(
+    managed_evaluation, monkeypatch, tier
+):
+    from strategy_evaluator import assess_candidates, compare_candidates, research_models as m
+    from strategy_manager import CandidateDerivation, CandidateDerivationKind, canonical_sha256
+    from czsc_trader.research_tools import build_assessment_evidence, EvaluationLineage, evaluation
+    from functional_support import replay_fingerprint
+
+    old_context, request = managed_evaluation
+    sessions = request.execution_data.adjusted_daily["dt"]
+    daily = pd.DataFrame(
+        {
+            "dt": sessions,
+            "open": [1.0, 1.0, 1.0, 1.05, 1.1, 1.1],
+            "close": [1.0, 1.0, 1.0, 1.05, 1.1, 1.1],
+        }
+    )
+    flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
+    _install_candidate_dataflows(monkeypatch, flow, daily)
+    monkeypatch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
+    context = create_formal_experiment_context(
+        old_context.definition,
+        repository_root=request.repository_root,
+        resources=ExperimentResources(1, 1),
+        workspace=ExperimentWorkspace(
+            request.repository_root / ".tmp/stress-integration", request.repository_root
+        ),
+    )
+    request = replace(
+        request,
+        frequency_window_days=2,
+        costs=(EvaluationCost("standard", 0.001, tier), EvaluationCost("fee_x2", 0.002, "STRESS")),
+        execution_data=replace(
+            request.execution_data,
+            adjusted_daily=daily,
+            execution_daily=daily,
+            fingerprint=replay_fingerprint(daily),
+        ),
+    )
+    parent = context.evaluation.evaluate(request)
+    base_evidence = build_assessment_evidence(request, parent)
+    child = replace(
+        request.strategy,
+        candidate_id="C002",
+        payload={
+            **request.strategy.payload,
+            "parameters": {**request.strategy.payload["parameters"], "threshold": 0.6},
+        },
+    )
+    identity = StrategyRuntime().identify(child, dependencies=())
+    relation = CandidateDerivation(
+        CandidateKey("S900", "C001"),
+        parent.runs[0].identity.content_sha256,
+        CandidateKey("S900", "C002"),
+        identity.content_sha256,
+        CandidateDerivationKind.PARAMETERS,
+        {"threshold": {"before": 0.5, "after": 0.6}},
+        "a" * 64,
+        CandidateEvidence(
+            context.workspace.path(parent.record.path)
+            .relative_to(request.repository_root)
+            .as_posix(),
+            parent.record.sha256,
+        ),
+    )
+    child_request = replace(
+        request,
+        strategy=child,
+        costs=(request.costs[0],),
+        runtime_binding={**request.runtime_binding, "candidate_id": child.reference_id},
+        lineage=EvaluationLineage(relation),
+    )
+    neighbor = build_assessment_evidence(child_request, context.evaluation.evaluate(child_request))
+    center = base_evidence[0].candidate
+    protocol = m.SelfCheckProtocol(
+        "1",
+        "full",
+        "standard",
+        "fee_x2",
+        2,
+        1,
+        m.QuantileMethod.LINEAR,
+        1,
+        1,
+        40,
+        2,
+        1,
+        1e-7,
+        pbo_blocks=2,
+    )
+    panel = assess_candidates(
+        m.CandidateAssessmentRequest(
+            (center,),
+            protocol,
+            (
+                m.PerturbationLink(
+                    center, neighbor[0].candidate, 1.0, canonical_sha256(relation.to_dict())
+                ),
+            ),
+            (*base_evidence, *neighbor),
+        )
+    )
+    metrics = {x.metric: x for x in panel.rows[0].diagnostics}
+    stress = metrics[m.ResearchMetric.STRESS_ANNUAL_LOSS]
+    assert stress.status is m.DiagnosticStatus.AVAILABLE, stress
+    by_scenario = {x.scenario_id: x for x in base_evidence}
+    standard, pressure = by_scenario["standard"], by_scenario["fee_x2"]
+    exponent = 252 / len(standard.account)
+    expected_loss = (standard.account[-1].equity / standard.initial_cash) ** exponent - (
+        pressure.account[-1].equity / pressure.initial_cash
+    ) ** exponent
+    assert stress.value == pytest.approx(expected_loss)
+    assert set(stress.evaluation_ids) == {standard.evaluation_id, pressure.evaluation_id}
+    comparison = compare_candidates(
+        m.CandidateComparisonRequest(
+            (center,),
+            m.ResearchTargets((), 2),
+            panel,
+            m.ComparisonPolicy(
+                "1",
+                tuple(
+                    m.MetricBinSpec(x, 0.01, 0.0, m.BinRounding.FLOOR) for x in m.RANKING_METRICS
+                ),
+            ),
+        )
+    )
+    assert comparison.rows[0].status is m.ComparisonStatus.RANKED, comparison.rows[0].reasons

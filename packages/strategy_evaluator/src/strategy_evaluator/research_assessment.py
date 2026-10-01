@@ -292,8 +292,13 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             stress = evidence.get((center, p.baseline_window, p.stress_scenario))
             if (
                 stress
+                and base.scenario_context.measurement_tier in {"FORMAL", "SCREENING"}
+                and stress.scenario_context.measurement_tier == "STRESS"
+                and stress.scenario_context.one_way_cost > base.scenario_context.one_way_cost
                 and replace(
-                    stress.scenario_context, one_way_cost=base.scenario_context.one_way_cost
+                    stress.scenario_context,
+                    one_way_cost=base.scenario_context.one_way_cost,
+                    measurement_tier=base.scenario_context.measurement_tier,
                 )
                 == base.scenario_context
                 and (stress.context_sha256, stress.metric_version)

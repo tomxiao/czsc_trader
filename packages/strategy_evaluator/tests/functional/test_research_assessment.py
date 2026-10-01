@@ -45,7 +45,10 @@ def evidence(who=None, profits=(10.0, 20.0), scenario="standard", parent=None):
         scenario,
         "test-v1",
         m.EvaluationScenarioContext(
-            0.001 if scenario == "pressure" else 0.0005, "FORMAL", "BuyHold", "BUYHOLD"
+            0.001 if scenario == "pressure" else 0.0005,
+            "STRESS" if scenario == "pressure" else "FORMAL",
+            "BuyHold",
+            "BUYHOLD",
         ),
         1000.0,
         1000.0,
@@ -315,7 +318,7 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         "v1",
         60,
         m.EvaluationScenarioContext(0.0005, "FORMAL", "BuyHold", "BUYHOLD"),
-        m.EvaluationScenarioContext(0.001, "FORMAL", "BuyHold", "BUYHOLD"),
+        m.EvaluationScenarioContext(0.001, "STRESS", "BuyHold", "BUYHOLD"),
         tuple(diagnostics),
         m.UncertaintyInterval(m.DiagnosticStatus.NOT_APPLICABLE, None, None, "test"),
         (),
@@ -381,6 +384,46 @@ def test_neighbor_fee_difference_is_rejected_but_declared_stress_fee_is_allowed(
     metrics = {x.metric: x for x in panel.rows[0].diagnostics}
     assert metrics[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION].value is None
     assert metrics[m.ResearchMetric.STRESS_ANNUAL_LOSS].status is m.DiagnosticStatus.AVAILABLE
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"measurement_tier": "FORMAL"},
+        {"measurement_tier": "SCREENING"},
+        {"one_way_cost": 0.0005},
+        {"one_way_cost": 0.0001},
+        {"benchmark_id": "Other"},
+        {"benchmark_kind": "OTHER"},
+    ],
+)
+def test_stress_pair_rejects_invalid_role_fee_or_benchmark(change):
+    req = request()
+    stress = req.evidence[-1]
+    req = replace(
+        req,
+        evidence=(
+            *req.evidence[:-1],
+            replace(stress, scenario_context=replace(stress.scenario_context, **change)),
+        ),
+    )
+    metric = values(assess_candidates(req))[m.ResearchMetric.STRESS_ANNUAL_LOSS]
+    assert metric.status is m.DiagnosticStatus.INSUFFICIENT_DATA
+    assert metric.reason == "MISSING_OR_INCOMPARABLE_STRESS"
+
+
+@pytest.mark.parametrize("tier", ["STRESS", "UNKNOWN"])
+def test_stress_pair_rejects_invalid_standard_role(tier):
+    req = request()
+    base = req.evidence[0]
+    req = replace(
+        req,
+        evidence=(
+            replace(base, scenario_context=replace(base.scenario_context, measurement_tier=tier)),
+            *req.evidence[1:],
+        ),
+    )
+    assert values(assess_candidates(req))[m.ResearchMetric.STRESS_ANNUAL_LOSS].value is None
 
 
 @pytest.mark.parametrize("fee", [True, -0.1, 1.0, float("nan")])

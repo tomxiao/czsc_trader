@@ -264,7 +264,8 @@ TDR `build_assessment_evidence(request, result)`核验受管请求与结果，�
 `AssessmentEvidence.scenario_context`使用`EvaluationScenarioContext`绑定实际单边费用、计量
 层级、基准ID和基准类型，研究员须按既定协议解释这些口径。候选比较同时核对公共上下文及
 标准／压力场景；同名场景费用不同也会标为`INCOMPARABLE`，不能只比`context_sha256`。
-参数邻域和研究族标准场景须保持一致；标准与压力场景允许协议声明的费用变化，其余口径须一致。
+参数邻域和研究族标准场景须保持一致；标准／压力配对要求标准层级为`FORMAL/SCREENING`、
+压力层级为`STRESS`且费用严格增加，基准定义、指标版本和公共上下文保持一致。
 
 #### 执行步骤
 
