@@ -3,6 +3,9 @@
 状态：正式研究经TDR／REX受管入口执行的原则已获用户确认；具体契约和API方案待评审。
 所有“拟新增／拟修改”接口尚未实现。
 
+批次A的字段、调用顺序、预算语义及验收详见[批次A详细设计](RESEARCH_TOOLS_BATCH_A_DESIGN.md)。
+与本概览同一事项的更细约束以该详细设计为评审对象。
+
 日期：2026-10-01。身份：DEV。评审分支：`codex/research-tools-design-review`。
 实现基线：`b9bc8442`。需求依据：[RSCH Agent](../research/RSCH_AGENT.md)、
 [交付与候选契约需求](RESEARCH_DELIVERY_CONTRACT.md)及本会话已确认的平台边界。
@@ -172,7 +175,8 @@ REX声明对DFLS的直接类型依赖。`ExperimentRuntimePort.describe/create`�
 用作独立于ID的内容指纹。拟在`StrategyRuntime`增加：
 
 ```python
-def identify(self, candidate: StrategyCandidate) -> CandidateContentIdentity: ...
+def identify(self, candidate: StrategyCandidate, *,
+             dependencies: tuple[ImplementationDependency, ...]) -> CandidateContentIdentity: ...
 ```
 
 `CandidateContentIdentity`包含`schema_version`、`content_sha256`、`source_sha256`和
@@ -201,7 +205,7 @@ def identify(self, candidate: StrategyCandidate) -> CandidateContentIdentity: ..
 
 | 模块／公共API | 行为 |
 | --- | --- |
-| TDR `application.register_candidate(context, request: CandidateRegistrationRequest) -> CandidateRegistration` | 输入现有候选、实验回执引用和可选派生关系；通过SRT认证后委托SM登记 |
+| TDR `application.register_candidate(context, request: CandidateRegistrationRequest) -> CandidateRegistration` | 输入现有候选、执行前实验定义／绑定及预检引用、依赖和可选派生关系；通过SRT认证后委托SM登记；执行后回执追加引用该候选 |
 | TDR `application.load_candidate(context, key: CandidateKey) -> StrategyCandidate` | 验证登记、文件哈希、依赖和运行定义，返回同一候选身份 |
 | SM `StrategyRegistry.register_candidate(record: CandidateRegistration) -> CandidateRegistration` | TDR平台适配调用；原子创建，同key同内容返回既有记录，同key异内容抛`CandidateIdentityConflict` |
 | SM `StrategyRegistry.get_candidate(key: CandidateKey) -> CandidateRegistration` | 只读查询；缺失抛明确错误 |
