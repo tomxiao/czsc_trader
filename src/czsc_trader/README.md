@@ -170,6 +170,26 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 比较须同时核对公共上下文与场景口径，不能仅凭相同`scenario_id`或`context_sha256`认定可比。
 自检、排序和不确定性结果的口径见[SE说明](../../packages/strategy_evaluator/README.md)。
 
+### 标准与压力场景
+
+`EvaluationRequest.costs`须包含唯一的`standard`场景，计量层级使用`FORMAL`或`SCREENING`。
+其他场景须显式使用`STRESS`，且单边费率严格高于标准场景；不满足时评价请求校验失败。
+`EvaluationCost.measurement_tier`默认值为`FORMAL`，构造压力场景时必须显式覆盖：
+
+```python
+from czsc_trader.research_tools import EvaluationCost
+
+# 传给 EvaluationRequest(costs=costs, ...)；费率仅为示例，按已确认协议填写。
+costs = (
+    EvaluationCost("standard", one_way_cost=0.001, measurement_tier="FORMAL"),
+    EvaluationCost("fee_x2", one_way_cost=0.002, measurement_tier="STRESS"),
+)
+```
+
+SE自检协议中的标准／压力场景ID须与评价请求一致；标准／压力配对允许上述费用与层级差异，
+基准定义、指标版本和公共上下文须一致。跨候选比较及参数邻域仍须保持对应场景口径一致。
+计量层级与REX实验执行模式分别声明；`SCREENING`场景也须遵守正式研究的受管执行要求。
+
 ## 7. 五阶段交付
 
 从`czsc_trader.research_tools`导入交付契约，实现`ResearchDeliverable.definition`和

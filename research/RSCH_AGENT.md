@@ -266,6 +266,8 @@ TDR `build_assessment_evidence(request, result)`核验受管请求与结果，�
 标准／压力场景；同名场景费用不同也会标为`INCOMPARABLE`，不能只比`context_sha256`。
 参数邻域和研究族标准场景须保持一致；标准／压力配对要求标准层级为`FORMAL/SCREENING`、
 压力层级为`STRESS`且费用严格增加，基准定义、指标版本和公共上下文保持一致。
+构造请求时显式填写压力场景层级，并将自检协议的场景ID与评价请求对齐，示例见
+[TDR标准与压力场景](../src/czsc_trader/README.md#标准与压力场景)。
 
 #### 执行步骤
 
