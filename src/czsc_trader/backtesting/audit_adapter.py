@@ -162,6 +162,8 @@ def build_benchmark_evidence(
     signals: SignalReplay,
     data: BacktestExecutionData,
     initial_cash: float,
+    *,
+    lot_size: int,
 ) -> dict[str, BenchmarkEvidence]:
     evaluation = data.execution_daily.loc[
         data.execution_daily["dt"].between(
@@ -197,6 +199,7 @@ def build_benchmark_evidence(
             _records(benchmarks.buyhold_orders, ("signal_date", "execution_date")),
             empty_trades,
             benchmarks.metrics["buyhold"]["metrics"],
+            lot_size=lot_size,
         ),
         "ma5_ma20": BenchmarkEvidence(
             "MA5_MA20",
@@ -209,5 +212,6 @@ def build_benchmark_evidence(
             _records(benchmarks.ma_orders, ("signal_date", "execution_date")),
             _records(benchmarks.ma_trades, ("entry_date", "exit_date")),
             benchmarks.metrics["ma5_ma20"]["metrics"],
+            lot_size=lot_size,
         ),
     }

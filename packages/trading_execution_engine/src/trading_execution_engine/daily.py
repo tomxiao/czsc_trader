@@ -46,8 +46,11 @@ def execute_target_positions(
         raise ValueError("initial_cash must be positive and finite")
     if not np.isfinite(float(slippage_bp)) or slippage_bp < 0:
         raise ValueError("slippage_bp must be non-negative and finite")
-    if lot_size is not None and int(lot_size) <= 0:
-        raise ValueError("lot_size must be positive")
+    if lot_size is not None:
+        if type(lot_size) is not int:
+            raise TypeError("lot_size must be an integer")
+        if lot_size <= 0:
+            raise ValueError("lot_size must be positive")
 
     cash = float(initial_cash)
     shares = 0.0

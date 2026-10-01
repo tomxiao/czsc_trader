@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Mapping
 from pathlib import Path
+from dataflows import Dataflows
 
 from .contracts import StrategyIdentity, TradableWindow
 from .loader import StrategyLoader
@@ -31,8 +32,11 @@ class StrategyInit:
 class StrategyRuntime:
     """Create strategy instances; all running behavior belongs to the instance."""
 
-    def __init__(self, strategy_root: Path | None = None) -> None:
+    def __init__(
+        self, strategy_root: Path | None = None, *, dataflows: Dataflows | None = None,
+    ) -> None:
         self._loader = StrategyLoader(strategy_root)
+        self._dataflows = dataflows
 
     def _load(
         self,
@@ -99,4 +103,5 @@ class StrategyRuntime:
             tradable_window=request.tradable_window,
             data_dir=request.data_dir,
             execution_policy=request.execution_policy or definition.execution,
+            dataflows=self._dataflows,
         )

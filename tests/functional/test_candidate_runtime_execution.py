@@ -81,6 +81,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily):
         }
     )
     monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: flows)
+    monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
+    monkeypatch.setattr("czsc_trader.research_tools.evaluation.Dataflows", lambda **kwargs: flows)
 
 
 def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser(
@@ -201,7 +203,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     summary = run_backtest_v2(
         snapshot=snapshot,
         request=BacktestRequestV2(
-            "588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000
+            "588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100
         ),
         srt_data_root=tmp_path,
         outputs_root=tmp_path / "outputs",
@@ -227,7 +229,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     api_result = run_backtest(
         context,
         candidate,
-        BacktestRequestV2("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000),
+        BacktestRequestV2("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100),
         run_date=sessions[-1].date(),
         chart_descriptor=chart_descriptor,
     )

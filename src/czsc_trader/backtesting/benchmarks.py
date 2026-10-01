@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import pandas as pd
 
 from czsc_trader.moving_average import moving_average_signals
-from czsc_trader.research_backtest import run_backtest as run_next_open_backtest
 from czsc_trader.strategy_metrics import closed_trade_ledger, strategy_comparison_metrics
 from trading_execution_engine import execute_target_positions
 
@@ -61,6 +60,7 @@ def _account_daily(
     initial_target: float,
     initial_signal_date: pd.Timestamp,
     equity: pd.Series,
+    state: pd.DataFrame,
 ) -> pd.DataFrame:
     index = pd.DatetimeIndex(pd.to_datetime(prices["dt"]), name="date")
     desired = target.reindex(index).astype(float)
@@ -76,6 +76,8 @@ def _account_daily(
             "target_position": execution_target.to_numpy(),
             "close": prices["close"].astype(float).to_numpy(),
             "equity": equity.reindex(index).astype(float).to_numpy(),
+            "cash": state["cash"].reindex(index).to_numpy(),
+            "quantity": state["quantity"].reindex(index).to_numpy(),
         }
     )
 
@@ -84,6 +86,8 @@ def replay_buyhold(
     signals: SignalReplay,
     execution_data: BacktestExecutionData,
     initial_cash: float,
+    *,
+    lot_size: int,
 ) -> BuyHoldReplay:
     """Run the independently funded BuyHold benchmark for a signal window."""
 
@@ -111,6 +115,7 @@ def replay_buyhold(
         target,
         fee_rate=fee_rate,
         initial_cash=initial_cash,
+        lot_size=lot_size,
     )
     orders = result.orders.copy()
     if not orders.empty:
@@ -140,6 +145,7 @@ def replay_buyhold(
             1.0,
             prior_date,
             result.equity,
+            result.state,
         ),
         orders=orders,
     )
@@ -149,6 +155,8 @@ def replay_benchmarks(
     signals: SignalReplay,
     execution_data: BacktestExecutionData,
     initial_cash: float,
+    *,
+    lot_size: int,
 ) -> BenchmarkReplay:
     """Run independently funded BuyHold and MA5/MA20 next-open benchmarks."""
     fee_rate = _fee_rate(signals)
@@ -167,20 +175,24 @@ def replay_benchmarks(
         raise ValueError("benchmark interval has no prior signal session")
     prior_date = pd.Timestamp(prior_dates[-1])
 
-    buyhold = replay_buyhold(signals, execution_data, initial_cash)
+    buyhold = replay_buyhold(signals, execution_data, initial_cash, lot_size=lot_size)
 
     ma_target = adjusted_signals["target_position"].reindex(evaluation_index).astype(float)
     initial_ma_target = float(adjusted_signals.loc[prior_date, "target_position"])
-    ma = run_next_open_backtest(
+    execution_target = ma_target.shift(1)
+    execution_target.iloc[0] = initial_ma_target
+    ma = execute_target_positions(
         evaluation,
-        ma_target,
+        execution_target,
         fee_rate=fee_rate,
-        init_cash=initial_cash,
-        initial_target=initial_ma_target,
-        initial_signal_date=prior_date,
+        initial_cash=initial_cash,
+        lot_size=lot_size,
     )
-    ma_trades = closed_trade_ledger(ma.orders)
-    ma_metrics = strategy_comparison_metrics(ma.equity, ma.orders, initial_cash)
+    ma_orders = ma.orders.rename(columns={"quantity": "size"}).copy()
+    previous_sessions = pd.Series([prior_date, *evaluation_index[:-1]], index=evaluation_index)
+    ma_orders.insert(0, "signal_date", pd.to_datetime(ma_orders["execution_date"]).map(previous_sessions))
+    ma_trades = closed_trade_ledger(ma_orders)
+    ma_metrics = strategy_comparison_metrics(ma.equity, ma_orders, initial_cash)
     ma_metrics["closed_trades"] = int(len(ma_trades))
     ma_account = _account_daily(
         evaluation,
@@ -188,6 +200,7 @@ def replay_benchmarks(
         initial_ma_target,
         prior_date,
         ma.equity,
+        ma.state,
     )
     visible_signals = adjusted_signals.loc[prior_date : signals.evaluation_end].reset_index()
     visible_signals = visible_signals.rename(columns={"dt": "date"})
@@ -204,7 +217,7 @@ def replay_benchmarks(
         buyhold_account_daily=buyhold.account_daily,
         buyhold_orders=buyhold.orders,
         ma_signals=visible_signals,
-        ma_orders=ma.orders,
+        ma_orders=ma_orders,
         ma_account_daily=ma_account,
         ma_trades=ma_trades,
         ma_audit_signals=ma_audit_signals,

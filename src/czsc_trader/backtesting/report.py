@@ -19,6 +19,7 @@ def render_report(
     evaluation_start: date,
     evaluation_end: date,
     trading_days: int,
+    lot_size: int,
 ) -> str:
     def percent(value: object) -> str:
         return "N/A" if value is None else f"{float(value):.2%}"
@@ -47,6 +48,7 @@ def render_report(
         "主策略使用冻结执行规则；BuyHold与MA5/MA20使用独立资金按次日开盘成交。",
         f"- 策略参考标的：{strategy_reference_symbol}",
         f"- 实际回测标的：{backtest_symbol}",
+        f"- 策略、BuyHold、MA5/MA20 最小交易数量单位：{lot_size}",
         (
             "- 应用方式：跨标的泛化测试"
             if application_mode == "cross_symbol_generalization"

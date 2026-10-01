@@ -124,7 +124,7 @@ def prepare_backtest_execution_data(
     asset_type: str,
     start: date,
     end: date,
-    env_file: Path,
+    env_file: Path | None = None,
     include_five_minute: bool = False,
     dataflows: Dataflows | None = None,
 ) -> BacktestExecutionData:
@@ -137,7 +137,7 @@ def prepare_backtest_execution_data(
         raise ValueError("backtest asset type must be stock or etf")
     normalized_symbol = symbol.upper()
     flows = dataflows or Dataflows()
-    options = {"env_file": str(Path(env_file).resolve())}
+    options = {} if env_file is None else {"env_file": str(Path(env_file).resolve())}
     calendar = _ready(
         flows,
         DataRequest(

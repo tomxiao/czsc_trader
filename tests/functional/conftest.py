@@ -125,6 +125,8 @@ def functional_repo(tmp_path: Path, monkeypatch) -> Path:
 
     flows = Dataflows({key[0]: fetch for key in frames})
     monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: flows)
+    monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
+    monkeypatch.setattr("czsc_trader.research_tools.evaluation.Dataflows", lambda **kwargs: flows)
     monkeypatch.setattr(
         "czsc_trader.backtesting.execution_data.Dataflows", lambda: flows
     )

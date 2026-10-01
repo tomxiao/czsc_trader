@@ -24,6 +24,16 @@ def _add_output_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--debug", action="store_true")
 
 
+def _positive_integer(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return number
+
+
 def _context(args: argparse.Namespace) -> RepositoryContext:
     context = RepositoryContext.discover(Path.cwd())
     load_dotenv(context.root / ".env", override=False)
@@ -51,6 +61,7 @@ def _backtest_run(args: argparse.Namespace):
             start=args.start,
             end=args.end,
             initial_cash=args.init_cash,
+            lot_size=args.lot_size,
         ),
     )
 
@@ -71,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_run.add_argument("--start", required=True, type=date.fromisoformat)
     backtest_run.add_argument("--end", required=True, type=date.fromisoformat)
     backtest_run.add_argument("--init-cash", required=True, type=float)
+    backtest_run.add_argument("--lot-size", required=True, type=_positive_integer)
     _add_output_options(backtest_run)
     backtest_run.set_defaults(
         command_handler=_backtest_run,

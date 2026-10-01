@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataflows import Dataflows
+
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -219,6 +221,7 @@ def build_srt_signal_replay(
     end: pd.Timestamp,
     repository_root: Path,
     space_created_on: date | None = None,
+    dataflows: Dataflows | None = None,
 ) -> tuple[object, SignalReplay]:
     """Create one SRT instance and calculate its complete historical window."""
 
@@ -227,7 +230,7 @@ def build_srt_signal_replay(
         snapshot,
         deployment_symbol=execution_data.symbol,
     )
-    runtime = StrategyRuntime(Path(repository_root) / "strategies")
+    runtime = StrategyRuntime(Path(repository_root) / "strategies", dataflows=dataflows)
     if end.normalize() > pd.Timestamp(execution_data.cutoff):
         raise RuntimeContractError("backtest window exceeds the published cutoff")
     sessions = pd.DatetimeIndex(
@@ -377,6 +380,7 @@ def replay_srt_account(
     execution_data: BacktestExecutionData,
     initial_cash: float,
     fee_rate_override: float | None = None,
+    dataflows: Dataflows | None = None,
 ) -> BacktestResult:
     """Route SRT decisions directly through TXE, then wrap facts for reporting."""
 
@@ -395,7 +399,7 @@ def replay_srt_account(
             settings["one_way_cost"] = float(fee_rate_override)
         effective_policy = ExecutionPolicy(effective_policy.policy_type, settings)
     strategy_root = Path(signals.snapshot.identity.source)
-    strategy = StrategyRuntime(strategy_root).create(
+    strategy = StrategyRuntime(strategy_root, dataflows=dataflows).create(
         StrategyInit(
             signals.strategy_source,
             strategy.tradable_window,

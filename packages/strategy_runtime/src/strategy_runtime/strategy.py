@@ -9,7 +9,7 @@ from types import MappingProxyType
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataflows, Dataset
 
 from .contracts import (
     DataPreparationResult,
@@ -94,12 +94,14 @@ class StrategyInstance:
         tradable_window: TradableWindow,
         data_dir: Path,
         execution_policy,
+        dataflows: Dataflows | None = None,
     ) -> None:
         self._algorithm = algorithm
         self._identity = identity
         self._tradable_window = tradable_window
         self._data_dir = Path(data_dir).resolve()
         self._execution_policy = execution_policy
+        self._dataflows = dataflows
         self._prepared_data: PreparedStrategyData | None = None
         self._history_cache: dict[
             tuple[str, str], tuple[pd.DataFrame, pd.DatetimeIndex]
@@ -170,6 +172,7 @@ class StrategyInstance:
                 algorithm=self._algorithm,
                 tradable_window=self._tradable_window,
                 data_dir=self._data_dir,
+                dataflows=self._dataflows,
             )
             inputs = save_prepared_inputs(inputs, self._data_dir)
         prepared = PreparedStrategyData.from_inputs(

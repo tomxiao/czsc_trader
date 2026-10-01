@@ -155,6 +155,7 @@ def test_backtest_v2_replays_strategy_snapshot_with_empty_account(
         start=pd.Timestamp("2026-01-01").date(),
         end=pd.Timestamp("2026-09-02").date(),
         initial_cash=100_000,
+        lot_size=100,
     )
     with pytest.raises(ValueError, match="request window differs"):
         run_backtest_v2(
@@ -184,6 +185,8 @@ def test_backtest_v2_replays_strategy_snapshot_with_empty_account(
     }
     assert required == {path.name for path in summary.output_dir.iterdir()}
     assert summary.output_dir.name == "S001v1_588080_0904_BT01"
+    assert summary.manifest["schema_version"] == 4
+    assert summary.manifest["request"]["lot_size"] == 100
     assert not any((functional_repo / ".tmp" / "backtest").iterdir())
     assert set(summary.metrics) == {"strategy", "benchmarks"}
     assert summary.metrics["strategy"]["reference"] == "S001-v1"
@@ -207,6 +210,7 @@ def test_backtest_v2_replays_strategy_snapshot_with_empty_account(
         "equity"
     ] > 0
     report = (summary.output_dir / "report.md").read_text(encoding="utf-8")
+    assert "最小交易数量单位：100" in report
     assert "- 策略研发窗口：2020-01-01—2026-09-02" in report
     calculation_line = next(line for line in report.splitlines() if line.startswith("- 计算窗口："))
     assert calculation_line.endswith("—2026-09-01")
@@ -265,7 +269,7 @@ def test_backtest_does_not_read_legacy_srt_publication_manifests(
             "--asset", "etf",
             "--start", "2026-01-05",
             "--end", "2026-01-30",
-            "--init-cash", "100000",
+            "--init-cash", "100000", "--lot-size", "100",
         ],
         capsys,
     )
@@ -296,6 +300,7 @@ def test_ft_t03_backtest_publishes_audited_metrics_orders_and_reports(
             "2026-09-02",
             "--init-cash",
             "100000",
+            "--lot-size", "100",
         ],
         capsys,
     )
@@ -345,7 +350,7 @@ def test_ft_t03_backtest_publishes_audited_metrics_orders_and_reports(
             "backtest", "run",
             "--strategy", "S001", "--strategy-version", "v1",
             "--symbol", "159352.SZ", "--asset", "etf",
-            "--start", "2026-01-01", "--end", "2026-09-02", "--init-cash", "100000",
+            "--start", "2026-01-01", "--end", "2026-09-02", "--init-cash", "100000", "--lot-size", "100",
         ],
         capsys,
     )
@@ -375,7 +380,7 @@ def test_backtest_rejects_false_success_beyond_published_session(
             "backtest", "run",
             "--strategy", "S001", "--strategy-version", "v1",
             "--symbol", "588080.SH", "--asset", "etf",
-            "--start", "2026-01-01", "--end", "2026-09-06", "--init-cash", "100000",
+            "--start", "2026-01-01", "--end", "2026-09-06", "--init-cash", "100000", "--lot-size", "100",
         ],
         capsys,
     )
@@ -406,7 +411,7 @@ def test_backtest_historical_window_remains_valid_after_source_advances(
             "backtest", "run",
             "--strategy", "S001", "--strategy-version", "v1",
             "--symbol", "588080.SH", "--asset", "etf",
-            "--start", "2026-06-25", "--end", "2026-08-31", "--init-cash", "100000",
+            "--start", "2026-06-25", "--end", "2026-08-31", "--init-cash", "100000", "--lot-size", "100",
         ],
         capsys,
     )

@@ -122,9 +122,12 @@ def _flows() -> Dataflows:
 def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     tmp_path, monkeypatch
 ) -> None:
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
+    def unconfigured():
+        pytest.fail("runtime must use the host-supplied Dataflows")
+
+    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", unconfigured)
     trading_date = date(2026, 9, 3)
-    strategy = StrategyRuntime(ROOT / "strategies").create(
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=_flows()).create(
         StrategyInit(
             _release("S002", "v1"),
             TradableWindow(trading_date, trading_date),

@@ -13,6 +13,7 @@ from typing import Any, Mapping
 
 import numpy as np
 import pandas as pd
+from dataflows import Dataflows
 from strategy_evaluator import EvaluationProtocol, MetricObservation, MetricStatus
 from strategy_runtime import StrategyCandidate, StrategyRuntime, canonical_sha256
 from strategy_runtime.implementation_identity import implementation_sha256
@@ -30,7 +31,7 @@ from ..backtesting.srt_bridge import (
     replay_srt_account,
 )
 
-METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v2"
+METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v3-lot-size"
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class CandidateEvaluationContext:
     review_data_hash: str | None = None
     candidate_runtime_roots: dict[str, Path] | None = None
     candidate_chart_descriptors: dict[str, dict[str, object]] | None = None
+    dataflows: Dataflows | None = None
 
 
 @dataclass(frozen=True)
@@ -179,8 +181,9 @@ def prepare_evaluation_workspace(
             asset_type=context.asset_type,
             start=first_start.date(),
             end=pd.Timestamp(protocol.development_cutoff).date(),
-            env_file=context.repository.root / ".env",
+            env_file=context.repository.root / ".env" if context.dataflows is None else None,
             include_five_minute=bool(options),
+            dataflows=context.dataflows,
         )
     cutoff = pd.Timestamp(protocol.development_cutoff).normalize()
     dates = pd.DatetimeIndex(pd.to_datetime(execution_data.adjusted_daily["dt"])).normalize()
@@ -260,6 +263,7 @@ def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
                 start=start,
                 end=end,
                 repository_root=context.repository.root,
+                dataflows=context.dataflows,
             )
             for name, (start, end) in workspace.periods.items()
         }
@@ -274,6 +278,7 @@ def execute_candidate_replay(context, workspace, prepared, fee_rate):
         signals=signals,
         execution_data=workspace.execution_data,
         initial_cash=context.init_cash, fee_rate_override=fee_rate,
+        dataflows=context.dataflows,
     )
     support = dict(signals.support_data)
     policy = support["execution_policy"]
@@ -467,7 +472,14 @@ def _evaluate_prepared(
             workspace.execution_data,
         )
         buyhold = (
-            replay_buyhold(signals, workspace.execution_data, context.init_cash)
+            replay_buyhold(
+                signals, workspace.execution_data, context.init_cash,
+                lot_size=(
+                    prepared[0].definition.execution.settings["instrument"]["lot_size"]
+                    if prepared[0].definition.execution.policy_type == "FROZEN_RULE"
+                    else prepared[0].definition.execution.settings["lot_size"]
+                ),
+            )
             if include_buyhold
             else None
         )
@@ -729,7 +741,9 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
 
 
-def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
+def evaluate_strategy(
+    request: EvaluationRequest, *, dataflows: Dataflows | None = None,
+) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
     contract, binding_hash = _request_contract(request)
@@ -757,6 +771,9 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
         workers=request.workers,
         frequency_window_days=request.frequency_window_days,
         family_id=request.strategy.strategy_family_id,
+        dataflows=dataflows if dataflows is not None else Dataflows(
+            env_file=Path(request.repository_root) / ".env",
+        ),
     )
     snapshot = StrategySnapshot(
         StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
@@ -774,6 +791,7 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
                 start=start,
                 end=end,
                 repository_root=Path(request.repository_root).resolve(),
+                dataflows=context.dataflows,
             )
             for name, (start, end) in periods
         }

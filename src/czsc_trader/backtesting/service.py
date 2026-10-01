@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 
 import pandas as pd
+from dataflows import Dataflows
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from czsc_trader.reporting.publication import publish_run_directory
@@ -38,6 +39,13 @@ class BacktestRequestV2:
     start: date
     end: date
     initial_cash: float
+    lot_size: int
+
+    def __post_init__(self) -> None:
+        if type(self.lot_size) is not int:
+            raise TypeError("lot_size must be an integer")
+        if self.lot_size <= 0:
+            raise ValueError("lot_size must be positive")
 
 
 @dataclass(frozen=True)
@@ -87,6 +95,7 @@ def run_backtest_v2(
     run_date: date,
     repository_root: Path | None = None,
     execution_data: BacktestExecutionData | None = None,
+    dataflows: Dataflows | None = None,
 ) -> BacktestRunSummary:
     """Run, validate, and atomically publish one immutable replay."""
     request = replace(request, symbol=request.symbol.upper())
@@ -97,6 +106,19 @@ def run_backtest_v2(
         snapshot,
         deployment_symbol=request.symbol,
     )
+    settings = definition.execution.settings
+    policy_type = definition.execution.policy_type
+    if policy_type == "FROZEN_RULE":
+        policy_lot_size = settings["instrument"]["lot_size"]
+    elif policy_type == "INTRADAY_OVERLAY":
+        policy_lot_size = settings["lot_size"]
+    else:
+        raise ValueError(f"unsupported execution policy: {policy_type}")
+    if type(policy_lot_size) is not int or request.lot_size != policy_lot_size:
+        raise ValueError("request lot_size differs from strategy execution contract")
+    flows = dataflows if dataflows is not None else Dataflows(
+        env_file=Path(repository_root) / ".env",
+    )
     if execution_data is None:
         execution_data = prepare_backtest_execution_data(
             srt_data_root=srt_data_root,
@@ -104,8 +126,8 @@ def run_backtest_v2(
             asset_type=request.asset_type,
             start=request.start,
             end=request.end,
-            env_file=Path(repository_root) / ".env",
             include_five_minute="5m" in execution_intraday_frequencies(definition),
+            dataflows=flows,
         )
     if execution_data.symbol != request.symbol:
         raise ValueError("request symbol differs from TDR execution data")
@@ -119,6 +141,7 @@ def run_backtest_v2(
         end=execution_data.evaluation_end,
         repository_root=repository_root,
         space_created_on=run_date,
+        dataflows=flows,
     )
     reference_symbol = strategy_reference_symbol(strategy)
     if snapshot.identity.kind == "REGISTERED":
@@ -134,6 +157,7 @@ def run_backtest_v2(
     result = replay_srt_account(
         strategy=strategy, signals=signals, execution_data=execution_data,
         initial_cash=request.initial_cash,
+        dataflows=flows,
     )
     strategy_metrics = calculate_metrics(result, request.initial_cash)
     evidence = build_replay_evidence(
@@ -143,11 +167,13 @@ def run_backtest_v2(
     if audited.status is not AuditStatus.PASS:
         raise ValueError(f"SE replay audit failed: {', '.join(audited.reason_codes)}")
     audit = audited.to_dict()
-    benchmarks = replay_benchmarks(signals, execution_data, request.initial_cash)
+    benchmarks = replay_benchmarks(
+        signals, execution_data, request.initial_cash, lot_size=request.lot_size,
+    )
     benchmark_audits = {
         name: audit_benchmark_replay(evidence)
         for name, evidence in build_benchmark_evidence(
-            benchmarks, signals, execution_data, request.initial_cash
+            benchmarks, signals, execution_data, request.initial_cash, lot_size=request.lot_size,
         ).items()
     }
     failures = {
@@ -211,6 +237,7 @@ def run_backtest_v2(
                 evaluation_start=signals.evaluation_start.date(),
                 evaluation_end=signals.evaluation_end.date(),
                 trading_days=len(result.account_daily),
+                lot_size=request.lot_size,
             ),
             encoding="utf-8",
         )

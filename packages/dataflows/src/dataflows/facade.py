@@ -5,12 +5,15 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from dataclasses import replace
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import numpy as np
+
+from .cache import CacheError, LocalCacheConfig, fetch_cached
 
 from .contract import (
     DataError,
@@ -829,7 +832,16 @@ def _date_bounds(
 class Dataflows:
     """Dataset registry and explicit publication-result boundary for DFLS."""
 
-    def __init__(self, providers: Mapping[str, Provider] | None = None) -> None:
+    def __init__(
+        self, providers: Mapping[str, Provider] | None = None, *,
+        env_file: Path | None = None, cache: LocalCacheConfig | None = None,
+    ) -> None:
+        if cache is not None and not isinstance(cache, LocalCacheConfig):
+            raise TypeError("cache must be LocalCacheConfig or None")
+        if env_file is not None and not isinstance(env_file, Path):
+            raise TypeError("env_file must be Path or None")
+        self._env_file = env_file
+        self._cache = cache
         self._providers = dict(providers) if providers is not None else _default_providers()
 
     @property
@@ -839,6 +851,32 @@ class Dataflows:
         return tuple(sorted(self._providers))
 
     def fetch(self, request: DataRequest) -> DataResult:
+        if not isinstance(request, DataRequest):
+            raise TypeError("request must be DataRequest")
+        if self._env_file is not None and "env_file" not in request.options:
+            request = replace(request, options={**request.options, "env_file": self._env_file})
+        if self._cache is None or request.dataset == Dataset.STRATEGY_FEATURE_EVIDENCE:
+            return self._fetch_source(request)
+
+        def validate(result: DataResult) -> None:
+            if result.identity.content_sha256 != canonical_frame_sha256(result.dataframe):
+                raise ValueError("cache content identity differs")
+            if result.identity.dataset != request.dataset or result.identity.symbol != request.symbol:
+                raise ValueError("cache request identity differs")
+            _validate_provider_output(result.dataframe, request, result.identity.metadata)
+            if _date_bounds(result.dataframe, request, result.identity.metadata) != (
+                result.identity.data_start, result.identity.data_cutoff,
+            ):
+                raise ValueError("cache publication bounds differ")
+            if request.coverage and len(result.dataframe) < request.coverage.minimum_rows:
+                raise ValueError("cache coverage differs")
+
+        try:
+            return fetch_cached(self._cache, request, lambda: self._fetch_source(request), validate)
+        except CacheError as exc:
+            return self._failure(DataStatus.FAILED, exc.code, str(exc), request)
+
+    def _fetch_source(self, request: DataRequest) -> DataResult:
         provider = self._providers.get(str(request.dataset))
         if provider is None:
             return self._failure(

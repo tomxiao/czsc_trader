@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .service import BacktestRequestV2
 
 from .execution_data import BacktestExecutionData
 from .models import StrategySnapshot
@@ -9,7 +13,7 @@ from .signal_replay import SignalReplay
 
 def build_manifest(
     *,
-    request: object,
+    request: BacktestRequestV2,
     snapshot: StrategySnapshot,
     data: BacktestExecutionData,
     signals: SignalReplay,
@@ -19,7 +23,7 @@ def build_manifest(
     run_date: date,
 ) -> dict[str, object]:
     manifest = {
-        "schema_version": 3,
+        "schema_version": 4,
         "engine": "TDR_BACKTEST_V2",
         "run_date": run_date.isoformat(),
         "strategy": {
@@ -37,11 +41,12 @@ def build_manifest(
             "execution_adjustment": "none",
         },
         "request": {
-            "symbol": getattr(request, "symbol"),
-            "asset_type": getattr(request, "asset_type"),
-            "start": getattr(request, "start").isoformat(),
-            "end": getattr(request, "end").isoformat(),
-            "initial_cash": getattr(request, "initial_cash"),
+            "symbol": request.symbol,
+            "asset_type": request.asset_type,
+            "start": request.start.isoformat(),
+            "end": request.end.isoformat(),
+            "initial_cash": request.initial_cash,
+            "lot_size": request.lot_size,
         },
         "ranges": {
             "calculation": [

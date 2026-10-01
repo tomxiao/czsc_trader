@@ -1,5 +1,7 @@
 """Reusable financial dataflows with an explicit publication contract."""
 
+from .cache import CachePolicy, LocalCacheConfig
+
 from .contract import (
     DataCoverageRequirement,
     DataError,
@@ -25,6 +27,8 @@ from .facade import Dataflows, canonical_frame_sha256
 from .temporal import TemporalAlignmentResult, align_temporal_frame
 
 __all__ = [
+    "CachePolicy",
+    "LocalCacheConfig",
     "DataContractError",
     "DataCoverageRequirement",
     "DataError",

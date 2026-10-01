@@ -36,6 +36,13 @@ class BenchmarkEvidence(Record):
     orders: tuple[Mapping[str, Any], ...]
     trades: tuple[Mapping[str, Any], ...]
     metrics: Mapping[str, Any]
+    lot_size: int
+
+    def __post_init__(self) -> None:
+        if type(self.lot_size) is not int:
+            raise TypeError("lot_size must be an integer")
+        if self.lot_size <= 0:
+            raise ValueError("lot_size must be positive")
 
     def to_dict(self) -> dict[str, Any]:
         return _jsonable({name: getattr(self, name) for name in self.__dataclass_fields__})
@@ -168,6 +175,8 @@ def audit_benchmark_replay(
     shares = 0.0
     previous_target = 0.0
     equity_values: list[float] = []
+    cash_values: list[float] = []
+    quantity_values: list[float] = []
     expected_orders: list[dict[str, Any]] = []
     for desired, (_, price) in zip(target, prices.iterrows(), strict=True):
         open_price = float(price["open"])
@@ -177,32 +186,45 @@ def audit_benchmark_replay(
             delta = float(desired) * portfolio_value - shares * open_price
             if delta > 0.0:
                 bought = min(delta / open_price, cash / (open_price * (1.0 + evidence.fee_rate)))
+                bought = float(int(bought // evidence.lot_size) * evidence.lot_size)
                 cash -= bought * open_price * (1.0 + evidence.fee_rate)
                 shares += bought
-                expected_orders.append(
-                    {
-                        "execution_date": price["date"],
-                        "side": "Buy",
-                        "size": bought,
-                        "price": open_price,
-                        "fees": bought * open_price * evidence.fee_rate,
-                    }
-                )
-            else:
+                if bought > 0:
+                    expected_orders.append(
+                        {
+                            "execution_date": price["date"],
+                            "side": "Buy",
+                            "size": bought,
+                            "price": open_price,
+                            "fees": bought * open_price * evidence.fee_rate,
+                        }
+                    )
+            elif delta < 0:
                 sold = min(-delta / open_price, shares)
+                if desired > 0:
+                    sold = float(int(sold // evidence.lot_size) * evidence.lot_size)
                 cash += sold * open_price * (1.0 - evidence.fee_rate)
                 shares -= sold
-                expected_orders.append(
-                    {
-                        "execution_date": price["date"],
-                        "side": "Sell",
-                        "size": sold,
-                        "price": open_price,
-                        "fees": sold * open_price * evidence.fee_rate,
-                    }
-                )
+                if sold > 0:
+                    expected_orders.append(
+                        {
+                            "execution_date": price["date"],
+                            "side": "Sell",
+                            "size": sold,
+                            "price": open_price,
+                            "fees": sold * open_price * evidence.fee_rate,
+                        }
+                    )
             previous_target = float(desired)
         equity_values.append(cash + shares * close_price)
+        cash_values.append(cash)
+        quantity_values.append(shares)
+    for name, expected in (("cash", cash_values), ("quantity", quantity_values)):
+        actual = pd.to_numeric(accounts.get(name, pd.Series(dtype=float)), errors="coerce")
+        if len(actual) != len(expected) or not np.isfinite(actual).all() or not np.allclose(
+            actual.to_numpy(), expected, rtol=0, atol=tolerance,
+        ):
+            reasons.append("BENCHMARK_LEDGER_MISMATCH")
     expected_equity = pd.Series(equity_values, index=sessions, dtype=float)
     actual_equity = pd.to_numeric(accounts["equity"], errors="coerce")
     if actual_equity.isna().any() or not np.allclose(

@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import replace
+from functools import partial
 import json
 import math
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from dataflows import DataRequest, DataResult, Dataflows
+from dataflows import DataRequest, DataResult, Dataflows, LocalCacheConfig
 import pandas as pd
 from research_experiment import (
     ExperimentCapability,
@@ -354,8 +355,11 @@ def create_experiment_context(
         repository_root=repository_root,
         dataflows=dataflows,
         resources=resources,
-        runtime=runtime or StrategyRuntime(),
-        evaluator=evaluator,
+        runtime=runtime or StrategyRuntime(dataflows=dataflows),
+        evaluator=(
+            partial(evaluate_strategy, dataflows=dataflows)
+            if evaluator is evaluate_strategy else evaluator
+        ),
         workspace=workspace,
         real_returns=real_returns,
         sealed_validation=sealed_validation,
@@ -371,18 +375,20 @@ def create_formal_experiment_context(
     resources: ExperimentResources,
     workspace: ExperimentWorkspace | None = None,
     predecessors: tuple[ExperimentInput, ...] = (),
+    cache: LocalCacheConfig | None = None,
 ) -> ExperimentContext:
     """Create a formal context using only platform-owned production adapters."""
 
     if definition.mode is not ExperimentMode.FORMAL:
         raise ValueError("formal context requires a FORMAL experiment definition")
+    flows = Dataflows(env_file=Path(repository_root) / ".env", cache=cache)
     return _create_experiment_context(
         definition,
         repository_root=repository_root,
-        dataflows=Dataflows(),
+        dataflows=flows,
         resources=resources,
-        runtime=StrategyRuntime(),
-        evaluator=evaluate_strategy,
+        runtime=StrategyRuntime(dataflows=flows),
+        evaluator=partial(evaluate_strategy, dataflows=flows),
         workspace=workspace,
         real_returns=True,
         sealed_validation=True,
