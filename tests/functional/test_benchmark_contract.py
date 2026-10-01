@@ -40,6 +40,8 @@ def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence():
     assert result.account_daily.iloc[-1].cash == pytest.approx(2847.844)
     assert result.account_daily.iloc[-1].equity == pytest.approx(1461437.844)
     assert len(result.execution.fills) == 1  # residual cash is not reinvested
+    assert result.execution.decisions.action.tolist() == ["BUY", "HOLD"]
+    assert (result.execution.decisions.reason == "BUY_AND_HOLD").all()
     next_open = replay_buyhold(
         signals, data, 1e6, benchmark=EvaluationBenchmark(NextOpenBuyHold(100))
     )

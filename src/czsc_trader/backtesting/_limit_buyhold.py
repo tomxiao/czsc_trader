@@ -139,7 +139,11 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             required_capabilities=ExecutionCapabilities(tuple({x.order_type for x in orders}), ()),
             input_identities=identities,
             price_identities=identities,
-            evidence={"signal_date": signal_day.date().isoformat(), "reason": "BUY_AND_HOLD"},
+            evidence={
+                "signal_date": signal_day.date().isoformat(),
+                "action": str(raw["action"]),
+                "reason": "BUY_AND_HOLD",
+            },
             **terms,
         )
         channel.execute(plan)
