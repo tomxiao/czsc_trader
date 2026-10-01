@@ -50,10 +50,12 @@ def _publish(root: Path, relative: str, data: bytes, temporary: Path) -> Candida
     target = root / relative
     if not target.resolve().is_relative_to(root.resolve()):
         raise ValueError("candidate file escapes registry root")
-    target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
         ref.resolve(root)
         return ref
+    if (root / "experiment_manifest.json").exists():
+        raise ValueError("cannot add candidate objects to a sealed experiment")
+    target.parent.mkdir(parents=True, exist_ok=True)
     stage = temporary / ref.sha256
     stage.write_bytes(data)
     # Exclusive creation prevents replacing an already published content address.
@@ -77,9 +79,11 @@ def register_candidate(
     ):
         raise ValueError("registration requires candidate sources inside repository")
     origin = request.origin
-    loaded = load_experiment(
-        context.experiments_root / candidate.strategy_family_id / origin.experiment_id
-    )
+    experiment_root = context.experiments_root / candidate.strategy_family_id / origin.experiment_id
+    for path in (experiment_root, experiment_root.parent, context.experiments_root):
+        if path.is_symlink() or path.is_junction():
+            raise ValueError("candidate experiment root contains a link")
+    loaded = load_experiment(experiment_root)
     binding_path = loaded.root / "experiment_binding.json"
     if (
         loaded.definition.schema_version != 2
@@ -128,7 +132,7 @@ def register_candidate(
     registry = StrategyRegistry(context.research_registry_root)
     registry.get_family(candidate.strategy_family_id)
     temporary = create_temporary_directory(context.root, "candidate-registration")
-    root = context.research_registry_root
+    root = loaded.root
 
     def copy_evidence(ref):
         data = ref.resolve(context.root).read_bytes()
@@ -186,17 +190,22 @@ def register_candidate(
         replace(origin, preflight=copy_evidence(origin.preflight)),
         derivation,
     )
-    return registry.register_candidate(record)
+    return registry.register_candidate(record, experiments_root=context.experiments_root)
+
+
+def _registered_root(context, record):
+    if record.schema_version == 1:
+        return context.research_registry_root
+    return context.experiments_root / record.key.strategy_id / record.origin.experiment_id
 
 
 def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCandidate:
-    record = StrategyRegistry(context.research_registry_root).get_candidate(key)
-    payload = json.loads(
-        record.payload.resolve(context.research_registry_root).read_text(encoding="utf-8")
+    record = StrategyRegistry(context.research_registry_root).get_candidate(
+        key, experiments_root=context.experiments_root
     )
-    root = (
-        context.research_registry_root / f"objects/source/{record.source_sha256}/strategy_runtime"
-    )
+    evidence_root = _registered_root(context, record)
+    payload = json.loads(record.payload.resolve(evidence_root).read_text(encoding="utf-8"))
+    root = evidence_root / f"objects/source/{record.source_sha256}/strategy_runtime"
     candidate = StrategyCandidate(key.strategy_id, key.candidate_id, payload, root)
     identity = StrategyRuntime().identify(
         candidate,

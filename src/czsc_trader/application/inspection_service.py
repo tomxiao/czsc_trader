@@ -39,7 +39,7 @@ from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
 from strategy_runtime.errors import StrategyRuntimeError
 
 from .context import RepositoryContext
-from .candidate_service import load_candidate
+from .candidate_service import load_candidate, _registered_root
 from .runtime_acceptance import runtime_readiness, require_same_runtime_content
 from .delivery_service import validate_delivery, _delivery_path, _resolve
 from ..research_tools import delivery as d
@@ -102,6 +102,19 @@ def _delivery(context, ref):
     if checked.status is not d.ValidationStatus.PASS:
         raise ValueError(f"decision delivery is invalid: {checked.issues}")
     document = _read(path.parent / "delivery.json")
+    if document["schema_version"] == 3:
+        # Schema 3 references have an explicitly retained legacy storage layout.
+        def legacy_references(value):
+            if isinstance(value, list):
+                return [legacy_references(item) for item in value]
+            if isinstance(value, dict):
+                result = {key: legacy_references(item) for key, item in value.items()}
+                if result.get("type") == "DeliveryReference":
+                    result["type"] = "LegacyDeliveryReference"
+                return result
+            return value
+
+        document["content"] = legacy_references(document["content"])
     return receipt.reference, d.DeliveryContent.from_dict(document["content"])
 
 
@@ -213,12 +226,14 @@ class CandidateInspectionRequest:
 
 
 def _copy_plan(context, request, registration):
+    evidence_root = _registered_root(context, registration)
+
     def copy(ref, root):
         return _store(context, ref.resolve(root).read_bytes())
 
     prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
     files = tuple(
-        f.FreezeFile(ref.path.removeprefix(prefix), copy(ref, context.research_registry_root))
+        f.FreezeFile(ref.path.removeprefix(prefix), copy(ref, evidence_root))
         for ref in registration.source_files
     )
     files += tuple(
@@ -237,11 +252,11 @@ def _copy_plan(context, request, registration):
         registration.origin.experiment_id,
         request.selection_data_cutoff,
         request.forward_start,
-        copy(registration.payload, context.research_registry_root),
+        copy(registration.payload, evidence_root),
         files,
         copy(request.runtime_binding, context.root),
         tuple(
-            copy(ref, context.research_registry_root)
+            copy(ref, evidence_root)
             for ref in (
                 registration.origin.preflight,
                 *((registration.derivation.evidence,) if registration.derivation else ()),
@@ -530,7 +545,9 @@ def inspect_candidate(
         for name in ("execution_receipt.json", "execution_envelope.json", "execution_failure.json")
     ):
         raise ValueError("inspection cannot append to a sealed experiment workspace")
-    registration = StrategyRegistry(context.research_registry_root).get_candidate(request.candidate)
+    registration = StrategyRegistry(context.research_registry_root).get_candidate(
+        request.candidate, experiments_root=context.experiments_root
+    )
     candidate = load_candidate(context, request.candidate)
     selection = read_decision(context.strategy_root, request.selection)
     if (
@@ -811,7 +828,7 @@ def freeze_candidate(
     _delivery(context, selection.subject.delivery)
     load_candidate(context, report.plan.origin.candidate)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        report.plan.origin.candidate
+        report.plan.origin.candidate, experiments_root=context.experiments_root
     )
     for name, expected in registration.dependencies:
         if metadata.version(name) != expected:
@@ -846,7 +863,9 @@ def freeze_candidate(
     manifest["package_hash"] = canonical_sha256(manifest)
     (stage / "release_manifest.json").write_bytes(_bytes(manifest))
     return registry.freeze_version(
-        FreezeVersionRequest(request, stage, context.research_registry_root)
+        FreezeVersionRequest(
+            request, stage, context.research_registry_root, context.experiments_root
+        )
     )
 
 

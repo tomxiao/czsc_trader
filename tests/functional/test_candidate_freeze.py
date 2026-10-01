@@ -38,11 +38,13 @@ def file_ref(root, path):
 def inspection(completed):
     context, old_execution, request, result, experiment = completed
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        CandidateKey("S900", "C001")
+        CandidateKey("S900", "C001"), experiments_root=context.experiments_root
     )
     definition, content = prepare(completed)
     assemble_delivery(context, Deliverable(definition, content))
-    delivery_path = context.research_root / "S900/deliveries/ASSESSMENT/1/receipt.json"
+    delivery_path = (
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/receipt.json"
+    )
     source = context.root / ".tmp/user-confirmation.json"
     source.write_text('{"message":"synthetic user approval"}')
     selection = record_research_decision(
@@ -345,13 +347,18 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspection):
         ("是否批准该计划冻结",),
     )
     definition = d.DeliveryDefinition(
-        "S900", d.DeliveryStage.INSPECTION, 1, predecessors=(assessment,)
+        d.ExperimentOwner("S900", "20261001_S900_EX01"),
+        d.DeliveryStage.INSPECTION,
+        1,
+        predecessors=(assessment,),
     )
     value = content(payload, attachments=tuple(attachments.values()))
     receipt = assemble_delivery(context, Deliverable(definition, value))
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert assemble_delivery(context, Deliverable(definition, value)) == receipt
-    published = context.research_root / "S900/deliveries/INSPECTION/1/report.md"
+    published = (
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/INSPECTION/1/report.md"
+    )
     assert "技术检验：PASS" in published.read_text(encoding="utf-8")
     assert "尚未请求" in published.read_text(encoding="utf-8")
     assert "选择合成候选" in published.read_text(encoding="utf-8")
@@ -589,7 +596,7 @@ def test_inspection_in_fresh_process_uses_archived_reference(inspection):
         ref,
         experiment=replace(
             ref.experiment,
-            workspace_path=f"research/S900/deliveries/ASSESSMENT/1/experiments/{ref.experiment.experiment_id}",
+            workspace_path=f"experiments/S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/experiments/{ref.experiment.experiment_id}",
         ),
     )
     # Transfer only fresh reproduction inputs and public references. No old

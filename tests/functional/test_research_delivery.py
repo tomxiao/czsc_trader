@@ -42,7 +42,9 @@ class Deliverable(d.ResearchDeliverable):
 def context(tmp_path):
     (tmp_path / "src/czsc_trader").mkdir(parents=True)
     (tmp_path / "pyproject.toml").write_text("")
-    return RepositoryContext.discover(tmp_path)
+    result = RepositoryContext.discover(tmp_path)
+    owner_experiment(result)
+    return result
 
 
 def content(payload=None, **kwargs):
@@ -57,7 +59,14 @@ def content(payload=None, **kwargs):
 
 
 def definition(stage=d.DeliveryStage.COMPONENTS, **kwargs):
-    return d.DeliveryDefinition("S900", stage, 1, **kwargs)
+    return d.DeliveryDefinition(
+        d.MandateOwner("S900")
+        if stage is d.DeliveryStage.MANDATE
+        else d.ExperimentOwner("S900", "20261001_S900_EX01"),
+        stage,
+        1,
+        **kwargs,
+    )
 
 
 def attachment(context, name="source.json", value=None):
@@ -75,8 +84,9 @@ def attachment(context, name="source.json", value=None):
 
 
 def published(context, receipt):
-    r = receipt.reference
-    return context.root / f"research/{r.strategy_id}/deliveries/{r.stage.value}/{r.revision}"
+    from czsc_trader.application.delivery_service import _delivery_path
+
+    return _delivery_path(context, receipt.reference)
 
 
 def experiment(context, *, records=(), number=1, predecessors=None):
@@ -417,12 +427,12 @@ def test_evidence_rejects_unsafe_paths(path):
 @pytest.mark.parametrize("revision", [True, "1", 0, -1])
 def test_revision_strict_types(revision):
     with pytest.raises((ValueError, TypeError)):
-        d.DeliveryDefinition("S900", d.DeliveryStage.MANDATE, revision)
+        d.DeliveryDefinition(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, revision)
 
 
 def test_contract_rejects_missing_values_strings_and_unknown_fields():
     with pytest.raises(TypeError):
-        d.DeliveryDefinition("S900", "MANDATE", 1)
+        d.DeliveryDefinition(d.ExperimentOwner("S900", "20261001_S900_EX01"), "MANDATE", 1)
     with pytest.raises(ValueError, match="confirmation"):
         d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED)
     with pytest.raises(ValueError, match="null"):
@@ -467,7 +477,7 @@ def test_publish_interruption_and_existing_revision_validation(context, monkeypa
     monkeypatch.setattr(Path, "rename", interrupt)
     with pytest.raises(d.DeliveryValidationError, match="interruption"):
         assemble_delivery(context, Deliverable(definition(), content()))
-    destination = context.root / "research/S900/deliveries/COMPONENTS/1"
+    destination = context.root / "experiments/S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
     assert not destination.exists()
     monkeypatch.setattr(Path, "rename", original)
     receipt = assemble_delivery(context, Deliverable(definition(), content()))
@@ -497,8 +507,15 @@ def test_actual_rex_executor_receipt_can_be_published(context):
         use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     defined = d.DeliveryDefinition(
-        loaded.definition.strategy_id, d.DeliveryStage.COMPONENTS, 1, experiments=(ref,)
+        d.ExperimentOwner(loaded.definition.strategy_id, loaded.definition.experiment_id),
+        d.DeliveryStage.COMPONENTS,
+        1,
+        experiments=(ref,),
     )
+    owner_root = (
+        context.experiments_root / loaded.definition.strategy_id / loaded.definition.experiment_id
+    )
+    shutil.copytree(loaded.root, owner_root)
     receipt = assemble_delivery(context, Deliverable(defined, content()))
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
@@ -579,3 +596,23 @@ def test_catalog_fingerprints_are_canonical_and_finite(cls, filename):
     assert replace(value, version=value.version + 1).definition_sha256 != value.definition_sha256
     with pytest.raises(CatalogValidationError):
         replace(value, parameters={"invalid": float("inf")}).definition_sha256
+
+
+def owner_experiment(context, number=1):
+    from test_research_experiment import _write_v3_experiment
+    from research_experiment import experiment_source_sha256
+
+    root = context.experiments_root / "S900" / f"20261001_S900_EX{number:02}"
+    _write_v3_experiment(root)
+    source = root / "experiment.py"
+    source.write_text(
+        source.read_text(encoding="utf-8")
+        .replace("20260925_S009_EX99", root.name)
+        .replace("S009", "S900"),
+        encoding="utf-8",
+    )
+    path = root / "experiment_binding.json"
+    binding = json.loads(path.read_text())
+    binding["source_sha256"] = experiment_source_sha256(root, ("experiment.py",))
+    path.write_text(json.dumps(binding))
+    return root

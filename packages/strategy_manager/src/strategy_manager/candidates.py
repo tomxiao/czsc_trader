@@ -174,11 +174,11 @@ class CandidateRegistration(_Record):
     dependencies: tuple[tuple[str, str], ...]
     origin: CandidateRegistrationOrigin
     derivation: CandidateDerivation | None = None
-    schema_version: int = 1
+    schema_version: int = 2
     identity_schema_version: int = 1
 
     def __post_init__(self):
-        if type(self.schema_version) is not int or self.schema_version != 1:
+        if type(self.schema_version) is not int or self.schema_version not in (1, 2):
             raise ValidationError("unsupported candidate registration schema")
         if type(self.identity_schema_version) is not int or self.identity_schema_version != 1:
             raise ValidationError("unsupported candidate content identity schema")
@@ -206,7 +206,9 @@ class CandidateRegistration(_Record):
         ) or len({item[0] for item in dependencies}) != len(dependencies):
             raise ValidationError("dependencies must contain unique name/version pairs")
         for name, version in dependencies:
-            if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or not re.fullmatch(r"[0-9][A-Za-z0-9.+!-]*", version):
+            if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or not re.fullmatch(
+                r"[0-9][A-Za-z0-9.+!-]*", version
+            ):
                 raise ValidationError("dependencies require normalized names and exact versions")
         if (
             canonical_sha256(
@@ -273,3 +275,17 @@ def validate_registration_files(record: CandidateRegistration, root: Path) -> No
         or descriptor.get("source_sha256") != record.source_sha256
     ):
         raise ValidationError("registered source closure hash differs")
+
+
+def _registration_evidence_root(record, registry_root: Path, experiments_root: Path) -> Path:
+    if not isinstance(experiments_root, Path):
+        raise TypeError("experiments_root requires Path")
+    if record.schema_version == 1:
+        return registry_root
+    root = experiments_root / record.key.strategy_id / record.origin.experiment_id
+    for path in (root, root.parent, experiments_root):
+        if path.is_symlink() or path.is_junction():
+            raise ValidationError("candidate experiment root contains a link")
+    if not root.is_dir() or not root.resolve().is_relative_to(experiments_root.resolve()):
+        raise ValidationError("candidate experiment is missing or escapes experiments root")
+    return root

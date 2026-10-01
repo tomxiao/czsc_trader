@@ -211,14 +211,23 @@ def prepare(completed):
             ),
         )
     )
-    mandate = replace(mandate, items=(*mandate.items,
-        d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "显式基准",
-            d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation.reference),
-            d.BenchmarkRequirement(request.benchmark))))
+    mandate = replace(
+        mandate,
+        items=(
+            *mandate.items,
+            d.MandateItem(
+                "benchmark",
+                d.MandateItemKind.BENCHMARK,
+                "显式基准",
+                d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation.reference),
+                d.BenchmarkRequirement(request.benchmark),
+            ),
+        ),
+    )
     mandate_receipt = assemble_delivery(
         context,
         Deliverable(
-            d.DeliveryDefinition("S900", d.DeliveryStage.MANDATE, 1),
+            d.DeliveryDefinition(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, 1),
             content(mandate, attachments=(confirmation,)),
         ),
     )
@@ -238,7 +247,12 @@ def prepare(completed):
     candidate_receipt = assemble_delivery(
         context,
         Deliverable(
-            d.DeliveryDefinition("S900", d.DeliveryStage.CANDIDATES, 1, experiments=(exp,)),
+            d.DeliveryDefinition(
+                d.ExperimentOwner("S900", "20261001_S900_EX01"),
+                d.DeliveryStage.CANDIDATES,
+                1,
+                experiments=(exp,),
+            ),
             content(candidates),
         ),
     )
@@ -261,7 +275,7 @@ def prepare(completed):
         ("是否补做压力与参数扰动实验",),
     )
     definition = d.DeliveryDefinition(
-        "S900",
+        d.ExperimentOwner("S900", "20261001_S900_EX01"),
         d.DeliveryStage.ASSESSMENT,
         1,
         predecessors=(candidate_receipt.reference, mandate_receipt.reference),
@@ -446,7 +460,7 @@ def test_frequency_targets_require_the_confirmed_window(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     payload = value.payload
-    source = context.root / "research/S900/deliveries/MANDATE/1/delivery.json"
+    source = context.root / "research/S900/mandates/1/delivery.json"
     original = d.DeliveryContent.from_dict(
         json.loads(source.read_text(encoding="utf-8"))["content"]
     )
@@ -482,7 +496,10 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         context,
         Deliverable(
             d.DeliveryDefinition(
-                "S900", d.DeliveryStage.MANDATE, 2, predecessors=(payload.source_mandate,)
+                d.MandateOwner("S900"),
+                d.DeliveryStage.MANDATE,
+                2,
+                predecessors=(payload.source_mandate,),
             ),
             replace(original, payload=mandate),
         ),
@@ -527,21 +544,25 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
 ):
     context, _, _, _, _ = completed
     prepare(completed)
-    root = context.research_root / "S900/deliveries/CANDIDATES/1"
+    root = context.experiments_root / "S900/20261001_S900_EX01/deliveries/CANDIDATES/1"
     document = json.loads((root / "delivery.json").read_text(encoding="utf-8"))
     definition = d.DeliveryDefinition.from_dict(document["definition"])
     value = d.DeliveryContent.from_dict(document["content"])
     receipt = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text()))
     registry = StrategyRegistry(context.research_registry_root)
-    registration = registry.get_candidate(CandidateKey("S900", "C001"))
+    registration = registry.get_candidate(
+        CandidateKey("S900", "C001"), experiments_root=context.experiments_root
+    )
     if damage == "missing":
         path = context.research_registry_root / "S900/candidates/C001.json"
         path.rename(path.with_suffix(".removed"))
     elif damage == "content":
-        path = registration.payload.resolve(context.research_registry_root)
+        path = registration.payload.resolve(context.experiments_root / "S900/20261001_S900_EX01")
         path.write_text("{}")
     else:
-        path = registration.source_files[0].resolve(context.research_registry_root)
+        path = registration.source_files[0].resolve(
+            context.experiments_root / "S900/20261001_S900_EX01"
+        )
         path.write_bytes(path.read_bytes() + b"\n# changed\n")
     with pytest.raises(d.DeliveryValidationError) as error:
         assemble_delivery(context, Deliverable(replace(definition, revision=2), value))

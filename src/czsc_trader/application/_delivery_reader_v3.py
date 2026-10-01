@@ -16,8 +16,7 @@ from strategy_evaluator import (
 )
 
 from .context import RepositoryContext
-from ..research_tools import delivery as d
-from ..temp_workspace import create_temporary_directory
+from ..research_tools import _delivery_v3 as d
 
 
 def _fail(code: str, path: str, message: str):
@@ -41,39 +40,10 @@ def _resolve(root: Path, relative: str) -> Path:
 
 
 def _delivery_path(context: RepositoryContext, reference) -> Path:
-    if isinstance(reference, d.LegacyDeliveryReference):
-        return _resolve(
-            context.root,
-            f"research/{reference.strategy_id}/deliveries/{reference.stage.value}/{reference.revision}",
-        )
-    if isinstance(reference.owner, d.MandateOwner):
-        return _resolve(
-            context.root, f"research/{reference.strategy_id}/mandates/{reference.revision}"
-        )
     return _resolve(
         context.root,
-        f"experiments/{reference.strategy_id}/{reference.owner.experiment_id}/deliveries/{reference.stage.value}/{reference.revision}",
+        f"research/{reference.strategy_id}/deliveries/{reference.stage.value}/{reference.revision}",
     )
-
-
-def _validate_owner(context, definition, *, publishing=False):
-    if isinstance(definition.owner, d.MandateOwner):
-        return
-    from research_experiment import ExperimentBinding, experiment_source_sha256
-    from ..experiment_archive import validate_experiment_archive
-
-    owner = definition.owner
-    root = _resolve(context.root, f"experiments/{owner.strategy_id}/{owner.experiment_id}")
-    binding = ExperimentBinding.from_mapping(_read_json(_resolve(root, "experiment_binding.json")))
-    for name in binding.source_files:
-        _resolve(root, name)
-    if experiment_source_sha256(root, binding.source_files) != binding.source_sha256:
-        _fail("OWNER_BINDING", "owner", "experiment source differs from binding")
-    if (root / "experiment_manifest.json").exists():
-        if publishing:
-            _fail("EXPERIMENT_SEALED", "owner", "cannot publish into a sealed experiment")
-        validate_experiment_archive(root)
-    return root
 
 
 def _read_json(path: Path):
@@ -350,11 +320,11 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document["schema_version"] not in (3, 4):
+        if document["schema_version"] != 3:
             _fail(
                 "ASSESSMENT_SOURCE",
                 ref.stage.value,
-                "assessment requires schema 3 or 4 mandate and candidate handoffs",
+                "v3 assessment requires v3 mandate and candidate handoffs",
             )
         return d.DeliveryContent.from_dict(document["content"]).payload
 
@@ -424,24 +394,16 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
                 "frequency window requires a confirmed exact session count",
             )
     benchmark_item = declarations.get(payload.benchmark_mandate_item_id)
-    if (
-        benchmark_item is None
+    if (benchmark_item is None
         or benchmark_item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
-        or not isinstance(benchmark_item.requirement, d.BenchmarkRequirement)
-    ):
+        or not isinstance(benchmark_item.requirement, d.BenchmarkRequirement)):
         _fail("BENCHMARK_BINDING", "benchmark", "benchmark requires a confirmed typed mandate")
     benchmark = benchmark_item.requirement.benchmark
     for evidence in payload.assessment_request.evidence:
-        if (
-            evidence.scenario_context.benchmark_contract_sha256 != benchmark.fingerprint
+        if (evidence.scenario_context.benchmark_contract_sha256 != benchmark.fingerprint
             or evidence.scenario_context.benchmark_id != benchmark.benchmark_id
-            or evidence.scenario_context.benchmark_kind != benchmark.kind
-        ):
-            _fail(
-                "BENCHMARK_BINDING",
-                evidence.evaluation_id,
-                "benchmark differs from confirmed mandate",
-            )
+            or evidence.scenario_context.benchmark_kind != benchmark.kind):
+            _fail("BENCHMARK_BINDING", evidence.evaluation_id, "benchmark differs from confirmed mandate")
     saved = {}
     attempts = {}
     for experiment_id, (root, _, _, records) in experiments.items():
@@ -526,7 +488,6 @@ def _report(definition, content, root) -> bytes:
         f"# {definition.strategy_id} · {definition.stage.value} · {definition.revision}",
         "",
         f"研究员声明状态：{content.status.value}",
-        f"归属：{safe(definition.owner.experiment_id) if isinstance(definition.owner, d.ExperimentOwner) else '研究任务治理'}",
         "",
         "技术校验验证结构、身份与证据引用；阶段推进和研究结论由研究员与用户决定。",
         "",
@@ -901,16 +862,15 @@ def _manifest(root: Path) -> tuple[d.EvidenceRef, ...]:
 def _read_delivery(context, reference, root, visited):
     document = _read_json(_resolve(root, "delivery.json"))
     version = document.get("schema_version") if type(document) is dict else None
-    if type(version) is not int or version not in (1, 2, 3, 4):
+    if type(version) is not int or version not in (1, 2, 3):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
-    if isinstance(reference, d.LegacyDeliveryReference):
-        if version == 4:
-            _fail("DELIVERY_SCHEMA", "reference", "legacy reference cannot address schema 4")
-        from . import _delivery_reader_v3 as legacy
+    if version in (1, 2):
+        if version == 1:
+            from . import _delivery_reader_v1 as legacy
+        else:
+            from . import _delivery_reader_v2 as legacy
 
-        value = reference.to_dict()
-        value["type"] = "DeliveryReference"
-        old_reference = legacy.d.DeliveryReference.from_dict(value)
+        old_reference = legacy.d.DeliveryReference.from_dict(reference.to_dict())
         try:
             receipt = legacy._read_delivery(context, old_reference, root, visited)
         except legacy.d.DeliveryValidationError as exc:
@@ -918,13 +878,13 @@ def _read_delivery(context, reference, root, visited):
                 tuple(d.DeliveryIssue.from_dict(x.to_dict()) for x in exc.issues)
             ) from exc
         return d.DeliveryReceipt.from_dict(receipt.to_dict())
-    identity = (reference.owner, reference.stage, reference.revision)
+    identity = (reference.strategy_id, reference.stage, reference.revision)
     if identity in visited:
         _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
     visited = visited | {identity}
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if (
-        receipt.schema_version != 4
+        receipt.schema_version != 3
         or receipt.reference != reference
         or d._digest(receipt.files) != reference.content_sha256
     ):
@@ -936,14 +896,13 @@ def _read_delivery(context, reference, root, visited):
     if (
         set(document) != {"schema_version", "definition", "content"}
         or type(document["schema_version"]) is not int
-        or document["schema_version"] != 4
+        or document["schema_version"] != 3
     ):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     definition = d.DeliveryDefinition.from_dict(document["definition"])
     content = d.DeliveryContent.from_dict(document["content"])
-    if (definition.owner, definition.stage, definition.revision) != identity:
+    if (definition.strategy_id, definition.stage, definition.revision) != identity:
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
-    _validate_owner(context, definition)
     experiments = _load_experiments(definition, root, published=True)
     _validate_content(definition, content, root, experiments, context)
     if _resolve(root, "report.md").read_bytes() != _report(definition, content, root):
@@ -954,12 +913,10 @@ def _read_delivery(context, reference, root, visited):
 
 
 def validate_delivery(
-    context: RepositoryContext, reference: d.DeliveryReference | d.LegacyDeliveryReference
+    context: RepositoryContext, reference: d.DeliveryReference
 ) -> d.DeliveryValidation:
     """Read-only verification; never executes research code or reproduction commands."""
-    if not isinstance(context, RepositoryContext) or not isinstance(
-        reference, (d.DeliveryReference, d.LegacyDeliveryReference)
-    ):
+    if not isinstance(context, RepositoryContext) or not isinstance(reference, d.DeliveryReference):
         raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
     try:
         _read_delivery(context, reference, _delivery_path(context, reference), set())
@@ -970,134 +927,3 @@ def validate_delivery(
         return d.DeliveryValidation(
             d.ValidationStatus.FAIL, (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),)
         )
-
-
-def assemble_delivery(
-    context: RepositoryContext, deliverable: d.ResearchDeliverable
-) -> d.DeliveryReceipt:
-    """Build once, verify, then publish one immutable revision with an atomic rename."""
-    if not isinstance(context, RepositoryContext) or not isinstance(
-        deliverable, d.ResearchDeliverable
-    ):
-        raise TypeError("assemble_delivery requires RepositoryContext and ResearchDeliverable")
-    try:
-        definition = deliverable.definition
-        content = deliverable.build()
-        if type(definition) is not d.DeliveryDefinition or type(content) is not d.DeliveryContent:
-            _fail(
-                "DELIVERY_TYPE", "deliverable", "build/definition must return typed delivery values"
-            )
-        # Round-trip also catches externally mutated frozen objects and noncanonical values.
-        definition = d.DeliveryDefinition.from_dict(definition.to_dict())
-        content = d.DeliveryContent.from_dict(content.to_dict())
-        destination = _delivery_path(context, definition)
-        if destination.exists():
-            existing = _read_json(_resolve(destination, "delivery.json"))
-            expected = {
-                "schema_version": 4,
-                "definition": definition.to_dict(),
-                "content": content.to_dict(),
-            }
-            if existing != expected:
-                raise d.DeliveryConflictError(
-                    "delivery revision already contains different content"
-                )
-            receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-            return _read_delivery(context, receipt.reference, destination, set())
-        owner_root = _validate_owner(context, definition, publishing=True)
-        if owner_root is not None:
-            from research_experiment import load_experiment
-
-            loaded = load_experiment(owner_root)
-            if loaded.definition.schema_version != 2:
-                _fail(
-                    "OWNER_BINDING", "owner", "new deliveries require a typed experiment definition"
-                )
-        for predecessor in definition.predecessors:
-            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
-        experiments = _load_experiments(definition, context.root, published=False)
-        if isinstance(content.payload, d.CandidateSet):
-            from strategy_manager import StrategyRegistry, StrategyManagerError
-            from strategy_runtime.errors import StrategyRuntimeError
-            from .candidate_service import load_candidate
-
-            identities = {x.identity.key: x.identity for x in content.payload.candidates}
-            for key in content.payload.handoff:
-                try:
-                    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-                        key, experiments_root=context.experiments_root
-                    )
-                    if registration.content_sha256 != identities[key].content_sha256:
-                        raise ValueError("registered candidate content differs from handoff")
-                    load_candidate(context, key)
-                except (
-                    OSError,
-                    ValueError,
-                    TypeError,
-                    KeyError,
-                    StrategyManagerError,
-                    StrategyRuntimeError,
-                ) as exc:
-                    _fail("HANDOFF_REGISTRATION", key.candidate_id, str(exc))
-        _resolve(context.root, ".tmp/delivery")
-        staging = create_temporary_directory(context.root, "delivery")
-
-        def copy(source, relative, expected):
-            target = _resolve(staging, relative)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            data = source.read_bytes()
-            if sha256(data).hexdigest() != expected:
-                _fail("EVIDENCE_HASH", relative, "source changed or hash differs")
-            with target.open("xb") as output:
-                output.write(data)
-
-        for attachment in content.attachments:
-            copy(
-                _resolve(context.root, attachment.source_path),
-                attachment.reference.path,
-                attachment.reference.sha256,
-            )
-        for experiment_id, (source, result, _, _) in experiments.items():
-            prefix = f"experiments/{experiment_id}"
-            for name in ("execution_envelope.json", "execution_receipt.json"):
-                path = _resolve(source, name)
-                copy(path, f"{prefix}/{name}", sha256(path.read_bytes()).hexdigest())
-            for artifact in result.artifacts:
-                copy(_resolve(source, artifact.path), f"{prefix}/{artifact.path}", artifact.sha256)
-        verified = _load_experiments(definition, staging, published=True)
-        _validate_content(definition, content, staging, verified, context)
-        document = {"schema_version": 4, "definition": definition, "content": content}
-        (staging / "delivery.json").write_bytes(d._canonical(document))
-        (staging / "report.md").write_bytes(_report(definition, content, staging))
-        files = _manifest(staging)
-        reference = d.DeliveryReference(
-            definition.owner, definition.stage, definition.revision, d._digest(files)
-        )
-        receipt = d.DeliveryReceipt(reference, files)
-        (staging / "receipt.json").write_bytes(d._canonical(receipt))
-        _read_delivery(context, reference, staging, set())
-        destination = _delivery_path(context, reference)
-        _validate_owner(context, definition, publishing=True)
-        if destination.exists():
-            return _existing(context, reference, destination)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            staging.rename(destination)
-        except OSError:
-            if destination.exists():
-                return _existing(context, reference, destination)
-            raise
-        return receipt
-    except (d.DeliveryValidationError, d.DeliveryConflictError):
-        raise
-    except (OSError, ValueError, TypeError, KeyError) as exc:
-        raise d.DeliveryValidationError(
-            (d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)
-        ) from exc
-
-
-def _existing(context, reference, destination):
-    receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-    if receipt.reference != reference:
-        raise d.DeliveryConflictError("delivery revision already contains different content")
-    return _read_delivery(context, reference, destination, set())

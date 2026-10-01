@@ -176,19 +176,22 @@ def test_ft_t07_resealed_archive_preserves_and_validates_original_manifest(
     repair = json.loads(repair_path.read_text(encoding="utf-8"))
     repair["corrected_files"][0]["current_record"]["bytes"] += 1
     repair_path.write_text(json.dumps(repair, indent=2) + "\n", encoding="utf-8")
-    build_experiment_manifest(
-        archive,
-        {
-            "schema_version": 2,
-            "experiment_id": "0904_RESEALED",
-            "status": "COMPLETE",
-            "integrity_repair": {
-                "record": repair_path.name,
-                "record_sha256": normalized_text_sha256(repair_path),
-                "supersedes": original_path.name,
-                "supersedes_sha256": normalized_text_sha256(original_path),
+    sealed_bytes = (archive / "experiment_manifest.json").read_bytes()
+    with pytest.raises(ValueError):
+        build_experiment_manifest(
+            archive,
+            {
+                "schema_version": 2,
+                "experiment_id": "0904_RESEALED",
+                "status": "COMPLETE",
+                "integrity_repair": {
+                    "record": repair_path.name,
+                    "record_sha256": normalized_text_sha256(repair_path),
+                    "supersedes": original_path.name,
+                    "supersedes_sha256": normalized_text_sha256(original_path),
+                },
             },
-        },
-    )
+        )
+    assert (archive / "experiment_manifest.json").read_bytes() == sealed_bytes
     with pytest.raises(ValidationError):
         validate_archives(RepositoryContext.discover(functional_repo), archive)

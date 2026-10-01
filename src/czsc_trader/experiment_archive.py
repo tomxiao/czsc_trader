@@ -188,7 +188,14 @@ def build_experiment_manifest(
     serialized = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
     if "outputs/" in serialized or re.search(r"_R\d{2}", serialized):
         raise ValueError("experiment manifest must not reference outputs revisions")
-    (experiment_dir / MANIFEST_NAME).write_text(serialized, encoding="utf-8")
+    path = experiment_dir / MANIFEST_NAME
+    if path.exists():
+        existing = validate_experiment_archive(experiment_dir)
+        if existing != manifest:
+            raise ValueError("sealed experiment manifest cannot be overwritten")
+        return existing
+    with path.open("x", encoding="utf-8") as stream:
+        stream.write(serialized)
     return manifest
 
 

@@ -11,7 +11,12 @@ from time import sleep
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .freeze_contracts import ResearchDecision, DecisionReference, FreezeReceipt, FreezeRequestId
+    from .freeze_contracts import (
+        ResearchDecision,
+        DecisionReference,
+        FreezeReceipt,
+        FreezeRequestId,
+    )
     from .freeze_store import FreezeVersionRequest
 
 from .errors import (
@@ -39,7 +44,13 @@ from .models import (
 )
 from .validation import require_string
 from .write_lock import RegistryWriteLock, registry_write
-from .candidates import CandidateKey, CandidateRegistration, CandidateIdentityConflict, validate_registration_files
+from .candidates import (
+    CandidateKey,
+    CandidateRegistration,
+    CandidateIdentityConflict,
+    validate_registration_files,
+    _registration_evidence_root,
+)
 
 
 def _now() -> str:
@@ -74,33 +85,51 @@ class StrategyRegistry:
     @registry_write
     def record_research_decision(self, decision: ResearchDecision) -> DecisionReference:
         from .freeze_store import record_decision
+
         return record_decision(self, decision)
 
     @registry_write
     def freeze_version(self, request: FreezeVersionRequest) -> FreezeReceipt:
         from .freeze_store import freeze
+
         return freeze(self, request)
 
     def get_freeze_result(self, request_id: FreezeRequestId) -> FreezeReceipt:
         from .freeze_store import query
+
         return query(self, request_id)
 
     @registry_write
-    def register_candidate(self, record: CandidateRegistration) -> CandidateRegistration:
+    def register_candidate(
+        self, record: CandidateRegistration, *, experiments_root: Path
+    ) -> CandidateRegistration:
         if not isinstance(record, CandidateRegistration):
             raise TypeError("register_candidate requires CandidateRegistration")
+        if record.schema_version != 2:
+            raise ValidationError("new candidate registrations require schema 2")
         self.get_family(record.key.strategy_id)
-        validate_registration_files(record, self.root)
-        path = self._strategy_dir(record.key.strategy_id) / "candidates" / f"{record.key.candidate_id}.json"
+        validate_registration_files(
+            record, _registration_evidence_root(record, self.root, experiments_root)
+        )
+        path = (
+            self._strategy_dir(record.key.strategy_id)
+            / "candidates"
+            / f"{record.key.candidate_id}.json"
+        )
         if path.exists():
-            existing = self.get_candidate(record.key)
+            existing = self.get_candidate(record.key, experiments_root=experiments_root)
             if existing.record_sha256 != record.record_sha256:
-                raise CandidateIdentityConflict("candidate key is already bound to different content")
+                raise CandidateIdentityConflict(
+                    "candidate key is already bound to different content"
+                )
             return existing
-        self._atomic_write(path, _canonical_json({"record": record.to_dict(), "record_sha256": record.record_sha256}))
+        self._atomic_write(
+            path,
+            _canonical_json({"record": record.to_dict(), "record_sha256": record.record_sha256}),
+        )
         return record
 
-    def get_candidate(self, key: CandidateKey) -> CandidateRegistration:
+    def get_candidate(self, key: CandidateKey, *, experiments_root: Path) -> CandidateRegistration:
         if not isinstance(key, CandidateKey):
             raise TypeError("get_candidate requires CandidateKey")
         path = self._strategy_dir(key.strategy_id) / "candidates" / f"{key.candidate_id}.json"
@@ -112,7 +141,9 @@ class StrategyRegistry:
         record = CandidateRegistration.from_dict(value["record"])
         if record.key != key or record.record_sha256 != value["record_sha256"]:
             raise RegistryError("candidate registration identity differs")
-        validate_registration_files(record, self.root)
+        validate_registration_files(
+            record, _registration_evidence_root(record, self.root, experiments_root)
+        )
         return record
 
     @property
@@ -324,6 +355,7 @@ class StrategyRegistry:
             raise RegistryError(f"invalid strategy version {strategy_id}-{version}: {exc}") from exc
         if model.schema_version == 4:
             from .freeze_store import require_committed
+
             require_committed(self, model)
         return model
 
@@ -337,7 +369,13 @@ class StrategyRegistry:
             if raw.get("schema_version") == 4:
                 model = StrategyVersion.from_dict(raw)
                 request_id = model.governance.request_id
-                marker = self.root / "freeze_requests" / strategy_id / request_id.value / "committed.json"
+                marker = (
+                    self.root
+                    / "freeze_requests"
+                    / strategy_id
+                    / request_id.value
+                    / "committed.json"
+                )
                 if not marker.exists():
                     continue
             versions.append(self.get_version(strategy_id, path.stem))
@@ -865,6 +903,7 @@ class StrategyRegistry:
             raise EvidenceRequiredError("strategy version is not frozen")
         if release.schema_version == 4:
             from .freeze_store import require_committed
+
             require_committed(self, release)
             return "RESEARCH_FREEZE_VALIDATED"
         if release.schema_version in {1, 2}:

@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 
 from . import freeze_contracts as f
-from .candidates import CandidateEvidence, CandidateRegistration
+from .candidates import CandidateEvidence, CandidateRegistration, _registration_evidence_root
 from .errors import RegistryError, ValidationError
 from .models import StrategyVersion, canonical_sha256
 from .validation import require_exact_fields, require_date, require_string, require_sha256
@@ -198,12 +198,14 @@ class FreezeVersionRequest:
     request: f.FreezeCandidateRequest
     staged_package: Path
     candidate_registry_root: Path
+    experiments_root: Path
 
     def __post_init__(self):
         if (
             type(self.request) is not f.FreezeCandidateRequest
             or not isinstance(self.staged_package, Path)
             or not isinstance(self.candidate_registry_root, Path)
+            or not isinstance(self.experiments_root, Path)
         ):
             raise TypeError("freeze_version requires typed request and paths")
 
@@ -353,14 +355,19 @@ def freeze(registry, request):
     report = validate_approval(registry.root, operation)
     plan = report.plan
     research = StrategyRegistry(request.candidate_registry_root)
-    registration = research.get_candidate(plan.origin.candidate)
+    registration = research.get_candidate(
+        plan.origin.candidate, experiments_root=request.experiments_root
+    )
+    evidence_root = _registration_evidence_root(
+        registration, research.root, request.experiments_root
+    )
     if (
         registration.record_sha256 != plan.origin.registration_sha256
         or registration.content_sha256 != plan.origin.content_sha256
     ):
         raise ValueError("candidate changed since inspection")
     if (
-        registration.payload.resolve(research.root).read_bytes()
+        registration.payload.resolve(evidence_root).read_bytes()
         != plan.payload.resolve(registry.root).read_bytes()
     ):
         raise ValueError("freeze payload differs from registered candidate")

@@ -81,7 +81,7 @@ def test_historical_component_evidence_retains_original_receipt_and_closure(cont
     before = (context.root / ref.workspace_path / "execution_receipt.json").read_bytes()
     receipt = assemble_delivery(context, Deliverable(defined, value))
     root = published(context, receipt)
-    assert receipt.schema_version == 3
+    assert receipt.schema_version == 4
     assert (root / f"experiments/{ref.experiment_id}/execution_receipt.json").read_bytes() == before
     assert "HISTORICAL_REFERENCE" in (root / "report.md").read_text(encoding="utf-8")
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
@@ -126,9 +126,7 @@ def test_mandate_binds_all_same_metric_conditions_exactly(completed):
     source = published(
         context,
         d.DeliveryReceipt.from_dict(
-            json.loads(
-                (context.root / "research/S900/deliveries/MANDATE/1/receipt.json").read_text()
-            )
+            json.loads((context.root / "research/S900/mandates/1/receipt.json").read_text())
         ),
     )
     original = d.DeliveryContent.from_dict(
@@ -146,7 +144,10 @@ def test_mandate_binds_all_same_metric_conditions_exactly(completed):
         context,
         Deliverable(
             d.DeliveryDefinition(
-                "S900", d.DeliveryStage.MANDATE, 2, predecessors=(payload.source_mandate,)
+                d.MandateOwner("S900"),
+                d.DeliveryStage.MANDATE,
+                2,
+                predecessors=(payload.source_mandate,),
             ),
             replace(original, payload=d.ResearchMandate((item, original.payload.items[1]))),
         ),
@@ -189,7 +190,9 @@ def test_v1_public_validation_is_read_only_and_new_writer_refuses_v1(context):
     reference = old.DeliveryReference("S900", old.DeliveryStage.COMPONENTS, 1, old._digest(files))
     (root / "receipt.json").write_bytes(old._canonical(old.DeliveryReceipt(reference, files)))
     before = {p.name: sha256(p.read_bytes()).hexdigest() for p in root.iterdir()}
-    ref = d.DeliveryReference.from_dict(reference.to_dict())
+    ref = d.LegacyDeliveryReference(
+        "S900", d.DeliveryStage(reference.stage), reference.revision, reference.content_sha256
+    )
     assert validate_delivery(context, ref).status is d.ValidationStatus.PASS
     assert {p.name: sha256(p.read_bytes()).hexdigest() for p in root.iterdir()} == before
     successor = assemble_delivery(
@@ -216,11 +219,17 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
     current = assemble_delivery(context, Deliverable(defined, value))
 
     def publish_v1(stage, payload, predecessors=()):
-        source = context.root / f"research/S900/deliveries/{stage.value}/1"
-        destination = source.parent / "10"
+        source = (
+            (context.research_root / "S900/mandates/1")
+            if stage.value == "MANDATE"
+            else (context.experiments_root / f"S900/20261001_S900_EX01/deliveries/{stage.value}/1")
+        )
+        destination = context.research_root / f"S900/deliveries/{stage.value}/10"
         shutil.copytree(source, destination)
         document = json.loads((source / "delivery.json").read_text(encoding="utf-8"))
         spec = document["definition"]
+        spec.pop("owner")
+        spec["strategy_id"] = "S900"
         spec.update(schema_version=1, revision=10, predecessors=[x.to_dict() for x in predecessors])
         for ref in spec["experiments"]:
             del ref["use"]
@@ -247,7 +256,9 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
                 record_path = artifact_path.with_name("record.json")
                 record_path.write_text(json.dumps(record), encoding="utf-8")
             for name in receipt["artifact_sha256"]:
-                receipt["artifact_sha256"][name] = sha256((exp_root / name).read_bytes()).hexdigest()
+                receipt["artifact_sha256"][name] = sha256(
+                    (exp_root / name).read_bytes()
+                ).hexdigest()
             for artifact in envelope["result"]["artifacts"]:
                 artifact["sha256"] = receipt["artifact_sha256"][artifact["path"]]
             receipt["result_sha256"] = canonical_sha256(envelope["result"])
@@ -255,9 +266,11 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
             envelope["receipt_sha256"] = digest
             envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
             (exp_root / "execution_receipt.json").write_text(
-                json.dumps({**receipt, "receipt_sha256": digest}), encoding="utf-8")
+                json.dumps({**receipt, "receipt_sha256": digest}), encoding="utf-8"
+            )
             ref["receipt_sha256"] = digest
         document["content"]["payload"] = payload.to_dict()
+
         def update_refs(value):
             if isinstance(value, dict):
                 for key, item in value.items():
@@ -268,6 +281,7 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
             elif isinstance(value, list):
                 for item in value:
                     update_refs(item)
+
         if spec["experiments"]:
             update_refs(document["content"])
         v1def = old.DeliveryDefinition.from_dict(spec)
@@ -282,9 +296,7 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
         return ref
 
     mandate_doc = json.loads(
-        (context.root / "research/S900/deliveries/MANDATE/1/delivery.json").read_text(
-            encoding="utf-8"
-        )
+        (context.root / "research/S900/mandates/1/delivery.json").read_text(encoding="utf-8")
     )
     mandate_payload = mandate_doc["content"]["payload"]
     mandate_payload["items"] = [x for x in mandate_payload["items"] if x["kind"] != "BENCHMARK"]
@@ -293,9 +305,10 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
     ).to_dict()
     mandate = publish_v1(old.DeliveryStage.MANDATE, old.ResearchMandate.from_dict(mandate_payload))
     candidates_doc = json.loads(
-        (context.root / "research/S900/deliveries/CANDIDATES/1/delivery.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            context.root
+            / "experiments/S900/20261001_S900_EX01/deliveries/CANDIDATES/1/delivery.json"
+        ).read_text(encoding="utf-8")
     )
     candidates = publish_v1(
         old.DeliveryStage.CANDIDATES,
@@ -334,7 +347,9 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
         value.payload.pending_decisions,
     )
     ref = publish_v1(old.DeliveryStage.ASSESSMENT, payload, (candidates, mandate))
-    public_ref = d.DeliveryReference.from_dict(ref.to_dict())
+    public_ref = d.LegacyDeliveryReference(
+        "S900", d.DeliveryStage(ref.stage), ref.revision, ref.content_sha256
+    )
     root = published(
         context,
         d.DeliveryReceipt.from_dict(

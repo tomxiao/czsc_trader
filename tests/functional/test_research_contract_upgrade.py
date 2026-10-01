@@ -459,7 +459,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(
         register_candidate(context, replace(request, candidate=replace(candidate, payload=changed)))
     (candidate_root / "strategies" / "candidate_fixture.py").write_text("invalid original source")
     assert load_candidate(context, record.key).candidate_id == "C001"
-    saved_source = record.source_files[0].resolve(context.research_registry_root)
+    saved_source = record.source_files[0].resolve(experiment_path)
     saved_source.write_text("tampered")
     with pytest.raises(Exception, match="hash differs"):
         load_candidate(context, CandidateKey("S009", "C001"))
