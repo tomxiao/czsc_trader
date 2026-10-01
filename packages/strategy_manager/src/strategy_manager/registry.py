@@ -35,6 +35,7 @@ from .models import (
 )
 from .validation import require_string
 from .write_lock import RegistryWriteLock, registry_write
+from .candidates import CandidateKey, CandidateRegistration, CandidateIdentityConflict, validate_registration_files
 
 
 def _now() -> str:
@@ -65,6 +66,36 @@ class StrategyRegistry:
     def __init__(self, root: Path | str):
         self.root = Path(root)
         self._write_lock = RegistryWriteLock(self.root)
+
+    @registry_write
+    def register_candidate(self, record: CandidateRegistration) -> CandidateRegistration:
+        if not isinstance(record, CandidateRegistration):
+            raise TypeError("register_candidate requires CandidateRegistration")
+        self.get_family(record.key.strategy_id)
+        validate_registration_files(record, self.root)
+        path = self._strategy_dir(record.key.strategy_id) / "candidates" / f"{record.key.candidate_id}.json"
+        if path.exists():
+            existing = self.get_candidate(record.key)
+            if existing.record_sha256 != record.record_sha256:
+                raise CandidateIdentityConflict("candidate key is already bound to different content")
+            return existing
+        self._atomic_write(path, _canonical_json({"record": record.to_dict(), "record_sha256": record.record_sha256}))
+        return record
+
+    def get_candidate(self, key: CandidateKey) -> CandidateRegistration:
+        if not isinstance(key, CandidateKey):
+            raise TypeError("get_candidate requires CandidateKey")
+        path = self._strategy_dir(key.strategy_id) / "candidates" / f"{key.candidate_id}.json"
+        if not path.resolve().is_relative_to(self.root.resolve()):
+            raise RegistryError("candidate record escapes registry")
+        value = self._read_json(path)
+        if set(value) != {"record", "record_sha256"}:
+            raise RegistryError("invalid candidate registration envelope")
+        record = CandidateRegistration.from_dict(value["record"])
+        if record.key != key or record.record_sha256 != value["record_sha256"]:
+            raise RegistryError("candidate registration identity differs")
+        validate_registration_files(record, self.root)
+        return record
 
     @property
     def registry_path(self) -> Path:

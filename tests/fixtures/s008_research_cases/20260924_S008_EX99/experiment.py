@@ -10,7 +10,7 @@ from dataflows import DataRequest
 from research_experiment import (
     ExperimentCapabilities,
     ExperimentCapability,
-    ExperimentDefinition,
+    ExperimentDefinition, ExperimentDataScope,
     ExperimentDependency,
     ExperimentMode,
     ExperimentOutcome,
@@ -27,10 +27,11 @@ class Experiment(ResearchExperiment):
     @property
     def definition(self) -> ExperimentDefinition:
         return ExperimentDefinition(
-            schema_version=1,
+            schema_version=2,
             experiment_id="20260924_S008_EX99",
             strategy_id="S008",
             mode=ExperimentMode.DISCOVERY,
+            data_scope=ExperimentDataScope.DEVELOPMENT,
             research_question="Can a small synthetic price sample exercise the anchor contract?",
             hypothesis="The declared sample is readable and produces one deterministic summary.",
             falsification_conditions=("DFLS does not return the declared sample",),

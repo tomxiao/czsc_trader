@@ -8,6 +8,8 @@ from datetime import date
 from hashlib import sha256
 from math import isfinite
 from pathlib import Path
+import platform
+from importlib import metadata
 import re
 from typing import Any, Mapping
 
@@ -15,7 +17,9 @@ import numpy as np
 import pandas as pd
 from dataflows import Dataflows
 from strategy_evaluator import EvaluationProtocol, MetricObservation, MetricStatus
-from strategy_runtime import StrategyCandidate, StrategyRuntime, canonical_sha256
+from strategy_runtime import StrategyCandidate, StrategyRuntime, canonical_sha256, ImplementationDependency
+from strategy_manager import CandidateKey, CandidateDerivation
+from research_experiment import ExperimentArtifact
 from strategy_runtime.implementation_identity import implementation_sha256
 from trading_execution_engine import ExecutionResult
 
@@ -64,12 +68,20 @@ class EvaluationWindow:
     start: date
     end: date
 
+    def __post_init__(self):
+        if type(self.start) is not date or type(self.end) is not date or self.start > self.end:
+            raise ValueError("evaluation window requires ordered date values")
+
 
 @dataclass(frozen=True)
 class EvaluationCost:
     scenario_id: str
     one_way_cost: float
     measurement_tier: str = "FORMAL"
+
+    def __post_init__(self):
+        if isinstance(self.one_way_cost, bool) or not isfinite(self.one_way_cost) or not 0 <= self.one_way_cost < 1:
+            raise ValueError("evaluation cost must be finite and in [0, 1)")
 
 
 @dataclass(frozen=True)
@@ -89,7 +101,7 @@ class EvaluationRequest:
     symbol: str
     asset_type: str
     windows: tuple[EvaluationWindow, ...]
-    development_cutoff: date
+    data_cutoff: date
     initial_cash: float
     costs: tuple[EvaluationCost, ...]
     execution_data: BacktestExecutionData
@@ -97,6 +109,64 @@ class EvaluationRequest:
     workers: int = 1
     frequency_window_days: int = 60
     execution_mode: str = "FULL"
+    lineage: EvaluationLineage | None = None
+    dependencies: tuple[ImplementationDependency, ...] = ()
+
+    def __post_init__(self):
+        if type(self.data_cutoff) is not date:
+            raise TypeError("data_cutoff must be a date")
+        if not isinstance(self.strategy, StrategyCandidate):
+            raise TypeError("strategy must be StrategyCandidate")
+        if not isinstance(self.runtime_binding, Mapping):
+            raise TypeError("runtime_binding must be a mapping")
+        if not isinstance(self.windows, tuple) or not all(isinstance(item, EvaluationWindow) for item in self.windows):
+            raise TypeError("windows must be a tuple of EvaluationWindow")
+        if not isinstance(self.costs, tuple) or not all(isinstance(item, EvaluationCost) for item in self.costs):
+            raise TypeError("costs must be a tuple of EvaluationCost")
+        if type(self.workers) is not int or self.workers < 1:
+            raise ValueError("workers must be a positive integer")
+        if isinstance(self.initial_cash, bool) or not isfinite(self.initial_cash) or self.initial_cash <= 0:
+            raise ValueError("initial_cash must be positive and finite")
+        if not isinstance(self.dependencies, tuple) or not all(isinstance(item, ImplementationDependency) for item in self.dependencies):
+            raise TypeError("dependencies must contain ImplementationDependency")
+        if self.lineage is not None and not isinstance(self.lineage, EvaluationLineage):
+            raise TypeError("lineage must be EvaluationLineage")
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationLineage:
+    derivation: CandidateDerivation
+
+    def __post_init__(self):
+        if not isinstance(self.derivation, CandidateDerivation):
+            raise TypeError("lineage requires CandidateDerivation")
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationIdentity:
+    candidate: CandidateKey
+    content_sha256: str
+    input_sha256: str
+    protocol_sha256: str
+    environment_sha256: str
+
+    def __post_init__(self):
+        if not isinstance(self.candidate, CandidateKey):
+            raise TypeError("evaluation identity requires CandidateKey")
+        for value in (self.content_sha256, self.input_sha256, self.protocol_sha256, self.environment_sha256):
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                raise ValueError("evaluation identities must be lowercase SHA-256")
+
+    def to_dict(self):
+        return {
+            "candidate": self.candidate.to_dict(), "content_sha256": self.content_sha256,
+            "input_sha256": self.input_sha256, "protocol_sha256": self.protocol_sha256,
+            "environment_sha256": self.environment_sha256,
+        }
+
+    @property
+    def evaluation_id(self):
+        return canonical_sha256(self.to_dict())
 
 
 @dataclass(frozen=True)
@@ -110,6 +180,7 @@ class EvaluationRun:
     execution: ExecutionResult
     observation: MetricObservation
     buyhold: BuyHoldReplay | None = None
+    identity: EvaluationIdentity | None = None
 
 
 @dataclass(frozen=True)
@@ -123,6 +194,8 @@ class EvaluationResult:
     data_identity: str = ""
     result_hash: str = ""
     execution_mode: str = "FULL"
+    attempt_id: str | None = None
+    record: ExperimentArtifact | None = None
 
     @property
     def observations(self) -> tuple[MetricObservation, ...]:
@@ -579,7 +652,7 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
     ):
         raise ValueError("strategy source closure differs from the runtime binding")
     binding_hash = canonical_sha256(binding)
-    StrategyRuntime().describe(candidate)
+    identity = StrategyRuntime().identify(candidate, dependencies=request.dependencies)
 
     symbol = request.symbol.upper()
     asset_type = request.asset_type.lower()
@@ -591,7 +664,7 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
     if (data.symbol, data.asset_type, data.cutoff) != (
         symbol,
         asset_type,
-        request.development_cutoff,
+        request.data_cutoff,
     ):
         raise ValueError("execution data identity differs from the evaluation contract")
     if re.fullmatch(r"[0-9a-f]{64}", data.fingerprint) is None:
@@ -614,7 +687,7 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         requested_sessions.empty
         or requested_sessions.has_duplicates
         or not requested_sessions.is_monotonic_increasing
-        or requested_sessions[-1].date() != request.development_cutoff
+        or requested_sessions[-1].date() != request.data_cutoff
         or not requested_sessions.isin(execution_sessions).all()
     ):
         raise ValueError("execution evaluation sessions are incomplete")
@@ -643,7 +716,7 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
         if start > end or start not in sessions or end not in sessions:
             raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
-        if end.date() > request.development_cutoff or not (sessions < start).any():
+        if end.date() > request.data_cutoff or not (sessions < start).any():
             raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
         windows.append(
             {
@@ -689,7 +762,9 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         )
 
     contract = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "content_sha256": identity.content_sha256,
+        "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "experiment_id": request.experiment_id,
         "strategy_reference": candidate.reference_id,
         "strategy_identity": candidate.runtime_identity_sha256,
@@ -697,7 +772,7 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         "symbol": symbol,
         "asset_type": asset_type,
         "windows": windows,
-        "development_cutoff": request.development_cutoff.isoformat(),
+        "data_cutoff": request.data_cutoff.isoformat(),
         "initial_cash": request.initial_cash,
         "costs": costs,
         "data_identity": data.fingerprint,
@@ -721,6 +796,7 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
                 "candidate_id": run.candidate_id,
                 "window_id": run.window_id,
                 "scenario_id": run.scenario_id,
+                "identity": None if run.identity is None else run.identity.to_dict(),
                 "signal_data_identity": run.signals.data_identity,
                 "signals": _frame_hash(run.signals.decisions),
                 "decisions": _frame_hash(run.execution.decisions),
@@ -807,6 +883,44 @@ def evaluate_strategy(
         },
         include_buyhold=True,
     )
+    environment = canonical_sha256({
+        "python": platform.python_version(), "platform": platform.platform(),
+        "numpy": np.__version__, "pandas": pd.__version__,
+        "implementation": implementation_sha256(("models.py", "runtime.py", "identity.py", "loader.py"), source_root=Path(__import__("strategy_runtime").__file__).parent),
+        "evaluator": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "packages": {
+            name: metadata.version(name) for name in (
+                "czsc-dataflows", "czsc-strategy-runtime", "czsc-strategy-evaluator",
+                "czsc-trading-execution-engine", "threadpoolctl",
+            )
+        },
+        "txe_source": {
+            path.relative_to(Path(__import__("trading_execution_engine").__file__).parent).as_posix(): sha256(path.read_bytes()).hexdigest()
+            for path in sorted(Path(__import__("trading_execution_engine").__file__).parent.rglob("*.py"))
+        },
+    })
+    windows_by_id = {item.window_id: item for item in request.windows}
+    costs_by_id = {item.scenario_id: item for item in request.costs}
+    identified = []
+    for run in runs:
+        window = windows_by_id[run.window_id]
+        cost = costs_by_id[run.scenario_id]
+        protocol_hash = canonical_sha256({
+            "window_id": run.window_id, "scenario_id": run.scenario_id,
+            "start": window.start.isoformat(), "end": window.end.isoformat(),
+            "initial_cash": request.initial_cash, "cost": cost.one_way_cost,
+            "tier": cost.measurement_tier, "benchmark": request.benchmark.benchmark_id,
+            "frequency_window_days": request.frequency_window_days,
+            "metric_version": METRIC_SEMANTICS_VERSION, "execution_mode": request.execution_mode,
+        })
+        identity = EvaluationIdentity(
+            CandidateKey(request.strategy.strategy_family_id, request.strategy.candidate_id),
+            contract["content_sha256"],
+            canonical_sha256({"execution": request.execution_data.fingerprint, "signal": run.signals.data_identity}),
+            protocol_hash, environment,
+        )
+        identified.append(replace(run, identity=identity))
+    runs = tuple(identified)
     result_hash = _evaluation_result_hash(request_hash, runs)
     return EvaluationResult(
         runs=runs,

@@ -1,6 +1,9 @@
 """Research Experiment (REX) public contracts."""
 
 from .contracts import (
+    ExperimentDataScope,
+    EvaluationRecord,
+    EvaluationAttemptStatus,
     ExperimentPrecheckResult,
     ExperimentArtifact,
     ExperimentCapabilities,
@@ -38,6 +41,9 @@ from .evidence import load_experiment_input
 __version__ = "0.1.0"
 
 __all__ = [
+    "ExperimentDataScope",
+    "EvaluationRecord",
+    "EvaluationAttemptStatus",
     "ExperimentPrecheckResult",
     "ExperimentArtifact",
     "ExperimentBinding",

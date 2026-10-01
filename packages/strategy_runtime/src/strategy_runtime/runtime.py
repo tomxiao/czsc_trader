@@ -9,7 +9,8 @@ from dataflows import Dataflows
 
 from .contracts import StrategyIdentity, TradableWindow
 from .loader import StrategyLoader
-from .models import ExecutionPolicy, StrategyCandidate, StrategyRelease
+from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, StrategyRelease
+from .identity import CandidateContentIdentity, ImplementationDependency, content_identity
 from .strategy import StrategyInstance
 
 
@@ -33,7 +34,10 @@ class StrategyRuntime:
     """Create strategy instances; all running behavior belongs to the instance."""
 
     def __init__(
-        self, strategy_root: Path | None = None, *, dataflows: Dataflows | None = None,
+        self,
+        strategy_root: Path | None = None,
+        *,
+        dataflows: Dataflows | None = None,
     ) -> None:
         self._loader = StrategyLoader(strategy_root)
         self._dataflows = dataflows
@@ -71,10 +75,36 @@ class StrategyRuntime:
         symbol: str | None = None,
         source_root: Path | None = None,
         runtime_binding: Mapping[str, object] | None = None,
-    ):
+    ) -> RuntimeDefinition:
         """Return the validated frozen definition without creating an instance."""
 
         return self._load(source, symbol, source_root, runtime_binding).definition
+
+    def identify(
+        self,
+        candidate: StrategyCandidate,
+        *,
+        dependencies: tuple[ImplementationDependency, ...],
+    ) -> CandidateContentIdentity:
+        """Validate the implementation and return its effective content identity."""
+        if not isinstance(candidate, StrategyCandidate):
+            raise TypeError("identify requires a StrategyCandidate")
+        if candidate.source_root is None:
+            raise ValueError("candidate identity requires a source root")
+        for name in candidate.payload["runtime"]["source_files"]:
+            if not (candidate.source_root / name).resolve().is_relative_to(candidate.source_root):
+                raise ValueError("candidate source escapes source root")
+        definition = self.describe(candidate)
+        return content_identity(
+            definition,
+            tuple(candidate.payload["runtime"]["source_files"]),
+            dependencies,
+            {
+                key: value
+                for key, value in candidate.payload.items()
+                if key not in {"runtime", "parameters"}
+            },
+        )
 
     def create(self, request: StrategyInit) -> StrategyInstance:
         algorithm = self._load(

@@ -17,7 +17,7 @@ from research_experiment import (
     ExperimentPreflightStatus,
     ExperimentCapabilities,
     ExperimentCapability,
-    ExperimentDefinition,
+    ExperimentDefinition, ExperimentDataScope,
     ExperimentDependency,
     ExperimentInput,
     ExperimentMode,
@@ -60,7 +60,7 @@ def _write_v3_experiment(root: Path, *, explicit_precheck: bool = True) -> Path:
     source.write_text(
         """from datetime import date
 from research_experiment import (
-    ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
+    ExperimentCapabilities, ExperimentDefinition, ExperimentDataScope, ExperimentMode,
     ExperimentOutcome, ExperimentProtocol, ExperimentResult,
     ExperimentStage, ResearchExperiment,
 )
@@ -69,10 +69,11 @@ class Experiment(ResearchExperiment):
     @property
     def definition(self):
         return ExperimentDefinition(
-            schema_version=1,
+            schema_version=2,
             experiment_id='20260925_S009_EX99',
             strategy_id='S009',
             mode=ExperimentMode.DISCOVERY,
+            data_scope=ExperimentDataScope.DEVELOPMENT,
             research_question='Can preflight block technical friction?',
             hypothesis='All static and synthetic checks pass before execution.',
             falsification_conditions=('A preflight check fails',),
@@ -293,10 +294,11 @@ def _definition(
     validation_cutoff: date | None = None,
 ) -> ExperimentDefinition:
     return ExperimentDefinition(
-        schema_version=1,
+        schema_version=2,
         experiment_id="20260924_S008_EX98",
         strategy_id="S008",
         mode=mode,
+        data_scope=ExperimentDataScope.SEALED_VALIDATION if validation_cutoff else ExperimentDataScope.DEVELOPMENT,
         research_question="Does the public experiment boundary reject undeclared behavior?",
         hypothesis="Every sensitive operation is checked before execution.",
         falsification_conditions=("An undeclared operation reaches its provider",),
@@ -367,7 +369,7 @@ def _execute_fixture(tmp_path: Path, workspace_name: str):
         workspace=_workspace(tmp_path, workspace_name),
         resources=ExperimentResources(
             max_workers=4,
-            max_evaluations=8,
+
             random_seed=experiment.definition.random_seed,
         ),
     )
@@ -480,7 +482,7 @@ def test_executor_rechecks_source_after_loading(tmp_path: Path) -> None:
         resources=ExperimentResources(
             max_workers=1,
             random_seed=experiment.definition.random_seed,
-            max_evaluations=1,
+
         ),
     )
     source = target / "experiment.py"
@@ -549,7 +551,7 @@ def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
         workspace=_workspace(tmp_path, "predecessor"),
         resources=ExperimentResources(
             max_workers=1,
-            max_evaluations=1,
+
             random_seed=predecessor.definition.random_seed,
         ),
     )
@@ -646,7 +648,6 @@ def test_data_adapter_blocks_future_data_before_provider(tmp_path: Path) -> None
     ("real_returns", "sealed_validation", "missing"),
     [
         (True, False, "reads_real_returns"),
-        (False, True, "reads_sealed_validation"),
     ],
 )
 def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
@@ -717,21 +718,22 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
         symbol="518880.SH",
         asset_type="etf",
         windows=(EvaluationWindow("full", date(2026, 9, 1), date(2026, 9, 2)),),
-        development_cutoff=definition.development_cutoff,
+        data_cutoff=definition.development_cutoff,
         initial_cash=1_000_000.0,
         costs=(EvaluationCost("main", 0.001),),
         execution_data=object(),
     )
 
     assert context.runtime.describe(candidate) == "runtime-definition"
-    assert context.evaluation.evaluate(request).runs == ()
+    with pytest.raises(ValueError, match="sourced StrategyCandidate"):
+        context.evaluation.evaluate(request)
     assert runtime_calls == ["describe"]
-    assert evaluation_calls == [definition.experiment_id]
+    assert evaluation_calls == []
     assert context.trace.capabilities == (ExperimentCapability.READ_REAL_RETURNS,)
-    assert context.trace.operations == ("runtime.describe", "evaluation.evaluate")
+    assert context.trace.operations == ("runtime.describe",)
 
 
-def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
+def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
     tmp_path: Path,
 ) -> None:
     calls: list[str] = []
@@ -748,7 +750,7 @@ def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
         workspace=_workspace(tmp_path, "resource-budget"),
         resources=ExperimentResources(
             max_workers=1,
-            max_evaluations=1,
+
             random_seed=98,
         ),
         evaluator=evaluator,
@@ -761,7 +763,7 @@ def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
         symbol="518880.SH",
         asset_type="etf",
         windows=(EvaluationWindow("full", date(2026, 9, 1), date(2026, 9, 2)),),
-        development_cutoff=definition.development_cutoff,
+        data_cutoff=definition.development_cutoff,
         initial_cash=1_000_000.0,
         costs=(EvaluationCost("standard", 0.001),),
         execution_data=object(),
@@ -769,10 +771,9 @@ def test_evaluation_adapter_enforces_worker_and_evaluation_budgets(
 
     with pytest.raises(PermissionError, match="workers exceed"):
         context.evaluation.evaluate(replace(request, workers=2))
-    assert context.evaluation.evaluate(request).runs == ()
-    with pytest.raises(PermissionError, match="evaluation count exceeds"):
+    with pytest.raises(ValueError, match="sourced StrategyCandidate"):
         context.evaluation.evaluate(request)
-    assert calls == [definition.experiment_id]
+    assert calls == []
 
 
 class _CandidateExperiment(ResearchExperiment):
@@ -816,7 +817,7 @@ def test_bound_candidate_result_requires_declared_capability(
     source.write_text(
         """from datetime import date
 from research_experiment import (
-    ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
+    ExperimentCapabilities, ExperimentDefinition, ExperimentDataScope, ExperimentMode,
     ExperimentOutcome, ExperimentProtocol, ExperimentResult,
     ExperimentStage, ResearchExperiment,
 )
@@ -826,10 +827,11 @@ class Experiment(ResearchExperiment):
     @property
     def definition(self):
         return ExperimentDefinition(
-            schema_version=1,
+            schema_version=2,
             experiment_id='20260924_S008_EX98',
             strategy_id='S008',
             mode=ExperimentMode.DISCOVERY,
+            data_scope=ExperimentDataScope.DEVELOPMENT,
             research_question='Does candidate creation require a declared capability?',
             hypothesis='The platform rejects undeclared candidate creation.',
             falsification_conditions=('An undeclared candidate is accepted',),

@@ -1,6 +1,7 @@
 """Strategy Runtime (SRT) public contracts."""
 
 from .algorithm import StrategyImplementation
+from .identity import CandidateContentIdentity, ImplementationDependency
 from .alignment import AlignmentRule, AlignedInput, InputAlignment, align_input_history
 from .calculation import (
     CalculationScope,
@@ -66,6 +67,8 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "CandidateContentIdentity",
+    "ImplementationDependency",
     "ExecutionOutcomeStatus",
     "SignalHistoryMode",
     "AlignedInput",

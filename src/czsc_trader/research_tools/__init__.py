@@ -7,11 +7,14 @@ from .evaluation import (
     EvaluationBenchmark,
     EvaluationCost,
     EvaluationRequest,
+    EvaluationIdentity,
+    EvaluationLineage,
     EvaluationResult,
     EvaluationRun,
     EvaluationWindow,
     evaluate_strategy,
 )
+from ._evaluation_records import EvaluationExecutionError
 from .experiment import (
     create_experiment_context,
     create_formal_experiment_context,
@@ -28,6 +31,9 @@ __all__ = [
     "EvaluationBenchmark",
     "EvaluationCost",
     "EvaluationRequest",
+    "EvaluationIdentity",
+    "EvaluationLineage",
+    "EvaluationExecutionError",
     "EvaluationResult",
     "EvaluationRun",
     "EvaluationWindow",

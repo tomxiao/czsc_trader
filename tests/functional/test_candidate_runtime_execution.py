@@ -559,7 +559,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         symbol="588080.SH",
         asset_type="etf",
         windows=(EvaluationWindow("full", sessions[1].date(), sessions[-1].date()),),
-        development_cutoff=sessions[-1].date(),
+        data_cutoff=sessions[-1].date(),
         initial_cash=100_000,
         costs=(EvaluationCost("standard", 0.001),),
         execution_data=execution_data,
@@ -712,7 +712,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
         json.dumps(binding, indent=2) + "\n", encoding="utf-8"
     )
     request = {
-        "schema_version": 1,
+        "schema_version": 2,
         "experiment_id": experiment.name,
         "strategy": {
             "strategy_id": "S900",
@@ -724,7 +724,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
         "market": {
             "symbol": "588080.SH",
             "asset_type": "etf",
-            "development_cutoff": sessions[-1].date().isoformat(),
+            "data_cutoff": sessions[-1].date().isoformat(),
         },
         "windows": [
             {

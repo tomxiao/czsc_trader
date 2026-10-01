@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 from hashlib import sha256
 import json
@@ -13,9 +13,16 @@ import math
 from pathlib import Path, PurePosixPath
 import re
 from types import MappingProxyType
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 
-from strategy_runtime import StrategyCandidate, StrategyInit
+from dataflows import DataRequest, DataResult
+from strategy_runtime import (
+    StrategyCandidate,
+    StrategyInit,
+    StrategyRelease,
+    RuntimeDefinition,
+    StrategyInstance,
+)
 
 
 _EXPERIMENT_ID = re.compile(r"\d{8}_(S\d{3})_EX\d{2,}")
@@ -94,6 +101,11 @@ class ExperimentMode(StrEnum):
 
     DISCOVERY = "DISCOVERY"
     FORMAL = "FORMAL"
+
+
+class ExperimentDataScope(StrEnum):
+    DEVELOPMENT = "DEVELOPMENT"
+    SEALED_VALIDATION = "SEALED_VALIDATION"
 
 
 class ExperimentOutcome(StrEnum):
@@ -299,10 +311,15 @@ class ExperimentDefinition:
     validation_cutoff: date | None = None
     dependencies: tuple[ExperimentDependency, ...] = ()
     capabilities: ExperimentCapabilities = ExperimentCapabilities()
+    data_scope: ExperimentDataScope | None = None
 
     def __post_init__(self) -> None:
-        if self.schema_version != 1:
-            raise ValueError("experiment schema_version must be 1")
+        if type(self.schema_version) is not int or self.schema_version not in {1, 2}:
+            raise ValueError("experiment schema_version must be 1 or 2")
+        if self.schema_version == 2 and not isinstance(self.data_scope, ExperimentDataScope):
+            raise ValueError("schema 2 requires an ExperimentDataScope")
+        if self.schema_version == 1 and self.data_scope is not None:
+            raise ValueError("historical schema 1 cannot declare data_scope")
         experiment_id = _text(self.experiment_id, "experiment_id")
         strategy_id = _text(self.strategy_id, "strategy_id")
         match = _EXPERIMENT_ID.fullmatch(experiment_id)
@@ -312,9 +329,9 @@ class ExperimentDefinition:
             raise ValueError("strategy_id must match the experiment_id strategy")
         if not isinstance(self.mode, ExperimentMode):
             raise ValueError("mode must be an ExperimentMode")
-        if not isinstance(self.development_cutoff, date):
+        if type(self.development_cutoff) is not date:
             raise ValueError("development_cutoff must be a date")
-        if self.validation_cutoff is not None and not isinstance(self.validation_cutoff, date):
+        if self.validation_cutoff is not None and type(self.validation_cutoff) is not date:
             raise ValueError("validation_cutoff must be a date or None")
         if isinstance(self.random_seed, bool) or not isinstance(self.random_seed, int):
             raise ValueError("random_seed must be an integer")
@@ -342,7 +359,12 @@ class ExperimentDefinition:
             raise ValueError("an experiment cannot depend on itself")
         if any(_EXPERIMENT_ID.fullmatch(item).group(1) != strategy_id for item in predecessors):
             raise ValueError("predecessor experiments must belong to the same strategy")
-        if self.mode is ExperimentMode.FORMAL:
+        sealed = self.data_scope is ExperimentDataScope.SEALED_VALIDATION or (
+            self.schema_version == 1 and self.mode is ExperimentMode.FORMAL
+        )
+        if sealed:
+            if self.mode is not ExperimentMode.FORMAL:
+                raise ValueError("sealed validation requires FORMAL execution")
             if self.validation_cutoff is None or self.validation_cutoff <= self.development_cutoff:
                 raise ValueError(
                     "FORMAL experiments require validation_cutoff after development_cutoff"
@@ -355,8 +377,10 @@ class ExperimentDefinition:
                 )
             if self.capabilities.searches_parameters or self.capabilities.selects_parameters:
                 raise ValueError("FORMAL experiments cannot search or select parameters")
-        elif self.validation_cutoff is not None:
-            raise ValueError("DISCOVERY experiments cannot declare validation_cutoff")
+        elif self.validation_cutoff is not None or self.capabilities.reads_sealed_validation:
+            raise ValueError("DEVELOPMENT cannot declare validation_cutoff or sealed capability")
+        if self.mode is ExperimentMode.FORMAL and not self.capabilities.reads_real_returns:
+            raise ValueError("FORMAL requires real-return capability")
         object.__setattr__(self, "experiment_id", experiment_id)
         object.__setattr__(self, "strategy_id", strategy_id)
         object.__setattr__(
@@ -394,17 +418,18 @@ class ExperimentDefinition:
         }
         if self.subjects:
             payload["subjects"] = self.subjects
+        if self.schema_version == 2:
+            payload["data_scope"] = self.data_scope.value
         return _canonical_sha256(payload)
 
 
 @dataclass(frozen=True, slots=True)
 class ExperimentResources:
-    """Explicit local resource budget supplied by the platform."""
+    """Caller-declared per-operation execution configuration."""
 
     max_workers: int
     random_seed: int
     native_threads_per_worker: int = 1
-    max_evaluations: int | None = None
 
     def __post_init__(self) -> None:
         for name in ("max_workers", "native_threads_per_worker"):
@@ -415,12 +440,6 @@ class ExperimentResources:
             raise ValueError("random_seed must be an integer")
         if self.random_seed < 0:
             raise ValueError("random_seed must be non-negative")
-        if self.max_evaluations is not None and (
-            isinstance(self.max_evaluations, bool)
-            or not isinstance(self.max_evaluations, int)
-            or self.max_evaluations < 1
-        ):
-            raise ValueError("max_evaluations must be a positive integer or None")
 
     @property
     def sha256(self) -> str:
@@ -429,7 +448,7 @@ class ExperimentResources:
                 "max_workers": self.max_workers,
                 "random_seed": self.random_seed,
                 "native_threads_per_worker": self.native_threads_per_worker,
-                "max_evaluations": self.max_evaluations,
+                "schema_version": 2,
             }
         )
 
@@ -451,6 +470,142 @@ class ExperimentArtifact:
         object.__setattr__(self, "kind", kind)
 
 
+class EvaluationAttemptStatus(StrEnum):
+    STARTED = "STARTED"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    UNKNOWN = "UNKNOWN"
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationRecord:
+    """Observed facts about one call; contains no scheduling or budget policy."""
+
+    attempt_id: str
+    experiment_id: str
+    candidate_id: str
+    content_sha256: str
+    request_hash: str
+    status: EvaluationAttemptStatus
+    started_at: str
+    requested_count: int
+    completed_count: int | None = 0
+    finished_at: str | None = None
+    elapsed_seconds: float | None = None
+    evaluation_ids: tuple[str, ...] = ()
+    result_hash: str | None = None
+    result_artifact: ExperimentArtifact | None = None
+    error_code: str | None = None
+    error_message: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.attempt_id, str) or not re.fullmatch(
+            r"[0-9a-f]{32}", self.attempt_id
+        ):
+            raise ValueError("attempt_id must be a UUID hex string")
+        if not isinstance(self.status, EvaluationAttemptStatus):
+            raise TypeError("status must be EvaluationAttemptStatus")
+        for name in ("experiment_id", "candidate_id"):
+            _text(getattr(self, name), name)
+        for value in (self.content_sha256, self.request_hash, *self.evaluation_ids):
+            if not isinstance(value, str) or not _SHA256.fullmatch(value):
+                raise ValueError("evaluation record identities must be SHA-256")
+        if len(set(self.evaluation_ids)) != len(self.evaluation_ids):
+            raise ValueError("evaluation identities must be unique")
+        for name in ("requested_count", "completed_count"):
+            if name == "completed_count" and self.completed_count is None:
+                continue
+            if type(getattr(self, name)) is not int or getattr(self, name) < 0:
+                raise ValueError("evaluation counts must be nonnegative integers")
+        if self.requested_count < 1 or (
+            self.completed_count is not None and self.completed_count > self.requested_count
+        ):
+            raise ValueError("invalid evaluation counts")
+        start = datetime.fromisoformat(self.started_at)
+        if start.utcoffset() is None:
+            raise ValueError("record timestamps must include a timezone")
+        if self.status is EvaluationAttemptStatus.STARTED:
+            if (
+                any(
+                    value is not None
+                    for value in (
+                        self.finished_at,
+                        self.elapsed_seconds,
+                        self.result_hash,
+                        self.result_artifact,
+                        self.error_code,
+                        self.error_message,
+                    )
+                )
+                or self.completed_count != 0
+            ):
+                raise ValueError("STARTED cannot contain terminal facts")
+        else:
+            if self.finished_at is None or self.elapsed_seconds is None:
+                raise ValueError("terminal record requires completion time and duration")
+            end = datetime.fromisoformat(self.finished_at)
+            if end.utcoffset() is None or end < start:
+                raise ValueError("invalid completion timestamp")
+            if (
+                isinstance(self.elapsed_seconds, bool)
+                or not math.isfinite(self.elapsed_seconds)
+                or self.elapsed_seconds < 0
+            ):
+                raise ValueError("invalid elapsed_seconds")
+        if self.status is EvaluationAttemptStatus.SUCCEEDED:
+            if (
+                self.completed_count != self.requested_count
+                or len(self.evaluation_ids) != self.completed_count
+            ):
+                raise ValueError("success requires all evaluation coordinates")
+            if not isinstance(self.result_hash, str) or not _SHA256.fullmatch(self.result_hash):
+                raise ValueError("success requires result_hash")
+            if (
+                not isinstance(self.result_artifact, ExperimentArtifact)
+                or self.error_code
+                or self.error_message
+            ):
+                raise ValueError("success requires result artifact and no error")
+        elif self.result_hash is not None or self.result_artifact is not None:
+            raise ValueError("unsuccessful record cannot reference a successful result")
+        if self.status in {
+            EvaluationAttemptStatus.FAILED,
+            EvaluationAttemptStatus.CANCELLED,
+            EvaluationAttemptStatus.UNKNOWN,
+        }:
+            _text(self.error_code, "error_code")
+            _text(self.error_message, "error_message")
+        object.__setattr__(self, "evaluation_ids", tuple(self.evaluation_ids))
+
+    def to_dict(self) -> dict[str, object]:
+        from dataclasses import fields
+
+        value = {item.name: getattr(self, item.name) for item in fields(self)}
+        value["status"] = self.status.value
+        value["evaluation_ids"] = list(self.evaluation_ids)
+        artifact = self.result_artifact
+        value["result_artifact"] = (
+            None
+            if artifact is None
+            else {
+                "path": artifact.path,
+                "kind": artifact.kind,
+                "sha256": artifact.sha256,
+            }
+        )
+        return value
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, object]) -> EvaluationRecord:
+        payload = dict(value)
+        payload["status"] = EvaluationAttemptStatus(payload["status"])
+        payload["evaluation_ids"] = tuple(payload["evaluation_ids"])
+        if payload["result_artifact"] is not None:
+            payload["result_artifact"] = ExperimentArtifact(**payload["result_artifact"])
+        return cls(**payload)
+
+
 @dataclass(frozen=True, slots=True)
 class ExperimentTrace:
     """Read-only execution trace captured at platform boundaries."""
@@ -458,7 +613,8 @@ class ExperimentTrace:
     capabilities: tuple[ExperimentCapability, ...]
     operations: tuple[str, ...]
     data_requests: tuple[Mapping[str, Any], ...]
-    evaluations: tuple[Mapping[str, Any], ...] = ()
+    evaluations: tuple[EvaluationRecord, ...] = ()
+    data_scope: ExperimentDataScope | None = None
 
     def __post_init__(self) -> None:
         capabilities = tuple(self.capabilities)
@@ -468,7 +624,11 @@ class ExperimentTrace:
             raise ValueError("trace capabilities must be unique")
         operations = tuple(_text(item, "trace operation") for item in self.operations)
         requests = tuple(_freeze_json(item, "trace data request") for item in self.data_requests)
-        evaluations = tuple(_freeze_json(item, "trace evaluation") for item in self.evaluations)
+        evaluations = tuple(self.evaluations)
+        if not all(isinstance(item, EvaluationRecord) for item in evaluations):
+            raise TypeError("trace evaluations require EvaluationRecord")
+        if self.data_scope is not None and not isinstance(self.data_scope, ExperimentDataScope):
+            raise TypeError("trace data_scope must be ExperimentDataScope")
         object.__setattr__(self, "capabilities", capabilities)
         object.__setattr__(self, "operations", operations)
         object.__setattr__(self, "data_requests", requests)
@@ -479,7 +639,8 @@ class ExperimentTrace:
             "capabilities": [item.value for item in self.capabilities],
             "operations": list(self.operations),
             "data_requests": _thaw_json(self.data_requests),
-            "evaluations": _thaw_json(self.evaluations),
+            "evaluations": [item.to_dict() for item in self.evaluations],
+            "data_scope": None if self.data_scope is None else self.data_scope.value,
         }
 
 
@@ -514,8 +675,8 @@ class ExperimentReceipt:
         artifact_sha256: Mapping[str, str],
         trace: ExperimentTrace,
     ) -> ExperimentReceipt:
-        if schema_version != 1:
-            raise ValueError("experiment receipt schema_version must be 1")
+        if type(schema_version) is not int or schema_version not in {1, 2}:
+            raise ValueError("experiment receipt schema_version must be 1 or 2")
         if _EXPERIMENT_ID.fullmatch(experiment_id) is None:
             raise ValueError("receipt experiment_id is invalid")
         identities = {
@@ -756,7 +917,7 @@ class ExperimentWorkspace:
 class ExperimentDataPort(Protocol):
     """Platform data-publication port available to research code."""
 
-    def fetch(self, request: object) -> object: ...
+    def fetch(self, request: DataRequest) -> DataResult: ...
 
 
 class ExperimentRuntimePort(Protocol):
@@ -764,29 +925,37 @@ class ExperimentRuntimePort(Protocol):
 
     def describe(
         self,
-        source: object,
+        source: StrategyRelease | StrategyCandidate,
         *,
         symbol: str | None = None,
         source_root: Path | None = None,
         runtime_binding: Mapping[str, object] | None = None,
-    ) -> object: ...
+    ) -> RuntimeDefinition: ...
 
-    def create(self, request: StrategyInit) -> object: ...
+    def create(self, request: StrategyInit) -> StrategyInstance: ...
 
 
-class ExperimentEvaluationPort(Protocol):
+RequestT = TypeVar("RequestT", contravariant=True)
+ResultT = TypeVar("ResultT", covariant=True)
+
+
+class ExperimentEvaluationPort(Protocol[RequestT, ResultT]):
     """Platform evaluation port available to research code."""
 
-    def evaluate(self, request: object) -> object: ...
+    def evaluate(self, request: RequestT) -> ResultT: ...
 
 
-class ExperimentContext(Protocol):
+ContextRequestT = TypeVar("ContextRequestT")
+ContextResultT = TypeVar("ContextResultT")
+
+
+class ExperimentContext(Protocol[ContextRequestT, ContextResultT]):
     """Research-facing protocol implemented by a platform context."""
 
     definition: ExperimentDefinition
     data: ExperimentDataPort
     runtime: ExperimentRuntimePort
-    evaluation: ExperimentEvaluationPort
+    evaluation: ExperimentEvaluationPort[ContextRequestT, ContextResultT]
     workspace: ExperimentWorkspace
     resources: ExperimentResources
     predecessors: Mapping[str, ExperimentInput]

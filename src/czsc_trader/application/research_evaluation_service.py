@@ -82,7 +82,7 @@ def _evaluation_request(
         },
         "evaluation request",
     )
-    if raw["schema_version"] != 1 or raw["experiment_id"] != experiment.name:
+    if raw["schema_version"] != 2 or raw["experiment_id"] != experiment.name:
         raise ValueError("evaluation request schema or experiment identity is invalid")
 
     strategy_raw = raw["strategy"]
@@ -113,8 +113,8 @@ def _evaluation_request(
     market = raw["market"]
     if not isinstance(market, dict):
         raise ValueError("evaluation market must be an object")
-    _exact(market, {"symbol", "asset_type", "development_cutoff"}, "evaluation market")
-    cutoff = date.fromisoformat(str(market["development_cutoff"]))
+    _exact(market, {"symbol", "asset_type", "data_cutoff"}, "evaluation market")
+    cutoff = date.fromisoformat(str(market["data_cutoff"]))
 
     raw_windows = raw["windows"]
     if not isinstance(raw_windows, list) or not raw_windows:
@@ -189,7 +189,7 @@ def _evaluation_request(
         symbol=str(market["symbol"]),
         asset_type=str(market["asset_type"]),
         windows=tuple(windows),
-        development_cutoff=cutoff,
+        data_cutoff=cutoff,
         initial_cash=float(capital["initial_cash"]),
         costs=tuple(costs),
         execution_data=prepared,
@@ -225,9 +225,13 @@ def _write_frame(path: Path, frame: pd.DataFrame) -> None:
 
 
 def _run_documents(result: EvaluationResult) -> list[dict[str, object]]:
+    if any(run.identity is None for run in result.runs):
+        raise ValueError("published evaluation runs require verified identities")
     return [
         {
             "candidate_id": run.candidate_id,
+            "identity": run.identity.to_dict(),
+            "evaluation_id": run.identity.evaluation_id,
             "window_id": run.window_id,
             "scenario_id": run.scenario_id,
             "signal_data_identity": run.signals.data_identity,
@@ -258,7 +262,7 @@ def _publish_result(
             "evaluation result",
         )
         expected_identity = {
-            "schema_version": 1,
+            "schema_version": 2,
             "status": "PASS",
             "request_hash": result.request_hash,
             "result_hash": result.result_hash,
@@ -320,7 +324,7 @@ def _publish_result(
             _write_json(benchmark_path, run.buyhold.metrics)
             files[(relative / benchmark_path.name).as_posix()] = _file_hash(benchmark_path)
         document = {
-            "schema_version": 1,
+            "schema_version": 2,
             "status": "PASS",
             "request_hash": result.request_hash,
             "result_hash": result.result_hash,

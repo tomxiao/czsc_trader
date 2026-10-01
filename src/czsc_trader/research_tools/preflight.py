@@ -135,6 +135,8 @@ def preflight_experiment(
     checks.append(_check("SOURCE_BOUND", source_bound, success="source closure matches binding"))
 
     def definition_bound() -> None:
+        if experiment.definition.schema_version != 2:
+            raise ValueError("new executions require experiment definition schema 2")
         if experiment.implementation.definition.sha256 != experiment.definition.sha256:
             raise ValueError("experiment definition changed after loading")
 
@@ -143,11 +145,6 @@ def preflight_experiment(
     def resource_contract() -> None:
         if resources.random_seed != experiment.definition.random_seed:
             raise ValueError("resource random_seed must match experiment definition")
-        if (
-            experiment.definition.capabilities.searches_parameters
-            and resources.max_evaluations is None
-        ):
-            raise ValueError("parameter-search experiments require max_evaluations")
 
     checks.append(
         _check("RESOURCE_CONTRACT", resource_contract, success="resources match definition")

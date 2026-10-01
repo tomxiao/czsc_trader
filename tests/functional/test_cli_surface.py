@@ -127,7 +127,6 @@ def test_public_research_apis_preserve_validation(functional_repo, tmp_path) -> 
     report = preflight_experiment_archive(
         context,
         repo / "tests/fixtures/s008_research_cases/20260924_S008_EX99",
-        max_evaluations=1,
     )
     assert report.status == "PASS" and report.warnings
     with pytest.raises(ValidationError) as error:

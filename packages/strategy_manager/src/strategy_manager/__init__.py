@@ -23,8 +23,14 @@ from .models import (
     canonical_sha256,
 )
 from .registry import StrategyRegistry
+from .candidates import (
+    CandidateKey, CandidateEvidence, CandidateRegistrationOrigin, CandidateRegistration,
+    CandidateDerivation, CandidateDerivationKind, CandidateIdentityConflict,
+)
 
 __all__ = [
+    "CandidateKey", "CandidateEvidence", "CandidateRegistrationOrigin", "CandidateRegistration",
+    "CandidateDerivation", "CandidateDerivationKind", "CandidateIdentityConflict",
     "EvidencePhase",
     "EvidenceRequiredError",
     "GovernanceResult",

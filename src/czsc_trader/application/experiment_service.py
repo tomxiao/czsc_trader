@@ -26,7 +26,6 @@ def preflight_experiment_archive(
     *,
     max_workers: int = 1,
     native_threads_per_worker: int = 1,
-    max_evaluations: int | None = None,
     predecessors: tuple[PredecessorEvidence, ...] = (),
 ) -> CommandResult:
     """Validate an experiment before the formal execution boundary."""
@@ -37,7 +36,6 @@ def preflight_experiment_archive(
             max_workers=max_workers,
             random_seed=loaded.definition.random_seed,
             native_threads_per_worker=native_threads_per_worker,
-            max_evaluations=max_evaluations,
         )
         inputs = tuple(
             load_experiment_input(
