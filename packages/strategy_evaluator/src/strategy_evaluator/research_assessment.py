@@ -128,7 +128,7 @@ def _family(request):
             and np.array_equal(_returns(evidence), matrix[:, column]),
             "family returns differ from account",
         )
-        contexts.add((evidence.context_sha256, evidence.metric_version))
+        contexts.add((evidence.context_sha256, evidence.metric_version, evidence.scenario_context))
     m.require(len(contexts) == 1, "family return comparison contexts differ")
     values = []
 
@@ -256,6 +256,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 x is not None
                 and x.context_sha256 == base.context_sha256
                 and x.metric_version == base.metric_version
+                and x.scenario_context == base.scenario_context
                 for x in neighbors
             )
             if len(neighbors) >= p.minimum_perturbations and comparable:
@@ -289,9 +290,17 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     put(metric, reason="INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS", sources=(base,))
                 gaps.append("INCOMPLETE_OR_INCOMPARABLE_PERTURBATIONS")
             stress = evidence.get((center, p.baseline_window, p.stress_scenario))
-            if stress and (stress.context_sha256, stress.metric_version) == (
-                base.context_sha256,
-                base.metric_version,
+            if (
+                stress
+                and replace(
+                    stress.scenario_context, one_way_cost=base.scenario_context.one_way_cost
+                )
+                == base.scenario_context
+                and (stress.context_sha256, stress.metric_version)
+                == (
+                    base.context_sha256,
+                    base.metric_version,
+                )
             ):
                 put(
                     m.ResearchMetric.STRESS_ANNUAL_LOSS,
@@ -359,6 +368,8 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 None if base is None else base.context_sha256,
                 None if base is None else base.metric_version,
                 None if base is None else base.frequency_window_days,
+                None if base is None else base.scenario_context,
+                None if base is None or stress is None else stress.scenario_context,
                 tuple(diagnostics[x] for x in m.ResearchMetric),
                 interval,
                 tuple(gaps),
@@ -433,7 +444,13 @@ def _rank(request, bins, order):
         x.candidate.candidate_id for x in records if x.status is m.ComparisonStatus.RANKED
     }
     contexts = {
-        (x.context_sha256, x.metric_version, x.frequency_window_days)
+        (
+            x.context_sha256,
+            x.metric_version,
+            x.frequency_window_days,
+            x.baseline_scenario,
+            x.stress_scenario,
+        )
         for x in request.panel.rows
         if x.candidate.candidate_id in eligible_ids
     }

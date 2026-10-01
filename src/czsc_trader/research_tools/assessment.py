@@ -5,6 +5,7 @@ from strategy_evaluator import (
     AccountPoint,
     AssessmentCandidate,
     AssessmentEvidence,
+    EvaluationScenarioContext,
     AssessmentFill,
     ClosedCycle,
     FillSide,
@@ -136,6 +137,7 @@ def build_assessment_evidence(
             }
         )
         opening = run.execution.account_daily.iloc[0]
+        cost = next(x for x in request.costs if x.scenario_id == run.scenario_id)
         records.append(
             AssessmentEvidence(
                 candidate,
@@ -148,6 +150,12 @@ def build_assessment_evidence(
                 run.window_id,
                 run.scenario_id,
                 METRIC_SEMANTICS_VERSION,
+                EvaluationScenarioContext(
+                    float(cost.one_way_cost),
+                    cost.measurement_tier,
+                    request.benchmark.benchmark_id,
+                    request.benchmark.kind,
+                ),
                 float(request.initial_cash),
                 float(opening["cash_before"]),
                 int(opening["quantity_before"]),

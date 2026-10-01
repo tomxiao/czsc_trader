@@ -3,8 +3,22 @@
 from dataclasses import dataclass
 import json
 from uuid import uuid4
+from math import isfinite
 
 from research_experiment import EvaluationRecord, ExperimentArtifact, ExperimentWorkspace
+
+
+def _signal_table(value):
+    table = json.loads(
+        value.to_json(orient="table", date_format="iso", date_unit="ns", index=False)
+    )
+    # pandas JSON limits doubles to 15 digits. Keep Python float values so the
+    # enclosing JSON writer preserves the full binary64 round-trip precision.
+    for encoded, original in zip(table["data"], value.to_dict(orient="records")):
+        for name, cell in original.items():
+            if isinstance(cell, float) and isfinite(cell):
+                encoded[name] = cell
+    return table
 
 
 class EvaluationExecutionError(RuntimeError):
@@ -43,6 +57,9 @@ class _CallEvidence:
     def result(self, result, request) -> ExperimentArtifact:
         from dataclasses import replace
         from .assessment import build_assessment_evidence
+        from .evaluation import _request_identity_payload
+        from ..backtesting.audit_adapter import build_replay_evidence
+        from ..backtesting.metrics import calculate_metrics
 
         assessment = build_assessment_evidence(request, replace(result, attempt_id=self.attempt_id))
 
@@ -61,10 +78,20 @@ class _CallEvidence:
         for run in result.runs:
             item = {
                 "identity": run.identity.to_dict(),
+                "replay_evidence": build_replay_evidence(
+                    run.signals,
+                    request.execution_data,
+                    run.execution,
+                    request.initial_cash,
+                    calculate_metrics(run.execution, request.initial_cash),
+                ).to_dict(),
                 "window_id": run.window_id,
                 "scenario_id": run.scenario_id,
                 "candidate_id": run.candidate_id,
-                "signals": frame(run.signals.decisions),
+                "signals": _signal_table(run.signals.decisions),
+                "signal_dtypes": {
+                    name: str(dtype) for name, dtype in run.signals.decisions.dtypes.items()
+                },
                 "signal_data_identity": run.signals.data_identity,
                 "signal_support": run.signals.support_data,
                 "signal_window": {
@@ -89,7 +116,10 @@ class _CallEvidence:
         return self.write(
             "result",
             {
-                "schema_version": 2,
+                "schema_version": 3,
+                "request_identity": _request_identity_payload(
+                    request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
+                ),
                 "request_hash": result.request_hash,
                 "result_hash": result.result_hash,
                 "runs": runs,

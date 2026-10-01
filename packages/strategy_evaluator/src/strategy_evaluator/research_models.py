@@ -171,6 +171,17 @@ class ClosedCycle(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class EvaluationScenarioContext(ResearchRecord):
+    one_way_cost: float
+    measurement_tier: str
+    benchmark_id: str
+    benchmark_kind: str
+
+    def validate(self):
+        require(0 <= self.one_way_cost < 1, "cost must be in [0, 1)")
+
+
+@dataclass(frozen=True)
 class AssessmentEvidence(ResearchRecord):
     candidate: AssessmentCandidate
     experiment_id: str
@@ -182,6 +193,7 @@ class AssessmentEvidence(ResearchRecord):
     window_id: str
     scenario_id: str
     metric_version: str
+    scenario_context: EvaluationScenarioContext
     initial_cash: float
     opening_cash: float
     opening_quantity: int
@@ -502,12 +514,31 @@ class CandidateAssessment(ResearchRecord):
     context_sha256: str | None
     metric_version: str | None
     frequency_window_days: int | None
+    baseline_scenario: EvaluationScenarioContext | None
+    stress_scenario: EvaluationScenarioContext | None
     diagnostics: tuple[DiagnosticValue, ...]
     uncertainty: UncertaintyInterval
     coverage_gaps: tuple[str, ...]
     behavior_sha256: str | None
 
     def validate(self):
+        require(
+            (self.context_sha256 is None) == (self.baseline_scenario is None),
+            "baseline context/scenario must be supplied together",
+        )
+        require(
+            self.baseline_scenario is not None
+            or all(x.status is not DiagnosticStatus.AVAILABLE for x in self.diagnostics),
+            "available diagnostics require a baseline scenario",
+        )
+        require(
+            self.stress_scenario is not None
+            or all(
+                x.metric is not ResearchMetric.STRESS_ANNUAL_LOSS or x.value is None
+                for x in self.diagnostics
+            ),
+            "available stress diagnostic requires a stress scenario",
+        )
         unique((x.metric for x in self.diagnostics), "diagnostic metric")
         require(
             {x.metric for x in self.diagnostics} == set(ResearchMetric),

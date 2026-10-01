@@ -6,9 +6,7 @@ import pytest
 from research_experiment import load_experiment, ExperimentResources, ExperimentWorkspace
 from strategy_manager import (
     CandidateEvidence,
-    CandidateRegistrationOrigin,
-    ResearchState,
-    StrategyFamily,
+    CandidateKey,
     StrategyRegistry,
     StrategyVersion,
 )
@@ -16,16 +14,15 @@ from strategy_manager import freeze_contracts as f
 from strategy_runtime import StrategyRelease, implementation_sha256
 from czsc_trader.application import (
     assemble_delivery,
-    CandidateRegistrationRequest,
-    register_candidate,
     CandidateInspectionRequest,
     InspectionReplay,
+    EvaluationEvidenceReference,
     inspect_candidate,
     record_research_decision,
     freeze_candidate,
     get_freeze_result,
 )
-from czsc_trader.research_tools import preflight_experiment, create_formal_experiment_context
+from czsc_trader.research_tools import create_formal_experiment_context
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_assessment_delivery import completed as completed, prepare
 from test_research_delivery import Deliverable
@@ -39,39 +36,9 @@ def file_ref(root, path):
 
 @pytest.fixture
 def inspection(completed):
-    context, old_execution, request, result, _ = completed
-    family = StrategyFamily(
-        2,
-        "S900",
-        "Freeze fixture",
-        "ETF",
-        {"hypothesis": "synthetic"},
-        ResearchState.RESEARCHING,
-        "2026-10-01T00:00:00+00:00",
-        "test",
-        "2026-10-01T00:00:00+00:00",
-    )
-    StrategyRegistry(context.research_registry_root).create_family(
-        family, actor="test", reason="fixture"
-    )
-    path = context.experiments_root / "S900" / request.experiment_id
-    loaded = load_experiment(path)
-    preflight = preflight_experiment(loaded, resources=ExperimentResources(1, 1))
-    preflight.require_pass()
-    preflight_path = path / "preflight.json"
-    preflight_path.write_text(json.dumps(preflight.to_dict()))
-    registration = register_candidate(
-        context,
-        CandidateRegistrationRequest(
-            request.strategy,
-            CandidateRegistrationOrigin(
-                request.experiment_id,
-                loaded.definition.sha256,
-                sha256((path / "experiment_binding.json").read_bytes()).hexdigest(),
-                file_ref(context.root, preflight_path),
-            ),
-            (),
-        ),
+    context, old_execution, request, result, experiment = completed
+    registration = StrategyRegistry(context.research_registry_root).get_candidate(
+        CandidateKey("S900", "C001")
     )
     definition, content = prepare(completed)
     assemble_delivery(context, Deliverable(definition, content))
@@ -138,12 +105,23 @@ def inspection(completed):
         resources=ExperimentResources(1, 1),
         workspace=ExperimentWorkspace(context.root / ".tmp/inspection", context.root),
     )
+    result_artifact = old_execution.trace.evaluations[0].result_artifact
     inspection_request = CandidateInspectionRequest(
         registration.key,
         selection,
         f.InspectionProtocol((f.InspectionCoordinate("full", "standard"),), 1e-7),
         execution,
-        (InspectionReplay(request, result, old_execution.workspace.root, request),),
+        (
+            InspectionReplay(
+                EvaluationEvidenceReference(
+                    experiment,
+                    result.attempt_id,
+                    tuple(x.identity.evaluation_id for x in result.runs),
+                    CandidateEvidence(result_artifact.path, result_artifact.sha256),
+                ),
+                request,
+            ),
+        ),
         "v1",
         None,
         "合成冻结验证",
@@ -376,6 +354,19 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspection):
     published = context.research_root / "S900/deliveries/INSPECTION/1/report.md"
     assert "技术检验：PASS" in published.read_text(encoding="utf-8")
     assert "尚未请求" in published.read_text(encoding="utf-8")
+    assert "选择合成候选" in published.read_text(encoding="utf-8")
+    assert "确认来源" in published.read_text(encoding="utf-8")
+    from czsc_trader.application.delivery_service import _report
+
+    for status in (f.FreezeStatus.FAILED, f.FreezeStatus.UNKNOWN):
+        failed = f.FreezeReceipt(
+            f.FreezeRequestId("S900", "render-only"), status, "a" * 64, reason="具体冻结失败原因"
+        )
+        rendered = _report(
+            definition, replace(value, payload=replace(payload, freeze=failed)), published.parent
+        ).decode()
+        assert status.value in rendered and "具体冻结失败原因" in rendered
+        assert "已冻结版本" not in rendered
     before = published.read_bytes()
     operation = approve(context, report, source)
     frozen = freeze_candidate(context, operation)
@@ -540,3 +531,154 @@ def test_invalid_package_reports_failure_and_decisions_are_immutable(inspection)
     assert record_research_decision(context, repeated) == request.selection
     with pytest.raises(ValidationError, match="hash differs"):
         record_research_decision(context, replace(repeated, reason="changed decision content"))
+
+
+@pytest.mark.parametrize("field", ["attempt", "evaluation", "artifact"])
+def test_inspection_rejects_reference_identity_mismatch(inspection, field):
+    context, request, _ = inspection
+    replay = request.replays[0]
+    ref = replay.reference
+    if field == "attempt":
+        ref = replace(ref, attempt_id="f" * 32)
+    elif field == "evaluation":
+        ref = replace(ref, evaluation_ids=("f" * 64,))
+    else:
+        ref = replace(ref, result=replace(ref.result, sha256="f" * 64))
+    with pytest.raises(ValueError, match="receipted evaluation"):
+        inspect_candidate(context, replace(request, replays=(replace(replay, reference=ref),)))
+    assert request.execution.trace.evaluations == ()
+
+
+def test_inspection_rejects_tampered_archive(inspection):
+    context, request, _ = inspection
+    ref = request.replays[0].reference
+    artifact = context.root / ref.experiment.workspace_path / ref.result.path
+    artifact.write_bytes(artifact.read_bytes() + b" ")
+    with pytest.raises(ValueError):
+        inspect_candidate(context, request)
+    assert request.execution.trace.evaluations == ()
+
+
+def test_inspection_rejects_wrong_receipt_and_untyped_reference(inspection):
+    context, request, _ = inspection
+    replay = request.replays[0]
+    ref = replay.reference
+    with pytest.raises(TypeError):
+        InspectionReplay(ref.to_dict(), replay.reproduction_request)
+    with pytest.raises(ValueError):
+        replace(ref, evaluation_ids=())
+    wrong = replace(ref, experiment=replace(ref.experiment, receipt_sha256="f" * 64))
+    with pytest.raises(ValueError, match="expected identity"):
+        inspect_candidate(context, replace(request, replays=(replace(replay, reference=wrong),)))
+    assert request.execution.trace.evaluations == ()
+
+
+def test_inspection_in_fresh_process_uses_archived_reference(inspection):
+    import pickle
+    import subprocess
+    import sys
+    from pathlib import Path
+    from dataclasses import fields
+
+    context, request, _ = inspection
+    replay = request.replays[0]
+    ref = replay.reference
+    original = context.root / ref.experiment.workspace_path
+    original.rename(original.with_name("original-evaluation-removed"))
+    archived = replace(
+        ref,
+        experiment=replace(
+            ref.experiment,
+            workspace_path=f"research/S900/deliveries/ASSESSMENT/1/experiments/{ref.experiment.experiment_id}",
+        ),
+    )
+    # Transfer only fresh reproduction inputs and public references. No old
+    # EvaluationRequest/EvaluationResult, execution context, or baseline frames.
+    payload = {
+        "inspection": {
+            x.name: getattr(request, x.name)
+            for x in fields(request)
+            if x.name not in {"execution", "replays"}
+        },
+        "reference": archived.to_dict(),
+        "reproduction": {
+            x.name: getattr(replay.reproduction_request, x.name)
+            for x in fields(replay.reproduction_request)
+            if x.name != "strategy"
+        },
+    }
+    path = context.root / ".tmp/fresh-inspection-input.pkl"
+    path.write_bytes(pickle.dumps(payload))
+    script = "import sys; sys.path.insert(0, sys.argv[1]); from test_candidate_freeze import _cold_start_inspection; _cold_start_inspection(sys.argv[2])"
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", script, str(Path(__file__).parent), str(path)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "COLD_START_PASS" in result.stdout
+
+
+def _cold_start_inspection(path):
+    import pickle
+    from pathlib import Path
+    import pandas as pd
+    from czsc_trader.application import RepositoryContext, load_candidate
+    from czsc_trader.research_tools import EvaluationRequest
+    from test_candidate_runtime_execution import _install_candidate_dataflows
+    from czsc_trader.research_tools import evaluation
+
+    payload = pickle.loads(Path(path).read_bytes())
+    values = payload["reproduction"]
+    context = RepositoryContext.discover(values["repository_root"])
+    sessions = pd.bdate_range("2026-09-14", periods=6)
+    daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
+    flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
+    with pytest.MonkeyPatch.context() as patch:
+        _install_candidate_dataflows(patch, flow, daily)
+        patch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
+        definition = load_experiment(
+            context.experiments_root / "S900" / values["experiment_id"]
+        ).definition
+        execution = create_formal_experiment_context(
+            definition,
+            repository_root=context.root,
+            resources=ExperimentResources(1, 1),
+            workspace=ExperimentWorkspace(context.root / ".tmp/fresh-inspection", context.root),
+        )
+        fresh = EvaluationRequest(
+            strategy=load_candidate(context, payload["inspection"]["candidate"]), **values
+        )
+        reference = EvaluationEvidenceReference.from_dict(payload["reference"])
+        request = CandidateInspectionRequest(
+            **payload["inspection"],
+            execution=execution,
+            replays=(InspectionReplay(reference, fresh),),
+        )
+        report = inspect_candidate(context, request)
+        assert report.status is f.InspectionStatus.PASS, report.checks
+        print("COLD_START_PASS")
+
+
+def test_archived_signal_restoration_preserves_precision_units_and_nulls():
+    import pandas as pd
+    from czsc_trader.application.inspection_service import _reference_signals
+    from czsc_trader.research_tools._evaluation_records import _signal_table
+
+    signals = pd.DataFrame(
+        {
+            "signal_date": pd.Series(["2026-10-01T00:00:00.123456"], dtype="datetime64[us]"),
+            "target": [0.12345678901234567],
+            "regime": pd.Series([None], dtype=object),
+        }
+    )
+    persisted = json.loads(
+        json.dumps(
+            {
+                "signals": _signal_table(signals),
+                "signal_dtypes": {name: str(dtype) for name, dtype in signals.dtypes.items()},
+            }
+        )
+    )
+    pd.testing.assert_frame_equal(signals, _reference_signals(persisted), check_exact=True)

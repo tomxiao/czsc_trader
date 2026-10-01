@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 from research_experiment import ExperimentContext, EvaluationRecord, EvaluationAttemptStatus
+from research_experiment import load_experiment_input
 from strategy_evaluator import (
     audit_replay,
     AuditStatus,
@@ -16,6 +17,8 @@ from strategy_evaluator import (
     LedgerComparisonRequest,
     LedgerComparisonMode,
     LedgerComparisonStatus,
+    ReplayEvidence,
+    AssessmentEvidence,
 )
 from strategy_manager import StrategyRegistry, CandidateEvidence, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
@@ -38,9 +41,9 @@ from strategy_runtime.errors import StrategyRuntimeError
 from .context import RepositoryContext
 from .candidate_service import load_candidate
 from .runtime_acceptance import runtime_readiness, require_same_runtime_content
-from .delivery_service import validate_delivery, _delivery_path
+from .delivery_service import validate_delivery, _delivery_path, _resolve
 from ..research_tools import delivery as d
-from ..research_tools.evaluation import EvaluationRequest, EvaluationResult
+from ..research_tools.evaluation import EvaluationRequest
 from ..research_tools.assessment import build_assessment_evidence
 from ..research_tools._evaluation_records import EvaluationExecutionError
 from ..backtesting.audit_adapter import build_replay_evidence
@@ -142,18 +145,27 @@ def record_research_decision(
 
 
 @dataclass(frozen=True, slots=True)
+class EvaluationEvidenceReference(d._Record):
+    experiment: d.ExperimentEvidenceRef
+    attempt_id: str
+    evaluation_ids: tuple[str, ...]
+    result: CandidateEvidence
+
+    def _validate(self):
+        d.EvaluationEvidenceRef(self.experiment.experiment_id, self.attempt_id, self.evaluation_ids)
+        if not self.evaluation_ids or len(set(self.evaluation_ids)) != len(self.evaluation_ids):
+            raise ValueError("reference requires unique evaluation IDs")
+
+
+@dataclass(frozen=True, slots=True)
 class InspectionReplay:
-    reference_request: EvaluationRequest
-    reference_result: EvaluationResult
-    reference_workspace: Path
+    reference: EvaluationEvidenceReference
     reproduction_request: EvaluationRequest
 
     def __post_init__(self):
         if (
-            type(self.reference_request) is not EvaluationRequest
+            type(self.reference) is not EvaluationEvidenceReference
             or type(self.reproduction_request) is not EvaluationRequest
-            or type(self.reference_result) is not EvaluationResult
-            or not isinstance(self.reference_workspace, Path)
         ):
             raise TypeError("inspection replay requires typed evaluation inputs/results")
 
@@ -303,11 +315,57 @@ def _authenticate(context, request, result, workspace):
         raise ValueError("inspection evaluation record differs")
     artifact = record.result_artifact
     value = _read(CandidateEvidence(artifact.path, artifact.sha256).resolve(root))
-    if value.get("schema_version") != 2 or value["assessment_evidence"] != [
+    if value.get("schema_version") != 3 or value["assessment_evidence"] != [
         x.to_dict() for x in projection
     ]:
         raise ValueError("inspection evaluation artifact differs")
     return projection, _store_json(context, {"record": record.to_dict(), "result": value})
+
+
+def _load_reference(context, reference):
+    root = _resolve(context.root, reference.experiment.workspace_path)
+    _resolve(root, "execution_receipt.json")
+    envelope = _read(_resolve(root, "execution_envelope.json"))
+    for path in envelope["receipt"]["artifact_sha256"]:
+        _resolve(root, path)
+    loaded = load_experiment_input(
+        root, expected_receipt_sha256=reference.experiment.receipt_sha256
+    )
+    if loaded.experiment_id != reference.experiment.experiment_id:
+        raise ValueError("reference experiment identity differs")
+    records = tuple(
+        EvaluationRecord.from_dict(x) for x in envelope["receipt"]["trace"]["evaluations"]
+    )
+    record = next((x for x in records if x.attempt_id == reference.attempt_id), None)
+    if (
+        record is None
+        or record.status is not EvaluationAttemptStatus.SUCCEEDED
+        or tuple(record.evaluation_ids) != reference.evaluation_ids
+        or record.result_artifact is None
+        or (record.result_artifact.path, record.result_artifact.sha256)
+        != (reference.result.path, reference.result.sha256)
+    ):
+        raise ValueError("reference differs from receipted evaluation")
+    value = _read(reference.result.resolve(root))
+    if value.get("schema_version") != 3:
+        raise ValueError("inspection requires evaluation evidence schema 3")
+    if (
+        value["request_hash"] != record.request_hash
+        or value["result_hash"] != record.result_hash
+        or canonical_sha256(value["request_identity"]) != record.request_hash
+    ):
+        raise ValueError("reference request/result identity differs")
+    projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
+    if tuple(x.evaluation_id for x in projection) != reference.evaluation_ids or any(
+        x.attempt_id != record.attempt_id
+        or x.request_sha256 != record.request_hash
+        or x.result_sha256 != record.result_hash
+        or x.candidate.candidate_id != record.candidate_id
+        or x.candidate.content_sha256 != record.content_sha256
+        for x in projection
+    ):
+        raise ValueError("reference assessment identity differs")
+    return value, projection, _store_json(context, {"record": record.to_dict(), "result": value})
 
 
 def _replay_evidence(request, run):
@@ -317,6 +375,20 @@ def _replay_evidence(request, run):
         run.execution,
         request.initial_cash,
         calculate_metrics(run.execution, request.initial_cash),
+    )
+
+
+def _reference_signals(run):
+    # Construct each typed column directly: read_json inference changes object
+    # nulls to NaN and datetime units, causing false reproduction differences.
+    columns = [x["name"] for x in run["signals"]["schema"]["fields"]]
+    return pd.DataFrame(
+        {
+            name: pd.Series(
+                [row[name] for row in run["signals"]["data"]], dtype=run["signal_dtypes"][name]
+            )
+            for name in columns
+        }
     )
 
 
@@ -526,29 +598,25 @@ def inspect_candidate(
     covered = []
     comparisons, audits, signals, sources, release_replays = [], [], [], [], []
     errors = []
+    signal_errors = []
     for replay in request.replays:
-        old_request, new_request = replay.reference_request, replay.reproduction_request
-        if any(
-            (x.strategy.strategy_family_id, x.strategy.candidate_id)
-            != (request.candidate.strategy_id, request.candidate.candidate_id)
-            or Path(x.repository_root).resolve() != context.root.resolve()
-            for x in (old_request, new_request)
-        ):
+        new_request = replay.reproduction_request
+        if (new_request.strategy.strategy_family_id, new_request.strategy.candidate_id) != (
+            request.candidate.strategy_id,
+            request.candidate.candidate_id,
+        ) or Path(new_request.repository_root).resolve() != context.root.resolve():
             raise ValueError("inspection replay candidate/repository differs")
+        baseline, projection, ref = _load_reference(context, replay.reference)
         if (
-            old_request.data_cutoff.isoformat() > plan.selection_data_cutoff
+            baseline["request_identity"]["data_cutoff"] > plan.selection_data_cutoff
             or new_request.data_cutoff.isoformat() > plan.selection_data_cutoff
         ):
             raise ValueError("reproduction cutoff exceeds frozen selection cutoff")
-        projection, ref = _authenticate(
-            context, old_request, replay.reference_result, replay.reference_workspace
-        )
         if not all(
-            any(
-                (x.candidate, x.evaluation_id, x.result_sha256)
-                == (p.candidate, p.evaluation_id, p.result_sha256)
-                for x in selected_evidence
-            )
+            p in selected_evidence
+            and p.candidate.candidate_id
+            == f"{request.candidate.strategy_id}-{request.candidate.candidate_id}"
+            and p.candidate.content_sha256 == registration.content_sha256
             for p in projection
         ):
             raise ValueError("reference evaluation is absent from selected assessment")
@@ -560,7 +628,9 @@ def inspect_candidate(
                 context, current_request, current, request.execution.workspace.root
             )
             sources.append(current_ref)
-            old = {(x.window_id, x.scenario_id): x for x in replay.reference_result.runs}
+            old = {(x["window_id"], x["scenario_id"]): x for x in baseline["runs"]}
+            if len(old) != len(baseline["runs"]):
+                raise ValueError("duplicate reference coordinates")
             if set(old) != {(x.window_id, x.scenario_id) for x in current.runs}:
                 raise ValueError("reproduction coordinates differ from reference")
             for run in current.runs:
@@ -570,13 +640,13 @@ def inspect_candidate(
                     run.identity.input_sha256,
                     run.identity.protocol_sha256,
                 ) != (
-                    previous.identity.content_sha256,
-                    previous.identity.input_sha256,
-                    previous.identity.protocol_sha256,
+                    previous["identity"]["content_sha256"],
+                    previous["identity"]["input_sha256"],
+                    previous["identity"]["protocol_sha256"],
                 ):
                     raise ValueError("reproduction content/input/protocol identity differs")
                 a, b = (
-                    _replay_evidence(old_request, previous),
+                    ReplayEvidence.from_dict(previous["replay_evidence"]),
                     _replay_evidence(current_request, run),
                 )
                 audit = audit_replay(b, tolerance=request.protocol.tolerance)
@@ -589,15 +659,16 @@ def inspect_candidate(
                 comparisons.append(compared.to_dict())
                 try:
                     pd.testing.assert_frame_equal(
-                        previous.signals.decisions,
+                        _reference_signals(previous),
                         run.signals.decisions,
                         check_exact=request.protocol.tolerance == 0,
                         atol=request.protocol.tolerance,
                         rtol=0,
                     )
                     signals.append(True)
-                except AssertionError:
+                except AssertionError as exc:
                     signals.append(False)
+                    signal_errors.append(str(exc))
                 if release is None:
                     raise ValueError("prospective release runtime unavailable")
                 release_replay = _inspect_release_replay(
@@ -629,6 +700,7 @@ def inspect_candidate(
             "audits": audits,
             "comparisons": comparisons,
             "signal_equivalence": signals,
+            "signal_errors": signal_errors,
             "errors": errors,
             "release_replays": release_replays,
             "sources": [x.to_dict() for x in sources],
@@ -665,7 +737,10 @@ def inspect_candidate(
             if any(not x for x in values)
             else (f.InspectionStatus.PASS if complete and values else f.InspectionStatus.INCOMPLETE)
         )
-        check(kind, status, f"{sum(values)}/{len(values)} reproduction coordinates passed", refs)
+        detail = f"{sum(values)}/{len(values)} reproduction coordinates passed"
+        if kind is f.InspectionCheck.SIGNAL_EQUIVALENCE and signal_errors:
+            detail += "; " + "; ".join(signal_errors)
+        check(kind, status, detail, refs)
     request_hash = canonical_sha256(
         {
             "plan": plan.sha256,

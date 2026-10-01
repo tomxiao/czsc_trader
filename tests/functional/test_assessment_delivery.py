@@ -1,16 +1,34 @@
 from dataclasses import replace
+from hashlib import sha256
 import json
 import shutil
 
 import pytest
-from research_experiment import experiment_source_sha256, load_experiment
-from strategy_manager import CandidateKey
+from research_experiment import experiment_source_sha256, load_experiment, ExperimentResources
+from strategy_manager import (
+    CandidateKey,
+    CandidateEvidence,
+    CandidateRegistrationOrigin,
+    ResearchState,
+    StrategyFamily,
+    StrategyRegistry,
+)
 from strategy_runtime import StrategyRuntime
 from strategy_evaluator import assess_candidates, compare_candidates
 from strategy_evaluator import research_models as m
 
-from czsc_trader.application import RepositoryContext, assemble_delivery, validate_delivery
-from czsc_trader.research_tools import build_assessment_evidence, execute_experiment
+from czsc_trader.application import (
+    RepositoryContext,
+    assemble_delivery,
+    validate_delivery,
+    CandidateRegistrationRequest,
+    register_candidate,
+)
+from czsc_trader.research_tools import (
+    build_assessment_evidence,
+    execute_experiment,
+    preflight_experiment,
+)
 from czsc_trader.research_tools import delivery as d
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_research_delivery import Deliverable, content, attachment, published
@@ -69,7 +87,45 @@ class Experiment(ResearchExperiment):
         execution.workspace.root.relative_to(root).as_posix(),
         receipt_result.receipt.sha256,
     )
-    return RepositoryContext.discover(root), execution, request, loaded.implementation.result, ref
+    evaluation_result = loaded.implementation.result
+    context = RepositoryContext.discover(root)
+    family = StrategyFamily(
+        2,
+        "S900",
+        "Freeze fixture",
+        "ETF",
+        {"hypothesis": "synthetic"},
+        ResearchState.RESEARCHING,
+        "2026-10-01T00:00:00+00:00",
+        "test",
+        "2026-10-01T00:00:00+00:00",
+    )
+    StrategyRegistry(context.research_registry_root).create_family(
+        family, actor="test", reason="fixture"
+    )
+    path = context.experiments_root / "S900" / request.experiment_id
+    loaded = load_experiment(path)
+    preflight = preflight_experiment(loaded, resources=ExperimentResources(1, 1))
+    preflight.require_pass()
+    preflight_path = path / "preflight.json"
+    preflight_path.write_text(json.dumps(preflight.to_dict()))
+    register_candidate(
+        context,
+        CandidateRegistrationRequest(
+            request.strategy,
+            CandidateRegistrationOrigin(
+                request.experiment_id,
+                loaded.definition.sha256,
+                sha256((path / "experiment_binding.json").read_bytes()).hexdigest(),
+                CandidateEvidence(
+                    preflight_path.relative_to(root).as_posix(),
+                    sha256(preflight_path.read_bytes()).hexdigest(),
+                ),
+            ),
+            (),
+        ),
+    )
+    return context, execution, request, evaluation_result, ref
 
 
 def assessment_request(evidence):
@@ -207,7 +263,7 @@ def test_adapter_authenticates_requests_and_does_not_reload_source(completed, mo
     assert evidence[0].candidate.candidate_id == "S900-C001"
     artifact = execution.trace.evaluations[0].result_artifact
     saved = json.loads(execution.workspace.path(artifact.path).read_text())
-    assert saved["schema_version"] == 2
+    assert saved["schema_version"] == 3
     assert saved["runs"][0]["signal_support"] == result.runs[0].signals.support_data
     assert (
         saved["runs"][0]["signal_window"]["evaluation_start"]
@@ -233,6 +289,8 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
         and "待用户决定" in report
         and "MISSING_OR_INCOMPARABLE_STRESS" in report
     )
+    assert "逐项目标检查" in report and "观测值" in report
+    assert "排序敏感性" in report and "行为分组" in report
     document = json.loads(
         (published(context, receipt) / "delivery.json").read_text(encoding="utf-8")
     )
@@ -418,3 +476,50 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         assemble_delivery(
             context, Deliverable(replace(defined, revision=2), replace(value, payload=changed))
         )
+
+
+@pytest.mark.parametrize("damage", ["missing", "content", "source"])
+def test_handoff_requires_registered_content_but_published_delivery_is_independent(
+    completed, damage
+):
+    context, _, _, _, _ = completed
+    prepare(completed)
+    root = context.research_root / "S900/deliveries/CANDIDATES/1"
+    document = json.loads((root / "delivery.json").read_text(encoding="utf-8"))
+    definition = d.DeliveryDefinition.from_dict(document["definition"])
+    value = d.DeliveryContent.from_dict(document["content"])
+    receipt = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text()))
+    registry = StrategyRegistry(context.research_registry_root)
+    registration = registry.get_candidate(CandidateKey("S900", "C001"))
+    if damage == "missing":
+        path = context.research_registry_root / "S900/candidates/C001.json"
+        path.rename(path.with_suffix(".removed"))
+    elif damage == "content":
+        path = registration.payload.resolve(context.research_registry_root)
+        path.write_text("{}")
+    else:
+        path = registration.source_files[0].resolve(context.research_registry_root)
+        path.write_bytes(path.read_bytes() + b"\n# changed\n")
+    with pytest.raises(d.DeliveryValidationError) as error:
+        assemble_delivery(context, Deliverable(replace(definition, revision=2), value))
+    assert error.value.issues[0].code == "HANDOFF_REGISTRATION"
+    assert not (root.parent / "2").exists()
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+
+
+def test_report_renders_sensitivity_rows_and_behavior_members(completed):
+    from czsc_trader.application.delivery_service import _report
+
+    context, _, _, _, _ = completed
+    definition, value = prepare(completed)
+    result = value.payload.comparison
+    result = replace(
+        result,
+        sensitivities=(m.SensitivityRanking("coarse-bins", result.rows),),
+        behavior_groups=(m.BehaviorGroup("f" * 64, (result.rows[0].candidate,)),),
+    )
+    rendered = _report(
+        definition, replace(value, payload=replace(value.payload, comparison=result)), context.root
+    ).decode()
+    assert "coarse-bins" in rendered and "f" * 64 in rendered
+    assert "S900-C001" in rendered and "逐项目标检查" in rendered

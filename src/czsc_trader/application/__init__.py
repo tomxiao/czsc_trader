@@ -9,6 +9,7 @@ from importlib import import_module
 _EXPORTS = {
     "CandidateInspectionRequest": "inspection_service",
     "InspectionReplay": "inspection_service",
+    "EvaluationEvidenceReference": "inspection_service",
     "inspect_candidate": "inspection_service",
     "record_research_decision": "inspection_service",
     "freeze_candidate": "inspection_service",

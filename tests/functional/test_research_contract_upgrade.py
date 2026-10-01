@@ -460,3 +460,17 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(
     saved_source.write_text("tampered")
     with pytest.raises(Exception, match="hash differs"):
         load_candidate(context, CandidateKey("S009", "C001"))
+
+
+def test_assessment_adapter_binds_actual_fees_for_identically_named_scenarios(managed_evaluation):
+    from czsc_trader.research_tools import build_assessment_evidence
+
+    context, request = managed_evaluation
+    other = replace(request, costs=(EvaluationCost("standard", 0.002),))
+    first = build_assessment_evidence(request, context.evaluation.evaluate(request))[0]
+    second = build_assessment_evidence(other, context.evaluation.evaluate(other))[0]
+    assert first.context_sha256 == second.context_sha256
+    assert first.scenario_id == second.scenario_id == "standard"
+    assert first.scenario_context.one_way_cost == 0.001
+    assert second.scenario_context.one_way_cost == 0.002
+    assert first.scenario_context != second.scenario_context

@@ -44,6 +44,9 @@ def evidence(who=None, profits=(10.0, 20.0), scenario="standard", parent=None):
         "full",
         scenario,
         "test-v1",
+        m.EvaluationScenarioContext(
+            0.001 if scenario == "pressure" else 0.0005, "FORMAL", "BuyHold", "BUYHOLD"
+        ),
         1000.0,
         1000.0,
         0,
@@ -311,6 +314,8 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         "d" * 64,
         "v1",
         60,
+        m.EvaluationScenarioContext(0.0005, "FORMAL", "BuyHold", "BUYHOLD"),
+        m.EvaluationScenarioContext(0.001, "FORMAL", "BuyHold", "BUYHOLD"),
         tuple(diagnostics),
         m.UncertaintyInterval(m.DiagnosticStatus.NOT_APPLICABLE, None, None, "test"),
         (),
@@ -340,6 +345,56 @@ def test_raw_pareto_then_binned_seven_metrics_and_ties():
     assert by_id[a.candidate_id].rank_in_layer == by_id[b.candidate_id].rank_in_layer == 1
     assert result.rows[0].candidate == a  # ID is only presentation order in an actual tie.
     assert len(result.behavior_groups[0].candidates) == 3
+
+
+@pytest.mark.parametrize(
+    "field,change",
+    [
+        ("baseline_scenario", {"one_way_cost": 0.001}),
+        ("baseline_scenario", {"measurement_tier": "DIAGNOSTIC"}),
+        ("baseline_scenario", {"benchmark_kind": "NONE"}),
+        ("stress_scenario", {"one_way_cost": 0.002}),
+    ],
+)
+def test_comparison_rejects_different_actual_scenario_contexts(field, change):
+    left, right = row(candidate()), row(candidate("C002", "b"))
+    right = replace(right, **{field: replace(getattr(right, field), **change)})
+    result = compare((left, right))
+    assert all(x.status is m.ComparisonStatus.INCOMPARABLE for x in result.rows)
+    assert all("EVALUATION_CONTEXTS_DIFFER" in x.reasons for x in result.rows)
+
+
+def test_neighbor_fee_difference_is_rejected_but_declared_stress_fee_is_allowed():
+    req = request()
+    neighbor = req.evidence[1]
+    req = replace(
+        req,
+        evidence=(
+            req.evidence[0],
+            replace(
+                neighbor, scenario_context=replace(neighbor.scenario_context, one_way_cost=0.002)
+            ),
+            req.evidence[2],
+        ),
+    )
+    panel = assess_candidates(req)
+    metrics = {x.metric: x for x in panel.rows[0].diagnostics}
+    assert metrics[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION].value is None
+    assert metrics[m.ResearchMetric.STRESS_ANNUAL_LOSS].status is m.DiagnosticStatus.AVAILABLE
+
+
+@pytest.mark.parametrize("fee", [True, -0.1, 1.0, float("nan")])
+def test_scenario_contract_rejects_invalid_fees(fee):
+    with pytest.raises((TypeError, ValueError)):
+        m.EvaluationScenarioContext(fee, "FORMAL", "BuyHold", "BUYHOLD")
+
+
+def test_available_diagnostics_require_explicit_scenario_context():
+    complete = row(candidate())
+    with pytest.raises(ValueError, match="baseline scenario"):
+        replace(complete, baseline_scenario=None, context_sha256=None)
+    with pytest.raises(ValueError, match="stress scenario"):
+        replace(complete, stress_scenario=None)
 
 
 def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked():
