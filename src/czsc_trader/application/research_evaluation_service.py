@@ -162,7 +162,7 @@ def _evaluation_request(
     benchmark_raw = raw["benchmark"]
     if not isinstance(benchmark_raw, dict):
         raise ValueError("evaluation benchmark must be an object")
-    _exact(benchmark_raw, {"benchmark_id", "kind"}, "evaluation benchmark")
+    benchmark = EvaluationBenchmark.from_dict(benchmark_raw)
 
     execution = raw["execution"]
     if not isinstance(execution, dict):
@@ -193,9 +193,7 @@ def _evaluation_request(
         initial_cash=float(capital["initial_cash"]),
         costs=tuple(costs),
         execution_data=prepared,
-        benchmark=EvaluationBenchmark(
-            str(benchmark_raw["benchmark_id"]), str(benchmark_raw["kind"])
-        ),
+        benchmark=benchmark,
         workers=int(execution["workers"]),
         frequency_window_days=int(execution["frequency_window_days"]),
         execution_mode=str(execution["mode"]),

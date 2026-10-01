@@ -315,7 +315,7 @@ def _authenticate(context, request, result, workspace):
         raise ValueError("inspection evaluation record differs")
     artifact = record.result_artifact
     value = _read(CandidateEvidence(artifact.path, artifact.sha256).resolve(root))
-    if value.get("schema_version") != 3 or value["assessment_evidence"] != [
+    if value.get("schema_version") != 4 or value["assessment_evidence"] != [
         x.to_dict() for x in projection
     ]:
         raise ValueError("inspection evaluation artifact differs")
@@ -347,8 +347,8 @@ def _load_reference(context, reference):
     ):
         raise ValueError("reference differs from receipted evaluation")
     value = _read(reference.result.resolve(root))
-    if value.get("schema_version") != 3:
-        raise ValueError("inspection requires evaluation evidence schema 3")
+    if value.get("schema_version") != 4:
+        raise ValueError("inspection requires evaluation evidence schema 4")
     if (
         value["request_hash"] != record.request_hash
         or value["result_hash"] != record.result_hash

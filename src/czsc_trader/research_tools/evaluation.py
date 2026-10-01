@@ -28,6 +28,7 @@ from ..backtesting.execution_data import (
     prepare_backtest_execution_data,
 )
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
+from ..backtesting.benchmark_contracts import EvaluationBenchmark
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
 from ..backtesting.srt_bridge import (
@@ -35,7 +36,7 @@ from ..backtesting.srt_bridge import (
     replay_srt_account,
 )
 
-METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v3-lot-size"
+METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v4-explicit-benchmark"
 
 
 @dataclass(frozen=True)
@@ -85,12 +86,6 @@ class EvaluationCost:
 
 
 @dataclass(frozen=True)
-class EvaluationBenchmark:
-    benchmark_id: str = "BuyHold"
-    kind: str = "BUYHOLD"
-
-
-@dataclass(frozen=True)
 class EvaluationRequest:
     """Complete researcher-owned input contract for one executable strategy."""
 
@@ -105,7 +100,7 @@ class EvaluationRequest:
     initial_cash: float
     costs: tuple[EvaluationCost, ...]
     execution_data: BacktestExecutionData
-    benchmark: EvaluationBenchmark = EvaluationBenchmark()
+    benchmark: EvaluationBenchmark
     workers: int = 1
     frequency_window_days: int = 60
     execution_mode: str = "FULL"
@@ -508,6 +503,8 @@ def _validate_buyhold(
         raise ValueError("BuyHold ledger does not use the strategy evaluation sessions")
     if not np.isfinite(account["equity"].astype(float).to_numpy()).all():
         raise ValueError("BuyHold ledger contains non-finite equity")
+    if benchmark.execution is not None:
+        _validate_execution_result(benchmark.execution, execution_data, start, end)
 
 
 def _evaluate_prepared(
@@ -518,6 +515,7 @@ def _evaluate_prepared(
     costs,
     *,
     include_buyhold,
+    benchmark=None,
 ):
     tasks = tuple(
         (key, window, scenario, prepared, fee, measurement_tier)
@@ -547,11 +545,7 @@ def _evaluate_prepared(
         buyhold = (
             replay_buyhold(
                 signals, workspace.execution_data, context.init_cash,
-                lot_size=(
-                    prepared[0].definition.execution.settings["instrument"]["lot_size"]
-                    if prepared[0].definition.execution.policy_type == "FROZEN_RULE"
-                    else prepared[0].definition.execution.settings["lot_size"]
-                ),
+                benchmark=benchmark,
             )
             if include_buyhold
             else None
@@ -699,8 +693,8 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         raise ValueError("evaluation workers must be a positive integer")
     if type(request.frequency_window_days) is not int or request.frequency_window_days < 1:
         raise ValueError("frequency_window_days must be a positive integer")
-    if request.benchmark != EvaluationBenchmark():
-        raise ValueError("the initial Harness supports only the BuyHold benchmark")
+    if type(request.benchmark) is not EvaluationBenchmark:
+        raise TypeError("evaluation requires an explicit EvaluationBenchmark")
 
     if not request.windows:
         raise ValueError("evaluation windows must not be empty")
@@ -753,7 +747,7 @@ def _request_identity_payload(
 ) -> dict[str, object]:
     """Project already authenticated request values without loading mutable source files."""
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "experiment_id": request.experiment_id,
@@ -774,10 +768,7 @@ def _request_identity_payload(
             for x in request.costs
         ],
         "data_identity": request.execution_data.fingerprint,
-        "benchmark": {
-            "benchmark_id": request.benchmark.benchmark_id,
-            "kind": request.benchmark.kind,
-        },
+        "benchmark": request.benchmark.to_dict(),
         "frequency_window_days": request.frequency_window_days,
         "execution_mode": request.execution_mode,
         "metric_semantics_version": METRIC_SEMANTICS_VERSION,
@@ -815,6 +806,11 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
                 if benchmark is None
                 else _frame_hash(benchmark.orders),
                 "buyhold_metrics": None if benchmark is None else benchmark.metrics,
+                "benchmark": None if benchmark is None else benchmark.benchmark.to_dict(),
+                "buyhold_execution": None if benchmark is None or benchmark.execution is None else {
+                    name: _frame_hash(getattr(benchmark.execution, name))
+                    for name in ("decisions", "orders", "fills", "account_daily", "trades")
+                },
             }
         )
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
@@ -885,12 +881,21 @@ def evaluate_strategy(
             for item in request.costs
         },
         include_buyhold=True,
+        benchmark=request.benchmark,
     )
     environment = canonical_sha256({
         "python": platform.python_version(), "platform": platform.platform(),
         "numpy": np.__version__, "pandas": pd.__version__,
         "implementation": implementation_sha256(("models.py", "runtime.py", "identity.py", "loader.py"), source_root=Path(__import__("strategy_runtime").__file__).parent),
         "evaluator": sha256(Path(__file__).read_bytes()).hexdigest(),
+        "benchmark_source": {
+            name: sha256((Path(__file__).parents[1] / "backtesting" / name).read_bytes()).hexdigest()
+            for name in ("benchmark_contracts.py", "benchmarks.py", "_limit_buyhold.py")
+        },
+        "srt_execution_source": {
+            name: sha256((Path(__import__("strategy_runtime").__file__).parent / name).read_bytes()).hexdigest()
+            for name in ("execution_planner.py", "execution_rules.py", "contracts.py")
+        },
         "packages": {
             name: metadata.version(name) for name in (
                 "czsc-dataflows", "czsc-strategy-runtime", "czsc-strategy-evaluator",
@@ -912,7 +917,7 @@ def evaluate_strategy(
             "window_id": run.window_id, "scenario_id": run.scenario_id,
             "start": window.start.isoformat(), "end": window.end.isoformat(),
             "initial_cash": request.initial_cash, "cost": cost.one_way_cost,
-            "tier": cost.measurement_tier, "benchmark": request.benchmark.benchmark_id,
+            "tier": cost.measurement_tier, "benchmark": request.benchmark.to_dict(),
             "frequency_window_days": request.frequency_window_days,
             "metric_version": METRIC_SEMANTICS_VERSION, "execution_mode": request.execution_mode,
         })

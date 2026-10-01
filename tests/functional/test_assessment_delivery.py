@@ -211,6 +211,10 @@ def prepare(completed):
             ),
         )
     )
+    mandate = replace(mandate, items=(*mandate.items,
+        d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "显式基准",
+            d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation.reference),
+            d.BenchmarkRequirement(request.benchmark))))
     mandate_receipt = assemble_delivery(
         context,
         Deliverable(
@@ -251,6 +255,7 @@ def prepare(completed):
         compare_candidates(comparison),
         (d.TargetMandateBinding("net_annual_return", "return"),),
         None,
+        "benchmark",
         "先补充缺失自检证据，再由用户选型",
         (contrary,),
         ("是否补做压力与参数扰动实验",),
@@ -282,7 +287,7 @@ def test_adapter_authenticates_requests_and_does_not_reload_source(completed, mo
     assert evidence[0].candidate.candidate_id == "S900-C001"
     artifact = execution.trace.evaluations[0].result_artifact
     saved = json.loads(execution.workspace.path(artifact.path).read_text())
-    assert saved["schema_version"] == 3
+    assert saved["schema_version"] == 4
     assert saved["runs"][0]["signal_support"] == result.runs[0].signals.support_data
     assert (
         saved["runs"][0]["signal_window"]["evaluation_start"]

@@ -49,6 +49,7 @@ def evidence(who=None, profits=(10.0, 20.0), scenario="standard", parent=None):
             "STRESS" if scenario == "pressure" else "FORMAL",
             "BuyHold",
             "BUYHOLD",
+            "a" * 64,
         ),
         1000.0,
         1000.0,
@@ -321,8 +322,8 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         "d" * 64,
         "v1",
         60,
-        m.EvaluationScenarioContext(0.0005, "FORMAL", "BuyHold", "BUYHOLD"),
-        m.EvaluationScenarioContext(0.001, "STRESS", "BuyHold", "BUYHOLD"),
+        m.EvaluationScenarioContext(0.0005, "FORMAL", "BuyHold", "BUYHOLD", "a" * 64),
+        m.EvaluationScenarioContext(0.001, "STRESS", "BuyHold", "BUYHOLD", "a" * 64),
         tuple(diagnostics),
         m.UncertaintyInterval(m.DiagnosticStatus.NOT_APPLICABLE, None, None, "test"),
         (),
@@ -448,7 +449,7 @@ def test_stress_pair_rejects_invalid_standard_role(tier):
 @pytest.mark.parametrize("fee", [True, -0.1, 1.0, float("nan")])
 def test_scenario_contract_rejects_invalid_fees(fee):
     with pytest.raises((TypeError, ValueError)):
-        m.EvaluationScenarioContext(fee, "FORMAL", "BuyHold", "BUYHOLD")
+        m.EvaluationScenarioContext(fee, "FORMAL", "BuyHold", "BUYHOLD", "a" * 64)
 
 
 def test_available_diagnostics_require_explicit_scenario_context():

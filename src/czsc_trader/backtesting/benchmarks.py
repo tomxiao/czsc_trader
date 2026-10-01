@@ -6,7 +6,9 @@ import pandas as pd
 
 from czsc_trader.moving_average import moving_average_signals
 from czsc_trader.strategy_metrics import closed_trade_ledger, strategy_comparison_metrics
-from trading_execution_engine import execute_target_positions
+from trading_execution_engine import ExecutionResult, execute_target_positions
+
+from .benchmark_contracts import EvaluationBenchmark, LimitBuyHold, NextOpenBuyHold
 
 from .execution_data import BacktestExecutionData
 from .signal_replay import SignalReplay
@@ -31,6 +33,8 @@ class BuyHoldReplay:
     metrics: dict[str, object]
     account_daily: pd.DataFrame
     orders: pd.DataFrame
+    benchmark: EvaluationBenchmark
+    execution: ExecutionResult | None = None
 
 
 def _fee_rate(signals: SignalReplay) -> float:
@@ -87,11 +91,21 @@ def replay_buyhold(
     execution_data: BacktestExecutionData,
     initial_cash: float,
     *,
-    lot_size: int,
+    benchmark: EvaluationBenchmark,
 ) -> BuyHoldReplay:
     """Run the independently funded BuyHold benchmark for a signal window."""
 
+    if type(benchmark) is not EvaluationBenchmark:
+        raise TypeError("BuyHold replay requires an EvaluationBenchmark")
     fee_rate = _fee_rate(signals)
+    if isinstance(benchmark.execution, LimitBuyHold):
+        from ._limit_buyhold import replay_limit_buyhold
+
+        ledger = replay_limit_buyhold(signals, execution_data, initial_cash, benchmark, fee_rate)
+        from .metrics import calculate_metrics
+
+        metrics = calculate_metrics(ledger, initial_cash)
+        return BuyHoldReplay(metrics, ledger.account_daily, ledger.orders, benchmark, ledger)
     execution = execution_data.execution_daily.copy()
     execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
     evaluation = execution.loc[
@@ -115,7 +129,7 @@ def replay_buyhold(
         target,
         fee_rate=fee_rate,
         initial_cash=initial_cash,
-        lot_size=lot_size,
+        lot_size=benchmark.execution.lot_size,
     )
     orders = result.orders.copy()
     if not orders.empty:
@@ -148,6 +162,7 @@ def replay_buyhold(
             result.state,
         ),
         orders=orders,
+        benchmark=benchmark,
     )
 
 
@@ -175,7 +190,10 @@ def replay_benchmarks(
         raise ValueError("benchmark interval has no prior signal session")
     prior_date = pd.Timestamp(prior_dates[-1])
 
-    buyhold = replay_buyhold(signals, execution_data, initial_cash, lot_size=lot_size)
+    buyhold = replay_buyhold(
+        signals, execution_data, initial_cash,
+        benchmark=EvaluationBenchmark(NextOpenBuyHold(lot_size)),
+    )
 
     ma_target = adjusted_signals["target_position"].reindex(evaluation_index).astype(float)
     initial_ma_target = float(adjusted_signals.loc[prior_date, "target_position"])

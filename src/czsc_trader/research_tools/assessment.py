@@ -105,6 +105,8 @@ def build_assessment_evidence(
             if row.status == "CLOSED"
         )
         benchmark = ()
+        if run.buyhold is None or run.buyhold.benchmark != request.benchmark:
+            raise ValueError("benchmark execution contract differs")
         if run.buyhold is not None:
             frame = run.buyhold.account_daily
             if tuple(pd.to_datetime(frame["date"]).dt.date.astype(str)) != tuple(
@@ -130,7 +132,7 @@ def build_assessment_evidence(
                 "symbol": request.symbol,
                 "sessions": [x.session for x in account],
                 "initial_cash": request.initial_cash,
-                "benchmark": request.benchmark.benchmark_id,
+                "benchmark": request.benchmark.fingerprint,
                 "execution_mode": request.execution_mode,
                 "frequency_window_days": request.frequency_window_days,
                 "metric_version": METRIC_SEMANTICS_VERSION,
@@ -155,6 +157,7 @@ def build_assessment_evidence(
                     cost.measurement_tier,
                     request.benchmark.benchmark_id,
                     request.benchmark.kind,
+                    request.benchmark.fingerprint,
                 ),
                 float(request.initial_cash),
                 float(opening["cash_before"]),

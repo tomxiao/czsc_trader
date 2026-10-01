@@ -110,13 +110,18 @@ class _CallEvidence:
                     "account_daily": frame(run.buyhold.account_daily),
                     "orders": frame(run.buyhold.orders),
                     "metrics": run.buyhold.metrics,
+                    "benchmark": run.buyhold.benchmark.to_dict(),
+                    "execution": None if run.buyhold.execution is None else {
+                        name: frame(getattr(run.buyhold.execution, name))
+                        for name in ("decisions", "orders", "fills", "account_daily", "trades")
+                    },
                 },
             }
             runs.append(item)
         return self.write(
             "result",
             {
-                "schema_version": 3,
+                "schema_version": 4,
                 "request_identity": _request_identity_payload(
                     request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
                 ),

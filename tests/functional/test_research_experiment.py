@@ -9,6 +9,8 @@ import shutil
 from dataflows import DataRequest, Dataflows
 import pandas as pd
 import pytest
+
+from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
 from strategy_runtime import StrategyCandidate
 
 from research_experiment import (
@@ -722,6 +724,7 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
         initial_cash=1_000_000.0,
         costs=(EvaluationCost("main", 0.001),),
         execution_data=object(),
+        benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
 
     assert context.runtime.describe(candidate) == "runtime-definition"
@@ -767,6 +770,7 @@ def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
         initial_cash=1_000_000.0,
         costs=(EvaluationCost("standard", 0.001),),
         execution_data=object(),
+        benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
 
     with pytest.raises(PermissionError, match="workers exceed"):

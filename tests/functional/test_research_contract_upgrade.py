@@ -8,6 +8,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
+
+from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
 from research_experiment import (
     ExperimentCapabilities,
     ExperimentDataScope,
@@ -118,6 +120,7 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
         100_000,
         (EvaluationCost("standard", 0.001),),
         execution,
+        benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
     return context, request
 

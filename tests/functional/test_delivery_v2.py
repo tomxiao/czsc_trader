@@ -81,7 +81,7 @@ def test_historical_component_evidence_retains_original_receipt_and_closure(cont
     before = (context.root / ref.workspace_path / "execution_receipt.json").read_bytes()
     receipt = assemble_delivery(context, Deliverable(defined, value))
     root = published(context, receipt)
-    assert receipt.schema_version == 2
+    assert receipt.schema_version == 3
     assert (root / f"experiments/{ref.experiment_id}/execution_receipt.json").read_bytes() == before
     assert "HISTORICAL_REFERENCE" in (root / "report.md").read_text(encoding="utf-8")
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
@@ -148,7 +148,7 @@ def test_mandate_binds_all_same_metric_conditions_exactly(completed):
             d.DeliveryDefinition(
                 "S900", d.DeliveryStage.MANDATE, 2, predecessors=(payload.source_mandate,)
             ),
-            replace(original, payload=d.ResearchMandate((item,))),
+            replace(original, payload=d.ResearchMandate((item, original.payload.items[1]))),
         ),
     )
     comparison = replace(payload.comparison_request, targets=m.ResearchTargets(targets, 60))
@@ -224,7 +224,52 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
         spec.update(schema_version=1, revision=10, predecessors=[x.to_dict() for x in predecessors])
         for ref in spec["experiments"]:
             del ref["use"]
+            # Build a genuine old-schema fixture before sealing its receipt.
+            # Production validation must continue to reject newer projections.
+            exp_root = destination / "experiments" / ref["experiment_id"]
+            envelope_path = exp_root / "execution_envelope.json"
+            envelope = json.loads(envelope_path.read_text())
+            receipt = envelope["receipt"]
+            changed_hashes = {}
+            for record in receipt["trace"]["evaluations"]:
+                artifact = record.get("result_artifact")
+                if artifact is None:
+                    continue
+                artifact_path = exp_root / artifact["path"]
+                result = json.loads(artifact_path.read_text())
+                result["schema_version"] = 3
+                for evidence in result["assessment_evidence"]:
+                    evidence["scenario_context"].pop("benchmark_contract_sha256")
+                artifact_path.write_text(json.dumps(result), encoding="utf-8")
+                digest = sha256(artifact_path.read_bytes()).hexdigest()
+                changed_hashes[artifact["sha256"]] = digest
+                artifact["sha256"] = digest
+                record_path = artifact_path.with_name("record.json")
+                record_path.write_text(json.dumps(record), encoding="utf-8")
+            for name in receipt["artifact_sha256"]:
+                receipt["artifact_sha256"][name] = sha256((exp_root / name).read_bytes()).hexdigest()
+            for artifact in envelope["result"]["artifacts"]:
+                artifact["sha256"] = receipt["artifact_sha256"][artifact["path"]]
+            receipt["result_sha256"] = canonical_sha256(envelope["result"])
+            digest = canonical_sha256(receipt)
+            envelope["receipt_sha256"] = digest
+            envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
+            (exp_root / "execution_receipt.json").write_text(
+                json.dumps({**receipt, "receipt_sha256": digest}), encoding="utf-8")
+            ref["receipt_sha256"] = digest
         document["content"]["payload"] = payload.to_dict()
+        def update_refs(value):
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    if key == "sha256" and item in changed_hashes:
+                        value[key] = changed_hashes[item]
+                    else:
+                        update_refs(item)
+            elif isinstance(value, list):
+                for item in value:
+                    update_refs(item)
+        if spec["experiments"]:
+            update_refs(document["content"])
         v1def = old.DeliveryDefinition.from_dict(spec)
         v1content = old.DeliveryContent.from_dict(document["content"])
         (destination / "delivery.json").write_bytes(
@@ -242,6 +287,7 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
         )
     )
     mandate_payload = mandate_doc["content"]["payload"]
+    mandate_payload["items"] = [x for x in mandate_payload["items"] if x["kind"] != "BENCHMARK"]
     mandate_payload["items"][0]["requirement"] = old.NumericRequirement(
         "net_annual_return", "ratio", lower=-1.0
     ).to_dict()
@@ -255,7 +301,10 @@ def test_v1_assessment_uses_original_targets_formula_and_report(completed):
         old.DeliveryStage.CANDIDATES,
         old.CandidateSet.from_dict(candidates_doc["content"]["payload"]),
     )
-    request = om.CandidateAssessmentRequest.from_dict(value.payload.assessment_request.to_dict())
+    request_data = value.payload.assessment_request.to_dict()
+    for evidence in request_data["evidence"]:
+        evidence["scenario_context"].pop("benchmark_contract_sha256")
+    request = om.CandidateAssessmentRequest.from_dict(request_data)
     panel = old_assess(request)
     comparison = om.CandidateComparisonRequest(
         request.centers,

@@ -9,6 +9,8 @@ from types import SimpleNamespace
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
+
+from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
 from dataflows import Dataflows, Dataset
 
 from strategy_runtime import (
@@ -564,6 +566,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         costs=(EvaluationCost("standard", 0.001),),
         execution_data=execution_data,
         frequency_window_days=3,
+        benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
     harness = evaluate_strategy(harness_request)
     assert harness.observations == (formal[0],)
@@ -746,7 +749,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
                 "measurement_tier": "STRESS",
             },
         ],
-        "benchmark": {"benchmark_id": "BuyHold", "kind": "BUYHOLD"},
+        "benchmark": EvaluationBenchmark(NextOpenBuyHold(100)).to_dict(),
         "execution": {
             "mode": "FULL",
             "workers": 2,

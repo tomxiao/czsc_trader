@@ -1,3 +1,4 @@
+# Frozen schema-v2 validation semantics from e130c88b; read-only.
 """Typed research handoffs. These values describe evidence, never control research."""
 
 from __future__ import annotations
@@ -13,11 +14,9 @@ import re
 from types import UnionType
 from typing import Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 
-from ..backtesting.benchmark_contracts import EvaluationBenchmark
-
 from strategy_manager import CandidateKey
 from strategy_manager import CandidateInspectionReport, DecisionReference, FreezeReceipt
-from strategy_evaluator import (
+from strategy_evaluator._research_models_v2 import (
     CandidateAssessmentRequest,
     AssessmentPanel,
     CandidateComparisonRequest,
@@ -189,11 +188,11 @@ class DeliveryDefinition(_Record):
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
     experiments: tuple[ExperimentEvidenceRef, ...] = ()
-    schema_version: int = 3
+    schema_version: int = 2
 
     def _validate(self):
         CandidateKey(self.strategy_id, "Delivery")
-        if self.revision < 1 or self.schema_version != 3:
+        if self.revision < 1 or self.schema_version != 2:
             raise ValueError("invalid delivery revision/schema_version")
         _unique((x.experiment_id for x in self.experiments), "experiment_id")
         _unique(((x.stage, x.revision) for x in self.predecessors), "predecessor")
@@ -259,23 +258,16 @@ class PerformanceRequirement(_Record):
 
 
 @dataclass(frozen=True, slots=True)
-class BenchmarkRequirement(_Record):
-    benchmark: EvaluationBenchmark
-
-
-@dataclass(frozen=True, slots=True)
 class MandateItem(_Record):
     item_id: str
     kind: MandateItemKind
     statement: str
     confirmation: ConfirmationRecord
-    requirement: NumericRequirement | PerformanceRequirement | BenchmarkRequirement | None = None
+    requirement: NumericRequirement | PerformanceRequirement | None = None
 
     def _validate(self):
         _text(self.item_id, "item_id")
         _text(self.statement, "statement")
-        if (self.kind is MandateItemKind.BENCHMARK) != isinstance(self.requirement, BenchmarkRequirement):
-            raise ValueError("benchmark mandate requires a typed BenchmarkRequirement")
         if isinstance(self.requirement, PerformanceRequirement) and self.kind not in (
             MandateItemKind.OBJECTIVE,
             MandateItemKind.CONSTRAINT,
@@ -676,7 +668,6 @@ class CandidateAssessmentDelivery(_Record):
     comparison: CandidateComparison
     target_bindings: tuple[TargetMandateBinding, ...]
     frequency_window_item_id: str | None
-    benchmark_mandate_item_id: str
     recommendation: str
     contrary_evidence: tuple[EvidenceRef, ...]
     pending_decisions: tuple[str, ...]
@@ -785,10 +776,10 @@ class DeliveryValidation(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[EvidenceRef, ...]
-    schema_version: int = 3
+    schema_version: int = 2
 
     def _validate(self):
-        if self.schema_version not in (1, 2, 3):
+        if self.schema_version not in (1, 2):
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

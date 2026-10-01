@@ -1,3 +1,4 @@
+# Frozen schema-v2 validation semantics from e130c88b; read-only.
 """Assemble and verify immutable, self-contained stage evidence publications."""
 
 from dataclasses import fields, is_dataclass
@@ -7,17 +8,16 @@ from pathlib import Path
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from research_experiment import EvaluationRecord, load_experiment_input
-from strategy_evaluator import (
+from strategy_evaluator._research_models_v2 import (
     AssessmentEvidence,
-    assess_candidates,
-    compare_candidates,
     ResearchMetric,
     IncompleteEvaluationStatus,
 )
 
+from strategy_evaluator._research_assessment_v2 import assess_candidates, compare_candidates
+
 from .context import RepositoryContext
-from ..research_tools import delivery as d
-from ..temp_workspace import create_temporary_directory
+from ..research_tools import _delivery_v2 as d
 
 
 def _fail(code: str, path: str, message: str):
@@ -321,11 +321,11 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document["schema_version"] != 3:
+        if document["schema_version"] != 2:
             _fail(
                 "ASSESSMENT_SOURCE",
                 ref.stage.value,
-                "v3 assessment requires v3 mandate and candidate handoffs",
+                "v2 assessment requires v2 mandate and candidate handoffs",
             )
         return d.DeliveryContent.from_dict(document["content"]).payload
 
@@ -394,17 +394,6 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
                 "frequency_window",
                 "frequency window requires a confirmed exact session count",
             )
-    benchmark_item = declarations.get(payload.benchmark_mandate_item_id)
-    if (benchmark_item is None
-        or benchmark_item.confirmation.status is not d.ConfirmationStatus.CONFIRMED
-        or not isinstance(benchmark_item.requirement, d.BenchmarkRequirement)):
-        _fail("BENCHMARK_BINDING", "benchmark", "benchmark requires a confirmed typed mandate")
-    benchmark = benchmark_item.requirement.benchmark
-    for evidence in payload.assessment_request.evidence:
-        if (evidence.scenario_context.benchmark_contract_sha256 != benchmark.fingerprint
-            or evidence.scenario_context.benchmark_id != benchmark.benchmark_id
-            or evidence.scenario_context.benchmark_kind != benchmark.kind):
-            _fail("BENCHMARK_BINDING", evidence.evaluation_id, "benchmark differs from confirmed mandate")
     saved = {}
     attempts = {}
     for experiment_id, (root, _, _, records) in experiments.items():
@@ -413,7 +402,7 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
             if record.result_artifact is None:
                 continue
             result = _read_json(_resolve(root, record.result_artifact.path))
-            if result.get("schema_version") != 4:
+            if result.get("schema_version") != 3:
                 continue
             for item in result["assessment_evidence"]:
                 evidence = AssessmentEvidence.from_dict(item)
@@ -517,8 +506,6 @@ def _report(definition, content, root) -> bytes:
                 if requirement is None
                 else str(requirement.targets)
                 if isinstance(requirement, d.PerformanceRequirement)
-                else str(requirement.benchmark.to_dict())
-                if isinstance(requirement, d.BenchmarkRequirement)
                 else (
                     f"{requirement.metric}: [{requirement.lower}, {requirement.upper}] {requirement.unit}"
                 )
@@ -863,13 +850,10 @@ def _manifest(root: Path) -> tuple[d.EvidenceRef, ...]:
 def _read_delivery(context, reference, root, visited):
     document = _read_json(_resolve(root, "delivery.json"))
     version = document.get("schema_version") if type(document) is dict else None
-    if type(version) is not int or version not in (1, 2, 3):
+    if type(version) is not int or version not in (1, 2):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
-    if version in (1, 2):
-        if version == 1:
-            from . import _delivery_reader_v1 as legacy
-        else:
-            from . import _delivery_reader_v2 as legacy
+    if version == 1:
+        from . import _delivery_reader_v1 as legacy
 
         old_reference = legacy.d.DeliveryReference.from_dict(reference.to_dict())
         try:
@@ -885,7 +869,7 @@ def _read_delivery(context, reference, root, visited):
     visited = visited | {identity}
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if (
-        receipt.schema_version != 3
+        receipt.schema_version != 2
         or receipt.reference != reference
         or d._digest(receipt.files) != reference.content_sha256
     ):
@@ -897,7 +881,7 @@ def _read_delivery(context, reference, root, visited):
     if (
         set(document) != {"schema_version", "definition", "content"}
         or type(document["schema_version"]) is not int
-        or document["schema_version"] != 3
+        or document["schema_version"] != 2
     ):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     definition = d.DeliveryDefinition.from_dict(document["definition"])
@@ -911,141 +895,3 @@ def _read_delivery(context, reference, root, visited):
     for predecessor in definition.predecessors:
         _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited)
     return receipt
-
-
-def validate_delivery(
-    context: RepositoryContext, reference: d.DeliveryReference
-) -> d.DeliveryValidation:
-    """Read-only verification; never executes research code or reproduction commands."""
-    if not isinstance(context, RepositoryContext) or not isinstance(reference, d.DeliveryReference):
-        raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
-    try:
-        _read_delivery(context, reference, _delivery_path(context, reference), set())
-        return d.DeliveryValidation(d.ValidationStatus.PASS)
-    except d.DeliveryValidationError as exc:
-        return d.DeliveryValidation(d.ValidationStatus.FAIL, exc.issues)
-    except (OSError, ValueError, TypeError, KeyError) as exc:
-        return d.DeliveryValidation(
-            d.ValidationStatus.FAIL, (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),)
-        )
-
-
-def assemble_delivery(
-    context: RepositoryContext, deliverable: d.ResearchDeliverable
-) -> d.DeliveryReceipt:
-    """Build once, verify, then publish one immutable revision with an atomic rename."""
-    if not isinstance(context, RepositoryContext) or not isinstance(
-        deliverable, d.ResearchDeliverable
-    ):
-        raise TypeError("assemble_delivery requires RepositoryContext and ResearchDeliverable")
-    try:
-        definition = deliverable.definition
-        content = deliverable.build()
-        if type(definition) is not d.DeliveryDefinition or type(content) is not d.DeliveryContent:
-            _fail(
-                "DELIVERY_TYPE", "deliverable", "build/definition must return typed delivery values"
-            )
-        # Round-trip also catches externally mutated frozen objects and noncanonical values.
-        definition = d.DeliveryDefinition.from_dict(definition.to_dict())
-        content = d.DeliveryContent.from_dict(content.to_dict())
-        destination = _delivery_path(context, definition)
-        if destination.exists():
-            existing = _read_json(_resolve(destination, "delivery.json"))
-            expected = {
-                "schema_version": 3,
-                "definition": definition.to_dict(),
-                "content": content.to_dict(),
-            }
-            if existing != expected:
-                raise d.DeliveryConflictError(
-                    "delivery revision already contains different content"
-                )
-            receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-            return _read_delivery(context, receipt.reference, destination, set())
-        for predecessor in definition.predecessors:
-            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
-        experiments = _load_experiments(definition, context.root, published=False)
-        if isinstance(content.payload, d.CandidateSet):
-            from strategy_manager import StrategyRegistry, StrategyManagerError
-            from strategy_runtime.errors import StrategyRuntimeError
-            from .candidate_service import load_candidate
-
-            identities = {x.identity.key: x.identity for x in content.payload.candidates}
-            for key in content.payload.handoff:
-                try:
-                    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-                        key
-                    )
-                    if registration.content_sha256 != identities[key].content_sha256:
-                        raise ValueError("registered candidate content differs from handoff")
-                    load_candidate(context, key)
-                except (
-                    OSError,
-                    ValueError,
-                    TypeError,
-                    KeyError,
-                    StrategyManagerError,
-                    StrategyRuntimeError,
-                ) as exc:
-                    _fail("HANDOFF_REGISTRATION", key.candidate_id, str(exc))
-        _resolve(context.root, ".tmp/delivery")
-        staging = create_temporary_directory(context.root, "delivery")
-
-        def copy(source, relative, expected):
-            target = _resolve(staging, relative)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            data = source.read_bytes()
-            if sha256(data).hexdigest() != expected:
-                _fail("EVIDENCE_HASH", relative, "source changed or hash differs")
-            with target.open("xb") as output:
-                output.write(data)
-
-        for attachment in content.attachments:
-            copy(
-                _resolve(context.root, attachment.source_path),
-                attachment.reference.path,
-                attachment.reference.sha256,
-            )
-        for experiment_id, (source, result, _, _) in experiments.items():
-            prefix = f"experiments/{experiment_id}"
-            for name in ("execution_envelope.json", "execution_receipt.json"):
-                path = _resolve(source, name)
-                copy(path, f"{prefix}/{name}", sha256(path.read_bytes()).hexdigest())
-            for artifact in result.artifacts:
-                copy(_resolve(source, artifact.path), f"{prefix}/{artifact.path}", artifact.sha256)
-        verified = _load_experiments(definition, staging, published=True)
-        _validate_content(definition, content, staging, verified, context)
-        document = {"schema_version": 3, "definition": definition, "content": content}
-        (staging / "delivery.json").write_bytes(d._canonical(document))
-        (staging / "report.md").write_bytes(_report(definition, content, staging))
-        files = _manifest(staging)
-        reference = d.DeliveryReference(
-            definition.strategy_id, definition.stage, definition.revision, d._digest(files)
-        )
-        receipt = d.DeliveryReceipt(reference, files)
-        (staging / "receipt.json").write_bytes(d._canonical(receipt))
-        _read_delivery(context, reference, staging, set())
-        destination = _delivery_path(context, reference)
-        if destination.exists():
-            return _existing(context, reference, destination)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            staging.rename(destination)
-        except OSError:
-            if destination.exists():
-                return _existing(context, reference, destination)
-            raise
-        return receipt
-    except (d.DeliveryValidationError, d.DeliveryConflictError):
-        raise
-    except (OSError, ValueError, TypeError, KeyError) as exc:
-        raise d.DeliveryValidationError(
-            (d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)
-        ) from exc
-
-
-def _existing(context, reference, destination):
-    receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-    if receipt.reference != reference:
-        raise d.DeliveryConflictError("delivery revision already contains different content")
-    return _read_delivery(context, reference, destination, set())

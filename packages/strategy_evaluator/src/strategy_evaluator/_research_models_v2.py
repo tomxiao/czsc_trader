@@ -1,3 +1,4 @@
+# Frozen schema-v2 validation semantics from e130c88b; read-only.
 """Research comparison contracts, independent of orchestration and repositories."""
 
 from dataclasses import dataclass, fields, is_dataclass
@@ -176,11 +177,9 @@ class EvaluationScenarioContext(ResearchRecord):
     measurement_tier: str
     benchmark_id: str
     benchmark_kind: str
-    benchmark_contract_sha256: str
 
     def validate(self):
         require(0 <= self.one_way_cost < 1, "cost must be in [0, 1)")
-        require(bool(re.fullmatch(r"[0-9a-f]{64}", self.benchmark_contract_sha256)), "benchmark contract requires SHA-256")
 
 
 @dataclass(frozen=True)

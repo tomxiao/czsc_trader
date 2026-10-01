@@ -1,6 +1,9 @@
 """Public platform tools for strategy research."""
 
+from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold
+
 from .delivery import (
+    BenchmarkRequirement,
     ExperimentEvidenceUse,
     PerformanceRequirement,
     CandidateInspectionDelivery,
@@ -152,3 +155,5 @@ __all__ += [
 ]
 
 __all__ += ["ExperimentEvidenceUse", "PerformanceRequirement"]
+
+__all__ += ["BenchmarkRequirement", "LimitBuyHold", "NextOpenBuyHold"]
