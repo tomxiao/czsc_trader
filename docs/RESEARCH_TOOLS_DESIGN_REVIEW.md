@@ -1,9 +1,9 @@
 # 研究平台工具优化技术方案评审
 
-状态：正式研究经TDR／REX受管入口执行的原则已获用户确认；具体契约和API方案待评审。
+状态：已确认研究员掌握研究控制流程，平台实现被调用的业务操作并保证技术契约；正式研究经TDR／REX受管入口执行。具体契约和API方案待评审。
 所有“拟新增／拟修改”接口尚未实现。
 
-批次A的字段、调用顺序、预算语义及验收详见[批次A详细设计](RESEARCH_TOOLS_BATCH_A_DESIGN.md)。
+批次A的字段、调用顺序、单次执行留证及并发验收详见[批次A详细设计](RESEARCH_TOOLS_BATCH_A_DESIGN.md)。
 与本概览同一事项的更细约束以该详细设计为评审对象。
 
 日期：2026-10-01。身份：DEV。评审分支：`codex/research-tools-design-review`。
@@ -20,11 +20,11 @@ Optuna保持独立使用；可选适配器延后，根据实际重复代码与�
 | 优先级 | 当前事实与风险 | 建议修改 |
 | --- | --- | --- |
 | P0 | REX的`FORMAL`强制封存验证且禁止搜索／选参；与RSCH阶段四正式执行开发池自检的要求冲突 | 分离受管执行模式和数据使用范围；两者分别强类型声明 |
-| P0 | `StrategyCandidate`是不可变运行输入，但相同族内ID可在不同进程绑定不同内容；运行身份哈希包含候选ID | 增加独立内容指纹及持久登记；同ID异内容拒绝；追加证据保持ID |
+| P0 | `StrategyCandidate`是不可变运行输入，但相同族内ID可在不同进程绑定不同内容；运行身份哈希包含候选ID | 增加独立内容指纹；汇总和登记时拒绝同ID异内容；持久登记用于交接与冻结，不要求每个trial登记 |
 | P0 | 新冻结API已删除旧依赖但尚未提供；`StrategyVersion`仍只解码历史schema 1/2/3治理结构 | 新增候选技术检验、批准绑定及事务冻结；同步升级版本读取与治理验证 |
 | P1 | 阶段二至五依赖研究代码手工组装交付，机器事实和报告缺少统一引用约束 | TDR提供薄产物抽象及统一组装、校验入口 |
 | P1 | SE旧筛选／排序会行为去重、采用非劣门槛和中位分数；与当前RSCH七项顺序不同 | 新增明确的研究比较契约；复用纯数值函数，禁止直接套用旧排序政策 |
-| P1 | REX评价预算是上下文内计数，成功后才记评价追踪；没有跨进程全局预算及失败尝试留证 | 给受管评价增加尝试记录和原子预算声明，保持与Optuna无关 |
+| P1 | TDR持有评价预算并在成功后才记评价追踪，混合研究停止政策和执行记录 | 删除平台评价预算控制；增加每次调用的输入、状态、耗时、错误及结果留证 |
 | P2 | CAP占位部分落后于实现或已确认决定 | 实现验收后按真实状态回填，不把占位当作可调用API |
 
 证据入口：REX [定义合同](../packages/research_experiment/src/research_experiment/contracts.py)、
@@ -45,7 +45,7 @@ SM [版本模型](../packages/strategy_manager/src/strategy_manager/models.py)�
 | --- | --- | --- |
 | CAP-01 | REX定义、结果、回执、受管产物；TDR文件化评价发布 | TDR阶段产物、目标合同、证据引用及双产物组装；SM持久候选身份 |
 | CAP-02 | FSC信息族、因子、信号定义及目录查询 | FSC仅补定义指纹；REX保留检验证据，TDR组件面板承载职责和研究判断 |
-| CAP-03 | 独立Optuna；REX资源预算；SRT候选spawn传输 | 通用评价尝试／预算及搜索轨迹类型；不向TDR/REX引入Optuna依赖 |
+| CAP-03 | 独立Optuna；REX执行配置；SRT候选spawn传输 | 独立进程评价及可序列化执行记录；研究代码控制搜索预算和调度；不向TDR/REX引入Optuna依赖 |
 | CAP-04 | `LocalCacheConfig`、三种缓存策略、SRT准备结果校验、DFLS依赖注入 | 复用当前接口；先量测命中率、准备耗时和内存，再决定是否做内部性能优化 |
 | CAP-05 | 完整SRT/TXE评价、显式整手回测、`compare_ledgers`及独立账本审计 | 补评价身份、归因的成对上下文校验和证据引用；不新增通用归因框架 |
 | CAP-06 | 参数邻域、压力、Bootstrap、PBO、DSR、帕累托数值函数 | SE强类型自检面板和明确排序算法；TDR组合执行和派生候选关联 |
@@ -63,8 +63,10 @@ REX不导入TDR；SE只接收数值及身份合同。FSC不保存每次实验的
 ### 2.1 已确认原则与RSCH导入范围
 
 用户已确认：正式研究执行统一通过TDR／REX受管入口。具体落实为：REX定义实验及端口合同，
-TDR创建平台上下文、执行实验、认证输入、管理资源并生成回执；研究员仍可直接组合公共定义类型、
-纯计算函数和已授权第三方库。正式执行入口不承担机制选择、统计方法选择或研究结论裁定。
+TDR创建平台上下文、按显式配置执行调用、认证输入并生成回执；研究员仍可直接组合公共定义类型、
+纯计算函数和已授权第三方库。研究员负责机制、方法、搜索空间、预算、调度、重试、剪枝、停止及
+结论解释；用户批准阶段推进、候选选择与冻结。平台验证输入、数据范围、身份、结果和证据，
+按明确授权完成持久化。平台不新增研究阶段状态机，不自动判定研究充分、完成或进入下一阶段。
 
 | RSCH可导入模块 | 允许直接处理的工作 | 正式执行或写入入口 |
 | --- | --- | --- |
@@ -92,7 +94,7 @@ RSCH编写ResearchExperiment与StrategyImplementation
   → TDR execute_experiment
       → context.data.fetch：校验数据范围，记录输入身份
       → context.runtime.describe/create：校验候选和运行范围
-      → context.evaluation.evaluate：校验实际候选，预占预算，执行SRT／TXE，记录尝试
+      → context.evaluation.evaluate：认证实际候选，校验本次配置，执行SRT／TXE，记录调用事实
       → SE／第三方纯计算：研究员组合，协议、输入引用和结果写入ExperimentResult
   → 平台核验结果及产物，生成实验回执
   → TDR组装阶段交付；SM写入由TDR业务入口调用
@@ -120,7 +122,7 @@ RSCH编写ResearchExperiment与StrategyImplementation
 - SRT作者接口和SE纯计算接口保持各自顶层导出；DFLS供应商、TDR内部评价实现及SM文件写入函数
   不因本轮重构新增为RSCH接口。
 - 批次验收增加公开导入示例及跨模块主链测试：正式上下文拒绝自定义适配、数据范围越界、
-  候选错绑、预算超额及伪造结果引用；正式交付保留SE计算协议和原始证据身份。
+  候选错绑、非法执行配置及伪造结果引用；正式交付保留SE计算协议和原始证据身份。
 
 ## 3. 先修正执行和数据范围契约
 
@@ -133,8 +135,8 @@ RSCH编写ResearchExperiment与StrategyImplementation
 
 | 执行模式／范围 | 搜索及选参 | 数据上界与前置条件 |
 | --- | --- | --- |
-| `DISCOVERY + DEVELOPMENT` | 按声明能力和预算允许 | `development_cutoff` |
-| `FORMAL + DEVELOPMENT` | 按声明能力和预算允许 | `development_cutoff`；正式源码绑定、预检和回执 |
+| `DISCOVERY + DEVELOPMENT` | 按声明能力校验，研究代码控制搜索 | `development_cutoff` |
+| `FORMAL + DEVELOPMENT` | 按声明能力校验，研究代码控制搜索 | `development_cutoff`；正式源码绑定、预检和回执 |
 | `FORMAL + SEALED_VALIDATION` | 禁止 | 显式`validation_cutoff`、封存区读取能力及相应用户授权来源 |
 | `DISCOVERY + SEALED_VALIDATION` | 拒绝 | 不提供此组合 |
 
@@ -152,20 +154,23 @@ RSCH编写ResearchExperiment与StrategyImplementation
 REX声明对DFLS的直接类型依赖。`ExperimentRuntimePort.describe/create`使用现有SRT输入／输出类型。
 评价端口使用请求／结果类型参数，在TDR绑定为`EvaluationRequest/EvaluationResult`，避免REX导入TDR。
 
-保留`context.evaluation.evaluate(request)`这一调用入口，在其内部增加：
+保留`context.evaluation.evaluate(request)`这一调用入口，拟作以下修改：
 
-- `EvaluationAttempt`：`attempt_id`、请求身份、实际候选、预占次数、状态、错误及结果引用；
-  状态为`STARTED/SUCCEEDED/FAILED/CANCELLED/UNKNOWN`。
-- 父级上下文使用本地事务账本，原子预占`窗口数 × 成本场景数`预算；总预算跨worker共享，
-  失败尝试同样消耗已声明的执行预算，不通过重启或换进程重置。
-- 出参校验通过后记录`SUCCEEDED`；运行异常先留`FAILED`再抛出；进程失联保留`UNKNOWN`，
-  由显式后继尝试承接，不静默重试。保留所有尝试及其来源实验。
-- 先保证单一上下文／进程的完整尝试留证，再实现受管worker句柄的序列化；在跨进程验收通过前，
-  不声称复制上下文能够共享预算。worker只持任务及受限上下文句柄，不持有Optuna Study。
+- 删除TDR `_EvaluationBudget`及扣减调用；REX新`ExperimentResources`删除`max_evaluations`；
+  上下文工厂、预检及TDR `preflight_experiment_archive`同步删除预算必填检查和参数转传。
+  历史资源字段仅在旧证据解码中按原算法验真，新公共调用不接受该字段。
+- 增加强类型单次执行记录：attempt ID、请求及实际候选身份、状态、开始／结束时间、耗时、
+  已完成坐标数、错误及结果引用。状态只表达调用事实，不提供任务调度、重试或研究停止控制。
+- 出参及持久化成功后记录`SUCCEEDED`；异常记录`FAILED`；明确取消记录`CANCELLED`；
+  中断后无法核实结果的记录呈现`UNKNOWN`。平台不静默重试，研究员决定是否再次调用。
+- 支持研究代码自行建立进程池：各进程创建绑定同一实验身份的正式上下文并隔离工作目录，
+  返回可序列化执行记录。平台校验提交记录的身份、文件哈希、重复ID和结果覆盖。
 
-事务账本属于受管实验工作空间；缓存目录不承担预算、批准或研究证据持久性。
-`ExperimentResources.max_evaluations`明确是账户评价坐标数；另行记录trial数、唯一参数数和行为数，
-三者不可互换。第三方sampler、ask/tell、剪枝、网格耗尽及接续政策仍由研究代码负责。
+`max_workers/native_threads_per_worker`保留为单次执行配置，不作为整个研究搜索的并发配额。
+搜索预算、Optuna Study、sampler、ask/tell、任务分发、剪枝与接续均由研究代码控制；
+预算和实际搜索轨迹可作为协议及证据留存，平台不据此自动停止搜索。
+记录使用每次调用独立的产物及原子发布，不建设共享预算数据库或全局调度器。
+归档校验已声明的记录集合，不声称掌握研究进程之外未提交的全部尝试。
 
 ## 4. 候选、评价、派生和批准的强类型身份
 
@@ -205,13 +210,17 @@ def identify(self, candidate: StrategyCandidate, *,
 
 | 模块／公共API | 行为 |
 | --- | --- |
-| TDR `application.register_candidate(context, request: CandidateRegistrationRequest) -> CandidateRegistration` | 输入现有候选、执行前实验定义／绑定及预检引用、依赖和可选派生关系；通过SRT认证后委托SM登记；执行后回执追加引用该候选 |
+| TDR `application.register_candidate(context, request: CandidateRegistrationRequest) -> CandidateRegistration` | 输入现有候选、来源实验定义／绑定及预检引用、依赖和可选派生关系；通过SRT认证后委托SM登记；用于持久查询、跨阶段交接和冻结 |
 | TDR `application.load_candidate(context, key: CandidateKey) -> StrategyCandidate` | 验证登记、文件哈希、依赖和运行定义，返回同一候选身份 |
 | SM `StrategyRegistry.register_candidate(record: CandidateRegistration) -> CandidateRegistration` | TDR平台适配调用；原子创建，同key同内容返回既有记录，同key异内容抛`CandidateIdentityConflict` |
 | SM `StrategyRegistry.get_candidate(key: CandidateKey) -> CandidateRegistration` | 只读查询；缺失抛明确错误 |
 
 无变化的重复提议可引用既有候选；不同ID即使内容相同仍保留。参数、源码或固定规则变化必须新ID。
 研究登记不表示达标、被选择或已批准冻结。
+
+评价直接认证不可变候选及内容指纹，不要求每个trial预先写入SM。研究代码负责并发候选ID分配；
+实验汇总、交付及登记拒绝同key异内容。尚未登记或汇总的独立进程之间不提供全局实时唯一性保证。
+结果始终绑定key和内容指纹，持久登记前后保持候选身份，不能通过重新编号改变证据归属。
 
 ### 4.3 TDR：评价身份与派生归属
 
@@ -223,7 +232,8 @@ def identify(self, candidate: StrategyCandidate, *,
 费用、初始资金或窗口变化产生新评价ID；修改候选固定交易规则产生新候选ID。
 不通过修改候选payload表达临时成本压力。`BacktestRequestV2.lot_size`继续必填且与候选一致。
 
-`EvaluationRequest`拟增加`lineage: EvaluationLineage | None`：中心候选、实际候选及派生登记引用。
+`EvaluationRequest`拟增加`lineage: EvaluationLineage | None`：中心和实际候选的key及内容指纹、
+研究员声明的派生关系与来源证据引用；无须提前登记父子候选。
 普通评价使用`None`；扰动评价必须核对实际请求候选为child，汇总归属为parent。
 正式排序集合由阶段三交付显式确定，不能通过收集全部评价行推断。
 
@@ -295,9 +305,9 @@ def assess_candidates(request: CandidateAssessmentRequest) -> AssessmentPanel: .
 def compare_candidates(request: CandidateComparisonRequest) -> CandidateComparison: ...
 ```
 
-TDR负责通过现有`context.evaluation.evaluate`产生账户事实，再调用SE；首版不再增加一个
-自动跑完整阶段四的总控API。参数扰动由研究代码生成强类型计划并登记child候选，受管评价和
-交付装配已覆盖编排需求。
+研究代码调用现有`context.evaluation.evaluate`产生账户事实，再直接调用SE纯计算API。
+参数扰动计划、不可变child候选及父子关系由研究员生成；需要持久交接时再登记。
+阶段四的实验安排和结果解释由研究员负责，TDR提供评价及交付组装操作。
 
 `CandidateAssessmentRequest`绑定显式中心集合、全部派生关系、评价身份及`SelfCheckProtocol`。
 协议包括扰动域／尺度／权重、窗口长度／步长、分位算法、压力场景、单位、最低覆盖和缺失语义。
@@ -366,7 +376,8 @@ SM新增`StrategyRegistry.record_research_decision(decision: ResearchDecision) -
 
 技术协议覆盖源码／依赖闭包、SRT加载及能力、数据与评价身份、当前结果复算、独立账本审计、
 信号与经济账本等价、拟冻结文件闭包。复用已认证证据须满足身份、方法版本和覆盖一致，
-身份或方法变化则重新检验。调用方显式提交复算范围、预算及允许误差。
+身份或方法变化则重新检验。调用方显式提交复算范围、执行配置及允许误差；
+研究员依据自己的预算选择调用范围，平台按本次检验合同执行并报告覆盖。
 
 当前`compare_ledgers(ECONOMIC)`仍比较附加诊断字段，调用方必须提交同口径完整证据；
 不通过删除差异列或改写身份绕过失败。信号等价另行比较，账本等价不能替代信号与独立审计。
@@ -398,23 +409,24 @@ TDR `validate_release_package/strategy_info`及PTE版本读取测试。
 
 | 批次 | 交付边界 | 最小验收证据 |
 | --- | --- | --- |
-| A：受管实验及身份 | REX数据范围拆分；SRT内容指纹；SM候选登记；TDR评价身份及失败留证 | 开发池正式搜索可执行；封存区搜索被阻止；同ID冲突、参数／源码／固定规则变化、换机器路径、失败attempt均覆盖 |
+| A：受管实验及身份 | REX数据范围拆分并移除预算控制；SRT内容指纹；SM持久登记；TDR评价身份及失败留证 | 未登记候选可正式评价；独立进程并发与证据汇总；封存范围校验；同ID冲突、内容变化、失败attempt均覆盖 |
 | B：阶段交付及组件 | 目标合同、薄产物抽象、双产物组装、组件面板、决定记录 | 空面板／无达标候选可完整交付；未确认目标不作硬门；引用逃逸／文件缺失／机器报告差异被拒绝；决定追加不改原件 |
 | C：阶段四计算 | 派生候选关系、自检面板、显式排序合同、严格帕累托输入 | 已知支配／并列／缺失／边界分箱；压力改善保留负值；无盈利不填零；扰动不进中心池；全部达标候选覆盖；容差非传递不误分组 |
 | D：检验及冻结 | 技术报告、新版本schema、批准绑定、SM事务和查询 | 错候选／过期指纹／缺批准／不完整检验拒绝；并发同版本冲突；提交前后断进程；同请求幂等；旧五个版本原哈希与读取行为保持 |
-| E：可选性能 | 通用worker预算、跨进程接续；独立Optuna适配包可行性评估 | 相同输入／预算的正确性对照、并发收益及内存指标；无收益则保留独立调用 |
+| E：可选性能 | 数据准备与并行性能优化；独立Optuna适配包可行性评估 | 相同研究侧搜索协议及输入的正确性对照、并发收益和内存指标；依据收益决定是否增加适配包 |
 
-批次A先完成单进程受管评价，批次E才承诺跨进程全局预算及接续；首版不引入全局任务调度服务。
+批次A需验证独立进程中的受管评价；后续性能优化仍遵守研究员控制搜索预算和编排的边界。
 每批仅运行受影响模块和跨模块主链测试；版本验收再跑`scripts/test-all.ps1`。
 本轮方案检查仅验证代码证据、公共导出、相对链接和接口归属；不以此前全量回归通过证明拟议API可用。
 
-已确认的设计原则：正式研究执行统一通过TDR／REX受管入口；模块可导入范围和调用路径见第2.1—2.3节。
+已确认的设计原则：研究员控制研究流程；正式研究执行通过TDR／REX受管入口保证技术契约；
+平台不管理搜索预算、调度、剪枝或重试；评价不要求逐trial登记。模块导入及调用路径见第2.1—2.3节。
 该原则确认不等于批准全部新增API或批次实施。
 
 待评审的设计选择：
 
 1. 采纳REX执行模式／数据范围拆分，使正式开发池研究与封存验证分开表达。
-2. 采纳SM候选登记和事务冻结，SRT保持单一运行候选对象；TDR只做跨模块认证及编排。
+2. 采纳SM持久登记和事务冻结的具体契约，SRT保持单一运行候选对象；TDR完成单次业务操作的跨模块认证与调用。
 3. 采纳薄产物抽象和SE两个明确计算入口；Optuna适配器及额外加速放到最后按收益决定。
 4. 按A→B→C→D推进；已存在的缓存、整手执行及账本比较作为基础，不重复建设。
 
