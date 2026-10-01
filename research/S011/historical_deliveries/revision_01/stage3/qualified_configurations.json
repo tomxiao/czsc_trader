@@ -1,0 +1,1990 @@
+[
+  {
+    "historical_evaluation": {
+      "trial": "40",
+      "cagr": "0.4154489709858009",
+      "drawdown": "-0.07250951093439251",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.75",
+      "spx_weight": "0.15",
+      "entry": "0.3",
+      "exit": "0.0",
+      "max_days": "2",
+      "lookback": "120",
+      "premium": "0.003",
+      "experiment": "EX15",
+      "reference": "EX15T040",
+      "parameter_key": "{\"entry\": 0.3, \"exit\": 0.0, \"lookback\": 120, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.15, \"tail_weight\": 0.75}",
+      "account_key": "c04b85e1294c78591596451c29ccd6eeb09b8ce2e42243ff49acfb77cdf11540",
+      "end_equity": "1743054.5945000001",
+      "prior_parameter": "False",
+      "fees": "",
+      "orders": "",
+      "fills": "",
+      "duplicate_parameter_of": "",
+      "same_account_as": "",
+      "cagr_delta_T040": "",
+      "drawdown_improvement_T040": "",
+      "dominates_T040": "",
+      "cagr_delta_EX19T054": "",
+      "drawdown_improvement_EX19T054": "",
+      "dominates_EX19T054": ""
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000137",
+        "config_fingerprint": "df9aa6206254e67e4c31a9f4e3e0eea6f086a9653d26f60cbcc9786c2a67fb7a",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.75,
+            "spx_weight": 0.15,
+            "entry": 0.3,
+            "exit": 0.0,
+            "max_days": 2,
+            "lookback": 120,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "a09e474ad1697615637fe126ddb214e80b3118bc25a2d16589e1fe2d8fd06b09"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX15/runtime/strategy_runtime",
+        "first_reference": "EX15T040",
+        "references": [
+          "EX15T040"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "11",
+      "cagr": "0.41706153047914296",
+      "drawdown": "-0.07242659828715625",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.75",
+      "spx_weight": "0.15",
+      "entry": "0.3",
+      "exit": "0.0",
+      "max_days": "2",
+      "lookback": "120",
+      "premium": "0.004",
+      "experiment": "EX23",
+      "reference": "EX23T011",
+      "parameter_key": "{\"entry\": 0.3, \"exit\": 0.0, \"lookback\": 120, \"max_days\": 2, \"premium\": 0.004, \"spx_weight\": 0.15, \"tail_weight\": 0.75}",
+      "account_key": "e1bf081e5ebc2ea526b1d4547116002ac1bcd4851f77fbed6d2dff9e33ec59ed",
+      "end_equity": "1746231.3604000008",
+      "prior_parameter": "False",
+      "fees": "112820.03959999999",
+      "orders": "96.0",
+      "fills": "94.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.0016125594933420473",
+      "drawdown_improvement_T040": "8.291264723624125e-05",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "",
+      "drawdown_improvement_EX19T054": "",
+      "dominates_EX19T054": ""
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000204",
+        "config_fingerprint": "b6dca48f97e3fba376bb3f1a50905c0dfaf01ab71433dd7a981539e138a55d0c",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.75,
+            "spx_weight": 0.15,
+            "entry": 0.3,
+            "exit": 0.0,
+            "lookback": 120,
+            "max_days": 2,
+            "premium": 0.004
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+        "first_reference": "EX23T011",
+        "references": [
+          "EX23T011"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "51",
+      "cagr": "0.40220891396468494",
+      "drawdown": "-0.08222112854693808",
+      "closed_trades": "38",
+      "sessions": "403",
+      "frequency": "5.6575682382134",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.625",
+      "spx_weight": "0.2",
+      "entry": "0.28",
+      "exit": "0.0",
+      "max_days": "2",
+      "lookback": "60",
+      "premium": "0.005",
+      "experiment": "EX23",
+      "reference": "EX23T051",
+      "parameter_key": "{\"entry\": 0.28, \"exit\": 0.0, \"lookback\": 60, \"max_days\": 2, \"premium\": 0.005, \"spx_weight\": 0.2, \"tail_weight\": 0.625}",
+      "account_key": "46c98dbdaaf15a9d32a90f10d040e34b10eeba1ca71ff593dfee6f7d5dcc3ef2",
+      "end_equity": "1717053.5500000012",
+      "prior_parameter": "False",
+      "fees": "101609.45",
+      "orders": "83.0",
+      "fills": "82.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "-0.01324005702111597",
+      "drawdown_improvement_T040": "-0.00971161761254559",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "",
+      "drawdown_improvement_EX19T054": "",
+      "dominates_EX19T054": ""
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000244",
+        "config_fingerprint": "97dbb38c0f90d7b2c7b80efaaa68af958fac9fb72e711afb5aaa9fa473544260",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.625,
+            "spx_weight": 0.2,
+            "entry": 0.28,
+            "exit": 0.0,
+            "lookback": 60,
+            "max_days": 2,
+            "premium": 0.005
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+        "first_reference": "EX23T051",
+        "references": [
+          "EX23T051"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "54",
+      "cagr": "0.4268585090742474",
+      "drawdown": "-0.07235127587824985",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.335",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.005",
+      "experiment": "EX23",
+      "reference": "EX23T054",
+      "parameter_key": "{\"entry\": 0.335, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.005, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "1eb01e03133a2859b1ab5ff819301f3de058f5efa8c5afd0006cf8f8765b74a6",
+      "end_equity": "1765578.0895000014",
+      "prior_parameter": "False",
+      "fees": "111688.2105",
+      "orders": "94.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.01140953808844647",
+      "drawdown_improvement_T040": "0.00015823505614263877",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "",
+      "drawdown_improvement_EX19T054": "",
+      "dominates_EX19T054": ""
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000247",
+        "config_fingerprint": "4d54687951a4a1c63c5a9ea659996bd6c6ef6aa69f1dce4a148695cfed9f04c1",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.335,
+            "exit": 0.025,
+            "lookback": 130,
+            "max_days": 2,
+            "premium": 0.005
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+        "first_reference": "EX23T054",
+        "references": [
+          "EX23T054",
+          "EX22T001",
+          "EX24T001",
+          "EX25T001"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "15",
+      "cagr": "0.410650083923912",
+      "drawdown": "-0.07235132473435757",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.335",
+      "exit": "0.0",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.005",
+      "experiment": "EX22",
+      "reference": "EX22T015",
+      "parameter_key": "{\"entry\": 0.335, \"exit\": 0.0, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.005, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "80f8bbae1f9e5520eb7875fcb00649b2f0de3f90a4a287cbf56504d190fd5214",
+      "end_equity": "1733613.545700001",
+      "prior_parameter": "False",
+      "fees": "110257.75430000002",
+      "orders": "92.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "-0.004798887061888912",
+      "drawdown_improvement_T040": "0.00015818620003492379",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "-0.01620842515033538",
+      "drawdown_improvement_EX19T054": "-4.8856107714989605e-08",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000590",
+        "config_fingerprint": "9f8891210c50ec0c23d3299a766a5d90e63270939835c9500cce561d78090fed",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.335,
+            "exit": 0.0,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.005
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX22/runtime/strategy_runtime",
+        "first_reference": "EX22T015",
+        "references": [
+          "EX22T015"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "2",
+      "cagr": "0.47334286375491197",
+      "drawdown": "-0.07256534108773505",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.002",
+      "experiment": "EX24",
+      "reference": "EX24T002",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.002, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "bda5103bde499b8010829c486aea95b1a6c31f76c9d56e3e32b5113f58a52263",
+      "end_equity": "1858457.1143",
+      "prior_parameter": "False",
+      "fees": "112221.18569999999",
+      "orders": "98.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.057893892769111055",
+      "drawdown_improvement_T040": "-5.58301533425537e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.046484354680664586",
+      "drawdown_improvement_EX19T054": "-0.00021406520948519248",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000617",
+        "config_fingerprint": "53a7f00a5ba6e3b8e4f43c0a11c6caa24f89631267b0d3ccfa00f00e689f6769",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.002
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T002",
+        "references": [
+          "EX24T002",
+          "EX27T014"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "3",
+      "cagr": "0.49806063332693906",
+      "drawdown": "-0.07250640712455592",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX24",
+      "reference": "EX24T003",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "959072da1cd5c2d82130d62e2eace9d0028ac3600b0a4da8a6774e83f0082fa9",
+      "end_equity": "1908568.3496000015",
+      "prior_parameter": "False",
+      "fees": "116695.05040000001",
+      "orders": "100.0",
+      "fills": "96.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.08261166234113815",
+      "drawdown_improvement_T040": "3.1038098365770983e-06",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.07120212425269168",
+      "drawdown_improvement_EX19T054": "-0.00015513124630606168",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000618",
+        "config_fingerprint": "a60e2af93624852af1037842db0da403a95b29d15a9c0e73e7b8897b6494ab32",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T003",
+        "references": [
+          "EX24T003",
+          "EX25T015",
+          "EX27T012"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "6",
+      "cagr": "0.42116155736689453",
+      "drawdown": "-0.06159849060257927",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.002",
+      "experiment": "EX24",
+      "reference": "EX24T006",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.002, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "537fcbb1190816469b25cbbc353379b733a2225f4d9f9e4423f6072a0dbb71a1",
+      "end_equity": "1754318.2301000007",
+      "prior_parameter": "False",
+      "fees": "105887.8699",
+      "orders": "95.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.005712586381093621",
+      "drawdown_improvement_T040": "0.010911020331813223",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "-0.005696951707352849",
+      "drawdown_improvement_EX19T054": "0.010752785275670584",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000620",
+        "config_fingerprint": "0adaba749424c821ce880003fbdef1dedbf6aed1ce99b86090c78ec7c20f7ba3",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.002
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T006",
+        "references": [
+          "EX24T006"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "7",
+      "cagr": "0.4310672583807367",
+      "drawdown": "-0.06154830526516941",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX24",
+      "reference": "EX24T007",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "7ca416c04d42bf43a8b25098e9b608cc6f469117e6a9ac68ca5c89a831a2e926",
+      "end_equity": "1773913.885200002",
+      "prior_parameter": "False",
+      "fees": "109054.71479999999",
+      "orders": "96.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.01561828739493576",
+      "drawdown_improvement_T040": "0.010961205669223081",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.00420874930648929",
+      "drawdown_improvement_EX19T054": "0.010802970613080443",
+      "dominates_EX19T054": "True"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000621",
+        "config_fingerprint": "594d2c76a1c328b370c3a3acbb66281c1bdedc096b636ad00366162229ea7914",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T007",
+        "references": [
+          "EX24T007",
+          "EX25T019"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "10",
+      "cagr": "0.47334286375491197",
+      "drawdown": "-0.07256534108773505",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.002",
+      "experiment": "EX24",
+      "reference": "EX24T010",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.002, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "bda5103bde499b8010829c486aea95b1a6c31f76c9d56e3e32b5113f58a52263",
+      "end_equity": "1858457.1143",
+      "prior_parameter": "False",
+      "fees": "112221.18569999999",
+      "orders": "98.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "2.0",
+      "cagr_delta_T040": "0.057893892769111055",
+      "drawdown_improvement_T040": "-5.58301533425537e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.046484354680664586",
+      "drawdown_improvement_EX19T054": "-0.00021406520948519248",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000623",
+        "config_fingerprint": "e6304ad698bc8441aeff665b19e3d39dc3a03a4efb6197eb815d19d307dd3721",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.002
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T010",
+        "references": [
+          "EX24T010"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "11",
+      "cagr": "0.49806063332693906",
+      "drawdown": "-0.07250640712455592",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX24",
+      "reference": "EX24T011",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "959072da1cd5c2d82130d62e2eace9d0028ac3600b0a4da8a6774e83f0082fa9",
+      "end_equity": "1908568.3496000015",
+      "prior_parameter": "False",
+      "fees": "116695.05040000001",
+      "orders": "100.0",
+      "fills": "96.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "3.0",
+      "cagr_delta_T040": "0.08261166234113815",
+      "drawdown_improvement_T040": "3.1038098365770983e-06",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.07120212425269168",
+      "drawdown_improvement_EX19T054": "-0.00015513124630606168",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000624",
+        "config_fingerprint": "2b2021b36c8186a17f6b8916f7c9412ae510aeea9c4710a1780fb04f43f100f9",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T011",
+        "references": [
+          "EX24T011",
+          "EX25T021"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "14",
+      "cagr": "0.42116155736689453",
+      "drawdown": "-0.06159849060257927",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.002",
+      "experiment": "EX24",
+      "reference": "EX24T014",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.002, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "537fcbb1190816469b25cbbc353379b733a2225f4d9f9e4423f6072a0dbb71a1",
+      "end_equity": "1754318.2301000007",
+      "prior_parameter": "False",
+      "fees": "105887.8699",
+      "orders": "95.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "6.0",
+      "cagr_delta_T040": "0.005712586381093621",
+      "drawdown_improvement_T040": "0.010911020331813223",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "-0.005696951707352849",
+      "drawdown_improvement_EX19T054": "0.010752785275670584",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000627",
+        "config_fingerprint": "55780fb28fc14b0be13051b1e818734faacb285c109df417ede9cacb0debe880",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.002
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T014",
+        "references": [
+          "EX24T014"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "15",
+      "cagr": "0.4310672583807367",
+      "drawdown": "-0.06154830526516941",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX24",
+      "reference": "EX24T015",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "7ca416c04d42bf43a8b25098e9b608cc6f469117e6a9ac68ca5c89a831a2e926",
+      "end_equity": "1773913.885200002",
+      "prior_parameter": "False",
+      "fees": "109054.71479999999",
+      "orders": "96.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "7.0",
+      "cagr_delta_T040": "0.01561828739493576",
+      "drawdown_improvement_T040": "0.010961205669223081",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.00420874930648929",
+      "drawdown_improvement_EX19T054": "0.010802970613080443",
+      "dominates_EX19T054": "True"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000628",
+        "config_fingerprint": "d5044cbbb047251d96283273a04ca33d704e2eda4556e43d06c2e25f74985b91",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T015",
+        "references": [
+          "EX24T015",
+          "EX25T025"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "19",
+      "cagr": "0.4135720019998106",
+      "drawdown": "-0.07250805477753697",
+      "closed_trades": "38",
+      "sessions": "403",
+      "frequency": "5.6575682382134",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.335",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX24",
+      "reference": "EX24T019",
+      "parameter_key": "{\"entry\": 0.335, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "6a04113b9a1a67d8dc148be4c494a93a36c1468b2d0c2b7da2e10911f16f670b",
+      "end_equity": "1739359.668300002",
+      "prior_parameter": "False",
+      "fees": "104750.4317",
+      "orders": "94.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "-0.0018769689859903238",
+      "drawdown_improvement_T040": "1.45615685552547e-06",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "-0.013286507074436793",
+      "drawdown_improvement_EX19T054": "-0.0001567788992871133",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000632",
+        "config_fingerprint": "849ab6f615558d7360494d1ec25a15cce92ef23643b8d8f96592ff7ad263e5f6",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.335,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T019",
+        "references": [
+          "EX24T019"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "20",
+      "cagr": "0.41278193526677076",
+      "drawdown": "-0.07242301248271366",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.335",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.004",
+      "experiment": "EX24",
+      "reference": "EX24T020",
+      "parameter_key": "{\"entry\": 0.335, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.004, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "6b3babf53ef148d6750ed361ab37f947a50c7c5d9bbffb0b1af463a763b0d109",
+      "end_equity": "1737805.2532000002",
+      "prior_parameter": "False",
+      "fees": "107862.9468",
+      "orders": "95.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "-0.002667035719030153",
+      "drawdown_improvement_T040": "8.649845167883752e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "-0.014076573807476622",
+      "drawdown_improvement_EX19T054": "-7.173660446380126e-05",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000633",
+        "config_fingerprint": "9928ec59764a9b29b75a485308cd5b83f8f3333fba26be97da3c0d391daf64e0",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.335,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.004
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "first_reference": "EX24T020",
+        "references": [
+          "EX24T020"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "8",
+      "cagr": "0.4738866228995984",
+      "drawdown": "-0.07252300637048703",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.32",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T008",
+      "parameter_key": "{\"entry\": 0.32, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "3b44543a2f5a9ef5068b9e9349b3305f2bb14da2a2ee99b02eabe01a177ddeae",
+      "end_equity": "1859554.1173000012",
+      "prior_parameter": "False",
+      "fees": "114422.18269999999",
+      "orders": "100.0",
+      "fills": "94.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.05843765191379746",
+      "drawdown_improvement_T040": "-1.3495436094537738e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.04702811382535099",
+      "drawdown_improvement_EX19T054": "-0.0001717304922371765",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000643",
+        "config_fingerprint": "62cb5f485ebf93705ba8a21c1d335691fe5a0469f64054acd410bc5860f7b1bd",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.32,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T008",
+        "references": [
+          "EX25T008",
+          "EX27T010"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "10",
+      "cagr": "0.44152453663146796",
+      "drawdown": "-0.0725228591285898",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.32",
+      "exit": "0.1",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T010",
+      "parameter_key": "{\"entry\": 0.32, \"exit\": 0.1, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "f29296d1498c2d44b68229c67dc22e9fa40c7988b6a653fcdd0b01c04ca7ec49",
+      "end_equity": "1794689.0507999992",
+      "prior_parameter": "False",
+      "fees": "111952.1492",
+      "orders": "99.0",
+      "fills": "94.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.026075565645667043",
+      "drawdown_improvement_T040": "-1.3348194197307373e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.014666027557220573",
+      "drawdown_improvement_EX19T054": "-0.00017158325033994615",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000645",
+        "config_fingerprint": "b8a1c82ac8fb0c04839f14cc66e0f81021df24b25f2d97c2085747354fca7f73",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.32,
+            "exit": 0.1,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T010",
+        "references": [
+          "EX25T010"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "12",
+      "cagr": "0.42172043923695357",
+      "drawdown": "-0.06155922629808752",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.32",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T012",
+      "parameter_key": "{\"entry\": 0.32, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "1f1d1a8b9ef894a50ed0c783236a62928c6e0c90a6c45bf22ed0f6d014258795",
+      "end_equity": "1755421.6494999998",
+      "prior_parameter": "False",
+      "fees": "108025.4505",
+      "orders": "97.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.0062714682511526565",
+      "drawdown_improvement_T040": "0.010950284636304972",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "-0.005138069837293813",
+      "drawdown_improvement_EX19T054": "0.010792049580162333",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000647",
+        "config_fingerprint": "486b3751f3aa48b86e3b667a47acaa5173076240af6798de649ab807d7765951",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.32,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T012",
+        "references": [
+          "EX25T012"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "14",
+      "cagr": "0.47047882514523165",
+      "drawdown": "-0.07252440152534889",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T014",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "814f6379be0252ece1d394351de89fb40f5c4560d6c3872ef02592ed6813cd66",
+      "end_equity": "1852683.084500001",
+      "prior_parameter": "False",
+      "fees": "111964.8155",
+      "orders": "98.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.055029854159430736",
+      "drawdown_improvement_T040": "-1.4890590956398442e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.043620316070984266",
+      "drawdown_improvement_EX19T054": "-0.00017312564709903722",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000649",
+        "config_fingerprint": "997542827de0f656e40af648d6284799a67c6c403ac1388f262348a1130c4817",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T014",
+        "references": [
+          "EX25T014",
+          "EX27T000"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "16",
+      "cagr": "0.4381847802882093",
+      "drawdown": "-0.0725254111209741",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.1",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T016",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.1, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "32f7e6ca965c4f1465230754e36aef72941f8317f21945465ae5970e4d4a0c8b",
+      "end_equity": "1788044.2065000003",
+      "prior_parameter": "False",
+      "fees": "109527.2935",
+      "orders": "97.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.022735809302408372",
+      "drawdown_improvement_T040": "-1.590018658161052e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.011326271213961903",
+      "drawdown_improvement_EX19T054": "-0.0001741352427242493",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000650",
+        "config_fingerprint": "918c86785885f49629cafa87f1be9ca1ca49450c62a5e3a1790973394565d559",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.1,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T016",
+        "references": [
+          "EX25T016"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "17",
+      "cagr": "0.4509653844642496",
+      "drawdown": "-0.07250646569812602",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.1",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX25",
+      "reference": "EX25T017",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.1, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "768e212f6d7b0cb84e768ff6b326da142d79b0f6e1f33d270749cda3b56ad103",
+      "end_equity": "1813522.6471000018",
+      "prior_parameter": "False",
+      "fees": "113107.65289999999",
+      "orders": "98.0",
+      "fills": "94.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.035516413478448694",
+      "drawdown_improvement_T040": "3.045236266471796e-06",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.024106875390002225",
+      "drawdown_improvement_EX19T054": "-0.00015518981987616698",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000651",
+        "config_fingerprint": "8fd8032b596f41ab1f2b7af7aad727b714dcb50b6b74586aeebbdfe8ac34c341",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.1,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T017",
+        "references": [
+          "EX25T017"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "18",
+      "cagr": "0.4184385560487076",
+      "drawdown": "-0.06156253741816464",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.325",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T018",
+      "parameter_key": "{\"entry\": 0.325, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "cb9d58d096908122a0e01f227cce816923ccfb1897440037917fb12ff009cca7",
+      "end_equity": "1748945.8363000008",
+      "prior_parameter": "False",
+      "fees": "105653.8637",
+      "orders": "95.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "-1.0",
+      "cagr_delta_T040": "0.0029895850629066967",
+      "drawdown_improvement_T040": "0.01094697351622785",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "-0.008419953025539773",
+      "drawdown_improvement_EX19T054": "0.010788738460085212",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000652",
+        "config_fingerprint": "2145c4d5bf3776f401ba0309f964c677b100d8e04552bc8ad63fc20e8a8cc962",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T018",
+        "references": [
+          "EX25T018"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "20",
+      "cagr": "0.47047882514523165",
+      "drawdown": "-0.07252440152534889",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.025",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T020",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.025, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "814f6379be0252ece1d394351de89fb40f5c4560d6c3872ef02592ed6813cd66",
+      "end_equity": "1852683.084500001",
+      "prior_parameter": "False",
+      "fees": "111964.8155",
+      "orders": "98.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "14.0",
+      "cagr_delta_T040": "0.055029854159430736",
+      "drawdown_improvement_T040": "-1.4890590956398442e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.043620316070984266",
+      "drawdown_improvement_EX19T054": "-0.00017312564709903722",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000653",
+        "config_fingerprint": "7f519ab5635e81c98a79d13325a87ef46295f8fbcf4088a588d4030e6fad2d68",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T020",
+        "references": [
+          "EX25T020",
+          "EX27T007"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "22",
+      "cagr": "0.4381847802882093",
+      "drawdown": "-0.0725254111209741",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.1",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T022",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.1, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "32f7e6ca965c4f1465230754e36aef72941f8317f21945465ae5970e4d4a0c8b",
+      "end_equity": "1788044.2065000003",
+      "prior_parameter": "False",
+      "fees": "109527.2935",
+      "orders": "97.0",
+      "fills": "92.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "16.0",
+      "cagr_delta_T040": "0.022735809302408372",
+      "drawdown_improvement_T040": "-1.590018658161052e-05",
+      "dominates_T040": "False",
+      "cagr_delta_EX19T054": "0.011326271213961903",
+      "drawdown_improvement_EX19T054": "-0.0001741352427242493",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000654",
+        "config_fingerprint": "61fbe22e612aa5a90a8cbb8251616f8ba8d9bb8809923e61ba3a94e58a9d6497",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.1,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T022",
+        "references": [
+          "EX25T022"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "23",
+      "cagr": "0.4509653844642496",
+      "drawdown": "-0.07250646569812602",
+      "closed_trades": "40",
+      "sessions": "403",
+      "frequency": "5.955334987593052",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.1",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.003",
+      "experiment": "EX25",
+      "reference": "EX25T023",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.1, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.003, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "768e212f6d7b0cb84e768ff6b326da142d79b0f6e1f33d270749cda3b56ad103",
+      "end_equity": "1813522.6471000018",
+      "prior_parameter": "False",
+      "fees": "113107.65289999999",
+      "orders": "98.0",
+      "fills": "94.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "17.0",
+      "cagr_delta_T040": "0.035516413478448694",
+      "drawdown_improvement_T040": "3.045236266471796e-06",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "0.024106875390002225",
+      "drawdown_improvement_EX19T054": "-0.00015518981987616698",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000655",
+        "config_fingerprint": "01c81433629c889c14da6c633f82e548cdba74cb6a768c67188f8ceec92ee8e6",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.1,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T023",
+        "references": [
+          "EX25T023"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  },
+  {
+    "historical_evaluation": {
+      "trial": "24",
+      "cagr": "0.4184385560487076",
+      "drawdown": "-0.06156253741816464",
+      "closed_trades": "39",
+      "sessions": "403",
+      "frequency": "5.806451612903226",
+      "buyhold_cagr": "0.2677652073856076",
+      "buyhold_drawdown": "-0.310919408097985",
+      "return_pass": "True",
+      "drawdown_pass": "True",
+      "frequency_pass": "True",
+      "qualified": "True",
+      "tail_weight": "0.575",
+      "spx_weight": "0.05",
+      "entry": "0.33",
+      "exit": "0.175",
+      "max_days": "2",
+      "lookback": "130",
+      "premium": "0.0025",
+      "experiment": "EX25",
+      "reference": "EX25T024",
+      "parameter_key": "{\"entry\": 0.33, \"exit\": 0.175, \"lookback\": 130, \"max_days\": 2, \"premium\": 0.0025, \"spx_weight\": 0.05, \"tail_weight\": 0.575}",
+      "account_key": "cb9d58d096908122a0e01f227cce816923ccfb1897440037917fb12ff009cca7",
+      "end_equity": "1748945.8363000008",
+      "prior_parameter": "False",
+      "fees": "105653.8637",
+      "orders": "95.0",
+      "fills": "90.0",
+      "duplicate_parameter_of": "-1.0",
+      "same_account_as": "18.0",
+      "cagr_delta_T040": "0.0029895850629066967",
+      "drawdown_improvement_T040": "0.01094697351622785",
+      "dominates_T040": "True",
+      "cagr_delta_EX19T054": "-0.008419953025539773",
+      "drawdown_improvement_EX19T054": "0.010788738460085212",
+      "dominates_EX19T054": "False"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000656",
+        "config_fingerprint": "9d1ca50a00b79b47a97f151432c94a575715323f0c435925ff993a09bdaee172",
+        "definition": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.33,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.0025
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+        "first_reference": "EX25T024",
+        "references": [
+          "EX25T024"
+        ],
+        "scope": "COMPARABLE_DEVELOPMENT"
+      }
+    ],
+    "new_candidate_key": null,
+    "new_content_sha256": null
+  }
+]

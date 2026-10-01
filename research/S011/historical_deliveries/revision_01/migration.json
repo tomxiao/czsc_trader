@@ -1,0 +1,17 @@
+{
+  "record_kind": "S011_FORMAL_DELIVERY_MIGRATION_REQUIREMENTS",
+  "schema_version": 1,
+  "implementation_status": "NOT_STARTED",
+  "economic_rules_changed": false,
+  "items": [
+    {"id": "M01", "scope": "MANDATE", "requirement": "补建带原确认来源的ResearchMandate；保留基准相对收益、严格回撤比较和全样本标准化频率。", "apis": ["ResearchMandate", "NumericRequirement", "ResearchTarget", "TargetMandateBinding"], "owner": "RSCH_WITH_DEV_CONTRACT_REVIEW"},
+    {"id": "M02", "scope": "COMPONENTS", "requirement": "后继执行真实记录历史证据认证或实际重新计算；schema 1原回执保持不变。", "apis": ["execute_experiment", "ComponentPanel", "ComponentTestResult", "assemble_delivery"], "owner": "RSCH"},
+    {"id": "M03", "scope": "CANDIDATES", "requirement": "将历史配置身份映射至当前CandidateKey/content_sha256，登记交接集合并生成真实受管评价。", "apis": ["StrategyRuntime.identify", "register_candidate", "load_candidate", "EvaluationRequest", "CandidateSet"], "owner": "RSCH"},
+    {"id": "M04", "scope": "ASSESSMENT_FREQUENCY", "requirement": "全样本60×闭合交易/交易日数与滚动频率中位数/Q10须分别表达。", "apis": ["ResearchMetric", "ResearchTarget", "assess_candidates", "compare_candidates"], "owner": "DEV_REVIEW_REQUIRED"},
+    {"id": "M05", "scope": "ASSESSMENT_RANKING", "requirement": "评审原分箱帕累托、逐指标成对偏序和可能名次区间与当前原值分层/缺失资格规则的差异；保留旧排名。", "apis": ["ComparisonPolicy", "CandidateComparison", "compare_candidates"], "owner": "DEV_REVIEW_AND_USER_POLICY_CONFIRMATION"},
+    {"id": "M06", "scope": "DECISION", "requirement": "保留621历史选择；正式决定需绑定新交付和确切内容身份，核对真实确认范围。", "apis": ["CandidateSelectionSubject", "record_research_decision"], "owner": "RSCH_AND_USER"},
+    {"id": "M07", "scope": "HISTORICAL_REPRODUCTION", "requirement": "阶段四原验证器引用当前Agent文档，须显式引用哈希匹配的封存快照；EX12的前序EX01 manifest指纹差异须追溯说明。原验证器不改写。", "apis": [], "owner": "RSCH", "status": "DISCLOSED_NOT_REPAIRED"}
+  ],
+  "next_action": "评审最小平台契约支持方案及历史证据承接，再实施正式阶段交付。",
+  "not_authorized_by_this_document": ["PLATFORM_IMPLEMENTATION", "STRATEGY_FREEZE", "DEPLOYMENT", "PRODUCTION_WRITE"]
+}
