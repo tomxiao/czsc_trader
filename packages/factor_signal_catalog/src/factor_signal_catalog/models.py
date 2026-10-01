@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from hashlib import sha256
+import json
 from typing import Any
 
 
@@ -13,6 +15,26 @@ class CatalogStatus(StrEnum):
 
 class CatalogValidationError(ValueError):
     pass
+
+
+def _definition_sha256(payload: dict[str, object]) -> str:
+    def check(value):
+        if isinstance(value, dict):
+            if any(type(key) is not str for key in value):
+                raise CatalogValidationError("definition object keys must be strings")
+            for item in value.values():
+                check(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                check(item)
+
+    check(payload)
+    try:
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True,
+                             separators=(",", ":"), allow_nan=False).encode("utf-8")
+    except (ValueError, TypeError) as exc:
+        raise CatalogValidationError("definition must contain finite JSON values") from exc
+    return sha256(encoded).hexdigest()
 
 
 def _required(payload: dict[str, Any], fields: set[str], kind: str) -> None:
@@ -73,6 +95,10 @@ class FactorDefinition:
     status: CatalogStatus
     version: int
 
+    @property
+    def definition_sha256(self) -> str:
+        return _definition_sha256(self.to_dict())
+
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "FactorDefinition":
         required = {
@@ -122,6 +148,10 @@ class SignalDefinition:
     causality: str
     status: CatalogStatus
     version: int
+
+    @property
+    def definition_sha256(self) -> str:
+        return _definition_sha256(self.to_dict())
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> "SignalDefinition":

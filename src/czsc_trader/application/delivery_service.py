@@ -1,0 +1,580 @@
+"""Assemble and verify immutable, self-contained stage evidence publications."""
+
+from dataclasses import fields, is_dataclass
+from hashlib import sha256
+import json
+from pathlib import Path
+
+from factor_signal_catalog import FactorDefinition, SignalDefinition
+from research_experiment import EvaluationRecord, load_experiment_input
+
+from .context import RepositoryContext
+from ..research_tools import delivery as d
+from ..temp_workspace import create_temporary_directory
+
+
+def _fail(code: str, path: str, message: str):
+    raise d.DeliveryValidationError((d.DeliveryIssue(code, path, message),))
+
+
+def _resolve(root: Path, relative: str) -> Path:
+    d._path(relative)
+    root = root.resolve()
+    target = root.joinpath(*relative.split("/"))
+    # Reject links even when they currently point inside the boundary. A published
+    # tree must retain its bytes independently of subsequent link-target changes.
+    for parent in (target, *target.parents):
+        if parent == root:
+            break
+        if parent.is_symlink() or parent.is_junction():
+            _fail("UNSAFE_PATH", relative, "evidence path contains a link")
+    if not target.resolve().is_relative_to(root):
+        _fail("UNSAFE_PATH", relative, "path escapes evidence root")
+    return target
+
+
+def _delivery_path(context: RepositoryContext, reference) -> Path:
+    return _resolve(
+        context.root,
+        f"research/{reference.strategy_id}/deliveries/{reference.stage.value}/{reference.revision}",
+    )
+
+
+def _read_json(path: Path):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError(f"duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=pairs)
+
+
+def _read_evidence(root: Path, reference: d.EvidenceRef) -> bytes:
+    data = _resolve(root, reference.path).read_bytes()
+    if sha256(data).hexdigest() != reference.sha256:
+        _fail("EVIDENCE_HASH", reference.path, "evidence hash differs")
+    return data
+
+
+def _walk(value):
+    yield value
+    if is_dataclass(value):
+        for field in fields(value):
+            yield from _walk(getattr(value, field.name))
+    elif isinstance(value, tuple):
+        for item in value:
+            yield from _walk(item)
+
+
+def _load_experiments(definition, root: Path, *, published: bool):
+    results = {}
+    candidates = {}
+    for ref in definition.experiments:
+        relative = f"experiments/{ref.experiment_id}" if published else ref.workspace_path
+        experiment_root = _resolve(root, relative)
+        # Validate all file paths before handing off to the existing REX reader.
+        envelope = _read_json(_resolve(experiment_root, "execution_envelope.json"))
+        for name in envelope["receipt"]["artifact_sha256"]:
+            _resolve(experiment_root, name)
+        _resolve(experiment_root, "execution_receipt.json")
+        result = load_experiment_input(experiment_root, expected_receipt_sha256=ref.receipt_sha256)
+        if result.experiment_id != ref.experiment_id:
+            _fail("EXPERIMENT_IDENTITY", relative, "experiment ID differs from reference")
+        receipt = envelope["receipt"]
+        if receipt["schema_version"] != 2:
+            _fail(
+                "EXPERIMENT_SCHEMA",
+                relative,
+                "new stage deliveries require typed schema 2 receipts",
+            )
+        records = tuple(EvaluationRecord.from_dict(x) for x in receipt["trace"]["evaluations"])
+        for record in records:
+            previous = candidates.setdefault(record.candidate_id, record.content_sha256)
+            if previous != record.content_sha256:
+                _fail(
+                    "CANDIDATE_CONFLICT", relative, "candidate ID has conflicting evidence content"
+                )
+        results[ref.experiment_id] = (experiment_root, result, receipt, records)
+    # REX binds predecessor identities, but its single-input reader does not load
+    # predecessor directories. Require the declared transitive closure here.
+    for _, _, receipt, _ in results.values():
+        for predecessor, digest in receipt["predecessor_receipts"].items():
+            if predecessor not in results or results[predecessor][1].receipt_sha256 != digest:
+                _fail("EXPERIMENT_CLOSURE", predecessor, "missing or differing predecessor receipt")
+    return results
+
+
+def _check_evaluation(ref, candidate, experiments):
+    if ref.experiment_id not in experiments:
+        _fail("EVALUATION_REFERENCE", ref.experiment_id, "undeclared source experiment")
+    records = experiments[ref.experiment_id][3]
+    record = next((x for x in records if x.attempt_id == ref.attempt_id), None)
+    if record is None:
+        _fail("EVALUATION_REFERENCE", ref.attempt_id, "attempt is absent from experiment receipt")
+    key = candidate.key
+    if (record.candidate_id, record.content_sha256) != (
+        f"{key.strategy_id}-{key.candidate_id}",
+        candidate.content_sha256,
+    ):
+        _fail("CANDIDATE_CONFLICT", ref.attempt_id, "evaluation candidate identity differs")
+    if any(x not in record.evaluation_ids for x in ref.evaluation_ids):
+        _fail("EVALUATION_REFERENCE", ref.attempt_id, "evaluation ID is absent from this attempt")
+
+
+def _validate_content(definition, content, root, experiments):
+    expected = {
+        d.DeliveryStage.MANDATE: d.ResearchMandate,
+        d.DeliveryStage.COMPONENTS: d.ComponentPanel,
+        d.DeliveryStage.CANDIDATES: d.CandidateSet,
+    }
+    if type(content.payload) is not expected[definition.stage]:
+        _fail("STAGE_CONTENT", "content.payload", "stage and content type differ")
+    available = {x.reference.path: x.reference.sha256 for x in content.attachments}
+    for experiment_id, (_, result, _, _) in experiments.items():
+        for artifact in result.artifacts:
+            available[f"experiments/{experiment_id}/{artifact.path}"] = artifact.sha256
+    for value in _walk(content):
+        if isinstance(value, d.EvidenceRef):
+            if available.get(value.path) != value.sha256:
+                _fail(
+                    "EVIDENCE_REFERENCE", value.path, "reference is absent from declared evidence"
+                )
+            _read_evidence(root, value)
+        elif isinstance(value, d.CatalogDefinitionRef):
+            payload = _read_json(_resolve(root, value.evidence.path))
+            cls = (
+                FactorDefinition
+                if value.kind is d.CatalogDefinitionKind.FACTOR
+                else SignalDefinition
+            )
+            catalog = cls.from_dict(payload)
+            identifier = (
+                catalog.factor_id if isinstance(catalog, FactorDefinition) else catalog.signal_id
+            )
+            if (identifier, catalog.version, catalog.definition_sha256) != (
+                value.catalog_id,
+                value.version,
+                value.definition_sha256,
+            ):
+                _fail(
+                    "COMPONENT_DEFINITION", value.catalog_id, "catalog definition identity differs"
+                )
+        elif isinstance(value, d.ExperimentDefinitionRef):
+            if value.experiment_id not in experiments:
+                _fail(
+                    "COMPONENT_DEFINITION", value.experiment_id, "undeclared definition experiment"
+                )
+            receipt = experiments[value.experiment_id][2]
+            if (receipt["definition_sha256"], receipt["source_sha256"]) != (
+                value.definition_sha256,
+                value.source_sha256,
+            ):
+                _fail(
+                    "COMPONENT_DEFINITION",
+                    value.experiment_id,
+                    "definition/source identity differs",
+                )
+        elif isinstance(value, d.ComponentTestResult):
+            if value.experiment_id not in experiments:
+                _fail("COMPONENT_TEST", value.test_id, "undeclared test experiment")
+            prefix = f"experiments/{value.experiment_id}/"
+            if not any(ref.path.startswith(prefix) for ref in value.evidence):
+                _fail(
+                    "COMPONENT_TEST",
+                    value.test_id,
+                    "test must cite its receipted experiment evidence",
+                )
+        elif isinstance(value, d.CandidateIdentityRef):
+            if value.key.strategy_id != definition.strategy_id:
+                _fail("CANDIDATE_FAMILY", value.key.candidate_id, "candidate family differs")
+    if isinstance(content.payload, d.CandidateSet):
+        identities = {
+            record.candidate_id: record.content_sha256
+            for _, _, _, records in experiments.values()
+            for record in records
+        }
+        for candidate in content.payload.candidates:
+            key = candidate.identity.key
+            digest = identities.get(f"{key.strategy_id}-{key.candidate_id}")
+            if digest is None:
+                _fail(
+                    "CANDIDATE_EVIDENCE",
+                    key.candidate_id,
+                    "candidate requires authenticated evaluation attempt evidence",
+                )
+            if digest != candidate.identity.content_sha256:
+                _fail(
+                    "CANDIDATE_CONFLICT",
+                    key.candidate_id,
+                    "candidate identity differs from source evidence",
+                )
+            for ref in candidate.evaluations:
+                _check_evaluation(ref, candidate.identity, experiments)
+        for search in content.payload.searches:
+            for trial in search.trials:
+                for ref in trial.evaluations:
+                    _check_evaluation(ref, trial.candidate, experiments)
+
+
+def _report(definition, content) -> bytes:
+    # Tables/numbers are rendered only from the machine contract. Free-text
+    # explanations remain researcher statements; no semantic NLP certification.
+    def safe(value):
+        return (
+            str(value)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("|", "\\|")
+            .replace("\n", "<br>")
+        )
+
+    lines = [
+        f"# {definition.strategy_id} · {definition.stage.value} · {definition.revision}",
+        "",
+        f"研究员声明状态：{content.status.value}",
+        "",
+        "技术校验验证结构、身份与证据引用；阶段推进和研究结论由研究员与用户决定。",
+        "",
+        "[完整机器契约](delivery.json)",
+        "",
+        "## 阶段内容",
+        "",
+    ]
+    payload = content.payload
+    if isinstance(payload, d.ResearchMandate):
+        lines.extend(
+            [
+                "| 项目 | 类别 | 内容 | 确认状态 | 数值约束（含边界） |",
+                "| --- | --- | --- | --- | --- |",
+            ]
+        )
+        for item in payload.items:
+            requirement = item.requirement
+            bounds = (
+                "—"
+                if requirement is None
+                else (
+                    f"{requirement.metric}: [{requirement.lower}, {requirement.upper}] {requirement.unit}"
+                )
+            )
+            lines.append(
+                "| "
+                + " | ".join(
+                    safe(x)
+                    for x in (
+                        item.item_id,
+                        item.kind.value,
+                        item.statement,
+                        item.confirmation.status.value,
+                        bounds,
+                    )
+                )
+                + " |"
+            )
+        for item in payload.items:
+            if item.confirmation.source is not None:
+                ref = item.confirmation.source
+                lines.extend(
+                    ["", f"{safe(item.item_id)} 确认来源：[{safe(ref.path)}](<{ref.path}>)"]
+                )
+    elif isinstance(payload, d.ComponentPanel):
+        lines.extend([payload.conclusion, ""])
+        for component in payload.components:
+            lines.extend(
+                [
+                    f"### {safe(component.component_id)}",
+                    "",
+                    f"职责：{component.role}",
+                    "",
+                    f"研究判断：{component.judgment}",
+                    "",
+                    f"适用边界：{component.applicability}",
+                    "",
+                    f"标签／期限／对照：{component.label} / {component.horizon} / {component.control}",
+                    "",
+                    f"可用时点／价格口径：{component.availability} / {component.price_basis}",
+                    "",
+                ]
+            )
+            for test in component.tests:
+                lines.append(f"- {safe(test.test_id)}：{test.status.value}；{test.explanation}")
+                lines.extend(f"  - 证据：[{safe(ref.path)}](<{ref.path}>)" for ref in test.evidence)
+    else:
+        lines.extend(
+            [
+                payload.conclusion,
+                "",
+                "交接候选："
+                + ("、".join(f"{x.strategy_id}-{x.candidate_id}" for x in payload.handoff) or "无"),
+                "",
+            ]
+        )
+        for candidate in payload.candidates:
+            key = candidate.identity.key
+            lines.extend(
+                [
+                    f"### {key.strategy_id}-{key.candidate_id}",
+                    "",
+                    f"内容指纹：`{candidate.identity.content_sha256}`",
+                    "",
+                    f"策略假设：{candidate.hypothesis}",
+                    "",
+                    f"研究判断：{candidate.judgment}",
+                    "",
+                ]
+            )
+        for search in payload.searches:
+            lines.extend(
+                [
+                    f"### 搜索 {safe(search.search_id)}",
+                    "",
+                    f"方法：{search.method} {search.method_version}；种子：{search.seed}",
+                    "",
+                    f"调度：{search.scheduling}；声明预算：{search.declared_budget}；"
+                    f"已提交记录数：{len(search.trials)}",
+                    "",
+                    f"停止原因：{search.stop_reason}",
+                    "",
+                    "| 提议 | 参数 | 试验状态 | 原因 |",
+                    "| --- | --- | --- | --- |",
+                ]
+            )
+            for trial in search.trials:
+                parameters = ", ".join(f"{p.name}={p.value}" for p in trial.parameters)
+                lines.append(
+                    "| "
+                    + " | ".join(
+                        safe(x)
+                        for x in (trial.proposal_id, parameters, trial.status.value, trial.reason)
+                    )
+                    + " |"
+                )
+    lines.extend(
+        [
+            "",
+            "## 事实",
+            "",
+            "| ID | 值 | 单位 | 状态 | 缺失原因 |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+    )
+    for fact in content.facts:
+        lines.append(
+            "| "
+            + " | ".join(
+                safe(v)
+                for v in (
+                    fact.fact_id,
+                    fact.value if fact.value is not None else "—",
+                    fact.unit,
+                    fact.status.value,
+                    fact.reason or "—",
+                )
+            )
+            + " |"
+        )
+    for fact in content.facts:
+        lines.extend(
+            f"\n{safe(fact.fact_id)} 证据：[{safe(ref.path)}](<{ref.path}>) `{ref.sha256}`"
+            for ref in fact.evidence
+        )
+    lines.extend(["", "## 解释", ""])
+    facts = {x.fact_id: x for x in content.facts}
+    for explanation in content.explanations:
+        lines.extend([f"**{explanation.kind.value}**：{explanation.text}", ""])
+        for name in explanation.fact_ids:
+            fact = facts[name]
+            value = fact.value if fact.value is not None else fact.reason
+            lines.append(f"- {safe(name)}：{safe(value)} {safe(fact.unit)}")
+        for label, refs in (
+            ("支持证据", explanation.supporting),
+            ("不利证据", explanation.contrary),
+        ):
+            lines.extend(f"- {label}：[{safe(x.path)}](<{x.path}>) `{x.sha256}`" for x in refs)
+    lines.extend(
+        [
+            "",
+            "## 未完成事项",
+            "",
+            *[f"- {safe(x)}" for x in content.incomplete_items],
+            "",
+            "## 复算",
+            "",
+            content.reproduction.instructions,
+            "",
+            f"数据访问：{content.reproduction.data_access}",
+            "",
+            f"确定性及容差：{content.reproduction.determinism}",
+            "",
+        ]
+    )
+    lines.extend(
+        f"- 环境：[{safe(x.path)}](<{x.path}>) `{x.sha256}`"
+        for x in content.reproduction.environment
+    )
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def _manifest(root: Path) -> tuple[d.EvidenceRef, ...]:
+    result = []
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        _resolve(root, relative)
+        if path.is_file() and relative != "receipt.json":
+            media = {".json": "application/json", ".md": "text/markdown"}.get(
+                path.suffix, "application/octet-stream"
+            )
+            result.append(d.EvidenceRef(relative, sha256(path.read_bytes()).hexdigest(), media))
+    d._unique((x.path.casefold() for x in result), "manifest path")
+    return tuple(result)
+
+
+def _read_delivery(context, reference, root, visited):
+    identity = (reference.strategy_id, reference.stage, reference.revision)
+    if identity in visited:
+        _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
+    visited = visited | {identity}
+    receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
+    if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
+        _fail(
+            "DELIVERY_IDENTITY", "receipt", "receipt differs from independently retained reference"
+        )
+    if _manifest(root) != receipt.files:
+        _fail("DELIVERY_FILES", "receipt.files", "published file manifest differs")
+    document = _read_json(_resolve(root, "delivery.json"))
+    if (
+        set(document) != {"schema_version", "definition", "content"}
+        or type(document["schema_version"]) is not int
+        or document["schema_version"] != 1
+    ):
+        _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
+    definition = d.DeliveryDefinition.from_dict(document["definition"])
+    content = d.DeliveryContent.from_dict(document["content"])
+    if (definition.strategy_id, definition.stage, definition.revision) != identity:
+        _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
+    experiments = _load_experiments(definition, root, published=True)
+    _validate_content(definition, content, root, experiments)
+    if _resolve(root, "report.md").read_bytes() != _report(definition, content):
+        _fail("REPORT_FACTS", "report.md", "report differs from machine content")
+    for predecessor in definition.predecessors:
+        _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited)
+    return receipt
+
+
+def validate_delivery(
+    context: RepositoryContext, reference: d.DeliveryReference
+) -> d.DeliveryValidation:
+    """Read-only verification; never executes research code or reproduction commands."""
+    if not isinstance(context, RepositoryContext) or not isinstance(reference, d.DeliveryReference):
+        raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
+    try:
+        _read_delivery(context, reference, _delivery_path(context, reference), set())
+        return d.DeliveryValidation(d.ValidationStatus.PASS)
+    except d.DeliveryValidationError as exc:
+        return d.DeliveryValidation(d.ValidationStatus.FAIL, exc.issues)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        return d.DeliveryValidation(
+            d.ValidationStatus.FAIL, (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),)
+        )
+
+
+def assemble_delivery(
+    context: RepositoryContext, deliverable: d.ResearchDeliverable
+) -> d.DeliveryReceipt:
+    """Build once, verify, then publish one immutable revision with an atomic rename."""
+    if not isinstance(context, RepositoryContext) or not isinstance(
+        deliverable, d.ResearchDeliverable
+    ):
+        raise TypeError("assemble_delivery requires RepositoryContext and ResearchDeliverable")
+    try:
+        definition = deliverable.definition
+        content = deliverable.build()
+        if type(definition) is not d.DeliveryDefinition or type(content) is not d.DeliveryContent:
+            _fail(
+                "DELIVERY_TYPE", "deliverable", "build/definition must return typed delivery values"
+            )
+        # Round-trip also catches externally mutated frozen objects and noncanonical values.
+        definition = d.DeliveryDefinition.from_dict(definition.to_dict())
+        content = d.DeliveryContent.from_dict(content.to_dict())
+        destination = _delivery_path(context, definition)
+        if destination.exists():
+            existing = _read_json(_resolve(destination, "delivery.json"))
+            expected = {
+                "schema_version": 1,
+                "definition": definition.to_dict(),
+                "content": content.to_dict(),
+            }
+            if existing != expected:
+                raise d.DeliveryConflictError(
+                    "delivery revision already contains different content"
+                )
+            receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
+            return _read_delivery(context, receipt.reference, destination, set())
+        for predecessor in definition.predecessors:
+            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
+        experiments = _load_experiments(definition, context.root, published=False)
+        _resolve(context.root, ".tmp/delivery")
+        staging = create_temporary_directory(context.root, "delivery")
+
+        def copy(source, relative, expected):
+            target = _resolve(staging, relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            data = source.read_bytes()
+            if sha256(data).hexdigest() != expected:
+                _fail("EVIDENCE_HASH", relative, "source changed or hash differs")
+            with target.open("xb") as output:
+                output.write(data)
+
+        for attachment in content.attachments:
+            copy(
+                _resolve(context.root, attachment.source_path),
+                attachment.reference.path,
+                attachment.reference.sha256,
+            )
+        for experiment_id, (source, result, _, _) in experiments.items():
+            prefix = f"experiments/{experiment_id}"
+            for name in ("execution_envelope.json", "execution_receipt.json"):
+                path = _resolve(source, name)
+                copy(path, f"{prefix}/{name}", sha256(path.read_bytes()).hexdigest())
+            for artifact in result.artifacts:
+                copy(_resolve(source, artifact.path), f"{prefix}/{artifact.path}", artifact.sha256)
+        verified = _load_experiments(definition, staging, published=True)
+        _validate_content(definition, content, staging, verified)
+        document = {"schema_version": 1, "definition": definition, "content": content}
+        (staging / "delivery.json").write_bytes(d._canonical(document))
+        (staging / "report.md").write_bytes(_report(definition, content))
+        files = _manifest(staging)
+        reference = d.DeliveryReference(
+            definition.strategy_id, definition.stage, definition.revision, d._digest(files)
+        )
+        receipt = d.DeliveryReceipt(reference, files)
+        (staging / "receipt.json").write_bytes(d._canonical(receipt))
+        _read_delivery(context, reference, staging, set())
+        destination = _delivery_path(context, reference)
+        if destination.exists():
+            return _existing(context, reference, destination)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            staging.rename(destination)
+        except OSError:
+            if destination.exists():
+                return _existing(context, reference, destination)
+            raise
+        return receipt
+    except (d.DeliveryValidationError, d.DeliveryConflictError):
+        raise
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        raise d.DeliveryValidationError(
+            (d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)
+        ) from exc
+
+
+def _existing(context, reference, destination):
+    receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
+    if receipt.reference != reference:
+        raise d.DeliveryConflictError("delivery revision already contains different content")
+    return _read_delivery(context, reference, destination, set())
