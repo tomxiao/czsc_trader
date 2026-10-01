@@ -33,10 +33,15 @@
 | 对象 | 当前要求 | 代码入口 |
 | --- | --- | --- |
 | `experiment_binding.json` / `ExperimentBinding` | 新正式实验使用`schema_version=3`；加载器仍支持历史版本2 | [loader.py](src/research_experiment/loader.py) |
-| `ExperimentDefinition` | 当前`schema_version=1`；在`subjects`中声明唯一研究标的 | [contracts.py](src/research_experiment/contracts.py) |
+| `ExperimentDefinition` | 新上下文要求`schema_version=2`，显式声明`data_scope`；历史版本1保留原语义；在`subjects`中声明唯一研究标的 | [contracts.py](src/research_experiment/contracts.py) |
+| `ExperimentReceipt` | 新执行生成`schema_version=2`，绑定实际执行追踪和产物；历史版本1仍可读取 | [contracts.py](src/research_experiment/contracts.py) |
 | `ResearchExperiment.synthetic_precheck()` | 返回`ExperimentPrecheckResult`或`None`，不读取真实研究结果 | [contracts.py](src/research_experiment/contracts.py) |
 
-两个对象的版本号独立，不得把绑定版本3填写到`ExperimentDefinition.schema_version`。
+绑定、定义与回执分别管理版本号，不得互相套用。
+
+`ExperimentMode.FORMAL`声明受管执行方式；`ExperimentDataScope.DEVELOPMENT`声明开发数据范围，
+`SEALED_VALIDATION`声明封存验证范围。正式开发实验可以搜索参数；封存验证必须使用正式模式、
+显式验证截止日及读取能力，并禁止搜索和选择参数。数据门属于执行契约，不构成Python代码安全沙箱。
 
 - 合成预检必须覆盖输入结构、边界、时间对齐和实际计算路径。
 - 合成预检不得使用真实收益筛选参数。
@@ -61,7 +66,7 @@
 
 ### API入口
 
-源码与定义冻结后、首次正式执行前调用TDR公共`preflight_experiment_archive(context, experiment, ...)`，见[公共导出](../../src/czsc_trader/application/__init__.py)。显式提供`max_workers`、搜索预算`max_evaluations`及`PredecessorEvidence`序列；前驱绑定工作空间与回执哈希。示例见[TDR说明](../../src/czsc_trader/README.md)。用户CLI仅保留回测，研究员不得通过CLI执行预检。
+源码与定义冻结后、首次正式执行前调用TDR公共`preflight_experiment_archive(context, experiment, ...)`，见[公共导出](../../src/czsc_trader/application/__init__.py)。按需提供`max_workers`、`native_threads_per_worker`及`PredecessorEvidence`序列；前驱绑定工作空间与回执哈希。示例见[TDR说明](../../src/czsc_trader/README.md)。用户CLI仅保留回测，研究员使用Python API执行预检。
 
 - 技术失败档案必须按实际档案身份引用。
 - 不得伪造成功receipt。
@@ -93,8 +98,21 @@ dataflows=flows, data_requests=requests)`。`requests`必须是`DataRequest`元�
 调用方负责它们的数据配置。正式上下文只接受`cache: LocalCacheConfig | None`，由平台创建DFLS
 并共享给SRT和评价器，默认不启用缓存。配置见[DFLS说明](../dataflows/README.md#dev配置本地缓存)。
 
-Optuna继续作为独立第三方库使用，由实验实现组织搜索，并遵守已声明的能力及评价次数预算。
-TDR/REX不接管study、sampler或trial生命周期；当前未提供平台Optuna适配器。
+Optuna继续作为独立第三方库使用，研究员组织study、sampler、trial、预算、剪枝、重试和停止条件。
+`ExperimentResources(max_workers, random_seed, native_threads_per_worker=1)`配置单次执行资源，
+不包含评价次数预算。当前未提供平台Optuna适配器或跨进程搜索调度。
+
+## 受管端口与执行证据
+
+`ExperimentContext`通过强类型`ExperimentDataPort`、`ExperimentRuntimePort`和
+`ExperimentEvaluationPort`提供数据、运行和评价能力。正式评价使用
+`context.evaluation.evaluate(EvaluationRequest)`，评价本身不自动登记候选。
+平台为真实调用保留开始及终态记录，成功、失败、取消分别表达；窗口／场景结果绑定候选内容、
+输入、协议和环境身份，重复计算不增加独立研究证据数量。
+
+`execute_experiment`将声明产物、受管评价产物以及`inspect_candidate`注册的检验证据共同纳入
+执行回执。技术检验须在正式执行尚未封存时完成，已存在回执或失败终态的空间拒绝追加检验。
+REX记录实际执行事实；阶段报告由TDR的`assemble_delivery`另行验证和发布。
 
 ## 阅读实验来源
 
@@ -114,4 +132,6 @@ REX执行成功只证明实验按声明运行；其结果不自动成为可交�
 | 重复复算 | 不增加独立证据数量 |
 | 前瞻数据 | 参与新版本选择后纳入该版本开发池范围 |
 
-研究员负责披露选择历史及污染影响；上述记录不构成独立性证明。现有协议字段不足时由实验结构化产物补齐，统一交付入口待CAP-01实现，见[交付契约占位](../../docs/RESEARCH_DELIVERY_CONTRACT.md)。
+研究员负责披露选择历史及污染影响；上述记录不构成独立性证明。实验结构化产物可以补充研究记录，
+阶段交付通过`ResearchDeliverable`、`assemble_delivery`和`validate_delivery`绑定完整证据，
+调用契约见[TDR五阶段交付](../../src/czsc_trader/README.md#7-五阶段交付)。

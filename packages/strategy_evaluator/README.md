@@ -4,9 +4,39 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 
 研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
 
-`validate_protocol`、`screen_candidates`、`rank_candidates`保留已有协议驱动的比较计算；它们不等同于RSCH阶段四的完整排序政策。阶段四按已批准协议调用`pareto_layers`及所需诊断，不自行新增经济硬门。统计风险标签不等于冻结决定或未来成功概率。
+阶段四使用`assess_candidates`和`compare_candidates`，输入与输出均为强类型不可变记录。
+`validate_protocol`、`screen_candidates`、`rank_candidates`保留既有协议计算语义；新阶段交付
+按下述研究契约进行复算。统计风险标签不等于冻结决定或未来成功概率。
 
-平台只校验结构、计算和证据一致性，研究员解释结果，用户决定选型。新冻结工具仍待实现，见[RSCH契约](../../research/RSCH_AGENT.md)。
+平台校验结构、计算和证据一致性，研究员解释与推荐，用户决定选型；检验和获批冻结使用
+[TDR入口](../../src/czsc_trader/README.md#8-技术检验用户决定与冻结)。
+
+## 候选自检与比较
+
+| 公共API | 输入 | 输出 |
+| --- | --- | --- |
+| `assess_candidates(request)` | `CandidateAssessmentRequest` | `AssessmentPanel` |
+| `compare_candidates(request)` | `CandidateComparisonRequest` | `CandidateComparison` |
+
+全部类型和函数从`strategy_evaluator`顶层导入。TDR的
+`build_assessment_evidence(EvaluationRequest, EvaluationResult)`先认证受管评价，再适配为
+`AssessmentEvidence`。SE只计算传入事实，不读取仓库、调度搜索或代替执行证据认证。
+
+`CandidateAssessmentRequest`显式指定中心候选、账户／成交／基准证据、参数扰动关系、
+未完成评价和`SelfCheckProtocol`。协议指定场景、窗口、覆盖、分位数算法、Bootstrap种子及
+容差。参数邻域仅接纳真实`PARAMETERS`派生；缺失或不可比诊断保留状态和原因，失败与取消
+尝试保留记录，不填零或静默丢弃。主要结果包括净年化、回撤、已完成交易周期及频率、配对
+滚动超额收益、利润集中度、压力损失和参数退化；置信区间及家族PBO/DSR作为诊断报告。
+
+`CandidateComparisonRequest`显式传入比较候选集、`ResearchTargets`、自检面板和
+`ComparisonPolicy`。TDR阶段交付将数值目标绑定到阶段一已确认的`MandateItem`；纯SE请求本身
+不证明目标已获用户确认。诊断指标不自动升级为研究硬门。
+
+比较先按原始净年化和回撤作帕累托分层，再按七项指标的显式分箱顺序比较：净年化、回撤、
+参数收益退化、参数回撤退化、滚动超额Q10、压力年化损失、利润集中度。分箱由
+`MetricBinSpec`指定分辨率、原点及舍入规则；同层同箱保留并列，候选ID只用于稳定展示。
+交易频率用于目标核验，不参与上述层内排序；未达标、证据不足和不可比候选仍保留结果。
+敏感性方案另列，不改写基准排序；输出不自动产生入选或冻结决定。
 
 ## `compare_ledgers`：保留原始身份的账本比较
 
@@ -46,6 +76,8 @@ result = compare_ledgers(LedgerComparisonRequest(
 | `INVALID` | 证据序列化、内容哈希、日期覆盖或引用关系不合格 |
 
 经济等价模式仍比较诊断等附加字段；相同成交并不自动得到`EQUIVALENT`。
+仅在`ECONOMIC`、零容差且等价时返回`economic_sha256`，用于确定性行为分组；容差内近似一致
+不生成同一经济哈希。双方原始证据哈希及身份始终保留。
 账本比较用于定位两次运行的差异，执行正确性仍由`audit_replay`独立审计。
 
 ## 基准整手审计
@@ -61,10 +93,10 @@ BuyHold及MA5/MA20的基准证据必须携带实际现金与持仓数量，不�
 
 | 检查 | 调用方要求 |
 | --- | --- |
-| 指标集合 | 每个配置的指标键必须一致；当前实现按双方键的交集比较 |
-| 数值 | 参与分层的数值必须有限 |
+| 指标集合 | 指标键非空、唯一且完全一致；重复候选ID或不同指标集合立即拒绝 |
+| 数值 | 只接受有限整数／浮点数，拒绝布尔值和非有限值 |
 | 方向 | 越大越好；收益／回撤双指标分层传入净年化及负的最大回撤幅度 |
 | 缺失 | 影响比较的缺失值标记不可比，不填零或静默丢弃指标 |
-| 政策 | 研究目标核验及层内排序由调用方按已冻结协议执行 |
+| 政策 | `pareto_layers`只分层；阶段四目标核验和分箱排序使用`compare_candidates` |
 
 最小适配测试应覆盖指标键不一致、非有限值、完全并列及已知支配关系。工具分层结果不替代研究员解释或用户选型。

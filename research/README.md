@@ -9,13 +9,18 @@
 | --- | --- |
 | 五阶段研究、自检、技术检验及获批冻结 | [RSCH Agent](RSCH_AGENT.md) |
 | 不可变正式实验的目录和归档合同 | [实验档案说明](../experiments/README.md) |
-| 平台架构、研究工具待评审事项与开发运维 | [开发运维交接](../docs/DEVELOPMENT_HANDOFF.md) |
+| 当前公共契约、五阶段交付与冻结API | [TDR使用说明](../src/czsc_trader/README.md) |
+| 平台架构与开发运维 | [开发运维交接](../docs/DEVELOPMENT_HANDOFF.md) |
 
 新流程由用户批准阶段推进、选择候选并决定是否冻结；研究员执行研究、自检、技术检验及获批冻结。
-`StrategyCandidate`身份贯穿阶段三至五，不另建候选包对象。新平台能力的实现状态见RSCH附录“平台能力占位清单”。
+`StrategyCandidate`身份贯穿阶段三至五，通过TDR显式登记。当前已实现的接口以模块README和
+公共导出为准；RSCH附录及历史设计稿中的能力占位用于追溯需求。
 部署和PTE账户操作须另行取得授权。
 
-旧CIO及候选包执行入口已删除；历史实验与冻结证据原件保留。新冻结能力尚未实现，不得恢复旧流程代替。
+正式研究执行通过TDR/REX受管入口，研究员管理参数搜索与预算。阶段报告使用
+`assemble_delivery/validate_delivery`发布和验证；用户选型后调用`inspect_candidate`，取得明确
+冻结批准后调用`freeze_candidate`，仅`COMMITTED`表示成功。旧CIO及候选包执行入口已删除，
+历史实验与冻结证据原件保留。
 
 ## 策略批次
 
@@ -36,7 +41,9 @@
 | --- | --- |
 | 批次意图、材料和研究凭据 | `research/registrations/SXX/`、`research/SXX/materials.json` |
 | 实验问题、失败记录和机器证据 | `experiments/SXX/`中的不可变档案 |
-| 新流程候选内容与自检证据 | 阶段三、四机器产物及证据索引；统一登记入口待CAP-01、CAP-07补齐 |
+| 候选身份、源码与派生关系 | `research/registrations/<策略ID>/candidates/`及登记对象 |
+| 五阶段交付和自检证据 | `research/<策略ID>/deliveries/<阶段>/<修订>/`中的内容、报告、回执及附件 |
+| 用户决定、技术检验与冻结结果 | `strategies/research_decisions/`、`research_objects/`、`freeze_requests/`中的不可变引用及状态 |
 | 历史候选提交内容 | `research/SXX/candidates/`及对应旧候选包 |
 | 正式身份、冻结版本、SRT部署和治理证据 | `strategies/`，只由平台工具写入 |
 | 数据与可再生输出 | `data/`、`outputs/`；使用前仍须按角色契约核对因果及身份 |

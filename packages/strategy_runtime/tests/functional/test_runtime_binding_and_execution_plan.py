@@ -100,6 +100,7 @@ def test_every_active_frozen_release_has_a_matching_source_binding() -> None:
 
 def test_runtime_rejects_release_without_deployed_implementation() -> None:
     raw = {
+        "schema_version": 1,
         "strategy_id": "S999",
         "version": "v1",
         "release_id": "S999-v1",
@@ -116,6 +117,22 @@ def test_strategy_release_rejects_payload_with_a_borrowed_hash() -> None:
     raw["strategy_payload"]["rule"]["portfolio_rule"]["holding_sessions"] = 6
 
     with pytest.raises(RuntimeContractError, match="complete frozen record"):
+        StrategyRelease.from_mapping(raw)
+
+
+@pytest.mark.parametrize("schema_version", [None, True, "1", 0, 5])
+def test_strategy_release_rejects_missing_or_invalid_schema(schema_version) -> None:
+    raw = {
+        "strategy_id": "S999",
+        "version": "v1",
+        "release_id": "S999-v1",
+        "strategy_payload": {"kind": "test"},
+    }
+    if schema_version is not None:
+        raw["schema_version"] = schema_version
+    raw["release_hash"] = canonical_sha256(raw)
+
+    with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
         StrategyRelease.from_mapping(raw)
 
 

@@ -102,7 +102,12 @@ def test_public_business_exports_resolve_existing_implementations() -> None:
         assert getattr(api, name) is getattr(
             import_module("czsc_trader.application." + module), name
         )
-    assert "freeze_candidate" not in api.__all__
+    assert {
+        "inspect_candidate",
+        "record_research_decision",
+        "freeze_candidate",
+        "get_freeze_result",
+    } <= set(api.__all__)
     assert "extract_news" not in api.__all__
 
 

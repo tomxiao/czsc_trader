@@ -9,7 +9,11 @@
 | 任务 | 公共入口 | 说明 |
 | --- | --- | --- |
 | 完整业务操作 | [application](application/__init__.py) | 选择性导出现有应用服务，不重复包装实现 |
-| 正式实验与账户评价 | [research_tools](research_tools/__init__.py) | REX受管上下文、预算及执行追踪 |
+| 正式实验与账户评价 | [research_tools](research_tools/__init__.py) | REX受管上下文、数据范围及实际执行追踪 |
+| 候选登记与读取 | `register_candidate`、`load_candidate` | 显式保存候选身份、来源和源码；评价不自动登记 |
+| 五阶段交付 | `assemble_delivery`、`validate_delivery` | 强类型内容、证据闭包和不可变修订 |
+| 自检证据适配 | `research_tools.build_assessment_evidence` | 将受管评价事实转换为SE的`AssessmentEvidence` |
+| 技术检验与获批冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 用户选型、检验、冻结批准分别绑定证据 |
 | 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放 |
 | 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
 | 数据准备与校验 | `PrepareDataCommand`、`prepare_data`、`validate_data` | 准备行情可能联网并写入数据目录 |
@@ -21,7 +25,7 @@
 
 - `RepositoryContext.discover`只定位仓库路径，不加载凭据；数据入口按其签名接收仓库环境文件。
 - API输入遵循公开类型；现有文件化API仍接收JSON文件路径，不要求经由CLI。
-- 应用服务返回`CommandResult`对象，调用者读取状态、结果、制品及警告；失败使用明确异常。
+- 目录、回测等既有服务返回`CommandResult`；候选、交付、检验与冻结服务返回各自强类型结果，具体见下文。调用方须核对状态及异常。
 - 路径相对性按接口签名处理。临时工作空间放在`.tmp/`，不得覆盖封存实验。
 - API返回成功不替代研究结论判断、用户批准或生产授权。
 
@@ -36,11 +40,14 @@ from czsc_trader.application import RepositoryContext, preflight_experiment_arch
 context = RepositoryContext.discover(Path.cwd())
 report = preflight_experiment_archive(
     context, context.root / "experiments/SXXX/YYYYMMDD_SXXX_EXNN",
-    max_workers=1, max_evaluations=100,
+    max_workers=1, native_threads_per_worker=1,
 )
 ```
 
-路径和预算是示例，须替换为已批准的实际值。前驱通过`PredecessorEvidence`绑定回执哈希。
+路径和单次执行资源配置是示例，须替换为实际值。前驱通过`PredecessorEvidence`绑定回执哈希。
+新执行上下文要求`ExperimentDefinition.schema_version=2`，显式区分`DEVELOPMENT`开发数据与
+`SEALED_VALIDATION`封存验证数据。`FORMAL`表示受管执行方式，开发数据也可以正式执行；
+封存验证要求专属能力和截止日，并禁止参数搜索与选择。
 
 合成预检可返回`ExperimentPrecheckResult`，列出检查项并提供合成`ExperimentResult`样本做严格
 JSON往返校验。预检还报告共享数组修改、列名冲突、进程载荷、浅层序列化及trial身份风险。
@@ -52,10 +59,11 @@ data_requests=(request,))`。数据请求必须满足实验允许的数据集、
 未传探测请求时保留`DATA_READINESS`警告；上面的档案应用API当前不接收探测参数。
 缓存命中只证明缓存请求可用；验证源凭据和实时可达性时，使用未启用缓存或`REFRESH`配置的DFLS。
 
-实验使用`load_experiment`加载，按模式通过`create_formal_experiment_context`或`create_experiment_context`建立上下文，再调用`execute_experiment`。正式评价使用`context.evaluation.evaluate(request)`，保留身份、截止日、并发和次数预算校验。执行回执不允许由研究实现伪造。
+实验使用`load_experiment`加载，按模式通过`create_formal_experiment_context`或`create_experiment_context`建立上下文，再调用`execute_experiment`。正式评价使用`context.evaluation.evaluate(request)`，校验身份、数据范围、截止日及单次执行资源。平台记录实际成功、失败和取消尝试，生成schema 2回执；执行回执不允许由研究实现伪造。
 
-Optuna维持独立第三方库使用方式。实验实现负责study及trial生命周期，平台评价端口负责已声明的
-资源和次数预算；TDR未集成Optuna适配器。
+Optuna维持独立第三方库使用方式。研究员负责study、trial、搜索预算、剪枝、重试和停止条件。
+`ExperimentResources`只声明`max_workers`、`random_seed`和`native_threads_per_worker`；
+平台不管理搜索预算或跨进程搜索调度，TDR未集成Optuna适配器。
 
 ## 4. 策略评价与回测
 
@@ -73,7 +81,8 @@ Optuna维持独立第三方库使用方式。实验实现负责study及trial生�
 应用API `run_backtest`将其包装为错误码`backtest_failed`的`ExecutionError`。
 调用方应按已绑定的交易单位填写，不能用请求字段覆盖冻结规则。
 
-当前版本回测仍需要已有SRT部署凭据；缺少时明确失败，不自动部署。移除该依赖属于后续改造。候选持久化解析尚未实现，用户CLI暂仅支持已登记版本；候选通过API传对象，不自动登记。
+当前版本回测仍需要已有SRT部署凭据；缺少时明确失败，不自动部署。用户CLI仅支持已登记版本；
+候选通过`load_candidate(context, key)`读取后传入API，回测和评价均不自动登记候选。
 
 ```python
 from czsc_trader.application import BacktestRequestV2, run_backtest
@@ -139,12 +148,91 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 自定义执行器须遵守SRT的`SignalHistoryMode`及`ExecutionOutcomeStatus`契约，见
 [SRT说明](../../packages/strategy_runtime/README.md)。
 
-## 6. 冻结与历史治理
+## 6. 候选登记与自检
 
-旧候选包、CIO审查及冻结执行入口已移除；新闻抽取能力已移除。新候选检验、批准绑定及冻结入口仍待CAP-07实现，当前不可执行冻结。
+以下业务函数从`czsc_trader.application`导入；`CandidateKey`、`CandidateRegistrationOrigin`、
+`CandidateDerivation`从`strategy_manager`导入，候选与依赖类型从`strategy_runtime`导入。
 
-历史版本、发布清单、批准记录和凭据原件保持不变。SM内部只读解码器用于历史治理验证，不提供送审、裁定或冻结写入。发布清单中的历史字段继续参与哈希验证，不恢复候选包对象模型。
+| API | 请求与返回 |
+| --- | --- |
+| `register_candidate(context, request)` | `CandidateRegistrationRequest(candidate, origin, dependencies, derivation=None)` → `CandidateRegistration` |
+| `load_candidate(context, key)` | `CandidateKey(strategy_id, candidate_id)` → `StrategyCandidate` |
 
-## 7. 使用与维护边界
+来源绑定实验定义、源码绑定和预检证据。登记记录位于`research/registrations/<策略ID>/candidates/`，
+源码与载荷保存在登记区的内容寻址对象中。同一键和登记内容重复调用返回原记录；不同内容拒绝覆盖。
+参数、实现或执行规则派生使用`CandidateDerivation`分别记录`PARAMETERS/IMPLEMENTATION/EXECUTION`。
+
+`EvaluationRequest`显式携带`data_cutoff`、依赖及可选`EvaluationLineage`。每次受管评价保留
+尝试身份；每个窗口／场景的`EvaluationIdentity`绑定候选键、内容、输入、协议与环境哈希。
+`research_tools.build_assessment_evidence(request, result)`核验请求与结果后返回
+`tuple[AssessmentEvidence, ...]`，供SE `assess_candidates`与`compare_candidates`使用。
+自检、排序和不确定性结果的口径见[SE说明](../../packages/strategy_evaluator/README.md)。
+
+## 7. 五阶段交付
+
+从`czsc_trader.research_tools`导入交付契约，实现`ResearchDeliverable.definition`和
+`build() -> DeliveryContent`，再调用以下业务API：
+
+| API | 返回与语义 |
+| --- | --- |
+| `assemble_delivery(context, deliverable)` | `DeliveryReceipt`；验证内容和证据后发布不可变修订，校验失败或修订冲突抛出明确异常 |
+| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验`DeliveryReference`，返回`PASS/FAIL`及问题定位 |
+
+| `DeliveryStage` | 对应的强类型内容 |
+| --- | --- |
+| `MANDATE` | `ResearchMandate`：研究目标、约束及逐项确认记录 |
+| `COMPONENTS` | `ComponentPanel`：组件角色、定义哈希、实验与事实引用 |
+| `CANDIDATES` | `CandidateSet`：已登记候选、评价证据和描述性的`SearchRecord` |
+| `ASSESSMENT` | `CandidateAssessmentDelivery`：自检／比较请求与结果、目标绑定、反面证据及待决事项 |
+| `INSPECTION` | `CandidateInspectionDelivery`：技术检验、用户决定、可选冻结回执及待决事项 |
+
+产物发布至`research/<策略ID>/deliveries/<阶段>/<修订>/`，包含`delivery.json`、`report.md`、
+`receipt.json`及完整声明证据。`EvidenceFile.source_path`相对仓库，`EvidenceRef.path`相对
+交付目录，文件哈希必须匹配。先在`.tmp/delivery/`组装，再原子发布；同修订同内容可重复调用，
+不同内容必须使用新修订。`COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
+
+阶段四发布和验证都会按记录的请求复算SE结果，并绑定阶段一已确认的数值目标。阶段五复制
+检验、登记、源码、决定和确认材料闭包；可先交付待批准报告，冻结后用新修订记录实际冻结结果。
+技术验证不自动推进研究阶段，也不替用户选型。
+
+## 8. 技术检验、用户决定与冻结
+
+业务函数、`CandidateInspectionRequest`和`InspectionReplay`从`czsc_trader.application`导入；
+决定、检验协议、冻结请求及回执等强类型契约从`strategy_manager`导入。
+
+| API | 请求与返回 |
+| --- | --- |
+| `record_research_decision(context, decision)` | `ResearchDecision` → `DecisionReference` |
+| `inspect_candidate(context, request)` | `CandidateInspectionRequest` → `CandidateInspectionReport` |
+| `freeze_candidate(context, request)` | `FreezeCandidateRequest(request_id, inspection, approval)` → `FreezeReceipt` |
+| `get_freeze_result(context, request_id)` | `FreezeRequestId(strategy_id, value)` → `FreezeReceipt` |
+
+调用顺序与必要输入：
+
+1. 留存用户对阶段四交付中候选的选择，以`CandidateSelectionSubject`绑定交付、候选键和内容哈希。
+2. `CandidateInspectionRequest`传入选择记录、`InspectionProtocol`、正在执行的正式REX上下文、
+   `InspectionReplay`元组、明确的版本／父版本、选择截止日、前瞻起始日和运行绑定模板。
+   每个回放项同时携带原受管评价请求、结果、证据工作空间和本次复算请求。
+3. `inspect_candidate`核验候选及依赖、覆盖、运行定义、复算、独立账本审计、候选与拟冻结版本的
+   信号／账本等价性和发布文件闭包，生成`FreezePlan`及`PASS/FAIL/INCOMPLETE`报告。
+   检验证据同时归入本次REX执行回执；已封存执行空间拒绝追加。
+4. 用户明确批准冻结后，以`FreezeSubject`绑定候选内容、检验报告、计划哈希和版本，留存
+   `DecisionAction.APPROVE`决定，再传入`freeze_candidate`。
+5. 读取回执状态；不确定时用同一`FreezeRequestId`查询，完整状态定义见[SM说明](../../packages/strategy_manager/README.md)。
+
+`ResearchDecision.subject`还支持阶段推进的`StageAdvanceSubject`；`action`使用
+`APPROVE/REJECT/DEFER`。宿主负责取得和核验真实用户授权，平台校验确认材料及其引用，
+调用者填写的批准字段本身不构成人员身份认证。
+
+运行绑定模板使用schema 1，字段为`schema_version/source_files/implementation_sha256/install_files/charts/observation`；
+发布身份由冻结生成。TDR输入模板、附加文件和确认材料的路径相对仓库；API返回的检验、决定和
+计划证据相对`strategies/`，调用方应直接复用返回引用。
+
+仅`COMMITTED`表示版本完成冻结；新版本使用schema 4，绑定来源登记、检验、批准和请求身份。
+同一请求同内容返回既有状态，内容冲突或版本冲突明确失败。中断、证据损坏或未完成提交返回
+`UNKNOWN`时保留现场，不自动重试、回滚或换版本。冻结不会自动获得`PAPER_READY`资格或执行部署。
+历史schema 1/2/3版本、发布清单和治理证据按原始语义读取，保持原件和哈希不变。
+
+## 9. 使用与维护边界
 
 API收敛不改变模块职责；数据、统计及策略计算继续使用所属模块的公开能力。研究员不得使用私有函数、CLI子进程或手工治理写入绕过契约。安装依赖、部署及生产写入分别取得授权。

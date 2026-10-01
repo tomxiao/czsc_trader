@@ -9,7 +9,9 @@ SRT 是研究、回测、模拟交易及未来实盘共用的策略计算锚点�
 SRT 不管理策略生命周期，不评价策略优劣，也不记录成交和账户账本。SM 管理策略身份与治理，
 SE 负责数值评估，TXE 和 PTE 分别负责历史执行与模拟交易执行。
 
-RSCH通过显式源码绑定构造`StrategyCandidate`并复用同一实现进行研究评价。冻结版本及部署凭据保持原样；部署需要独立授权。新冻结能力尚未提供，详见[RSCH契约](../../research/RSCH_AGENT.md)。
+RSCH通过显式源码绑定构造`StrategyCandidate`并复用同一实现进行研究评价。正式研究运行通过
+TDR/REX受管入口；候选登记、检验和获批冻结见[TDR说明](../../src/czsc_trader/README.md)。
+部署需要独立授权，历史冻结版本及部署凭据保持原样。
 
 ## 公共门面
 
@@ -17,6 +19,8 @@ RSCH通过显式源码绑定构造`StrategyCandidate`并复用同一实现进行
 
 - `StrategyRuntime.describe(source, symbol=None)`：校验策略及源码绑定，返回只读
   `RuntimeDefinition`；
+- `StrategyRuntime.identify(candidate, *, dependencies)`：校验候选源码和运行定义，返回
+  `CandidateContentIdentity`，依赖显式使用`tuple[ImplementationDependency, ...]`；
 - `StrategyRuntime.create(StrategyInit(...))`：创建一个不可变的 `StrategyInstance`；
 - `StrategyInstance.prepare_data()`：显式准备并认证该实例所需的全部数据；
 - `StrategyInstance.plan_at(...)`：结合调用方提供的资金、持仓和执行状态，生成单个交易日的
@@ -37,12 +41,13 @@ from pathlib import Path
 
 from strategy_runtime import StrategyInit, StrategyRuntime, TradableWindow
 
+# 以下为宿主或合成验证示例；正式研究通过TDR/REX运行端口执行。
 # source 是已校验的 StrategyCandidate 或 StrategyRelease。
 instance = StrategyRuntime().create(
     StrategyInit(
         source=source,
         tradable_window=TradableWindow(date(2026, 9, 21), date(2026, 9, 21)),
-        data_dir=Path("state/srt/S007-v1/2026-09-21"),
+        data_dir=Path(".tmp/srt/S007-v1/2026-09-21"),
     )
 )
 prepared = instance.prepare_data()
@@ -154,6 +159,10 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 
 ## 身份与冻结版本
 
+候选`CandidateContentIdentity`包含`content_sha256/source_sha256/dependency_sha256`。
+内容身份覆盖参数、输入、决策、执行、监控、能力、历史模式、交易标的、源码闭包、依赖和
+扩展载荷，排除机器绝对路径及候选编号。内容相同的不同编号仍有各自登记键；身份计算不写SM。
+
 运行身份由以下内容共同决定：
 
 - SM 冻结版本的 `release_hash`；
@@ -168,3 +177,8 @@ SRT决策需要输出的展示无关观察序列。SRT只负责校验并物化�
 生成前瞻观察图，不调用策略回测图代码，也不读取未冻结候选包。
 
 冻结版本的可用性以当前治理事实和TDR `strategy_info` API查询为准，不以本说明中的历史版本清单判断。
+
+`StrategyRelease.from_mapping`要求显式整数`schema_version`，支持历史1/2/3及当前4；缺失、
+布尔值、字符串或未知版本立即失败。schema 4包含强类型来源和冻结治理身份；正式部署读取还会
+核对冻结请求、`committed.json`、版本及发布包哈希，拒绝未提交或证据损坏的版本。
+TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不等于已冻结或已部署。

@@ -1,6 +1,6 @@
 # 因子与信号目录（Factor & Signal Catalog，FSC）
 
-本文面向策略研究员（RSCH）和首席投资官（CIO）。平台安装、源码维护和验证见
+本文面向策略研究员（RSCH）和平台开发者（DEV）。平台安装、源码维护和验证见
 [开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
 
 FSC是项目级“弹药目录”。它记录信息族、因子和信号的稳定定义，让TDR和各策略研究线能够
@@ -14,17 +14,29 @@ FSC只管理定义，不保存标的计算值、缓存、收益、实验结论�
 校验和确定性摘要；研究者负责在具体标的和窗口中物化、去冗余及验证机制，SE和FSC均不据此
 宣称Alpha有效。
 
-RSCH在构建信息路径前先查询已有定义，核对因果可用时间、实现入口和参数；CIO在候选体检时
-核对引用的定义身份与候选证据。目录数据位于仓库根目录`catalog/`，通过TDR只读查询：
+RSCH在构建信息路径前先查询已有定义，核对因果可用时间、实现入口和参数，并在组件交付中
+绑定定义身份与实验事实。目录数据位于仓库根目录`catalog/`，通过TDR Python API只读查询：
 
-```powershell
-.\.venv\Scripts\czsc-trader.exe catalog validate
-.\.venv\Scripts\czsc-trader.exe catalog list --kind signal --family MARKET_STRUCTURE
-.\.venv\Scripts\czsc-trader.exe catalog show --id F-PROJECT-ER60
+```python
+from pathlib import Path
+from czsc_trader.application import (
+    RepositoryContext, validate_catalog, list_catalog, show_catalog,
+)
+
+context = RepositoryContext.discover(Path.cwd())
+validation = validate_catalog(context)
+signals = list_catalog(
+    context, kind="signal", family="MARKET_STRUCTURE", status=None, query=None,
+)
+factor = show_catalog(context, "F-PROJECT-ER60")
 ```
+
+`FactorDefinition.definition_sha256`和`SignalDefinition.definition_sha256`覆盖完整规范定义，
+参数必须满足有限JSON值契约。阶段二使用`CatalogDefinitionRef`绑定定义类型、ID和哈希，
+TDR发布／验证交付时核验定义一致性。定义哈希与实验收益证据分别保存。
 
 状态含义：`DISCOVERED`表示已发现但语义或契约尚未完整整理；`READY`表示定义、实现和因果
 可用时间已经可复用；`DEPRECATED`表示只为历史引用保留。状态不表达Alpha有效性。
 
 `READY`只表示目录定义可复用。具体标的上的信息价值、冗余和收益贡献仍由RSCH通过实验验证；
-目录状态不能替代CIO的候选裁决。
+目录状态不能替代研究员解释或用户选型决定。

@@ -48,6 +48,10 @@ RSCH正式比较策略时，通过TDR的`context.evaluation.evaluate(EvaluationR
 执行可行性。限价触碰默认采用保守的严格穿越规则；如研究协议明确要求“触价即成交”，必须
 显式传入`inclusive_touch=True`并在证据中记录。PTE模拟账户仍以Futu成交回报为准。
 
+阶段四由TDR将受管TXE事实转换为SE的`AssessmentEvidence`，保留实际成交、费用、周期和
+账户轨迹；阶段五技术检验还会重放拟冻结版本并进行独立账本审计与经济等价比较。
+调用方不改写原始订单或成交ID来制造一致性，比较时的身份归一化由SE在内部副本完成。
+
 ## 整手数量与完成状态
 
 `execute_target_positions(..., lot_size=100)`要求`lot_size`为正整数，拒绝`bool`、浮点数、

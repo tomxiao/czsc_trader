@@ -6,8 +6,9 @@
 
 ## RSCH：取得可用数据
 
-在研究数据门中，先从`dataflows`顶层公开的`Dataset`确认数据集标识，再通过`Dataflows.fetch`
-请求指定标的、窗口和截止日。例如：
+先从`dataflows`顶层公开的`Dataset`、`DataRequest`、`DataStatus`确认请求和结果契约。
+正式研究通过TDR/REX的`context.data.fetch(request)`取得受管数据。以下`Dataflows.fetch`
+示例用于宿主配置和单独的数据可用性核验：
 
 ```python
 from dataflows import Dataflows, DataRequest, DataStatus, Dataset
@@ -45,6 +46,7 @@ else:
 ## DEV：配置本地缓存
 
 缓存通过现有`Dataflows.fetch(DataRequest)`使用，由宿主显式配置；默认不启用。
+跨调用复用由本地缓存提供，公共API不增加snapshot接口。
 
 ```python
 from datetime import timedelta
