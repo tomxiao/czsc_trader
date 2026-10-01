@@ -1,6 +1,7 @@
 # 研究平台工具优化技术方案评审
 
-状态：待用户评审，所有“拟新增／拟修改”接口尚未实现。
+状态：正式研究经TDR／REX受管入口执行的原则已获用户确认；具体契约和API方案待评审。
+所有“拟新增／拟修改”接口尚未实现。
 
 日期：2026-10-01。身份：DEV。评审分支：`codex/research-tools-design-review`。
 实现基线：`b9bc8442`。需求依据：[RSCH Agent](../research/RSCH_AGENT.md)、
@@ -55,6 +56,68 @@ SM [版本模型](../packages/strategy_manager/src/strategy_manager/models.py)�
 依赖方向保持：TDR调用各模块；SM使用自身标准库值对象，避免反向依赖SRT或TDR；
 REX不导入TDR；SE只接收数值及身份合同。FSC不保存每次实验的绩效结论。
 不增加阶段四／五流程基类，不恢复候选包或CIO裁定对象，不新增DFLS snapshot API。
+
+### 2.1 已确认原则与RSCH导入范围
+
+用户已确认：正式研究执行统一通过TDR／REX受管入口。具体落实为：REX定义实验及端口合同，
+TDR创建平台上下文、执行实验、认证输入、管理资源并生成回执；研究员仍可直接组合公共定义类型、
+纯计算函数和已授权第三方库。正式执行入口不承担机制选择、统计方法选择或研究结论裁定。
+
+| RSCH可导入模块 | 允许直接处理的工作 | 正式执行或写入入口 |
+| --- | --- | --- |
+| `dataflows` | `Dataset/DataRequest/DataResult/DataIdentity`等合同及`LocalCacheConfig`配置 | 正式输入通过`context.data.fetch`；缓存配置交给上下文工厂，研究代码不绕过端口访问供应商 |
+| `factor_signal_catalog` | 信息族、因子、信号定义与只读目录查询 | 定义引用进入实验和组件面板；公共目录修改属于另行授权的平台维护 |
+| `strategy_template_catalog` | 模板定义、查询和构造策略原型 | 模板实例进入源码绑定；自定义策略仍允许 |
+| `research_experiment` | 实现`ResearchExperiment`，构造定义、合成预检和结果，读取认证前驱 | 实验通过TDR `execute_experiment`；研究代码不自行构造平台回执 |
+| `strategy_runtime` | 实现`StrategyImplementation`，构造候选、参数、输入和执行合同 | 正式实验用`context.runtime.describe/create`，完整账户用`context.evaluation.evaluate` |
+| `trading_execution_engine` | 执行结果类型；合成测试与专门执行诊断 | 正式账户由TDR驱动SRT／TXE，独立调用产生的诊断不能直接充当正式评价回执 |
+| `strategy_evaluator` | 账本审计、比较、统计、自检、排序等公开纯计算 | 可在`ResearchExperiment.execute`内直接调用；输入评价身份、协议和结果纳入实验产物及回执 |
+| `strategy_manager` | 身份类型及候选／版本／生命周期只读查询 | 候选登记、决定记录和冻结统一从TDR `application`进入 |
+| `czsc_trader.research_tools` | 实验工厂、预检和执行、评价与产物类型 | 正式账户只用上下文评价端口；模块级`evaluate_strategy`保留给平台适配和明确的非正式调用 |
+| `czsc_trader.application` | 登记、查询、回测、交付、技术检验、决定记录与获批冻结 | 入口按操作校验合同和引用；独立回测不自动产生REX正式实验回执 |
+| 已授权第三方库 | Optuna搜索；tsfresh特征提取；expr_codegen表达式生成；pandas／NumPy等计算 | 在实验定义中声明实际依赖和能力，账户评价仍回到受管端口 |
+
+RSCH使用各模块的顶层公共导出；私有实现和文件布局不作为调用合同。以上是研究员调用规范及
+平台受管路径的验证要求，不声称普通Python能够阻止任意import、文件读取或恶意代码执行。
+本次不引入Python安全沙箱或任意代码隔离系统。
+
+### 2.2 正式执行链与各入口责任
+
+```text
+RSCH编写ResearchExperiment与StrategyImplementation
+  → TDR加载绑定、预检、创建正式上下文
+  → TDR execute_experiment
+      → context.data.fetch：校验数据范围，记录输入身份
+      → context.runtime.describe/create：校验候选和运行范围
+      → context.evaluation.evaluate：校验实际候选，预占预算，执行SRT／TXE，记录尝试
+      → SE／第三方纯计算：研究员组合，协议、输入引用和结果写入ExperimentResult
+  → 平台核验结果及产物，生成实验回执
+  → TDR组装阶段交付；SM写入由TDR业务入口调用
+```
+
+`ResearchExperiment.execute(context)`内不得另建`Dataflows`、裸调用`evaluate_strategy`或启动
+独立`run_backtest`来替代正式输入和账户评价。正式上下文保留平台拥有的适配器，禁止注入研究员
+自定义评价器；探索上下文允许已声明的测试适配。第三方计算函数不逐个增加同义TDR包装。
+
+直接调用`SE.assess_candidates/compare_candidates`属于实验内部数值计算；正式交付要绑定其
+输入评价身份、冻结协议和实验产物引用。独立诊断结果如需进入正式证据，须在正式实验中按相同
+合同复算或验证已受管的来源，不允许通过补填身份字段把非受管运行标成正式运行。
+
+预检及受管端口校验调用合同；回执和交付校验认证来源及结果完整性。源码扫描只能提示绕行风险，
+不把“未扫描到违规导入”作为执行隔离证明。用户决定来源及具体冻结批准继续独立核验。
+
+### 2.3 公共导出与实现约束
+
+- `czsc_trader.research_tools.__all__`暴露RSCH需要的实验、评价和产物合同；
+  现有`evaluate_strategy`保留明确的平台适配用途，不复制成第二个正式评价入口。
+- `czsc_trader.application.__all__`选择性导出业务操作；新增操作返回具体强类型结果，
+  不再套一层内容无约束的同义服务。
+- SM `register_candidate/record_research_decision/freeze_version`是TDR调用的模块公共API；
+  不列入RSCH可直接执行的写操作清单。SM仍自行校验身份和事务，不能只依赖TDR前置检查。
+- SRT作者接口和SE纯计算接口保持各自顶层导出；DFLS供应商、TDR内部评价实现及SM文件写入函数
+  不因本轮重构新增为RSCH接口。
+- 批次验收增加公开导入示例及跨模块主链测试：正式上下文拒绝自定义适配、数据范围越界、
+  候选错绑、预算超额及伪造结果引用；正式交付保留SE计算协议和原始证据身份。
 
 ## 3. 先修正执行和数据范围契约
 
@@ -140,7 +203,7 @@ def identify(self, candidate: StrategyCandidate) -> CandidateContentIdentity: ..
 | --- | --- |
 | TDR `application.register_candidate(context, request: CandidateRegistrationRequest) -> CandidateRegistration` | 输入现有候选、实验回执引用和可选派生关系；通过SRT认证后委托SM登记 |
 | TDR `application.load_candidate(context, key: CandidateKey) -> StrategyCandidate` | 验证登记、文件哈希、依赖和运行定义，返回同一候选身份 |
-| SM `StrategyRegistry.register_candidate(record: CandidateRegistration) -> CandidateRegistration` | 原子创建；同key同内容返回既有记录，同key异内容抛`CandidateIdentityConflict` |
+| SM `StrategyRegistry.register_candidate(record: CandidateRegistration) -> CandidateRegistration` | TDR平台适配调用；原子创建，同key同内容返回既有记录，同key异内容抛`CandidateIdentityConflict` |
 | SM `StrategyRegistry.get_candidate(key: CandidateKey) -> CandidateRegistration` | 只读查询；缺失抛明确错误 |
 
 无变化的重复提议可引用既有候选；不同ID即使内容相同仍保留。参数、源码或固定规则变化必须新ID。
@@ -290,7 +353,8 @@ SE只接收数值目标，用户确认来源由TDR在调用前验证，避免SE�
 接口记录用户决定来源，不凭一段调用方自填文字证明操作者已获授权；宿主负责取得并核对真实确认。
 
 SM新增`StrategyRegistry.record_research_decision(decision: ResearchDecision) -> DecisionReference`
-持久化不可变决定；TDR验证阶段交付、文件和计算证据后调用。决定记录不回写原排名。
+持久化不可变决定；由TDR验证阶段交付、文件和计算证据后调用，RSCH使用TDR入口。
+决定记录不回写原排名。
 技术报告区分`PASS/FAIL/INCOMPLETE`；其必检项由版本化技术协议声明，缺项不能PASS。
 冻结只接受必检项通过；剩余非阻断风险须进入呈现给用户的同一报告。
 
@@ -340,7 +404,10 @@ TDR `validate_release_package/strategy_info`及PTE版本读取测试。
 每批仅运行受影响模块和跨模块主链测试；版本验收再跑`scripts/test-all.ps1`。
 本轮方案检查仅验证代码证据、公共导出、相对链接和接口归属；不以此前全量回归通过证明拟议API可用。
 
-建议确认的设计选择：
+已确认的设计原则：正式研究执行统一通过TDR／REX受管入口；模块可导入范围和调用路径见第2.1—2.3节。
+该原则确认不等于批准全部新增API或批次实施。
+
+待评审的设计选择：
 
 1. 采纳REX执行模式／数据范围拆分，使正式开发池研究与封存验证分开表达。
 2. 采纳SM候选登记和事务冻结，SRT保持单一运行候选对象；TDR只做跨模块认证及编排。
