@@ -17,6 +17,7 @@ from strategy_runtime import (
     StrategyInit,
     StrategyRelease,
     StrategyRuntime,
+    SignalHistoryMode,
     TradableWindow,
     TradingPoint,
 )
@@ -166,6 +167,20 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     )
 
     assert prepared.strategy.reference_id == "S002-v1"
+    for mode in SignalHistoryMode:
+        history = strategy.inspect_signals(history_mode=mode)
+        explicit = strategy.plan_at(
+            point=TradingPoint(trading_date, calculated_at),
+            portfolio=PortfolioSnapshot("s002-v1", "510500.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
+            state=ExecutionState(3, calculated_at, 5900), history_mode=mode,
+        )
+        assert explicit.target_position == history.loc[pd.Timestamp(explicit.signal_date), "target_position"]
+        if mode is SignalHistoryMode.CONTINUOUS:
+            assert explicit.plan_identity == plan.plan_identity
+        history.loc[:, "target_position"] = 99
+        assert strategy.inspect_signals(history_mode=mode).target_position.lt(99).all()
+    with pytest.raises(RuntimeContractError, match="SignalHistoryMode"):
+        strategy.inspect_signals(history_mode="WINDOW")
     assert prepared.available_through == date(2026, 9, 2)
     window = TradableWindow(trading_date, trading_date)
     manifest_path = _prepared_manifest(tmp_path, window)

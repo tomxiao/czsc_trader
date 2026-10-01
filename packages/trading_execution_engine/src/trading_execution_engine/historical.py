@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from strategy_runtime import ExecutionOutcomeStatus
+
 from datetime import datetime, time
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
@@ -226,7 +228,7 @@ class HistoricalExecutor:
                 ),
                 self._cycle_target,
             ),
-            status="SETTLED",
+            status=ExecutionOutcomeStatus.SETTLED,
         )
         self._plans[key] = plan
         self._outcomes[key] = outcome

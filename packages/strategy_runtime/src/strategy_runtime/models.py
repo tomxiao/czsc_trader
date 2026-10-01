@@ -444,6 +444,12 @@ class StrategyCandidate:
     def reference_id(self) -> str:
         return f"{self.strategy_family_id}-{self.candidate_id}"
 
+    def __reduce__(self):
+        """Reconstruct through validation when a host sends a candidate to a worker."""
+        return type(self), (
+            self.strategy_family_id, self.candidate_id, _thaw_json(self.payload), self.source_root,
+        )
+
     @property
     def runtime_identity_sha256(self) -> str:
         return canonical_sha256(

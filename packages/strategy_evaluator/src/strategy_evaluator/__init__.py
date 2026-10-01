@@ -89,7 +89,18 @@ from .benchmark_audit import (
 
 __version__ = "0.1.0"
 
+from .ledger_comparison import (
+    LedgerComparisonMode, LedgerComparisonRequest, LedgerComparisonResult,
+    LedgerComparisonStatus, LedgerDifference, compare_ledgers,
+)
+
 __all__ = [
+    "LedgerComparisonMode",
+    "LedgerComparisonRequest",
+    "LedgerComparisonResult",
+    "LedgerComparisonStatus",
+    "LedgerDifference",
+    "compare_ledgers",
     "CandidateDescriptor",
     "CandidateProfile",
     "EvaluationProtocol",

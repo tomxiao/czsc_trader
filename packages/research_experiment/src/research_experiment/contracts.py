@@ -625,6 +625,26 @@ class ExperimentResult:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class ExperimentPrecheckResult:
+    """Named synthetic checks and an optional synthetic output serialization sample."""
+
+    checks: tuple[ExperimentPreflightCheck, ...]
+    result: ExperimentResult | None = None
+
+    def __post_init__(self) -> None:
+        checks = tuple(self.checks)
+        if not checks or not all(isinstance(item, ExperimentPreflightCheck) for item in checks):
+            raise TypeError("precheck requires non-empty typed checks")
+        if len({item.code for item in checks}) != len(checks):
+            raise ValueError("precheck codes must be unique")
+        if any(item.code in {"PRECHECK", "COVERAGE"} for item in checks):
+            raise ValueError("precheck code is reserved by the platform")
+        if self.result is not None and not isinstance(self.result, ExperimentResult):
+            raise TypeError("precheck result sample must be ExperimentResult")
+        object.__setattr__(self, "checks", checks)
+
+
 def experiment_result_sha256(result: ExperimentResult) -> str:
     """Return the stable identity of experiment output before platform receipt."""
 
@@ -785,7 +805,7 @@ class ResearchExperiment(ABC):
     def definition(self) -> ExperimentDefinition:
         """Return the immutable pre-execution definition."""
 
-    def synthetic_precheck(self) -> None:
+    def synthetic_precheck(self) -> ExperimentPrecheckResult | None:
         """Exercise technical boundaries without reading formal experiment outcomes."""
 
         return None
@@ -796,6 +816,7 @@ class ResearchExperiment(ABC):
 
 
 __all__ = [
+    "ExperimentPrecheckResult",
     "ExperimentArtifact",
     "ExperimentCapabilities",
     "ExperimentCapability",

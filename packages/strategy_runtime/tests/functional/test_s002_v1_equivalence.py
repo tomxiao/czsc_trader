@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from strategy_runtime import ExecutionOutcomeStatus
+
 from dataclasses import asdict
 from datetime import date, datetime
 from decimal import Decimal
@@ -205,7 +207,7 @@ class _DeterministicExecutor:
         portfolio, state = self.snapshot(
             TradingPoint(plan.trading_date, plan.generated_at)
         )
-        return ExecutionOutcome(plan.plan_identity, portfolio, state, "FILLED")
+        return ExecutionOutcome(plan.plan_identity, portfolio, state, ExecutionOutcomeStatus.SETTLED)
 
     def finish(self):
         return tuple(self.plans)

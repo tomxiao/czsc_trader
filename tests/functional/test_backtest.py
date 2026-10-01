@@ -136,6 +136,8 @@ def test_backtest_v2_replays_strategy_snapshot_with_empty_account(
         signals, execution_data, result, 100_000, calculate_metrics(result, 100_000)
     )
     assert audit_replay(evidence).status is AuditStatus.PASS
+    from strategy_evaluator import LedgerComparisonRequest, LedgerComparisonStatus, compare_ledgers
+    assert compare_ledgers(LedgerComparisonRequest(evidence, evidence)).status is LedgerComparisonStatus.EQUIVALENT
     corrupted = list(evidence.account_daily)
     corrupted[-1] = {**corrupted[-1], "equity": corrupted[-1]["equity"] + 1}
     tampered = audit_replay(replace(evidence, account_daily=tuple(corrupted)))

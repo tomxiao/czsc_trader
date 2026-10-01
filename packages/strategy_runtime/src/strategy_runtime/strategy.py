@@ -14,8 +14,11 @@ from dataflows import Dataflows, Dataset
 from .contracts import (
     DataPreparationResult,
     ExecutionCapabilities,
+    ExecutionOutcome,
+    ExecutionOutcomeStatus,
     ExecutionPlan,
     ExecutionState,
+    SignalHistoryMode,
     OrderSide,
     OrderType,
     PlanLeg,
@@ -29,7 +32,7 @@ from .contracts import (
     signal_identity_for,
 )
 from .data import PreparedStrategyData
-from .errors import RuntimeCompatibilityError, RuntimeContractError
+from .errors import RuntimeCompatibilityError, RuntimeContractError, RuntimeExecutionError
 from .execution_planner import build_execution_plan
 from .models import ExecutionPolicy, ExecutionPricingData
 from .preparation import PreparedInputs, prepare_inputs
@@ -104,7 +107,7 @@ class StrategyInstance:
         self._dataflows = dataflows
         self._prepared_data: PreparedStrategyData | None = None
         self._history_cache: dict[
-            tuple[str, str], tuple[pd.DataFrame, pd.DatetimeIndex]
+            tuple[str, SignalHistoryMode], tuple[pd.DataFrame, pd.DatetimeIndex]
         ] = {}
 
     @property
@@ -190,12 +193,14 @@ class StrategyInstance:
     def _history(
         self,
         data: PreparedStrategyData,
-        mode: str,
+        mode: SignalHistoryMode,
     ) -> tuple[pd.DataFrame, pd.DatetimeIndex]:
         frames = {name: result.dataframe for name, result in data._inputs.results.items()}
-        if mode == "point":
+        if not isinstance(mode, SignalHistoryMode):
+            raise RuntimeContractError("history_mode must be SignalHistoryMode")
+        if mode is SignalHistoryMode.CONTINUOUS:
             dates = data.calculation_dates()
-        elif mode == "window":
+        elif mode is SignalHistoryMode.WINDOW:
             dates = tuple(dict.fromkeys(data._inputs.signal_dates.values()))
         else:
             raise RuntimeContractError(f"unsupported calculation mode: {mode}")
@@ -207,7 +212,7 @@ class StrategyInstance:
         if cached is None:
             history = (
                 self._algorithm.calculate_window_history(frames, sessions)
-                if mode == "window"
+                if mode is SignalHistoryMode.WINDOW
                 else self._algorithm.calculate_history(frames, sessions)
             )
             if not isinstance(history, pd.DataFrame) or not isinstance(
@@ -221,16 +226,24 @@ class StrategyInstance:
                 raise RuntimeContractError(
                     "strategy history sessions must be unique and ordered"
                 )
-            if mode == "window" and not actual_sessions.equals(sessions):
+            if mode is SignalHistoryMode.WINDOW and not actual_sessions.equals(sessions):
                 raise RuntimeContractError(
                     "strategy window history differs from requested evaluation sessions"
                 )
-            if mode == "point" and not sessions.difference(actual_sessions).empty:
+            if mode is SignalHistoryMode.CONTINUOUS and not sessions.difference(actual_sessions).empty:
                 raise RuntimeContractError(
                     "strategy point history omits required calculation sessions"
                 )
             history = history.copy()
             history.index = actual_sessions
+            if "target_position" not in history:
+                raise RuntimeContractError("strategy history requires target_position")
+            targets = pd.to_numeric(history["target_position"], errors="coerce")
+            if targets.isna().any() or not targets.between(
+                self.definition.decision.minimum_target,
+                self.definition.decision.maximum_target,
+            ).all():
+                raise RuntimeContractError("strategy history contains invalid target positions")
             cached = (history, sessions)
             self._history_cache[cache_key] = cached
         return cached
@@ -239,7 +252,7 @@ class StrategyInstance:
         self,
         data: PreparedStrategyData,
         point: TradingPoint,
-        history_mode: str,
+        history_mode: SignalHistoryMode,
     ) -> StrategySignal:
         history, _ = self._history(data, history_mode)
         signal_date = data.signal_date_for(point.trading_date)
@@ -292,11 +305,13 @@ class StrategyInstance:
             },
         )
 
-    def inspect_signals(self) -> pd.DataFrame:
-        """Return a defensive copy of strategy signal history for diagnostics."""
+    def inspect_signals(
+        self, *, history_mode: SignalHistoryMode = SignalHistoryMode.WINDOW,
+    ) -> pd.DataFrame:
+        """Return defensive history; default WINDOW matches run_window initialization."""
 
         data = self._prepared()
-        history, _ = self._history(data, "window")
+        history, _ = self._history(data, history_mode)
         return history.copy()
 
     def inspect_price_history(self) -> pd.DataFrame:
@@ -310,14 +325,15 @@ class StrategyInstance:
         point: TradingPoint,
         portfolio: PortfolioSnapshot,
         state: ExecutionState,
+        history_mode: SignalHistoryMode = SignalHistoryMode.CONTINUOUS,
     ) -> ExecutionPlan:
-        """Calculate one point using the strategy's canonical state history."""
+        """Plan with continuous warmup state, or explicitly match WINDOW replay history."""
 
         return self._plan_at(
             point=point,
             portfolio=portfolio,
             state=state,
-            history_mode="point",
+            history_mode=history_mode,
         )
 
     def _plan_at(
@@ -326,7 +342,7 @@ class StrategyInstance:
         point: TradingPoint,
         portfolio: PortfolioSnapshot,
         state: ExecutionState,
-        history_mode: str,
+        history_mode: SignalHistoryMode,
     ) -> ExecutionPlan:
         data = self._prepared()
         if not self._tradable_window.contains(point.trading_date):
@@ -448,7 +464,20 @@ class StrategyInstance:
         )
 
     def run_window(self, *, executor: WindowExecutor):
+        """Replay WINDOW history and finish only after every plan is SETTLED."""
         data = self._prepared()
+        capabilities = executor.capabilities
+        if not isinstance(capabilities, ExecutionCapabilities):
+            raise RuntimeContractError("executor capabilities must be ExecutionCapabilities")
+        missing_orders = set(self.definition.capabilities.order_types) - {
+            item.value for item in capabilities.order_types
+        }
+        missing_checkpoints = set(self.definition.capabilities.checkpoints) - set(capabilities.checkpoints)
+        if missing_orders or missing_checkpoints:
+            raise RuntimeCompatibilityError(
+                "window executor lacks required capabilities before execution: "
+                f"order_types={sorted(missing_orders)}, checkpoints={sorted(missing_checkpoints)}"
+            )
         for trading_date in data.trading_dates():
             signal_date = data.signal_date_for(trading_date)
             point = TradingPoint(
@@ -460,7 +489,7 @@ class StrategyInstance:
                 point=point,
                 portfolio=portfolio,
                 state=state,
-                history_mode="window",
+                history_mode=SignalHistoryMode.WINDOW,
             )
             missing_orders = set(plan.required_capabilities.order_types) - set(
                 executor.capabilities.order_types
@@ -475,6 +504,10 @@ class StrategyInstance:
                     f"checkpoints={sorted(missing_checkpoints)}"
                 )
             outcome = executor.execute(plan)
+            if not isinstance(outcome, ExecutionOutcome):
+                raise RuntimeContractError("executor must return ExecutionOutcome")
             if outcome.plan_identity != plan.plan_identity:
                 raise RuntimeContractError("executor outcome refers to another plan")
+            if outcome.status is not ExecutionOutcomeStatus.SETTLED:
+                raise RuntimeExecutionError(f"window executor did not settle the plan: {plan.plan_identity}")
         return executor.finish()

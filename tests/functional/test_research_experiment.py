@@ -12,6 +12,9 @@ import pytest
 from strategy_runtime import StrategyCandidate
 
 from research_experiment import (
+    ExperimentPrecheckResult,
+    ExperimentPreflightCheck,
+    ExperimentPreflightStatus,
     ExperimentCapabilities,
     ExperimentCapability,
     ExperimentDefinition,
@@ -150,6 +153,136 @@ def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
     with pytest.raises(ValueError, match="SYNTHETIC_PRECHECK"):
         execute_experiment(failing_loaded, failing_context)
     assert not failing_context.workspace.path("execution_envelope.json").exists()
+
+
+def _preflight_fixture(tmp_path, *, extra="", real_data=False):
+    root = _write_v3_experiment(tmp_path / "S009" / "20260925_S009_EX99")
+    source = root / "experiment.py"
+    text = source.read_text(encoding="utf-8")
+    if real_data:
+        text = text.replace("capabilities=ExperimentCapabilities(),", "capabilities=ExperimentCapabilities(reads_real_returns=True),")
+    source.write_text(text + extra, encoding="utf-8")
+    binding_path = root / "experiment_binding.json"
+    binding = json.loads(binding_path.read_text())
+    binding["source_sha256"] = experiment_source_sha256(root, ("experiment.py",))
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    return load_experiment(root)
+
+
+@pytest.mark.parametrize("status", [ExperimentPreflightStatus.PASS, ExperimentPreflightStatus.FAIL])
+def test_preflight_named_checks_and_nested_result_serialization(tmp_path, monkeypatch, status):
+    loaded = _preflight_fixture(tmp_path)
+    sample = ExperimentResult(ExperimentOutcome.PASS, {"nested": {"rows": [1, 2]}}, {})
+    result = ExperimentPrecheckResult((ExperimentPreflightCheck("LEDGER", status, "ledger test"),), sample)
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: result)
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    checks = {item.code: item for item in report.checks}
+    assert report.passed is (status is ExperimentPreflightStatus.PASS)
+    assert checks["SYNTHETIC_LEDGER"].status is status
+    assert checks["SYNTHETIC_PRECHECK"].status is status
+    if report.passed:
+        assert checks["RESULT_SERIALIZATION"].status is ExperimentPreflightStatus.PASS
+        json.dumps(report.to_dict(), allow_nan=False)
+
+
+def test_preflight_rejects_false_success_and_bad_output_serialization(tmp_path, monkeypatch):
+    loaded = _preflight_fixture(tmp_path)
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: False)
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    assert not report.passed
+    assert next(item for item in report.checks if item.code == "SYNTHETIC_PRECHECK").status is ExperimentPreflightStatus.FAIL
+    result = ExperimentPrecheckResult((ExperimentPreflightCheck("OUTPUT", ExperimentPreflightStatus.PASS, "synthetic"),),
+        ExperimentResult(ExperimentOutcome.PASS, {}, {}))
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: result)
+    monkeypatch.setattr(ExperimentResult, "to_dict", lambda self: {"bad": object()})
+    failed = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    assert not failed.passed
+    assert next(item for item in failed.checks if item.code == "RESULT_SERIALIZATION").status is ExperimentPreflightStatus.FAIL
+
+
+def test_preflight_detects_known_source_risks_without_executing_them(tmp_path):
+    loaded = _preflight_fixture(tmp_path, extra='''
+def risky(frame, result, study):
+    a = frame.to_numpy()
+    b = frame.join(frame)
+    c = dict(result.facts)
+    d = study.trials[-1]
+    pool = ProcessPoolExecutor()
+    return a, b, c, d, pool
+''')
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    assert report.passed
+    checks = {item.code: item for item in report.checks}
+    for code in ("NUMPY_VIEW_MUTATION_RISK", "JOIN_COLUMN_COLLISION_RISK", "SHALLOW_RESULT_SERIALIZATION_RISK", "LAST_TRIAL_IDENTITY_RISK", "PROCESS_PAYLOAD_REVIEW"):
+        assert checks[code].status is ExperimentPreflightStatus.WARNING
+        assert "experiment.py:" in checks[code].message
+    assert checks["DATA_READINESS"].status is ExperimentPreflightStatus.WARNING
+    assert checks["SYNTHETIC_COVERAGE"].status is ExperimentPreflightStatus.WARNING
+
+
+def test_preflight_blocks_changed_source_before_synthetic_or_data_access(tmp_path, monkeypatch):
+    loaded = _preflight_fixture(tmp_path, real_data=True)
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: pytest.fail("must not execute"))
+    path = loaded.root / "experiment.py"
+    path.write_text(path.read_text(encoding="utf-8") + "\n# changed\n", encoding="utf-8")
+    flows = Dataflows({"etf.ohlcv": lambda request: pytest.fail("must not fetch")})
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
+        data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
+    assert not report.passed
+
+
+def test_preflight_detects_source_mutation_during_synthetic_check(tmp_path, monkeypatch):
+    loaded = _preflight_fixture(tmp_path)
+    def mutate(self):
+        path = loaded.root / "experiment.py"
+        path.write_text(path.read_text(encoding="utf-8") + "\n# changed\n", encoding="utf-8")
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", mutate)
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    assert not report.passed
+    assert next(item for item in report.checks if item.code == "SOURCE_UNCHANGED").status is ExperimentPreflightStatus.FAIL
+
+
+def test_preflight_bare_assertion_becomes_structured_failure(tmp_path, monkeypatch):
+    loaded = _preflight_fixture(tmp_path)
+    def fail(self):
+        raise AssertionError
+    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", fail)
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    check = next(item for item in report.checks if item.code == "SYNTHETIC_PRECHECK")
+    assert check.status is ExperimentPreflightStatus.FAIL
+    assert check.message == "AssertionError"
+
+
+def test_preflight_successful_explicit_data_probe(tmp_path):
+    loaded = _preflight_fixture(tmp_path, real_data=True)
+    frame = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"],
+        "Open": [1., 1.], "High": [1., 1.], "Low": [1., 1.], "Close": [1., 1.],
+        "Volume": [1., 1.], "Amount": [1., 1.]})
+    flows = Dataflows({"etf.ohlcv": lambda request: (frame, {"vendor": "synthetic"})})
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
+        data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
+    assert report.passed
+    assert next(item for item in report.checks if item.code == "DATA_REQUEST_001").status is ExperimentPreflightStatus.PASS
+
+
+@pytest.mark.parametrize("real_data,end,expected_calls", [(False, "2026-09-15", 0), (True, "2026-09-25", 0), (True, "2026-09-15", 1)])
+def test_preflight_data_readiness_is_explicit_and_governed(tmp_path, real_data, end, expected_calls):
+    loaded = _preflight_fixture(tmp_path, real_data=real_data)
+    calls = []
+    def empty(request):
+        calls.append(request)
+        return pd.DataFrame(), {}
+    request = DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", end, end)
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99),
+        dataflows=Dataflows({"etf.ohlcv": empty}), data_requests=(request,))
+    assert not report.passed
+    assert len(calls) == expected_calls
+    check = next(item for item in report.checks if item.code == "DATA_REQUEST_001")
+    assert check.status is ExperimentPreflightStatus.FAIL
+    if expected_calls:
+        assert "EMPTY" in check.message
+    with pytest.raises(ValueError, match="configured Dataflows"):
+        preflight_experiment(loaded, resources=ExperimentResources(1, 99), data_requests=(request,))
 
 
 def _definition(

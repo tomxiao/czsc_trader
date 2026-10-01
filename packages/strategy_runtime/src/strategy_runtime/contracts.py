@@ -16,6 +16,13 @@ from .models import canonical_sha256
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+class SignalHistoryMode(StrEnum):
+    """CONTINUOUS carries warmup state; WINDOW uses window-initialized replay state."""
+
+    CONTINUOUS = "CONTINUOUS"
+    WINDOW = "WINDOW"
 JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | tuple["JsonValue", ...] | Mapping[str, "JsonValue"]
 
@@ -52,6 +59,8 @@ class TradableWindow:
     end: date
 
     def __post_init__(self) -> None:
+        if type(self.start) is not date or type(self.end) is not date:
+            raise RuntimeContractError("tradable window requires date values")
         if self.start > self.end:
             raise RuntimeContractError("tradable window start must not follow end")
 
@@ -151,7 +160,9 @@ class TradingPoint:
     calculation_time: datetime
 
     def __post_init__(self) -> None:
-        if self.calculation_time.tzinfo is None:
+        if type(self.trading_date) is not date or not isinstance(self.calculation_time, datetime):
+            raise RuntimeContractError("trading point requires date and datetime values")
+        if self.calculation_time.utcoffset() is None:
             raise RuntimeContractError("calculation_time must be timezone-aware")
 
 
@@ -215,6 +226,8 @@ class ExecutionCapabilities:
     checkpoints: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        if not isinstance(self.order_types, tuple) or not all(isinstance(item, OrderType) for item in self.order_types):
+            raise RuntimeContractError("execution order types must be a tuple of OrderType")
         if len(set(self.order_types)) != len(self.order_types):
             raise RuntimeContractError("execution order types must be unique")
         if len(set(self.checkpoints)) != len(self.checkpoints):
@@ -422,17 +435,25 @@ class ExecutionPlan:
             raise RuntimeContractError("plan identity differs from execution facts")
 
 
+class ExecutionOutcomeStatus(StrEnum):
+    SETTLED = "SETTLED"
+    FAILED = "FAILED"
+
+
 @dataclass(frozen=True, slots=True)
 class ExecutionOutcome:
     plan_identity: str
     portfolio: PortfolioSnapshot
     state: ExecutionState
-    status: str
+    status: ExecutionOutcomeStatus
 
     def __post_init__(self) -> None:
         if _SHA256.fullmatch(self.plan_identity) is None:
             raise RuntimeContractError("outcome plan identity must be lowercase SHA-256")
-        object.__setattr__(self, "status", _text(self.status, "execution status"))
+        if not isinstance(self.status, ExecutionOutcomeStatus):
+            raise RuntimeContractError("execution status must be ExecutionOutcomeStatus")
+        if not isinstance(self.portfolio, PortfolioSnapshot) or not isinstance(self.state, ExecutionState):
+            raise RuntimeContractError("execution outcome requires typed portfolio and state")
 
 
 @runtime_checkable

@@ -21,6 +21,7 @@ from .contracts import (
     DataPreparationResult,
     ExecutionCapabilities,
     ExecutionOutcome,
+    ExecutionOutcomeStatus,
     ExecutionPlan,
     ExecutionState,
     OrderSide,
@@ -30,6 +31,7 @@ from .contracts import (
     PortfolioSnapshot,
     PriceReference,
     StrategyIdentity,
+    SignalHistoryMode,
     TradableWindow,
     TradingPoint,
     WindowExecutor,
@@ -64,6 +66,8 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "ExecutionOutcomeStatus",
+    "SignalHistoryMode",
     "AlignedInput",
     "AlignmentRule",
     "DataPreparationResult",
