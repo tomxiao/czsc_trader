@@ -42,7 +42,20 @@ report = preflight_experiment_archive(
 
 路径和预算是示例，须替换为已批准的实际值。前驱通过`PredecessorEvidence`绑定回执哈希。
 
+合成预检可返回`ExperimentPrecheckResult`，列出检查项并提供合成`ExperimentResult`样本做严格
+JSON往返校验。预检还报告共享数组修改、列名冲突、进程载荷、浅层序列化及trial身份风险。
+这些源码扫描结果为启发式警告，调用方须阅读报告中的`checks`和`warnings`。
+
+如需验证凭据、数据可用性和覆盖，显式调用
+`research_tools.preflight_experiment(loaded, resources=resources, dataflows=flows,
+data_requests=(request,))`。数据请求必须满足实验允许的数据集、真实收益读取能力和开发截止日。
+未传探测请求时保留`DATA_READINESS`警告；上面的档案应用API当前不接收探测参数。
+缓存命中只证明缓存请求可用；验证源凭据和实时可达性时，使用未启用缓存或`REFRESH`配置的DFLS。
+
 实验使用`load_experiment`加载，按模式通过`create_formal_experiment_context`或`create_experiment_context`建立上下文，再调用`execute_experiment`。正式评价使用`context.evaluation.evaluate(request)`，保留身份、截止日、并发和次数预算校验。执行回执不允许由研究实现伪造。
+
+Optuna维持独立第三方库使用方式。实验实现负责study及trial生命周期，平台评价端口负责已声明的
+资源和次数预算；TDR未集成Optuna适配器。
 
 ## 4. 策略评价与回测
 
@@ -54,6 +67,12 @@ report = preflight_experiment_archive(
 
 `run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequestV2`。候选图表描述通过`chart_descriptor`显式传入；版本使用认证后的原图表，不允许覆盖。两类对象共用底层回放流程，保留各自身份。
 
+`BacktestRequestV2.lot_size`是必填正整数，拒绝布尔值、浮点数及隐式默认值。平台在请求行情前
+核对它与策略执行合同的一致性：`FROZEN_RULE`读取`settings.instrument.lot_size`，
+`INTRADAY_OVERLAY`读取`settings.lot_size`；不一致时底层`run_backtest_v2`抛出`ValueError`，
+应用API `run_backtest`将其包装为错误码`backtest_failed`的`ExecutionError`。
+调用方应按已绑定的交易单位填写，不能用请求字段覆盖冻结规则。
+
 当前版本回测仍需要已有SRT部署凭据；缺少时明确失败，不自动部署。移除该依赖属于后续改造。候选持久化解析尚未实现，用户CLI暂仅支持已登记版本；候选通过API传对象，不自动登记。
 
 ```python
@@ -61,7 +80,10 @@ from czsc_trader.application import BacktestRequestV2, run_backtest
 # context、strategy、start、end来自已核对的仓库、对象与获准窗口。
 result = run_backtest(
     context, strategy,
-    BacktestRequestV2("588080.SH", "etf", start, end, 1_000_000),
+    BacktestRequestV2(
+        symbol="588080.SH", asset_type="etf", start=start, end=end,
+        initial_cash=1_000_000, lot_size=100,
+    ),
 )
 ```
 
@@ -71,10 +93,37 @@ result = run_backtest(
 .\.venv\Scripts\czsc-trader.exe backtest run `
   --strategy SXXX --strategy-version v1 `
   --symbol 588080.SH --asset etf `
-  --start 2026-07-01 --end 2026-09-28 --init-cash 1000000
+  --start 2026-07-01 --end 2026-09-28 --init-cash 1000000 --lot-size 100
 ```
 
 核对`audit_status`及审计文件，不能仅看命令PASS。评价／回测不替代正式REX实验回执，也不自动产生完整阶段报告。
+
+CLI的`--lot-size`必填且必须大于零。BuyHold、MA5/MA20与策略使用相同整手单位，基准通过TXE
+记录实际现金、持仓、费用及净值，SE独立复算审计。底层`replay_buyhold`和`replay_benchmarks`
+同样要求关键字参数`lot_size`。回测manifest使用`schema_version=4`并记录`request.lot_size`；
+研究指标语义版本为`candidate-srt-txe-v3-lot-size`，新结果与旧基准结果比较前须核对计算口径。
+
+### 配置数据入口与本地缓存
+
+```python
+from datetime import timedelta
+from pathlib import Path
+from dataflows import CachePolicy, Dataflows, LocalCacheConfig
+
+cache = LocalCacheConfig(
+    root=Path(".tmp/dataflows-cache"), namespace="research-provider-v1",
+    max_age=timedelta(hours=24), policy=CachePolicy.READ_THROUGH,
+)
+flows = Dataflows(env_file=context.root / ".env", cache=cache)
+result = run_backtest(context, strategy, request, dataflows=flows)
+```
+
+`run_backtest`、`run_backtest_v2`、`evaluate_strategy`和`CandidateEvaluationContext`支持宿主
+显式传入`dataflows`，同一配置贯穿输入准备和默认评价执行链。默认入口使用仓库环境文件且不启用缓存。
+探索使用`create_experiment_context(..., dataflows=flows)`；正式实验通过
+`create_formal_experiment_context(..., cache=cache)`由平台创建数据入口。
+缓存策略、有效期、命名空间及错误码见[DFLS说明](../../packages/dataflows/README.md#dev配置本地缓存)。
+缓存配置属于执行宿主配置，不替代数据身份，也不写入评价请求身份。
 
 ## 5. 证据读取与失败语义
 
@@ -83,6 +132,12 @@ result = run_backtest(
 - 文件化评价重复发布校验既有身份及文件哈希；不同结果不得覆盖旧证据。
 - 重复调用可能重新准备数据和执行计算，不推定无副作用。
 - 数据截止日缺口、输入身份不符、未完成审计均显式报告，不静默缩窗或降级。
+
+比较两次账户回放时使用SE的`compare_ledgers(LedgerComparisonRequest(...))`，按目的选择
+`STRICT`或`ECONOMIC`模式，并读取`EQUIVALENT/DIFFERENT/INCOMPARABLE/INVALID`状态。
+保持两侧原始证据不变，差异定位和可比性条件见[SE说明](../../packages/strategy_evaluator/README.md)。
+自定义执行器须遵守SRT的`SignalHistoryMode`及`ExecutionOutcomeStatus`契约，见
+[SRT说明](../../packages/strategy_runtime/README.md)。
 
 ## 6. 冻结与历史治理
 

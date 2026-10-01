@@ -25,8 +25,9 @@ RSCH通过显式源码绑定构造`StrategyCandidate`并复用同一实现进行
   `WindowExecutor`；
 - `inspect_signals()`、`inspect_price_history()`：测试和诊断使用的只读接口。
 
-`StrategyRuntime` 是实例工厂，不持有运行中的策略状态。业务行为、数据和缓存均归属于创建出来的
-`StrategyInstance`。
+`StrategyRuntime`是实例工厂，不持有运行中的策略状态；可通过关键字参数`dataflows`
+接收宿主配置的DFLS。策略状态、准备结果及信号缓存归属于`StrategyInstance`，
+原始请求的本地缓存由DFLS管理。
 
 ## 实例初始化
 
@@ -50,7 +51,7 @@ prepared = instance.prepare_data()
 初始化参数的业务语义：
 
 - `source`：带实现身份和参数的候选，或 SM 发布的冻结版本；
-- `tradable_window`：需要生成执行计划的闭区间，端点必须是可交易日；
+- `tradable_window`：需要生成执行计划的闭区间，端点必须是`date`类型的可交易日，拒绝字符串和`datetime`；
 - `data_dir`：由主调方分配、可写且与其他实例隔离的数据空间；
 - `symbol`：仅用于冻结版本的显式标的绑定；不支持候选策略静默换标的；
 - `execution_policy`：只允许在保持原策略执行策略类型不变时覆盖，用于受控复算。
@@ -82,6 +83,10 @@ prepared = instance.prepare_data()
 候选代码只从`strategy_runtime`顶层导入公共符号，不依赖`StrategyLoader`或各内部子模块。
 候选由`StrategyRuntime.create(StrategyInit(...))`加载和运行。
 
+`StrategyCandidate`支持标准库pickle及进程spawn传输，重建时重新验证候选合同并保持嵌套参数
+不可变、源码根目录和身份不变。该能力仅覆盖候选对象；调用方仍须验证自己的完整worker载荷，
+并在子进程显式配置数据入口。源码绑定继续由SRT加载路径核验。
+
 策略实现负责自身的因果滞后、特征构造、预热、状态推导和目标仓位。
 
 跨市场或跨频率输入应在`InputRequirement.alignment`声明源时间列、源日历、决策日历、最大
@@ -103,6 +108,24 @@ prepared = instance.prepare_data()
 再次使用同一目录时，SRT校验身份与内容后才加载。实例目录属于SRT私有格式，调用方不得
 解析其内部文件。`prepare_data()`成功证明已声明输入完整可用，仍不代表策略有效或订单已成交。
 
+需要跨实例复用DFLS请求时，使用`StrategyRuntime(dataflows=flows)`；`flows`由宿主构造，
+配置示例见[DFLS本地缓存](../dataflows/README.md#dev配置本地缓存)。已有实例准备结果仍按原身份加载，
+DFLS的`REFRESH`策略不会重写它。需要重新准备时，为新实例分配独立目录。
+
+## 信号历史语义
+
+`SignalHistoryMode`是公共枚举，接口拒绝同名字符串。
+
+| 模式 | 计算语义 | 默认入口 |
+| --- | --- | --- |
+| `CONTINUOUS` | 调用`calculate_history`，使用完整计算范围，延续预热阶段状态 | `plan_at(..., history_mode=SignalHistoryMode.CONTINUOUS)` |
+| `WINDOW` | 调用`calculate_window_history`，按窗口信号日期计算 | `inspect_signals(history_mode=SignalHistoryMode.WINDOW)`；`run_window`固定使用此模式 |
+
+策略可覆盖`calculate_window_history`定义窗口初始化行为；基类实现将窗口信号日期传给`calculate_history`。
+比较逐日计划与窗口回放时，调用方必须显式对齐历史模式。两类历史分别缓存，诊断接口返回副本。
+历史必须使用有序且唯一的`DatetimeIndex`并覆盖所需日期；窗口历史日期必须精确匹配。
+`target_position`必须为有限数值且位于策略声明的仓位边界内，违规时抛出`RuntimeContractError`。
+
 ## 执行计划
 
 `plan_at(...)` 接收调用方权威的 `PortfolioSnapshot`、`ExecutionState` 和 `TradingPoint`，输出
@@ -115,10 +138,19 @@ prepared = instance.prepare_data()
 - 所需订单类型及检查点能力。
 
 SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点。执行宿主只负责校验自身能力并执行
-计划。执行结果必须通过 `ExecutionOutcome` 返回，计划生成成功不代表订单已经成交。
+计划。`TradingPoint.trading_date`必须为`date`，`calculation_time`必须是带时区的`datetime`。
+`ExecutionCapabilities.order_types`必须是由`OrderType`枚举组成的元组。
+
+执行结果必须返回`ExecutionOutcome`：`status`显式使用`ExecutionOutcomeStatus.SETTLED`或
+`FAILED`，`portfolio`和`state`分别使用`PortfolioSnapshot`和`ExecutionState`，
+`plan_identity`必须对应当前计划。`SETTLED`表示执行已完成并对账，可以包含未成交订单；
+成交情况仍由订单与成交明细表达。
 
 `run_window(...)` 面向 TDR 等连续执行场景。调用方注册 `WindowExecutor`，由 SRT 逐交易日获取
 账户快照、生成计划并回调执行器。PTE 使用 `plan_at(...)`，以自己的事务和券商回报管理单日执行。
+
+`run_window`在首次读取账户快照前校验执行器的订单类型及检查点能力，并保留逐计划检查。
+执行器返回非`ExecutionOutcome`、错误计划身份或非`SETTLED`状态时立即失败，不生成成功窗口结果。
 
 ## 身份与冻结版本
 

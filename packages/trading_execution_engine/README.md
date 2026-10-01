@@ -1,10 +1,10 @@
 # 交易执行引擎（Trading Execution Engine，TXE）
 
-本文面向策略研究员（RSCH）和首席投资官（CIO）。平台实现与测试入口见
+本文面向策略研究员（RSCH）和平台开发者（DEV）。平台实现与测试入口见
 [开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
 
 TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT决策及执行计划，生成可审计的
-订单、成交、费用、现金、持仓和净值事实，供研究复算、候选回测和 TDR 冻结体检共同使用。
+订单、成交、费用、现金、持仓和净值事实，供研究复算及候选／版本回测共同使用。
 
 ## 能力边界
 
@@ -22,13 +22,14 @@ TXE 不负责：
 - 搜索参数或评价策略优劣；
 - 管理策略版本、PTE账户或券商订单状态。
 
-PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究、回测和冻结复核的统一执行口径，
+PTE仍以渠道成交回报作为模拟账户事实来源。TXE用于研究与回测的统一执行口径，
 不能替代Futu订单与成交对账。
 
 ## 使用入口与结果
 
-RSCH正式比较策略时，优先调用TDR研究评价入口，由SRT生成逐日计划、TXE生成完整账户事实；
-CIO通过`candidate evaluate`取得独立复算结果。只有需要自行组织合成或专门回放场景时，才
+RSCH正式比较策略时，通过TDR的`context.evaluation.evaluate(EvaluationRequest)`或
+`run_backtest(context, strategy, request)`取得完整账户事实。由SRT生成逐日计划、TXE执行。
+需要自行组织合成或专门回放场景时，可
 直接使用TXE公共接口：
 
 - `HistoricalExecutor`：实现SRT的`WindowExecutor`协议，向SRT提供逐日账户快照，接收
@@ -40,12 +41,26 @@ CIO通过`candidate evaluate`取得独立复算结果。只有需要自行组织
 
 后两者是数值能力接口；正式策略回放由 `StrategyInstance.run_window(...)` 驱动
 `HistoricalExecutor`，不能用简化仓位收益替代完整执行证据。SRT决定委托类型、参考价、委托价
-和生效时点，TXE根据历史行情完成触发、成交、滑点和记账。TDR只指定评价窗口、初始资金和
-执行数据，并负责审计、报告与图表。
+和生效时点，TXE根据历史行情完成触发、成交、滑点和记账。TDR指定评价窗口、初始资金和
+执行数据；回测调用方还必须显式提供与策略执行合同一致的`lot_size`。TDR负责审计、报告与图表。
 
 结果应同时核对订单、成交、费用、现金、持仓和逐日净值；只看信号收益或最终净值不足以判断
 执行可行性。限价触碰默认采用保守的严格穿越规则；如研究协议明确要求“触价即成交”，必须
 显式传入`inclusive_touch=True`并在证据中记录。PTE模拟账户仍以Futu成交回报为准。
+
+## 整手数量与完成状态
+
+`execute_target_positions(..., lot_size=100)`要求`lot_size`为正整数，拒绝`bool`、浮点数、
+字符串及非正数。通用辅助接口的`lot_size=None`表示允许小数数量；TDR回测及基准始终显式传入
+整手单位，BuyHold与MA5/MA20共享这一数量口径。资金不足一手时保留现金，不生成零数量订单。
+
+`HistoricalExecutor`向SRT返回`ExecutionOutcome`，状态使用
+`ExecutionOutcomeStatus.SETTLED`。它表示该计划执行处理完成并已记账，可以包含未成交委托；
+订单是否成交、原因及数量仍以明细为准。自定义`WindowExecutor`同样必须返回强类型结果及
+匹配的计划身份，失败使用`FAILED`；SRT遇到失败状态会停止窗口执行。
+
+执行器必须在`ExecutionCapabilities`中如实声明`OrderType`枚举元组和检查点能力。
+SRT在首次账户快照前检查策略要求，并逐计划复核，避免运行到不支持的订单后才发现能力不足。
 
 ## 研究账户评价口径
 
@@ -63,4 +78,4 @@ CIO通过`candidate evaluate`取得独立复算结果。只有需要自行组织
 | 口径差异 | 显式披露，不擅自替换研究基准 |
 | 账本 | 下单、成交、持仓和收益分别记录 |
 
-本文涉及CIO或旧冻结体检的描述仅作为旧治理实现参考；新研究流程以[RSCH Agent](../../research/RSCH_AGENT.md)为准。
+研究流程以[RSCH Agent](../../research/RSCH_AGENT.md)为准；TDR公共调用示例见[TDR说明](../../src/czsc_trader/README.md)。
