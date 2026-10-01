@@ -1,0 +1,2072 @@
+{
+  "record_kind": "S011_HISTORICAL_STAGE_SUPPLEMENT",
+  "schema_version": 1,
+  "strategy_id": "S011",
+  "symbol": "159326.SZ",
+  "development_cutoff": "2026-09-28",
+  "formal_delivery_status": "NOT_PUBLISHED",
+  "new_experiments": 0,
+  "new_evaluations": 0,
+  "evidence_scope": "SEEN_DEVELOPMENT_POOL_ONLY",
+  "source_path_base": "repository_root",
+  "stage": 3,
+  "historical_summary": {
+    "rounds": [
+      {
+        "experiment": "EX15",
+        "evaluations": 96,
+        "qualified_evaluations": 1,
+        "new_parameters": 96
+      },
+      {
+        "experiment": "EX23",
+        "evaluations": 384,
+        "qualified_evaluations": 4,
+        "new_parameters": 383
+      },
+      {
+        "experiment": "EX22",
+        "evaluations": 42,
+        "qualified_evaluations": 3,
+        "new_parameters": 40
+      },
+      {
+        "experiment": "EX24",
+        "evaluations": 25,
+        "qualified_evaluations": 12,
+        "new_parameters": 20
+      },
+      {
+        "experiment": "EX25",
+        "evaluations": 26,
+        "qualified_evaluations": 17,
+        "new_parameters": 20
+      }
+    ],
+    "frontier_evolution": [
+      {
+        "through_experiment": "EX15",
+        "frontier_accounts": 1,
+        "new_frontier_accounts": 1,
+        "frontier_references": [
+          "EX15T040"
+        ]
+      },
+      {
+        "through_experiment": "EX23",
+        "frontier_accounts": 1,
+        "new_frontier_accounts": 1,
+        "frontier_references": [
+          "EX23T054"
+        ]
+      },
+      {
+        "through_experiment": "EX22",
+        "frontier_accounts": 1,
+        "new_frontier_accounts": 0,
+        "frontier_references": [
+          "EX23T054"
+        ]
+      },
+      {
+        "through_experiment": "EX24",
+        "frontier_accounts": 2,
+        "new_frontier_accounts": 2,
+        "frontier_references": [
+          "EX24T003",
+          "EX24T007"
+        ]
+      },
+      {
+        "through_experiment": "EX25",
+        "frontier_accounts": 2,
+        "new_frontier_accounts": 0,
+        "frontier_references": [
+          "EX24T003",
+          "EX24T007"
+        ]
+      }
+    ],
+    "evaluations_excluding_inherited_duplicates_and_technical_replays": 573,
+    "unique_parameters": 559,
+    "distinct_accounts": 521,
+    "qualified_parameters": 26,
+    "qualified_accounts": 18,
+    "pareto_parameters": 4,
+    "pareto_accounts": 2,
+    "frontier": [
+      {
+        "reference": "EX24T003",
+        "tail_weight": 0.575,
+        "spx_weight": 0.05,
+        "entry": 0.325,
+        "exit": 0.025,
+        "max_days": 2,
+        "lookback": 130,
+        "premium": 0.003,
+        "cagr": 0.49806063332693906,
+        "drawdown": -0.07250640712455592,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1908568.3496000015
+      },
+      {
+        "reference": "EX24T007",
+        "tail_weight": 0.575,
+        "spx_weight": 0.05,
+        "entry": 0.325,
+        "exit": 0.175,
+        "max_days": 2,
+        "lookback": 130,
+        "premium": 0.003,
+        "cagr": 0.4310672583807367,
+        "drawdown": -0.06154830526516941,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1773913.885200002
+      }
+    ],
+    "optuna_progress": [
+      {
+        "through": 48,
+        "qualified": 2,
+        "best_cagr": 0.41706153047914296,
+        "best_drawdown": -0.07242659828715625
+      },
+      {
+        "through": 96,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 144,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 192,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 240,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 288,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 336,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      },
+      {
+        "through": 384,
+        "qualified": 4,
+        "best_cagr": 0.4268585090742474,
+        "best_drawdown": -0.07235127587824985
+      }
+    ],
+    "archives": [
+      {
+        "experiment": "20260930_S011_EX15",
+        "receipt": "de2edb5fcd83395ec3b3f68ae9cabe2acb933c4ad36332dc708f33c6639d8014",
+        "manifest_sha256": "a352639b3fe27b6f40801e3ee499b9d1328311d72416cc25a5d20e6c28344509",
+        "source_sha256": "795303c57ad95131b5fa83efe67d4f8d5782a02a3ae96b166a75ff10a12ad513"
+      },
+      {
+        "experiment": "20260930_S011_EX23",
+        "receipt": "f9bfa2035bdb96eea6ddc8abc426301cf1ae78f437a91b43fa06f1e2c458a827",
+        "manifest_sha256": "8d9acf58fd462043138829556b2b5928772b9f001c6a7e1d0eb95edf27352ddc",
+        "source_sha256": "1cd691ae16bbb04a304763d50572c24671fca52d5fe05be4f9ed50438e4e39e1"
+      },
+      {
+        "experiment": "20260930_S011_EX22",
+        "receipt": "8c35b0cc01c89ada91946e8f47971ebaf3c12789a4c3a88b63a5dcafb91e94d1",
+        "manifest_sha256": "24199ede4ed2fbbd54047bcf9425891cf2fa73dcafae0201bc8cc3b3c6d5c019",
+        "source_sha256": "07c32708839126e7cb1980994ab475b475ff901e0f248ac15d03b985097f924e"
+      },
+      {
+        "experiment": "20260930_S011_EX24",
+        "receipt": "c215ce0978fb9a7587336cd38ec9c88145760d03557b34efd8152750175b754e",
+        "manifest_sha256": "0c00a8b8b33e9e74edd9f47c28cf2d350cc311e80372bbb575cf872ca7ab84b5",
+        "source_sha256": "9de32aa1dc4a04583102829f464590acfa49d0510f5e025f4b9ba8f258c593e9"
+      },
+      {
+        "experiment": "20260930_S011_EX25",
+        "receipt": "5d936c5fd0b46fe697138c476f282594fe24f58582494f8ec5c2f6160102ddfc",
+        "manifest_sha256": "04edfeba0ce9b36c30ff5df47a8d1694f7317cdfc623dca13a592af2bf0eadaa",
+        "source_sha256": "3563cbc74b6a3cae28fdf4a3e8bf05c4491a34ae01e16acfce55d808727eb01d"
+      }
+    ],
+    "development_only": true,
+    "stage_four_complete": false,
+    "count_warning": "Parameter configurations of one expression, not independent economic hypotheses; repeated account behaviors are counted separately only in evaluation totals."
+  },
+  "strategy_hypothesis": "市场短期回落与ETF尾盘卖压提供次日修复机会，严格较早SPX信息有限确认；固定排序分数、仓位、限价入场及退出时间构成完整策略。",
+  "components_used": [
+    "S011-COMP-01",
+    "S011-COMP-02",
+    "S011-COMP-04"
+  ],
+  "diagnostic_only_component": "S011-COMP-03",
+  "historical_frontier": {
+    "status": "DEVELOPMENT_FRONTIER_NOT_STAGE_FOUR_REPRESENTATIVES",
+    "configurations": [
+      {
+        "identity": "S011-EX24T003",
+        "evidence_reference": "EX24T003",
+        "candidate_id": "EX24T003",
+        "strategy_id": "S011",
+        "path_base": "repository_root",
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "strategy_payload": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.025,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "strategy_identity": {
+          "result_hash": "a69d0b34e8d37330e5fe50aa2956de20808f25d18ffca81071483c366d5ff3d5",
+          "request_hash": "5c10c18840d6479e1950e9d48cd14af4d3bfecc60fad59514a88181d45bc22a8",
+          "strategy_identity": "01568d331c4be4658af47432dfb624b365020d2987deb6531438f3e72f95b212",
+          "data_identity": "a8ff93b965b6abc222b543d31306d34f8baa3b89f9b1f6bad89f28b57d23287b",
+          "runtime_binding_hash": "399c7afe59dd61632b6949dcf6a418acf34ec9ce71e54898ed4bd40154fe3d1d"
+        },
+        "metrics": {
+          "cagr": 0.49806063332693906,
+          "drawdown": -0.07250640712455592,
+          "closed_trades": 40,
+          "frequency": 5.955334987593052,
+          "end_equity": 1908568.3496000015
+        },
+        "equivalent_parameter_references": [
+          "EX24T003",
+          "EX24T011"
+        ]
+      },
+      {
+        "identity": "S011-EX24T007",
+        "evidence_reference": "EX24T007",
+        "candidate_id": "EX24T007",
+        "strategy_id": "S011",
+        "path_base": "repository_root",
+        "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+        "strategy_payload": {
+          "strategy_kind": "s011_short_pressure_reversal",
+          "symbol": "159326.SZ",
+          "parameters": {
+            "tail_weight": 0.575,
+            "spx_weight": 0.05,
+            "entry": 0.325,
+            "exit": 0.175,
+            "max_days": 2,
+            "lookback": 130,
+            "premium": 0.003
+          },
+          "runtime": {
+            "module": "strategy_runtime.strategies.s011_reversal",
+            "qualname": "S011Reversal",
+            "contract_version": 1,
+            "source_files": [
+              "strategies/s011_reversal.py"
+            ],
+            "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+          }
+        },
+        "strategy_identity": {
+          "result_hash": "05f02659c15c77b7b5eae462d501030f850ed0c7353e240e99797d1b443b5288",
+          "request_hash": "67b10dec6fe336a5ec207ec5ef41b5fb5014a35a1b76cbb79c2b6a1cbd9a88ea",
+          "strategy_identity": "968b1c26220f93ec121c3684e3e42dbab869c5eddbe442d33ea992a3cc5b2c80",
+          "data_identity": "a8ff93b965b6abc222b543d31306d34f8baa3b89f9b1f6bad89f28b57d23287b",
+          "runtime_binding_hash": "89206f0c5e222924b39640c80d845b6bb590cd054e1543c268705a357697ad0e"
+        },
+        "metrics": {
+          "cagr": 0.4310672583807367,
+          "drawdown": -0.06154830526516941,
+          "closed_trades": 40,
+          "frequency": 5.955334987593052,
+          "end_equity": 1773913.885200002
+        },
+        "equivalent_parameter_references": [
+          "EX24T007",
+          "EX24T015"
+        ]
+      }
+    ],
+    "stage_four_complete": false,
+    "cio_candidate_package_created": false,
+    "freeze_or_deployment_authorized": false
+  },
+  "search_and_attribution": [
+    "research/S011/stage3/iteration_02/all_evaluations.csv",
+    "research/S011/stage3/iteration_02/unique_parameters.csv",
+    "research/S011/stage3/iteration_02/paired_changes.json",
+    "research/S011/stage3/iteration_02/paired_orders.csv"
+  ],
+  "qualified_parameter_mapping": "stage3/qualified_configurations.json",
+  "later_stage_four_intake": {
+    "original_contract": {
+      "return": "CAGR >= 1.5 * same-scenario buyhold CAGR; if buyhold <= 0, strategy > 0 and > buyhold",
+      "drawdown": "Drawdown magnitude strictly smaller than same-scenario buyhold",
+      "frequency": "4 <= 60 * closed trades / evaluation sessions <= 6"
+    },
+    "configurations": [
+      {
+        "config_id": "S011-CFG-000137",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX15T040-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.41544897098580114,
+        "drawdown_magnitude": 0.07250951093439262,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1743054.5945000001
+      },
+      {
+        "config_id": "S011-CFG-000193",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX23T000-standard",
+          "S011-EVAL-EX22T000-standard",
+          "S011-EVAL-EX24T000-standard",
+          "S011-EVAL-EX25T000-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.41544897098580114,
+        "drawdown_magnitude": 0.07250951093439262,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1743054.5945000001
+      },
+      {
+        "config_id": "S011-CFG-000204",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX23T011-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.41706153047914296,
+        "drawdown_magnitude": 0.07242659828715625,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1746231.3604000008
+      },
+      {
+        "config_id": "S011-CFG-000244",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX23T051-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.40220891396468494,
+        "drawdown_magnitude": 0.08222112854693808,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "end_equity": 1717053.5500000012
+      },
+      {
+        "config_id": "S011-CFG-000247",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX23T054-standard",
+          "S011-EVAL-EX22T001-standard",
+          "S011-EVAL-EX24T001-standard",
+          "S011-EVAL-EX25T001-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4268585090742474,
+        "drawdown_magnitude": 0.07235127587824985,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1765578.0895000014
+      },
+      {
+        "config_id": "S011-CFG-000590",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX22T015-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.410650083923912,
+        "drawdown_magnitude": 0.07235132473435757,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1733613.545700001
+      },
+      {
+        "config_id": "S011-CFG-000617",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T002-standard",
+          "S011-EVAL-EX27T014-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.47334286375491197,
+        "drawdown_magnitude": 0.07256534108773505,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1858457.1143
+      },
+      {
+        "config_id": "S011-CFG-000618",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T003-standard",
+          "S011-EVAL-EX25T015-standard",
+          "S011-EVAL-EX27T012-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.49806063332693906,
+        "drawdown_magnitude": 0.07250640712455592,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1908568.3496000015
+      },
+      {
+        "config_id": "S011-CFG-000620",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T006-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.42116155736689453,
+        "drawdown_magnitude": 0.06159849060257927,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1754318.2301000007
+      },
+      {
+        "config_id": "S011-CFG-000621",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T007-standard",
+          "S011-EVAL-EX25T019-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4310672583807367,
+        "drawdown_magnitude": 0.06154830526516941,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1773913.885200002
+      },
+      {
+        "config_id": "S011-CFG-000623",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T010-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.47334286375491197,
+        "drawdown_magnitude": 0.07256534108773505,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1858457.1143
+      },
+      {
+        "config_id": "S011-CFG-000624",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T011-standard",
+          "S011-EVAL-EX25T021-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.49806063332693906,
+        "drawdown_magnitude": 0.07250640712455592,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1908568.3496000015
+      },
+      {
+        "config_id": "S011-CFG-000627",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T014-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.42116155736689453,
+        "drawdown_magnitude": 0.06159849060257927,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1754318.2301000007
+      },
+      {
+        "config_id": "S011-CFG-000628",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T015-standard",
+          "S011-EVAL-EX25T025-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4310672583807367,
+        "drawdown_magnitude": 0.06154830526516941,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1773913.885200002
+      },
+      {
+        "config_id": "S011-CFG-000632",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T019-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4135720019998106,
+        "drawdown_magnitude": 0.07250805477753697,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "end_equity": 1739359.668300002
+      },
+      {
+        "config_id": "S011-CFG-000633",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX24T020-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.41278193526677076,
+        "drawdown_magnitude": 0.07242301248271366,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1737805.2532000002
+      },
+      {
+        "config_id": "S011-CFG-000643",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T008-standard",
+          "S011-EVAL-EX27T010-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4738866228995984,
+        "drawdown_magnitude": 0.07252300637048703,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1859554.1173000012
+      },
+      {
+        "config_id": "S011-CFG-000645",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T010-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.44152453663146796,
+        "drawdown_magnitude": 0.0725228591285898,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1794689.0507999992
+      },
+      {
+        "config_id": "S011-CFG-000647",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T012-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.42172043923695357,
+        "drawdown_magnitude": 0.06155922629808752,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1755421.6494999998
+      },
+      {
+        "config_id": "S011-CFG-000649",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T014-standard",
+          "S011-EVAL-EX27T000-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.47047882514523165,
+        "drawdown_magnitude": 0.07252440152534889,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1852683.084500001
+      },
+      {
+        "config_id": "S011-CFG-000650",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T016-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1788044.2065000003
+      },
+      {
+        "config_id": "S011-CFG-000651",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T017-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4509653844642496,
+        "drawdown_magnitude": 0.07250646569812602,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1813522.6471000018
+      },
+      {
+        "config_id": "S011-CFG-000652",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T018-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4184385560487076,
+        "drawdown_magnitude": 0.06156253741816464,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1748945.8363000008
+      },
+      {
+        "config_id": "S011-CFG-000653",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T020-standard",
+          "S011-EVAL-EX27T007-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.47047882514523165,
+        "drawdown_magnitude": 0.07252440152534889,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1852683.084500001
+      },
+      {
+        "config_id": "S011-CFG-000654",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T022-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1788044.2065000003
+      },
+      {
+        "config_id": "S011-CFG-000655",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T023-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4509653844642496,
+        "drawdown_magnitude": 0.07250646569812602,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1813522.6471000018
+      },
+      {
+        "config_id": "S011-CFG-000656",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX25T024-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4184385560487076,
+        "drawdown_magnitude": 0.06156253741816464,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1748945.8363000008
+      },
+      {
+        "config_id": "S011-CFG-000657",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T001-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.45710369307079146,
+        "drawdown_magnitude": 0.07252268134358608,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1825807.4715000005
+      },
+      {
+        "config_id": "S011-CFG-000658",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T002-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.41195801292709566,
+        "drawdown_magnitude": 0.07252490695718816,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "end_equity": 1736184.7836999996
+      },
+      {
+        "config_id": "S011-CFG-000659",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T003-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.432052505187827,
+        "drawdown_magnitude": 0.07252285561505534,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1775867.376999999
+      },
+      {
+        "config_id": "S011-CFG-000660",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T004-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4381847802882093,
+        "drawdown_magnitude": 0.0725254111209741,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1788044.2065000003
+      },
+      {
+        "config_id": "S011-CFG-000661",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T005-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.40347956466447665,
+        "drawdown_magnitude": 0.07327741445601677,
+        "closed_trades": 40,
+        "frequency": 5.955334987593052,
+        "end_equity": 1719542.5201
+      },
+      {
+        "config_id": "S011-CFG-000662",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T006-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4365336591366591,
+        "drawdown_magnitude": 0.07252332855568921,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1784762.5163000005
+      },
+      {
+        "config_id": "S011-CFG-000663",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T008-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4537417961292467,
+        "drawdown_magnitude": 0.0725238816078162,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1819075.3333999992
+      },
+      {
+        "config_id": "S011-CFG-000664",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T009-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.4300043659449446,
+        "drawdown_magnitude": 0.09888679865398886,
+        "closed_trades": 39,
+        "frequency": 5.806451612903226,
+        "end_equity": 1771807.3455000003
+      },
+      {
+        "config_id": "S011-CFG-000665",
+        "source_evaluation_ids": [
+          "S011-EVAL-EX27T011-standard"
+        ],
+        "return_pass": true,
+        "drawdown_pass": true,
+        "frequency_pass": true,
+        "qualified": true,
+        "cagr": 0.40723963633601534,
+        "drawdown_magnitude": 0.07252391788622836,
+        "closed_trades": 38,
+        "frequency": 5.6575682382134,
+        "end_equity": 1726915.7161999997
+      }
+    ]
+  },
+  "later_intake_definitions": [
+    {
+      "config_id": "S011-CFG-000137",
+      "config_fingerprint": "df9aa6206254e67e4c31a9f4e3e0eea6f086a9653d26f60cbcc9786c2a67fb7a",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.75,
+          "spx_weight": 0.15,
+          "entry": 0.3,
+          "exit": 0.0,
+          "max_days": 2,
+          "lookback": 120,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "a09e474ad1697615637fe126ddb214e80b3118bc25a2d16589e1fe2d8fd06b09"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX15/runtime/strategy_runtime",
+      "first_reference": "EX15T040",
+      "references": [
+        "EX15T040"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000193",
+      "config_fingerprint": "58436662dc6a711c4bb5efefe921dcfdb0c4464928bc10218e3cde4e3d55f5d2",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.75,
+          "spx_weight": 0.15,
+          "entry": 0.3,
+          "exit": 0.0,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+      "first_reference": "EX23T000",
+      "references": [
+        "EX23T000",
+        "EX22T000",
+        "EX24T000",
+        "EX25T000"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000204",
+      "config_fingerprint": "b6dca48f97e3fba376bb3f1a50905c0dfaf01ab71433dd7a981539e138a55d0c",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.75,
+          "spx_weight": 0.15,
+          "entry": 0.3,
+          "exit": 0.0,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.004
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+      "first_reference": "EX23T011",
+      "references": [
+        "EX23T011"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000244",
+      "config_fingerprint": "97dbb38c0f90d7b2c7b80efaaa68af958fac9fb72e711afb5aaa9fa473544260",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.625,
+          "spx_weight": 0.2,
+          "entry": 0.28,
+          "exit": 0.0,
+          "lookback": 60,
+          "max_days": 2,
+          "premium": 0.005
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+      "first_reference": "EX23T051",
+      "references": [
+        "EX23T051"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000247",
+      "config_fingerprint": "4d54687951a4a1c63c5a9ea659996bd6c6ef6aa69f1dce4a148695cfed9f04c1",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.335,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.005
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX23/runtime/strategy_runtime",
+      "first_reference": "EX23T054",
+      "references": [
+        "EX23T054",
+        "EX22T001",
+        "EX24T001",
+        "EX25T001"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000590",
+      "config_fingerprint": "9f8891210c50ec0c23d3299a766a5d90e63270939835c9500cce561d78090fed",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.335,
+          "exit": 0.0,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.005
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX22/runtime/strategy_runtime",
+      "first_reference": "EX22T015",
+      "references": [
+        "EX22T015"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000617",
+      "config_fingerprint": "53a7f00a5ba6e3b8e4f43c0a11c6caa24f89631267b0d3ccfa00f00e689f6769",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.002
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T002",
+      "references": [
+        "EX24T002",
+        "EX27T014"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000618",
+      "config_fingerprint": "a60e2af93624852af1037842db0da403a95b29d15a9c0e73e7b8897b6494ab32",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T003",
+      "references": [
+        "EX24T003",
+        "EX25T015",
+        "EX27T012"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000620",
+      "config_fingerprint": "0adaba749424c821ce880003fbdef1dedbf6aed1ce99b86090c78ec7c20f7ba3",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.002
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T006",
+      "references": [
+        "EX24T006"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000621",
+      "config_fingerprint": "594d2c76a1c328b370c3a3acbb66281c1bdedc096b636ad00366162229ea7914",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T007",
+      "references": [
+        "EX24T007",
+        "EX25T019"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000623",
+      "config_fingerprint": "e6304ad698bc8441aeff665b19e3d39dc3a03a4efb6197eb815d19d307dd3721",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.002
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T010",
+      "references": [
+        "EX24T010"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000624",
+      "config_fingerprint": "2b2021b36c8186a17f6b8916f7c9412ae510aeea9c4710a1780fb04f43f100f9",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T011",
+      "references": [
+        "EX24T011",
+        "EX25T021"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000627",
+      "config_fingerprint": "55780fb28fc14b0be13051b1e818734faacb285c109df417ede9cacb0debe880",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.002
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T014",
+      "references": [
+        "EX24T014"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000628",
+      "config_fingerprint": "d5044cbbb047251d96283273a04ca33d704e2eda4556e43d06c2e25f74985b91",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T015",
+      "references": [
+        "EX24T015",
+        "EX25T025"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000632",
+      "config_fingerprint": "849ab6f615558d7360494d1ec25a15cce92ef23643b8d8f96592ff7ad263e5f6",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.335,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T019",
+      "references": [
+        "EX24T019"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000633",
+      "config_fingerprint": "9928ec59764a9b29b75a485308cd5b83f8f3333fba26be97da3c0d391daf64e0",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.335,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.004
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX24/runtime/strategy_runtime",
+      "first_reference": "EX24T020",
+      "references": [
+        "EX24T020"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000643",
+      "config_fingerprint": "62cb5f485ebf93705ba8a21c1d335691fe5a0469f64054acd410bc5860f7b1bd",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.32,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T008",
+      "references": [
+        "EX25T008",
+        "EX27T010"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000645",
+      "config_fingerprint": "b8a1c82ac8fb0c04839f14cc66e0f81021df24b25f2d97c2085747354fca7f73",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.32,
+          "exit": 0.1,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T010",
+      "references": [
+        "EX25T010"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000647",
+      "config_fingerprint": "486b3751f3aa48b86e3b667a47acaa5173076240af6798de649ab807d7765951",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.32,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T012",
+      "references": [
+        "EX25T012"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000649",
+      "config_fingerprint": "997542827de0f656e40af648d6284799a67c6c403ac1388f262348a1130c4817",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T014",
+      "references": [
+        "EX25T014",
+        "EX27T000"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000650",
+      "config_fingerprint": "918c86785885f49629cafa87f1be9ca1ca49450c62a5e3a1790973394565d559",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.1,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T016",
+      "references": [
+        "EX25T016"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000651",
+      "config_fingerprint": "8fd8032b596f41ab1f2b7af7aad727b714dcb50b6b74586aeebbdfe8ac34c341",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.1,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T017",
+      "references": [
+        "EX25T017"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000652",
+      "config_fingerprint": "2145c4d5bf3776f401ba0309f964c677b100d8e04552bc8ad63fc20e8a8cc962",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T018",
+      "references": [
+        "EX25T018"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000653",
+      "config_fingerprint": "7f519ab5635e81c98a79d13325a87ef46295f8fbcf4088a588d4030e6fad2d68",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T020",
+      "references": [
+        "EX25T020",
+        "EX27T007"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000654",
+      "config_fingerprint": "61fbe22e612aa5a90a8cbb8251616f8ba8d9bb8809923e61ba3a94e58a9d6497",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.1,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T022",
+      "references": [
+        "EX25T022"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000655",
+      "config_fingerprint": "01c81433629c889c14da6c633f82e548cdba74cb6a768c67188f8ceec92ee8e6",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.1,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.003
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T023",
+      "references": [
+        "EX25T023"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000656",
+      "config_fingerprint": "9d1ca50a00b79b47a97f151432c94a575715323f0c435925ff993a09bdaee172",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.33,
+          "exit": 0.175,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX25/runtime/strategy_runtime",
+      "first_reference": "EX25T024",
+      "references": [
+        "EX25T024"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000657",
+      "config_fingerprint": "337ce3588add7bd59b3b6c4c9a85e696e74f50016163633fef308ed56ea9bded",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.55,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T001",
+      "references": [
+        "EX27T001"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000658",
+      "config_fingerprint": "2645183530f3b780215422832a9b1a524bf90be6c81c2b0683ab03575d15c7a5",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.075,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T002",
+      "references": [
+        "EX27T002"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000659",
+      "config_fingerprint": "c060cf97b9db4fead05805683097ef38b398e4b32c1440b711e08d19331a3b0b",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 140,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T003",
+      "references": [
+        "EX27T003"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000660",
+      "config_fingerprint": "e33d3806d8e83f07bb76f0353d6015418ca1f92fd048c1dfb09d01e624550238",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.05,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T004",
+      "references": [
+        "EX27T004"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000661",
+      "config_fingerprint": "408cbb2b2c2bc0cfb2226830813f56b1f9e2d3f15307ecc3f215bbedf985f96f",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.025,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T005",
+      "references": [
+        "EX27T005"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000662",
+      "config_fingerprint": "31723d5b06182dd3812a0a24e4b05413b862ce7a59e46e3ba96619681f3a8ed8",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.6,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T006",
+      "references": [
+        "EX27T006"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000663",
+      "config_fingerprint": "ada0f975cf3b84358d265f8bedb5ab20794da05bcf38c4a181b25b014221f4b7",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.0,
+          "max_days": 2,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T008",
+      "references": [
+        "EX27T008"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000664",
+      "config_fingerprint": "8a57026649f56304585f6b34c75792e8cc28ad3c277da3d4052a921506d69011",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 3,
+          "lookback": 130,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T009",
+      "references": [
+        "EX27T009"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    },
+    {
+      "config_id": "S011-CFG-000665",
+      "config_fingerprint": "0aeffcc8a16d2f83b5df73d1d12c78f56dd8b5b2fdd92d4bbadc1783583e574d",
+      "definition": {
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ",
+        "parameters": {
+          "tail_weight": 0.575,
+          "spx_weight": 0.05,
+          "entry": 0.325,
+          "exit": 0.025,
+          "max_days": 2,
+          "lookback": 120,
+          "premium": 0.0025
+        },
+        "runtime": {
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "contract_version": 1,
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "53faf44a861c97e83ce72c7827685791530a96b1e53ee0a6cefb5dab11fab71e"
+        }
+      },
+      "source_root": "experiments/S011/20260930_S011_EX27/runtime/strategy_runtime",
+      "first_reference": "EX27T011",
+      "references": [
+        "EX27T011"
+      ],
+      "scope": "COMPARABLE_DEVELOPMENT"
+    }
+  ],
+  "scope_warning": "26 qualified stage-three parameters and 36 later stage-four configuration identities are distinct historical scopes; later intake is not retroactive stage-three output.",
+  "source_reports": [
+    "research/S011/stage3/README.md",
+    "research/S011/stage3/iteration_01/README.md",
+    "research/S011/stage3/iteration_02/README.md"
+  ]
+}
