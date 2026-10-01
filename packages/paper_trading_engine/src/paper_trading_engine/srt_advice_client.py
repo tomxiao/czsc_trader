@@ -210,7 +210,14 @@ class SrtAdviceClient:
 
     def _load_release(self, strategy_id: str, strategy_version: str) -> StrategyRelease:
         path = self.repo_root / "strategies" / strategy_id / "versions" / f"{strategy_version}.json"
-        return StrategyRelease.from_mapping(_load_manifest(path))
+        payload = _load_manifest(path)
+        release = StrategyRelease.from_mapping(payload)
+        if payload.get("schema_version") == 4:
+            from strategy_runtime import load_strategy_deployment
+            deployment = load_strategy_deployment(self.repo_root / "strategies", release.release_id)
+            if deployment.release_hash != release.release_hash:
+                raise AdviceClientError("strategy differs from committed deployment")
+        return release
 
     def _account_root(self, account_id: str) -> Path:
         if _ACCOUNT_ID.fullmatch(account_id) is None:

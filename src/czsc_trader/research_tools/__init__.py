@@ -1,6 +1,7 @@
 """Public platform tools for strategy research."""
 
 from .delivery import (
+    CandidateInspectionDelivery,
     CandidateAssessmentDelivery,
     TargetMandateBinding,
     DeliveryStage,
@@ -76,6 +77,7 @@ from .audit_evidence import build_champion_audit_request
 from .assessment import build_assessment_evidence
 
 __all__ = [
+    "CandidateInspectionDelivery",
     "CandidateAssessmentDelivery",
     "TargetMandateBinding",
     "build_assessment_evidence",

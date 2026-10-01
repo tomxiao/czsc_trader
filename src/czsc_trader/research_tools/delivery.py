@@ -14,6 +14,7 @@ from types import UnionType
 from typing import Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from strategy_manager import CandidateKey
+from strategy_manager import CandidateInspectionReport, DecisionReference, FreezeReceipt
 from strategy_evaluator import (
     CandidateAssessmentRequest,
     AssessmentPanel,
@@ -97,6 +98,7 @@ class DeliveryStage(StrEnum):
     COMPONENTS = "COMPONENTS"
     CANDIDATES = "CANDIDATES"
     ASSESSMENT = "ASSESSMENT"
+    INSPECTION = "INSPECTION"
 
 
 class DeliveryStatus(StrEnum):
@@ -650,7 +652,28 @@ class CandidateAssessmentDelivery(_Record):
             _text(item, "pending decision")
 
 
-StageContent = ResearchMandate | ComponentPanel | CandidateSet | CandidateAssessmentDelivery
+@dataclass(frozen=True, slots=True)
+class CandidateInspectionDelivery(_Record):
+    source_assessment: DeliveryReference
+    inspection: CandidateInspectionReport
+    inspection_evidence: EvidenceRef
+    decisions: tuple[DecisionReference, ...]
+    freeze: FreezeReceipt | None
+    pending_decisions: tuple[str, ...]
+
+    def _validate(self):
+        if self.source_assessment.stage is not DeliveryStage.ASSESSMENT:
+            raise ValueError("inspection delivery requires assessment predecessor")
+        if self.source_assessment.strategy_id != self.inspection.plan.origin.candidate.strategy_id:
+            raise ValueError("inspection delivery candidate family differs")
+        _unique((x.decision_id for x in self.decisions), "decision ID")
+        if self.freeze is None and not self.pending_decisions:
+            raise ValueError("unfrozen inspection must identify pending user decisions")
+        for item in self.pending_decisions:
+            _text(item, "pending decision")
+
+
+StageContent = ResearchMandate | ComponentPanel | CandidateSet | CandidateAssessmentDelivery | CandidateInspectionDelivery
 T = TypeVar("T", bound=StageContent)
 
 

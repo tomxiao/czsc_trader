@@ -4,7 +4,10 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .freeze_contracts import CandidateOrigin, FreezeGovernance
 
 from .errors import ValidationError
 from .validation import (
@@ -328,8 +331,9 @@ class StrategyVersion:
     forward_start: str
     strategy_payload: dict[str, Any]
     release_hash: str | None
-    governance: dict[str, str] | None = None
+    governance: dict[str, str] | FreezeGovernance | None = None
     governance_hash: str | None = None
+    origin: CandidateOrigin | None = None
 
     FIELDS: ClassVar[tuple[str, ...]] = (
         "schema_version",
@@ -349,6 +353,9 @@ class StrategyVersion:
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> StrategyVersion:
         schema_version = value.get("schema_version")
+        if schema_version == 4 and type(schema_version) is int:
+            from .freeze_store import version_from_dict
+            return version_from_dict(value)
         optional = ("governance", "governance_hash") if schema_version in {2, 3} else ()
         require_exact_fields(value, cls.FIELDS, optional)
         if schema_version not in {1, 2, 3} or isinstance(schema_version, bool):
@@ -445,6 +452,14 @@ class StrategyVersion:
 
     def to_dict(self) -> dict[str, Any]:
         value = _enum_dict(self)
+        if self.schema_version == 4:
+            from .freeze_contracts import CandidateOrigin, FreezeGovernance
+            if not isinstance(self.origin, CandidateOrigin) or not isinstance(self.governance, FreezeGovernance):
+                raise ValidationError("schema 4 requires typed origin and governance")
+            value["origin"] = self.origin.to_dict()
+            value["governance"] = self.governance.to_dict()
+        else:
+            value.pop("origin")
         if self.schema_version == 1:
             value.pop("governance")
             value.pop("governance_hash")

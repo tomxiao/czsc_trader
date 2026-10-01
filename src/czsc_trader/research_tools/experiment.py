@@ -496,6 +496,7 @@ class _PlatformExperimentContext:
         self.predecessors = MappingProxyType(dict(predecessors))
         self._recorder = recorder
         self._formal = formal
+        self._artifacts = []
 
     @property
     def trace(self) -> ExperimentTrace:
@@ -700,7 +701,7 @@ def execute_experiment(
     if not isinstance(result, ExperimentResult):
         raise TypeError("experiment returned an invalid result")
     artifacts = {item.path: item for item in result.artifacts}
-    for item in context.evaluation._artifacts:
+    for item in (*context.evaluation._artifacts, *context._artifacts):
         if item.path in artifacts and artifacts[item.path] != item:
             raise ValueError("experiment artifact conflicts with platform evidence")
         artifacts[item.path] = item

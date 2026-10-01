@@ -137,6 +137,7 @@ def _validate_content(definition, content, root, experiments, context):
         d.DeliveryStage.COMPONENTS: d.ComponentPanel,
         d.DeliveryStage.CANDIDATES: d.CandidateSet,
         d.DeliveryStage.ASSESSMENT: d.CandidateAssessmentDelivery,
+        d.DeliveryStage.INSPECTION: d.CandidateInspectionDelivery,
     }
     if type(content.payload) is not expected[definition.stage]:
         _fail("STAGE_CONTENT", "content.payload", "stage and content type differ")
@@ -227,6 +228,51 @@ def _validate_content(definition, content, root, experiments, context):
                     _check_evaluation(ref, trial.candidate, experiments)
     if isinstance(content.payload, d.CandidateAssessmentDelivery):
         _validate_assessment_delivery(definition, content.payload, experiments, context)
+    if isinstance(content.payload, d.CandidateInspectionDelivery):
+        _validate_inspection_delivery(definition, content, root, context)
+
+
+def _validate_inspection_delivery(definition, content, root, context):
+    from strategy_manager import CandidateEvidence, StrategyRegistry
+    from strategy_manager import freeze_contracts as f
+    from strategy_manager.freeze_store import read_decision, validate_inspection
+    payload = content.payload
+    if payload.source_assessment not in definition.predecessors:
+        _fail("INSPECTION_SOURCE", "source_assessment", "assessment predecessor missing")
+    report = f.CandidateInspectionReport.from_dict(
+        json.loads(_read_evidence(root, payload.inspection_evidence)))
+    if report != payload.inspection or report != validate_inspection(context.strategy_root, report.reference):
+        _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
+    selection = read_decision(context.strategy_root, report.selection)
+    receipt_path = _delivery_path(context, payload.source_assessment) / "receipt.json"
+    if (selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix() or
+        selection.subject.delivery.sha256 != sha256(receipt_path.read_bytes()).hexdigest()):
+        _fail("INSPECTION_SELECTION", "source_assessment", "selection refers to another assessment")
+    # Explicit attachments preserve the complete report evidence closure.
+    attached = {(x.reference.sha256, _read_evidence(root, x.reference)) for x in content.attachments}
+    records = [report]
+    for ref in (report.selection, *payload.decisions):
+        record = read_decision(context.strategy_root, ref)
+        if record.strategy_id != definition.strategy_id:
+            _fail("INSPECTION_DECISION", ref.decision_id, "decision family differs")
+        for evidence in (ref.evidence, record.confirmation_source):
+            if (evidence.sha256, evidence.resolve(context.strategy_root).read_bytes()) not in attached:
+                _fail("INSPECTION_EVIDENCE", evidence.path, "decision evidence must be attached")
+        if isinstance(record.subject, f.FreezeSubject) and record.subject.inspection != report.reference:
+            _fail("INSPECTION_DECISION", ref.decision_id, "freeze decision report differs")
+    for value in _walk(records[0]):
+        if isinstance(value, CandidateEvidence):
+            if (value.sha256, value.resolve(context.strategy_root).read_bytes()) not in attached:
+                _fail("INSPECTION_EVIDENCE", value.path, "inspection evidence must be attached")
+    if payload.freeze is not None:
+        receipt = StrategyRegistry(context.strategy_root).get_freeze_result(payload.freeze.request_id)
+        if receipt != payload.freeze:
+            _fail("FREEZE_RECEIPT", "freeze", "freeze receipt differs from actual result")
+        if receipt.status is f.FreezeStatus.COMMITTED:
+            version = StrategyRegistry(context.strategy_root).get_version(
+                receipt.version.strategy_id, receipt.version.version)
+            if version.governance.inspection != report.reference or version.governance.approval not in payload.decisions:
+                _fail("FREEZE_RECEIPT", "freeze", "frozen version report/approval differs")
 
 
 def _validate_assessment_delivery(definition, payload, experiments, context):
@@ -537,7 +583,7 @@ def _report(definition, content) -> bytes:
         lines.extend(["", "不利证据：", ""])
         lines.extend(f"- [{safe(x.path)}](<{x.path}>)" for x in payload.contrary_evidence)
         lines.extend(["", "待用户决定：", "", *[f"- {safe(x)}" for x in payload.pending_decisions]])
-    else:
+    elif isinstance(payload, d.CandidateSet):
         lines.extend(
             [
                 payload.conclusion,
@@ -587,6 +633,23 @@ def _report(definition, content) -> bytes:
                     )
                     + " |"
                 )
+    if isinstance(payload, d.CandidateInspectionDelivery):
+        report = payload.inspection
+        plan = report.plan
+        lines.extend([
+            f"候选：{plan.origin.candidate.strategy_id}-{plan.origin.candidate.candidate_id}", "",
+            f"内容指纹：`{plan.origin.content_sha256}`", "",
+            f"拟冻结版本：{plan.version}；计划摘要：`{plan.sha256}`", "",
+            f"技术检验：{report.status.value}；方法：{report.protocol.method_version}", "",
+            "| 检验项 | 状态 | 说明 |", "| --- | --- | --- |",
+            *[f"| {x.check.value} | {x.status.value} | {safe(x.detail)} |" for x in report.checks],
+            "", "剩余风险：", *[f"- {safe(x)}" for x in report.remaining_risks], "",
+            f"冻结状态：{payload.freeze.status.value if payload.freeze else '尚未请求'}", "",
+            *[f"待用户决定：{safe(x)}" for x in payload.pending_decisions],
+        ])
+        if payload.freeze is not None and payload.freeze.version is not None:
+            lines.extend(["", f"已冻结版本：{payload.freeze.version.strategy_id}-{payload.freeze.version.version}",
+                          f"发布哈希：`{payload.freeze.version.release_hash}`"])
     lines.extend(
         [
             "",

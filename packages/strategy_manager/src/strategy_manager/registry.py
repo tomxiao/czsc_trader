@@ -8,7 +8,11 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 from time import sleep
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .freeze_contracts import ResearchDecision, DecisionReference, FreezeReceipt, FreezeRequestId
+    from .freeze_store import FreezeVersionRequest
 
 from .errors import (
     EvidenceRequiredError,
@@ -66,6 +70,20 @@ class StrategyRegistry:
     def __init__(self, root: Path | str):
         self.root = Path(root)
         self._write_lock = RegistryWriteLock(self.root)
+
+    @registry_write
+    def record_research_decision(self, decision: ResearchDecision) -> DecisionReference:
+        from .freeze_store import record_decision
+        return record_decision(self, decision)
+
+    @registry_write
+    def freeze_version(self, request: FreezeVersionRequest) -> FreezeReceipt:
+        from .freeze_store import freeze
+        return freeze(self, request)
+
+    def get_freeze_result(self, request_id: FreezeRequestId) -> FreezeReceipt:
+        from .freeze_store import query
+        return query(self, request_id)
 
     @registry_write
     def register_candidate(self, record: CandidateRegistration) -> CandidateRegistration:
@@ -304,13 +322,25 @@ class StrategyRegistry:
                     f"release hash mismatch: {strategy_id}-{version}"
                 ) from exc
             raise RegistryError(f"invalid strategy version {strategy_id}-{version}: {exc}") from exc
+        if model.schema_version == 4:
+            from .freeze_store import require_committed
+            require_committed(self, model)
         return model
 
     def _versions(self, strategy_id: str) -> list[StrategyVersion]:
         directory = self._strategy_dir(strategy_id) / "versions"
         if not directory.exists():
             return []
-        versions = [self.get_version(strategy_id, path.stem) for path in directory.glob("v*.json")]
+        versions = []
+        for path in directory.glob("v*.json"):
+            raw = self._read_json(path)
+            if raw.get("schema_version") == 4:
+                model = StrategyVersion.from_dict(raw)
+                request_id = model.governance.request_id
+                marker = self.root / "freeze_requests" / strategy_id / request_id.value / "committed.json"
+                if not marker.exists():
+                    continue
+            versions.append(self.get_version(strategy_id, path.stem))
         return sorted(versions, key=lambda item: int(item.version[1:]))
 
     def versions(self, strategy_id: str) -> tuple[StrategyVersion, ...]:
@@ -632,6 +662,8 @@ class StrategyRegistry:
     def current_qualification(self, strategy_id: str, version: str) -> Qualification:
         events = [event for event in self.lifecycle_events(strategy_id) if event.version == version]
         if not events:
+            if self.get_version(strategy_id, version).schema_version == 4:
+                return Qualification.RESEARCH
             raise RegistryError(f"strategy version has no lifecycle: {strategy_id}-{version}")
         return events[-1].to_state
 
@@ -831,7 +863,11 @@ class StrategyRegistry:
         release = self.get_version(strategy_id, version)
         if not release.release_hash:
             raise EvidenceRequiredError("strategy version is not frozen")
-        if release.schema_version != 3:
+        if release.schema_version == 4:
+            from .freeze_store import require_committed
+            require_committed(self, release)
+            return "RESEARCH_FREEZE_VALIDATED"
+        if release.schema_version in {1, 2}:
             accepted = [
                 item
                 for item in self.lifecycle_events(strategy_id)
@@ -1015,6 +1051,8 @@ class StrategyRegistry:
                         )
             for item in versions:
                 self.current_qualification(item.strategy_id, item.version)
+                if item.schema_version == 4:
+                    self.validate_version_governance(item.strategy_id, item.version)
             for item in evidence:
                 version = self.get_version(item.strategy_id, item.version)
                 if not version.release_hash or item.release_hash != version.release_hash:

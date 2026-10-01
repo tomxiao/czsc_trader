@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataflows import Dataflows
 
 from hashlib import sha256
-import json
 from pathlib import Path
 from collections.abc import Mapping
 from datetime import date
@@ -79,9 +78,10 @@ def _overlay_decision_id(reference: str, signal_date: pd.Timestamp) -> str:
 
 
 def _load_release(repository_root: Path, reference: str) -> StrategyRelease:
+    from strategy_manager import StrategyRegistry
     family, version = reference.split("-", 1)
-    path = Path(repository_root) / "strategies" / family / "versions" / f"{version}.json"
-    return StrategyRelease.from_mapping(json.loads(path.read_text(encoding="utf-8")))
+    frozen = StrategyRegistry(Path(repository_root) / "strategies").get_version(family, version)
+    return StrategyRelease.from_mapping(frozen.to_dict())
 
 
 def load_srt_strategy(

@@ -7,6 +7,12 @@ services. Every name resolves to the existing implementation, without wrappers.
 from importlib import import_module
 
 _EXPORTS = {
+    "CandidateInspectionRequest": "inspection_service",
+    "InspectionReplay": "inspection_service",
+    "inspect_candidate": "inspection_service",
+    "record_research_decision": "inspection_service",
+    "freeze_candidate": "inspection_service",
+    "get_freeze_result": "inspection_service",
     "assemble_delivery": "delivery_service",
     "validate_delivery": "delivery_service",
     "CandidateRegistrationRequest": "candidate_service",
