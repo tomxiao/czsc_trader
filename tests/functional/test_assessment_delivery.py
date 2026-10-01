@@ -86,6 +86,7 @@ class Experiment(ResearchExperiment):
         request.experiment_id,
         execution.workspace.root.relative_to(root).as_posix(),
         receipt_result.receipt.sha256,
+        use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     evaluation_result = loaded.implementation.result
     context = RepositoryContext.discover(root)
@@ -164,10 +165,20 @@ def assessment_request(evidence):
 
 def comparison_request(panel):
     policy = m.ComparisonPolicy(
-        "1", tuple(m.MetricBinSpec(x, 0.0001, 0.0, m.BinRounding.FLOOR) for x in m.RANKING_METRICS)
+        "1",
+        tuple((m.MetricBinSpec(x, 0.0001, 0.0, m.BinRounding.FLOOR) for x in m.RANKING_METRICS)),
+        pareto_basis=m.ParetoBasis.RAW,
+        missing_evidence_policy=m.MissingEvidencePolicy.REQUIRE_COMPLETE,
     )
     targets = m.ResearchTargets(
-        (m.ResearchTarget(m.ResearchMetric.NET_ANNUAL_RETURN, lower=-1.0),), 60
+        (
+            m.ResearchTarget(
+                "net_annual_return",
+                m.ResearchMetric.NET_ANNUAL_RETURN,
+                lower=m.ConstantBound(-1.0, True),
+            ),
+        ),
+        60,
     )
     return m.CandidateComparisonRequest(
         tuple(x.candidate for x in panel.rows), targets, panel, policy
@@ -188,7 +199,15 @@ def prepare(completed):
                 d.MandateItemKind.OBJECTIVE,
                 "净年化下界",
                 d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation.reference),
-                d.NumericRequirement("net_annual_return", "ratio", lower=-1.0),
+                d.PerformanceRequirement(
+                    (
+                        m.ResearchTarget(
+                            "net_annual_return",
+                            m.ResearchMetric.NET_ANNUAL_RETURN,
+                            lower=m.ConstantBound(-1.0, True),
+                        ),
+                    )
+                ),
             ),
         )
     )
@@ -230,7 +249,7 @@ def prepare(completed):
         panel,
         comparison,
         compare_candidates(comparison),
-        (d.TargetMandateBinding(m.ResearchMetric.NET_ANNUAL_RETURN, "return"),),
+        (d.TargetMandateBinding("net_annual_return", "return"),),
         None,
         "先补充缺失自检证据，再由用户选型",
         (contrary,),
@@ -309,7 +328,14 @@ def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
     changed_target = replace(
         payload.comparison_request,
         targets=m.ResearchTargets(
-            (m.ResearchTarget(m.ResearchMetric.NET_ANNUAL_RETURN, lower=0.0),), 60
+            (
+                m.ResearchTarget(
+                    "net_annual_return",
+                    m.ResearchMetric.NET_ANNUAL_RETURN,
+                    lower=m.ConstantBound(0.0, True),
+                ),
+            ),
+            60,
         ),
     )
     changed = replace(
@@ -428,7 +454,15 @@ def test_frequency_targets_require_the_confirmed_window(completed):
                 d.MandateItemKind.OBJECTIVE,
                 "滚动闭合次数中位数",
                 confirmation,
-                d.NumericRequirement("frequency_median", "closed_cycles_per_window", lower=0.0),
+                d.PerformanceRequirement(
+                    (
+                        m.ResearchTarget(
+                            "frequency_median",
+                            m.ResearchMetric.FREQUENCY_MEDIAN,
+                            lower=m.ConstantBound(0.0, True),
+                        ),
+                    )
+                ),
             ),
             d.MandateItem(
                 "frequency_days",
@@ -452,7 +486,11 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         payload.comparison_request.targets,
         requirements=(
             *payload.comparison_request.targets.requirements,
-            m.ResearchTarget(m.ResearchMetric.FREQUENCY_MEDIAN, lower=0.0),
+            m.ResearchTarget(
+                "frequency_median",
+                m.ResearchMetric.FREQUENCY_MEDIAN,
+                lower=m.ConstantBound(0.0, True),
+            ),
         ),
     )
     comparison = replace(payload.comparison_request, targets=targets)
@@ -464,7 +502,7 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         frequency_window_item_id="frequency_days",
         target_bindings=(
             *payload.target_bindings,
-            d.TargetMandateBinding(m.ResearchMetric.FREQUENCY_MEDIAN, "frequency"),
+            d.TargetMandateBinding("frequency_median", "frequency"),
         ),
     )
     defined = replace(definition, predecessors=(payload.source_candidates, receipt.reference))
@@ -515,7 +553,7 @@ def test_report_renders_sensitivity_rows_and_behavior_members(completed):
     result = value.payload.comparison
     result = replace(
         result,
-        sensitivities=(m.SensitivityRanking("coarse-bins", result.rows),),
+        sensitivities=(m.SensitivityRanking("coarse-bins", result.rows, result.pairs),),
         behavior_groups=(m.BehaviorGroup("f" * 64, (result.rows[0].candidate,)),),
     )
     rendered = _report(

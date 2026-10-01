@@ -1,17 +1,18 @@
+# Frozen schema-v1 validation semantics from 13fe9633. Read-only; never used for new publications.
 """Deterministic research diagnostics. No evaluation scheduling or economic gates."""
 
 from collections import defaultdict
 from dataclasses import replace
-from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_EVEN, ROUND_HALF_UP
-from itertools import combinations
-import operator
+from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_EVEN
 import math
 
 import numpy as np
 
-from . import research_models as m
+from . import _research_models_v1 as m
 from .bootstrap import paired_stationary_bootstrap
 from .audit_models import ReturnMatrixEvidence
+from .models import CandidateProfile
+from .pareto import pareto_layers
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
 
 
@@ -27,13 +28,9 @@ def _quantile(values, q, method, weights=None):
 
 
 def _performance(evidence):
-    return _equity_performance([x.equity for x in evidence.account], evidence.initial_cash)
-
-
-def _equity_performance(equity, initial_cash):
-    equity = np.asarray(equity)
-    wealth = np.r_[initial_cash, equity]
-    annual = float((equity[-1] / initial_cash) ** (252 / len(equity)) - 1)
+    equity = np.asarray([x.equity for x in evidence.account])
+    wealth = np.r_[evidence.initial_cash, equity]
+    annual = float((equity[-1] / evidence.initial_cash) ** (252 / len(equity)) - 1)
     drawdown = float(-np.min(wealth / np.maximum.accumulate(wealth) - 1))
     m.require(math.isfinite(annual), "annual return overflow")
     return annual, drawdown
@@ -197,7 +194,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
         ):
             unit = (
                 m.MetricUnit.CLOSED_CYCLES_PER_WINDOW
-                if metric in m.FREQUENCY_METRICS
+                if metric in (m.ResearchMetric.FREQUENCY_MEDIAN, m.ResearchMetric.FREQUENCY_Q10)
                 else m.MetricUnit.RATIO
             )
             diagnostics[metric] = m.DiagnosticValue(
@@ -220,11 +217,6 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             put(m.ResearchMetric.DRAWDOWN_MAGNITUDE, drawdown, sources=(base,))
             sessions = tuple(x.session for x in base.account)
             size = base.frequency_window_days
-            put(
-                m.ResearchMetric.FULL_SAMPLE_FREQUENCY,
-                size * len(base.closed_cycles) / len(sessions),
-                sources=(base,),
-            )
             counts = [
                 sum(
                     sessions[i - size + 1] <= x.exit_session <= sessions[i]
@@ -376,26 +368,6 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 gaps.append("MISSING_BENCHMARK")
         else:
             gaps.append("MISSING_BASELINE")
-        benchmark_values = (
-            _equity_performance(base.benchmark_equity, base.initial_cash)
-            if base is not None and base.benchmark_equity
-            else (None, None)
-        )
-        benchmark = m.BenchmarkAssessment(
-            tuple(
-                m.DiagnosticValue(
-                    metric,
-                    m.MetricUnit.RATIO,
-                    m.DiagnosticStatus.AVAILABLE
-                    if value is not None
-                    else m.DiagnosticStatus.INSUFFICIENT_DATA,
-                    value,
-                    None if value is not None else "MISSING_BENCHMARK",
-                    (base.evaluation_id,) if base is not None else (),
-                )
-                for metric, value in zip(m.BENCHMARK_METRICS, benchmark_values)
-            )
-        )
         rows.append(
             m.CandidateAssessment(
                 center,
@@ -408,285 +380,140 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 interval,
                 tuple(gaps),
                 None if base is None else base.behavior_sha256,
-                benchmark,
             )
         )
     family, limitations = _family(request)
     return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations)
 
 
-def _check_target(target, row, frequency_window_days):
-    metrics = {x.metric: x for x in row.diagnostics}
-    benchmark = {x.metric: x for x in row.benchmark.diagnostics}
-    observed = metrics[target.metric].value
-    sources = list(metrics[target.metric].evaluation_ids)
-    condition_value = None
-    lower = upper = None
-
-    def result(status, reason=None):
-        return m.TargetCheck(
-            target,
-            observed,
-            status,
-            reason,
-            lower,
-            upper,
-            condition_value,
-            tuple(dict.fromkeys(sources)),
-        )
-
-    if target.when is not None:
-        condition = target.when
-        diagnostic = benchmark[condition.metric]
-        condition_value = diagnostic.value
-        sources.extend(diagnostic.evaluation_ids)
-        if condition_value is None:
-            return result(m.TargetCheckStatus.INDETERMINATE, "MISSING_CONDITION_BENCHMARK")
-        operations = {
-            m.ComparisonOperator.LT: operator.lt,
-            m.ComparisonOperator.LE: operator.le,
-            m.ComparisonOperator.GT: operator.gt,
-            m.ComparisonOperator.GE: operator.ge,
-        }
-        if not operations[condition.operator](condition_value, condition.value):
-            return result(m.TargetCheckStatus.NOT_APPLICABLE, "CONDITION_FALSE")
-    if target.metric in m.FREQUENCY_METRICS and row.frequency_window_days != frequency_window_days:
-        return result(m.TargetCheckStatus.INDETERMINATE, "FREQUENCY_WINDOW_DIFFERS")
-    if observed is None:
-        return result(m.TargetCheckStatus.INDETERMINATE, metrics[target.metric].reason)
-    bounds = []
-    for bound in (target.lower, target.upper):
-        if isinstance(bound, m.BenchmarkBound):
-            diagnostic = benchmark[target.metric]
-            sources.extend(diagnostic.evaluation_ids)
-            if diagnostic.value is None:
-                return result(m.TargetCheckStatus.INDETERMINATE, "MISSING_BOUND_BENCHMARK")
-            value = diagnostic.value * bound.multiplier
-            m.require(math.isfinite(value), "benchmark bound overflow")
-            bounds.append(value)
-        else:
-            bounds.append(None if bound is None else bound.value)
-    lower, upper = bounds
-    passed = (
-        lower is None or (observed >= lower if target.lower.inclusive else observed > lower)
-    ) and (upper is None or (observed <= upper if target.upper.inclusive else observed < upper))
-    return result(
-        m.TargetCheckStatus.PASSED if passed else m.TargetCheckStatus.FAILED,
-        None if passed else "TARGET_NOT_MET",
-    )
-
-
-def _bin(value, spec):
-    if value is None:
-        return None
-    rounding = {
-        m.BinRounding.FLOOR: ROUND_FLOOR,
-        m.BinRounding.NEAREST_HALF_EVEN: ROUND_HALF_EVEN,
-        m.BinRounding.NEAREST_HALF_UP: ROUND_HALF_UP,
-    }[spec.rounding]
-    return int(
-        (
-            (Decimal(str(value)) - Decimal(str(spec.origin))) / Decimal(str(spec.resolution))
-        ).to_integral_value(rounding=rounding)
-    )
-
-
-def _compare_pair(a, b, layer, order):
-    for metric, left, right in zip(order, a.bin_values, b.bin_values):
-        if left is None or right is None:
-            return m.PairwiseComparison(
-                a.candidate,
-                b.candidate,
-                layer,
-                m.PairwiseRelation.INCOMPARABLE,
-                metric,
-                "MISSING_METRIC",
-            )
-        if left != right:
-            maximize = metric in (
-                m.ResearchMetric.NET_ANNUAL_RETURN,
-                m.ResearchMetric.ROLLING_EXCESS_Q10,
-            )
-            relation = (
-                m.PairwiseRelation.A_BEFORE_B
-                if (left > right) == maximize
-                else m.PairwiseRelation.B_BEFORE_A
-            )
-            return m.PairwiseComparison(a.candidate, b.candidate, layer, relation, metric, None)
-    return m.PairwiseComparison(a.candidate, b.candidate, layer, m.PairwiseRelation.TIE, None, None)
-
-
-def _order_layer(members, layer, order):
-    members = sorted(members, key=lambda x: x.candidate.candidate_id)
-    ids = [x.candidate for x in members]
-    edges, ties, unknown = ({x: set() for x in ids} for _ in range(3))
-    pairs = tuple(_compare_pair(a, b, layer, order) for a, b in combinations(members, 2))
-    for pair in pairs:
-        a, b = pair.candidate_a, pair.candidate_b
-        if pair.relation is m.PairwiseRelation.A_BEFORE_B:
-            edges[a].add(b)
-        elif pair.relation is m.PairwiseRelation.B_BEFORE_A:
-            edges[b].add(a)
-        elif pair.relation is m.PairwiseRelation.TIE:
-            ties[a].add(b)
-            ties[b].add(a)
-        else:
-            unknown[a].add(b)
-            unknown[b].add(a)
-    after = {}
-    for who in ids:
-        seen, stack = set(), list(edges[who])
-        while stack:
-            other = stack.pop()
-            m.require(other != who, "partial-order cycle")
-            if other not in seen:
-                seen.add(other)
-                stack.extend(edges[other])
-        after[who] = seen
-    result = []
-    for row in members:
-        who = row.candidate
-        before = {other for other in ids if who in after[other]}
-        lo, hi = len(before) + 1, len(ids) - len(after[who])
-        exact = (
-            lo
-            if lo == hi or (ties[who] and not unknown[who] and hi - lo + 1 == len(ties[who]) + 1)
-            else None
-        )
-        status = (
-            m.ComparisonStatus.PARTIALLY_ORDERED
-            if unknown[who]
-            else m.ComparisonStatus.TIED
-            if ties[who]
-            else m.ComparisonStatus.RANKED
-        )
-        result.append(
-            replace(
-                row,
-                status=status,
-                pareto_layer=layer,
-                rank_in_layer=exact,
-                rank_min=lo,
-                rank_max=hi,
-            )
-        )
-    return sorted(result, key=lambda x: (x.rank_min, x.candidate.candidate_id)), pairs
-
-
 def _rank(request, bins, order):
     specifications = {x.metric: x for x in bins}
-    records, profiles, eligible_rows = [], [], []
+    records, comparable = [], []
     for row in request.panel.rows:
         metrics = {x.metric: x for x in row.diagnostics}
-        checks = tuple(
-            _check_target(x, row, request.targets.frequency_window_days)
-            for x in request.targets.requirements
-        )
-        reasons = [
-            x.reason
-            for x in checks
-            if x.status in (m.TargetCheckStatus.FAILED, m.TargetCheckStatus.INDETERMINATE)
-        ]
-        missing = [metric for metric in order if metrics[metric].value is None]
-        reasons.extend(f"{metric.value}:{metrics[metric].reason}" for metric in missing)
-        if any(x.status is m.TargetCheckStatus.FAILED for x in checks):
-            status = m.ComparisonStatus.TARGET_NOT_MET
-        elif (
-            any(x.status is m.TargetCheckStatus.INDETERMINATE for x in checks)
-            or row.context_sha256 is None
-            or any(x in missing for x in m.BENCHMARK_METRICS)
-            or (
-                missing
-                and request.policy.missing_evidence_policy
-                is m.MissingEvidencePolicy.REQUIRE_COMPLETE
+        checks, reasons = [], []
+        for target in request.targets.requirements:
+            value = metrics[target.metric].value
+            frequency = target.metric in (
+                m.ResearchMetric.FREQUENCY_MEDIAN,
+                m.ResearchMetric.FREQUENCY_Q10,
             )
-        ):
-            status = m.ComparisonStatus.INCOMPARABLE
+            if frequency and row.frequency_window_days != request.targets.frequency_window_days:
+                checks.append(m.TargetCheck(target, value, None, "FREQUENCY_WINDOW_DIFFERS"))
+            elif value is None:
+                checks.append(m.TargetCheck(target, None, None, metrics[target.metric].reason))
+            else:
+                passed = (target.lower is None or value >= target.lower) and (
+                    target.upper is None or value <= target.upper
+                )
+                checks.append(
+                    m.TargetCheck(target, value, passed, None if passed else "TARGET_NOT_MET")
+                )
+        if any(x.passed is False for x in checks):
+            status = m.ComparisonStatus.TARGET_NOT_MET
+            reasons.append("TARGET_NOT_MET")
+        else:
+            reasons.extend(x.reason for x in checks if x.passed is None)
+            reasons.extend(
+                f"{metric.value}:{metrics[metric].reason}"
+                for metric in order
+                if metrics[metric].value is None
+            )
             if row.context_sha256 is None:
                 reasons.append("EVALUATION_CONTEXTS_DIFFER")
-        else:
-            status = m.ComparisonStatus.RANKED
-        values = tuple(_bin(metrics[metric].value, specifications[metric]) for metric in order)
-        records.append(
-            m.CandidateRank(
-                row.candidate, status, checks, None, None, values, tuple(reasons), None, None
-            )
-        )
+            status = m.ComparisonStatus.INCOMPARABLE if reasons else m.ComparisonStatus.RANKED
+        rank = m.CandidateRank(row.candidate, status, tuple(checks), None, None, (), tuple(reasons))
         if status is m.ComparisonStatus.RANKED:
-            eligible_rows.append(row)
-            raw = request.policy.pareto_basis is m.ParetoBasis.RAW
-            annual, dd = (
-                metrics[x].value if raw else _bin(metrics[x].value, specifications[x])
-                for x in m.BENCHMARK_METRICS
+            values = []
+            for metric in order:
+                spec = specifications[metric]
+                rounding = ROUND_FLOOR if spec.rounding is m.BinRounding.FLOOR else ROUND_HALF_EVEN
+                value = (
+                    (Decimal(str(metrics[metric].value)) - Decimal(str(spec.origin)))
+                    / Decimal(str(spec.resolution))
+                ).to_integral_value(rounding=rounding)
+                values.append(int(value))
+            rank = replace(rank, bin_values=tuple(values))
+            comparable.append(
+                CandidateProfile(
+                    row.candidate.candidate_id,
+                    True,
+                    True,
+                    (
+                        ("net_annual", metrics[m.ResearchMetric.NET_ANNUAL_RETURN].value),
+                        ("negative_drawdown", -metrics[m.ResearchMetric.DRAWDOWN_MAGNITUDE].value),
+                    ),
+                )
             )
-            profiles.append((row.candidate.candidate_id, annual, -dd))
-
-    contexts = {
-        (x.context_sha256, x.metric_version, x.frequency_window_days, x.baseline_scenario)
-        for x in eligible_rows
+        records.append(rank)
+    eligible_ids = {
+        x.candidate.candidate_id for x in records if x.status is m.ComparisonStatus.RANKED
     }
-    # Absent pressure evidence is missing data; two different known scenarios remain incompatible.
-    stress_contexts = {x.stress_scenario for x in eligible_rows if x.stress_scenario is not None}
-    if len(contexts) > 1 or len(stress_contexts) > 1:
+    contexts = {
+        (
+            x.context_sha256,
+            x.metric_version,
+            x.frequency_window_days,
+            x.baseline_scenario,
+            x.stress_scenario,
+        )
+        for x in request.panel.rows
+        if x.candidate.candidate_id in eligible_ids
+    }
+    if len(contexts) > 1:
         records = [
             replace(
                 x,
                 status=m.ComparisonStatus.INCOMPARABLE,
+                bin_values=(),
                 reasons=(*x.reasons, "EVALUATION_CONTEXTS_DIFFER"),
             )
-            if x.status is m.ComparisonStatus.RANKED
+            if x.candidate.candidate_id in eligible_ids
             else x
             for x in records
         ]
-        profiles = []
-    # Keep integer bins exact; coercing them to float can merge distinct cells.
-    remaining = {who: (annual, negative_dd) for who, annual, negative_dd in profiles}
-    layers = {}
-    layer_number = 0
-    while remaining:
-        front = [
-            who
-            for who, vector in remaining.items()
-            if not any(
-                all(a >= b for a, b in zip(other, vector))
-                and any(a > b for a, b in zip(other, vector))
-                for key, other in remaining.items()
-                if key != who
-            )
-        ]
-        m.require(bool(front), "dominance cycle")
-        layer_number += 1
-        for who in front:
-            layers[who] = layer_number
-            del remaining[who]
-    result, pairs = [], []
+        comparable = []
+    layers = {x.candidate_id: x.pareto_layer for x in pareto_layers(tuple(comparable))}
+
+    def sort_key(row):
+        return tuple(
+            -value
+            if metric in (m.ResearchMetric.NET_ANNUAL_RETURN, m.ResearchMetric.ROLLING_EXCESS_Q10)
+            else value
+            for metric, value in zip(order, row.bin_values)
+        )
+
+    result = []
     for layer in sorted(set(layers.values())):
         members = [x for x in records if layers.get(x.candidate.candidate_id) == layer]
-        ranked, comparisons = _order_layer(members, layer, order)
-        result.extend(ranked)
-        pairs.extend(comparisons)
+        keys = sorted(set(sort_key(x) for x in members))
+        result.extend(
+            replace(x, pareto_layer=layer, rank_in_layer=keys.index(sort_key(x)) + 1)
+            for x in sorted(members, key=lambda x: (sort_key(x), x.candidate.candidate_id))
+        )
     result.extend(
         sorted(
-            (x for x in records if x.candidate.candidate_id not in layers),
+            (x for x in records if x.status is not m.ComparisonStatus.RANKED),
             key=lambda x: x.candidate.candidate_id,
         )
     )
-    return tuple(result), tuple(pairs)
+    return tuple(result)
 
 
 def compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
     if type(request) is not m.CandidateComparisonRequest:
         raise TypeError("compare_candidates requires CandidateComparisonRequest")
     request = m.CandidateComparisonRequest.from_dict(request.to_dict())
-    baseline, pairs = _rank(request, request.policy.bins, m.RANKING_METRICS)
+    baseline = _rank(request, request.policy.bins, m.RANKING_METRICS)
     sensitivities = []
     for variant in request.policy.sensitivities:
         order = list(m.RANKING_METRICS)
         if variant.adjacent_swap is not None:
             i = variant.adjacent_swap
             order[i], order[i + 1] = order[i + 1], order[i]
-        rows, comparisons = _rank(request, variant.bins, tuple(order))
-        sensitivities.append(m.SensitivityRanking(variant.name, rows, comparisons))
+        sensitivities.append(
+            m.SensitivityRanking(variant.name, _rank(request, variant.bins, tuple(order)))
+        )
     groups = defaultdict(list)
     for row in request.panel.rows:
         if row.behavior_sha256 is not None:
@@ -696,4 +523,4 @@ def compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComp
         for key, values in sorted(groups.items())
         if len(values) > 1
     )
-    return m.CandidateComparison(request.sha256, baseline, tuple(sensitivities), behavior, pairs)
+    return m.CandidateComparison(request.sha256, baseline, tuple(sensitivities), behavior)

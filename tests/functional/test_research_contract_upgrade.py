@@ -598,8 +598,10 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
             m.ComparisonPolicy(
                 "1",
                 tuple(
-                    m.MetricBinSpec(x, 0.01, 0.0, m.BinRounding.FLOOR) for x in m.RANKING_METRICS
+                    (m.MetricBinSpec(x, 0.01, 0.0, m.BinRounding.FLOOR) for x in m.RANKING_METRICS)
                 ),
+                pareto_basis=m.ParetoBasis.RAW,
+                missing_evidence_policy=m.MissingEvidencePolicy.REQUIRE_COMPLETE,
             ),
         )
     )

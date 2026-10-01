@@ -1,3 +1,4 @@
+# Frozen schema-v1 validation semantics from 13fe9633. Read-only; never used for new publications.
 """Research comparison contracts, independent of orchestration and repositories."""
 
 from dataclasses import dataclass, fields, is_dataclass
@@ -245,7 +246,6 @@ class DiagnosticStatus(StrEnum):
 
 
 class ResearchMetric(StrEnum):
-    FULL_SAMPLE_FREQUENCY = "FULL_SAMPLE_FREQUENCY"
     NET_ANNUAL_RETURN = "NET_ANNUAL_RETURN"
     DRAWDOWN_MAGNITUDE = "DRAWDOWN_MAGNITUDE"
     FREQUENCY_MEDIAN = "FREQUENCY_MEDIAN"
@@ -255,14 +255,6 @@ class ResearchMetric(StrEnum):
     ROLLING_EXCESS_Q10 = "ROLLING_EXCESS_Q10"
     STRESS_ANNUAL_LOSS = "STRESS_ANNUAL_LOSS"
     PROFIT_CONCENTRATION = "PROFIT_CONCENTRATION"
-
-
-FREQUENCY_METRICS = (
-    ResearchMetric.FULL_SAMPLE_FREQUENCY,
-    ResearchMetric.FREQUENCY_MEDIAN,
-    ResearchMetric.FREQUENCY_Q10,
-)
-BENCHMARK_METRICS = (ResearchMetric.NET_ANNUAL_RETURN, ResearchMetric.DRAWDOWN_MAGNITUDE)
 
 
 class MetricUnit(StrEnum):
@@ -282,7 +274,7 @@ class DiagnosticValue(ResearchRecord):
     def validate(self):
         unit = (
             MetricUnit.CLOSED_CYCLES_PER_WINDOW
-            if self.metric in FREQUENCY_METRICS
+            if self.metric in (ResearchMetric.FREQUENCY_MEDIAN, ResearchMetric.FREQUENCY_Q10)
             else MetricUnit.RATIO
         )
         require(self.unit is unit, "metric unit differs")
@@ -302,7 +294,6 @@ class DiagnosticValue(ResearchRecord):
             if self.metric in (
                 ResearchMetric.FREQUENCY_MEDIAN,
                 ResearchMetric.FREQUENCY_Q10,
-                ResearchMetric.FULL_SAMPLE_FREQUENCY,
                 ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                 ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
             ):
@@ -519,24 +510,6 @@ class FamilyDiagnostic(ResearchRecord):
 
 
 @dataclass(frozen=True)
-class BenchmarkAssessment(ResearchRecord):
-    diagnostics: tuple[DiagnosticValue, ...]
-
-    def validate(self):
-        unique((x.metric for x in self.diagnostics), "benchmark metric")
-        require(
-            {x.metric for x in self.diagnostics} == set(BENCHMARK_METRICS),
-            "benchmark requires annual return and drawdown",
-        )
-        require(
-            all(
-                x.evaluation_ids for x in self.diagnostics if x.status is DiagnosticStatus.AVAILABLE
-            ),
-            "benchmark source required",
-        )
-
-
-@dataclass(frozen=True)
 class CandidateAssessment(ResearchRecord):
     candidate: AssessmentCandidate
     context_sha256: str | None
@@ -548,7 +521,6 @@ class CandidateAssessment(ResearchRecord):
     uncertainty: UncertaintyInterval
     coverage_gaps: tuple[str, ...]
     behavior_sha256: str | None
-    benchmark: BenchmarkAssessment
 
     def validate(self):
         require(
@@ -573,11 +545,6 @@ class CandidateAssessment(ResearchRecord):
             {x.metric for x in self.diagnostics} == set(ResearchMetric),
             "incomplete diagnostic schema",
         )
-        require(
-            self.baseline_scenario is not None
-            or all(x.status is not DiagnosticStatus.AVAILABLE for x in self.benchmark.diagnostics),
-            "available benchmark requires a baseline scenario",
-        )
 
 
 @dataclass(frozen=True)
@@ -587,55 +554,21 @@ class AssessmentPanel(ResearchRecord):
     rows: tuple[CandidateAssessment, ...]
     family_diagnostics: tuple[FamilyDiagnostic, ...]
     family_limitations: tuple[str, ...]
-    formula_version: str = "research-assessment-v2"
+    formula_version: str = "research-assessment-v1"
 
     def validate(self):
         require(
-            self.formula_version == "research-assessment-v2",
+            self.formula_version == "research-assessment-v1",
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
 
 
-class ComparisonOperator(StrEnum):
-    LT = "LT"
-    LE = "LE"
-    GT = "GT"
-    GE = "GE"
-
-
-@dataclass(frozen=True)
-class ConstantBound(ResearchRecord):
-    value: float
-    inclusive: bool
-
-
-@dataclass(frozen=True)
-class BenchmarkBound(ResearchRecord):
-    multiplier: float
-    inclusive: bool
-
-    def validate(self):
-        require(self.multiplier > 0, "benchmark multiplier must be positive")
-
-
-@dataclass(frozen=True)
-class BenchmarkCondition(ResearchRecord):
-    metric: ResearchMetric
-    operator: ComparisonOperator
-    value: float
-
-    def validate(self):
-        require(self.metric in BENCHMARK_METRICS, "unsupported benchmark condition metric")
-
-
 @dataclass(frozen=True)
 class ResearchTarget(ResearchRecord):
-    target_id: str
     metric: ResearchMetric
-    lower: ConstantBound | BenchmarkBound | None = None
-    upper: ConstantBound | BenchmarkBound | None = None
-    when: BenchmarkCondition | None = None
+    lower: float | None = None
+    upper: float | None = None
 
     def validate(self):
         require(
@@ -645,23 +578,14 @@ class ResearchTarget(ResearchRecord):
                 ResearchMetric.DRAWDOWN_MAGNITUDE,
                 ResearchMetric.FREQUENCY_MEDIAN,
                 ResearchMetric.FREQUENCY_Q10,
-                ResearchMetric.FULL_SAMPLE_FREQUENCY,
             ),
             "unsupported research target",
         )
         require(self.lower is not None or self.upper is not None, "target has no bound")
-        if isinstance(self.lower, ConstantBound) and isinstance(self.upper, ConstantBound):
-            require(
-                self.lower.value < self.upper.value
-                or (
-                    self.lower.value == self.upper.value
-                    and self.lower.inclusive
-                    and self.upper.inclusive
-                ),
-                "empty or reversed target bounds",
-            )
-        if any(isinstance(x, BenchmarkBound) for x in (self.lower, self.upper)):
-            require(self.metric in BENCHMARK_METRICS, "unsupported benchmark bound metric")
+        require(
+            self.lower is None or self.upper is None or self.lower <= self.upper,
+            "reversed target bounds",
+        )
 
 
 @dataclass(frozen=True)
@@ -670,7 +594,7 @@ class ResearchTargets(ResearchRecord):
     frequency_window_days: int
 
     def validate(self):
-        unique((x.target_id for x in self.requirements), "research target")
+        unique((x.metric for x in self.requirements), "research target")
         require(self.frequency_window_days > 0, "invalid frequency window")
 
 
@@ -688,7 +612,6 @@ RANKING_METRICS = (
 class BinRounding(StrEnum):
     FLOOR = "FLOOR"
     NEAREST_HALF_EVEN = "NEAREST_HALF_EVEN"
-    NEAREST_HALF_UP = "NEAREST_HALF_UP"
 
 
 @dataclass(frozen=True)
@@ -717,22 +640,10 @@ class ComparisonVariant(ResearchRecord):
         )
 
 
-class ParetoBasis(StrEnum):
-    RAW = "RAW"
-    BINNED = "BINNED"
-
-
-class MissingEvidencePolicy(StrEnum):
-    REQUIRE_COMPLETE = "REQUIRE_COMPLETE"
-    PREFIX_PARTIAL = "PREFIX_PARTIAL"
-
-
 @dataclass(frozen=True)
 class ComparisonPolicy(ResearchRecord):
     version: str
     bins: tuple[MetricBinSpec, ...]
-    pareto_basis: ParetoBasis
-    missing_evidence_policy: MissingEvidencePolicy
     sensitivities: tuple[ComparisonVariant, ...] = ()
 
     def validate(self):
@@ -760,38 +671,14 @@ class ComparisonStatus(StrEnum):
     TARGET_NOT_MET = "TARGET_NOT_MET"
     INCOMPARABLE = "INCOMPARABLE"
     RANKED = "RANKED"
-    PARTIALLY_ORDERED = "PARTIALLY_ORDERED"
-    TIED = "TIED"
-
-
-class TargetCheckStatus(StrEnum):
-    PASSED = "PASSED"
-    FAILED = "FAILED"
-    NOT_APPLICABLE = "NOT_APPLICABLE"
-    INDETERMINATE = "INDETERMINATE"
 
 
 @dataclass(frozen=True)
 class TargetCheck(ResearchRecord):
     target: ResearchTarget
     observed: float | None
-    status: TargetCheckStatus
+    passed: bool | None
     reason: str | None
-    resolved_lower: float | None
-    resolved_upper: float | None
-    condition_observed: float | None
-    evaluation_ids: tuple[str, ...]
-
-    def validate(self):
-        require(
-            (self.status is TargetCheckStatus.PASSED) == (self.reason is None),
-            "target status/reason differ",
-        )
-        require(
-            self.status not in (TargetCheckStatus.PASSED, TargetCheckStatus.FAILED)
-            or self.observed is not None,
-            "decided target requires observation",
-        )
 
 
 @dataclass(frozen=True)
@@ -801,60 +688,14 @@ class CandidateRank(ResearchRecord):
     target_checks: tuple[TargetCheck, ...]
     pareto_layer: int | None
     rank_in_layer: int | None
-    bin_values: tuple[int | None, ...]
+    bin_values: tuple[int, ...]
     reasons: tuple[str, ...]
-    rank_min: int | None
-    rank_max: int | None
-
-    def validate(self):
-        require((self.rank_min is None) == (self.rank_max is None), "rank interval incomplete")
-        if self.rank_min is not None:
-            require(
-                self.pareto_layer is not None and 1 <= self.rank_min <= self.rank_max,
-                "invalid rank interval",
-            )
-        require(
-            self.rank_in_layer is None or self.rank_in_layer == self.rank_min,
-            "exact/tied rank must equal the first possible rank",
-        )
-
-
-class PairwiseRelation(StrEnum):
-    A_BEFORE_B = "A_BEFORE_B"
-    B_BEFORE_A = "B_BEFORE_A"
-    TIE = "TIE"
-    INCOMPARABLE = "INCOMPARABLE"
-
-
-@dataclass(frozen=True)
-class PairwiseComparison(ResearchRecord):
-    candidate_a: AssessmentCandidate
-    candidate_b: AssessmentCandidate
-    pareto_layer: int
-    relation: PairwiseRelation
-    decisive_metric: ResearchMetric | None
-    reason: str | None
-
-    def validate(self):
-        require(
-            self.candidate_a != self.candidate_b and self.pareto_layer > 0,
-            "invalid comparison pair",
-        )
-        require(
-            (self.relation is PairwiseRelation.TIE) == (self.decisive_metric is None),
-            "pair relation/metric differ",
-        )
-        require(
-            (self.relation is PairwiseRelation.INCOMPARABLE) == (self.reason is not None),
-            "pair relation/reason differ",
-        )
 
 
 @dataclass(frozen=True)
 class SensitivityRanking(ResearchRecord):
     name: str
     rows: tuple[CandidateRank, ...]
-    pairs: tuple[PairwiseComparison, ...]
 
 
 @dataclass(frozen=True)
@@ -869,7 +710,6 @@ class CandidateComparison(ResearchRecord):
     rows: tuple[CandidateRank, ...]
     sensitivities: tuple[SensitivityRanking, ...]
     behavior_groups: tuple[BehaviorGroup, ...]
-    pairs: tuple[PairwiseComparison, ...]
 
 
 __all__ = [

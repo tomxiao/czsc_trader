@@ -278,9 +278,13 @@ def policy(resolution=0.01):
     return m.ComparisonPolicy(
         "1",
         tuple(
-            m.MetricBinSpec(metric, resolution, 0.0, m.BinRounding.FLOOR)
-            for metric in m.RANKING_METRICS
+            (
+                m.MetricBinSpec(metric, resolution, 0.0, m.BinRounding.FLOOR)
+                for metric in m.RANKING_METRICS
+            )
         ),
+        pareto_basis=m.ParetoBasis.RAW,
+        missing_evidence_policy=m.MissingEvidencePolicy.REQUIRE_COMPLETE,
     )
 
 
@@ -297,7 +301,7 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         }.get(metric, 0.01)
         unit = (
             m.MetricUnit.CLOSED_CYCLES_PER_WINDOW
-            if metric in (m.ResearchMetric.FREQUENCY_MEDIAN, m.ResearchMetric.FREQUENCY_Q10)
+            if metric in m.FREQUENCY_METRICS
             else m.MetricUnit.RATIO
         )
         diagnostics.append(
@@ -323,6 +327,21 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
         m.UncertaintyInterval(m.DiagnosticStatus.NOT_APPLICABLE, None, None, "test"),
         (),
         "f" * 64,
+        benchmark=m.BenchmarkAssessment(
+            tuple(
+                (
+                    m.DiagnosticValue(
+                        metric,
+                        m.MetricUnit.RATIO,
+                        m.DiagnosticStatus.AVAILABLE,
+                        0.05,
+                        None,
+                        ("a" * 64,),
+                    )
+                    for metric in m.BENCHMARK_METRICS
+                )
+            )
+        ),
     )
 
 
@@ -444,7 +463,13 @@ def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked()
     a, b, c = candidate(), candidate("C002", "b"), candidate("C003", "c")
     result = compare(
         (row(a, 0.1), row(b, 0.01), row(c, 0.2, missing=m.ResearchMetric.PROFIT_CONCENTRATION)),
-        targets=(m.ResearchTarget(m.ResearchMetric.NET_ANNUAL_RETURN, lower=0.05),),
+        targets=(
+            m.ResearchTarget(
+                "net_annual_return",
+                m.ResearchMetric.NET_ANNUAL_RETURN,
+                lower=m.ConstantBound(0.05, True),
+            ),
+        ),
     )
     statuses = {x.candidate: x.status for x in result.rows}
     assert statuses == {
@@ -460,12 +485,25 @@ def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked()
             for x in second.diagnostics
         ),
     )
-    frequency = (m.ResearchTarget(m.ResearchMetric.FREQUENCY_MEDIAN, lower=4.0, upper=10.0),)
+    frequency = (
+        m.ResearchTarget(
+            "frequency_median",
+            m.ResearchMetric.FREQUENCY_MEDIAN,
+            lower=m.ConstantBound(4.0, True),
+            upper=m.ConstantBound(10.0, True),
+        ),
+    )
     result = compare((first, second), targets=frequency)
     assert [x.rank_in_layer for x in result.rows] == [1, 1]
     rejected_context = compare(
         (row(a, 0.1), replace(row(b, 0.01), context_sha256="e" * 64)),
-        targets=(m.ResearchTarget(m.ResearchMetric.NET_ANNUAL_RETURN, lower=0.05),),
+        targets=(
+            m.ResearchTarget(
+                "net_annual_return",
+                m.ResearchMetric.NET_ANNUAL_RETURN,
+                lower=m.ConstantBound(0.05, True),
+            ),
+        ),
     )
     assert rejected_context.rows[0].status is m.ComparisonStatus.RANKED
 

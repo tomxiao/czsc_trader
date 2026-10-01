@@ -1,6 +1,8 @@
 """Public platform tools for strategy research."""
 
 from .delivery import (
+    ExperimentEvidenceUse,
+    PerformanceRequirement,
     CandidateInspectionDelivery,
     CandidateAssessmentDelivery,
     TargetMandateBinding,
@@ -148,3 +150,5 @@ __all__ += [
     "DeliveryValidationError",
     "DeliveryConflictError",
 ]
+
+__all__ += ["ExperimentEvidenceUse", "PerformanceRequirement"]

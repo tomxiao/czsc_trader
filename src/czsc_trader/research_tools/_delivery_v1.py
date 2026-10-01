@@ -1,3 +1,4 @@
+# Frozen schema-v1 validation semantics from 13fe9633. Read-only; never used for new publications.
 """Typed research handoffs. These values describe evidence, never control research."""
 
 from __future__ import annotations
@@ -15,12 +16,12 @@ from typing import Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from strategy_manager import CandidateKey
 from strategy_manager import CandidateInspectionReport, DecisionReference, FreezeReceipt
-from strategy_evaluator import (
+from strategy_evaluator._research_models_v1 import (
     CandidateAssessmentRequest,
     AssessmentPanel,
     CandidateComparisonRequest,
     CandidateComparison,
-    ResearchTarget,
+    ResearchMetric,
 )
 
 
@@ -147,17 +148,11 @@ class EvidenceFile(_Record):
             raise ValueError("attached evidence must use attachments/ namespace")
 
 
-class ExperimentEvidenceUse(StrEnum):
-    HISTORICAL_REFERENCE = "HISTORICAL_REFERENCE"
-    CURRENT_EVALUATION = "CURRENT_EVALUATION"
-
-
 @dataclass(frozen=True, slots=True)
 class ExperimentEvidenceRef(_Record):
     experiment_id: str
     workspace_path: str
     receipt_sha256: str
-    use: ExperimentEvidenceUse
 
     def _validate(self):
         if not re.fullmatch(r"\d{8}_S\d{3,}_EX\d{2,}", self.experiment_id):
@@ -187,11 +182,11 @@ class DeliveryDefinition(_Record):
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
     experiments: tuple[ExperimentEvidenceRef, ...] = ()
-    schema_version: int = 2
+    schema_version: int = 1
 
     def _validate(self):
         CandidateKey(self.strategy_id, "Delivery")
-        if self.revision < 1 or self.schema_version != 2:
+        if self.revision < 1 or self.schema_version != 1:
             raise ValueError("invalid delivery revision/schema_version")
         _unique((x.experiment_id for x in self.experiments), "experiment_id")
         _unique(((x.stage, x.revision) for x in self.predecessors), "predecessor")
@@ -247,36 +242,16 @@ class NumericRequirement(_Record):
 
 
 @dataclass(frozen=True, slots=True)
-class PerformanceRequirement(_Record):
-    targets: tuple[ResearchTarget, ...]
-
-    def _validate(self):
-        if not self.targets:
-            raise ValueError("performance requirement needs targets")
-        _unique((target.target_id for target in self.targets), "performance target")
-
-
-@dataclass(frozen=True, slots=True)
 class MandateItem(_Record):
     item_id: str
     kind: MandateItemKind
     statement: str
     confirmation: ConfirmationRecord
-    requirement: NumericRequirement | PerformanceRequirement | None = None
+    requirement: NumericRequirement | None = None
 
     def _validate(self):
         _text(self.item_id, "item_id")
         _text(self.statement, "statement")
-        if isinstance(self.requirement, PerformanceRequirement) and self.kind not in (
-            MandateItemKind.OBJECTIVE,
-            MandateItemKind.CONSTRAINT,
-        ):
-            raise ValueError("performance requirement must be an objective or constraint")
-        if isinstance(self.requirement, NumericRequirement) and self.kind in (
-            MandateItemKind.OBJECTIVE,
-            MandateItemKind.CONSTRAINT,
-        ):
-            raise ValueError("performance objectives/constraints require typed targets")
 
 
 @dataclass(frozen=True, slots=True)
@@ -285,15 +260,6 @@ class ResearchMandate(_Record):
 
     def _validate(self):
         _unique((x.item_id for x in self.items), "mandate item")
-        _unique(
-            (
-                target.target_id
-                for item in self.items
-                if isinstance(item.requirement, PerformanceRequirement)
-                for target in item.requirement.targets
-            ),
-            "mandate target",
-        )
 
 
 class CatalogDefinitionKind(StrEnum):
@@ -649,11 +615,10 @@ class ReproductionSpec(_Record):
 
 @dataclass(frozen=True, slots=True)
 class TargetMandateBinding(_Record):
-    target_id: str
+    metric: ResearchMetric
     mandate_item_id: str
 
     def _validate(self):
-        _text(self.target_id, "target_id")
         _text(self.mandate_item_id, "mandate_item_id")
 
 
@@ -679,7 +644,8 @@ class CandidateAssessmentDelivery(_Record):
             raise ValueError("assessment requires candidate-set and mandate deliveries")
         if self.comparison_request.panel != self.assessment:
             raise ValueError("comparison must use the supplied assessment panel")
-        _unique((x.target_id for x in self.target_bindings), "target binding")
+        _unique((x.metric for x in self.target_bindings), "target binding")
+        _unique((x.mandate_item_id for x in self.target_bindings), "bound mandate item")
         _text(self.recommendation, "recommendation")
         if not self.pending_decisions:
             raise ValueError("assessment delivery must identify pending user decisions")
@@ -708,13 +674,7 @@ class CandidateInspectionDelivery(_Record):
             _text(item, "pending decision")
 
 
-StageContent = (
-    ResearchMandate
-    | ComponentPanel
-    | CandidateSet
-    | CandidateAssessmentDelivery
-    | CandidateInspectionDelivery
-)
+StageContent = ResearchMandate | ComponentPanel | CandidateSet | CandidateAssessmentDelivery | CandidateInspectionDelivery
 T = TypeVar("T", bound=StageContent)
 
 
@@ -775,10 +735,10 @@ class DeliveryValidation(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[EvidenceRef, ...]
-    schema_version: int = 2
+    schema_version: int = 1
 
     def _validate(self):
-        if self.schema_version not in (1, 2):
+        if self.schema_version != 1:
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

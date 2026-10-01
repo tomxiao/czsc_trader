@@ -1,3 +1,4 @@
+from strategy_evaluator import research_models as m
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -121,7 +122,10 @@ def experiment(context, *, records=(), number=1, predecessors=None):
     )
     load_experiment_input(root, expected_receipt_sha256=receipt.sha256)
     return d.ExperimentEvidenceRef(
-        experiment_id, root.relative_to(context.root).as_posix(), receipt.sha256
+        experiment_id,
+        root.relative_to(context.root).as_posix(),
+        receipt.sha256,
+        use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     ), artifact
 
 
@@ -180,7 +184,15 @@ def test_partial_mandate_confirmation_and_roundtrip(context):
                 d.MandateItemKind.OBJECTIVE,
                 "讨论年化目标",
                 d.ConfirmationRecord(d.ConfirmationStatus.PROPOSED),
-                d.NumericRequirement("net_annual_return", "ratio", lower=0.1),
+                d.PerformanceRequirement(
+                    (
+                        m.ResearchTarget(
+                            "net_annual_return",
+                            m.ResearchMetric.NET_ANNUAL_RETURN,
+                            lower=m.ConstantBound(0.1, True),
+                        ),
+                    )
+                ),
             ),
         )
     )
@@ -482,6 +494,7 @@ def test_actual_rex_executor_receipt_can_be_published(context):
         loaded.definition.experiment_id,
         execution.workspace.root.relative_to(context.root).as_posix(),
         result.receipt.sha256,
+        use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     defined = d.DeliveryDefinition(
         loaded.definition.strategy_id, d.DeliveryStage.COMPONENTS, 1, experiments=(ref,)

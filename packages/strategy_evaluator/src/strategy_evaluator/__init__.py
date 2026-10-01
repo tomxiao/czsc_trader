@@ -12,6 +12,16 @@ from .models import (
     ValidationError,
 )
 from .research_models import (
+    BenchmarkAssessment,
+    ComparisonOperator,
+    ConstantBound,
+    BenchmarkBound,
+    BenchmarkCondition,
+    ParetoBasis,
+    MissingEvidencePolicy,
+    TargetCheckStatus,
+    PairwiseRelation,
+    PairwiseComparison,
     AssessmentDerivationKind,
     AssessmentCandidate,
     FillSide,
@@ -129,8 +139,12 @@ from .benchmark_audit import (
 __version__ = "0.1.0"
 
 from .ledger_comparison import (
-    LedgerComparisonMode, LedgerComparisonRequest, LedgerComparisonResult,
-    LedgerComparisonStatus, LedgerDifference, compare_ledgers,
+    LedgerComparisonMode,
+    LedgerComparisonRequest,
+    LedgerComparisonResult,
+    LedgerComparisonStatus,
+    LedgerDifference,
+    compare_ledgers,
 )
 
 __all__ = [
@@ -254,4 +268,17 @@ __all__ = [
     "BenchmarkAuditResult",
     "BenchmarkEvidence",
     "audit_benchmark_replay",
+]
+
+__all__ += [
+    "BenchmarkAssessment",
+    "ComparisonOperator",
+    "ConstantBound",
+    "BenchmarkBound",
+    "BenchmarkCondition",
+    "ParetoBasis",
+    "MissingEvidencePolicy",
+    "TargetCheckStatus",
+    "PairwiseRelation",
+    "PairwiseComparison",
 ]
