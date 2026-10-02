@@ -246,11 +246,11 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
         candidate = str(candidate)
     if candidate is not None and not candidate.startswith(f"{strategy_id}-"):
         candidate = f"{strategy_id}-{candidate}"
+    execution = definition.execution
     fee_rate = (
-        stored.strategy_payload.get("rule", {})
-        .get("execution", {})
-        .get("capital", {})
-        .get("fee_rate")
+        execution.settings.get("capital", {}).get("fee_rate")
+        if execution.policy_type == "FROZEN_RULE"
+        else execution.settings.get("one_way_cost")
     )
     return {
         "strategy_id": strategy_id,

@@ -4,10 +4,7 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, ClassVar, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .freeze_contracts import CandidateOrigin, FreezeGovernance
+from typing import Any, ClassVar
 
 from .errors import ValidationError
 from .validation import (
@@ -331,9 +328,6 @@ class StrategyVersion:
     forward_start: str
     strategy_payload: dict[str, Any]
     release_hash: str
-    governance: FreezeGovernance
-    governance_hash: str
-    origin: CandidateOrigin
 
     FIELDS: ClassVar[tuple[str, ...]] = (
         "schema_version",
@@ -351,22 +345,35 @@ class StrategyVersion:
     )
 
     def __post_init__(self):
-        from .freeze_contracts import CandidateOrigin, FreezeGovernance
-
-        if type(self.schema_version) is not int or self.schema_version != 4:
-            raise ValidationError("strategy version schema_version must be 4")
-        if not isinstance(self.origin, CandidateOrigin) or not isinstance(self.governance, FreezeGovernance):
-            raise ValidationError("strategy version requires typed origin and governance")
+        if type(self.schema_version) is not int or self.schema_version != 5:
+            raise ValidationError("strategy version schema_version must be 5")
+        require_strategy_id(self.strategy_id)
+        require_version(self.version)
+        if self.release_id != f"{self.strategy_id}-{self.version}":
+            raise ValidationError("release identity differs")
+        if self.parent_version is not None:
+            require_version(self.parent_version)
+            if int(self.parent_version[1:]) >= int(self.version[1:]):
+                raise ValidationError("parent version must precede release")
+        for name in ("change_summary", "source_experiment", "source_candidate"):
+            require_string(getattr(self, name), name)
+        for name in ("selection_data_cutoff", "forward_start"):
+            require_date(getattr(self, name), name)
+        if self.forward_start <= self.selection_data_cutoff:
+            raise ValidationError("forward window overlaps selection")
+        if type(self.strategy_payload) is not dict or not self.strategy_payload:
+            raise ValidationError("strategy payload must be nonempty")
         require_sha256(self.release_hash, "release_hash")
-        require_sha256(self.governance_hash, "governance_hash")
-        require_string(self.source_candidate, "source_candidate")
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> StrategyVersion:
-        if type(value.get("schema_version")) is not int or value["schema_version"] != 4:
-            raise ValidationError("strategy version schema_version must be 4")
-        from .freeze_store import version_from_dict
-        return version_from_dict(value)
+        if type(value.get("schema_version")) is not int or value["schema_version"] != 5:
+            raise ValidationError("strategy version schema_version must be 5")
+        require_exact_fields(value, cls.FIELDS)
+        instance = cls(**value)
+        if canonical_sha256(instance.release_payload()) != instance.release_hash:
+            raise ValidationError("release_hash does not match the release payload")
+        return instance
 
     def release_payload(self) -> dict[str, Any]:
         value = self.to_dict()
@@ -374,10 +381,7 @@ class StrategyVersion:
         return value
 
     def to_dict(self) -> dict[str, Any]:
-        value = _enum_dict(self)
-        value["origin"] = self.origin.to_dict()
-        value["governance"] = self.governance.to_dict()
-        return value
+        return _enum_dict(self)
 
 
 @dataclass(frozen=True)

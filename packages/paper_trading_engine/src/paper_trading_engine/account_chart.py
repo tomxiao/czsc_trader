@@ -286,9 +286,14 @@ class AccountChartService:
         }
 
     @staticmethod
-    def _has_ready_observation(row: dict[str, Any]) -> bool:
-        observation = dict(row.get("payload") or {}).get("observation")
-        return isinstance(observation, dict) and observation.get("status") == "READY"
+    def _has_ready_observation(row: dict[str, Any], release_hash: str) -> bool:
+        payload = dict(row.get("payload") or {})
+        observation = payload.get("observation")
+        return (
+            payload.get("strategy", {}).get("release_hash") == release_hash
+            and isinstance(observation, dict)
+            and observation.get("status") == "READY"
+        )
 
     @staticmethod
     def _intent(row: dict[str, Any]) -> dict[str, Any]:
@@ -333,7 +338,7 @@ class AccountChartService:
         decisions = [
             self._decision(row)
             for row in forward_decision_rows
-            if self._has_ready_observation(row)
+            if self._has_ready_observation(row, account["release_hash"])
         ]
         omitted_decision_count = len(forward_decision_rows) - len(decisions)
         observation_start = min(
@@ -546,12 +551,12 @@ class AccountChartService:
             omitted_count = int(meta.get("omitted_decision_count") or 0)
             observation_start = meta.get("observation_start")
             observation_message = (
-                f"观察事实自 {observation_start} 开始；此前 {omitted_count} 条历史决策"
-                "未保存 observation，未绘制策略解释"
+                f"观察事实自 {observation_start} 开始；其中 {omitted_count} 条决策"
+                "缺少可用的观察事实，未绘制策略解释"
                 if observation_start and omitted_count
                 else (
-                    f"等待第一条策略观察事实；此前 {omitted_count} 条历史决策"
-                    "未保存 observation，未绘制策略解释"
+                    f"等待第一条策略观察事实；其中 {omitted_count} 条决策"
+                    "缺少可用的观察事实，未绘制策略解释"
                     if omitted_count
                     else None
                 )

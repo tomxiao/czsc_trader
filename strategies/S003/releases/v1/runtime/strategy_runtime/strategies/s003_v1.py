@@ -20,6 +20,7 @@ from ..calculation import (
 from ..contracts import TradableWindow
 from ..errors import RuntimeContractError
 from ..implementation_identity import implementation_sha256
+from ..observation import ObservationDefinition
 from ..models import (
     CutoffRule,
     DecisionContract,
@@ -189,7 +190,7 @@ class S003V1(StrategyImplementation):
     """Executable S003-v1 with an immutable seed and point-in-time increments."""
 
     def __init__(self, release: StrategyRelease) -> None:
-        payload = _object(release.payload, "strategy payload")
+        payload = _object(release.payload["parameters"], "strategy parameters")
         if payload.get("strategy_kind") != "constituent_moneyflow_intraday_overlay":
             raise RuntimeContractError("S003-v1 strategy_kind differs")
         rule = _object(payload.get("rule"), "S003-v1 rule")
@@ -250,7 +251,7 @@ class S003V1(StrategyImplementation):
             ),
         )
         self._definition = RuntimeDefinition(
-            1,
+            3,
             release.strategy_family_id,
             release.version,
             release.release_id,
@@ -268,7 +269,7 @@ class S003V1(StrategyImplementation):
                     )
                 ),
             ),
-            ParameterSet(release.payload),
+            ParameterSet(payload),
             InputContract(requirements),
             DecisionContract("INTRADAY_OVERLAY", 0.0, 1.0, "NEXT_SESSION_OPEN_TO_11_30"),
             ExecutionPolicy("INTRADAY_OVERLAY", execution),
@@ -279,6 +280,7 @@ class S003V1(StrategyImplementation):
                 ("OPEN", "11:30_CLOSE"),
             ),
             tradable_symbol=self._symbol,
+            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'dynamic_threshold', 'label': '动态阈值', 'value_field': 'threshold', 'kind': 'EVIDENCE'}], 'key': 'moneyflow_breadth', 'label': '资金流宽度', 'value_field': 'moneyflow_breadth'}], 'facts': []}),
         )
 
     @classmethod

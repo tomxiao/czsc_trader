@@ -2,48 +2,62 @@
   "change_summary": "冻结S003-C001成分资金流宽度早盘延续机制及唯一正式执行规则",
   "forward_start": "2026-09-09",
   "parent_version": null,
-  "release_hash": "f84cf6ecba0eb232660e8db1a8b05052fc0bf9322e84134302d01c56e7f751b3",
+  "release_hash": "f002404faac0be81183b8d49dfe965f0ac82dcc536beaeb74173ec9f4378585d",
   "release_id": "S003-v1",
-  "schema_version": 1,
+  "schema_version": 5,
   "selection_data_cutoff": "2026-09-08",
   "source_candidate": "S003-C001",
   "source_experiment": "experiments/S003/20260911_S003_EX60",
   "strategy_id": "S003",
   "strategy_payload": {
-    "candidate_source": {
-      "candidate_hash": "1d6736f816d652c59d43dd22491c567e65100eaddfa3d20575531ca5a124f741",
-      "candidate_id": "S003-C001",
-      "definition": "experiments/S003/20260911_S003_EX53/candidate_payload.json",
-      "runtime_contract": "experiments/S003/20260911_S003_EX56/candidate_payload.json"
-    },
-    "rule": {
-      "data_source": {
-        "format": "S003_CONSTITUENT_MONEYFLOW_SEED_V1",
-        "package": "strategy_runtime",
-        "path": "resources/s003_v1_seed.csv.gz",
-        "sha256": "6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c"
+    "parameters": {
+      "candidate_source": {
+        "candidate_hash": "1d6736f816d652c59d43dd22491c567e65100eaddfa3d20575531ca5a124f741",
+        "candidate_id": "S003-C001",
+        "definition": "experiments/S003/20260911_S003_EX53/candidate_payload.json",
+        "runtime_contract": "experiments/S003/20260911_S003_EX56/candidate_payload.json"
       },
-      "execution": {
-        "core_fraction": 0.5,
-        "entry_checkpoint": "OPEN",
-        "event_fraction": 0.5,
-        "exit_checkpoint": "11:30_CLOSE",
-        "lot_size": 100,
-        "maximum_events_per_day": 1,
-        "one_way_cost": 0.00012,
-        "t_plus_one_inventory_rotation": true
+      "rule": {
+        "data_source": {
+          "format": "S003_CONSTITUENT_MONEYFLOW_SEED_V1",
+          "package": "strategy_runtime",
+          "path": "resources/s003_v1_seed.csv.gz",
+          "sha256": "6a60c143617fcf6597ccd475782849763cb413e4cf47b7c45199f720c988d86c"
+        },
+        "execution": {
+          "core_fraction": 0.5,
+          "entry_checkpoint": "OPEN",
+          "event_fraction": 0.5,
+          "exit_checkpoint": "11:30_CLOSE",
+          "lot_size": 100,
+          "maximum_events_per_day": 1,
+          "one_way_cost": 0.00012,
+          "t_plus_one_inventory_rotation": true
+        },
+        "feature": {
+          "comparison": "GREATER_THAN_OR_EQUAL",
+          "minimum_observed_weight_ratio": 0.95,
+          "threshold_excludes_current_session": true,
+          "threshold_lookback_sessions": 60,
+          "threshold_quantile": 0.8
+        },
+        "symbol": "510500.SH"
       },
-      "feature": {
-        "comparison": "GREATER_THAN_OR_EQUAL",
-        "minimum_observed_weight_ratio": 0.95,
-        "threshold_excludes_current_session": true,
-        "threshold_lookback_sessions": 60,
-        "threshold_quantile": 0.8
-      },
+      "strategy_kind": "constituent_moneyflow_intraday_overlay",
       "symbol": "510500.SH"
     },
-    "strategy_kind": "constituent_moneyflow_intraday_overlay",
-    "symbol": "510500.SH"
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.s003_v1",
+      "qualname": "S003V1",
+      "source_files": [
+        "strategies/s003_v1.py",
+        "calculation.py",
+        "execution_rules.py",
+        "resources/s003_v1_seed.csv.gz"
+      ],
+      "source_sha256": "c0e1aa4955518455f87f3cd758346c8c23c0df61a05aafb8c115cd6440da5aea"
+    }
   },
   "version": "v1"
 }

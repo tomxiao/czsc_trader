@@ -2,134 +2,148 @@
   "change_summary": "Accept evaluation champion R1102",
   "forward_start": "2026-09-03",
   "parent_version": "v1",
-  "release_hash": "146490c8a4ee75f307d3d59453efaebc8fea671c726c023c96449706c40b944e",
+  "release_hash": "c847882b07c15624110c4f56c9cec6fffb35ffad78064db8d2ebed1a430005eb",
   "release_id": "S001-v2",
-  "schema_version": 1,
+  "schema_version": 5,
   "selection_data_cutoff": "2026-09-02",
   "source_candidate": "R1102",
   "source_experiment": "experiments/0903_EX06",
   "strategy_id": "S001",
   "strategy_payload": {
-    "execution_review": {
-      "artifact_path": "experiments/0903_EX01/artifacts/execution_review.json",
-      "experiment_id": "0903_EX01",
-      "sha256": "5ad2a792d497b90c566a9bacc9611d6f68eb5c5ee955ada92bd542d966e474f7"
-    },
-    "research_source": {
-      "candidate_id": "R1102",
-      "experiment_id": "0903_EX04",
-      "protocol_path": "experiments/0903_EX04/evaluation_protocol.json"
-    },
-    "rule": {
-      "baseline": {
-        "sha256": "fc22ca5a973f77faf528cdb3efba4900163e18fe0c08cf79234d79ef22f5c822",
-        "version": "baseline_20260826"
+    "parameters": {
+      "execution_review": {
+        "artifact_path": "experiments/0903_EX01/artifacts/execution_review.json",
+        "experiment_id": "0903_EX01",
+        "sha256": "5ad2a792d497b90c566a9bacc9611d6f68eb5c5ee955ada92bd542d966e474f7"
       },
-      "candidate_id": "R1102",
-      "confirm_days": 1,
-      "entry_threshold": 0.175,
-      "er_lookback": 60,
-      "er_threshold": 0.12654614652711713,
-      "execution": {
-        "capital": {
-          "fee_rate": 0.0005,
-          "mode": "full_available_cash",
-          "target_scope": "entry_cycle"
-        },
-        "entry": {
-          "limit_family": "previous_close_ratio",
-          "limit_parameter": 0.0,
-          "order_type": "LIMIT",
-          "price_rounding": "floor"
-        },
-        "exit": {
-          "limit_ratio": 0.2,
-          "order_type": "LIMIT",
-          "price_rounding": "nearest_half_up"
-        },
-        "instrument": {
-          "asset_type": "etf",
-          "lot_size": 100,
-          "market": "CN",
-          "maximum_order_quantity": 1000000,
-          "price_limit_ratio": 0.2,
-          "price_tick": 0.001,
-          "symbol": "588080.SH"
-        },
-        "virtual_fill": {
-          "buy_intraday": "low_strictly_below_limit",
-          "buy_open": "open_at_or_below_limit",
-          "liquidity_check": "diagnostic_only",
-          "sell": "marketable_limit_at_open",
-          "touch_only": "uncertain_unfilled"
-        }
+      "research_source": {
+        "candidate_id": "R1102",
+        "experiment_id": "0903_EX04",
+        "protocol_path": "experiments/0903_EX04/evaluation_protocol.json"
       },
-      "exit_confirm_days": 1,
-      "exit_threshold": 0.025,
-      "experiment": "0903_EX04",
-      "factor_names": [
-        "raw__30m__cxt_bi_status_V230101",
-        "raw__30m__cxt_third_buy_V230228__di_1",
-        "raw__daily__cxt_bi_status_V230101",
-        "raw__daily__cxt_five_bi_V230619__di_1",
-        "raw__daily__cxt_seven_bi_V230620__di_1",
-        "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5",
-        "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10",
-        "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20",
-        "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26",
-        "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5",
-        "raw__daily__pressure_support_V240406__di_1__w_20",
-        "raw__weekly__cxt_bi_status_V230101"
-      ],
-      "fee_rate": 0.0005,
-      "min_hold_days": 3,
-      "multipliers": {
-        "range": {
-          "trend": 1.25,
-          "volume_position": 1.25
+      "rule": {
+        "baseline": {
+          "sha256": "fc22ca5a973f77faf528cdb3efba4900163e18fe0c08cf79234d79ef22f5c822",
+          "version": "baseline_20260826"
         },
-        "trend": {
-          "trend": 0.75,
-          "volume_position": 0.5
-        }
-      },
-      "regime_labels": [
-        "trend",
-        "range",
-        "warmup"
-      ],
-      "research_end": "2026-09-02",
-      "schema_version": 2,
-      "weights": {
-        "range": {
-          "raw__30m__cxt_bi_status_V230101": 0.1093352024227754,
-          "raw__30m__cxt_third_buy_V230228__di_1": 0.2658319020145573,
-          "raw__daily__cxt_bi_status_V230101": 0.0712059717055788,
-          "raw__daily__cxt_five_bi_V230619__di_1": 0.0954365365549241,
-          "raw__daily__cxt_seven_bi_V230620__di_1": 0.0858856323585978,
-          "raw__daily__pressure_support_V240406__di_1__w_20": 0.0706871683649345,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.073063874588257,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.0204337943772586,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.0141094893079042,
-          "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.0160026875626817,
-          "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.132149132981035,
-          "raw__weekly__cxt_bi_status_V230101": 0.0458586077614954
+        "candidate_id": "R1102",
+        "confirm_days": 1,
+        "entry_threshold": 0.175,
+        "er_lookback": 60,
+        "er_threshold": 0.12654614652711713,
+        "execution": {
+          "capital": {
+            "fee_rate": 0.0005,
+            "mode": "full_available_cash",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "limit_family": "previous_close_ratio",
+            "limit_parameter": 0.0,
+            "order_type": "LIMIT",
+            "price_rounding": "floor"
+          },
+          "exit": {
+            "limit_ratio": 0.2,
+            "order_type": "LIMIT",
+            "price_rounding": "nearest_half_up"
+          },
+          "instrument": {
+            "asset_type": "etf",
+            "lot_size": 100,
+            "market": "CN",
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.2,
+            "price_tick": 0.001,
+            "symbol": "588080.SH"
+          },
+          "virtual_fill": {
+            "buy_intraday": "low_strictly_below_limit",
+            "buy_open": "open_at_or_below_limit",
+            "liquidity_check": "diagnostic_only",
+            "sell": "marketable_limit_at_open",
+            "touch_only": "uncertain_unfilled"
+          }
         },
-        "trend": {
-          "raw__30m__cxt_bi_status_V230101": 0.08088503201392443,
-          "raw__30m__cxt_third_buy_V230228__di_1": 0.08108724459395922,
-          "raw__daily__cxt_bi_status_V230101": 0.06470802561113954,
-          "raw__daily__cxt_five_bi_V230619__di_1": 0.08129198483124447,
-          "raw__daily__cxt_seven_bi_V230620__di_1": 0.06470802561113954,
-          "raw__daily__pressure_support_V240406__di_1__w_20": 0.1294160512222791,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.07279652881253199,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.07279652881253199,
-          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.08538997284529917,
-          "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.07279652881253199,
-          "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.1294160512222791,
-          "raw__weekly__cxt_bi_status_V230101": 0.06470802561113954
+        "exit_confirm_days": 1,
+        "exit_threshold": 0.025,
+        "experiment": "0903_EX04",
+        "factor_names": [
+          "raw__30m__cxt_bi_status_V230101",
+          "raw__30m__cxt_third_buy_V230228__di_1",
+          "raw__daily__cxt_bi_status_V230101",
+          "raw__daily__cxt_five_bi_V230619__di_1",
+          "raw__daily__cxt_seven_bi_V230620__di_1",
+          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5",
+          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10",
+          "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20",
+          "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26",
+          "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5",
+          "raw__daily__pressure_support_V240406__di_1__w_20",
+          "raw__weekly__cxt_bi_status_V230101"
+        ],
+        "fee_rate": 0.0005,
+        "min_hold_days": 3,
+        "multipliers": {
+          "range": {
+            "trend": 1.25,
+            "volume_position": 1.25
+          },
+          "trend": {
+            "trend": 0.75,
+            "volume_position": 0.5
+          }
+        },
+        "regime_labels": [
+          "trend",
+          "range",
+          "warmup"
+        ],
+        "research_end": "2026-09-02",
+        "schema_version": 2,
+        "weights": {
+          "range": {
+            "raw__30m__cxt_bi_status_V230101": 0.1093352024227754,
+            "raw__30m__cxt_third_buy_V230228__di_1": 0.2658319020145573,
+            "raw__daily__cxt_bi_status_V230101": 0.0712059717055788,
+            "raw__daily__cxt_five_bi_V230619__di_1": 0.0954365365549241,
+            "raw__daily__cxt_seven_bi_V230620__di_1": 0.0858856323585978,
+            "raw__daily__pressure_support_V240406__di_1__w_20": 0.0706871683649345,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.073063874588257,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.0204337943772586,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.0141094893079042,
+            "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.0160026875626817,
+            "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.132149132981035,
+            "raw__weekly__cxt_bi_status_V230101": 0.0458586077614954
+          },
+          "trend": {
+            "raw__30m__cxt_bi_status_V230101": 0.08088503201392443,
+            "raw__30m__cxt_third_buy_V230228__di_1": 0.08108724459395922,
+            "raw__daily__cxt_bi_status_V230101": 0.06470802561113954,
+            "raw__daily__cxt_five_bi_V230619__di_1": 0.08129198483124447,
+            "raw__daily__cxt_seven_bi_V230620__di_1": 0.06470802561113954,
+            "raw__daily__pressure_support_V240406__di_1__w_20": 0.1294160512222791,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_10": 0.07279652881253199,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_20": 0.07279652881253199,
+            "raw__daily__tas_ma_base_V221101__di_1__ma_type_SMA__timeperiod_5": 0.08538997284529917,
+            "raw__daily__tas_macd_base_V221028__di_1__fastperiod_12__signalperiod_9__slowperiod_26": 0.07279652881253199,
+            "raw__daily__vol_window_V230731__di_1__m_30__n_10__w_5": 0.1294160512222791,
+            "raw__weekly__cxt_bi_status_V230101": 0.06470802561113954
+          }
         }
       }
+    },
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.s001_v2",
+      "qualname": "S001V2",
+      "source_files": [
+        "strategies/s001_v2.py",
+        "strategies/s001_common.py",
+        "calculation.py",
+        "execution_rules.py"
+      ],
+      "source_sha256": "45e2f475d2d623d3e24abbb9af61db73c5c2cf1b9e298a50e7fc9752632ea030"
     }
   },
   "version": "v2"

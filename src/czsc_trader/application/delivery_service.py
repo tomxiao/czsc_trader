@@ -326,14 +326,17 @@ def _validate_inspection_delivery(definition, content, root, context):
         if receipt != payload.freeze:
             _fail("FREEZE_RECEIPT", "freeze", "freeze receipt differs from actual result")
         if receipt.status is f.FreezeStatus.COMMITTED:
-            version = StrategyRegistry(context.strategy_root).get_version(
-                receipt.version.strategy_id, receipt.version.version
-            )
+            request_path = (context.strategy_root / "freeze_requests"
+                            / receipt.request_id.strategy_id / receipt.request_id.value
+                            / "request.json")
+            request = f.FreezeCandidateRequest.from_dict(
+                json.loads(request_path.read_text(encoding="utf-8")))
             if (
-                version.governance.inspection != report.reference
-                or version.governance.approval not in payload.decisions
+                request.sha256 != receipt.request_sha256
+                or request.inspection != report.reference
+                or request.approval not in payload.decisions
             ):
-                _fail("FREEZE_RECEIPT", "freeze", "frozen version report/approval differs")
+                _fail("FREEZE_RECEIPT", "freeze", "freeze request report/approval differs")
 
 
 def _assessment_recomputation_matches(

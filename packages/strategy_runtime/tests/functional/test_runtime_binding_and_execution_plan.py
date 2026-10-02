@@ -17,7 +17,7 @@ from strategy_runtime.strategy import _capital_terms
 ROOT = Path(__file__).resolve().parents[4]
 
 
-@pytest.mark.parametrize("schema", [None, True, "4", 0, 1, 2, 3, 5])
+@pytest.mark.parametrize("schema", [None, True, "5", 0, 1, 2, 3, 4, 6])
 def test_release_only_accepts_current_serialized_contract(schema):
     with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
         StrategyRelease.from_mapping({"schema_version": schema})

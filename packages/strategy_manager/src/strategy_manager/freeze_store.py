@@ -1,4 +1,4 @@
-"""Freeze persistence with one durable visibility marker and no automatic recovery."""
+"""Research freeze persistence; publish the runtime version only after durable acceptance."""
 
 from dataclasses import dataclass, replace
 from hashlib import sha256
@@ -11,7 +11,6 @@ from . import freeze_contracts as f
 from .candidates import CandidateEvidence, CandidateRegistration, _registration_evidence_root
 from .errors import RegistryError, ValidationError
 from .models import StrategyVersion, canonical_sha256
-from .validation import require_exact_fields, require_date, require_string, require_sha256
 
 _ACTIVE: set[Path] = set()
 
@@ -41,41 +40,6 @@ def _durable(path, value, *, temporary_root):
         os.replace(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)
-
-
-def version_from_dict(value):
-    require_exact_fields(value, (*StrategyVersion.FIELDS, "origin", "governance", "governance_hash"))
-    origin = f.CandidateOrigin.from_dict(value["origin"])
-    governance = f.FreezeGovernance.from_dict(value["governance"])
-    f.FrozenVersionReference(
-        value["strategy_id"], value["version"], value["release_hash"], "0" * 64
-    )
-    if value["release_id"] != f"{value['strategy_id']}-{value['version']}":
-        raise ValidationError("release identity differs")
-    if (
-        origin.candidate.strategy_id != value["strategy_id"]
-        or origin.candidate.candidate_id != value["source_candidate"]
-        or governance.request_id.strategy_id != value["strategy_id"]
-    ):
-        raise ValidationError("release candidate/governance differs")
-    if value["parent_version"] is not None:
-        f._version(value["parent_version"])
-        if int(value["parent_version"][1:]) >= int(value["version"][1:]):
-            raise ValidationError("parent version must precede release")
-    for name in ("change_summary", "source_experiment"):
-        require_string(value[name], name)
-    for name in ("selection_data_cutoff", "forward_start"):
-        require_date(value[name], name)
-    if value["forward_start"] <= value["selection_data_cutoff"]:
-        raise ValidationError("forward window overlaps selection")
-    if type(value["strategy_payload"]) is not dict or not value["strategy_payload"]:
-        raise ValidationError("strategy payload must be nonempty")
-    if require_sha256(value["governance_hash"], "governance_hash") != governance.sha256:
-        raise ValidationError("governance hash differs")
-    instance = StrategyVersion(**{**value, "origin": origin, "governance": governance})
-    if canonical_sha256(instance.release_payload()) != instance.release_hash:
-        raise ValidationError("release_hash does not match the release payload")
-    return instance
 
 
 def read_decision(root, ref):
@@ -167,12 +131,9 @@ def validate_approval(root, request):
 def build_version(root, request):
     report = validate_approval(root, request)
     plan = report.plan
-    governance = f.FreezeGovernance(
-        report.selection, request.inspection, request.approval, plan.sha256, request.request_id
-    )
     candidate = plan.origin.candidate
     version = StrategyVersion(
-        4,
+        5,
         candidate.strategy_id,
         plan.version,
         f"{candidate.strategy_id}-{plan.version}",
@@ -184,9 +145,6 @@ def build_version(root, request):
         plan.forward_start,
         _read(plan.payload.resolve(root)),
         "0" * 64,
-        governance,
-        governance.sha256,
-        plan.origin,
     )
     return StrategyVersion.from_dict(
         replace(version, release_hash=canonical_sha256(version.release_payload())).to_dict()
@@ -305,9 +263,10 @@ def _query(registry, request_id):
             or receipt.request_id != request_id
         ):
             raise ValueError("freeze commit marker differs")
-        version = StrategyVersion.from_dict(
-            _read(registry._version_path(request_id.strategy_id, receipt.version.version))
-        )
+        version_path = registry._version_path(request_id.strategy_id, receipt.version.version)
+        if not version_path.exists() and root.resolve() in _ACTIVE:
+            return f.FreezeReceipt(request_id, f.FreezeStatus.IN_PROGRESS, request.sha256)
+        version = StrategyVersion.from_dict(_read(version_path))
         expected = build_version(registry.root, request)
         if (
             version.to_dict() != expected.to_dict()
@@ -424,9 +383,6 @@ def freeze(registry, request):
             if path.is_file():
                 with path.open("r+b") as stream:
                     os.fsync(stream.fileno())
-        _durable(
-            version_path, version.to_dict(), temporary_root=registry.root.parent / ".tmp/freeze"
-        )
         _package(package_path, version, plan)
         receipt = f.FreezeReceipt(
             operation.request_id,
@@ -440,6 +396,10 @@ def freeze(registry, request):
             root / "committed.json",
             receipt.to_dict(),
             temporary_root=registry.root.parent / ".tmp/freeze",
+        )
+        # Publish the version last: registry/runtime readers need no research transaction.
+        _durable(
+            version_path, version.to_dict(), temporary_root=registry.root.parent / ".tmp/freeze"
         )
         return receipt
     except Exception as exc:
@@ -459,13 +419,3 @@ def freeze(registry, request):
         return failure
     finally:
         _ACTIVE.discard(root.resolve())
-
-
-def require_committed(registry, version):
-    receipt = query(registry, version.governance.request_id)
-    if (
-        receipt.status is not f.FreezeStatus.COMMITTED
-        or receipt.version.version != version.version
-        or receipt.version.release_hash != version.release_hash
-    ):
-        raise RegistryError("strategy version is not committed")

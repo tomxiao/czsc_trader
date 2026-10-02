@@ -21,6 +21,7 @@ from ..contracts import TradableWindow
 from ..errors import RuntimeContractError
 from ..execution_rules import effective_target_order_type
 from ..implementation_identity import implementation_sha256
+from ..observation import ObservationDefinition
 from ..models import (
     CutoffRule,
     DecisionContract,
@@ -234,7 +235,7 @@ class S007V1(StrategyImplementation):
     """Executable S007-v1; every feature is materialized from DFLS inputs."""
 
     def __init__(self, release: StrategyRelease) -> None:
-        payload = _object(release.payload, "strategy payload")
+        payload = _object(release.payload["parameters"], "strategy parameters")
         if payload.get("strategy_kind") != "causal_feature_gate":
             raise RuntimeContractError("S007-v1 strategy_kind differs")
         rule = _object(payload.get("rule"), "S007-v1 rule")
@@ -308,7 +309,7 @@ class S007V1(StrategyImplementation):
             ),
         )
         self._definition = RuntimeDefinition(
-            1,
+            3,
             release.strategy_family_id,
             release.version,
             release.release_id,
@@ -326,7 +327,7 @@ class S007V1(StrategyImplementation):
                     )
                 ),
             ),
-            ParameterSet(release.payload),
+            ParameterSet(payload),
             InputContract(requirements),
             DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION_OPEN"),
             ExecutionPolicy("FROZEN_RULE", execution),
@@ -344,6 +345,7 @@ class S007V1(StrategyImplementation):
             ),
             tradable_symbol=self._symbol,
             history=HistoryPolicy("CANONICAL_REPLAY", "2021-01-04", "2020-12-01"),
+            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'entry_threshold', 'label': '入场阈值', 'value': 0.10449974411727908, 'kind': 'CONSTANT'}, {'key': 'exit_threshold', 'label': '退出阈值', 'value': 0.047857421473087296, 'kind': 'CONSTANT'}], 'key': 'base_score', 'label': '基础分', 'value_field': 'base_score'}, {'guides': [{'key': 'confirmation_threshold', 'label': '确认门', 'value': -0.012073272333918687, 'kind': 'CONSTANT'}], 'key': 'confirmation_score', 'label': '确认分', 'value_field': 'confirmation_score'}], 'facts': []}),
         )
 
     @classmethod

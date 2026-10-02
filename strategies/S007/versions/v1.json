@@ -2,96 +2,110 @@
   "change_summary": "冻结S007-C001多源机会风险门控机制及唯一正式执行规则",
   "forward_start": "2026-09-03",
   "parent_version": null,
-  "release_hash": "42168d648a885ffe0424b947ea44095970c91b05e1a2c6339892fd14892959f0",
+  "release_hash": "8a7e339c7480eeb5c0132891dd3ebb5dacff3d2172c2071d1f0895e1dc2b3e37",
   "release_id": "S007-v1",
-  "schema_version": 1,
+  "schema_version": 5,
   "selection_data_cutoff": "2026-09-02",
   "source_candidate": "S007-C001",
   "source_experiment": "experiments/S007/20260916_S007_EX37",
   "strategy_id": "S007",
   "strategy_payload": {
-    "candidate_source": {
-      "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
-      "candidate_id": "S007-C001",
-      "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
-      "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
-    },
-    "rule": {
-      "data_source": {
-        "format": "S007_SELECTED_FEATURE_SEED_V1",
-        "package": "strategy_runtime",
-        "path": "resources/s007_v1_seed.csv.gz",
-        "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+    "parameters": {
+      "candidate_source": {
+        "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+        "candidate_id": "S007-C001",
+        "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+        "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
       },
-      "execution": {
-        "capital": {
-          "allocation_fraction": 1.0,
-          "fee_rate": 0.001,
-          "mode": "full_available_cash",
-          "target_scope": "entry_cycle"
+      "rule": {
+        "data_source": {
+          "format": "S007_SELECTED_FEATURE_SEED_V1",
+          "package": "strategy_runtime",
+          "path": "resources/s007_v1_seed.csv.gz",
+          "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
         },
-        "entry": {
-          "limit_family": "previous_close_ratio",
-          "limit_parameter": 0.2,
-          "order_type": "LIMIT",
-          "price_rounding": "floor"
+        "execution": {
+          "capital": {
+            "allocation_fraction": 1.0,
+            "fee_rate": 0.001,
+            "mode": "full_available_cash",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "limit_family": "previous_close_ratio",
+            "limit_parameter": 0.2,
+            "order_type": "LIMIT",
+            "price_rounding": "floor"
+          },
+          "exit": {
+            "limit_ratio": 0.2,
+            "order_type": "LIMIT",
+            "price_rounding": "nearest_half_up"
+          },
+          "instrument": {
+            "asset_type": "etf",
+            "lot_size": 100,
+            "market": "CN",
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.2,
+            "price_tick": 0.001,
+            "symbol": "588080.SH"
+          },
+          "virtual_fill": {
+            "buy_intraday": "low_strictly_below_limit",
+            "buy_open": "open_at_or_below_limit",
+            "liquidity_check": "diagnostic_only",
+            "sell": "marketable_limit_at_open",
+            "touch_only": "uncertain_unfilled"
+          }
         },
-        "exit": {
-          "limit_ratio": 0.2,
-          "order_type": "LIMIT",
-          "price_rounding": "nearest_half_up"
+        "normalization": {
+          "lookback_sessions": 252,
+          "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+          "minimum_observations": 20
         },
-        "instrument": {
-          "asset_type": "etf",
-          "lot_size": 100,
-          "market": "CN",
-          "maximum_order_quantity": 1000000,
-          "price_limit_ratio": 0.2,
-          "price_tick": 0.001,
-          "symbol": "588080.SH"
+        "score": {
+          "base_weights": {
+            "price_close_vwap_deviation": 0.28658573721959246,
+            "price_intraday_range": 0.06350436740892215,
+            "risk_chinext_turnover_z20": 0.3057021379837475,
+            "risk_global_spx_return": 0.20014784300885136,
+            "risk_shibor_on_change_5d": 0.14405991437888652
+          },
+          "confirmation_threshold": -0.012073272333918687,
+          "confirmation_weights": {
+            "micro_share_change_5d_lag1": 0.4069229172274985,
+            "tsfresh__log_volume_change__mean__lb20": 0.5930770827725015
+          },
+          "entry_threshold": 0.10449974411727908,
+          "exit_threshold": 0.047857421473087296,
+          "orientations": {
+            "micro_share_change_5d_lag1": -1,
+            "price_close_vwap_deviation": -1,
+            "price_intraday_range": 1,
+            "risk_chinext_turnover_z20": 1,
+            "risk_global_spx_return": 1,
+            "risk_shibor_on_change_5d": -1,
+            "tsfresh__log_volume_change__mean__lb20": 1
+          }
         },
-        "virtual_fill": {
-          "buy_intraday": "low_strictly_below_limit",
-          "buy_open": "open_at_or_below_limit",
-          "liquidity_check": "diagnostic_only",
-          "sell": "marketable_limit_at_open",
-          "touch_only": "uncertain_unfilled"
-        }
+        "symbol": "588080.SH"
       },
-      "normalization": {
-        "lookback_sessions": 252,
-        "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
-        "minimum_observations": 20
-      },
-      "score": {
-        "base_weights": {
-          "price_close_vwap_deviation": 0.28658573721959246,
-          "price_intraday_range": 0.06350436740892215,
-          "risk_chinext_turnover_z20": 0.3057021379837475,
-          "risk_global_spx_return": 0.20014784300885136,
-          "risk_shibor_on_change_5d": 0.14405991437888652
-        },
-        "confirmation_threshold": -0.012073272333918687,
-        "confirmation_weights": {
-          "micro_share_change_5d_lag1": 0.4069229172274985,
-          "tsfresh__log_volume_change__mean__lb20": 0.5930770827725015
-        },
-        "entry_threshold": 0.10449974411727908,
-        "exit_threshold": 0.047857421473087296,
-        "orientations": {
-          "micro_share_change_5d_lag1": -1,
-          "price_close_vwap_deviation": -1,
-          "price_intraday_range": 1,
-          "risk_chinext_turnover_z20": 1,
-          "risk_global_spx_return": 1,
-          "risk_shibor_on_change_5d": -1,
-          "tsfresh__log_volume_change__mean__lb20": 1
-        }
-      },
+      "strategy_kind": "causal_feature_gate",
       "symbol": "588080.SH"
     },
-    "strategy_kind": "causal_feature_gate",
-    "symbol": "588080.SH"
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.s007_v1",
+      "qualname": "S007V1",
+      "source_files": [
+        "strategies/s007_v1.py",
+        "calculation.py",
+        "execution_rules.py",
+        "resources/s007_v1_seed.csv.gz"
+      ],
+      "source_sha256": "60a8c7844cf8409331a8de204ff0efe4813da240620124391467aafd4855c084"
+    }
   },
   "version": "v1"
 }

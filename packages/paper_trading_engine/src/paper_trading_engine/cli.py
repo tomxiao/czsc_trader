@@ -43,22 +43,6 @@ class PortUnavailableError(RuntimeError):
     pass
 
 
-DEFAULT_VIRTUAL_INITIAL_CASH = Decimal("100000.0000")
-LEGACY_VIRTUAL_INITIAL_CASH = Decimal("1000000.0000")
-CURRENT_STRATEGY_ID = "S001"
-CURRENT_STRATEGY_NAME = "科创50多因子趋势策略"
-CURRENT_STRATEGY_VERSION = "v1"
-CURRENT_RELEASE_HASH = "ae422915ff736431d70e0381dd6514ee800d861060cc5568712b55c895ddfb62"
-CURRENT_SELECTION_DATA_CUTOFF = "2026-08-28"
-CURRENT_QUALIFICATION = "PAPER_READY"
-CURRENT_LEGACY_BASELINE = "baseline_20260903"
-CURRENT_LEGACY_BASELINE_HASH = (
-    "a7af8864e469b72a94c59eb2e012af5f9a634203cdf5a0214391dd2909e9e331"
-)
-DEFAULT_VIRTUAL_ACCOUNT_ID = "s001-v1"
-DEFAULT_VIRTUAL_ACCOUNT_NAME = "S001-v1模拟账户"
-
-
 def probe_port(host: str, port: int) -> None:
     candidate = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -215,66 +199,6 @@ def build_engine(args: argparse.Namespace):
             store, args.symbol, connect_execution, initial=initial_execution,
         )
     startup_timings["execution_initialize_ms"] = round(
-        (time.perf_counter() - stage_started) * 1000, 1,
-    )
-    stage_started = time.perf_counter()
-    try:
-        store.virtual_account("baseline-143")
-    except KeyError:
-        pass
-    else:
-        store.rename_virtual_account(
-            "baseline-143", DEFAULT_VIRTUAL_ACCOUNT_ID, DEFAULT_VIRTUAL_ACCOUNT_NAME,
-        )
-    try:
-        account = store.virtual_account(DEFAULT_VIRTUAL_ACCOUNT_ID)
-    except KeyError:
-        account = store.create_virtual_account(
-            DEFAULT_VIRTUAL_ACCOUNT_ID, DEFAULT_VIRTUAL_ACCOUNT_NAME, CURRENT_LEGACY_BASELINE,
-            CURRENT_LEGACY_BASELINE_HASH, DEFAULT_VIRTUAL_INITIAL_CASH,
-            strategy_id=CURRENT_STRATEGY_ID,
-            strategy_name_snapshot=CURRENT_STRATEGY_NAME,
-            strategy_version=CURRENT_STRATEGY_VERSION,
-            release_hash=CURRENT_RELEASE_HASH,
-            qualification_snapshot=CURRENT_QUALIFICATION,
-            selection_data_cutoff=CURRENT_SELECTION_DATA_CUTOFF,
-            asset_type=args.asset,
-        )
-    else:
-        if Decimal(account["initial_cash"]) == LEGACY_VIRTUAL_INITIAL_CASH:
-            account = store.migrate_pristine_virtual_account_capital(
-                DEFAULT_VIRTUAL_ACCOUNT_ID,
-                expected_initial_cash=LEGACY_VIRTUAL_INITIAL_CASH,
-                new_initial_cash=DEFAULT_VIRTUAL_INITIAL_CASH,
-            )
-        if account.get("selection_data_cutoff") is None:
-            store.backfill_account_selection_cutoff(
-                DEFAULT_VIRTUAL_ACCOUNT_ID,
-                CURRENT_RELEASE_HASH,
-                CURRENT_SELECTION_DATA_CUTOFF,
-            )
-            account = store.virtual_account(DEFAULT_VIRTUAL_ACCOUNT_ID)
-        expected = (
-            DEFAULT_VIRTUAL_ACCOUNT_NAME, CURRENT_LEGACY_BASELINE, CURRENT_LEGACY_BASELINE_HASH,
-            CURRENT_STRATEGY_ID, CURRENT_STRATEGY_VERSION, CURRENT_RELEASE_HASH,
-            CURRENT_QUALIFICATION,
-            args.symbol.upper(), args.asset, str(DEFAULT_VIRTUAL_INITIAL_CASH),
-            CURRENT_SELECTION_DATA_CUTOFF,
-        )
-        actual = (
-            account["name"], account["baseline_version"], account["baseline_sha256"],
-            account["strategy_id"], account["strategy_version"], account["release_hash"],
-            account["qualification_snapshot"],
-            account["symbol"], account["asset_type"], account["initial_cash"],
-            account["selection_data_cutoff"],
-        )
-        if actual != expected:
-            raise ValueError(f"{DEFAULT_VIRTUAL_ACCOUNT_ID} virtual account has a different immutable identity")
-    try:
-        store.rename_virtual_account("s001-v2", "s001-v2", "S001-v2模拟账户")
-    except KeyError:
-        pass
-    startup_timings["account_initialize_ms"] = round(
         (time.perf_counter() - stage_started) * 1000, 1,
     )
     accounts = store.strategy_virtual_accounts()

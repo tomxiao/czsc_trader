@@ -325,18 +325,6 @@ class CandidateInspectionReport(Record):
         return CandidateEvidence(f"research_objects/{self.sha256}", self.sha256)
 
 
-@dataclass(frozen=True, slots=True)
-class FreezeGovernance(Record):
-    selection: DecisionReference
-    inspection: CandidateEvidence
-    approval: DecisionReference
-    plan_sha256: str
-    request_id: FreezeRequestId
-
-    def _validate(self):
-        _hash(self.plan_sha256)
-
-
 class FreezeStatus(StrEnum):
     NOT_FOUND = "NOT_FOUND"
     IN_PROGRESS = "IN_PROGRESS"

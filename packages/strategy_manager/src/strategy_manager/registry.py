@@ -352,9 +352,6 @@ class StrategyRegistry:
                     f"release hash mismatch: {strategy_id}-{version}"
                 ) from exc
             raise RegistryError(f"invalid strategy version {strategy_id}-{version}: {exc}") from exc
-        from .freeze_store import require_committed
-
-        require_committed(self, model)
         return model
 
     def _versions(self, strategy_id: str) -> list[StrategyVersion]:
@@ -363,18 +360,6 @@ class StrategyRegistry:
             return []
         versions = []
         for path in directory.glob("v*.json"):
-            raw = self._read_json(path)
-            model = StrategyVersion.from_dict(raw)
-            request_id = model.governance.request_id
-            marker = (
-                self.root
-                / "freeze_requests"
-                / strategy_id
-                / request_id.value
-                / "committed.json"
-            )
-            if not marker.exists():
-                continue
             versions.append(self.get_version(strategy_id, path.stem))
         return sorted(versions, key=lambda item: int(item.version[1:]))
 
@@ -828,14 +813,16 @@ class StrategyRegistry:
         reason = require_string(reason, "reason")
         current = self.current_qualification(strategy_id, version)
         validate_transition(current, target)
+        frozen = self.get_version(strategy_id, version)
         registered = {item.evidence_id: item for item in self.evidence(strategy_id, version)}
         if any(evidence_id not in registered for evidence_id in evidence_ids):
             raise RegistryError("lifecycle transition references unknown evidence")
+        if any(registered[evidence_id].release_hash != frozen.release_hash for evidence_id in evidence_ids):
+            raise RegistryError("lifecycle transition evidence differs from current content")
         if required_phase is not None and not any(
             registered[evidence_id].phase is required_phase for evidence_id in evidence_ids
         ):
             raise EvidenceRequiredError(f"transition requires {required_phase.value} evidence")
-        frozen = self.get_version(strategy_id, version)
         event = self._event(
             event_type,
             strategy_id,
@@ -888,13 +875,7 @@ class StrategyRegistry:
                 f"{strategy_id}-{version} is not deployable to {environment}: {qualification.value}"
             )
         release = self.get_version(strategy_id, version)
-        self.validate_version_governance(strategy_id, version)
         return release
-
-    def validate_version_governance(self, strategy_id: str, version: str) -> str:
-        """Validate the current frozen release and its committed transaction."""
-        self.get_version(strategy_id, version)
-        return "RESEARCH_FREEZE_VALIDATED"
 
     def validate_all(self) -> dict[str, int]:
         strategies = self.list_families()
@@ -928,11 +909,10 @@ class StrategyRegistry:
                     raise RegistryError("historical freeze credentials are unsupported")
             for item in versions:
                 self.current_qualification(item.strategy_id, item.version)
-                self.validate_version_governance(item.strategy_id, item.version)
             for item in evidence:
-                version = self.get_version(item.strategy_id, item.version)
-                if not version.release_hash or item.release_hash != version.release_hash:
-                    raise RegistryError(f"evidence release mismatch: {item.evidence_id}")
+                # Evidence retains its original content identity. Only new lifecycle
+                # decisions require evidence for the current content hash.
+                self.get_version(item.strategy_id, item.version)
         return {
             "strategies": len(strategies),
             "versions": version_count,

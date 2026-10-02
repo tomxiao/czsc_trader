@@ -2,80 +2,93 @@
   "change_summary": "冻结三连跌五日修复候选及项目唯一正式执行规则",
   "forward_start": "2026-09-09",
   "parent_version": null,
-  "release_hash": "67326ee14e0b67b3cbebb6ba7fd3d10e6fc053002d2a5f1323fe3489a2f84ee9",
+  "release_hash": "15288e859dfde7096450d855000ed74d70931bdb1f82d0439a386db5718f046e",
   "release_id": "S002-v1",
-  "schema_version": 1,
+  "schema_version": 5,
   "selection_data_cutoff": "2026-09-08",
   "source_candidate": "S002-C001",
   "source_experiment": "experiments/20260910_S002_EX14",
   "strategy_id": "S002",
   "strategy_payload": {
-    "candidate_source": {
-      "candidate_hash": "8a804a7fafc784c92ddd8b8c2d4c3fbc8dda953ca0fd7f0cfb6ab6fd7650574d",
-      "candidate_id": "S002-C001",
-      "definition": "experiments/20260910_S002_EX12/candidate_payload.json"
+    "parameters": {
+      "candidate_source": {
+        "candidate_hash": "8a804a7fafc784c92ddd8b8c2d4c3fbc8dda953ca0fd7f0cfb6ab6fd7650574d",
+        "candidate_id": "S002-C001",
+        "definition": "experiments/20260910_S002_EX12/candidate_payload.json"
+      },
+      "rule": {
+        "execution": {
+          "capital": {
+            "fee_rate": 0.0005,
+            "mode": "full_available_cash",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "limit_family": "previous_close_ratio",
+            "limit_parameter": 0.0,
+            "order_type": "LIMIT",
+            "price_rounding": "floor"
+          },
+          "exit": {
+            "limit_ratio": 0.1,
+            "order_type": "LIMIT",
+            "price_rounding": "nearest_half_up"
+          },
+          "instrument": {
+            "asset_type": "etf",
+            "lot_size": 100,
+            "market": "CN",
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.1,
+            "price_tick": 0.001,
+            "symbol": "510500.SH"
+          },
+          "virtual_fill": {
+            "buy_intraday": "low_strictly_below_limit",
+            "buy_open": "open_at_or_below_limit",
+            "liquidity_check": "diagnostic_only",
+            "sell": "marketable_limit_at_open",
+            "touch_only": "uncertain_unfilled"
+          }
+        },
+        "portfolio_rule": {
+          "flat_position": 0.0,
+          "holding_sessions": 5,
+          "ignore_entries_while_holding": true,
+          "require_fresh_transition_after_exit": true,
+          "target_position": 1.0
+        },
+        "price_adjustment": "hfq",
+        "risk_filters": [],
+        "schema_version": 1,
+        "signal": {
+          "config": {
+            "di": 1,
+            "freq": "日线",
+            "name": "bar_triple_V230506"
+          },
+          "entry_state": "三连跌",
+          "frequency": "日线",
+          "name": "bar_triple_V230506",
+          "output_key": "日线_D1三K加速_裸K形态V230506",
+          "trigger": "fresh_transition",
+          "warmup_bars": 250
+        },
+        "symbol": "510500.SH"
+      },
+      "strategy_kind": "czsc_event_hold"
     },
-    "rule": {
-      "execution": {
-        "capital": {
-          "fee_rate": 0.0005,
-          "mode": "full_available_cash",
-          "target_scope": "entry_cycle"
-        },
-        "entry": {
-          "limit_family": "previous_close_ratio",
-          "limit_parameter": 0.0,
-          "order_type": "LIMIT",
-          "price_rounding": "floor"
-        },
-        "exit": {
-          "limit_ratio": 0.1,
-          "order_type": "LIMIT",
-          "price_rounding": "nearest_half_up"
-        },
-        "instrument": {
-          "asset_type": "etf",
-          "lot_size": 100,
-          "market": "CN",
-          "maximum_order_quantity": 1000000,
-          "price_limit_ratio": 0.1,
-          "price_tick": 0.001,
-          "symbol": "510500.SH"
-        },
-        "virtual_fill": {
-          "buy_intraday": "low_strictly_below_limit",
-          "buy_open": "open_at_or_below_limit",
-          "liquidity_check": "diagnostic_only",
-          "sell": "marketable_limit_at_open",
-          "touch_only": "uncertain_unfilled"
-        }
-      },
-      "portfolio_rule": {
-        "flat_position": 0.0,
-        "holding_sessions": 5,
-        "ignore_entries_while_holding": true,
-        "require_fresh_transition_after_exit": true,
-        "target_position": 1.0
-      },
-      "price_adjustment": "hfq",
-      "risk_filters": [],
-      "schema_version": 1,
-      "signal": {
-        "config": {
-          "di": 1,
-          "freq": "日线",
-          "name": "bar_triple_V230506"
-        },
-        "entry_state": "三连跌",
-        "frequency": "日线",
-        "name": "bar_triple_V230506",
-        "output_key": "日线_D1三K加速_裸K形态V230506",
-        "trigger": "fresh_transition",
-        "warmup_bars": 250
-      },
-      "symbol": "510500.SH"
-    },
-    "strategy_kind": "czsc_event_hold"
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.s002_v1",
+      "qualname": "S002V1",
+      "source_files": [
+        "strategies/s002_v1.py",
+        "calculation.py",
+        "execution_rules.py"
+      ],
+      "source_sha256": "c996d1cdffa5de4e833a0ebc63f065fef81eff18e5ec694ac1f41917fc01b9d5"
+    }
   },
   "version": "v1"
 }

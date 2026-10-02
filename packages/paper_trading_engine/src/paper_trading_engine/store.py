@@ -392,15 +392,6 @@ class PaperStore:
                 details={"schema": "flat_realized_pnl.v1", "accounts": pnl_repairs},
             ))
         self._connection.execute(
-            "UPDATE virtual_accounts SET strategy_id='S001',strategy_name_snapshot='综合基线策略',"
-            "strategy_version='v1',release_hash=?,qualification_snapshot='PAPER_READY' "
-            "WHERE strategy_id IS NULL AND baseline_version='baseline_20260903' AND baseline_sha256=?",
-            (
-                "ae422915ff736431d70e0381dd6514ee800d861060cc5568712b55c895ddfb62",
-                "a7af8864e469b72a94c59eb2e012af5f9a634203cdf5a0214391dd2909e9e331",
-            ),
-        )
-        self._connection.execute(
             "INSERT OR IGNORE INTO settings(key,value) VALUES('futu_capital_pool', ?)",
             (DEFAULT_FUTU_CAPITAL_POOL,),
         )

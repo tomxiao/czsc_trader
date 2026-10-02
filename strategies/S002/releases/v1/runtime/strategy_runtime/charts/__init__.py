@@ -1,1 +1,0 @@
-"""Frozen strategy chart implementations."""

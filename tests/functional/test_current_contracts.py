@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 import json
+from pathlib import Path
 
 import pytest
 from research_experiment import ExperimentBinding
@@ -15,6 +16,19 @@ from test_candidate_freeze import (
 )
 
 
+def test_real_installed_versions_report_execution_contract_fees():
+    from czsc_trader.application.context import RepositoryContext
+    from czsc_trader.application.strategy_runtime_service import list_installed_strategies
+
+    context = RepositoryContext.discover(Path(__file__).resolve().parents[2])
+    result = list_installed_strategies(context)
+    assert result.status == "PASS"
+    assert {row["strategy_version_id"]: row["fee_rate"] for row in result.result["strategies"]} == {
+        "S001-v1": 0.0005, "S001-v2": 0.0005, "S002-v1": 0.0005,
+        "S003-v1": 0.00012, "S007-v1": 0.001,
+    }
+
+
 @pytest.fixture
 def current_frozen(inspection):
     context, request, source = inspection
@@ -25,13 +39,13 @@ def current_frozen(inspection):
     return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
 
 
-@pytest.mark.parametrize("schema", [1, 2, 3, True, "4", None, 5])
+@pytest.mark.parametrize("schema", [1, 2, 3, 4, True, "5", None, 6])
 def test_retired_release_formats_are_rejected_without_writing(tmp_path, schema):
     raw = {"schema_version": schema, "strategy_id": "S900"}
     path = tmp_path / "original.json"
     path.write_text(json.dumps(raw))
     before = path.read_bytes()
-    with pytest.raises(ValidationError, match="schema_version must be 4"):
+    with pytest.raises(ValidationError, match="schema_version must be 5"):
         StrategyVersion.from_dict(raw)
     with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
         StrategyRelease.from_mapping(raw)
@@ -71,7 +85,7 @@ def test_removed_public_names_are_unavailable():
         assert all(not hasattr(module, name) for name in names)
 
 
-def test_current_frozen_identity_covers_governance_and_payload(current_frozen):
+def test_current_frozen_identity_covers_metadata_and_payload(current_frozen):
     _, version = current_frozen
     assert StrategyVersion.from_dict(version.to_dict()) == version
     for field, value in (("change_summary", "changed"), ("strategy_payload", {"changed": True})):
@@ -95,7 +109,7 @@ def test_current_binding_rejects_foreign_release_identity(current_frozen):
 
 
 def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
-    from strategy_manager import EvidenceRequiredError, InvalidTransitionError, PerformanceEvidence, Qualification
+    from strategy_manager import EvidenceRequiredError, InvalidTransitionError, PerformanceEvidence, Qualification, RegistryError
 
     context, version = current_frozen
     registry = StrategyRegistry(context.strategy_root)
@@ -113,6 +127,14 @@ def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
         "recorded_at": "2026-10-02T10:00:00+08:00", "recorded_by": "test",
     })
     registry.record_evidence(evidence)
+    historical = replace(evidence, evidence_id="previous-content", release_hash="0" * 64)
+    with pytest.raises(RegistryError, match="release_hash"):
+        registry.record_evidence(historical)
+    # An existing historical record stays readable but cannot approve current content.
+    registry._append_jsonl(context.strategy_root / "S900/evidence.jsonl", historical.to_dict())
+    assert registry.validate_all()["evidence"] == 2
+    with pytest.raises(RegistryError, match="current content"):
+        registry.promote_version("S900", "v1", actor="test", reason="stale", evidence_ids=[historical.evidence_id])
     registry.promote_version("S900", "v1", actor="test", reason="forward", evidence_ids=[evidence.evidence_id])
     assert registry.current_qualification("S900", "v1") is Qualification.LIVE_READY
     registry.retire_version("S900", "v1", actor="test", reason="retire")

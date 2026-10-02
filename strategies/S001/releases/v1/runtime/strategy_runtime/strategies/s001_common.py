@@ -22,6 +22,7 @@ from ..contracts import TradableWindow
 from ..errors import RuntimeContractError
 from ..execution_rules import effective_target_order_type
 from ..implementation_identity import implementation_sha256
+from ..observation import ObservationDefinition
 from ..models import (
     CutoffRule,
     DecisionContract,
@@ -361,7 +362,7 @@ class S001Base(StrategyImplementation):
             raise RuntimeContractError(
                 f"{self.__class__.__name__} can only load {self.expected_release_id}"
             )
-        payload = _object(release.payload, "strategy payload")
+        payload = _object(release.payload["parameters"], "strategy parameters")
         rule = _object(payload.get("rule"), "S001 rule")
         execution = _object(rule.get("execution"), "S001 execution")
         instrument = _object(execution.get("instrument"), "S001 instrument")
@@ -388,7 +389,7 @@ class S001Base(StrategyImplementation):
             Dataset.TRADING_CALENDAR.value,
         )
         self._definition = RuntimeDefinition(
-            1,
+            3,
             release.strategy_family_id,
             release.version,
             release.release_id,
@@ -399,7 +400,7 @@ class S001Base(StrategyImplementation):
                 1,
                 _source_sha256(self.__class__),
             ),
-            ParameterSet(release.payload),
+            ParameterSet(payload),
             InputContract(
                 (
                     InputRequirement(
@@ -455,6 +456,7 @@ class S001Base(StrategyImplementation):
                 _HISTORY_START.isoformat(),
                 _HISTORY_START.isoformat(),
             ),
+            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'entry_threshold', 'label': '买入阈值', 'value': 0.175, 'kind': 'CONSTANT'}, {'key': 'exit_threshold', 'label': '卖出阈值', 'value': 0.025, 'kind': 'CONSTANT'}], 'key': 'factor_score', 'label': '策略得分', 'value_field': 'factor_score'}], 'facts': []}),
         )
 
     @classmethod

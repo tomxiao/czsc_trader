@@ -1,4 +1,4 @@
-"""Convention-based loading of immutable strategy runtime implementations."""
+"""Load the explicitly declared source closure of strategy implementations."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class StrategyLoader:
         release: StrategyRelease,
         source_root: Path | None,
         runtime_binding: RuntimeBinding | None,
-    ) -> tuple[Path, Mapping[str, object]]:
+    ) -> tuple[Path, RuntimeBinding]:
         if source_root is None and runtime_binding is None:
             if self.strategy_root is None:
                 raise RuntimeCompatibilityError(
@@ -59,43 +59,14 @@ class StrategyLoader:
         if not isinstance(release, StrategyRelease):
             raise RuntimeCompatibilityError("frozen loading requires a validated StrategyRelease")
         root, binding = self._release_source(release, source_root, runtime_binding)
-        if "runtime" in release.payload:
-            descriptor = release.payload['runtime']
-            if (not isinstance(descriptor, Mapping) or
-                tuple(descriptor.get('source_files', ())) != binding.spec.source_files or
-                descriptor.get('source_sha256') != binding.spec.implementation_sha256):
-                raise RuntimeCompatibilityError('runtime binding differs from declared source closure')
-            module_name, class_name, factory = self._declared_factory(
-                release.payload, source_root=root,
-            )
-            return module_name, class_name, factory, root, binding
-        module_name = (
-            f"strategy_runtime.strategies."
-            f"{release.strategy_family_id.lower()}_{release.version.lower()}"
+        descriptor = release.payload.get("runtime")
+        if (not isinstance(descriptor, Mapping) or
+            tuple(descriptor.get("source_files", ())) != binding.spec.source_files or
+            descriptor.get("source_sha256") != binding.spec.implementation_sha256):
+            raise RuntimeCompatibilityError("runtime binding differs from declared source closure")
+        module_name, class_name, factory = self._declared_factory(
+            release.payload, source_root=root,
         )
-        class_name = f"{release.strategy_family_id}{release.version.upper()}"
-        actual = implementation_sha256(tuple(binding.spec.source_files), source_root=root)
-        if actual != binding.spec.implementation_sha256:
-            raise RuntimeCompatibilityError(
-                f"frozen implementation differs from runtime binding: {release.release_id}"
-            )
-        try:
-            with strategy_source_root(root):
-                module = load_closure_module(
-                    module_name,
-                    source_root=root,
-                    source_files=tuple(binding.spec.source_files),
-                    source_sha256=actual,
-                    marker="srt_source",
-                )
-                factory = getattr(module, class_name)
-        except (ImportError, AttributeError) as exc:
-            raise RuntimeCompatibilityError(
-                f"strategy implementation is unavailable: {module_name}.{class_name}"
-            ) from exc
-        factory.__module__ = module_name
-        if implementation_sha256(tuple(binding.spec.source_files), source_root=root) != actual:
-            raise RuntimeCompatibilityError("implementation source changed while loading")
         return module_name, class_name, factory, root, binding
 
     @staticmethod
@@ -253,27 +224,13 @@ class StrategyLoader:
             or definition.implementation.qualname != class_name
         ):
             raise RuntimeCompatibilityError(
-                "loaded implementation identity differs from convention"
+                "loaded implementation differs from declared identity"
             )
         if definition.observation.sha256 != binding.spec.observation_sha256:
             raise RuntimeCompatibilityError("observation definition differs from binding")
         if definition.implementation.source_sha256 != binding.spec.implementation_sha256:
             raise RuntimeCompatibilityError("implementation differs from binding")
-        if "runtime" in release.payload:
-            self._validate_declared_content(release.payload, strategy)
-            return strategy
-        if binding.release_hash != release.release_hash:
-            raise RuntimeCompatibilityError("runtime binding release hash differs from release")
-        source_files = tuple(binding.spec.source_files)
-        actual_sha256 = implementation_sha256(source_files, source_root=source_root)
-        if actual_sha256 != binding.spec.implementation_sha256:
-            raise RuntimeCompatibilityError(
-                f"frozen implementation differs from runtime binding: {release.release_id}"
-            )
-        if definition.implementation.source_sha256 != actual_sha256:
-            raise RuntimeCompatibilityError(
-                "runtime definition implementation hash differs from its source closure"
-            )
+        self._validate_declared_content(release.payload, strategy)
         return strategy
 
     def load(

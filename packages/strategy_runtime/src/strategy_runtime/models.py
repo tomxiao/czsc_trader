@@ -464,58 +464,24 @@ class StrategyCandidate:
         )
 
 
-def _validate_freeze_identity(raw):
-    """Validate schema-4 wire identity without depending on the SM writer."""
+def _validate_release_metadata(raw):
+    """Validate runtime release metadata independently of research governance."""
     expected = {"schema_version", "strategy_id", "version", "release_id", "parent_version",
                 "change_summary", "source_experiment", "source_candidate", "selection_data_cutoff",
-                "forward_start", "strategy_payload", "release_hash", "origin", "governance", "governance_hash"}
-    def record(value, name, keys):
-        if not isinstance(value, Mapping) or set(value) != set(keys) | {"type"} or value["type"] != name:
-            raise RuntimeContractError(f"invalid frozen {name}")
-    def digest(value):
-        if not isinstance(value, str) or not _SHA256.fullmatch(value):
-            raise RuntimeContractError("invalid frozen identity digest")
-    def evidence(value):
-        record(value, "CandidateEvidence", ("path", "sha256"))
-        from .deployment import _safe_relative
-        _safe_relative(value["path"], "frozen evidence")
-        digest(value["sha256"])
+                "forward_start", "strategy_payload", "release_hash"}
     if set(raw) != expected:
-        raise RuntimeContractError("schema 4 strategy release fields differ")
+        raise RuntimeContractError("schema 5 strategy release fields differ")
     if any(not isinstance(raw[name], str) or not raw[name].strip() for name in (
         "change_summary", "source_experiment", "selection_data_cutoff", "forward_start", "version", "source_candidate"
     )):
-        raise RuntimeContractError("schema 4 requires explicit release metadata")
+        raise RuntimeContractError("schema 5 requires explicit release metadata")
     if date.fromisoformat(raw["forward_start"]) <= date.fromisoformat(raw["selection_data_cutoff"]):
         raise RuntimeContractError("frozen forward window overlaps selection")
-    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]*", raw["source_candidate"]) or re.fullmatch(r"v\d+", raw["source_candidate"]):
-        raise RuntimeContractError("invalid frozen candidate key")
     parent = raw["parent_version"]
     if parent is not None and (not isinstance(parent, str) or not _VERSION.fullmatch(parent) or not _VERSION.fullmatch(raw["version"]) or int(parent[1:]) >= int(raw["version"][1:])):
         raise RuntimeContractError("invalid frozen parent version")
-    origin, governance = raw["origin"], raw["governance"]
-    record(origin, "CandidateOrigin", ("candidate", "content_sha256", "registration"))
-    candidate = origin["candidate"]
-    record(candidate, "CandidateKey", ("strategy_id", "candidate_id"))
-    if candidate["strategy_id"] != raw["strategy_id"] or candidate["candidate_id"] != raw["source_candidate"]:
-        raise RuntimeContractError("frozen candidate identity differs")
-    digest(origin["content_sha256"])
-    evidence(origin["registration"])
-    record(governance, "FreezeGovernance", ("selection", "inspection", "approval", "plan_sha256", "request_id"))
-    for key in ("selection", "approval"):
-        ref = governance[key]
-        record(ref, "DecisionReference", ("decision_id", "evidence"))
-        if not isinstance(ref["decision_id"], str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,99}", ref["decision_id"]):
-            raise RuntimeContractError("invalid frozen decision identifier")
-        evidence(ref["evidence"])
-    evidence(governance["inspection"])
-    digest(governance["plan_sha256"])
-    request = governance["request_id"]
-    record(request, "FreezeRequestId", ("strategy_id", "value"))
-    if request["strategy_id"] != raw["strategy_id"] or not isinstance(request["value"], str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,99}", request["value"]):
-        raise RuntimeContractError("invalid freeze request identity")
-    if canonical_sha256(governance) != raw["governance_hash"]:
-        raise RuntimeContractError("frozen governance hash differs")
+    if not isinstance(raw["strategy_payload"], Mapping) or not raw["strategy_payload"]:
+        raise RuntimeContractError("strategy payload must be nonempty")
 
 
 @dataclass(frozen=True, slots=True, init=False)
@@ -547,9 +513,9 @@ class StrategyRelease:
         if not isinstance(value, Mapping):
             raise RuntimeContractError("strategy release must be a mapping")
         raw = dict(value)
-        if type(raw.get("schema_version")) is not int or raw["schema_version"] != 4:
+        if type(raw.get("schema_version")) is not int or raw["schema_version"] != 5:
             raise RuntimeContractError("unsupported strategy release schema")
-        _validate_freeze_identity(raw)
+        _validate_release_metadata(raw)
         required = {"strategy_id", "version", "release_id", "release_hash", "strategy_payload"}
         missing = required - set(raw)
         if missing:

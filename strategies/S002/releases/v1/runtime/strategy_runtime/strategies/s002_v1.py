@@ -21,6 +21,7 @@ from ..contracts import TradableWindow
 from ..errors import RuntimeContractError
 from ..execution_rules import effective_target_order_type
 from ..implementation_identity import implementation_sha256
+from ..observation import ObservationDefinition
 from ..models import (
     CutoffRule,
     DecisionContract,
@@ -159,7 +160,7 @@ class S002V1(StrategyImplementation):
     """Executable S002-v1 implementation with no TDR dependency."""
 
     def __init__(self, release: StrategyRelease, deployment_symbol: str | None = None) -> None:
-        payload = _object(release.payload, "strategy payload")
+        payload = _object(release.payload["parameters"], "strategy parameters")
         if payload.get("strategy_kind") != "czsc_event_hold":
             raise RuntimeContractError("S002-v1 strategy_kind must be czsc_event_hold")
         rule = _object(payload.get("rule"), "S002-v1 rule")
@@ -196,7 +197,7 @@ class S002V1(StrategyImplementation):
             )
         )
         self._definition = RuntimeDefinition(
-            schema_version=1,
+            schema_version=3,
             strategy_family_id=release.strategy_family_id,
             version=release.version,
             release_id=release.release_id,
@@ -204,7 +205,7 @@ class S002V1(StrategyImplementation):
             implementation=ImplementationRef(
                 __name__, self.__class__.__name__, 1, _source_sha256()
             ),
-            parameters=ParameterSet(release.payload),
+            parameters=ParameterSet(payload),
             inputs=InputContract(
                 (
                     InputRequirement(
@@ -245,6 +246,7 @@ class S002V1(StrategyImplementation):
                 order_types,
             ),
             tradable_symbol=symbol,
+            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'signal_active', 'label': '信号激活值', 'value': 1.0, 'kind': 'CONSTANT'}], 'key': 'event_state', 'label': '事件状态', 'value_field': 'factor_score'}], 'facts': []}),
         )
 
     @classmethod

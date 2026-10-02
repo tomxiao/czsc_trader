@@ -30,6 +30,29 @@ def create_account(store, account_id, version, marker):
     )
 
 
+@pytest.mark.parametrize("accounts", [[], [{"strategy_id": "S001", "strategy_version": "v1", "release_hash": "e" * 64}]])
+def test_startup_reads_existing_bindings_without_default_account_writes(tmp_path, monkeypatch, accounts):
+    class ReachedDeploymentValidation(BaseException):
+        pass
+
+    # A read-only surface deliberately offers no account creation/rename/migration methods.
+    store = SimpleNamespace(strategy_virtual_accounts=lambda: accounts)
+    monkeypatch.setattr(pte_cli, "PaperStore", lambda _: store)
+    for name in ("AuditRecorder", "SrtAdviceClient", "FutuGateway", "FutuExecution", "ReconnectableExecution"):
+        monkeypatch.setattr(pte_cli, name, lambda *args, **kwargs: SimpleNamespace())
+
+    def validate(executable, root, references):
+        assert references == [(x["strategy_id"], x["strategy_version"]) for x in accounts]
+        raise ReachedDeploymentValidation()
+
+    monkeypatch.setattr(pte_cli, "_strategy_deployments", validate)
+    args = Namespace(action="once", database=tmp_path / "runtime.db", repo_root=tmp_path,
+                     data_dir=tmp_path / "data", asset="ETF", symbol="588080.SH",
+                     opend_host="127.0.0.1", opend_port=11111, advice_executable=None)
+    with pytest.raises(ReachedDeploymentValidation):
+        pte_cli.build_engine(args)
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows extended-path regression")
 def test_account_chart_accepts_equivalent_windows_extended_path(tmp_path, monkeypatch):
     from paper_trading_engine.account_chart import AccountChartService
@@ -535,7 +558,8 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(tmp_path
     store.close()
 
 
-def test_account_chart_uses_only_active_decisions(tmp_path):
+@pytest.mark.parametrize("old_content", [False, True])
+def test_account_chart_uses_only_active_decisions(tmp_path, old_content):
     from paper_trading_engine.account_chart import AccountChartService
 
     store = PaperStore(tmp_path / "chart-active-decisions.db")
@@ -576,6 +600,11 @@ def test_account_chart_uses_only_active_decisions(tmp_path):
     store.save_account_decision(
         "s001-v2", decision_payload("DEC-NEW", "2026-09-04", 0.2),
     )
+    if old_content:
+        historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-05", 0.5)
+        historical["strategy"]["release_hash"] = "a" * 64
+        historical["observation"] = {"contract_version": "strategy_observation.v1", "status": "READY"}
+        store.save_account_decision("s001-v2", historical)
     requests = []
 
     class ImmediateExecutor:
@@ -610,10 +639,10 @@ def test_account_chart_uses_only_active_decisions(tmp_path):
     assert status["status"] == "READY"
     assert [row["decision_id"] for row in requests[0]["observations"]] == ["DEC-NEW"]
     assert requests[0]["window"]["observation_start"] == "2026-09-04"
-    assert requests[0]["window"]["omitted_decision_count"] == 1
+    assert requests[0]["window"]["omitted_decision_count"] == 1 + int(old_content)
     assert status["message"] == (
-        "观察事实自 2026-09-04 开始；此前 1 条历史决策"
-        "未保存 observation，未绘制策略解释"
+        f"观察事实自 2026-09-04 开始；其中 {1 + int(old_content)} 条决策"
+        "缺少可用的观察事实，未绘制策略解释"
     )
     service.close()
     store.close()
@@ -665,8 +694,8 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
     assert status["status"] == "EMPTY"
     assert status["chart_url"]
     assert status["message"] == (
-        "等待第一条策略观察事实；此前 1 条历史决策"
-        "未保存 observation，未绘制策略解释"
+        "等待第一条策略观察事实；其中 1 条决策"
+        "缺少可用的观察事实，未绘制策略解释"
     )
     assert requests[0]["observations"] == []
     assert requests[0]["window"]["observation_start"] is None

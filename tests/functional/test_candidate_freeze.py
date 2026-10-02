@@ -136,11 +136,11 @@ def test_managed_inspection_freeze_and_idempotent_query(inspection):
     )
     registry = StrategyRegistry(context.strategy_root)
     version = registry.get_version("S900", "v1")
-    assert version.schema_version == 4
-    assert version.origin == report.plan.origin
+    assert version.schema_version == 5
+    assert not hasattr(version, "origin")
     assert StrategyVersion.from_dict(version.to_dict()) == version
     assert StrategyRelease.from_mapping(version.to_dict()).release_hash == version.release_hash
-    assert registry.validate_version_governance("S900", "v1") == "RESEARCH_FREEZE_VALIDATED"
+    assert not hasattr(registry, "validate_version_governance")
     assert registry.validate_all()["versions"] == 1
     assert not (context.strategy_root / "deployments").exists()
     with pytest.raises(ValueError, match="different content"):
@@ -181,7 +181,7 @@ def test_process_interruption_obeys_commit_visibility(inspection, monkeypatch, a
         pass
 
     def interrupt(path, value, **kwargs):
-        if path.name == "committed.json":
+        if path.name == "v1.json":
             assert (
                 get_freeze_result(context, operation.request_id).status
                 is f.FreezeStatus.IN_PROGRESS
@@ -356,10 +356,9 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspection):
     assert published.read_bytes() == before
 
 
-def test_schema_four_deployment_requires_commit_marker(inspection):
+def test_runtime_deployment_is_independent_of_research_commit_marker(inspection):
     from czsc_trader.application import deploy_strategy, validate_release_package
     from strategy_runtime import load_strategy_deployment
-    from strategy_runtime.errors import RuntimeCompatibilityError
     from strategy_runtime.prepare_cli import _load_release
     from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
@@ -379,12 +378,9 @@ def test_schema_four_deployment_requires_commit_marker(inspection):
     assert _load_release(context.root, "S900", "v1").release_hash == receipt.version.release_hash
     marker = context.strategy_root / "freeze_requests/S900/request1/committed.json"
     marker.rename(marker.with_name("simulated-lost-commit.json"))
-    with pytest.raises(RuntimeCompatibilityError, match="cannot read"):
-        load_strategy_deployment(context.strategy_root, "S900-v1")
-    with pytest.raises(RuntimeCompatibilityError, match="cannot read"):
-        client._load_release("S900", "v1")
-    with pytest.raises(RuntimeCompatibilityError, match="cannot read"):
-        _load_release(context.root, "S900", "v1")
+    assert load_strategy_deployment(context.strategy_root, "S900-v1").release_hash == receipt.version.release_hash
+    assert client._load_release("S900", "v1").release_hash == receipt.version.release_hash
+    assert _load_release(context.root, "S900", "v1").release_hash == receipt.version.release_hash
 
 
 def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch):
@@ -413,8 +409,7 @@ def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch)
         inspect_candidate(context, request)
 
 
-def test_corrupt_commit_returns_unknown_and_blocks_version_read(inspection):
-    from strategy_manager import RegistryError
+def test_corrupt_research_commit_does_not_change_runtime_version(inspection):
 
     context, request, source = inspection
     operation = approve(context, inspect_candidate(context, request), source)
@@ -425,8 +420,7 @@ def test_corrupt_commit_returns_unknown_and_blocks_version_read(inspection):
     assert receipt.status is f.FreezeStatus.UNKNOWN
     assert receipt.version is None
     assert "cannot be verified" in receipt.reason
-    with pytest.raises(RegistryError, match="not committed"):
-        StrategyRegistry(context.strategy_root).get_version("S900", "v1")
+    assert StrategyRegistry(context.strategy_root).get_version("S900", "v1").release_id == "S900-v1"
 
 
 def test_legacy_release_files_and_hashes_remain_unchanged():
@@ -434,7 +428,7 @@ def test_legacy_release_files_and_hashes_remain_unchanged():
 
     raw = {"schema_version": 3, "release_id": "S900-v1"}
     before = json.dumps(raw, sort_keys=True)
-    with pytest.raises(ValidationError, match="schema_version must be 4"):
+    with pytest.raises(ValidationError, match="schema_version must be 5"):
         StrategyVersion.from_dict(raw)
     with pytest.raises(Exception, match="unsupported strategy release schema"):
         StrategyRelease.from_mapping(raw)
