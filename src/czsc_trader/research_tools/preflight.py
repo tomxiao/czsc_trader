@@ -167,7 +167,7 @@ def preflight_experiment(
 
     def archive_identity() -> None:
         subjects = experiment.definition.subjects
-        if experiment.binding.schema_version >= 3 and len(subjects) != 1:
+        if len(subjects) != 1:
             raise ValueError("binding schema v3 requires exactly one experiment subject")
         if subjects:
             validate_experiment_manifest_metadata(
@@ -241,7 +241,7 @@ def preflight_experiment(
                 "synthetic execution skipped because prerequisite checks failed",
             )
         )
-    elif experiment.binding.schema_version >= 3 and not explicit_precheck:
+    elif not explicit_precheck:
         checks.append(
             ExperimentPreflightCheck(
                 "SYNTHETIC_PRECHECK",
@@ -315,31 +315,12 @@ def preflight_experiment(
                 success="definition unchanged after synthetic precheck",
             )
         )
-    else:
-        checks.append(
-            ExperimentPreflightCheck(
-                "SYNTHETIC_PRECHECK",
-                ExperimentPreflightStatus.WARNING,
-                "legacy binding has no explicit synthetic precheck",
-            )
+    checks.append(
+        ExperimentPreflightCheck(
+            "PREFLIGHT_ENFORCEMENT", ExperimentPreflightStatus.PASS,
+            "binding schema v3 requires preflight at execution entry",
         )
-
-    if experiment.binding.schema_version == 2:
-        checks.append(
-            ExperimentPreflightCheck(
-                "LEGACY_BINDING",
-                ExperimentPreflightStatus.WARNING,
-                "binding schema v2 is loadable but does not enforce preflight before execution",
-            )
-        )
-    else:
-        checks.append(
-            ExperimentPreflightCheck(
-                "PREFLIGHT_ENFORCEMENT",
-                ExperimentPreflightStatus.PASS,
-                "binding schema v3 requires preflight at execution entry",
-            )
-        )
+    )
 
     return ExperimentPreflightReport(
         experiment_id=experiment.definition.experiment_id,

@@ -42,7 +42,7 @@ def _context(args: argparse.Namespace) -> RepositoryContext:
 
 def _backtest_run(args: argparse.Namespace):
     from strategy_manager import StrategyRegistry, StrategyManagerError
-    from czsc_trader.application import BacktestRequestV2, run_backtest
+    from czsc_trader.application import BacktestRequest, run_backtest
     from czsc_trader.application.errors import ValidationError
 
     context = _context(args)
@@ -55,7 +55,7 @@ def _backtest_run(args: argparse.Namespace):
     return run_backtest(
         context,
         strategy,
-        BacktestRequestV2(
+        BacktestRequest(
             symbol=args.symbol,
             asset_type=args.asset,
             start=args.start,

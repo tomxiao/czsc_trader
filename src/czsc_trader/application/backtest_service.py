@@ -8,11 +8,11 @@ from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_runtime import StrategyCandidate
 
 from czsc_trader.backtesting import (
-    BacktestRequestV2,
+    BacktestRequest,
     resolve_candidate_snapshot,
     resolve_registered_strategy,
-    run_backtest_v2,
 )
+from czsc_trader.backtesting.service import _run_backtest
 from czsc_trader.backtesting.execution_data import (
     BacktestExecutionDataNotReadyError,
 )
@@ -26,7 +26,7 @@ from .runtime_acceptance import _plain
 def run_backtest(
     context: RepositoryContext,
     strategy: StrategyCandidate | StrategyVersion,
-    request: BacktestRequestV2,
+    request: BacktestRequest,
     *,
     run_date: date | None = None,
     chart_descriptor: dict[str, Any] | None = None,
@@ -40,8 +40,8 @@ def run_backtest(
     """
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
         raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
-    if not isinstance(request, BacktestRequestV2):
-        raise TypeError("backtest request must be BacktestRequestV2")
+    if not isinstance(request, BacktestRequest):
+        raise TypeError("backtest request must be BacktestRequest")
     reference = (
         strategy.reference_id if isinstance(strategy, StrategyCandidate) else strategy.release_id
     )
@@ -67,7 +67,7 @@ def run_backtest(
             if stored.to_dict() != strategy.to_dict():
                 raise ValueError("backtest version differs from the frozen registry record")
             snapshot = resolve_registered_strategy(context, strategy.strategy_id, strategy.version)
-        summary = run_backtest_v2(
+        summary = _run_backtest(
             snapshot=snapshot,
             request=request,
             srt_data_root=context.tdr_srt_root,

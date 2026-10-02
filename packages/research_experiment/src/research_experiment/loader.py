@@ -41,8 +41,8 @@ class ExperimentBinding:
     dependencies: tuple[ExperimentDependency, ...]
 
     def __post_init__(self) -> None:
-        if self.schema_version not in {2, 3}:
-            raise ValueError("experiment binding schema_version must be 2 or 3")
+        if type(self.schema_version) is not int or self.schema_version != 3:
+            raise ValueError("experiment binding schema_version must be 3")
         module = _nonempty_text(self.module, "binding module")
         qualname = _nonempty_text(self.qualname, "binding qualname")
         if not all(part.isidentifier() for part in module.split(".")):

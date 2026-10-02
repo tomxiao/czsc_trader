@@ -102,19 +102,6 @@ def _delivery(context, ref):
     if checked.status is not d.ValidationStatus.PASS:
         raise ValueError(f"decision delivery is invalid: {checked.issues}")
     document = _read(path.parent / "delivery.json")
-    if document["schema_version"] == 3:
-        # Schema 3 references have an explicitly retained legacy storage layout.
-        def legacy_references(value):
-            if isinstance(value, list):
-                return [legacy_references(item) for item in value]
-            if isinstance(value, dict):
-                result = {key: legacy_references(item) for key, item in value.items()}
-                if result.get("type") == "DeliveryReference":
-                    result["type"] = "LegacyDeliveryReference"
-                return result
-            return value
-
-        document["content"] = legacy_references(document["content"])
     return receipt.reference, d.DeliveryContent.from_dict(document["content"])
 
 
@@ -589,15 +576,12 @@ def inspect_candidate(
         check(f.InspectionCheck.PACKAGE, f.InspectionStatus.FAIL, str(exc))
     release = None
     try:
-        preview = {
-            "schema_version": 1,
-            "strategy_id": request.candidate.strategy_id,
-            "version": plan.version,
-            "release_id": f"{request.candidate.strategy_id}-{plan.version}",
-            "strategy_payload": _read(plan.payload.resolve(context.strategy_root)),
-        }
-        release = StrategyRelease.from_mapping(
-            {**preview, "release_hash": canonical_sha256(preview)}
+        release = StrategyRelease._from_runtime_identity(
+            strategy_family_id=request.candidate.strategy_id,
+            version=plan.version,
+            release_id=f"{request.candidate.strategy_id}-{plan.version}",
+            release_hash=plan.sha256,
+            payload=_read(plan.payload.resolve(context.strategy_root)),
         )
         runtime = request.execution.runtime
         left = runtime_readiness(runtime.describe(candidate))

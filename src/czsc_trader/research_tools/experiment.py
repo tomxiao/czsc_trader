@@ -675,12 +675,11 @@ def execute_experiment(
         raise ValueError("experiment and context definitions differ")
     if context._formal != (experiment.definition.mode is ExperimentMode.FORMAL):
         raise ValueError("experiment mode and context assurance differ")
-    if experiment.binding.schema_version >= 3:
-        preflight_experiment(
-            experiment,
-            resources=context.resources,
-            predecessors=tuple(context.predecessors.values()),
-        ).require_pass()
+    preflight_experiment(
+        experiment,
+        resources=context.resources,
+        predecessors=tuple(context.predecessors.values()),
+    ).require_pass()
     try:
         with threadpool_limits(limits=context.resources.native_threads_per_worker):
             result = experiment.implementation.execute(context)

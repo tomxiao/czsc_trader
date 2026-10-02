@@ -842,6 +842,7 @@ class Experiment(ResearchExperiment):
             development_cutoff=date(2026, 9, 2),
             random_seed=98,
             allowed_datasets=('etf.ohlcv',),
+            subjects=('518880.SH',),
             protocol=ExperimentProtocol(
                 stage=ExperimentStage.CANDIDATE,
                 first_principles=('Candidate creation is a governed action',),
@@ -852,6 +853,9 @@ class Experiment(ResearchExperiment):
             ),
             capabilities=ExperimentCapabilities(),
         )
+
+    def synthetic_precheck(self):
+        pass
 
     def execute(self, context):
         del context
@@ -870,7 +874,7 @@ class Experiment(ResearchExperiment):
         encoding="utf-8",
     )
     binding = {
-        "schema_version": 2,
+        "schema_version": 3,
         "module": "experiment",
         "qualname": "Experiment",
         "source_files": ["experiment.py"],

@@ -225,8 +225,7 @@ def audit_stress_results(
 ) -> StressAudit:
     received = {item.scenario_id for item in results}
     current = {item.scenario_id for item in required_stress_scenarios()}
-    legacy = {"fee_x2", "slippage_15bp", "slippage_30bp", "slippage_50bp"}
-    if not (current <= received or legacy <= received):
+    if not current <= received:
         return StressAudit(AuditStatus.INSUFFICIENT, (), ("MISSING_STRESS_SCENARIO",))
     if any(item.execution_policy_hash != execution_policy_hash for item in results):
         return StressAudit(AuditStatus.FAIL, (), ("STRESS_EXECUTION_HASH_MISMATCH",))

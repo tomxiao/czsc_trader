@@ -36,11 +36,10 @@ def _load_release(repo_root: Path, strategy_id: str, version: str) -> StrategyRe
     except (OSError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"cannot load frozen strategy {strategy_id}-{version}: {exc}") from exc
     release = StrategyRelease.from_mapping(payload)
-    if payload.get("schema_version") == 4:
-        from .deployment import load_strategy_deployment
-        deployment = load_strategy_deployment(repo_root / "strategies", release.release_id)
-        if deployment.release_hash != release.release_hash:
-            raise RuntimeError("prepared release differs from committed deployment")
+    from .deployment import load_strategy_deployment
+    deployment = load_strategy_deployment(repo_root / "strategies", release.release_id)
+    if deployment.release_hash != release.release_hash:
+        raise RuntimeError("prepared release differs from committed deployment")
     return release
 
 

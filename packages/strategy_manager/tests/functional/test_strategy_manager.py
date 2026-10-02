@@ -1,14 +1,9 @@
 from pathlib import Path
 import json
-import shutil
 import pytest
 from strategy_manager import (
     StrategyRegistry,
     StrategyFamily,
-    EvidenceRequiredError,
-    InvalidTransitionError,
-    PerformanceEvidence,
-    Qualification,
     RegistryError,
     ValidationError,
 )
@@ -16,21 +11,16 @@ from strategy_manager import (
 ROOT = Path(__file__).resolve().parents[4]
 
 
-@pytest.fixture
-def registry(tmp_path):
-    destination = tmp_path / "strategies"
-    shutil.copytree(ROOT / "strategies", destination)
-    return StrategyRegistry(destination)
-
-
-@pytest.mark.parametrize(
-    "family,version",
-    [("S001", "v1"), ("S001", "v2"), ("S002", "v1"), ("S003", "v1"), ("S007", "v1")],
-)
-def test_frozen_governance_remains_readable(registry, family, version):
-    assert registry.validate_version_governance(family, version) == "LEGACY_GOVERNANCE_ACCEPTED"
-    assert registry.get_version(family, version).release_hash
-    assert registry.validate_all()["versions"] == 5
+@pytest.mark.parametrize("schema", [1, 2, 3, True, "4", None])
+def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schema):
+    registry = StrategyRegistry(tmp_path)
+    path = tmp_path / "S900/versions/v1.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"schema_version": schema}))
+    before = path.read_bytes()
+    with pytest.raises(RegistryError, match="schema_version must be 4"):
+        registry.get_version("S900", "v1")
+    assert path.read_bytes() == before
 
 
 def test_retired_writers_and_models_are_unavailable():
@@ -51,64 +41,6 @@ def test_retired_writers_and_models_are_unavailable():
         "FreezeApproval",
     ):
         assert name not in sm.__all__ and not hasattr(sm, name)
-
-
-def test_frozen_payload_tampering_is_rejected(registry):
-    path = registry.root / "S001/versions/v1.json"
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    payload["strategy_payload"]["tampered"] = True
-    path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises((RegistryError, ValidationError, ValueError)):
-        registry.get_version("S001", "v1")
-
-
-@pytest.mark.parametrize("mode", ["missing", "duplicate", "wrong_hash"])
-def test_historical_acceptance_cannot_be_removed_duplicated_or_rebound(registry, mode):
-    path = registry.root / "S001/lifecycle.jsonl"
-    events = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-    accepted = next(
-        e
-        for e in events
-        if e["version"] == "v1" and e["event_type"] == "LEGACY_GOVERNANCE_ACCEPTED"
-    )
-    if mode == "missing":
-        events.remove(accepted)
-    elif mode == "duplicate":
-        events.append(accepted.copy())
-    else:
-        accepted["release_hash"] = "0" * 64
-    path.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
-    with pytest.raises(EvidenceRequiredError):
-        registry.validate_version_governance("S001", "v1")
-
-
-def test_historical_credential_chain_rejects_tampering(registry):
-    path = registry.root / "S007/credentials/SGC-S007-002.jsonl"
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-    rows[0]["reason"] = "changed"
-    path.write_text("".join(json.dumps(e) + "\n" for e in rows), encoding="utf-8")
-    with pytest.raises((RegistryError, ValidationError, ValueError)):
-        registry.validate_all()
-
-
-def test_lifecycle_still_requires_forward_evidence(registry):
-    with pytest.raises(EvidenceRequiredError, match="PAPER_FORWARD"):
-        registry.promote_version("S007", "v1", actor="test", reason="no evidence", evidence_ids=[])
-    source = registry.evidence("S007", "v1")[0].to_dict()
-    source.update(
-        evidence_id="EVD-TEST-FORWARD",
-        phase="PAPER_FORWARD",
-        period_start="2026-10-01",
-        period_end="2026-10-02",
-    )
-    registry.record_evidence(PerformanceEvidence.from_dict(source))
-    registry.promote_version(
-        "S007", "v1", actor="test", reason="forward evidence", evidence_ids=["EVD-TEST-FORWARD"]
-    )
-    assert registry.current_qualification("S007", "v1") is Qualification.LIVE_READY
-    registry.retire_version("S007", "v1", actor="test", reason="retire")
-    with pytest.raises(InvalidTransitionError):
-        registry.promote_version("S007", "v1", actor="test", reason="invalid", evidence_ids=[])
 
 
 def test_family_registration_still_validates_names_and_identity(tmp_path):

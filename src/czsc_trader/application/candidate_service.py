@@ -194,8 +194,6 @@ def register_candidate(
 
 
 def _registered_root(context, record):
-    if record.schema_version == 1:
-        return context.research_registry_root
     return context.experiments_root / record.key.strategy_id / record.origin.experiment_id
 
 

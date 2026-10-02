@@ -4,7 +4,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .service import BacktestRequestV2
+    from .service import BacktestRequest
 
 from .execution_data import BacktestExecutionData
 from .models import StrategySnapshot
@@ -13,7 +13,7 @@ from .signal_replay import SignalReplay
 
 def build_manifest(
     *,
-    request: BacktestRequestV2,
+    request: BacktestRequest,
     snapshot: StrategySnapshot,
     data: BacktestExecutionData,
     signals: SignalReplay,

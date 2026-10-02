@@ -42,7 +42,7 @@ def _requirement() -> InputRequirement:
 
 def _definition() -> RuntimeDefinition:
     return RuntimeDefinition(
-        schema_version=1,
+        schema_version=2,
         strategy_family_id="S007",
         version="v1",
         release_id="S007-v1",
@@ -84,7 +84,7 @@ def test_runtime_definition_binds_and_validates_tradable_symbol() -> None:
     assert definition.tradable_symbol == "588080.SH"
     with pytest.raises(RuntimeContractError, match="tradable_symbol"):
         RuntimeDefinition(
-            schema_version=1,
+            schema_version=2,
             strategy_family_id="S007",
             version="v1",
             release_id="S007-v1",
@@ -103,7 +103,7 @@ def test_runtime_definition_binds_and_validates_tradable_symbol() -> None:
 def test_runtime_definition_requires_input_capabilities() -> None:
     with pytest.raises(RuntimeContractError, match="input datasets"):
         RuntimeDefinition(
-            schema_version=1,
+            schema_version=2,
             strategy_family_id="S007",
             version="v1",
             release_id="S007-v1",

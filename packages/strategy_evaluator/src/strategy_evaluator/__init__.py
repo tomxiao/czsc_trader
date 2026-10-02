@@ -75,7 +75,7 @@ from .audit_models import (
     StressScenario,
     StressScenarioResult,
 )
-from .standards import OPC_V1, OPC_V2, OPC_V3, EvaluationStandard, MarginSet, resolve_margins
+from .standards import OPC_V3, EvaluationStandard, MarginSet, resolve_margins
 from .validation import validate_protocol
 from .evaluator import rank_candidates, screen_candidates
 from .noninferiority import compare_observation
@@ -218,8 +218,6 @@ __all__ = [
     "StressScenarioResult",
     "EvaluationStandard",
     "MarginSet",
-    "OPC_V1",
-    "OPC_V2",
     "OPC_V3",
     "resolve_margins",
     "validate_protocol",

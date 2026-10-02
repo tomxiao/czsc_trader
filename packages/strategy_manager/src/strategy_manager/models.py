@@ -326,14 +326,14 @@ class StrategyVersion:
     parent_version: str | None
     change_summary: str
     source_experiment: str
-    source_candidate: int | str | None
+    source_candidate: str
     selection_data_cutoff: str
     forward_start: str
     strategy_payload: dict[str, Any]
-    release_hash: str | None
-    governance: dict[str, str] | FreezeGovernance | None = None
-    governance_hash: str | None = None
-    origin: CandidateOrigin | None = None
+    release_hash: str
+    governance: FreezeGovernance
+    governance_hash: str
+    origin: CandidateOrigin
 
     FIELDS: ClassVar[tuple[str, ...]] = (
         "schema_version",
@@ -350,119 +350,33 @@ class StrategyVersion:
         "release_hash",
     )
 
+    def __post_init__(self):
+        from .freeze_contracts import CandidateOrigin, FreezeGovernance
+
+        if type(self.schema_version) is not int or self.schema_version != 4:
+            raise ValidationError("strategy version schema_version must be 4")
+        if not isinstance(self.origin, CandidateOrigin) or not isinstance(self.governance, FreezeGovernance):
+            raise ValidationError("strategy version requires typed origin and governance")
+        require_sha256(self.release_hash, "release_hash")
+        require_sha256(self.governance_hash, "governance_hash")
+        require_string(self.source_candidate, "source_candidate")
+
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> StrategyVersion:
-        schema_version = value.get("schema_version")
-        if schema_version == 4 and type(schema_version) is int:
-            from .freeze_store import version_from_dict
-            return version_from_dict(value)
-        optional = ("governance", "governance_hash") if schema_version in {2, 3} else ()
-        require_exact_fields(value, cls.FIELDS, optional)
-        if schema_version not in {1, 2, 3} or isinstance(schema_version, bool):
-            raise ValidationError("strategy version schema_version must be 1, 2 or 3")
-        strategy_id = require_strategy_id(value["strategy_id"])
-        version = require_version(value["version"])
-        release_id = require_string(value["release_id"], "release_id")
-        if release_id != f"{strategy_id}-{version}":
-            raise ValidationError("release_id must equal strategy_id-version")
-        parent = value["parent_version"]
-        if parent is not None:
-            parent = require_version(parent)
-        payload = value["strategy_payload"]
-        if not isinstance(payload, dict) or not payload:
-            raise ValidationError("strategy_payload must be a nonempty JSON object")
-        governance = value.get("governance")
-        governance_hash = value.get("governance_hash")
-        if schema_version in {2, 3}:
-            if not isinstance(governance, dict):
-                raise ValidationError(
-                    f"schema v{schema_version} strategy version requires governance"
-                )
-            required_governance = (
-                {
-                    "review_id",
-                    "candidate_snapshot_hash",
-                    "evaluation_mandate_hash",
-                    "adjudication_report_hash",
-                    "human_decision_hash",
-                    "runtime_acceptance_hash",
-                }
-                if schema_version == 2
-                else {
-                    "credential_id",
-                    "candidate_submission_seal_hash",
-                    "adjudication_seal_hash",
-                    "approval_seal_hash",
-                    "candidate_snapshot_hash",
-                    "evaluation_mandate_hash",
-                    "adjudication_report_hash",
-                }
-            )
-            if set(governance) != required_governance:
-                raise ValidationError("strategy version governance fields are incomplete")
-            identity_field = "review_id" if schema_version == 2 else "credential_id"
-            governance = {
-                identity_field: require_identifier(governance[identity_field], identity_field),
-                **{
-                    name: require_sha256(governance[name], name)
-                    for name in required_governance - {identity_field}
-                },
-            }
-            governance_hash = require_sha256(governance_hash, "governance_hash")
-            if governance_hash != canonical_sha256(governance):
-                raise ValidationError("governance_hash does not match governance")
-        elif governance is not None or governance_hash is not None:
-            raise ValidationError("schema v1 strategy version must not contain governance")
-        instance = cls(
-            schema_version=int(schema_version),
-            strategy_id=strategy_id,
-            version=version,
-            release_id=release_id,
-            parent_version=parent,
-            change_summary=require_string(value["change_summary"], "change_summary"),
-            source_experiment=require_string(value["source_experiment"], "source_experiment"),
-            source_candidate=value["source_candidate"],
-            selection_data_cutoff=require_date(
-                value["selection_data_cutoff"], "selection_data_cutoff"
-            ),
-            forward_start=require_date(value["forward_start"], "forward_start"),
-            strategy_payload=payload,
-            release_hash=require_sha256(value["release_hash"], "release_hash", allow_none=True),
-            governance=governance,
-            governance_hash=governance_hash,
-        )
-        if instance.release_hash and instance.release_hash != canonical_sha256(
-            instance.release_payload()
-        ):
-            raise ValidationError("release_hash does not match the release payload")
-        return instance
+        if type(value.get("schema_version")) is not int or value["schema_version"] != 4:
+            raise ValidationError("strategy version schema_version must be 4")
+        from .freeze_store import version_from_dict
+        return version_from_dict(value)
 
     def release_payload(self) -> dict[str, Any]:
-        if self.schema_version in {2, 3}:
-            return {
-                "schema_version": self.schema_version,
-                "strategy_id": self.strategy_id,
-                "version": self.version,
-                "release_id": self.release_id,
-                "strategy_payload": self.strategy_payload,
-            }
         value = self.to_dict()
         value.pop("release_hash")
         return value
 
     def to_dict(self) -> dict[str, Any]:
         value = _enum_dict(self)
-        if self.schema_version == 4:
-            from .freeze_contracts import CandidateOrigin, FreezeGovernance
-            if not isinstance(self.origin, CandidateOrigin) or not isinstance(self.governance, FreezeGovernance):
-                raise ValidationError("schema 4 requires typed origin and governance")
-            value["origin"] = self.origin.to_dict()
-            value["governance"] = self.governance.to_dict()
-        else:
-            value.pop("origin")
-        if self.schema_version == 1:
-            value.pop("governance")
-            value.pop("governance_hash")
+        value["origin"] = self.origin.to_dict()
+        value["governance"] = self.governance.to_dict()
         return value
 
 

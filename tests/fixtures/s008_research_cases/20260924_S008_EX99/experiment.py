@@ -38,6 +38,7 @@ class Experiment(ResearchExperiment):
             development_cutoff=date(2026, 9, 2),
             random_seed=8008,
             allowed_datasets=("etf.ohlcv",),
+            subjects=("518880.SH",),
             protocol=ExperimentProtocol(
                 stage=ExperimentStage.PROTOTYPE,
                 first_principles=(
@@ -57,6 +58,9 @@ class Experiment(ResearchExperiment):
             dependencies=(ExperimentDependency("czsc-dataflows", "0.1.0"),),
             capabilities=ExperimentCapabilities(searches_parameters=True),
         )
+
+    def synthetic_precheck(self):
+        assert self.definition.subjects == ("518880.SH",)
 
     def execute(self, context) -> ExperimentResult:
         context.require_capability(ExperimentCapability.SEARCH_PARAMETERS)

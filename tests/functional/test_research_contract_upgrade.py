@@ -279,7 +279,7 @@ def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation
         )
 
 
-def test_historical_receipt_preserves_original_hash_and_mapping_trace(tmp_path):
+def test_historical_receipt_is_rejected_without_modifying_original(tmp_path):
     from strategy_runtime import canonical_sha256
     from research_experiment import load_experiment_input
 
@@ -304,8 +304,8 @@ def test_historical_receipt_preserves_original_hash_and_mapping_trace(tmp_path):
     envelope = {"schema_version": 1, "receipt": receipt, "receipt_sha256": digest, "result": result}
     (tmp_path / "execution_envelope.json").write_text(json.dumps(envelope))
     original = (tmp_path / "execution_envelope.json").read_bytes()
-    loaded = load_experiment_input(tmp_path, expected_receipt_sha256=digest)
-    assert loaded.receipt_sha256 == digest
+    with pytest.raises(ValueError, match="schema_version must be 2"):
+        load_experiment_input(tmp_path, expected_receipt_sha256=digest)
     assert (tmp_path / "execution_envelope.json").read_bytes() == original
 
 

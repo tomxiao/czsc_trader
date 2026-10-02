@@ -1,8 +1,9 @@
 """Boundary regressions for the September code review; all state is temporary."""
 
 import http.client
-from pathlib import Path
 import shutil
+from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
+
 import subprocess
 import sys
 from threading import Thread
@@ -126,12 +127,10 @@ def test_metrics_include_initial_capital(values, expected):
     assert observation.max_drawdown == pytest.approx(expected)
 
 
-def test_frozen_loader_rejects_changed_code_even_with_updated_binding(tmp_path):
-    root = Path(__file__).resolve().parents[2]
-    shutil.copytree(
-        root / "strategies", tmp_path / "strategies",
-        ignore=shutil.ignore_patterns("__pycache__"),
-    )
+def test_frozen_loader_rejects_changed_code_even_with_updated_binding(current_frozen, tmp_path):
+    context, _ = current_frozen
+    shutil.copytree(context.strategy_root, tmp_path / "copy/strategies")
+    root = tmp_path / "copy"
     script = r'''
 import json, sys
 from pathlib import Path
@@ -139,11 +138,11 @@ from strategy_runtime import StrategyRelease, RuntimeCompatibilityError
 from strategy_runtime.loader import StrategyLoader
 from strategy_runtime.implementation_identity import implementation_sha256
 strategy_root = Path(sys.argv[1]) / "strategies"
-package = strategy_root / "S007/releases/v1/runtime/strategy_runtime"
+package = strategy_root / "S900/releases/v1/src/strategy_runtime"
 release = StrategyRelease.from_mapping(json.loads(Path(sys.argv[2]).read_text(encoding="utf-8")))
 if sys.argv[3] == "loaded":
     StrategyLoader(strategy_root).load(release)
-source = package / "strategies/s007_v1.py"
+source = package / "strategies/candidate_fixture.py"
 source.write_text(source.read_text(encoding="utf-8") + "\n# changed after startup\n", encoding="utf-8")
 binding_path = package.parent.parent / "runtime_binding.json"
 binding = json.loads(binding_path.read_text(encoding="utf-8"))
@@ -160,8 +159,8 @@ else:
 '''
     for mode in ("loaded", "not-yet-loaded"):
         completed = subprocess.run([
-            sys.executable, "-B", "-c", script, str(tmp_path),
-            str(root / "strategies/S007/versions/v1.json"), mode,
+            sys.executable, "-B", "-c", script, str(root),
+            str(root / "strategies/S900/versions/v1.json"), mode,
         ], capture_output=True, text=True, timeout=30)
         assert completed.returncode == 0, completed.stdout + completed.stderr
 

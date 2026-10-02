@@ -40,7 +40,7 @@ from strategy_evaluator import (
 
 PROTOCOL = {
     "schema_version": 1,
-    "standard_version": "opc-v2",
+    "standard_version": "opc-v3",
     "experiment_id": "0904_TEST",
     "research_objective": "改善震荡区间表现",
     "development_cutoff": "2026-09-02",
@@ -60,6 +60,24 @@ PROTOCOL = {
     ],
     "candidate_manifest": "candidate_manifest.json",
 }
+
+
+@pytest.mark.parametrize("standard", ["opc-v1", "opc-v2", "opc-v4"])
+def test_retired_or_unknown_standard_is_rejected(standard):
+    from strategy_evaluator import resolve_margins
+
+    protocol = EvaluationProtocol.from_dict({**PROTOCOL, "standard_version": standard})
+    with pytest.raises(ValidationError, match="unsupported standard"):
+        resolve_margins(protocol)
+
+
+def test_legacy_pressure_labels_cannot_satisfy_current_stress_contract():
+    from strategy_evaluator import audit_stress_results
+
+    results = tuple(StressScenarioResult(name, "a" * 64, ()) for name in (
+        "fee_x2", "slippage_15bp", "slippage_30bp", "slippage_50bp",
+    ))
+    assert audit_stress_results("champion", "incumbent", "a" * 64, (), results).status is AuditStatus.INSUFFICIENT
 
 
 def _observation(candidate_id: str, window: str, **changes) -> MetricObservation:

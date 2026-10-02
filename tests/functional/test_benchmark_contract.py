@@ -53,6 +53,7 @@ def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence():
     [
         {"lot_size": True},
         {"lot_size": 0},
+        {"lot_size": 1},
         {"premium": float("nan")},
         {"premium": 0.1},
         {"price_tick": 0.0},
@@ -73,6 +74,8 @@ def test_invalid_limit_contract_is_rejected_before_execution(kwargs):
 
 
 def test_contract_fingerprints_roundtrip_and_reject_implicit_defaults():
+    next_open = EvaluationBenchmark(NextOpenBuyHold(lot_size=1))
+    assert EvaluationBenchmark.from_dict(next_open.to_dict()) == next_open
     contract = EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 1000000))
     assert EvaluationBenchmark.from_dict(contract.to_dict()) == contract
     for field, value in (

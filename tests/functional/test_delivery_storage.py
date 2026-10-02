@@ -115,43 +115,11 @@ def test_seal_includes_deliveries_and_blocks_append_and_overwrite(context):
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.FAIL
 
 
-def test_new_reference_rejects_legacy_directory_alias(context):
-    receipt = assemble_delivery(context, Deliverable(definition(), content()))
-    legacy = d.LegacyDeliveryReference(
-        "S900", d.DeliveryStage.COMPONENTS, 1, receipt.reference.content_sha256
-    )
-    shutil.copytree(
-        published(context, receipt), context.research_root / "S900/deliveries/COMPONENTS/1"
-    )
-    assert validate_delivery(context, legacy).status is d.ValidationStatus.FAIL
 
 
-def test_schema_three_read_only_and_explicit_predecessor(context):
-    from czsc_trader.research_tools import _delivery_v3 as old
-    from czsc_trader.application import _delivery_reader_v3 as reader
-
-    old_definition = old.DeliveryDefinition("S900", old.DeliveryStage.COMPONENTS, 1)
-    old_content = old.DeliveryContent.from_dict(content().to_dict())
-    root = context.research_root / "S900/deliveries/COMPONENTS/1"
-    root.mkdir(parents=True)
-    (root / "delivery.json").write_bytes(
-        old._canonical({"schema_version": 3, "definition": old_definition, "content": old_content})
-    )
-    (root / "report.md").write_bytes(reader._report(old_definition, old_content, root))
-    files = reader._manifest(root)
-    ref = old.DeliveryReference("S900", old.DeliveryStage.COMPONENTS, 1, old._digest(files))
-    (root / "receipt.json").write_bytes(old._canonical(old.DeliveryReceipt(ref, files)))
-    legacy = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text())).reference
-    assert isinstance(legacy, d.LegacyDeliveryReference)
-    before = tree(root)
-    receipt = assemble_delivery(
-        context, Deliverable(replace(definition(), predecessors=(legacy,)), content())
-    )
-    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
-    assert tree(root) == before
 
 
-def test_candidate_entities_owned_by_experiment_and_legacy_record_readable(completed):
+def test_candidate_entities_owned_by_experiment_and_old_record_rejected(completed):
     context = completed[0]
     registry = StrategyRegistry(context.research_registry_root)
     key = CandidateKey("S900", "C001")
@@ -164,17 +132,19 @@ def test_candidate_entities_owned_by_experiment_and_legacy_record_readable(compl
     seal(root)
     assert registry.register_candidate(record, experiments_root=context.experiments_root) == record
     validate_experiment_archive(root)
-    # Construct an actual old-format registry fixture, then use only public reads.
-    shutil.copytree(root / "objects", context.research_registry_root / "objects")
-    old = replace(record, schema_version=1)
+    from strategy_manager import CandidateRegistration
+    for field in ("schema_version", "identity_schema_version"):
+        incomplete = record.to_dict()
+        del incomplete[field]
+        with pytest.raises(ValidationError, match="unsupported candidate"):
+            CandidateRegistration.from_dict(incomplete)
+    raw = record.to_dict()
+    raw["schema_version"] = 1
     registration_path = context.research_registry_root / "S900/candidates/C001.json"
-    registration_path.write_text(
-        json.dumps({"record": old.to_dict(), "record_sha256": old.record_sha256})
-    )
+    registration_path.write_text(json.dumps({"record": raw, "record_sha256": record.record_sha256}))
     before = tree(context.research_registry_root)
-    assert load_candidate(context, key).candidate_id == "C001"
-    with pytest.raises(ValidationError, match="schema 2"):
-        registry.register_candidate(old, experiments_root=context.experiments_root)
+    with pytest.raises(ValidationError, match="unsupported candidate registration schema"):
+        load_candidate(context, key)
     assert tree(context.research_registry_root) == before
 
 

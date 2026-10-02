@@ -10,8 +10,8 @@ BENCHMARK_EXECUTION_VERSION = "buyhold-execution-v1"
 
 
 def _lot(value: int) -> None:
-    if type(value) is not int or value <= 0 or value % 100:
-        raise ValueError("lot_size must be a positive multiple of SRT's 100-share lot")
+    if type(value) is not int or value <= 0:
+        raise ValueError("lot_size must be a positive integer")
 
 
 @dataclass(frozen=True)
@@ -32,6 +32,8 @@ class LimitBuyHold:
 
     def __post_init__(self):
         _lot(self.lot_size)
+        if self.lot_size % 100:
+            raise ValueError("limit lot_size must be a multiple of SRT's 100-share lot")
         for name in ("premium", "price_tick", "price_limit_ratio"):
             value = getattr(self, name)
             if type(value) is not float or not math.isfinite(value):

@@ -12,7 +12,7 @@ class MarginSet:
     profit_factor_retention: float = 0.85
     profit_factor_floor: float = 1.0
     minimum_closed_trades: int = 10
-    negative_calmar_requires_positive: bool = True
+    negative_calmar_requires_positive: bool = False
 
 
 @dataclass(frozen=True)
@@ -21,16 +21,14 @@ class EvaluationStandard:
     margins: MarginSet
 
 
-OPC_V1 = EvaluationStandard("opc-v1", MarginSet())
-OPC_V2 = EvaluationStandard("opc-v2", replace(MarginSet(), negative_calmar_requires_positive=False))
-OPC_V3 = EvaluationStandard("opc-v3", OPC_V2.margins)
+OPC_V3 = EvaluationStandard("opc-v3", MarginSet())
 
 _HIGHER_IS_TIGHTER = {"net_cagr_retention", "calmar_retention", "profit_factor_retention", "profit_factor_floor", "minimum_closed_trades"}
 _LOWER_IS_TIGHTER = {"max_drawdown_absolute", "max_drawdown_relative"}
 
 
 def resolve_margins(protocol: EvaluationProtocol) -> MarginSet:
-    standards = {item.version: item for item in (OPC_V1, OPC_V2, OPC_V3)}
+    standards = {OPC_V3.version: OPC_V3}
     standard = standards.get(protocol.standard_version)
     if standard is None:
         raise ValidationError(f"unsupported standard: {protocol.standard_version}", "UNSUPPORTED_STANDARD")
@@ -43,6 +41,6 @@ def resolve_margins(protocol: EvaluationProtocol) -> MarginSet:
         value = int(raw_value) if name == "minimum_closed_trades" else float(raw_value)
         loosened = (name in _HIGHER_IS_TIGHTER and value < default) or (name in _LOWER_IS_TIGHTER and value > default)
         if loosened:
-            raise ValidationError(f"margin {name} cannot loosen OPC-v1 default", "MARGIN_LOOSENED")
+            raise ValidationError(f"margin {name} cannot loosen OPC-v3 default", "MARGIN_LOOSENED")
         changes[name] = value
     return replace(defaults, **changes)

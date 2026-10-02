@@ -307,19 +307,17 @@ class ExperimentDefinition:
     random_seed: int
     allowed_datasets: tuple[str, ...]
     protocol: ExperimentProtocol
+    data_scope: ExperimentDataScope
     subjects: tuple[str, ...] = ()
     validation_cutoff: date | None = None
     dependencies: tuple[ExperimentDependency, ...] = ()
     capabilities: ExperimentCapabilities = ExperimentCapabilities()
-    data_scope: ExperimentDataScope | None = None
 
     def __post_init__(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version not in {1, 2}:
-            raise ValueError("experiment schema_version must be 1 or 2")
-        if self.schema_version == 2 and not isinstance(self.data_scope, ExperimentDataScope):
+        if type(self.schema_version) is not int or self.schema_version != 2:
+            raise ValueError("experiment schema_version must be 2")
+        if not isinstance(self.data_scope, ExperimentDataScope):
             raise ValueError("schema 2 requires an ExperimentDataScope")
-        if self.schema_version == 1 and self.data_scope is not None:
-            raise ValueError("historical schema 1 cannot declare data_scope")
         experiment_id = _text(self.experiment_id, "experiment_id")
         strategy_id = _text(self.strategy_id, "strategy_id")
         match = _EXPERIMENT_ID.fullmatch(experiment_id)
@@ -359,9 +357,7 @@ class ExperimentDefinition:
             raise ValueError("an experiment cannot depend on itself")
         if any(_EXPERIMENT_ID.fullmatch(item).group(1) != strategy_id for item in predecessors):
             raise ValueError("predecessor experiments must belong to the same strategy")
-        sealed = self.data_scope is ExperimentDataScope.SEALED_VALIDATION or (
-            self.schema_version == 1 and self.mode is ExperimentMode.FORMAL
-        )
+        sealed = self.data_scope is ExperimentDataScope.SEALED_VALIDATION
         if sealed:
             if self.mode is not ExperimentMode.FORMAL:
                 raise ValueError("sealed validation requires FORMAL execution")
@@ -418,8 +414,7 @@ class ExperimentDefinition:
         }
         if self.subjects:
             payload["subjects"] = self.subjects
-        if self.schema_version == 2:
-            payload["data_scope"] = self.data_scope.value
+        payload["data_scope"] = self.data_scope.value
         return _canonical_sha256(payload)
 
 
@@ -613,8 +608,8 @@ class ExperimentTrace:
     capabilities: tuple[ExperimentCapability, ...]
     operations: tuple[str, ...]
     data_requests: tuple[Mapping[str, Any], ...]
+    data_scope: ExperimentDataScope
     evaluations: tuple[EvaluationRecord, ...] = ()
-    data_scope: ExperimentDataScope | None = None
 
     def __post_init__(self) -> None:
         capabilities = tuple(self.capabilities)
@@ -627,7 +622,7 @@ class ExperimentTrace:
         evaluations = tuple(self.evaluations)
         if not all(isinstance(item, EvaluationRecord) for item in evaluations):
             raise TypeError("trace evaluations require EvaluationRecord")
-        if self.data_scope is not None and not isinstance(self.data_scope, ExperimentDataScope):
+        if not isinstance(self.data_scope, ExperimentDataScope):
             raise TypeError("trace data_scope must be ExperimentDataScope")
         object.__setattr__(self, "capabilities", capabilities)
         object.__setattr__(self, "operations", operations)
@@ -640,7 +635,7 @@ class ExperimentTrace:
             "operations": list(self.operations),
             "data_requests": _thaw_json(self.data_requests),
             "evaluations": [item.to_dict() for item in self.evaluations],
-            "data_scope": None if self.data_scope is None else self.data_scope.value,
+            "data_scope": self.data_scope.value,
         }
 
 
@@ -675,8 +670,8 @@ class ExperimentReceipt:
         artifact_sha256: Mapping[str, str],
         trace: ExperimentTrace,
     ) -> ExperimentReceipt:
-        if type(schema_version) is not int or schema_version not in {1, 2}:
-            raise ValueError("experiment receipt schema_version must be 1 or 2")
+        if type(schema_version) is not int or schema_version != 2:
+            raise ValueError("experiment receipt schema_version must be 2")
         if _EXPERIMENT_ID.fullmatch(experiment_id) is None:
             raise ValueError("receipt experiment_id is invalid")
         identities = {

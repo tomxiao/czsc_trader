@@ -33,7 +33,7 @@ from .srt_bridge import (
 
 
 @dataclass(frozen=True)
-class BacktestRequestV2:
+class BacktestRequest:
     symbol: str
     asset_type: str
     start: date
@@ -63,7 +63,7 @@ def _write_json(path: Path, value: object) -> None:
 
 
 def _validate_execution_window(
-    request: BacktestRequestV2,
+    request: BacktestRequest,
     execution_data: BacktestExecutionData,
 ) -> None:
     if request.start > request.end:
@@ -86,10 +86,10 @@ def _validate_execution_window(
         raise ValueError("request window differs from execution data evaluation sessions")
 
 
-def run_backtest_v2(
+def _run_backtest(
     *,
     snapshot: StrategySnapshot,
-    request: BacktestRequestV2,
+    request: BacktestRequest,
     srt_data_root: Path,
     outputs_root: Path,
     run_date: date,

@@ -305,8 +305,8 @@ class RuntimeDefinition:
     history: HistoryPolicy = field(default_factory=HistoryPolicy)
 
     def __post_init__(self) -> None:
-        if self.schema_version not in {1, 2}:
-            raise RuntimeContractError("runtime definition schema_version must be 1 or 2")
+        if type(self.schema_version) is not int or self.schema_version != 2:
+            raise RuntimeContractError("runtime definition schema_version must be 2")
         if not _FAMILY_ID.fullmatch(self.strategy_family_id):
             raise RuntimeContractError("strategy_family_id must look like S001")
         if self.identity_kind == "RELEASE":
@@ -356,53 +356,51 @@ class RuntimeDefinition:
             },
             "parameters_sha256": self.parameters.sha256,
         }
-        # Keep the five existing frozen identities byte-for-byte stable.
-        if self.schema_version == 2:
-            identity.update(identity_kind=self.identity_kind, candidate_id=self.candidate_id)
-            identity["contracts"] = {
-                "inputs": [
-                    {
-                        "name": item.name,
-                        "dataset": item.dataset,
-                        "subject": item.subject,
-                        "frequency": item.frequency,
-                        "lookback_sessions": item.lookback_sessions,
-                        "cutoff_rule": item.cutoff_rule.value,
-                        "maximum_staleness_days": item.maximum_staleness_days,
-                        **(
-                            {"alignment": item.alignment.identity_payload()}
-                            if item.alignment is not None
-                            else {}
-                        ),
-                    }
-                    for item in self.inputs.requirements
-                ],
-                "decision": {
-                    "output_kind": self.decision.output_kind,
-                    "minimum_target": self.decision.minimum_target,
-                    "maximum_target": self.decision.maximum_target,
-                    "effective_time_rule": self.decision.effective_time_rule,
-                },
-                "execution": {
-                    "policy_type": self.execution.policy_type,
-                    "settings": self.execution.settings,
-                },
-                "monitoring": {
-                    "policy_type": self.monitoring.policy_type,
-                    "rules": self.monitoring.rules,
-                },
-                "capabilities": {
-                    "datasets": self.capabilities.datasets,
-                    "order_types": self.capabilities.order_types,
-                    "checkpoints": self.capabilities.checkpoints,
-                },
-                "state_mode": self.state_mode,
-                "history": {
-                    "mode": self.history.mode,
-                    "canonical_start": self.history.canonical_start,
-                    "required_input_start": self.history.required_input_start,
-                },
-            }
+        identity.update(identity_kind=self.identity_kind, candidate_id=self.candidate_id)
+        identity["contracts"] = {
+            "inputs": [
+                {
+                    "name": item.name,
+                    "dataset": item.dataset,
+                    "subject": item.subject,
+                    "frequency": item.frequency,
+                    "lookback_sessions": item.lookback_sessions,
+                    "cutoff_rule": item.cutoff_rule.value,
+                    "maximum_staleness_days": item.maximum_staleness_days,
+                    **(
+                        {"alignment": item.alignment.identity_payload()}
+                        if item.alignment is not None
+                        else {}
+                    ),
+                }
+                for item in self.inputs.requirements
+            ],
+            "decision": {
+                "output_kind": self.decision.output_kind,
+                "minimum_target": self.decision.minimum_target,
+                "maximum_target": self.decision.maximum_target,
+                "effective_time_rule": self.decision.effective_time_rule,
+            },
+            "execution": {
+                "policy_type": self.execution.policy_type,
+                "settings": self.execution.settings,
+            },
+            "monitoring": {
+                "policy_type": self.monitoring.policy_type,
+                "rules": self.monitoring.rules,
+            },
+            "capabilities": {
+                "datasets": self.capabilities.datasets,
+                "order_types": self.capabilities.order_types,
+                "checkpoints": self.capabilities.checkpoints,
+            },
+            "state_mode": self.state_mode,
+            "history": {
+                "mode": self.history.mode,
+                "canonical_start": self.history.canonical_start,
+                "required_input_start": self.history.required_input_start,
+            },
+        }
         return canonical_sha256(identity)
 
 
@@ -524,14 +522,29 @@ class StrategyRelease:
     payload: Mapping[str, Any]
 
     @classmethod
+    def _from_runtime_identity(
+        cls, *, strategy_family_id: str, version: str, release_id: str,
+        release_hash: str, payload: Mapping[str, Any],
+    ) -> "StrategyRelease":
+        """Internal runtime view; deployment authentication remains mandatory at loading."""
+        instance = object.__new__(cls)
+        for name, value in (("strategy_family_id", strategy_family_id), ("version", version),
+                            ("release_id", release_id), ("release_hash", release_hash)):
+            object.__setattr__(instance, name, _text(value, name))
+        instance._validate_identity()
+        if not _SHA256.fullmatch(release_hash):
+            raise RuntimeContractError("release_hash must be lowercase SHA-256")
+        object.__setattr__(instance, "payload", _json_mapping(payload, "strategy payload"))
+        return instance
+
+    @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> "StrategyRelease":
         if not isinstance(value, Mapping):
             raise RuntimeContractError("strategy release must be a mapping")
         raw = dict(value)
-        if type(raw.get("schema_version")) is not int or raw["schema_version"] not in {1, 2, 3, 4}:
+        if type(raw.get("schema_version")) is not int or raw["schema_version"] != 4:
             raise RuntimeContractError("unsupported strategy release schema")
-        if raw["schema_version"] == 4:
-            _validate_freeze_identity(raw)
+        _validate_freeze_identity(raw)
         required = {"strategy_id", "version", "release_id", "release_hash", "strategy_payload"}
         missing = required - set(raw)
         if missing:
@@ -539,30 +552,14 @@ class StrategyRelease:
         release_hash = str(raw["release_hash"])
         if not _SHA256.fullmatch(release_hash):
             raise RuntimeContractError("release_hash must be lowercase SHA-256")
-        if raw.get("schema_version") in {2, 3}:
-            release_payload = {
-                "schema_version": raw["schema_version"],
-                "strategy_id": raw["strategy_id"],
-                "version": raw["version"],
-                "release_id": raw["release_id"],
-                "strategy_payload": raw["strategy_payload"],
-            }
-        else:
-            release_payload = {key: item for key, item in raw.items() if key != "release_hash"}
+        release_payload = {key: item for key, item in raw.items() if key != "release_hash"}
         if canonical_sha256(release_payload) != release_hash:
             raise RuntimeContractError("release_hash does not match the complete frozen record")
-        instance = object.__new__(cls)
-        object.__setattr__(instance, "strategy_family_id", str(raw["strategy_id"]))
-        object.__setattr__(instance, "version", str(raw["version"]))
-        object.__setattr__(instance, "release_id", str(raw["release_id"]))
-        object.__setattr__(instance, "release_hash", release_hash)
-        object.__setattr__(
-            instance,
-            "payload",
-            _json_mapping(raw["strategy_payload"], "strategy payload"),
+        return cls._from_runtime_identity(
+            strategy_family_id=raw["strategy_id"], version=raw["version"],
+            release_id=raw["release_id"], release_hash=release_hash,
+            payload=raw["strategy_payload"],
         )
-        instance._validate_identity()
-        return instance
 
     def _validate_identity(self) -> None:
         if not _FAMILY_ID.fullmatch(self.strategy_family_id):

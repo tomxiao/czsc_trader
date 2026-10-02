@@ -163,6 +163,10 @@ def validate_experiment_manifest_metadata(
     experiment_dir = Path(experiment_dir).resolve()
     if not isinstance(metadata, dict):
         raise TypeError("experiment manifest metadata must be a dict")
+    if "schema_version" in metadata and (type(metadata["schema_version"]) is not int or metadata["schema_version"] != 1):
+        raise ValueError("experiment manifest schema_version must be 1")
+    if "integrity_repair" in metadata or "files" in metadata:
+        raise ValueError("experiment manifest metadata contains managed fields")
     try:
         serialized = json.dumps(metadata, ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError) as exc:
@@ -199,95 +203,6 @@ def build_experiment_manifest(
     return manifest
 
 
-def _validate_integrity_repair(
-    experiment_dir: Path,
-    manifest: dict[str, object],
-    files: dict[str, object],
-) -> None:
-    """Verify that a resealed archive preserves and explains its original manifest."""
-    schema_version = manifest.get("schema_version")
-    repair_identity = manifest.get("integrity_repair")
-    if schema_version == 1:
-        if repair_identity is not None:
-            raise ValueError("schema v1 experiment manifest must not declare integrity repair")
-        return
-    if schema_version != 2 or not isinstance(repair_identity, dict):
-        raise ValueError("resealed experiment manifest must use schema v2 integrity repair")
-
-    required = {
-        "record",
-        "record_sha256",
-        "supersedes",
-        "supersedes_sha256",
-    }
-    if set(repair_identity) != required:
-        raise ValueError("integrity repair identity is incomplete")
-    record_name = str(repair_identity["record"])
-    original_name = str(repair_identity["supersedes"])
-    if Path(record_name).name != record_name or Path(original_name).name != original_name:
-        raise ValueError("integrity repair files must be archive-root filenames")
-    for name, hash_key in (
-        (record_name, "record_sha256"),
-        (original_name, "supersedes_sha256"),
-    ):
-        current = files.get(name)
-        if not isinstance(current, dict):
-            raise ValueError(f"integrity repair file is absent from manifest: {name}")
-        if current.get("sha256") != repair_identity[hash_key]:
-            raise ValueError(f"integrity repair hash differs from manifest: {name}")
-
-    try:
-        original = json.loads((experiment_dir / original_name).read_text(encoding="utf-8"))
-        repair = json.loads((experiment_dir / record_name).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError(f"cannot read integrity repair chain: {exc}") from exc
-    if not isinstance(original, dict) or not isinstance(repair, dict):
-        raise ValueError("integrity repair chain files must contain JSON objects")
-    experiment_id = manifest.get("experiment_id")
-    if (
-        original.get("experiment_id") != experiment_id
-        or repair.get("experiment_id") != experiment_id
-    ):
-        raise ValueError("integrity repair experiment identity differs")
-    if repair.get("decision") != "PRESERVE_ORIGINAL_MANIFEST_AND_RESEAL_CURRENT_ARCHIVE":
-        raise ValueError("integrity repair decision is invalid")
-
-    original_identity = repair.get("original_manifest")
-    if not isinstance(original_identity, dict):
-        raise ValueError("integrity repair lacks original manifest identity")
-    if original_identity.get("path") != original_name:
-        raise ValueError("integrity repair original manifest path differs")
-    original_record = files[original_name]
-    if original_identity.get("bytes") != original_record.get("bytes") or original_identity.get(
-        "sha256"
-    ) != original_record.get("sha256"):
-        raise ValueError("integrity repair original manifest identity differs")
-
-    original_files = original.get("files")
-    corrections = repair.get("corrected_files")
-    if not isinstance(original_files, dict) or not isinstance(corrections, list):
-        raise ValueError("integrity repair corrections are invalid")
-    correction_records: dict[str, dict[str, object]] = {}
-    for item in corrections:
-        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
-            raise ValueError("integrity repair correction is invalid")
-        name = str(item["path"])
-        if name in correction_records:
-            raise ValueError(f"duplicate integrity repair correction: {name}")
-        correction_records[name] = item
-
-    changed_names = {
-        name for name, old_record in original_files.items() if files.get(name) != old_record
-    }
-    if set(correction_records) != changed_names:
-        raise ValueError("integrity repair does not exactly explain manifest differences")
-    for name, correction in correction_records.items():
-        if correction.get("original_record") != original_files.get(name):
-            raise ValueError(f"integrity repair original record differs: {name}")
-        if correction.get("current_record") != files.get(name):
-            raise ValueError(f"integrity repair current record differs: {name}")
-
-
 def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
     """Validate required documents and every file declared by the manifest."""
     experiment_dir = Path(experiment_dir).resolve()
@@ -298,6 +213,12 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
     if "outputs/" in serialized or re.search(r"_R\d{2}", serialized):
         raise ValueError("experiment manifest must not reference outputs revisions")
     manifest = json.loads(serialized)
+    if not isinstance(manifest, dict):
+        raise ValueError("experiment manifest must be an object")
+    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
+        raise ValueError("experiment manifest schema_version must be 1")
+    if "integrity_repair" in manifest:
+        raise ValueError("experiment manifest must not declare integrity repair")
     _validate_strategy_experiment_identity(experiment_dir, manifest)
     files = manifest.get("files")
     if not isinstance(files, dict):
@@ -331,5 +252,4 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
             raise ValueError(f"file size differs from manifest: {relative_name}")
         if actual["sha256"] != expected.get("sha256"):
             raise ValueError(f"SHA-256 differs from manifest: {relative_name}")
-    _validate_integrity_repair(experiment_dir, manifest, files)
     return manifest

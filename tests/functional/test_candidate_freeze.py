@@ -472,24 +472,15 @@ def test_corrupt_commit_returns_unknown_and_blocks_version_read(inspection):
 
 
 def test_legacy_release_files_and_hashes_remain_unchanged():
-    from pathlib import Path
-    from czsc_trader.application import RepositoryContext, validate_release_package
+    from strategy_manager import StrategyVersion, ValidationError
 
-    root = Path(__file__).resolve().parents[2]
-    context = RepositoryContext.discover(root)
-    paths = tuple(sorted(context.strategy_root.glob("S*/versions/v*.json")))
-    legacy = [
-        p for p in paths if json.loads(p.read_text(encoding="utf-8"))["schema_version"] in (1, 2, 3)
-    ]
-    assert len(legacy) == 5
-    before = {p: p.read_bytes() for p in legacy}
-    registry = StrategyRegistry(context.strategy_root)
-    for path in legacy:
-        version = registry.get_version(path.parent.parent.name, path.stem)
-        assert StrategyRelease.from_mapping(version.to_dict()).release_hash == version.release_hash
-        registry.validate_version_governance(version.strategy_id, version.version)
-        validate_release_package(context, version.release_id)
-    assert before == {p: p.read_bytes() for p in legacy}
+    raw = {"schema_version": 3, "release_id": "S900-v1"}
+    before = json.dumps(raw, sort_keys=True)
+    with pytest.raises(ValidationError, match="schema_version must be 4"):
+        StrategyVersion.from_dict(raw)
+    with pytest.raises(Exception, match="unsupported strategy release schema"):
+        StrategyRelease.from_mapping(raw)
+    assert json.dumps(raw, sort_keys=True) == before
 
 
 def test_release_signal_divergence_blocks_freeze(inspection, monkeypatch):

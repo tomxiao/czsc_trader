@@ -185,16 +185,3 @@ def test_ties_use_competition_rank_and_never_candidate_id_as_economic_tiebreak()
         m.ComparisonStatus.TIED,
         m.ComparisonStatus.RANKED,
     ]
-
-
-def test_v1_formula_and_wire_remain_available_only_in_private_reader():
-    from strategy_evaluator import _research_models_v1 as old
-    from strategy_evaluator._research_assessment_v1 import assess_candidates as old_assess
-
-    old_request = old.CandidateAssessmentRequest.from_dict(request().to_dict())
-    panel = old_assess(old_request)
-    assert panel.formula_version == "research-assessment-v1"
-    assert len(panel.rows[0].diagnostics) == 9
-    assert old.AssessmentPanel.from_dict(panel.to_dict()) == panel
-    with pytest.raises(ValueError):
-        m.AssessmentPanel.from_dict(panel.to_dict())

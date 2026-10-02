@@ -47,23 +47,12 @@ def _read_document(path: Path, name: str) -> Mapping[str, Any]:
     return value
 
 
-class _HistoricalTrace(ExperimentTrace):
-    """Read-only schema 1 trace; preserves the original hash representation."""
-
-    def to_dict(self):
-        return {
-            "capabilities": [item.value for item in self.capabilities],
-            "operations": list(self.operations),
-            "data_requests": _thaw_json(self.data_requests),
-            "evaluations": _thaw_json(self.evaluations),
-        }
-
-
 def _trace_from_mapping(value: Any, *, schema_version: int) -> ExperimentTrace:
+    if type(schema_version) is not int or schema_version != 2:
+        raise ValueError("experiment receipt schema_version must be 2")
     payload = _exact_mapping(
         value,
-        {"capabilities", "operations", "data_requests", "evaluations"}
-        | ({"data_scope"} if schema_version == 2 else set()),
+        {"capabilities", "operations", "data_requests", "evaluations", "data_scope"},
         "experiment trace",
     )
     capabilities = payload["capabilities"]
@@ -82,10 +71,6 @@ def _trace_from_mapping(value: Any, *, schema_version: int) -> ExperimentTrace:
         parsed_capabilities = tuple(ExperimentCapability(item) for item in capabilities)
     except (TypeError, ValueError) as exc:
         raise ValueError("experiment trace contains an invalid capability") from exc
-    if schema_version == 1:
-        trace = _HistoricalTrace(parsed_capabilities, tuple(operations), tuple(data_requests))
-        object.__setattr__(trace, "evaluations", tuple(_freeze_json(item, "historical evaluation") for item in evaluations))
-        return trace
     return ExperimentTrace(
         capabilities=parsed_capabilities,
         operations=tuple(operations),
@@ -242,25 +227,24 @@ def load_experiment_input(
     artifact_hashes = {item.path: item.sha256 for item in artifacts}
     if artifact_hashes != dict(receipt.artifact_sha256):
         raise ValueError("experiment execution artifacts differ from receipt")
-    if receipt.schema_version == 2:
-        attempts = set()
-        candidates = {}
-        for record in receipt.trace.evaluations:
-            if record.experiment_id != receipt.experiment_id or record.attempt_id in attempts:
-                raise ValueError("evaluation attempt identity differs or is duplicated")
-            attempts.add(record.attempt_id)
-            previous = candidates.setdefault(record.candidate_id, record.content_sha256)
-            if previous != record.content_sha256:
-                raise ValueError("candidate ID has conflicting content in execution evidence")
-            if record.status is EvaluationAttemptStatus.STARTED:
-                raise ValueError("completed execution contains an unfinished evaluation")
-            if record.status is EvaluationAttemptStatus.SUCCEEDED and artifact_hashes.get(record.result_artifact.path) != record.result_artifact.sha256:
-                raise ValueError("successful evaluation artifact is missing from execution evidence")
+    attempts = set()
+    candidates = {}
+    for record in receipt.trace.evaluations:
+        if record.experiment_id != receipt.experiment_id or record.attempt_id in attempts:
+            raise ValueError("evaluation attempt identity differs or is duplicated")
+        attempts.add(record.attempt_id)
+        previous = candidates.setdefault(record.candidate_id, record.content_sha256)
+        if previous != record.content_sha256:
+            raise ValueError("candidate ID has conflicting content in execution evidence")
+        if record.status is EvaluationAttemptStatus.STARTED:
+            raise ValueError("completed execution contains an unfinished evaluation")
+        if record.status is EvaluationAttemptStatus.SUCCEEDED and artifact_hashes.get(record.result_artifact.path) != record.result_artifact.sha256:
+            raise ValueError("successful evaluation artifact is missing from execution evidence")
     for artifact in artifacts:
         _validate_artifact(root, artifact)
 
     receipt_path = root / _RECEIPT_FILE
-    if receipt.schema_version == 2 and not receipt_path.is_file():
+    if not receipt_path.is_file():
         raise ValueError("execution receipt publication is incomplete")
     if receipt_path.exists():
         receipt_document = _exact_mapping(

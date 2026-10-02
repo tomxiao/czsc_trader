@@ -95,7 +95,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     from functional_support import ReplayFixture, execution_data_from_replay
     from czsc_trader.backtesting.srt_bridge import build_srt_signal_replay, replay_srt_account
     from czsc_trader.backtesting.strategy_source import resolve_candidate_snapshot
-    from czsc_trader.backtesting.service import BacktestRequestV2, run_backtest_v2
+    from czsc_trader.backtesting.service import BacktestRequest, _run_backtest
     from czsc_trader.application.context import RepositoryContext
     from czsc_trader.data import MarketData
     import json
@@ -202,9 +202,9 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     assert_frame_equal(replay.account_daily, direct.account_daily, check_exact=True)
     assert len(replay.fills) == 3
     assert signals.support_data["runtime_sha256"] == definition.runtime_sha256
-    summary = run_backtest_v2(
+    summary = _run_backtest(
         snapshot=snapshot,
-        request=BacktestRequestV2(
+        request=BacktestRequest(
             "588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100
         ),
         srt_data_root=tmp_path,
@@ -231,7 +231,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     api_result = run_backtest(
         context,
         candidate,
-        BacktestRequestV2("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100),
+        BacktestRequest("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100),
         run_date=sessions[-1].date(),
         chart_descriptor=chart_descriptor,
     )
@@ -360,16 +360,11 @@ def test_parameter_search_and_release_use_one_implementation_and_isolated_txe(
     _, repeat = _execute(candidate, tmp_path / "repeat", monkeypatch)
     assert_frame_equal(ledger.account_daily, repeat.account_daily, check_exact=True)
 
-    # A real frozen identity binds the same source and parameters without a v1 Python wrapper.
-    raw = {
-        "schema_version": 3,
-        "strategy_id": "S900",
-        "version": "v1",
-        "release_id": "S900-v1",
-        "strategy_payload": payload,
-    }
-    raw["release_hash"] = canonical_sha256(raw)
-    frozen_source = StrategyRelease.from_mapping(raw)
+    # Prospective release and candidate exercise the same current implementation.
+    frozen_source = StrategyRelease._from_runtime_identity(
+        strategy_family_id="S900", version="v1", release_id="S900-v1",
+        release_hash="a" * 64, payload=payload,
+    )
     runtime_binding = {
         "release_id": frozen_source.release_id,
         "release_hash": frozen_source.release_hash,

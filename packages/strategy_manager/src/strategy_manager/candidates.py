@@ -178,7 +178,7 @@ class CandidateRegistration(_Record):
     identity_schema_version: int = 1
 
     def __post_init__(self):
-        if type(self.schema_version) is not int or self.schema_version not in (1, 2):
+        if type(self.schema_version) is not int or self.schema_version != 2:
             raise ValidationError("unsupported candidate registration schema")
         if type(self.identity_schema_version) is not int or self.identity_schema_version != 1:
             raise ValidationError("unsupported candidate content identity schema")
@@ -233,6 +233,10 @@ class CandidateRegistration(_Record):
 
     @classmethod
     def from_dict(cls, value):
+        if type(value.get("schema_version")) is not int or value["schema_version"] != 2:
+            raise ValidationError("unsupported candidate registration schema")
+        if type(value.get("identity_schema_version")) is not int or value["identity_schema_version"] != 1:
+            raise ValidationError("unsupported candidate content identity schema")
         value = dict(value)
         value["key"] = CandidateKey(**value["key"])
         value["payload"] = CandidateEvidence(**value["payload"])
@@ -277,11 +281,9 @@ def validate_registration_files(record: CandidateRegistration, root: Path) -> No
         raise ValidationError("registered source closure hash differs")
 
 
-def _registration_evidence_root(record, registry_root: Path, experiments_root: Path) -> Path:
+def _registration_evidence_root(record, experiments_root: Path) -> Path:
     if not isinstance(experiments_root, Path):
         raise TypeError("experiments_root requires Path")
-    if record.schema_version == 1:
-        return registry_root
     root = experiments_root / record.key.strategy_id / record.origin.experiment_id
     for path in (root, root.parent, experiments_root):
         if path.is_symlink() or path.is_junction():

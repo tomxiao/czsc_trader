@@ -10,7 +10,7 @@ import sys
 import pytest
 import research_experiment
 from research_experiment import (
-    ExperimentCapabilities,
+    ExperimentDataScope, ExperimentCapabilities,
     ExperimentCapability,
     ExperimentDefinition,
     ExperimentDependency,
@@ -31,7 +31,7 @@ from research_experiment import (
 
 def _definition() -> ExperimentDefinition:
     return ExperimentDefinition(
-        schema_version=1,
+        schema_version=2, data_scope=ExperimentDataScope.DEVELOPMENT,
         experiment_id="20260924_S008_EX99",
         strategy_id="S008",
         mode=ExperimentMode.DISCOVERY,
@@ -59,6 +59,14 @@ def test_rex_has_no_tdr_imports() -> None:
     assert ResearchExperiment.__module__.startswith("research_experiment.")
     for source in package_root.glob("*.py"):
         assert "czsc_trader" not in source.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("changes", [{"schema_version": 1}, {"schema_version": True}, {"data_scope": None}])
+def test_definition_rejects_retired_or_implicit_scope(changes):
+    from dataclasses import replace
+
+    with pytest.raises((TypeError, ValueError)):
+        replace(_definition(), **changes)
 
 
 def test_loaded_experiment_cannot_be_constructed_directly() -> None:
@@ -104,7 +112,7 @@ def test_loader_rejects_undeclared_relative_source(tmp_path: Path) -> None:
     source.write_text(
         """from datetime import date
 from research_experiment import (
-    ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
+    ExperimentDataScope, ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
     ExperimentOutcome, ExperimentProtocol, ExperimentResult,
     ExperimentStage, ResearchExperiment,
 )
@@ -114,7 +122,7 @@ class Experiment(ResearchExperiment):
     @property
     def definition(self):
         return ExperimentDefinition(
-            schema_version=1,
+            schema_version=2, data_scope=ExperimentDataScope.DEVELOPMENT,
             experiment_id='20260924_S008_EX99',
             strategy_id='S008',
             mode=ExperimentMode.DISCOVERY,
@@ -146,7 +154,7 @@ class Experiment(ResearchExperiment):
     )
     (root / "helper.py").write_text("VALUE = 1\n", encoding="utf-8")
     binding = {
-        "schema_version": 2,
+        "schema_version": 3,
         "module": "experiment",
         "qualname": "Experiment",
         "source_files": ["experiment.py"],
@@ -171,7 +179,7 @@ def test_loader_checks_dependencies_before_importing_experiment(tmp_path: Path) 
         encoding="utf-8",
     )
     binding = {
-        "schema_version": 2,
+        "schema_version": 3,
         "module": "experiment",
         "qualname": "Experiment",
         "source_files": ["experiment.py"],
@@ -197,7 +205,7 @@ def test_loader_does_not_retain_experiment_modules(tmp_path: Path) -> None:
     source.write_text(
         """from datetime import date
 from research_experiment import (
-    ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
+    ExperimentDataScope, ExperimentCapabilities, ExperimentDefinition, ExperimentMode,
     ExperimentOutcome, ExperimentProtocol, ExperimentResult,
     ExperimentStage, ResearchExperiment,
 )
@@ -206,7 +214,7 @@ class Experiment(ResearchExperiment):
     @property
     def definition(self):
         return ExperimentDefinition(
-            schema_version=1,
+            schema_version=2, data_scope=ExperimentDataScope.DEVELOPMENT,
             experiment_id='20260924_S008_EX95',
             strategy_id='S008',
             mode=ExperimentMode.DISCOVERY,
@@ -236,7 +244,7 @@ class Experiment(ResearchExperiment):
         encoding="utf-8",
     )
     binding = {
-        "schema_version": 2,
+        "schema_version": 3,
         "module": "experiment",
         "qualname": "Experiment",
         "source_files": ["experiment.py"],

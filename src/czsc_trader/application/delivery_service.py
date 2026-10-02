@@ -41,11 +41,6 @@ def _resolve(root: Path, relative: str) -> Path:
 
 
 def _delivery_path(context: RepositoryContext, reference) -> Path:
-    if isinstance(reference, d.LegacyDeliveryReference):
-        return _resolve(
-            context.root,
-            f"research/{reference.strategy_id}/deliveries/{reference.stage.value}/{reference.revision}",
-        )
     if isinstance(reference.owner, d.MandateOwner):
         return _resolve(
             context.root, f"research/{reference.strategy_id}/mandates/{reference.revision}"
@@ -350,7 +345,7 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document["schema_version"] not in (3, 4):
+        if document["schema_version"] != 4:
             _fail(
                 "ASSESSMENT_SOURCE",
                 ref.stage.value,
@@ -901,23 +896,8 @@ def _manifest(root: Path) -> tuple[d.EvidenceRef, ...]:
 def _read_delivery(context, reference, root, visited):
     document = _read_json(_resolve(root, "delivery.json"))
     version = document.get("schema_version") if type(document) is dict else None
-    if type(version) is not int or version not in (1, 2, 3, 4):
+    if type(version) is not int or version != 4:
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
-    if isinstance(reference, d.LegacyDeliveryReference):
-        if version == 4:
-            _fail("DELIVERY_SCHEMA", "reference", "legacy reference cannot address schema 4")
-        from . import _delivery_reader_v3 as legacy
-
-        value = reference.to_dict()
-        value["type"] = "DeliveryReference"
-        old_reference = legacy.d.DeliveryReference.from_dict(value)
-        try:
-            receipt = legacy._read_delivery(context, old_reference, root, visited)
-        except legacy.d.DeliveryValidationError as exc:
-            raise d.DeliveryValidationError(
-                tuple(d.DeliveryIssue.from_dict(x.to_dict()) for x in exc.issues)
-            ) from exc
-        return d.DeliveryReceipt.from_dict(receipt.to_dict())
     identity = (reference.owner, reference.stage, reference.revision)
     if identity in visited:
         _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
@@ -954,11 +934,11 @@ def _read_delivery(context, reference, root, visited):
 
 
 def validate_delivery(
-    context: RepositoryContext, reference: d.DeliveryReference | d.LegacyDeliveryReference
+    context: RepositoryContext, reference: d.DeliveryReference
 ) -> d.DeliveryValidation:
     """Read-only verification; never executes research code or reproduction commands."""
     if not isinstance(context, RepositoryContext) or not isinstance(
-        reference, (d.DeliveryReference, d.LegacyDeliveryReference)
+        reference, d.DeliveryReference
     ):
         raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
     try:

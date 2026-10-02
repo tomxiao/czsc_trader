@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-import json
-import inspect
 from decimal import Decimal
 from pathlib import Path
-import sys
 
 import pytest
 
 from strategy_runtime import (
     ExecutionPolicy,
-    RuntimeCompatibilityError,
     RuntimeContractError,
     StrategyRelease,
-    StrategyRuntime,
-    canonical_sha256,
 )
-from strategy_runtime.loader import StrategyLoader
 from strategy_runtime.execution_planner import build_execution_plan
 from strategy_runtime.strategy import _capital_terms
 
@@ -24,171 +17,10 @@ from strategy_runtime.strategy import _capital_terms
 ROOT = Path(__file__).resolve().parents[4]
 
 
-def test_schema_v2_release_hash_covers_executable_identity_not_governance() -> None:
-    from strategy_runtime import StrategyRelease, canonical_sha256
-
-    executable = {
-        "schema_version": 2,
-        "strategy_id": "S008",
-        "version": "v1",
-        "release_id": "S008-v1",
-        "strategy_payload": {"symbol": "588080.SH", "runtime": "example"},
-    }
-    payload = {
-        **executable,
-        "parent_version": None,
-        "change_summary": "首个冻结版本",
-        "source_experiment": "experiments/S008/EX01",
-        "source_candidate": "C001",
-        "selection_data_cutoff": "2026-09-02",
-        "forward_start": "2026-09-03",
-        "governance": {"review_id": "FR-S008-C001-001"},
-        "governance_hash": "0" * 64,
-        "release_hash": canonical_sha256(executable),
-    }
-    release = StrategyRelease.from_mapping(payload)
-    assert release.release_hash == payload["release_hash"]
-
-    changed = dict(payload)
-    changed["change_summary"] = "只改变治理说明"
-    assert StrategyRelease.from_mapping(changed).release_hash == release.release_hash
-
-
-def test_schema_v3_release_hash_accepts_sgc_governance_projection() -> None:
-    from strategy_runtime import StrategyRelease, canonical_sha256
-
-    executable = {
-        "schema_version": 3,
-        "strategy_id": "S008",
-        "version": "v1",
-        "release_id": "S008-v1",
-        "strategy_payload": {"symbol": "588080.SH", "runtime": "example"},
-    }
-    payload = {
-        **executable,
-        "governance": {
-            "credential_id": "SGC-S008-001",
-            "approval_seal_hash": "a" * 64,
-        },
-        "release_hash": canonical_sha256(executable),
-    }
-    release = StrategyRelease.from_mapping(payload)
-    assert release.release_hash == payload["release_hash"]
-
-
-def test_every_active_frozen_release_has_a_matching_source_binding() -> None:
-    root = Path(__file__).resolve().parents[4]
-    for strategy_id, version in (
-        ("S001", "v1"),
-        ("S001", "v2"),
-        ("S002", "v1"),
-        ("S003", "v1"),
-        ("S007", "v1"),
-    ):
-        payload = json.loads(
-            (root / "strategies" / strategy_id / "versions" / f"{version}.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        strategy = StrategyLoader(ROOT / "strategies").load(
-            StrategyRelease.from_mapping(payload)
-        )
-        assert strategy.definition.release_id == f"{strategy_id}-{version}"
-        assert strategy.definition.implementation.source_sha256
-        assert strategy.definition.runtime_sha256
-
-
-def test_runtime_rejects_release_without_deployed_implementation() -> None:
-    raw = {
-        "schema_version": 1,
-        "strategy_id": "S999",
-        "version": "v1",
-        "release_id": "S999-v1",
-        "strategy_payload": {"kind": "test"},
-    }
-    raw["release_hash"] = canonical_sha256(raw)
-
-    with pytest.raises(RuntimeCompatibilityError, match="deployment file"):
-        StrategyRuntime(ROOT / "strategies").describe(StrategyRelease.from_mapping(raw))
-
-
-def test_strategy_release_rejects_payload_with_a_borrowed_hash() -> None:
-    raw = json.loads((ROOT / "strategies/S002/versions/v1.json").read_text(encoding="utf-8"))
-    raw["strategy_payload"]["rule"]["portfolio_rule"]["holding_sessions"] = 6
-
-    with pytest.raises(RuntimeContractError, match="complete frozen record"):
-        StrategyRelease.from_mapping(raw)
-
-
-@pytest.mark.parametrize("schema_version", [None, True, "1", 0, 5])
-def test_strategy_release_rejects_missing_or_invalid_schema(schema_version) -> None:
-    raw = {
-        "strategy_id": "S999",
-        "version": "v1",
-        "release_id": "S999-v1",
-        "strategy_payload": {"kind": "test"},
-    }
-    if schema_version is not None:
-        raw["schema_version"] = schema_version
-    raw["release_hash"] = canonical_sha256(raw)
-
+@pytest.mark.parametrize("schema", [None, True, "4", 0, 1, 2, 3, 5])
+def test_release_only_accepts_current_serialized_contract(schema):
     with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
-        StrategyRelease.from_mapping(raw)
-
-
-def test_loader_rejects_source_that_differs_from_frozen_binding(monkeypatch) -> None:
-    root = Path(__file__).resolve().parents[4]
-    payload = json.loads((root / "strategies/S007/versions/v1.json").read_text(encoding="utf-8"))
-    monkeypatch.setattr(
-        "strategy_runtime.loader.implementation_sha256",
-        lambda _files, **_kwargs: "0" * 64,
-    )
-
-    with pytest.raises(RuntimeCompatibilityError, match="differs from runtime binding"):
-        StrategyLoader(ROOT / "strategies").load(StrategyRelease.from_mapping(payload))
-
-
-def test_loader_executes_helpers_from_the_authenticated_release_closure() -> None:
-    payload = json.loads(
-        (ROOT / "strategies/S007/versions/v1.json").read_text(encoding="utf-8")
-    )
-    strategy = StrategyLoader(ROOT / "strategies").load(
-        StrategyRelease.from_mapping(payload)
-    )
-    module = sys.modules[strategy.__class__.__module__]
-    release_root = ROOT / "strategies/S007/releases/v1/runtime/strategy_runtime"
-
-    assert Path(inspect.getsourcefile(module.next_session_calculation_scope)).resolve() == (
-        release_root / "calculation.py"
-    ).resolve()
-    assert Path(inspect.getsourcefile(module.effective_target_order_type)).resolve() == (
-        release_root / "execution_rules.py"
-    ).resolve()
-
-
-def test_symbol_binding_is_explicit_and_fails_closed() -> None:
-    root = Path(__file__).resolve().parents[4]
-
-    s001_payload = json.loads(
-        (root / "strategies/S001/versions/v2.json").read_text(encoding="utf-8")
-    )
-    bound = StrategyLoader(ROOT / "strategies").load_for_symbol(
-        StrategyRelease.from_mapping(s001_payload), "159352.SZ"
-    )
-    etf_subjects = {
-        item.subject
-        for item in bound.definition.inputs.requirements
-        if item.dataset.startswith("etf.")
-    }
-    assert etf_subjects == {"159352.SZ"}
-
-    s007_payload = json.loads(
-        (root / "strategies/S007/versions/v1.json").read_text(encoding="utf-8")
-    )
-    with pytest.raises(RuntimeCompatibilityError, match="does not support"):
-        StrategyLoader(ROOT / "strategies").load_for_symbol(
-            StrategyRelease.from_mapping(s007_payload), "588300.SH"
-        )
+        StrategyRelease.from_mapping({"schema_version": schema})
 
 
 def test_target_execution_plan_honors_frozen_limit_exit() -> None:

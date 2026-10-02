@@ -195,22 +195,6 @@ def _validate_owner_stage(owner, stage):
 
 
 @dataclass(frozen=True, slots=True)
-class LegacyDeliveryReference(_Record):
-    """Explicit read-only reference to schema 1-3 research-directory deliveries."""
-
-    strategy_id: str
-    stage: DeliveryStage
-    revision: int
-    content_sha256: str
-
-    def _validate(self):
-        CandidateKey(self.strategy_id, "Delivery")
-        if self.revision < 1:
-            raise ValueError("revision must be positive")
-        _hash(self.content_sha256)
-
-
-@dataclass(frozen=True, slots=True)
 class DeliveryReference(_Record):
     owner: MandateOwner | ExperimentOwner
     stage: DeliveryStage
@@ -233,7 +217,7 @@ class DeliveryDefinition(_Record):
     owner: MandateOwner | ExperimentOwner
     stage: DeliveryStage
     revision: int
-    predecessors: tuple[DeliveryReference | LegacyDeliveryReference, ...] = ()
+    predecessors: tuple[DeliveryReference, ...] = ()
     experiments: tuple[ExperimentEvidenceRef, ...] = ()
     schema_version: int = 4
 
@@ -247,27 +231,19 @@ class DeliveryDefinition(_Record):
             raise ValueError("invalid delivery revision/schema_version")
         _unique((x.experiment_id for x in self.experiments), "experiment_id")
         _unique(
-            ((_reference_owner(x), x.stage, x.revision) for x in self.predecessors), "predecessor"
+            ((x.owner, x.stage, x.revision) for x in self.predecessors), "predecessor"
         )
         for ref in self.predecessors:
             if ref.strategy_id != self.strategy_id:
                 raise ValueError("predecessor family differs")
             if (
-                _reference_owner(ref) == self.owner
+                ref.owner == self.owner
                 and ref.stage == self.stage
                 and ref.revision >= self.revision
             ):
                 raise ValueError("same-stage predecessor must be an earlier revision")
         if any(f"_{self.strategy_id}_" not in x.experiment_id for x in self.experiments):
             raise ValueError("experiment family differs")
-
-
-def _reference_owner(reference):
-    return (
-        reference.owner
-        if isinstance(reference, DeliveryReference)
-        else ("legacy", reference.strategy_id)
-    )
 
 
 class ConfirmationStatus(StrEnum):
@@ -734,8 +710,8 @@ class TargetMandateBinding(_Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateAssessmentDelivery(_Record):
-    source_candidates: DeliveryReference | LegacyDeliveryReference
-    source_mandate: DeliveryReference | LegacyDeliveryReference
+    source_candidates: DeliveryReference
+    source_mandate: DeliveryReference
     assessment_request: CandidateAssessmentRequest
     assessment: AssessmentPanel
     comparison_request: CandidateComparisonRequest
@@ -765,7 +741,7 @@ class CandidateAssessmentDelivery(_Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateInspectionDelivery(_Record):
-    source_assessment: DeliveryReference | LegacyDeliveryReference
+    source_assessment: DeliveryReference
     inspection: CandidateInspectionReport
     inspection_evidence: EvidenceRef
     decisions: tuple[DecisionReference, ...]
@@ -849,28 +825,17 @@ class DeliveryValidation(_Record):
 
 @dataclass(frozen=True, slots=True)
 class DeliveryReceipt(_Record):
-    reference: DeliveryReference | LegacyDeliveryReference
+    reference: DeliveryReference
     files: tuple[EvidenceRef, ...]
     schema_version: int = 4
 
     def _validate(self):
-        if self.schema_version not in (1, 2, 3, 4):
+        if self.schema_version != 4:
             raise ValueError("unsupported receipt schema")
-        if (self.schema_version == 4) != isinstance(self.reference, DeliveryReference):
-            raise ValueError("receipt schema differs from reference layout")
         if not self.files:
             raise ValueError("receipt requires file manifest")
         _unique((x.path.casefold() for x in self.files), "receipt file")
 
-    @classmethod
-    def from_dict(cls, value):
-        if value.get("schema_version") in (1, 2, 3):
-            value = dict(value)
-            reference = dict(value["reference"])
-            if reference.get("type") == "DeliveryReference":
-                reference["type"] = "LegacyDeliveryReference"
-            value["reference"] = reference
-        return super(DeliveryReceipt, cls).from_dict(value)
 
 
 class DeliveryValidationError(ValueError):

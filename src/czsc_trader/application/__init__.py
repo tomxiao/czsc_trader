@@ -39,7 +39,7 @@ _EXPORTS = {
     "list_templates": "template_service",
     "show_template": "template_service",
     "instantiate_template": "template_service",
-    "BacktestRequestV2": "backtest_service",
+    "BacktestRequest": "backtest_service",
     "run_backtest": "backtest_service",
     "list_installed_strategies": "strategy_runtime_service",
     "strategy_info": "strategy_runtime_service",

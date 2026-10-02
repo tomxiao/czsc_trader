@@ -250,18 +250,6 @@ def validate_a_share_intraday_bars(
     }
 
 
-def validate_a_share_30m_bars(
-    dataframe: pd.DataFrame, *, require_complete_days: bool = False
-) -> dict[str, Any]:
-    """Backward-compatible wrapper for the original public helper."""
-
-    return validate_a_share_intraday_bars(
-        dataframe,
-        "30m",
-        require_complete_days=require_complete_days,
-    )
-
-
 def validate_intraday_against_daily(
     intraday: pd.DataFrame,
     daily: pd.DataFrame,
@@ -326,23 +314,3 @@ def validate_intraday_against_daily(
     if failures:
         raise ValueError(f"{normalized_period}/daily reconciliation failed: " + "; ".join(failures))
     return {"matched_day_count": len(common_days), "matched_days": common_days}
-
-
-def validate_30m_against_daily(
-    intraday: pd.DataFrame,
-    daily: pd.DataFrame,
-    *,
-    price_tolerance: float = 0.005,
-    volume_relative_tolerance: float = 1e-5,
-    amount_relative_tolerance: float = 1e-5,
-) -> dict[str, Any]:
-    """Backward-compatible 30-minute reconciliation wrapper."""
-
-    return validate_intraday_against_daily(
-        intraday,
-        daily,
-        "30m",
-        price_tolerance=price_tolerance,
-        volume_relative_tolerance=volume_relative_tolerance,
-        amount_relative_tolerance=amount_relative_tolerance,
-    )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from datetime import date, datetime
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -15,7 +16,6 @@ from strategy_runtime import (
     PortfolioSnapshot,
     RuntimeContractError,
     StrategyInit,
-    StrategyRelease,
     StrategyRuntime,
     SignalHistoryMode,
     TradableWindow,
@@ -59,8 +59,8 @@ def test_prepare_cli_loads_repository_dotenv_without_overriding_process_environm
     exit_code = prepare_main([
         "--repo-root", str(tmp_path),
         "--data-dir", str(tmp_path / "data"),
-        "--symbol", "510500.SH",
-        "--release", "S002-v1",
+        "--symbol", "588080.SH",
+        "--release", "S900-v1",
         "--trading-date", "2026-01-05",
     ])
 
@@ -73,18 +73,12 @@ def test_prepare_cli_loads_repository_dotenv_without_overriding_process_environm
     }
 
 
-def _release(strategy_id: str, version: str) -> StrategyRelease:
-    payload = json.loads(
-        (ROOT / f"strategies/{strategy_id}/versions/{version}.json").read_text(encoding="utf-8")
-    )
-    return StrategyRelease.from_mapping(payload)
-
-
 def _flows() -> Dataflows:
     dates = pd.bdate_range(end="2026-09-02", periods=700)
     bars = pd.DataFrame(
         {
             "Date": dates,
+            "Flow": 0.8,
             "Open": pd.array([9.4] * len(dates), dtype="Float64"),
             "High": pd.array([9.5] * len(dates), dtype="Float64"),
             "Low": pd.array([9.3] * len(dates), dtype="Float64"),
@@ -113,6 +107,7 @@ def _flows() -> Dataflows:
 
     return Dataflows(
         {
+            "etf.share": market,
             Dataset.ETF_OHLCV.value: market,
             Dataset.ETF_UNADJUSTED_DAILY.value: market,
             Dataset.TRADING_CALENDAR.value: calendar,
@@ -121,7 +116,7 @@ def _flows() -> Dataflows:
 
 
 def test_public_runtime_prepares_and_plans_without_an_execution_channel(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, runtime_candidate
 ) -> None:
     def unconfigured():
         pytest.fail("runtime must use the host-supplied Dataflows")
@@ -130,7 +125,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     trading_date = date(2026, 9, 3)
     strategy = StrategyRuntime(ROOT / "strategies", dataflows=_flows()).create(
         StrategyInit(
-            _release("S002", "v1"),
+            runtime_candidate,
             TradableWindow(trading_date, trading_date),
             tmp_path,
         )
@@ -141,7 +136,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
             point=TradingPoint(trading_date, calculated_at),
             portfolio=PortfolioSnapshot(
                 "s002-v1",
-                "510500.SH",
+                "588080.SH",
                 Decimal("50000"),
                 Decimal("100000"),
                 5900,
@@ -156,7 +151,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         point=TradingPoint(trading_date, calculated_at),
         portfolio=PortfolioSnapshot(
             "s002-v1",
-            "510500.SH",
+            "588080.SH",
             Decimal("50000"),
             Decimal("100000"),
             5900,
@@ -166,12 +161,12 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         state=ExecutionState(3, calculated_at, 5900),
     )
 
-    assert prepared.strategy.reference_id == "S002-v1"
+    assert prepared.strategy.reference_id == "S900-C001"
     for mode in SignalHistoryMode:
         history = strategy.inspect_signals(history_mode=mode)
         explicit = strategy.plan_at(
             point=TradingPoint(trading_date, calculated_at),
-            portfolio=PortfolioSnapshot("s002-v1", "510500.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
+            portfolio=PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
             state=ExecutionState(3, calculated_at, 5900), history_mode=mode,
         )
         assert explicit.target_position == history.loc[pd.Timestamp(explicit.signal_date), "target_position"]
@@ -191,7 +186,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         value["identity"]["content_sha256"] == value["content_sha256"]
         for value in manifest["inputs"].values()
     )
-    assert plan.strategy.reference_id == "S002-v1"
+    assert plan.strategy.reference_id == "S900-C001"
     assert plan.expected_portfolio_revision == 7
     assert plan.expected_state_revision == 3
     assert plan.actual_quantity == 5900
@@ -206,7 +201,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
             point=TradingPoint(trading_date, before_close),
             portfolio=PortfolioSnapshot(
                 "s002-v1",
-                "510500.SH",
+                "588080.SH",
                 Decimal("50000"),
                 Decimal("100000"),
                 5900,
@@ -224,7 +219,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         StrategyRuntime(ROOT / "strategies")
         .create(
             StrategyInit(
-                _release("S002", "v1"),
+                runtime_candidate,
                 TradableWindow(trading_date, trading_date),
                 tmp_path,
             )
@@ -236,13 +231,13 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     second_window = TradableWindow(date(2026, 9, 2), date(2026, 9, 2))
     monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     StrategyRuntime(ROOT / "strategies").create(
-        StrategyInit(_release("S002", "v1"), second_window, tmp_path)
+        StrategyInit(runtime_candidate, second_window, tmp_path)
     ).prepare_data()
     assert _prepared_manifest(tmp_path, second_window).is_file()
 
     with pytest.raises(RuntimeContractError, match="another strategy"):
         StrategyRuntime(ROOT / "strategies").create(
-            StrategyInit(_release("S001", "v1"), second_window, tmp_path)
+            StrategyInit(replace(runtime_candidate, candidate_id="C002"), second_window, tmp_path)
         ).prepare_data()
 
     input_file = manifest_path.parent / next(iter(manifest["inputs"].values()))["file"]
@@ -250,21 +245,21 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     with pytest.raises(RuntimeContractError, match="file was modified"):
         StrategyRuntime(ROOT / "strategies").create(
             StrategyInit(
-                _release("S002", "v1"),
+                runtime_candidate,
                 TradableWindow(trading_date, trading_date),
                 tmp_path,
             )
         ).prepare_data()
 
 
-def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, monkeypatch) -> None:
+def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, monkeypatch, runtime_candidate) -> None:
     monkeypatch.setattr(
         "strategy_runtime.preparation.Dataflows",
         lambda: (_ for _ in ()).throw(RuntimeError("DFLS unavailable")),
     )
     strategy = StrategyRuntime(ROOT / "strategies").create(
         StrategyInit(
-            _release("S002", "v1"),
+            runtime_candidate,
             TradableWindow(date(2026, 9, 3), date(2026, 9, 3)),
             tmp_path,
         )

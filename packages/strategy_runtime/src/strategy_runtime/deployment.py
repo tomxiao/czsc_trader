@@ -135,23 +135,22 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
     family, version = release_id.rsplit("-", 1)
     version_path = root / family / "versions" / f"{version}.json"
     frozen = _read_object(version_path)
-    if frozen.get("schema_version") == 4:
-        from .models import StrategyRelease
-        release = StrategyRelease.from_mapping(frozen)
-        request_id = frozen["governance"]["request_id"]
-        transaction = root / "freeze_requests" / family / request_id["value"]
-        marker = _read_object(transaction / "committed.json")
-        request = _read_object(transaction / "request.json")
-        expected_version = {
-            "type": "FrozenVersionReference", "strategy_id": family, "version": version,
-            "release_hash": release.release_hash, "package_hash": package_hash,
-        }
-        if (marker.get("type") != "FreezeReceipt" or marker.get("status") != "COMMITTED" or
-            marker.get("request_id") != request_id or request.get("request_id") != request_id or
-            marker.get("request_sha256") != canonical_sha256(request) or
-            marker.get("version") != expected_version or
-            release.release_hash != receipt.get("strategy_version_hash")):
-            raise RuntimeCompatibilityError("strategy version has no matching freeze commit")
+    from .models import StrategyRelease
+    release = StrategyRelease.from_mapping(frozen)
+    request_id = frozen["governance"]["request_id"]
+    transaction = root / "freeze_requests" / family / request_id["value"]
+    marker = _read_object(transaction / "committed.json")
+    request = _read_object(transaction / "request.json")
+    expected_version = {
+        "type": "FrozenVersionReference", "strategy_id": family, "version": version,
+        "release_hash": release.release_hash, "package_hash": package_hash,
+    }
+    if (marker.get("type") != "FreezeReceipt" or marker.get("status") != "COMMITTED" or
+        marker.get("request_id") != request_id or request.get("request_id") != request_id or
+        marker.get("request_sha256") != canonical_sha256(request) or
+        marker.get("version") != expected_version or
+        release.release_hash != receipt.get("strategy_version_hash")):
+        raise RuntimeCompatibilityError("strategy version has no matching freeze commit")
 
     files = manifest.get("files")
     if not isinstance(files, dict) or not files:

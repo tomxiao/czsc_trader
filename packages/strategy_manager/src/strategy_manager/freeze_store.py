@@ -44,7 +44,7 @@ def _durable(path, value, *, temporary_root):
 
 
 def version_from_dict(value):
-    require_exact_fields(value, StrategyVersion.FIELDS, ("origin", "governance", "governance_hash"))
+    require_exact_fields(value, (*StrategyVersion.FIELDS, "origin", "governance", "governance_hash"))
     origin = f.CandidateOrigin.from_dict(value["origin"])
     governance = f.FreezeGovernance.from_dict(value["governance"])
     f.FrozenVersionReference(
@@ -183,7 +183,7 @@ def build_version(root, request):
         plan.selection_data_cutoff,
         plan.forward_start,
         _read(plan.payload.resolve(root)),
-        None,
+        "0" * 64,
         governance,
         governance.sha256,
         plan.origin,
@@ -359,7 +359,7 @@ def freeze(registry, request):
         plan.origin.candidate, experiments_root=request.experiments_root
     )
     evidence_root = _registration_evidence_root(
-        registration, research.root, request.experiments_root
+        registration, request.experiments_root
     )
     if (
         registration.record_sha256 != plan.origin.registration_sha256
