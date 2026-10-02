@@ -117,7 +117,7 @@ def test_chart_has_exact_five_metrics_and_pte_controls(chart_context):
     assert cards == [('收益率', '0.98%'), ('最大回撤', '-2.00%'), ('闭合交易数', '1'),
                      ('卡玛比率', '0.500'), ('盈亏比', 'N/A')]
     assert '夏普' not in html
-    assert 'data-range="40" aria-pressed="true"' in html
+    assert 'data-range="all" aria-pressed="true"' in html
     assert all(f'data-layer="{layer}"' in html for layer in ('signal', 'fill', 'position'))
     unavailable = render_backtest_chart_html(replace(chart_context, metrics=replace(chart_context.metrics, calmar=None)))
     assert '<span>卡玛比率</span><strong>N/A</strong>' in unavailable

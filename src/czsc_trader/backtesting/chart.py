@@ -100,8 +100,8 @@ def render_backtest_chart_html(context: BacktestChartContext) -> str:
     <div class="forward-toolbar">
       <div class="forward-controls" aria-label="观察窗口">
         <button type="button" data-range="20" aria-pressed="false">20日</button>
-        <button type="button" data-range="40" aria-pressed="true">40日</button>
-        <button type="button" data-range="all" aria-pressed="false">全部</button>
+        <button type="button" data-range="40" aria-pressed="false">40日</button>
+        <button type="button" data-range="all" aria-pressed="true">全部</button>
       </div>
       <div class="forward-controls" aria-label="图层">
         <button type="button" data-layer="signal" aria-pressed="true"><i class="signal"></i>策略信号</button>

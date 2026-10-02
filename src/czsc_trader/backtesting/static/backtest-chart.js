@@ -6,7 +6,7 @@
   const context=JSON.parse(document.querySelector('#forward-context').textContent);
   const NS='http://www.w3.org/2000/svg';
   const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const state={range:40,layers:{signal:true,fill:true,position:true},selected:null};
+  const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
   const bars=context.market_data.bars||[];
   const observations=context.observations||[];
   const fills=context.execution.fills||[];

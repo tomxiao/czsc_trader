@@ -65,7 +65,7 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert manifest["application"]["runtime_engine"] == "srt"
     html = (output / "chart.html").read_text(encoding="utf-8")
     assert 'tdr-backtest-chart' in html
-    assert 'data-range="40" aria-pressed="true"' in html
+    assert 'data-range="all" aria-pressed="true"' in html
     assert 'forward-svg' in html and 'Plotly.newPlot' not in html
     report = (output / "report.md").read_text(encoding="utf-8")
     assert '| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 |' in report
