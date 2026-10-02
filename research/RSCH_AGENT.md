@@ -27,7 +27,7 @@
 | RSCH | 研究、策略实现、自检、技术检验及成果交付；取得用户明确批准后执行冻结 |
 | DEV | 按用户授权修改平台模块、第三方依赖及开发运维能力 |
 
-当前流程由用户、RSCH和DEV按上表分工。平台提供被调用的执行、计算、校验和留证能力；研究员负责机制、方法、搜索空间、Optuna、预算、调度、剪枝、重试、停止条件和推荐。旧CIO及候选包执行流程已移除，历史治理保留原始读取与校验语义。
+当前流程由用户、RSCH和DEV按上表分工。平台提供被调用的执行、计算、校验和留证能力；研究员负责机制、方法、搜索空间、Optuna、预算、调度、剪枝、重试、停止条件和推荐。旧CIO及候选包执行流程已移除，历史治理原件保留供人工查阅，平台不承诺历史数据机器复验。
 
 - 每阶段完成后必须取得用户明确批准才能进入下一阶段。
 - 执行冻结前必须取得用户明确批准。
@@ -97,7 +97,8 @@
 发布阶段交付，最后生成`experiment_manifest.json`封存整个实验。执行回执完成后不能追加执行
 或技术检验；整个实验封存后不能追加交付或候选对象，也不能覆盖已有manifest。
 后续研究和交付修订由后继实验承接；同内容的已有交付可只读核验后返回。
-历史schema 1/2/3交付保留原位，通过`LegacyDeliveryReference`只读引用，不自动搬移或重签。
+交付读写只支持schema 4及`DeliveryReference`；旧schema 1/2/3原件保留原位供人工查阅。
+旧回执和旧交付不能作为当前强类型引用直接输入平台；获准继续研究后，由后继实验生成当前证据。
 保存范围、Git忽略制品及恢复核验要求见[实验档案说明](../experiments/README.md)。
 
 `DeliveryStatus.COMPLETE/PARTIAL/BLOCKED`表达研究员声明的交付完整度；技术验证`PASS/FAIL`
@@ -210,7 +211,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 已保存的源码和载荷。同键同记录幂等，内容变更使用新身份。评价端口不自动登记每个trial。
 新`CandidateRegistration`使用schema 2：登记记录保存在`research/registrations/`，
 载荷、源码及来源证据保存在来源实验的`objects/`，记录内文件路径相对来源实验根目录。
-历史schema 1登记保持原存储和哈希，按版本只读解析。
+当前API拒绝历史schema 1登记；原件及哈希保留。读取登记也要求显式的schema 2和内容身份版本1。
 `CandidateSet.handoff`列出阶段四要自检的全部达标候选；研究员须核对完整性，平台只核验
 已声明身份和证据。发布时`assemble_delivery`核验交接候选已登记、内容一致且源码／依赖证据
 完整、可加载；缺失或冲突以`HANDOFF_REGISTRATION`拒绝交付。此检查只覆盖`handoff`集合，
@@ -237,7 +238,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 - 研究员必须披露开发池范围及选择历史；记录口径见[REX说明](../packages/research_experiment/README.md)。
 - 策略实现、有效参数或固定交易规则改变时必须创建新候选身份。
 - 完整账户评价必须通过TDR受管评价入口执行：实验内调用`context.evaluation.evaluate`，请求与结果契约为`EvaluationRequest`、`EvaluationResult`，公共评价实现为`evaluate_strategy`；入口见[TDR研究工具 __init__.py](../src/czsc_trader/research_tools/__init__.py)。
-- `EvaluationRequest`显式声明数据截止日、依赖及必要的派生关系；保留实际成功、失败和取消记录。调用TDR `run_backtest`时，`BacktestRequestV2.lot_size`必须显式填写，并与策略执行合同一致。
+- `EvaluationRequest`显式声明数据截止日、依赖及必要的派生关系；保留实际成功、失败和取消记录。调用TDR `run_backtest`时，`BacktestRequest.lot_size`必须显式填写，并与策略执行合同一致。
 - 参数搜索必须使用Optuna管理；执行配置见[第三方研究库使用说明](../docs/RESEARCH_LIBRARIES.md)。
 - 同一配置的搜索评价与复算必须使用同一策略实现。
 - 加速评价用于正式比较前必须完成信号与完整经济账本的等价性核验。
@@ -421,7 +422,7 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 - 人工报告：技术检验结论、剩余风险、用户决定、冻结结果及使用边界。
 - `CandidateInspectionDelivery`引用阶段四交付、完整检验报告、证据、用户决定、可选冻结回执及待决定事项。冻结前可发布待批准报告；冻结后另建修订，保留原待批准版本。原归属实验若已封存，新交付归入后继实验。
 - 默认报告展示用户决定、理由及确认材料链接；冻结失败或结果不确定时展示具体原因，研究员据此说明后续处理与待批准事项。
-- 新冻结版本使用schema 4的`StrategyVersion`，通过`CandidateOrigin`与`FreezeGovernance`绑定登记记录、内容、检验、选择、批准和冻结请求。提交标记决定版本可见性；历史schema 1/2/3保持原件和哈希。契约与状态定义见[SM说明](../packages/strategy_manager/README.md)。
+- 新冻结版本使用schema 4的`StrategyVersion`，通过`CandidateOrigin`与`FreezeGovernance`绑定登记记录、内容、检验、选择、批准和冻结请求。提交标记决定版本可见性；旧schema 1/2/3在当前API中明确拒绝，原件和哈希保留供人工查阅。契约与状态定义见[SM说明](../packages/strategy_manager/README.md)。
 - 核对人工报告完整呈现用户决定、冻结状态及失败／未完成原因；默认渲染未展开的字段通过交付事实、解释和证据补齐。
 
 #### 必须遵守的约束
@@ -455,7 +456,7 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 | REX | 实验定义、数据范围、强类型受管端口、预检及实际执行回执 | [公共导出](../packages/research_experiment/src/research_experiment/__init__.py)、[使用说明](../packages/research_experiment/README.md)、[档案契约](../experiments/README.md) |
 | SRT / TXE | 策略输入、决策与计划；成交及完整账户 | [SRT公共导出](../packages/strategy_runtime/src/strategy_runtime/__init__.py)、[TXE公共导出](../packages/trading_execution_engine/src/trading_execution_engine/__init__.py)；[SRT说明](../packages/strategy_runtime/README.md)、[TXE说明](../packages/trading_execution_engine/README.md) |
 | SE | 纯数值计算、自检、比较、统计及账本审计；不获取数据或写治理状态 | [公共导出](../packages/strategy_evaluator/src/strategy_evaluator/__init__.py)、[使用说明](../packages/strategy_evaluator/README.md) |
-| SM | 候选身份、用户决定、冻结及查询、历史治理和生命周期 | [公共导出](../packages/strategy_manager/src/strategy_manager/__init__.py)、[使用说明](../packages/strategy_manager/README.md) |
+| SM | 候选身份、用户决定、冻结及查询、当前治理和生命周期 | [公共导出](../packages/strategy_manager/src/strategy_manager/__init__.py)、[使用说明](../packages/strategy_manager/README.md) |
 | TDR | 受管评价、候选登记、五阶段交付、证据适配、技术检验及获批冻结 | [业务公共导出](../src/czsc_trader/application/__init__.py)、[研究工具公共导出](../src/czsc_trader/research_tools/__init__.py)、[使用说明](../src/czsc_trader/README.md) |
 
 研究员可导入各模块公开契约、FSC/STC查询及定义能力、SE纯计算API和独立第三方研究库。
@@ -526,10 +527,11 @@ Optuna独立使用，TDR/REX不接管study、trial或搜索预算；当前也未
 | CAP-07／登记、归档检验与获批冻结已实现 | TDR `register_candidate/load_candidate`、`EvaluationEvidenceReference`、`inspect_candidate`、`record_research_decision`、`freeze_candidate/get_freeze_result` | 交接前完成登记；保存原评价归档引用并准备本次复算输入；明确选型与冻结批准，仅`COMMITTED`视为完成 |
 | CAP-08／模块导航与说明已更新 | 第4节、各模块README及公共导出 | 调用前核对安装版本、签名和最小闭环；历史研究库说明中的待办不代表当前能力 |
 
-当前契约版本分别为：新REX绑定3、定义2、执行回执2；新TDR评价产物4；
-新阶段交付定义和回执4；新候选登记2；新冻结版本4。
-各版本号独立管理，历史证据保持原格式和哈希，不补写旧字段、不重签历史原件；
-新公共契约要求的字段必须由相应版本的新执行产生。
+公共入口只接受各对象的当前契约：REX绑定3、定义2、执行回执2；TDR评价产物4；
+阶段交付定义和回执4；候选登记2及内容身份1；冻结版本与SRT发布记录4；SRT运行定义2；
+实验manifest与运行绑定模板1；SE标准`opc-v3`。版本号按对象独立管理，schema 1不等于过时。
+历史证据保持原格式和哈希，平台不承诺机器复验；需要继续执行、比较或冻结时，在获准的
+后继实验中生成满足当前合同的证据。不得调用私有旧解析器、补写字段或重签旧原件绕过边界。
 
 平台提供结构、证据和执行一致性约束；研究员承担研究解释、技术检验及获批冻结责任，用户
 保留阶段审批和冻结决定权。能力完善不得新增未经确认的经济硬门，也不得限制研究机制与方法选择。

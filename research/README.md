@@ -22,7 +22,7 @@
 正式研究执行通过TDR/REX受管入口，研究员管理参数搜索与预算。阶段报告使用
 `assemble_delivery/validate_delivery`发布和验证；用户选型后调用`inspect_candidate`，取得明确
 冻结批准后调用`freeze_candidate`，仅`COMMITTED`表示成功。旧CIO及候选包执行入口已删除，
-历史实验与冻结证据原件保留。
+历史实验与冻结证据原件保留供人工查阅；公共入口只接受当前契约，平台不承诺历史机器复验。
 
 ## 策略批次
 
@@ -47,7 +47,7 @@
 | 新登记候选的源码、载荷与来源证据 | `experiments/<策略ID>/<来源实验ID>/objects/`，通过登记引用读取 |
 | 阶段一目标、约束及确认依据 | `research/<策略ID>/mandates/<修订>/` |
 | 阶段二至五交付和自检证据 | `experiments/<策略ID>/<归属实验ID>/deliveries/<阶段>/<修订>/` |
-| 历史schema 1/2/3阶段交付 | 原`research/<策略ID>/deliveries/`，显式历史引用、只读核验 |
+| 历史schema 1/2/3阶段交付 | 原`research/<策略ID>/deliveries/`，原件保留供人工查阅 |
 | 用户决定、技术检验与冻结结果 | `strategies/research_decisions/`、`research_objects/`、`freeze_requests/`中的不可变引用及状态 |
 | 历史候选提交内容 | `research/SXX/candidates/`及对应旧候选包 |
 | 正式身份、冻结版本、SRT部署和治理证据 | `strategies/`，只由平台工具写入 |

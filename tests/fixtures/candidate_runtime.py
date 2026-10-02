@@ -1,7 +1,6 @@
 """Acceptance-only parameterized SRT using a non-OHLCV input.
 
-Tests install this source in an isolated SRT package path. It is never a
-production strategy or registered frozen release.
+Tests install and freeze this source only in isolated test repositories.
 """
 
 from datetime import date
@@ -172,4 +171,4 @@ class CandidateFixture(StrategyImplementation):
         target = (values > threshold).astype(float)
         if self.definition.parameters.values.get("invert", False):
             target = 1.0 - target
-        return pd.DataFrame({"target_position": target}, index=sessions)
+        return pd.DataFrame({"target_position": target, "fixture_signal": target}, index=sessions)

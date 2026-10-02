@@ -59,7 +59,7 @@ def _git(repo: Path, *arguments: str) -> None:
     )
 
 
-def _create_tagged_release_repo(repo: Path, release_id: str = "v0.4.1") -> None:
+def _create_tagged_release_repo(repo: Path, strategy_root: Path, release_id: str = "v0.4.1") -> None:
     repo.mkdir()
     (repo / ".gitignore").write_text("build/\npackages/*/build/\n", encoding="utf-8")
     shutil.copy2(ROOT / ".gitattributes", repo / ".gitattributes")
@@ -81,8 +81,8 @@ def _create_tagged_release_repo(repo: Path, release_id: str = "v0.4.1") -> None:
     )
     build_support.mkdir()
     (build_support / "sitecustomize.py").write_text("", encoding="utf-8")
-    shutil.copytree(ROOT / "strategies", repo / "strategies")
-    evidence = repo / "experiments" / "S007" / "source.csv.gz"
+    shutil.copytree(strategy_root, repo / "strategies")
+    evidence = repo / "experiments" / "S900" / "source.csv.gz"
     evidence.parent.mkdir(parents=True)
     evidence.write_bytes(b"research-only")
     _git(repo, "init")
@@ -234,11 +234,11 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
     assert calls[0][-1] == str(runtime / "shared" / "config")
 
 
-def test_build_is_local_and_publish_installs_final_runtime(tmp_path):
+def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen):
     repo = (tmp_path / "repo").resolve()
     build_root = (repo / ".build" / "pte").resolve()
-    runtime = (tmp_path / "runtime").resolve()
-    _create_tagged_release_repo(repo)
+    runtime = (tmp_path / "pte-runtime").resolve()
+    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
     runner = FakeReleaseRunner()
     fetch_sdist, pinned_runner = _source_build_fakes(runner)
 
@@ -319,11 +319,11 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path):
     assert all("vectorbt" not in " ".join(command).lower() for command in installs)
 
 
-def test_publish_rejects_tampered_build_and_existing_service_host(tmp_path):
+def test_publish_rejects_tampered_build_and_existing_service_host(tmp_path, pte_frozen):
     repo = (tmp_path / "repo").resolve()
     build_root = (repo / ".build" / "pte").resolve()
-    runtime = (tmp_path / "runtime").resolve()
-    _create_tagged_release_repo(repo)
+    runtime = (tmp_path / "pte-runtime").resolve()
+    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
     runner = FakeReleaseRunner()
     fetch_sdist, pinned_runner = _source_build_fakes(runner)
     build_release(

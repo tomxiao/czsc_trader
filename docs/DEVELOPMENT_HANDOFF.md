@@ -6,7 +6,7 @@
 > 执行契约见`research/RSCH_AGENT.md`；本文维护系统架构、
 > 开发环境、测试规则和PTE运维。历史设计与实施过程见`docs/superpowers/`。
 
-> 当前边界：研究员统一使用公开Python API，用户CLI仅保留`backtest run`。新闻抽取、CIO、候选包及旧裁定／冻结写入已删除。历史治理只保留读取与校验；新冻结能力待CAP-07实现。冻结记录、源码和部署凭据不因接口重构而重签。
+> 当前边界：研究员统一使用公开Python API，用户CLI仅保留`backtest run`。新闻抽取、CIO、候选包及旧裁定／冻结写入已删除。当前已提供五阶段交付、候选检验、用户决定绑定及原子冻结。公共入口只接受当前契约；历史原件供人工查阅，不承诺机器复验，不因接口重构而重签。
 
 ## 模块与简称
 
@@ -36,7 +36,7 @@ PTE生产活动版本都可能变化，必须在接手时按任务范围分别�
 目录。PTE控制台仅监听localhost，WDG服务名为`CZSC-PTE-Watchdog`，当前实现的交易渠道是
 Futu中国市场模拟交易；实际服务与渠道健康以运行环境状态为准。
 
-新冻结入口尚未提供；后续实现必须绑定候选身份、技术检验和用户明确批准。普通SRT决策使用`advice.v4`，原子时点计划
+当前冻结入口绑定候选身份、技术检验和用户明确批准，只有`COMMITTED`表示完成。普通SRT决策使用`advice.v4`，原子时点计划
 使用`advice.v5`；TDR回测图消费`strategy_chart.v1`，PTE以独立DFLS行情和SRT输出的
 `strategy_observation.v1`生成`pte_forward_chart.v1`前瞻图。PTE不读取未冻结候选包或
 策略专属前瞻图代码。
@@ -55,8 +55,8 @@ git rev-list --left-right --count origin/master...master
 研究员 → 公共API → REX受管实验 → SRT + DFLS → TXE账户 → SE数值证据
 用户 → backtest run → 同一回测API → 账户、审计、报告
 冻结版本 → 获批部署API → SRT部署凭据 → PTE独立运行
-历史版本／批准／凭据 → SM只读验证
-新候选检验与冻结：尚未提供
+候选 → TDR技术检验 → 用户批准 → SM原子冻结 → 当前版本及提交证明
+历史原件 → 人工查阅
 ```
 
 ### 模块边界
@@ -72,7 +72,7 @@ git rev-list --left-right --count origin/master...master
 - **REX**位于`packages/research_experiment/`。它定义可执行研究实验的声明、能力、输入与
   回执合同，并隔离加载经过源码哈希校验的实验实现；TDR的`research_tools`提供平台上下文、
   受控数据访问及执行适配。REX不替研究员判断机制或改变实验档案。
-- **SM**位于`packages/strategy_manager/`。保留策略族登记、既有版本、证据、生命周期及治理验证。旧送审、裁定与冻结写入已删除，历史凭据类型由内部只读模块解析；新冻结工具待实现。
+- **SM**位于`packages/strategy_manager/`。管理策略族、候选登记、用户决定、当前冻结版本、证据、生命周期及治理验证。`StrategyVersion`只支持schema 4，候选登记只支持schema 2；旧冻结治理解码已删除，原件保留。
 - **SE**位于`packages/strategy_evaluator/`。它接收TDR提供的结构化事实，执行筛劣、Pareto
   排名、PBO、DSR、Bootstrap、参数邻域和成本压力等确定性数值计算；它不读取仓库、不理解
   金融语义，也不签发TDR裁决或改变SM、PTE状态。
@@ -100,7 +100,7 @@ git rev-list --left-right --count origin/master...master
   的供应商模块、`facade.py`及`history_patches/`维护；补丁只匹配已登记的异常签名，修复后
   必须重新校验，未知异常明确失败。研究正式输入优先走DFLS公共门面。
 正式实验档案按`experiments/<策略ID>/<实验ID>/`保存。实验ID全局唯一，TDR按ID定位
-嵌套档案；历史SM证据中的旧路径字符串保持不变，并由兼容解析器映射到当前目录。
+嵌套档案；历史SM证据中的旧路径字符串随原件保留，不由当前API兼容解码。
 
 依赖方向保持为：`TDR → REX/FSC/STC/SM/SE/TXE/SRT/DFLS`、`REX → SRT`、`TXE → SRT`、
 `SRT → DFLS`、`PTE → SRT`、`WDG → PTE进程`。TXE与DFLS同层，TDR和研究脚本可以调用；
@@ -127,25 +127,23 @@ PTE的账户事实仍以渠道回报为准。
 7. WDG只负责PTE进程启动、探活和故障拉起，不包含交易、数据发布或账户状态判断。
 8. 批处理只有全部目标完成才可更新成功日期或成功状态。部分策略数据准备成功、部分账户决策成功、
    渠道仅受理委托或外部结果未知，都不能汇总成全局成功；失败事实必须进入审计、告警和退避。
- 9. 新版`StrategyVersion`同时维护运行身份和治理身份：`release_hash`覆盖SRT执行所需的版本号
-    与`strategy_payload`；`governance_hash`覆盖SGC凭据、候选、评价合同、裁判报告和人工批准
-    印章引用。部署时SM必须验证完整SGC哈希链、最终冻结印章、版本记录、正式证据和生命周期
-    事件。历史版本继续保留原release hash，并以唯一的`LEGACY_GOVERNANCE_ACCEPTED`事件证明
-    已完成治理迁移。
+9. 当前`StrategyVersion`使用schema 4，`release_hash`覆盖完整版本内容；`CandidateOrigin`与
+   `FreezeGovernance`绑定登记、检验、批准及冻结请求。版本查询、加载和部署核验
+   `committed.json`与发布包身份。历史格式明确拒绝，原件保持不可变。
 10. 跨机器文件身份统一复用`src/czsc_trader/identity.py`：普通文本归一化换行为LF，JSON按语义
     计算SHA-256，原始行情与二进制按字节计算SHA-256；既有实验档案保持原样。
 
 ### 研究API与治理边界
 
 1. 研究立项和意图更新使用TDR `create_research_batch/update_research_intent`，保留研究批次凭据与授权记录。
-2. 正式实验使用REX绑定、预检、受管上下文和执行回执；评价通过`context.evaluation.evaluate`保留预算与追踪。
-3. `run_backtest(context, strategy, request)`接受`StrategyCandidate`或`StrategyVersion`，共用SRT/TXE回放；用户CLI当前解析已登记版本。候选持久化CLI解析尚未提供。
+2. 正式实验使用REX绑定、预检、受管上下文和执行回执；评价通过`context.evaluation.evaluate`保留实际调用与结果追踪；搜索预算归研究员管理。
+3. `run_backtest(context, strategy, request)`接受`StrategyCandidate`或`StrategyVersion`，共用SRT/TXE回放；用户CLI当前解析已登记版本。请求使用`BacktestRequest`，显式提供`lot_size`；候选通过Python API登记和加载。
 4. 已登记版本回测仍使用现有SRT部署凭据，缺少时明确失败，不自动部署。
 5. `deploy_strategy`仅在独立授权后调用；PTE账户、服务和生产状态不随研究授权开放。
-6. 旧CIO、候选包、裁定及冻结执行路径已删除，不提供回退。历史版本、发布清单、批准和凭据保持不可变；内部历史解析器只读验证。
-7. 新候选检验、批准绑定和冻结工具仍待CAP-07实现，当前不可冻结。
+6. 旧CIO、候选包、裁定及冻结执行路径已删除，不提供回退。历史版本、发布清单、批准和凭据保持不可变；当前API不承担历史解码或机器复验。
+7. 用户选型后调用`inspect_candidate`；取得绑定检验计划的明确冻结批准后调用`freeze_candidate`。仅`COMMITTED`表示完成，不确定时以同一请求ID查询。
 
-研究员直接使用所属模块API或TDR公共业务入口，不拼装CLI。历史实验仅保证原件保留和档案校验，不要求旧研究脚本兼容新接口。
+研究员直接使用所属模块API或TDR公共业务入口，不拼装CLI。历史实验原件保留供人工查阅，不承诺机器复验；继续研究需生成符合当前契约的新证据。
 
 ## 新机器恢复
 
@@ -348,8 +346,10 @@ Get-Content (Join-Path $PteRoot 'shared\logs\pte.log') -Tail 100
 
 治理和执行链路由根目录及各独立包的长期功能场景验收：TDR覆盖公共API、唯一回测CLI、证据
 漂移与失败语义，SRT/TXE覆盖候选和冻结版本的同路径执行，PTE覆盖准备结果、账户、订单、账本与服务
-配置。历史实验只保证档案校验和人工查看，不承诺旧脚本回放。完整命令及版本验收边界见
+配置。当前契约档案可核验；历史实验原件供人工查看，平台不承诺机器复验。完整命令及版本验收边界见
 [测试用例治理](TEST_GOVERNANCE.md)；任何生产部署仍需独立授权。
+
+冻结发布包使用Git属性保留原始字节，避免跨平台换行转换破坏`release_manifest.json`的文件哈希。
 
 最近一次仓库级全量回归结果、治理记录和未覆盖在线检查以
 [测试用例治理](TEST_GOVERNANCE.md)的“最近一次治理记录”章节为准，不在本文复制快照。

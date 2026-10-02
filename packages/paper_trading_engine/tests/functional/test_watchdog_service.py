@@ -1,6 +1,5 @@
 from collections import deque
 import json
-from pathlib import Path
 import shutil
 import sqlite3
 import subprocess
@@ -38,7 +37,6 @@ from strategy_runtime.deployment import deployment_inventory
 from strategy_runtime.errors import RuntimeCompatibilityError
 
 
-ROOT = Path(__file__).resolve().parents[4]
 
 
 class Process:
@@ -49,10 +47,10 @@ class Process:
     def kill(self): self.code = -9
 
 
-def create_release(runtime_root, release_id, marker):
+def create_release(strategy_root, runtime_root, release_id, marker):
     release = runtime_root / "releases" / release_id
     strategies = release / "strategies"
-    shutil.copytree(ROOT / "strategies", strategies)
+    shutil.copytree(strategy_root, strategies)
     (strategies / "registry.json").write_text(
         json.dumps({"schema_version": 1, "marker": marker}), encoding="utf-8",
     )
@@ -82,9 +80,9 @@ def create_release(runtime_root, release_id, marker):
     return release
 
 
-def test_load_release_accepts_pre_deployment_inventory_snapshot(tmp_path):
+def test_load_release_accepts_pre_deployment_inventory_snapshot(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
-    release = create_release(runtime_root, "v0.4.1", "a")
+    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     strategies = release / "strategies"
     shutil.rmtree(strategies / "deployments")
     manifest_path = release / "release-manifest.json"
@@ -98,9 +96,9 @@ def test_load_release_accepts_pre_deployment_inventory_snapshot(tmp_path):
     assert loaded.release_id == "v0.4.1"
 
 
-def test_load_release_requires_declared_deployment_inventory(tmp_path):
+def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
-    release = create_release(runtime_root, "v0.4.1", "a")
+    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     strategies = release / "strategies"
     shutil.rmtree(strategies / "deployments")
     manifest_path = release / "release-manifest.json"
@@ -112,7 +110,7 @@ def test_load_release_requires_declared_deployment_inventory(tmp_path):
         load_release(runtime_root, "v0.4.1")
 
 
-def test_ft_pte06_watchdog_service_config_port_and_recovery(tmp_path):
+def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path):
     audit_store = PaperStore(tmp_path / "lifecycle.db")
     _record_service_lifecycle(
         AuditRecorder(audit_store), "SERVICE_STARTED", "instance-1", port=8080,
@@ -148,7 +146,7 @@ def test_ft_pte06_watchdog_service_config_port_and_recovery(tmp_path):
     (runtime_root / "shared" / "config" / ".env").write_text(
         "TUSHARE_TOKEN=test", encoding="utf-8",
     )
-    release = create_release(runtime_root, "v0.4.1", "a")
+    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     activate_release(runtime_root, "v0.4.1")
     config = ServiceConfig(runtime_root=runtime_root)
     path = tmp_path / "service.json"
@@ -280,14 +278,14 @@ def test_pythonservice_executable_uses_pywin32_venv_layout(tmp_path):
         find_pythonservice_executable(tmp_path / "missing")
 
 
-def test_pte_release_activation_rollback_and_dynamic_watchdog(tmp_path):
+def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
     (runtime_root / "shared" / "config").mkdir(parents=True)
     (runtime_root / "shared" / "config" / ".env").write_text(
         "TUSHARE_TOKEN=test", encoding="utf-8",
     )
-    first = create_release(runtime_root, "v0.4.1", "a")
-    second = create_release(runtime_root, "v0.4.2", "b")
+    first = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
+    second = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.2", "b")
     activate_release(runtime_root, "v0.4.1")
     config = ServiceConfig(runtime_root=runtime_root)
     assert config.pte_command()[0] == str(first / ".venv" / "Scripts" / "pte.exe")
@@ -326,13 +324,13 @@ def test_pte_release_activation_rollback_and_dynamic_watchdog(tmp_path):
         load_release(runtime_root, "v0.4.1")
 
 
-def test_release_activation_rejects_rebuilt_active_release_identity(tmp_path):
+def test_release_activation_rejects_rebuilt_active_release_identity(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
     (runtime_root / "shared" / "config").mkdir(parents=True)
     (runtime_root / "shared" / "config" / ".env").write_text(
         "TUSHARE_TOKEN=test", encoding="utf-8",
     )
-    release = create_release(runtime_root, "v0.4.1", "a")
+    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     activate_release(runtime_root, "v0.4.1")
     manifest_path = release / "release-manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -343,9 +341,9 @@ def test_release_activation_rejects_rebuilt_active_release_identity(tmp_path):
         activate_release(runtime_root, "v0.4.1")
 
 
-def test_pte_release_rejects_editable_install(tmp_path):
+def test_pte_release_rejects_editable_install(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
-    release = create_release(runtime_root, "v0.4.1", "a")
+    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     site_packages = release / ".venv" / "Lib" / "site-packages"
     (site_packages / "__editable__.paper_trading_engine.pth").write_text(
         "D:/CodeBase/czsc_trader/packages/paper_trading_engine/src", encoding="utf-8",
@@ -354,7 +352,7 @@ def test_pte_release_rejects_editable_install(tmp_path):
         load_release(runtime_root, "v0.4.1")
 
 
-def test_pte_deployment_verifies_release_and_rolls_back(tmp_path):
+def test_pte_deployment_verifies_release_and_rolls_back(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
     (runtime_root / "shared" / "config").mkdir(parents=True)
     (runtime_root / "shared" / "config" / ".env").write_text(
@@ -363,7 +361,7 @@ def test_pte_deployment_verifies_release_and_rolls_back(tmp_path):
     for release_id, marker in (
         ("v0.4.1", "a"), ("v0.4.2", "b"), ("v0.4.3", "c"), ("v0.5.0", "d"),
     ):
-        create_release(runtime_root, release_id, marker)
+        create_release(pte_frozen[0].strategy_root, runtime_root, release_id, marker)
     activate_release(runtime_root, "v0.4.1")
     commands = []
 

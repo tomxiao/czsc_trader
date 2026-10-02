@@ -93,7 +93,7 @@ def inspection(completed):
                         {
                             "key": "target",
                             "label": "目标",
-                            "value_field": "target_position",
+                            "value_field": "fixture_signal",
                             "guides": [],
                         }
                     ],

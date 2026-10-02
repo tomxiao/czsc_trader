@@ -56,8 +56,9 @@ experiments/<策略ID>/<实验ID>/
 Git保存研究定义、程序、结论、合同、交付报告／回执及候选对象；`artifacts/`和
 `deliveries/*/*/experiments/`中的机器制品副本按当前忽略规则保留在本地。
 交付与候选对象的受哈希约束文件通过Git属性保留原始字节。
-跨机器恢复须同时同步被忽略的制品和所引用的前驱档案，再调用`validate_archives`与
-`validate_delivery`核验；单独提交或推送Git不能证明完整档案已持久归档。
+跨机器恢复须同时同步被忽略的制品和所引用的前驱档案。符合当前契约的档案可调用
+`validate_archives`与`validate_delivery`核验；单独提交或推送Git不能证明完整档案已持久归档。
+历史格式原件保留供人工查阅，平台不承诺机器复验。
 当前平台未配置统一外部制品归档目的地，具体备份位置和同步责任须在任务交接中明确。
 `.tmp/`及`outputs/`不能作为正式交付的唯一保存位置。
 
@@ -70,22 +71,24 @@ Git保存研究定义、程序、结论、合同、交付报告／回执及候�
 | 研究修订 | 方法、参数域、合同或判断变化由后继版本承接 |
 | 实验执行 | 按[REX说明](../packages/research_experiment/README.md)冻结定义并通过正式执行前预检 |
 
-验证全部实验：
+核验指定的当前契约实验（路径替换为实际档案）：
 
 ```python
 from pathlib import Path
 from czsc_trader.application import RepositoryContext, validate_archives
-validate_archives(RepositoryContext.discover(Path.cwd()), all_archives=True)
+context = RepositoryContext.discover(Path.cwd())
+validate_archives(context, archive=context.experiments_root / "SXXX/YYYYMMDD_SXXX_EXNN")
 ```
 
-历史SM版本和证据可能保留迁移前的`experiments/<实验ID>/...`来源字符串，以维持发布哈希
-和审计记录。TDR通过全局唯一实验ID解析到当前策略目录。
+`all_archives=True`仍可扫描全库；包含不支持的旧格式时明确失败，不视为历史复验保证。
+实验manifest只支持schema 1；不接受schema 2重封存格式或`integrity_repair`，不通过更新哈希修复旧档案。
+旧路径和旧来源字符串随原件保留，当前API不承担旧SM来源的兼容解析。
 
 历史`run_experiment.py`保留为当时执行代码，不保证在迁移后的目录中直接运行。需要继续同一
 问题时创建新实验，显式声明来源实验及其哈希，并通过TDR的当前公共能力重建证据。
 
 ## 历史文档与证据版本
 
-文档修订只作用于后续工作，不改变已封存合同。若旧manifest绑定的文档路径现已更新，旧校验器可能报告哈希不符；应保留原manifest，使用封存输入或哈希匹配的历史备份审查。旧入口不能解析版本化输入时明确报告限制，不修改旧哈希或临时替换现行文档来伪造验证通过。
+文档修订只作用于后续工作，不改变已封存合同。旧manifest绑定的文档路径可能已更新，原manifest仍须保留；历史备份可用于人工查阅。平台不承诺旧格式解码、旧公式复算或历史档案机器校验。继续研究时，在授权范围内建立后继实验并生成当前契约证据，不修改旧哈希或替换现行文档来伪造通过。
 
 [RSCH的0930备份](../research/RSCH_AGENT.md.0930)仅作为历史参考；使用前核对其哈希与目标实验绑定，不能假定它适配全部历史实验。

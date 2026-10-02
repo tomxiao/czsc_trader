@@ -43,6 +43,12 @@ else:
 其他外部数据源须先取得用户授权；凭据不写入实验、候选包或Git。原始数据的完整性、权限和
 时间语义不确定时，停止收益分析并报告阻断原因。
 
+## DEV：多频行情校验
+
+适配器使用`dataflows.bar_utils.validate_a_share_intraday_bars(dataframe, period, ...)`
+和`validate_intraday_against_daily(intraday, daily, period, ...)`；30分钟数据显式传`period="30m"`。
+仅支持30分钟的旧包装函数已删除。研究数据发布继续通过`Dataflows.fetch`完成统一校验及身份生成。
+
 ## DEV：配置本地缓存
 
 缓存通过现有`Dataflows.fetch(DataRequest)`使用，由宿主显式配置；默认不启用。

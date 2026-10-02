@@ -38,17 +38,19 @@
 
 | 对象 | 当前要求 | 代码入口 |
 | --- | --- | --- |
-| `experiment_binding.json` / `ExperimentBinding` | 新正式实验使用`schema_version=3`；加载器仍支持历史版本2 | [loader.py](src/research_experiment/loader.py) |
-| `ExperimentDefinition` | 新上下文要求`schema_version=2`，显式声明`data_scope`；历史版本1保留原语义；在`subjects`中声明唯一研究标的 | [contracts.py](src/research_experiment/contracts.py) |
-| `ExperimentReceipt` | 新执行生成`schema_version=2`，绑定实际执行追踪和产物；历史版本1仍可读取 | [contracts.py](src/research_experiment/contracts.py) |
+| `experiment_binding.json` / `ExperimentBinding` | 只接受`schema_version=3` | [loader.py](src/research_experiment/loader.py) |
+| `ExperimentDefinition` | 只接受`schema_version=2`；`data_scope`必填且使用`ExperimentDataScope`；在`subjects`中声明唯一研究标的 | [contracts.py](src/research_experiment/contracts.py) |
+| `ExperimentReceipt` | 读写只接受`schema_version=2`，绑定实际执行追踪和产物 | [contracts.py](src/research_experiment/contracts.py) |
 | `ResearchExperiment.synthetic_precheck()` | 返回`ExperimentPrecheckResult`或`None`，不读取真实研究结果 | [contracts.py](src/research_experiment/contracts.py) |
 
-绑定、定义与回执分别管理版本号，不得互相套用。
+绑定、定义与回执分别管理版本号，不得互相套用。执行追踪也必须显式包含强类型`data_scope`。
+旧格式不自动解码、升级或补齐字段；原件供人工查阅，平台不承诺历史机器复验。
 
 `ExperimentMode.FORMAL`声明受管执行方式；`ExperimentDataScope.DEVELOPMENT`声明开发数据范围，
 `SEALED_VALIDATION`声明封存验证范围。正式开发实验可以搜索参数；封存验证必须使用正式模式、
 显式验证截止日及读取能力，并禁止搜索和选择参数。数据门属于执行契约，不构成Python代码安全沙箱。
 
+- 实验必须显式实现`synthetic_precheck`，缺失时预检失败。
 - 合成预检必须覆盖输入结构、边界、时间对齐和实际计算路径。
 - 合成预检不得使用真实收益筛选参数。
 - 预检未通过时必须修正并重新执行。

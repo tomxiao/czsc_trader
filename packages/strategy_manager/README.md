@@ -19,7 +19,7 @@ SM管理策略族、候选登记、用户决定、不可变冻结版本、生命
 内容哈希不符。候选登记存于`research/registrations/`；同键同记录幂等，不同内容拒绝覆盖。
 派生类型明确区分`PARAMETERS`、`IMPLEMENTATION`和`EXECUTION`，绑定双方内容及变更证据。
 
-新`CandidateRegistration`使用schema 2，其载荷、源码、预检及派生证据路径相对来源实验根目录
+`CandidateRegistration`读写只接受schema 2，内容身份使用`identity_schema_version=1`，其载荷、源码、预检及派生证据路径相对来源实验根目录
 `experiments/<key.strategy_id>/<origin.experiment_id>/`。候选内容身份不因保存位置改变。
 平台存储调用必须显式提供实验根目录：
 
@@ -28,8 +28,8 @@ registry.register_candidate(record, experiments_root=context.experiments_root)
 record = registry.get_candidate(key, experiments_root=context.experiments_root)
 ```
 
-SM据登记中的策略和来源实验定位实体并校验哈希，不接受新schema 1登记。
-已有schema 1记录按原登记根目录只读解析，原文件和身份保持不变。研究员通过TDR
+SM据登记中的策略和来源实验定位实体并校验哈希；序列化记录须显式提供两个版本字段，
+旧schema 1登记明确拒绝。研究员通过TDR
 `register_candidate/load_candidate`使用上述能力；TDR负责将实体保存到来源实验的`objects/`，
 拒绝在已封存实验中补写对象。登记记录和来源实验实体须一起保留，才能继续加载、检验及冻结。
 
@@ -47,12 +47,13 @@ SM据登记中的策略和来源实验定位实体并校验哈希，不接受新
 TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告；用户随后批准该确切计划。
 `CandidateOrigin`保存登记记录的文件引用，连同预检、派生材料组成可读取的证据闭包。
 `FreezeVersionRequest(request, staged_package, candidate_registry_root, experiments_root)`携带
-业务请求、暂存发布包、候选登记根目录和实验根目录；SM在已有写锁内按登记schema解析实体，
+业务请求、暂存发布包、候选登记根目录和实验根目录；SM在已有写锁内按当前登记契约解析实体，
 再次核验登记、载荷和拟冻结计划。
 
 发布包和schema 4版本文件准备完成后，最后原子写入`committed.json`作为提交可见性标记。
 `get_version`、`versions`、部署和治理读取共同核验提交身份，未提交版本不可作为可用版本读取。
-新版本`release_hash`覆盖来源、检验和用户决定等完整版本内容；历史schema 1/2/3按原规则读取。
+`StrategyVersion`只接受schema 4，`origin: CandidateOrigin`和`governance: FreezeGovernance`必填。
+`release_hash`覆盖来源、检验和用户决定等完整版本内容；旧schema 1/2/3在读取边界拒绝。
 
 | `FreezeStatus` | 含义及调用方处理 |
 | --- | --- |
@@ -80,6 +81,7 @@ TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告�
 | `strategies/deployments/` | 单独授权产生的SRT部署凭据 |
 
 历史`credentials/`、`freeze_approvals.jsonl`、`lifecycle.jsonl`及`evidence.jsonl`保留原件和哈希。
-旧候选包、CIO审查类型仅在内部历史解码中使用，当前写入使用上述强类型契约。
+旧候选包、CIO类型及历史解码分支已删除。原件供人工查阅，平台不承诺历史机器复验。
+当前研究立项仍使用`StrategyGovernanceSeal/StrategyGovernanceCredential`；该能力不承担旧冻结治理解码。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。
 操作遵守[RSCH契约](../../research/RSCH_AGENT.md)和[开发安全边界](../../docs/DEVELOPMENT_HANDOFF.md)。

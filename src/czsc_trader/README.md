@@ -14,12 +14,26 @@
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 强类型内容、证据闭包和不可变修订 |
 | 自检证据适配 | `research_tools.build_assessment_evidence` | 将受管评价事实转换为SE的`AssessmentEvidence` |
 | 技术检验与获批冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 用户选型、检验、冻结批准分别绑定证据 |
-| 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放 |
+| 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放类型；业务执行使用`application.run_backtest` |
 | 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
 | 数据准备与校验 | `PrepareDataCommand`、`prepare_data`、`validate_data` | 准备行情可能联网并写入数据目录 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | 完整模板操作包含跨FSC绑定校验 |
 | 档案校验 | `validate_archives` | 只读验证；不重签原件 |
 | 版本查询与部署 | `list_installed_strategies`、`strategy_info`、`deploy_strategy` | 部署单独授权；不操作PTE账户 |
+
+研究与策略发布公共入口只接受当前契约；旧格式在边界明确失败，不做隐式升级或历史解码。
+历史数据和证据原件保留供人工查阅，平台不承诺机器复验。当前有效的schema 1对象仍可使用，
+版本号按对象独立管理：
+
+| 对象 | 唯一支持版本 |
+| --- | --- |
+| REX绑定／定义／执行回执 | 3／2／2 |
+| TDR评价产物／阶段交付定义与回执 | 4／4 |
+| SM候选登记／候选内容身份 | 2／1 |
+| SM冻结版本／SRT发布记录 | 4／4 |
+| SRT运行定义 | 2 |
+| 实验manifest／运行绑定模板 | 1／1 |
+| SE评价标准 | `opc-v3` |
 
 ## 2. 公共输入与执行约定
 
@@ -73,23 +87,24 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 | 文件化评价及发布 | `evaluate_research_request(context, input_path)` | 实验`artifacts/evaluation/`及文件哈希 |
 | 候选或版本完整回测 | `run_backtest(context, strategy, request)` | 账户、指标、审计、报告及图表，位于返回的`artifacts.output_dir` |
 
-`run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequestV2`。候选图表描述通过`chart_descriptor`显式传入；版本使用认证后的原图表，不允许覆盖。两类对象共用底层回放流程，保留各自身份。
+`run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequest`。候选图表描述通过`chart_descriptor`显式传入；版本使用认证后的原图表，不允许覆盖。两类对象共用底层回放流程，保留各自身份。
 
-`BacktestRequestV2.lot_size`是必填正整数，拒绝布尔值、浮点数及隐式默认值。平台在请求行情前
+业务执行只使用`application.run_backtest`；底层回放函数不再公开，请求类型不保留带版本后缀的别名。
+
+`BacktestRequest.lot_size`是必填正整数，拒绝布尔值、浮点数及隐式默认值。平台在请求行情前
 核对它与策略执行合同的一致性：`FROZEN_RULE`读取`settings.instrument.lot_size`，
-`INTRADAY_OVERLAY`读取`settings.lot_size`；不一致时底层`run_backtest_v2`抛出`ValueError`，
-应用API `run_backtest`将其包装为错误码`backtest_failed`的`ExecutionError`。
+`INTRADAY_OVERLAY`读取`settings.lot_size`；不一致时`run_backtest`抛出错误码为`backtest_failed`的`ExecutionError`。
 调用方应按已绑定的交易单位填写，不能用请求字段覆盖冻结规则。
 
 当前版本回测仍需要已有SRT部署凭据；缺少时明确失败，不自动部署。用户CLI仅支持已登记版本；
 候选通过`load_candidate(context, key)`读取后传入API，回测和评价均不自动登记候选。
 
 ```python
-from czsc_trader.application import BacktestRequestV2, run_backtest
+from czsc_trader.application import BacktestRequest, run_backtest
 # context、strategy、start、end来自已核对的仓库、对象与获准窗口。
 result = run_backtest(
     context, strategy,
-    BacktestRequestV2(
+    BacktestRequest(
         symbol="588080.SH", asset_type="etf", start=start, end=end,
         initial_cash=1_000_000, lot_size=100,
     ),
@@ -110,7 +125,7 @@ result = run_backtest(
 CLI的`--lot-size`必填且必须大于零。BuyHold、MA5/MA20与策略使用相同整手单位，基准通过TXE
 记录实际现金、持仓、费用及净值，SE独立复算审计。底层`replay_buyhold`和`replay_benchmarks`
 同样要求关键字参数`lot_size`。回测manifest使用`schema_version=4`并记录`request.lot_size`；
-研究指标语义版本为`candidate-srt-txe-v3-lot-size`，新结果与旧基准结果比较前须核对计算口径。
+研究指标语义版本为`candidate-srt-txe-v3-lot-size`；结果比较要求双方均符合当前证据合同及计算口径。
 
 ### 配置数据入口与本地缓存
 
@@ -127,7 +142,7 @@ flows = Dataflows(env_file=context.root / ".env", cache=cache)
 result = run_backtest(context, strategy, request, dataflows=flows)
 ```
 
-`run_backtest`、`run_backtest_v2`、`evaluate_strategy`和`CandidateEvaluationContext`支持宿主
+`run_backtest`、`evaluate_strategy`和`CandidateEvaluationContext`支持宿主
 显式传入`dataflows`，同一配置贯穿输入准备和默认评价执行链。默认入口使用仓库环境文件且不启用缓存。
 探索使用`create_experiment_context(..., dataflows=flows)`；正式实验通过
 `create_formal_experiment_context(..., cache=cache)`由平台创建数据入口。
@@ -137,7 +152,7 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 ## 5. 证据读取与失败语义
 
 - 前驱通过REX `load_experiment_input`及可信的`expected_receipt_sha256`读取。
-- 档案通过`validate_archives(context, archive)`或`all_archives=True`校验，二者只能选一。
+- 当前契约档案通过`validate_archives(context, archive)`或`all_archives=True`校验，二者只能选一。全库调用遇到不支持的历史格式会明确失败，不等于平台承诺全部历史档案可复验。
 - 文件化评价重复发布校验既有身份及文件哈希；不同结果不得覆盖旧证据。
 - 重复调用可能重新准备数据和执行计算，不推定无副作用。
 - 数据截止日缺口、输入身份不符、未完成审计均显式报告，不静默缩窗或降级。
@@ -163,7 +178,8 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 `experiments/<策略ID>/<实验ID>/objects/`。登记内的文件引用相对该实验根目录，
 `CandidateRegistrationRequest`中的输入证据路径仍相对仓库。同一键和登记内容重复调用返回原记录；
 不同内容拒绝覆盖。实验封存后不得补写候选对象；已存在且一致的对象可只读复用。
-历史schema 1登记按原登记区解析，不自动搬移。继续检验或冻结需要登记记录及其引用实体完整可读。
+读取与写入只接受schema 2登记；序列化记录须显式提供`schema_version=2`与`identity_schema_version=1`。
+旧登记原件保留；继续研究须在获准的后继实验中通过当前API生成来源证据和登记。
 参数、实现或执行规则派生使用`CandidateDerivation`分别记录`PARAMETERS/IMPLEMENTATION/EXECUTION`。
 
 `EvaluationRequest`显式携带`data_cutoff`、依赖及可选`EvaluationLineage`。每次受管评价保留
@@ -178,7 +194,8 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 
 `EvaluationRequest.benchmark`必填，使用`EvaluationBenchmark(execution=...)`，执行策略为
 `NextOpenBuyHold(lot_size)`或`LimitBuyHold(lot_size, premium, price_tick, price_limit_ratio,
-maximum_order_quantity)`。两者均要求显式整手单位，当前为100股的正整数倍。
+maximum_order_quantity)`。两者均要求显式整手单位；开盘价模型接受正整数（包括1），
+限价模型使用SRT执行规划，要求100股的正整数倍。
 限价合同还校验溢价、价格档位、涨跌停比例和最大委托数量；研究员按已确认的执行口径选用。
 
 ```python
@@ -221,7 +238,7 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 | API | 返回与语义 |
 | --- | --- |
 | `assemble_delivery(context, deliverable)` | `DeliveryReceipt`；验证内容和证据后发布不可变修订，校验失败或修订冲突抛出明确异常 |
-| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验`DeliveryReference`或历史`LegacyDeliveryReference`，返回`PASS/FAIL`及问题定位 |
+| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验当前`DeliveryReference`，返回`PASS/FAIL`及问题定位 |
 
 | `DeliveryStage` | 对应的强类型内容 |
 | --- | --- |
@@ -262,9 +279,8 @@ definition = DeliveryDefinition(
 已有同内容交付可只读核验后返回。`build_experiment_manifest`也拒绝覆盖不同内容的已有清单。
 `COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
 
-历史schema 1/2/3交付保留在原`research/<策略ID>/deliveries/`目录，用
-`LegacyDeliveryReference`显式引用；`DeliveryReceipt.from_dict`可按旧回执schema恢复该引用。
-历史读取不自动搬移、补写或重签，新写入只使用schema 4。
+交付读写只支持schema 4及带`owner`的`DeliveryReference`，旧回执不能由当前API恢复或复验。
+历史交付原件保持原位，供人工查阅；新的受管证据和交付由获准的后继实验生成。
 
 发布`CandidateSet`时，`assemble_delivery`逐项检查`handoff`候选已登记、内容哈希一致、
 登记源码及依赖证据完整且可由`load_candidate`加载。缺失或冲突返回`DeliveryValidationError`，
@@ -362,7 +378,8 @@ REX执行回执仍为schema 2。新归档检验要求评价产物schema 4，旧�
 仅`COMMITTED`表示版本完成冻结；新版本使用schema 4，绑定来源登记、检验、批准和请求身份。
 同一请求同内容返回既有状态，内容冲突或版本冲突明确失败。中断、证据损坏或未完成提交返回
 `UNKNOWN`时保留现场，不自动重试、回滚或换版本。冻结不会自动获得`PAPER_READY`资格或执行部署。
-历史schema 1/2/3版本、发布清单和治理证据按原始语义读取，保持原件和哈希不变。
+版本读取、回测和部署只接受schema 4及完整冻结提交链。旧版本和治理原件保持不变；
+若需在当前平台执行，须另行授权重新检验及生成当前发布，不能通过改字段或重签原件绕过合同。
 
 ## 9. 使用与维护边界
 

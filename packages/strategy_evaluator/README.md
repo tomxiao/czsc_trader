@@ -11,6 +11,17 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 平台校验结构、计算和证据一致性，研究员解释与推荐，用户决定选型；检验和获批冻结使用
 [TDR入口](../../src/czsc_trader/README.md#8-技术检验用户决定与冻结)。
 
+## 当前协议与计算入口
+
+`EvaluationProtocol.standard_version`使用`opc-v3`，公共标准常量为`OPC_V3`；
+`resolve_margins`拒绝其他标准版本。旧研究模型和旧自检计算器已删除，证据须满足当前强类型合同。
+历史产物原件保留供人工查阅，平台不承诺按旧公式或旧schema机器复验。
+
+工程压力审计的必需场景由`required_stress_scenarios()`返回：
+`total_cost_15bp/total_cost_20bp/total_cost_30bp/total_cost_50bp`。
+`audit_stress_results`缺少任一必需场景时返回`INSUFFICIENT`，旧别名不能替代。
+阶段四自检仍按`SelfCheckProtocol`显式指定标准和压力场景，研究员负责确定研究口径。
+
 ## 候选自检与比较
 
 | 公共API | 输入 | 输出 |
