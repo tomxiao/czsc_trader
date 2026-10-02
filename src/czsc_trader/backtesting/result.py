@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pandas as pd
+from strategy_runtime import StrategyObservation
 
 from .models import StrategyIdentity
 
@@ -15,6 +16,7 @@ class BacktestResult:
     fills: pd.DataFrame
     account_daily: pd.DataFrame
     trades: pd.DataFrame
+    observations: tuple[StrategyObservation, ...] = ()
 
     @property
     def equity(self) -> pd.Series:

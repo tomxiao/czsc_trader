@@ -6,14 +6,12 @@ import sys
 
 import pytest
 import strategy_runtime
-import strategy_runtime.charts
 from strategy_runtime import implementation_identity
 
 
 @pytest.fixture
 def candidate_payload(tmp_path, monkeypatch):
     package_path = list(strategy_runtime.__path__)
-    chart_path = list(strategy_runtime.charts.__path__)
     package = tmp_path / "runtime" / "strategy_runtime"
     strategies = package / "strategies"
     strategies.mkdir(parents=True)
@@ -38,4 +36,3 @@ def candidate_payload(tmp_path, monkeypatch):
     sys.modules.pop(module_name, None)
     sys.modules.pop("strategy_runtime.strategies", None)
     strategy_runtime.__path__[:] = package_path
-    strategy_runtime.charts.__path__[:] = chart_path

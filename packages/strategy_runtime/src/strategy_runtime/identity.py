@@ -31,10 +31,10 @@ class CandidateContentIdentity:
     content_sha256: str
     source_sha256: str
     dependency_sha256: str
-    schema_version: int = 1
+    schema_version: int = 2
 
     def __post_init__(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version != 1:
+        if type(self.schema_version) is not int or self.schema_version != 2:
             raise RuntimeContractError("unsupported candidate identity schema")
         for name in ("content_sha256", "source_sha256", "dependency_sha256"):
             value = getattr(self, name)
@@ -80,10 +80,11 @@ def content_identity(
             "tradable_symbol",
             "state_mode",
             "history",
+            "observation",
         )
     }
     payload.update(
-        schema_version=1, source_files=sorted(source_files), dependency_sha256=dependency_hash
+        schema_version=2, source_files=sorted(source_files), dependency_sha256=dependency_hash
     )
     payload["payload_extensions"] = _value(payload_extensions)
     return CandidateContentIdentity(

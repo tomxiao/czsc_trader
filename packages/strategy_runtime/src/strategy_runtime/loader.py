@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 
 from .deployment import load_strategy_deployment
+from .binding import RuntimeBinding
 from .errors import RuntimeCompatibilityError
 from .implementation_identity import implementation_sha256, strategy_source_root
 from .isolated_import import load_closure_module
@@ -23,7 +24,7 @@ class StrategyLoader:
         self,
         release: StrategyRelease,
         source_root: Path | None,
-        runtime_binding: Mapping[str, object] | None,
+        runtime_binding: RuntimeBinding | None,
     ) -> tuple[Path, Mapping[str, object]]:
         if source_root is None and runtime_binding is None:
             if self.strategy_root is None:
@@ -33,28 +34,18 @@ class StrategyLoader:
             deployment = load_strategy_deployment(self.strategy_root, release.release_id)
             source_root = deployment.source_root
             runtime_binding = deployment.binding
-        elif (
-            source_root is not None
-            and runtime_binding is None
-            and isinstance(release.payload.get("runtime"), Mapping)
-        ):
-            descriptor = release.payload["runtime"]
-            runtime_binding = {
-                "release_id": release.release_id,
-                "release_hash": release.release_hash,
-                "source_files": descriptor.get("source_files"),
-                "implementation_sha256": descriptor.get("source_sha256"),
-            }
         elif source_root is None or runtime_binding is None:
             raise RuntimeCompatibilityError(
                 "release loading requires both source root and runtime binding"
             )
+        if not isinstance(runtime_binding, RuntimeBinding):
+            raise RuntimeCompatibilityError("runtime_binding requires RuntimeBinding")
         root = Path(source_root).resolve()
         if root.name != "strategy_runtime" or not (root / "strategies").is_dir():
             raise RuntimeCompatibilityError("release source root is not an SRT package")
         if (
-            runtime_binding.get("release_id") != release.release_id
-            or runtime_binding.get("release_hash") != release.release_hash
+            runtime_binding.release_id != release.release_id
+            or runtime_binding.release_hash != release.release_hash
         ):
             raise RuntimeCompatibilityError("runtime binding differs from frozen release")
         return root, runtime_binding
@@ -63,12 +54,17 @@ class StrategyLoader:
         self,
         release: StrategyRelease,
         source_root: Path | None = None,
-        runtime_binding: Mapping[str, object] | None = None,
+        runtime_binding: RuntimeBinding | None = None,
     ):
         if not isinstance(release, StrategyRelease):
             raise RuntimeCompatibilityError("frozen loading requires a validated StrategyRelease")
         root, binding = self._release_source(release, source_root, runtime_binding)
         if "runtime" in release.payload:
+            descriptor = release.payload['runtime']
+            if (not isinstance(descriptor, Mapping) or
+                tuple(descriptor.get('source_files', ())) != binding.spec.source_files or
+                descriptor.get('source_sha256') != binding.spec.implementation_sha256):
+                raise RuntimeCompatibilityError('runtime binding differs from declared source closure')
             module_name, class_name, factory = self._declared_factory(
                 release.payload, source_root=root,
             )
@@ -78,8 +74,8 @@ class StrategyLoader:
             f"{release.strategy_family_id.lower()}_{release.version.lower()}"
         )
         class_name = f"{release.strategy_family_id}{release.version.upper()}"
-        actual = implementation_sha256(tuple(binding["source_files"]), source_root=root)
-        if actual != binding["implementation_sha256"]:
+        actual = implementation_sha256(tuple(binding.spec.source_files), source_root=root)
+        if actual != binding.spec.implementation_sha256:
             raise RuntimeCompatibilityError(
                 f"frozen implementation differs from runtime binding: {release.release_id}"
             )
@@ -88,7 +84,7 @@ class StrategyLoader:
                 module = load_closure_module(
                     module_name,
                     source_root=root,
-                    source_files=tuple(binding["source_files"]),
+                    source_files=tuple(binding.spec.source_files),
                     source_sha256=actual,
                     marker="srt_source",
                 )
@@ -98,7 +94,7 @@ class StrategyLoader:
                 f"strategy implementation is unavailable: {module_name}.{class_name}"
             ) from exc
         factory.__module__ = module_name
-        if implementation_sha256(tuple(binding["source_files"]), source_root=root) != actual:
+        if implementation_sha256(tuple(binding.spec.source_files), source_root=root) != actual:
             raise RuntimeCompatibilityError("implementation source changed while loading")
         return module_name, class_name, factory, root, binding
 
@@ -182,8 +178,8 @@ class StrategyLoader:
     ) -> None:
         descriptor = payload["runtime"]
         definition = strategy.definition
-        if definition.schema_version != 2:
-            raise RuntimeCompatibilityError("declared implementations must use runtime schema 2")
+        if definition.schema_version != 3:
+            raise RuntimeCompatibilityError("declared implementations must use runtime schema 3")
         actual = definition.implementation
         for key in ("module", "qualname", "contract_version", "source_sha256"):
             if getattr(actual, key) != descriptor[key]:
@@ -237,7 +233,7 @@ class StrategyLoader:
         class_name: str,
         *,
         source_root: Path,
-        binding: Mapping[str, object],
+        binding: RuntimeBinding,
     ) -> StrategyImplementation:
         if not isinstance(strategy, StrategyImplementation):
             raise RuntimeCompatibilityError(
@@ -259,14 +255,18 @@ class StrategyLoader:
             raise RuntimeCompatibilityError(
                 "loaded implementation identity differs from convention"
             )
+        if definition.observation.sha256 != binding.spec.observation_sha256:
+            raise RuntimeCompatibilityError("observation definition differs from binding")
+        if definition.implementation.source_sha256 != binding.spec.implementation_sha256:
+            raise RuntimeCompatibilityError("implementation differs from binding")
         if "runtime" in release.payload:
             self._validate_declared_content(release.payload, strategy)
             return strategy
-        if binding.get("release_hash") != release.release_hash:
+        if binding.release_hash != release.release_hash:
             raise RuntimeCompatibilityError("runtime binding release hash differs from release")
-        source_files = tuple(binding["source_files"])
+        source_files = tuple(binding.spec.source_files)
         actual_sha256 = implementation_sha256(source_files, source_root=source_root)
-        if actual_sha256 != binding["implementation_sha256"]:
+        if actual_sha256 != binding.spec.implementation_sha256:
             raise RuntimeCompatibilityError(
                 f"frozen implementation differs from runtime binding: {release.release_id}"
             )
@@ -281,7 +281,7 @@ class StrategyLoader:
         release: StrategyRelease,
         *,
         source_root: Path | None = None,
-        runtime_binding: Mapping[str, object] | None = None,
+        runtime_binding: RuntimeBinding | None = None,
     ) -> StrategyImplementation:
         module_name, class_name, factory, root, binding = self._load_factory(
             release, source_root, runtime_binding,
@@ -304,7 +304,7 @@ class StrategyLoader:
         symbol: str,
         *,
         source_root: Path | None = None,
-        runtime_binding: Mapping[str, object] | None = None,
+        runtime_binding: RuntimeBinding | None = None,
     ) -> StrategyImplementation:
         """Bind a formula-compatible release to one explicit deployment symbol.
 

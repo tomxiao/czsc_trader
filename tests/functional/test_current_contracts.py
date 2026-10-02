@@ -6,7 +6,7 @@ import json
 import pytest
 from research_experiment import ExperimentBinding
 from strategy_manager import StrategyRegistry, StrategyVersion, ValidationError
-from strategy_runtime import ChartRuntime, StrategyRelease, RuntimeContractError
+from strategy_runtime import StrategyRelease, RuntimeContractError
 from czsc_trader.application import inspect_candidate, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
 from test_candidate_freeze import (
@@ -58,8 +58,10 @@ def test_removed_public_names_are_unavailable():
     import czsc_trader.backtesting as backtest
     import dataflows.bar_utils as bars
     import strategy_evaluator as se
+    import strategy_runtime as srt
 
     for module, names in (
+        (srt, ("ChartRuntime", "validate_chart_context", "validate_observation_descriptor", "validate_observation_payload")),
         (d, ("LegacyDeliveryReference",)),
         (app, ("BacktestRequestV2",)),
         (backtest, ("run_backtest_v2", "_run_backtest")),
@@ -83,21 +85,13 @@ def test_current_frozen_identity_covers_governance_and_payload(current_frozen):
             replace(version, **changes)
 
 
-def test_current_chart_rejects_foreign_release_identity(current_frozen):
+def test_current_binding_rejects_foreign_release_identity(current_frozen):
+    from strategy_runtime import StrategyRuntime, load_strategy_deployment, RuntimeCompatibilityError
     context, version = current_frozen
-    with pytest.raises(ValueError, match="identity hash differs"):
-        ChartRuntime(context.strategy_root).render_backtest(
-            version.release_id,
-            {
-                "contract_version": "strategy_chart.v1", "mode": "BACKTEST",
-                "strategy": {"strategy_id": "S900", "reference_id": version.release_id,
-                             "identity_hash": "0" * 64, "symbol": "588080.SH"},
-                "window": {"evaluation_start": "2026-09-15", "evaluation_end": "2026-09-21"},
-                "market_data": {"identity": "synthetic", "adjustment": "hfq", "bars": [{"date": "2026-09-15", "open": 1, "high": 1, "low": 1, "close": 1}]},
-                "strategy_output": {}, "execution": {},
-                "render": {"format": "html", "plotly_runtime": "embedded"},
-            },
-        )
+    deployment = load_strategy_deployment(context.strategy_root, version.release_id)
+    with pytest.raises(RuntimeCompatibilityError, match="differs from frozen release"):
+        StrategyRuntime().describe(StrategyRelease.from_mapping(version.to_dict()),
+            source_root=deployment.source_root, runtime_binding=replace(deployment.binding, release_hash="0" * 64))
 
 
 def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
@@ -124,3 +118,19 @@ def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
     registry.retire_version("S900", "v1", actor="test", reason="retire")
     with pytest.raises(InvalidTransitionError):
         registry.promote_version("S900", "v1", actor="test", reason="invalid", evidence_ids=[])
+
+
+def test_frozen_binding_rejects_observation_digest_tampering(current_frozen):
+    from strategy_runtime import StrategyRuntime, RuntimeCompatibilityError, load_strategy_deployment
+    context, version = current_frozen
+    release = StrategyRelease.from_mapping(version.to_dict())
+    deployed = load_strategy_deployment(context.strategy_root, version.release_id)
+    corrupted = replace(deployed.binding, spec=replace(deployed.binding.spec, observation_sha256='0'*64))
+    with pytest.raises(RuntimeCompatibilityError, match='observation'):
+        StrategyRuntime().describe(release, source_root=deployed.source_root, runtime_binding=corrupted)
+    with pytest.raises(RuntimeCompatibilityError, match='requires RuntimeBinding'):
+        StrategyRuntime().describe(release, source_root=deployed.source_root, runtime_binding=deployed.binding.to_dict())
+    with pytest.raises(RuntimeCompatibilityError):
+        StrategyRuntime().describe(release, source_root=deployed.source_root)
+    assert 'charts' not in deployed.binding.to_dict()
+    assert all(not name.startswith('charts/') for name in deployed.install_files)

@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from collections.abc import Mapping
 from pathlib import Path
 from dataflows import Dataflows
 
+from .binding import RuntimeBinding
 from .contracts import StrategyIdentity, TradableWindow
 from .loader import StrategyLoader
 from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, StrategyRelease
@@ -22,9 +22,11 @@ class StrategyInit:
     symbol: str | None = None
     execution_policy: ExecutionPolicy | None = None
     source_root: Path | None = None
-    runtime_binding: Mapping[str, object] | None = None
+    runtime_binding: RuntimeBinding | None = None
 
     def __post_init__(self) -> None:
+        if self.runtime_binding is not None and not isinstance(self.runtime_binding, RuntimeBinding):
+            raise TypeError("runtime_binding requires RuntimeBinding")
         object.__setattr__(self, "data_dir", Path(self.data_dir).resolve())
         if self.source_root is not None:
             object.__setattr__(self, "source_root", Path(self.source_root).resolve())
@@ -47,7 +49,7 @@ class StrategyRuntime:
         source: StrategyRelease | StrategyCandidate,
         symbol: str | None,
         source_root: Path | None = None,
-        runtime_binding: Mapping[str, object] | None = None,
+        runtime_binding: RuntimeBinding | None = None,
     ):
         if isinstance(source, StrategyRelease):
             return (
@@ -64,6 +66,8 @@ class StrategyRuntime:
                     runtime_binding=runtime_binding,
                 )
             )
+        if source_root is not None or runtime_binding is not None:
+            raise ValueError("candidate does not accept release source or binding overrides")
         if symbol is not None:
             raise ValueError("candidate strategy does not support symbol rebinding")
         return self._loader.load_candidate(source)
@@ -74,7 +78,7 @@ class StrategyRuntime:
         *,
         symbol: str | None = None,
         source_root: Path | None = None,
-        runtime_binding: Mapping[str, object] | None = None,
+        runtime_binding: RuntimeBinding | None = None,
     ) -> RuntimeDefinition:
         """Return the validated frozen definition without creating an instance."""
 

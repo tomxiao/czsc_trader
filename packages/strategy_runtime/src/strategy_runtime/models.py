@@ -17,6 +17,7 @@ import pandas as pd
 
 from .errors import RuntimeContractError
 from .alignment import InputAlignment
+from .observation import ObservationDefinition
 
 
 _FAMILY_ID = re.compile(r"S\d{3,}")
@@ -299,14 +300,17 @@ class RuntimeDefinition:
     monitoring: MonitoringPolicy
     capabilities: RequiredCapabilities
     tradable_symbol: str
+    observation: ObservationDefinition
     state_mode: str = "STATELESS"
     identity_kind: str = "RELEASE"
     candidate_id: str | None = None
     history: HistoryPolicy = field(default_factory=HistoryPolicy)
 
     def __post_init__(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version != 2:
-            raise RuntimeContractError("runtime definition schema_version must be 2")
+        if type(self.schema_version) is not int or self.schema_version != 3:
+            raise RuntimeContractError("runtime definition schema_version must be 3")
+        if not isinstance(self.observation, ObservationDefinition):
+            raise RuntimeContractError("runtime observation definition must be typed")
         if not _FAMILY_ID.fullmatch(self.strategy_family_id):
             raise RuntimeContractError("strategy_family_id must look like S001")
         if self.identity_kind == "RELEASE":
@@ -317,9 +321,9 @@ class RuntimeDefinition:
             if self.release_id != f"{self.strategy_family_id}-{self.version}":
                 raise RuntimeContractError("release_id must equal strategy_family_id-version")
         elif self.identity_kind == "CANDIDATE":
-            if self.schema_version != 2 or self.version is not None:
+            if self.schema_version != 3 or self.version is not None:
                 raise RuntimeContractError(
-                    "candidate runtime requires schema 2 and no frozen version"
+                    "candidate runtime requires schema 3 and no frozen version"
                 )
             _candidate_id(self.candidate_id)
             if self.release_id != f"{self.strategy_family_id}-{self.candidate_id}":
@@ -358,6 +362,7 @@ class RuntimeDefinition:
         }
         identity.update(identity_kind=self.identity_kind, candidate_id=self.candidate_id)
         identity["contracts"] = {
+            "observation": self.observation.to_dict(),
             "inputs": [
                 {
                     "name": item.name,

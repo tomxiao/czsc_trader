@@ -11,7 +11,7 @@ from strategy_manager import (
     StrategyVersion,
 )
 from strategy_manager import freeze_contracts as f
-from strategy_runtime import StrategyRelease, implementation_sha256
+from strategy_runtime import StrategyRelease
 from czsc_trader.application import (
     assemble_delivery,
     CandidateInspectionRequest,
@@ -60,47 +60,6 @@ def inspection(completed):
             "选择合成候选",
         ),
     )
-    chart = context.root / ".tmp/chart.py"
-    chart.write_text(
-        "class Charts:\n    def render_backtest(self, context):\n        return '<html>fixture</html>'\n"
-    )
-    chart_root = context.root / ".tmp/chart-source"
-    (chart_root / "charts").mkdir(parents=True)
-    (chart_root / "charts/freeze_fixture.py").write_bytes(chart.read_bytes())
-    binding = context.root / ".tmp/binding.json"
-    binding.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "source_files": list(request.strategy.payload["runtime"]["source_files"]),
-                "implementation_sha256": request.strategy.payload["runtime"]["source_sha256"],
-                "install_files": [
-                    *request.strategy.payload["runtime"]["source_files"],
-                    "charts/freeze_fixture.py",
-                ],
-                "charts": {
-                    "module": "strategy_runtime.charts.freeze_fixture",
-                    "qualname": "Charts",
-                    "contract_version": 1,
-                    "source_files": ["charts/freeze_fixture.py"],
-                    "source_sha256": implementation_sha256(
-                        ("charts/freeze_fixture.py",), source_root=chart_root
-                    ),
-                },
-                "observation": {
-                    "contract_version": "strategy_observation.v1",
-                    "series": [
-                        {
-                            "key": "target",
-                            "label": "目标",
-                            "value_field": "fixture_signal",
-                            "guides": [],
-                        }
-                    ],
-                },
-            }
-        )
-    )
     execution = create_formal_experiment_context(
         old_execution.definition,
         repository_root=context.root,
@@ -129,8 +88,7 @@ def inspection(completed):
         "合成冻结验证",
         request.data_cutoff.isoformat(),
         "2026-09-22",
-        file_ref(context.root, binding),
-        (f.FreezeFile("charts/freeze_fixture.py", file_ref(context.root, chart)),),
+        (),
         ("合成结果不代表收益证据",),
     )
     return context, inspection_request, source
@@ -186,7 +144,7 @@ def test_managed_inspection_freeze_and_idempotent_query(inspection):
     assert registry.validate_all()["versions"] == 1
     assert not (context.strategy_root / "deployments").exists()
     with pytest.raises(ValueError, match="different content"):
-        freeze_candidate(context, replace(operation, inspection=request.runtime_binding))
+        freeze_candidate(context, replace(operation, inspection=report.plan.payload))
 
 
 def test_missing_coverage_never_passes_or_freezes(inspection):
@@ -513,17 +471,12 @@ def test_invalid_package_reports_failure_and_decisions_are_immutable(inspection)
     from strategy_manager.freeze_store import read_decision
 
     context, request, source = inspection
-    binding_path = request.runtime_binding.resolve(context.root)
-    payload = json.loads(binding_path.read_text(encoding="utf-8"))
-    payload["install_files"] = []
-    binding_path.write_text(json.dumps(payload), encoding="utf-8")
-    report = inspect_candidate(
-        context, replace(request, runtime_binding=file_ref(context.root, binding_path), replays=())
-    )
-    assert (
-        next(x for x in report.checks if x.check is f.InspectionCheck.PACKAGE).status
-        is f.InspectionStatus.FAIL
-    )
+    report = inspect_candidate(context, request)
+    operation = approve(context, report, source)
+    binding_path = report.plan.runtime_binding.resolve(context.strategy_root)
+    binding_path.write_bytes(binding_path.read_bytes() + b" ")
+    with pytest.raises(ValidationError, match="hash"):
+        freeze_candidate(context, operation)
     selection = read_decision(context.strategy_root, request.selection)
     repeated = replace(selection, confirmation_source=file_ref(context.root, source))
     assert record_research_decision(context, repeated) == request.selection

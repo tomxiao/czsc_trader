@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from collections.abc import Mapping
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 import json
@@ -30,7 +29,7 @@ from strategy_runtime import (
     load_strategy_deployment,
     materialize_observation,
     unavailable_observation,
-    validate_observation_descriptor,
+    RuntimeDefinition, RuntimeContractError,
 )
 from dataflows import Dataflows, DataRequest, Dataset
 
@@ -41,7 +40,7 @@ from .errors import AdviceClientError
 
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
 _ACCOUNT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
-_PREPARED_STORAGE_REVISION = 1
+_PREPARED_STORAGE_REVISION = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,7 +49,6 @@ class PreparedAccountStrategy:
 
     instance: StrategyInstance
     result: DataPreparationResult
-    observation_descriptor: Mapping[str, object]
 
     @property
     def strategy(self):
@@ -114,7 +112,7 @@ def _order_payload(order) -> dict[str, object]:
 def _decision_from_plan(
     plan: ExecutionPlan,
     identity: dict[str, str],
-    observation_descriptor: Mapping[str, object],
+    definition: RuntimeDefinition,
 ) -> AdviceDecision:
     orders = [_order_payload(order) for order in plan.orders]
     legs = [
@@ -132,14 +130,9 @@ def _decision_from_plan(
     ]
     source_decision_id = f"SRT-{plan.signal_date:%Y%m%d}-{plan.signal_identity[:12].upper()}"
     try:
-        observation = materialize_observation(
-            observation_descriptor,
-            plan.evidence,
-            action=plan.action,
-            target_position=plan.target_position,
-        )
-    except ValueError as exc:
-        observation = unavailable_observation(exc)
+        observation = materialize_observation(definition, plan).to_dict()
+    except RuntimeContractError as exc:
+        observation = unavailable_observation(str(exc)).to_dict()
     payload = {
         "contract_version": "advice.v5" if plan.plan_mode != "NONE" or legs else "advice.v4",
         "decision_id": source_decision_id,
@@ -212,7 +205,6 @@ class SrtAdviceClient:
         path = self.repo_root / "strategies" / strategy_id / "versions" / f"{strategy_version}.json"
         payload = _load_manifest(path)
         release = StrategyRelease.from_mapping(payload)
-        from strategy_runtime import load_strategy_deployment
         deployment = load_strategy_deployment(self.repo_root / "strategies", release.release_id)
         if deployment.release_hash != release.release_hash:
             raise AdviceClientError("strategy differs from committed deployment")
@@ -300,8 +292,7 @@ class SrtAdviceClient:
             )
         )
         prepared = strategy.prepare_data()
-        descriptor = validate_observation_descriptor(entry.get("observation"))
-        return PreparedAccountStrategy(strategy, prepared, descriptor)
+        return PreparedAccountStrategy(strategy, prepared)
 
     def _trading_calendar(self, start: date, end: date) -> dict[date, int]:
         result = Dataflows().fetch(
@@ -475,12 +466,6 @@ class SrtAdviceClient:
             )
         if strategy.identity.symbol != symbol.upper():
             raise AdviceClientError("SRT execution-pricing symbol differs from account")
-        deployment = load_strategy_deployment(
-            self.repo_root / "strategies", release.release_id
-        )
-        observation = validate_observation_descriptor(
-            deployment.binding.get("observation")
-        )
         self._write_index(
             root,
             {
@@ -496,12 +481,11 @@ class SrtAdviceClient:
                         "runtime_sha256": strategy.identity.runtime_sha256,
                         "data_dir": directory.relative_to(root).as_posix(),
                         "data_identity": prepared.data_identity,
-                        "observation": observation,
                     }
                 },
             },
         )
-        return PreparedAccountStrategy(strategy, prepared, observation)
+        return PreparedAccountStrategy(strategy, prepared)
 
     def verify_account_data(
         self,
@@ -627,7 +611,7 @@ class SrtAdviceClient:
                 state=ExecutionState(state_revision, generated_at, cycle_target_quantity),
             )
             decision = _decision_from_plan(
-                plan, identity, prepared.observation_descriptor
+                plan, identity, prepared.instance.definition
             )
         except Exception as exc:
             self._audit_call(started, error=exc, **scope)

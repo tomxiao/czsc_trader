@@ -1,7 +1,7 @@
 from argparse import Namespace
 from concurrent.futures import Future
 from dataclasses import replace
-from datetime import date
+from datetime import date, timedelta
 import json
 import os
 from pathlib import Path
@@ -299,8 +299,13 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(tmp_path, 
             "valid_session": "2026-09-04",
             "action": "WAIT",
             "target_quantity": 0,
+            "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
+            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
-                "contract_version": "strategy_observation.v1",
+                "contract_version": "strategy_observation.v2",
+                "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
+                "definition_sha256":"d"*64, "signal_identity":"e"*64, "plan_identity":"f"*64,
+                "signal_date":"2026-09-03", "valid_session":"2026-09-04", "facts":[],
                 "status": "READY",
                 "action": "WAIT",
                 "target_position": 0.0,
@@ -464,8 +469,13 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(tmp_path
             "valid_session": "2026-09-04",
             "action": "WAIT",
             "target_quantity": 0,
+            "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
+            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
-                "contract_version": "strategy_observation.v1",
+                "contract_version": "strategy_observation.v2",
+                "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
+                "definition_sha256":"d"*64, "signal_identity":"e"*64, "plan_identity":"f"*64,
+                "signal_date":"2026-09-03", "valid_session":"2026-09-04", "facts":[],
                 "status": "READY",
                 "action": "WAIT",
                 "target_position": 0.0,
@@ -536,11 +546,16 @@ def test_account_chart_uses_only_active_decisions(tmp_path):
             "account_id": "s001-v2",
             "decision_id": decision_id,
             "signal_date": signal_date,
-            "valid_session": "2026-09-04",
+            "valid_session": (date.fromisoformat(signal_date)+timedelta(days=1)).isoformat(),
             "action": "WAIT",
             "target_quantity": 0,
+            "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
+            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
-                "contract_version": "strategy_observation.v1",
+                "contract_version": "strategy_observation.v2",
+                "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
+                "definition_sha256":"d"*64, "signal_identity":"e"*64, "plan_identity":"f"*64,
+                "signal_date":signal_date, "valid_session":(date.fromisoformat(signal_date)+timedelta(days=1)).isoformat(), "facts":[],
                 "status": "READY",
                 "action": "WAIT",
                 "target_position": 0.0,

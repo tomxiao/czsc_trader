@@ -8,7 +8,7 @@ import math
 import re
 from typing import Any
 
-from strategy_runtime import validate_observation_payload
+from strategy_runtime import StrategyObservation, ObservationUnavailable
 
 
 class AdviceContractError(ValueError):
@@ -334,7 +334,19 @@ class AdviceDecision:
             raise AdviceContractError("input identity hash has invalid format")
         strategy_output = _object(value.get("strategy_output"), "strategy output")
         try:
-            observation = validate_observation_payload(value.get("observation"))
+            raw_observation = value.get("observation")
+            if isinstance(raw_observation, dict) and raw_observation.get('status') == 'UNAVAILABLE':
+                observation = ObservationUnavailable.from_dict(raw_observation).to_dict()
+            else:
+                fact = StrategyObservation.from_dict(raw_observation)
+                if (fact.strategy.reference_id != strategy['release_id'] or
+                    fact.strategy.release_hash != release_hash or fact.strategy.symbol != value['symbol'] or
+                    fact.strategy.runtime_sha256 != runtime_sha256 or fact.action != value['action'] or
+                    fact.strategy.strategy_id != strategy['strategy_id'] or
+                    fact.signal_identity != value['signal_identity'] or fact.plan_identity != value['plan_identity'] or
+                    fact.signal_date.isoformat() != value['signal_date'] or fact.valid_session.isoformat() != value['valid_session']):
+                    raise AdviceContractError('observation belongs to another decision')
+                observation = fact.to_dict()
         except ValueError as exc:
             raise AdviceContractError(str(exc)) from exc
         if re.fullmatch(r"[0-9]{6}\.(SH|SZ)", str(value.get("symbol", "")).upper()) is None:

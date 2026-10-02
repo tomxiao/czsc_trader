@@ -5,7 +5,7 @@ from dataclasses import dataclass, fields, is_dataclass, replace
 from pathlib import Path
 
 from strategy_manager import StrategyVersion, canonical_sha256
-from strategy_runtime import RuntimeDefinition, StrategyRelease, StrategyRuntime
+from strategy_runtime import RuntimeBinding, RuntimeDefinition, StrategyRelease, StrategyRuntime
 
 
 def prospective_release(version: StrategyVersion) -> StrategyRelease:
@@ -54,10 +54,10 @@ def runtime_readiness(definition: RuntimeDefinition) -> RuntimeReadiness:
 
 
 def validate_runtime_readiness(
-    version: StrategyVersion, *, source_root: Path | None = None
+    version: StrategyVersion, *, source_root: Path | None = None, runtime_binding: RuntimeBinding | None = None
 ) -> RuntimeReadiness:
     return runtime_readiness(
-        StrategyRuntime().describe(prospective_release(version), source_root=source_root)
+        StrategyRuntime().describe(prospective_release(version), source_root=source_root, runtime_binding=runtime_binding)
     )
 
 

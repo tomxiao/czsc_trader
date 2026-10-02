@@ -202,17 +202,9 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
             app_js = response.read().decode()
         with urlopen(base + "/static/styles.css", timeout=3) as response:
             styles_css = response.read().decode()
-        with urlopen(base + "/static/plotly.min.js", timeout=3) as response:
-            plotly_javascript = response.read()
-            plotly_etag = response.headers["ETag"]
-            assert "immutable" in response.headers["Cache-Control"]
-        assert len(plotly_javascript) > 4_000_000
-        plotly_conditional = Request(
-            base + "/static/plotly.min.js", headers={"If-None-Match": plotly_etag}
-        )
-        with pytest.raises(HTTPError) as cached_plotly:
-            urlopen(plotly_conditional, timeout=3)
-        assert cached_plotly.value.code == 304
+        with pytest.raises(HTTPError) as obsolete_asset:
+            urlopen(base + "/static/plotly.min.js", timeout=3)
+        assert obsolete_asset.value.code == 404
         assert 'scrolling="no"' in app_js
         assert "sortVirtualAccounts(state.accounts)" in app_js
         assert "交易标的 ${esc(a.symbol)}" in app_js

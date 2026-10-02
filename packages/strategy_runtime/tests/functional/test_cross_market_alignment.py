@@ -18,7 +18,7 @@ from strategy_runtime import (
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
+    RuntimeDefinition, ObservationDefinition,
     RuntimeContractError,
     align_input_history,
 )
@@ -125,7 +125,8 @@ def test_c03_alignment_contract_participates_in_input_identity() -> None:
         "allow_same_day": False,
     }
     common = {
-        "schema_version": 2,
+        "schema_version": 3,
+        "observation": ObservationDefinition((),()),
         "strategy_family_id": "S008",
         "version": None,
         "release_id": "S008-EX64INPUT",

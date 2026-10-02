@@ -45,5 +45,5 @@ def test_strategy_commands_cover_only_installed_srt_versions(current_frozen):
     assert deployed.result["deployment_state"] == "SRT_DEPLOYED"
     assert [item["strategy_version_id"] for item in listed.result["strategies"]] == ["S900-v1"]
     assert info.result["strategy_version_id"] == "S900-v1"
-    assert info.result["chart_contract"] is True
+    assert len(info.result["observation_sha256"]) == 64
     assert not list((repo / "strategies" / "S900" / "releases" / "v1").rglob("__pycache__"))

@@ -8,6 +8,7 @@ from datetime import date
 import pandas as pd
 from dataflows import Dataset
 from strategy_runtime import (
+    ObservationDefinition, ObservationSeries,
     CalculationScope,
     CalendarWindow,
     CutoffRule,
@@ -80,7 +81,8 @@ class CandidateFixture(StrategyImplementation):
             for index, symbol in enumerate(reference_symbols, start=1)
         )
         self._definition = RuntimeDefinition(
-            schema_version=2,
+            schema_version=3,
+            observation=ObservationDefinition((ObservationSeries("fixture", "合成信号", "fixture_signal"),), ()),
             strategy_family_id=identity.strategy_family_id,
             version=None if candidate else identity.version,
             release_id=identity.reference_id if candidate else identity.release_id,

@@ -398,7 +398,9 @@ def replay_srt_account(
         order_types=definition.capabilities.order_types,
         checkpoints=definition.capabilities.checkpoints,
     )
-    ledger = strategy.run_window(executor=channel)
+    from .observation import ObservationExecutor
+    observed = ObservationExecutor(strategy.definition, channel)
+    ledger = strategy.run_window(executor=observed)
     return BacktestResult(
         identity=signals.snapshot.identity,
         decisions=ledger.decisions,
@@ -406,4 +408,5 @@ def replay_srt_account(
         fills=ledger.fills,
         account_daily=ledger.account_daily,
         trades=ledger.trades,
+        observations=tuple(observed.observations),
     )

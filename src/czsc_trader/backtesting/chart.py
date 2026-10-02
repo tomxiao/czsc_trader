@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from html import escape
+from dataclasses import asdict
 from datetime import datetime
 from importlib.resources import files
 import json
@@ -42,10 +43,8 @@ def _chart_payload(context: BacktestChartContext) -> dict[str, object]:
             "action": x.action,
             "observation": {
                 "status": "READY", "target_position": x.target_position,
-                "series": [
-                    {"key": "target_position", "label": "目标仓位", "value": x.target_position, "guides": []},
-                    *[{"key": key, "label": key, "value": value, "guides": []} for key, value in x.values],
-                ],
+                "series": [{**asdict(series), "guides": [asdict(guide) for guide in series.guides]} for series in x.series],
+                "facts": [asdict(fact) for fact in x.facts],
             },
         } for x in context.signals],
         "execution": {

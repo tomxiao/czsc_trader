@@ -341,12 +341,10 @@ def test_parameter_search_and_release_use_one_implementation_and_isolated_txe(
         strategy_family_id="S900", version="v1", release_id="S900-v1",
         release_hash="a" * 64, payload=payload,
     )
-    runtime_binding = {
-        "release_id": frozen_source.release_id,
-        "release_hash": frozen_source.release_hash,
-        "source_files": payload["runtime"]["source_files"],
-        "implementation_sha256": payload["runtime"]["source_sha256"],
-    }
+    from strategy_runtime import RuntimeBinding, RuntimeBindingSpec
+    runtime_binding = RuntimeBinding(frozen_source.release_id, frozen_source.release_hash,
+        RuntimeBindingSpec(tuple(payload['runtime']['source_files']), payload['runtime']['source_sha256'],
+                           tuple(payload['runtime']['source_files']), first.definition.observation.sha256))
     frozen = loader.load(
         frozen_source,
         source_root=package,

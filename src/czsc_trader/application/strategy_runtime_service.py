@@ -10,8 +10,8 @@ from typing import Any
 from strategy_manager import StrategyRegistry, canonical_sha256
 from strategy_runtime import (
     StrategyRuntime,
+    RuntimeBinding,
     load_strategy_deployment,
-    validate_observation_descriptor,
 )
 
 from .context import RepositoryContext
@@ -124,18 +124,7 @@ def validate_release_package(
         raise ValueError("strategy version package contains untracked or missing files")
     runtime_root = root / _safe_relative(manifest["runtime_root"], "runtime_root")
     binding = _read_object(root / _safe_relative(manifest["runtime_binding"], "runtime_binding"))
-    expected_binding = {
-        "schema_version",
-        "release_id",
-        "release_hash",
-        "source_files",
-        "implementation_sha256",
-        "install_files",
-        "charts",
-        "observation",
-    }
-    if set(binding) != expected_binding or binding["schema_version"] != 1:
-        raise ValueError("strategy version runtime binding fields are invalid")
+    RuntimeBinding.from_dict(binding)
     if (
         binding.get("release_id") != reference
         or binding.get("release_hash") != manifest["strategy_version_hash"]
@@ -149,14 +138,6 @@ def validate_release_package(
     )
     if len(normalized_install_files) != len(set(normalized_install_files)):
         raise ValueError("strategy version runtime binding repeats install files")
-    from strategy_runtime import ChartRuntime
-
-    ChartRuntime().validate_descriptor(
-        binding.get("charts"),
-        source_root=runtime_root,
-        install_files=normalized_install_files,
-    )
-    validate_observation_descriptor(binding.get("observation"))
     release = expected_release
     if release is None:
         registry = StrategyRegistry(context.strategy_root)
@@ -171,7 +152,7 @@ def validate_release_package(
     StrategyRuntime().describe(
         release,
         source_root=runtime_root,
-        runtime_binding=binding,
+        runtime_binding=RuntimeBinding.from_dict(binding),
     )
     return manifest, binding, runtime_root
 
@@ -203,7 +184,7 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
         definition = StrategyRuntime().describe(
             release,
             source_root=source_root,
-            runtime_binding=binding,
+            runtime_binding=RuntimeBinding.from_dict(binding),
         )
         receipt_payload = {
             "schema_version": 1,
@@ -255,8 +236,8 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
     family = registry.get_family(strategy_id)
     release = prospective_release(stored)
     if (
-        binding.get("release_id") != reference
-        or binding.get("release_hash") != release.release_hash
+        binding.release_id != reference
+        or binding.release_hash != release.release_hash
     ):
         raise ValueError("SRT binding differs from frozen strategy version")
     definition = StrategyRuntime(context.strategy_root).describe(release)
@@ -282,8 +263,8 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
         "selection_data_cutoff": stored.selection_data_cutoff,
         "fee_rate": fee_rate,
         "runtime_hash": definition.runtime_sha256,
-        "implementation_hash": binding.get("implementation_sha256"),
-        "chart_contract": "charts" in binding,
+        "implementation_hash": binding.spec.implementation_sha256,
+        "observation_sha256": binding.spec.observation_sha256,
         "deployment_state": "SRT_DEPLOYED",
         "receipt_hash": deployment.receipt_hash,
         "package_hash": deployment.package_hash,

@@ -40,7 +40,10 @@ def _context() -> dict[str, object]:
                 "action": "BUY",
                 "target_quantity": 1000,
                 "observation": {
-                    "contract_version": "strategy_observation.v1",
+                    "contract_version": "strategy_observation.v2",
+                    "strategy": {"strategy_id":"S007", "reference_id":"S007-v1", "release_hash":"a"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
+                    "definition_sha256":"d"*64, "signal_identity":"e"*64, "plan_identity":"f"*64,
+                    "signal_date":"2026-09-03", "valid_session":"2026-09-04", "facts":[],
                     "status": "READY",
                     "action": "BUY",
                     "target_position": 1.0,
@@ -75,3 +78,18 @@ def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
 
     with pytest.raises(ValueError, match="fields are invalid"):
         render_forward_chart_html(context)
+
+
+@pytest.mark.parametrize('field,value', [('release_hash','0'*64),('reference_id','S999-v1'),('symbol','159326.SZ')])
+def test_forward_chart_rejects_foreign_observation(field,value):
+    context = _context()
+    context['observations'][0]['observation']['strategy'][field] = value
+    with pytest.raises(ValueError, match='differs'):
+        render_forward_chart_html(context)
+
+
+def test_forward_chart_preserves_full_typed_explanation():
+    context = _context()
+    reason = '完整解释内容'*100
+    context['observations'][0]['observation']['facts'] = [dict(key='reason',label='理由',value_type='TEXT',format='TEXT',value=reason)]
+    assert reason in render_forward_chart_html(context)

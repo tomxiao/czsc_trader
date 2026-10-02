@@ -7,6 +7,7 @@ import re
 
 import pandas as pd
 import pytest
+from strategy_runtime import ObservedSeries, StrategyObservation, StrategyIdentity
 
 from czsc_trader.backtesting.chart import render_backtest_chart_html
 from czsc_trader.backtesting.chart_context import (
@@ -21,8 +22,8 @@ def chart_context():
     return BacktestChartContext(
         'S900-C001', 'a' * 64, 'b' * 64, '588080.SH', first, second, 1000.,
         (ChartBar(first, 10., 12., 9., 11.), ChartBar(second, 11., 13., 10., 12.)),
-        (ChartSignal('D1', date(2026, 9, 14), first, 1., 'BUY', (('score', .8),)),
-         ChartSignal('D2', first, second, 0., 'SELL', (('score', .2),))),
+        (ChartSignal('D1', date(2026, 9, 14), first, 1., 'BUY', (ObservedSeries('score', 'Score', .8, ()),)),
+         ChartSignal('D2', first, second, 0., 'SELL', (ObservedSeries('score', 'Score', .2, ()),))),
         (ChartFill('F1', 'D1', datetime(2026, 9, 15, 10), 'BUY', 100, 1., .1),
          ChartFill('F2', 'D2', datetime(2026, 9, 16, 10), 'SELL', 100, 1.1, .11)),
         (ChartAccount(first, 100, 1000.), ChartAccount(second, 0, 1009.79)),
@@ -44,7 +45,7 @@ def test_chart_separates_signals_fills_and_account_facts(chart_context):
     assert [x['quantity'] for x in payload['execution']['snapshots']] == [100, 0]
     assert payload['metrics'] == {'return': .00979, 'max_drawdown': -.02, 'closed_trades': 1,
                                  'calmar': .5, 'win_loss_ratio': None, 'win_rate': 1.}
-    assert payload['observations'][0]['observation']['series'][1]['value'] == .8
+    assert payload['observations'][0]['observation']['series'][0]['value'] == .8
 
 
 def test_chart_is_standalone_and_escapes_strategy_text(chart_context):
@@ -96,10 +97,11 @@ def test_projection_detaches_frames_and_rejects_foreign_identity(chart_context):
                             'low': x.low, 'close': x.close} for x in chart_context.bars])
     data = SimpleNamespace(adjusted_daily=prices, fingerprint='b' * 64, symbol='588080.SH')
     result = SimpleNamespace(identity=identity, decisions=pd.DataFrame([
-        {'decision_id': 'D1', 'signal_date': '2026-09-14', 'valid_session': '2026-09-15',
+        {'decision_id': 'DEC-' + 'E' * 20, 'signal_date': '2026-09-14', 'valid_session': '2026-09-15',
          'target_position': 1., 'action': 'BUY', 'score': .8}]), fills=pd.DataFrame(),
         account_daily=pd.DataFrame([{'date': x.session, 'quantity': x.quantity, 'equity': x.equity}
                                     for x in chart_context.accounts]))
+    result.observations = (StrategyObservation(StrategyIdentity('S900', 'S900-C001', 'a' * 64, 'b' * 64, '588080.SH'), 'c' * 64, 'd' * 64, 'e' * 64, date(2026,9,14), date(2026,9,15), 'BUY', 1., (ObservedSeries('score','Score',.8,()),), ()),)
     # The adapter expects a real typed result identity; only repository-independent facts are synthetic.
     result.identity = SimpleNamespace(reference='S900-C001')
     signals.snapshot.identity = result.identity

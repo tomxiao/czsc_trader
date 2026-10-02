@@ -15,6 +15,8 @@ import time
 from typing import Any, Callable
 from uuid import uuid4
 
+from strategy_runtime import StrategyObservation
+
 from .audit import AuditRecorder
 from .forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 
@@ -22,7 +24,7 @@ from .forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v2"
+CACHE_RENDER_REVISION = "pte-forward-chart-v3"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -261,6 +263,17 @@ class AccountChartService:
         if not isinstance(observation, dict) or observation.get("status") != "READY":
             message = observation.get("message") if isinstance(observation, dict) else None
             raise ValueError(message or f'decision {row["decision_id"]} has no chart observation')
+        fact = StrategyObservation.from_dict(observation)
+        if (fact.signal_identity != payload.get('signal_identity') or
+            fact.plan_identity != payload.get('plan_identity') or
+            fact.strategy.reference_id != payload.get('strategy', {}).get('release_id') or
+            fact.strategy.release_hash != payload.get('strategy', {}).get('release_hash') or
+            fact.strategy.symbol != payload.get('symbol') or
+            fact.signal_date.isoformat() != row['signal_date'] or
+            fact.valid_session.isoformat() != row['valid_session'] or
+            fact.action != payload.get('action') or
+            fact.strategy.runtime_sha256 != payload.get('runtime_sha256')):
+            raise ValueError('stored observation differs from decision identity')
         return {
             "account_id": row["account_id"],
             "decision_id": row["decision_id"],

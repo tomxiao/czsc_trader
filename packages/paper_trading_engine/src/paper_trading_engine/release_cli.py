@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
-import re
 import shutil
 import sqlite3
 import subprocess
@@ -21,12 +20,9 @@ from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
 from strategy_runtime import (
-    ChartRuntime,
     StrategyRelease,
     StrategyRuntime,
     deployment_inventory,
-    load_strategy_deployment,
-    validate_observation_descriptor,
 )
 
 from .runtime_release import (
@@ -201,9 +197,9 @@ def _verify_strategy_runtime_wheel_boundary(artifacts: Path) -> None:
                         "strategy_runtime/strategies/",
                         "strategy_runtime/bindings/",
                         "strategy_runtime/resources/",
+                        "strategy_runtime/charts/",
                     )
                 )
-                or re.fullmatch(r"strategy_runtime/charts/s\d+\.py", name)
             )
     except (BadZipFile, OSError) as exc:
         raise RuntimeError(f"cannot inspect strategy runtime wheel: {wheel.name}") from exc
@@ -216,7 +212,6 @@ def _verify_strategy_runtime_wheel_boundary(artifacts: Path) -> None:
 def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
     inventory = deployment_inventory(strategy_root)
     runtime = StrategyRuntime(strategy_root)
-    charts = ChartRuntime()
     for reference in inventory:
         family, version = reference.split("-", 1)
         path = strategy_root / family / "versions" / f"{version}.json"
@@ -226,13 +221,6 @@ def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
             raise RuntimeError(f"cannot read deployed strategy version: {reference}") from exc
         release = StrategyRelease.from_mapping(payload)
         runtime.describe(release)
-        deployment = load_strategy_deployment(strategy_root, reference)
-        charts.validate_descriptor(
-            deployment.binding.get("charts"),
-            source_root=deployment.source_root,
-            install_files=deployment.install_files,
-        )
-        validate_observation_descriptor(deployment.binding.get("observation"))
     return inventory
 
 

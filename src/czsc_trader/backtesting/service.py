@@ -243,6 +243,7 @@ def _run_backtest(
             ),
             encoding="utf-8", newline="\n",
         )
+        _write_json(staging / "observations.json", [item.to_dict() for item in result.observations])
         chart_context = build_backtest_chart_context(
                 signals, execution_data, result, request.initial_cash,
                 metrics=BacktestChartMetrics(
@@ -267,6 +268,7 @@ def _run_backtest(
         expected = {
             "manifest.json",
             "decisions.csv",
+            "observations.json",
             "orders.csv",
             "fills.csv",
             "account_daily.csv",

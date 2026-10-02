@@ -115,7 +115,7 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     assert decision.strategy_output is not None
     assert decision.observation is not None
     assert decision.observation["status"] == "READY"
-    assert decision.observation["series"][0]["key"] == "target"
+    assert decision.observation["series"][0]["key"] == "fixture"
 
 
 def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path, monkeypatch):
@@ -255,7 +255,7 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
     ]
     assert old_manifest.read_bytes() == old_manifest_bytes
     published = json.loads(current.read_text(encoding="utf-8"))
-    assert published["prepared_storage_revision"] == 1
+    assert published["prepared_storage_revision"] == 2
     assert published["symbol"] == second.strategy.symbol == symbol
     assert published["releases"]["S900-v1"]["release_hash"] == first.strategy.release_hash
     assert published["releases"]["S900-v1"]["runtime_sha256"] == (
@@ -424,3 +424,38 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(pte_frozen,
     assert decisions[0]["signal_date"] == "2026-09-02"
     assert decisions[0]["valid_session"] == "2026-09-03"
     store.close()
+
+
+def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen,tmp_path,monkeypatch):
+    from dataclasses import replace
+    from strategy_runtime import StrategyObservation
+    from paper_trading_engine.srt_advice_client import _decision_from_plan
+    from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
+    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
+    client = _client(pte_frozen[0].root,tmp_path,{date(2026,9,2):date(2026,9,3)})
+    prepared = client.prepare_account_data(account_id='s900-v1',strategy_id='S900',strategy_version='v1',symbol='588080.SH',asset='etf',signal_date=date(2026,9,2))
+    captured = []
+    original = __import__('paper_trading_engine.srt_advice_client',fromlist=['_decision_from_plan'])._decision_from_plan
+    def capture(plan,identity,definition):
+        captured.append((plan,identity,definition))
+        return original(plan,identity,definition)
+    monkeypatch.setattr('paper_trading_engine.srt_advice_client._decision_from_plan',capture)
+    result = client.get_decision(0,100000,100000,trading_date=date(2026,9,3),portfolio_revision=0,state_revision=0,strategy_id='S900',strategy_version='v1',account_id='s900-v1',symbol='588080.SH',asset='etf',prepared=prepared)
+    plan,identity,definition = captured[0]
+    unavailable = _decision_from_plan(replace(plan,evidence={}),identity,definition)
+    assert unavailable.observation['status'] == 'UNAVAILABLE'
+    assert unavailable.plan_identity == result.plan_identity
+    assert unavailable.orders == result.orders and unavailable.target_quantity == result.target_quantity
+    observed = StrategyObservation.from_dict(result.observation)
+    assert observed.plan_identity == result.plan_identity
+    # Reuse the actual transport payload and reject facts from another decision.
+    transport = []
+    original_parse = AdviceDecision.from_cli_payload
+    def parse(value):
+        transport.append(value)
+        return original_parse(value)
+    monkeypatch.setattr(AdviceDecision,'from_cli_payload',parse)
+    _decision_from_plan(plan,identity,definition)
+    transport[0]['result']['observation']['plan_identity'] = '0'*64
+    with pytest.raises(AdviceContractError, match='another decision'):
+        original_parse(transport[0])

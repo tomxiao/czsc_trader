@@ -5,6 +5,7 @@ from __future__ import annotations
 from html import escape
 import json
 from typing import Mapping
+from strategy_runtime import StrategyObservation
 
 
 FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v1"
@@ -27,6 +28,17 @@ def render_forward_chart_html(value: object) -> str:
     strategy_name = str(strategy.get("name", "")).strip()
     if not release_id or not strategy_name:
         raise ValueError("PTE forward chart strategy title is incomplete")
+    for row in context['observations']:
+        observation = StrategyObservation.from_dict(row['observation'])
+        if (row['account_id'] != strategy['account_id'] or
+            observation.strategy.strategy_id != strategy['strategy_id'] or
+            observation.strategy.reference_id != release_id or
+            observation.strategy.release_hash != strategy['release_hash'] or
+            observation.strategy.symbol != strategy['symbol'] or
+            observation.signal_date.isoformat() != row['signal_date'] or
+            observation.valid_session.isoformat() != row['valid_session'] or
+            observation.action != row['action']):
+            raise ValueError('forward observation differs from account or decision identity')
     encoded = json.dumps(
         context,
         ensure_ascii=False,
@@ -53,8 +65,8 @@ def render_forward_chart_html(value: object) -> str:
     <div class="forward-toolbar">
       <div class="forward-controls" aria-label="观察窗口">
         <button type="button" data-range="20" aria-pressed="false">20日</button>
-        <button type="button" data-range="40" aria-pressed="true">40日</button>
-        <button type="button" data-range="all" aria-pressed="false">全部</button>
+        <button type="button" data-range="40" aria-pressed="false">40日</button>
+        <button type="button" data-range="all" aria-pressed="true">全部</button>
       </div>
       <div class="forward-controls" aria-label="图层">
         <button type="button" data-layer="signal" aria-pressed="true"><i class="signal"></i>策略信号</button>

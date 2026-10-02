@@ -28,8 +28,16 @@
 
   function visibleBars(){if(state.range==='all')return bars;return bars.slice(Math.max(0,bars.length-Number(state.range)));}
   function add(node){svg.appendChild(node);return node;}
+  function factValue(item){
+    if(item.format==='PERCENT')return `${(Number(item.value)*100).toFixed(2)}%`;
+    if(item.format==='NUMBER')return Number(item.value).toFixed(4);
+    if(item.format==='BOOLEAN')return item.value?'是':'否';
+    return String(item.value);
+  }
   function explanation(observation){
-    return observation?.status==='READY'?(observation.series||[]).map(item=>`${item.label} ${Number(item.value).toFixed(4)}${(item.guides||[]).map(guide=>` / ${guide.label} ${Number(guide.value).toFixed(4)}`).join('')}`).join('；'):observation?.message||'当日没有策略观察事实';
+    if(observation?.status!=='READY')return observation?.message||'当日没有策略观察事实';
+    return [...(observation.series||[]).map(item=>`${item.label} ${Number(item.value).toFixed(4)}${(item.guides||[]).map(guide=>` / ${guide.label} ${Number(guide.value).toFixed(4)}`).join('')}`),
+      ...(observation.facts||[]).map(item=>`${item.label} ${factValue(item)}`)].join('；');
   }
   function wrapExplanation(text,width,measure){
     const lines=[];

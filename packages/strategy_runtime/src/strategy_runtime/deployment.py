@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from hashlib import sha256
 import json
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping
+from typing import Any
 
 from .errors import RuntimeCompatibilityError
 from .models import canonical_sha256
-from .observation import validate_observation_descriptor
+from .binding import RuntimeBinding
 
 
 def _read_object(path: Path) -> dict[str, Any]:
@@ -72,12 +72,12 @@ class StrategyDeployment:
     package_hash: str
     package_root: Path
     source_root: Path
-    binding: Mapping[str, Any]
+    binding: RuntimeBinding
     receipt_hash: str
 
     @property
     def install_files(self) -> tuple[str, ...]:
-        return tuple(str(item) for item in self.binding["install_files"])
+        return self.binding.spec.install_files
 
 
 def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDeployment:
@@ -182,18 +182,7 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
         raise RuntimeCompatibilityError("strategy release runtime root is invalid")
     binding_relative = _safe_relative(manifest.get("runtime_binding"), "runtime_binding")
     binding = _read_object(package_root.joinpath(*binding_relative.parts))
-    expected_binding = {
-        "schema_version",
-        "release_id",
-        "release_hash",
-        "source_files",
-        "implementation_sha256",
-        "install_files",
-        "charts",
-        "observation",
-    }
-    if set(binding) != expected_binding or binding.get("schema_version") != 1:
-        raise RuntimeCompatibilityError("strategy runtime binding fields are invalid")
+    RuntimeBinding.from_dict(binding)
     if (
         binding.get("release_id") != release_id
         or binding.get("release_hash") != receipt.get("strategy_version_hash")
@@ -206,7 +195,6 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
     missing = [name for name in install_files if not source_root.joinpath(*PurePosixPath(name).parts).is_file()]
     if missing:
         raise RuntimeCompatibilityError(f"strategy install files are missing: {missing}")
-    validate_observation_descriptor(binding.get("observation"))
     return StrategyDeployment(
         root,
         release_id,
@@ -214,7 +202,7 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
         str(package_hash),
         package_root,
         source_root,
-        binding,
+        RuntimeBinding.from_dict(binding),
         str(receipt_hash),
     )
 

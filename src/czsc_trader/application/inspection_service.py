@@ -32,8 +32,7 @@ from strategy_manager.freeze_store import (
 from strategy_runtime import (
     StrategyRuntime,
     StrategyRelease,
-    ChartRuntime,
-    validate_observation_descriptor,
+    RuntimeBindingSpec, RuntimeBinding,
 )
 from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
 from strategy_runtime.errors import StrategyRuntimeError
@@ -182,7 +181,6 @@ class CandidateInspectionRequest:
     change_summary: str
     selection_data_cutoff: str
     forward_start: str
-    runtime_binding: CandidateEvidence
     additional_files: tuple[f.FreezeFile, ...] = ()
     remaining_risks: tuple[str, ...] = ()
 
@@ -191,7 +189,6 @@ class CandidateInspectionRequest:
             ("candidate", CandidateKey),
             ("selection", f.DecisionReference),
             ("protocol", f.InspectionProtocol),
-            ("runtime_binding", CandidateEvidence),
         ):
             if not isinstance(getattr(self, name), kind):
                 raise TypeError(f"inspection {name} requires {kind}")
@@ -227,6 +224,12 @@ def _copy_plan(context, request, registration):
         f.FreezeFile(item.path, copy(item.source, context.root))
         for item in request.additional_files
     )
+    definition = StrategyRuntime().describe(load_candidate(context, registration.key))
+    binding = RuntimeBindingSpec(
+        tuple(registration_file.path.removeprefix(prefix) for registration_file in registration.source_files),
+        definition.implementation.source_sha256,
+        tuple(item.path for item in files), definition.observation.sha256,
+    )
     return f.FreezePlan(
         f.CandidateOrigin(
             registration.key,
@@ -241,7 +244,7 @@ def _copy_plan(context, request, registration):
         request.forward_start,
         copy(registration.payload, evidence_root),
         files,
-        copy(request.runtime_binding, context.root),
+        _store_json(context, binding.to_dict()),
         tuple(
             copy(ref, evidence_root)
             for ref in (
@@ -263,22 +266,9 @@ def _materialize(context, plan):
     return stage
 
 
-def _binding(context, plan, stage):
+def _binding(context, plan):
     template = _read(plan.runtime_binding.resolve(context.strategy_root))
-    if (
-        set(template)
-        != {
-            "schema_version",
-            "source_files",
-            "implementation_sha256",
-            "install_files",
-            "charts",
-            "observation",
-        }
-        or type(template["schema_version"]) is not int
-        or template["schema_version"] != 1
-    ):
-        raise ValueError("inspection binding template fields differ")
+    RuntimeBindingSpec.from_dict(template)
     payload = _read(plan.payload.resolve(context.strategy_root))
     runtime = payload["runtime"]
     if (
@@ -293,11 +283,10 @@ def _binding(context, plan, stage):
         or set(installed) != {x.path for x in plan.source_files}
     ):
         raise ValueError("binding install files differ from plan")
-    root = stage / "src/strategy_runtime"
-    ChartRuntime().validate_descriptor(
-        template["charts"], source_root=root, install_files=tuple(installed)
-    )
-    validate_observation_descriptor(template["observation"])
+    candidate = load_candidate(context, plan.origin.candidate)
+    definition = StrategyRuntime().describe(candidate)
+    if template['observation_sha256'] != definition.observation.sha256:
+        raise ValueError('binding observation differs from candidate')
     return template
 
 
@@ -394,13 +383,13 @@ def _reference_signals(run):
     )
 
 
-def _inspect_release_replay(context, execution, request, run, release, source_root, tolerance):
+def _inspect_release_replay(context, execution, request, run, release, source_root, tolerance, binding):
     """Exercise from_release through the managed runtime port, without deployment."""
     window = TradableWindow(run.signals.evaluation_start.date(), run.signals.evaluation_end.date())
     root = create_temporary_directory(context.root, "inspection-runtime")
     candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
     frozen = execution.runtime.create(
-        StrategyInit(release, window, root / "release", source_root=source_root)
+        StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding)
     )
     candidate_prepared = candidate.prepare_data()
     prepared = frozen.prepare_data()
@@ -438,7 +427,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     policy = ExecutionPolicy(policy.policy_type, settings)
     frozen = execution.runtime.create(
         StrategyInit(
-            release, window, root / "release", execution_policy=policy, source_root=source_root
+            release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding
         )
     )
     frozen.prepare_data()
@@ -455,10 +444,18 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
         order_types=frozen.definition.capabilities.order_types,
         checkpoints=frozen.definition.capabilities.checkpoints,
     )
-    ledger = frozen.run_window(executor=channel)
+    from ..backtesting.observation import ObservationExecutor
+    observed = ObservationExecutor(frozen.definition, channel)
+    ledger = frozen.run_window(executor=observed)
+    left_observations = tuple(run.execution.observations)
+    def economic_observations(items):
+        return [{k: v for k, v in item.to_dict().items() if k not in
+                 ('strategy', 'signal_identity', 'plan_identity')} for item in items]
+    if economic_observations(left_observations) != economic_observations(observed.observations):
+        raise ValueError('candidate and frozen observation facts differ')
     identity = StrategyIdentity("REGISTERED", release.release_id, "prospective_inspection")
     result = BacktestResult(
-        identity, ledger.decisions, ledger.orders, ledger.fills, ledger.account_daily, ledger.trades
+        identity, ledger.decisions, ledger.orders, ledger.fills, ledger.account_daily, ledger.trades, tuple(observed.observations)
     )
     support = dict(run.signals.support_data)
     support.update(
@@ -566,15 +563,16 @@ def inspect_candidate(
         check(f.InspectionCheck.CONTENT, f.InspectionStatus.FAIL, str(exc))
     stage = _materialize(context, plan)
     try:
-        _binding(context, plan, stage)
+        _binding(context, plan)
         check(
             f.InspectionCheck.PACKAGE,
             f.InspectionStatus.PASS,
-            "source, chart, observation and install closure verified",
+            "source, observation and install closure verified",
         )
     except (ValueError, TypeError, OSError, StrategyRuntimeError) as exc:
         check(f.InspectionCheck.PACKAGE, f.InspectionStatus.FAIL, str(exc))
     release = None
+    binding = None
     try:
         release = StrategyRelease._from_runtime_identity(
             strategy_family_id=request.candidate.strategy_id,
@@ -583,10 +581,11 @@ def inspect_candidate(
             release_hash=plan.sha256,
             payload=_read(plan.payload.resolve(context.strategy_root)),
         )
+        binding = RuntimeBinding(release.release_id, release.release_hash, RuntimeBindingSpec.from_dict(_binding(context, plan)))
         runtime = request.execution.runtime
         left = runtime_readiness(runtime.describe(candidate))
         right = runtime_readiness(
-            runtime.describe(release, source_root=stage / "src/strategy_runtime")
+            runtime.describe(release, source_root=stage / "src/strategy_runtime", runtime_binding=binding)
         )
         require_same_runtime_content(left, right)
         check(
@@ -680,6 +679,7 @@ def inspect_candidate(
                     release,
                     stage / "src/strategy_runtime",
                     request.protocol.tolerance,
+                    binding,
                 )
                 release_replays.append(release_replay)
                 comparisons.append(release_replay["comparison"])
@@ -818,7 +818,7 @@ def freeze_candidate(
         if metadata.version(name) != expected:
             raise ValueError(f"installed dependency changed since inspection: {name}")
     stage = _materialize(context, report.plan)
-    template = _binding(context, report.plan, stage)
+    template = _binding(context, report.plan)
     version = build_version(context.strategy_root, request)
     binding = {**template, "release_id": version.release_id, "release_hash": version.release_hash}
     (stage / "runtime_binding.json").write_bytes(_bytes(binding))
@@ -826,7 +826,7 @@ def freeze_candidate(
     actual = runtime.describe(
         StrategyRelease.from_mapping(version.to_dict()),
         source_root=stage / "src/strategy_runtime",
-        runtime_binding=binding,
+        runtime_binding=RuntimeBinding.from_dict(binding),
     )
     candidate = runtime.describe(load_candidate(context, report.plan.origin.candidate))
     require_same_runtime_content(runtime_readiness(candidate), runtime_readiness(actual))

@@ -46,10 +46,8 @@ def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):
 
 def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
     context, version = current_frozen
-    def forbidden_renderer(*args, **kwargs):
-        raise AssertionError("TDR must not load strategy-owned chart code")
-
-    monkeypatch.setattr("strategy_runtime.ChartRuntime._implementation", forbidden_renderer)
+    import strategy_runtime
+    assert not hasattr(strategy_runtime, "ChartRuntime")
     def check_win_rate_audit(evidence):
         audited = audit_replay(evidence)
         assert audited.status is AuditStatus.PASS
@@ -70,6 +68,12 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert len(outputs) == 1
     output = outputs[0].parent
     assert {"orders.csv", "fills.csv", "account_daily.csv", "trades.csv", "metrics.json", "chart.html", "report.md"} <= {p.name for p in output.iterdir()}
+    from strategy_runtime import StrategyObservation
+    observations = [StrategyObservation.from_dict(item) for item in json.loads((output / 'observations.json').read_text(encoding='utf-8'))]
+    decisions = pd.read_csv(output / 'decisions.csv')
+    assert len(observations) == len(decisions)
+    assert {'DEC-' + item.plan_identity[:20].upper() for item in observations} == set(decisions['decision_id'])
+    assert all(item.strategy.release_hash == version.release_hash for item in observations)
     account = pd.read_csv(output / "account_daily.csv")
     assert account.iloc[0]["cash_before"] == 100000
     orders = pd.read_csv(output / "orders.csv")

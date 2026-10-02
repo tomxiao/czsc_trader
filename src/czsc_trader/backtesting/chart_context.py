@@ -7,6 +7,7 @@ from math import isfinite
 from numbers import Real
 
 import pandas as pd
+from strategy_runtime import ObservedSeries, ObservedFact
 
 from .execution_data import BacktestExecutionData
 from .benchmarks import BenchmarkReplay
@@ -36,7 +37,8 @@ class ChartSignal:
     valid_session: date
     target_position: float
     action: str
-    values: tuple[tuple[str, float], ...]
+    series: tuple[ObservedSeries, ...]
+    facts: tuple[ObservedFact, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -154,14 +156,10 @@ class BacktestChartContext:
                     or signal.signal_date >= signal.valid_session
                     or not 0 <= _number(signal.target_position, "target_position") <= 1):
                 raise ValueError("chart signal identity, timing or target is invalid")
-            if type(signal.values) is not tuple:
-                raise TypeError("chart signal values must be a tuple")
-            if len({key for key, _ in signal.values}) != len(signal.values):
-                raise ValueError("chart signal fields must be unique")
-            for key, value in signal.values:
-                if not isinstance(key, str) or not key:
-                    raise ValueError("chart signal field name is invalid")
-                _number(value, key)
+            if type(signal.series) is not tuple or not all(isinstance(x, ObservedSeries) for x in signal.series):
+                raise TypeError('chart signal series must be typed')
+            if type(signal.facts) is not tuple or not all(isinstance(x, ObservedFact) for x in signal.facts):
+                raise TypeError('chart signal facts must be typed')
         if len({x.fill_id for x in self.fills}) != len(self.fills):
             raise ValueError("chart fill IDs must be unique")
         for fill in self.fills:
@@ -219,13 +217,27 @@ def build_backtest_chart_context(
     prices = prices.loc[pd.Timestamp(start):pd.Timestamp(end)]
     bars = tuple(ChartBar(_session(day), *(_number(row[key], key) for key in ("open", "high", "low", "close")))
                  for day, row in prices.iterrows())
-    excluded = {"decision_id", "signal_date", "valid_session", "target_position", "plan_mode", "action"}
-    signals = tuple(ChartSignal(
-        str(row["decision_id"]), _session(row["signal_date"]), _session(row["valid_session"]),
-        _number(row["target_position"], "target_position"), str(row["action"]),
-        tuple((str(key), _number(value, str(key))) for key, value in row.items()
-              if key not in excluded and isinstance(value, Real) and not isinstance(value, bool)),
-    ) for row in result.decisions.to_dict("records"))
+    observations = {(x.signal_date, x.valid_session): x for x in result.observations}
+    if len(observations) != len(result.observations):
+        raise ValueError("duplicate recorded observation sessions")
+    signal_rows = []
+    for row in result.decisions.to_dict('records'):
+        key = (_session(row['signal_date']), _session(row['valid_session']))
+        if key not in observations:
+            raise ValueError('chart decision has no recorded observation')
+        observation = observations[key]
+        expected = (result.identity.reference, signal_replay.snapshot.source_hash,
+                    execution_data.symbol, str(row['decision_id']), row['target_position'])
+        actual = (observation.strategy.reference_id, observation.strategy.release_hash,
+                  observation.strategy.symbol, 'DEC-' + observation.plan_identity[:20].upper(),
+                  observation.target_position)
+        if actual != expected:
+            fields = ('reference', 'release_hash', 'symbol', 'decision_id', 'target_position')
+            raise ValueError('chart observation differs from executed decision: ' +
+                             ', '.join(k for k,a,b in zip(fields,actual,expected) if a != b))
+        signal_rows.append(ChartSignal(str(row['decision_id']), *key, observation.target_position,
+                                       observation.action, observation.series, observation.facts))
+    signals = tuple(signal_rows)
     fills = tuple(ChartFill(
         str(row["fill_id"]), str(row["decision_id"]), pd.Timestamp(row["fill_time"]).to_pydatetime(),
         str(row["side"]), _quantity(row["quantity"]), _number(row["price"], "price"),
@@ -263,7 +275,7 @@ def build_ma_chart_context(base: BacktestChartContext, benchmark: BenchmarkRepla
         values = history.loc[pd.Timestamp(signal_day)]
         signals.append(ChartSignal(
             f"MA-{signal_day}", signal_day, day, target, action,
-            tuple((key, _number(values[key], key)) for key in ("ma5", "ma20")
+            tuple(ObservedSeries(key, key.upper(), _number(values[key], key), ()) for key in ("ma5", "ma20")
                   if pd.notna(values[key])),
         ))
         accounts.append(ChartAccount(day, _quantity(row["quantity"]), _number(row["equity"], "MA equity")))
@@ -282,7 +294,7 @@ def build_ma_chart_context(base: BacktestChartContext, benchmark: BenchmarkRepla
         "accounts": benchmark.ma_account_daily.to_json(orient="records", date_format="iso"),
     })
     return replace(
-        base, reference=f"{base.reference} · MA5/MA20", identity_hash=identity,
+        base, reference=f"{base.reference} 路 MA5/MA20", identity_hash=identity,
         signals=tuple(signals), fills=fills, accounts=tuple(accounts), benchmarks=(),
         metrics=BacktestChartMetrics(facts["return"], facts["max_drawdown"], facts["closed_trades"],
                                     facts["calmar"], facts["win_loss_ratio"], facts["win_rate"]),

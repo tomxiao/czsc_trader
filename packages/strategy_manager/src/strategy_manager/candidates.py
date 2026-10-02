@@ -175,12 +175,12 @@ class CandidateRegistration(_Record):
     origin: CandidateRegistrationOrigin
     derivation: CandidateDerivation | None = None
     schema_version: int = 2
-    identity_schema_version: int = 1
+    identity_schema_version: int = 2
 
     def __post_init__(self):
         if type(self.schema_version) is not int or self.schema_version != 2:
             raise ValidationError("unsupported candidate registration schema")
-        if type(self.identity_schema_version) is not int or self.identity_schema_version != 1:
+        if type(self.identity_schema_version) is not int or self.identity_schema_version != 2:
             raise ValidationError("unsupported candidate content identity schema")
         if (
             not isinstance(self.key, CandidateKey)
@@ -235,7 +235,7 @@ class CandidateRegistration(_Record):
     def from_dict(cls, value):
         if type(value.get("schema_version")) is not int or value["schema_version"] != 2:
             raise ValidationError("unsupported candidate registration schema")
-        if type(value.get("identity_schema_version")) is not int or value["identity_schema_version"] != 1:
+        if type(value.get("identity_schema_version")) is not int or value["identity_schema_version"] != 2:
             raise ValidationError("unsupported candidate content identity schema")
         value = dict(value)
         value["key"] = CandidateKey(**value["key"])

@@ -1,227 +1,449 @@
-"""Strategy-neutral observation facts emitted by deployed SRT releases."""
+"""Typed strategy observation declarations and immutable per-plan facts."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from copy import deepcopy
+from dataclasses import asdict, dataclass
+from datetime import date
+from enum import StrEnum
 import math
 import re
-from typing import Any
+from typing import TYPE_CHECKING
 
-from .errors import RuntimeCompatibilityError, RuntimeContractError
+from .errors import RuntimeContractError
 
+if TYPE_CHECKING:
+    from .contracts import ExecutionPlan, StrategyIdentity
+    from .models import RuntimeDefinition
 
-OBSERVATION_CONTRACT_VERSION = "strategy_observation.v1"
-_KEY = re.compile(r"[a-z][a-z0-9_]{0,63}")
-
-
-def _text(value: object, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise RuntimeCompatibilityError(f"{field} must be a non-empty string")
-    return value.strip()
+OBSERVATION_CONTRACT_VERSION = "strategy_observation.v2"
 
 
-def _key(value: object, field: str) -> str:
-    normalized = _text(value, field)
-    if _KEY.fullmatch(normalized) is None:
-        raise RuntimeCompatibilityError(f"{field} must be a lowercase semantic key")
-    return normalized
+def _require(condition, message):
+    if not condition:
+        raise RuntimeContractError(message)
 
 
-def _finite(value: object, field: str) -> float:
-    if isinstance(value, bool):
-        raise RuntimeContractError(f"{field} must be numeric")
-    try:
-        number = float(value)
-    except (TypeError, ValueError) as exc:
-        raise RuntimeContractError(f"{field} must be numeric") from exc
-    if not math.isfinite(number):
-        raise RuntimeContractError(f"{field} must be finite")
-    return number
+def _key(value):
+    _require(
+        isinstance(value, str) and re.fullmatch(r"[a-z][a-z0-9_]{0,63}", value),
+        "invalid observation key",
+    )
 
 
-def validate_observation_descriptor(value: object) -> dict[str, Any]:
-    """Validate display-neutral signal semantics stored in an SRT binding."""
+def _text(value):
+    _require(isinstance(value, str) and bool(value.strip()), "observation text is required")
 
-    if not isinstance(value, Mapping):
-        raise RuntimeCompatibilityError("observation descriptor must be an object")
-    descriptor = deepcopy(dict(value))
-    if set(descriptor) != {"contract_version", "series"}:
-        raise RuntimeCompatibilityError("observation descriptor fields are invalid")
-    if descriptor["contract_version"] != OBSERVATION_CONTRACT_VERSION:
-        raise RuntimeCompatibilityError(
-            f"observation descriptor must use {OBSERVATION_CONTRACT_VERSION}"
+
+def _number(value):
+    _require(
+        type(value) in (int, float) and math.isfinite(value),
+        "observation value must be finite numeric data",
+    )
+    return float(value)
+
+
+def _tuple(values, kind):
+    _require(
+        type(values) is tuple and all(isinstance(x, kind) for x in values),
+        "observation requires a typed tuple",
+    )
+    _require(len({x.key for x in values}) == len(values), "duplicate observation keys")
+
+
+def _fields(value, expected):
+    _require(
+        type(value) is dict and set(value) == set(expected.split()), "invalid observation fields"
+    )
+    return value
+
+
+class ObservationValueType(StrEnum):
+    NUMBER = "NUMBER"
+    INTEGER = "INTEGER"
+    BOOLEAN = "BOOLEAN"
+    TEXT = "TEXT"
+
+
+class ObservationFormat(StrEnum):
+    NUMBER = "NUMBER"
+    PERCENT = "PERCENT"
+    INTEGER = "INTEGER"
+    BOOLEAN = "BOOLEAN"
+    TEXT = "TEXT"
+
+
+@dataclass(frozen=True, slots=True)
+class ConstantGuide:
+    key: str
+    label: str
+    value: float
+
+    def __post_init__(self):
+        _key(self.key)
+        _text(self.label)
+        _number(self.value)
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceGuide:
+    key: str
+    label: str
+    value_field: str
+
+    def __post_init__(self):
+        _key(self.key)
+        _text(self.label)
+        _key(self.value_field)
+
+
+@dataclass(frozen=True, slots=True)
+class ObservationSeries:
+    key: str
+    label: str
+    value_field: str
+    guides: tuple[ConstantGuide | EvidenceGuide, ...] = ()
+
+    def __post_init__(self):
+        _key(self.key)
+        _text(self.label)
+        _key(self.value_field)
+        _tuple(self.guides, (ConstantGuide, EvidenceGuide))
+
+
+@dataclass(frozen=True, slots=True)
+class ObservationFact:
+    key: str
+    label: str
+    value_field: str
+    value_type: ObservationValueType
+    format: ObservationFormat
+
+    def __post_init__(self):
+        _key(self.key)
+        _text(self.label)
+        _key(self.value_field)
+        _require(
+            isinstance(self.value_type, ObservationValueType)
+            and isinstance(self.format, ObservationFormat),
+            "observation fact requires typed value/format",
         )
-    raw_series = descriptor.get("series")
-    if not isinstance(raw_series, list) or not raw_series:
-        raise RuntimeCompatibilityError("observation descriptor requires signal series")
-    if len(raw_series) > 4:
-        raise RuntimeCompatibilityError("observation descriptor supports at most four series")
-    normalized: list[dict[str, Any]] = []
-    keys: set[str] = set()
-    for index, raw in enumerate(raw_series):
-        if not isinstance(raw, Mapping):
-            raise RuntimeCompatibilityError(f"observation series {index} must be an object")
-        series = dict(raw)
-        if set(series) != {"key", "label", "value_field", "guides"}:
-            raise RuntimeCompatibilityError(f"observation series {index} fields are invalid")
-        key = _key(series["key"], f"observation series {index} key")
-        if key in keys:
-            raise RuntimeCompatibilityError("observation series keys must be unique")
-        keys.add(key)
-        guides = series.get("guides")
-        if not isinstance(guides, list) or len(guides) > 4:
-            raise RuntimeCompatibilityError(
-                f"observation series {key} guides must be a bounded list"
-            )
-        normalized_guides: list[dict[str, Any]] = []
-        guide_keys: set[str] = set()
-        for guide_index, raw_guide in enumerate(guides):
-            if not isinstance(raw_guide, Mapping):
-                raise RuntimeCompatibilityError(
-                    f"observation series {key} guide {guide_index} must be an object"
-                )
-            guide = dict(raw_guide)
-            expected = {"key", "label", "value"}
-            dynamic = {"key", "label", "value_field"}
-            if frozenset(guide) not in {frozenset(expected), frozenset(dynamic)}:
-                raise RuntimeCompatibilityError(
-                    f"observation series {key} guide {guide_index} fields are invalid"
-                )
-            guide_key = _key(
-                guide["key"], f"observation series {key} guide {guide_index} key"
-            )
-            if guide_key in guide_keys:
-                raise RuntimeCompatibilityError(
-                    f"observation series {key} guide keys must be unique"
-                )
-            guide_keys.add(guide_key)
-            normalized_guide = {
-                "key": guide_key,
-                "label": _text(
-                    guide["label"],
-                    f"observation series {key} guide {guide_index} label",
-                ),
-            }
-            if "value" in guide:
-                normalized_guide["value"] = _finite(
-                    guide["value"],
-                    f"observation series {key} guide {guide_index} value",
-                )
-            else:
-                normalized_guide["value_field"] = _key(
-                    guide["value_field"],
-                    f"observation series {key} guide {guide_index} value_field",
-                )
-            normalized_guides.append(normalized_guide)
-        normalized.append(
-            {
-                "key": key,
-                "label": _text(series["label"], f"observation series {index} label"),
-                "value_field": _key(
-                    series["value_field"], f"observation series {index} value_field"
-                ),
-                "guides": normalized_guides,
-            }
+        allowed = {
+            ObservationValueType.NUMBER: (ObservationFormat.NUMBER, ObservationFormat.PERCENT),
+            ObservationValueType.INTEGER: (ObservationFormat.INTEGER,),
+            ObservationValueType.BOOLEAN: (ObservationFormat.BOOLEAN,),
+            ObservationValueType.TEXT: (ObservationFormat.TEXT,),
+        }
+        _require(
+            self.format in allowed[self.value_type],
+            "observation fact format differs from value type",
         )
-    return {"contract_version": OBSERVATION_CONTRACT_VERSION, "series": normalized}
+
+    def validate_value(self, value):
+        if self.value_type is ObservationValueType.NUMBER:
+            _number(value)
+        else:
+            kind = {
+                ObservationValueType.INTEGER: int,
+                ObservationValueType.BOOLEAN: bool,
+                ObservationValueType.TEXT: str,
+            }[self.value_type]
+            _require(type(value) is kind, "observation fact value type differs")
 
 
-def unavailable_observation(message: object) -> dict[str, Any]:
-    return {
-        "contract_version": OBSERVATION_CONTRACT_VERSION,
-        "status": "UNAVAILABLE",
-        "message": str(message)[:500],
-    }
+@dataclass(frozen=True, slots=True)
+class ObservationDefinition:
+    series: tuple[ObservationSeries, ...]
+    facts: tuple[ObservationFact, ...]
+
+    def __post_init__(self):
+        _tuple(self.series, ObservationSeries)
+        _tuple(self.facts, ObservationFact)
+        _require(
+            not {x.key for x in self.series} & {x.key for x in self.facts},
+            "series and facts repeat observation keys",
+        )
+
+    def to_dict(self):
+        return {
+            "contract_version": OBSERVATION_CONTRACT_VERSION,
+            "series": [
+                {
+                    **asdict(x),
+                    "guides": [
+                        {
+                            "kind": "CONSTANT" if isinstance(g, ConstantGuide) else "EVIDENCE",
+                            **asdict(g),
+                        }
+                        for g in x.guides
+                    ],
+                }
+                for x in self.series
+            ],
+            "facts": [asdict(x) for x in self.facts],
+        }
+
+    @classmethod
+    def from_dict(cls, value):
+        _fields(value, "contract_version series facts")
+        _require(
+            value["contract_version"] == OBSERVATION_CONTRACT_VERSION,
+            "unsupported observation contract",
+        )
+        _require(
+            type(value["series"]) is list and type(value["facts"]) is list,
+            "observation collections must be lists",
+        )
+        series = []
+        for raw in value["series"]:
+            _fields(raw, "key label value_field guides")
+            _require(type(raw["guides"]) is list, "observation guides must be a list")
+            guides = []
+            for guide in raw["guides"]:
+                _require(
+                    type(guide) is dict and guide.get("kind") in ("CONSTANT", "EVIDENCE"),
+                    "invalid guide kind",
+                )
+                kind = ConstantGuide if guide["kind"] == "CONSTANT" else EvidenceGuide
+                field = "value" if kind is ConstantGuide else "value_field"
+                _fields(guide, f"kind key label {field}")
+                guides.append(kind(guide["key"], guide["label"], guide[field]))
+            series.append(
+                ObservationSeries(raw["key"], raw["label"], raw["value_field"], tuple(guides))
+            )
+        facts = []
+        for raw in value["facts"]:
+            _fields(raw, "key label value_field value_type format")
+            facts.append(
+                ObservationFact(
+                    raw["key"],
+                    raw["label"],
+                    raw["value_field"],
+                    ObservationValueType(raw["value_type"]),
+                    ObservationFormat(raw["format"]),
+                )
+            )
+        return cls(tuple(series), tuple(facts))
+
+    @property
+    def sha256(self):
+        from .models import canonical_sha256
+
+        return canonical_sha256(self.to_dict())
+
+
+@dataclass(frozen=True, slots=True)
+class ObservedSeries:
+    key: str
+    label: str
+    value: float
+    guides: tuple[ConstantGuide, ...]
+
+    def __post_init__(self):
+        _key(self.key)
+        _text(self.label)
+        _number(self.value)
+        _tuple(self.guides, ConstantGuide)
+
+
+@dataclass(frozen=True, slots=True)
+class ObservedFact:
+    key: str
+    label: str
+    value_type: ObservationValueType
+    format: ObservationFormat
+    value: float | int | bool | str
+
+    def __post_init__(self):
+        ObservationFact(
+            self.key, self.label, self.key, self.value_type, self.format
+        ).validate_value(self.value)
+
+
+@dataclass(frozen=True, slots=True)
+class StrategyObservation:
+    strategy: StrategyIdentity
+    definition_sha256: str
+    signal_identity: str
+    plan_identity: str
+    signal_date: date
+    valid_session: date
+    action: str
+    target_position: float
+    series: tuple[ObservedSeries, ...]
+    facts: tuple[ObservedFact, ...]
+
+    def __post_init__(self):
+        from .contracts import StrategyIdentity
+
+        _require(
+            isinstance(self.strategy, StrategyIdentity),
+            "observation strategy identity must be typed",
+        )
+        for value in (self.definition_sha256, self.signal_identity, self.plan_identity):
+            _require(
+                isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value),
+                "invalid observation identity hash",
+            )
+        _require(
+            type(self.signal_date) is date
+            and type(self.valid_session) is date
+            and self.signal_date < self.valid_session,
+            "invalid observation sessions",
+        )
+        _text(self.action)
+        _number(self.target_position)
+        _tuple(self.series, ObservedSeries)
+        _tuple(self.facts, ObservedFact)
+        _require(
+            not {x.key for x in self.series} & {x.key for x in self.facts},
+            "duplicate observation keys",
+        )
+
+    def to_dict(self):
+        value = asdict(self)
+        value.update(
+            contract_version=OBSERVATION_CONTRACT_VERSION,
+            status="READY",
+            signal_date=self.signal_date.isoformat(),
+            valid_session=self.valid_session.isoformat(),
+        )
+        value["series"] = [
+            {**asdict(x), "guides": [asdict(g) for g in x.guides]} for x in self.series
+        ]
+        value["facts"] = [asdict(x) for x in self.facts]
+        return value
+
+    @classmethod
+    def from_dict(cls, value):
+        from .contracts import StrategyIdentity
+
+        _fields(
+            value,
+            "contract_version status strategy definition_sha256 signal_identity plan_identity signal_date valid_session action target_position series facts",
+        )
+        _require(
+            value["contract_version"] == OBSERVATION_CONTRACT_VERSION
+            and value["status"] == "READY",
+            "unsupported ready observation contract",
+        )
+        _fields(value["strategy"], "strategy_id reference_id release_hash runtime_sha256 symbol")
+        _require(
+            type(value["series"]) is list and type(value["facts"]) is list,
+            "observation collections must be lists",
+        )
+        series = []
+        for raw in value["series"]:
+            _fields(raw, "key label value guides")
+            _require(type(raw["guides"]) is list, "observation guides must be a list")
+            guides = tuple(ConstantGuide(**_fields(g, "key label value")) for g in raw["guides"])
+            series.append(ObservedSeries(raw["key"], raw["label"], raw["value"], guides))
+        facts = []
+        for raw in value["facts"]:
+            _fields(raw, "key label value_type format value")
+            facts.append(
+                ObservedFact(
+                    raw["key"],
+                    raw["label"],
+                    ObservationValueType(raw["value_type"]),
+                    ObservationFormat(raw["format"]),
+                    raw["value"],
+                )
+            )
+        return cls(
+            StrategyIdentity(**value["strategy"]),
+            value["definition_sha256"],
+            value["signal_identity"],
+            value["plan_identity"],
+            date.fromisoformat(value["signal_date"]),
+            date.fromisoformat(value["valid_session"]),
+            value["action"],
+            value["target_position"],
+            tuple(series),
+            tuple(facts),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ObservationUnavailable:
+    message: str
+
+    def __post_init__(self):
+        _text(self.message)
+
+    def to_dict(self):
+        return {
+            "contract_version": OBSERVATION_CONTRACT_VERSION,
+            "status": "UNAVAILABLE",
+            "message": self.message,
+        }
+
+    @classmethod
+    def from_dict(cls, value):
+        _fields(value, "contract_version status message")
+        _require(
+            value["contract_version"] == OBSERVATION_CONTRACT_VERSION
+            and value["status"] == "UNAVAILABLE",
+            "unsupported unavailable observation contract",
+        )
+        return cls(value["message"])
+
+
+def unavailable_observation(message: str) -> ObservationUnavailable:
+    return ObservationUnavailable(message)
 
 
 def materialize_observation(
-    descriptor: object,
-    evidence: Mapping[str, object],
-    *,
-    action: str,
-    target_position: float,
-) -> dict[str, Any]:
-    """Resolve one immutable descriptor against one strategy decision."""
+    definition: RuntimeDefinition, plan: ExecutionPlan
+) -> StrategyObservation:
+    from .models import RuntimeDefinition
+    from .contracts import ExecutionPlan
 
-    normalized = validate_observation_descriptor(descriptor)
-    if not isinstance(evidence, Mapping):
-        raise RuntimeContractError("strategy observation evidence must be an object")
-    series_output: list[dict[str, Any]] = []
-    for series in normalized["series"]:
-        field = series["value_field"]
-        if field not in evidence:
-            raise RuntimeContractError(f"strategy observation is missing {field}")
-        guides = []
-        for guide in series["guides"]:
-            if "value" in guide:
-                value = guide["value"]
-            else:
-                guide_field = guide["value_field"]
-                if guide_field not in evidence:
-                    raise RuntimeContractError(
-                        f"strategy observation is missing {guide_field}"
-                    )
-                value = _finite(evidence[guide_field], f"observation guide {guide_field}")
-            guides.append(
-                {"key": guide["key"], "label": guide["label"], "value": value}
-            )
-        series_output.append(
-            {
-                "key": series["key"],
-                "label": series["label"],
-                "value": _finite(evidence[field], f"observation value {field}"),
-                "guides": guides,
-            }
-        )
-    return {
-        "contract_version": OBSERVATION_CONTRACT_VERSION,
-        "status": "READY",
-        "action": str(action),
-        "target_position": _finite(target_position, "observation target_position"),
-        "series": series_output,
-    }
-
-
-def validate_observation_payload(value: object) -> dict[str, Any]:
-    """Validate facts crossing from SRT into a PTE decision ledger."""
-
-    if not isinstance(value, Mapping):
-        raise RuntimeContractError("strategy observation must be an object")
-    observation = deepcopy(dict(value))
-    if observation.get("contract_version") != OBSERVATION_CONTRACT_VERSION:
-        raise RuntimeContractError(
-            f"strategy observation must use {OBSERVATION_CONTRACT_VERSION}"
-        )
-    if observation.get("status") == "UNAVAILABLE":
-        if set(observation) != {"contract_version", "status", "message"}:
-            raise RuntimeContractError("unavailable strategy observation fields are invalid")
-        observation["message"] = str(observation["message"])[:500]
-        return observation
-    if set(observation) != {
-        "contract_version", "status", "action", "target_position", "series",
-    } or observation.get("status") != "READY":
-        raise RuntimeContractError("strategy observation fields are invalid")
-    observation["action"] = str(observation["action"])
-    observation["target_position"] = _finite(
-        observation["target_position"], "observation target_position"
+    _require(
+        isinstance(definition, RuntimeDefinition) and isinstance(plan, ExecutionPlan),
+        "observation requires a runtime definition and execution plan",
     )
-    series = observation.get("series")
-    if not isinstance(series, list) or not series:
-        raise RuntimeContractError("strategy observation series are missing")
-    for index, item in enumerate(series):
-        if not isinstance(item, dict) or set(item) != {"key", "label", "value", "guides"}:
-            raise RuntimeContractError(f"strategy observation series {index} is invalid")
-        item["value"] = _finite(item["value"], f"observation series {index} value")
-        if not isinstance(item["guides"], list):
-            raise RuntimeContractError(f"strategy observation series {index} guides are invalid")
-        for guide_index, guide in enumerate(item["guides"]):
-            if not isinstance(guide, dict) or set(guide) != {"key", "label", "value"}:
-                raise RuntimeContractError(
-                    f"strategy observation series {index} guide {guide_index} is invalid"
+    _require(
+        plan.strategy.strategy_id == definition.strategy_family_id
+        and plan.strategy.runtime_sha256 == definition.runtime_sha256
+        and plan.strategy.reference_id == definition.release_id
+        and plan.strategy.release_hash == definition.release_hash
+        and plan.symbol == definition.tradable_symbol,
+        "observation plan differs from runtime definition",
+    )
+
+    def value(field):
+        _require(field in plan.evidence, f"observation evidence missing {field}")
+        return plan.evidence[field]
+
+    series = tuple(
+        ObservedSeries(
+            s.key,
+            s.label,
+            _number(value(s.value_field)),
+            tuple(
+                ConstantGuide(
+                    g.key,
+                    g.label,
+                    g.value if isinstance(g, ConstantGuide) else _number(value(g.value_field)),
                 )
-            guide["value"] = _finite(
-                guide["value"],
-                f"observation series {index} guide {guide_index} value",
-            )
-    return observation
+                for g in s.guides
+            ),
+        )
+        for s in definition.observation.series
+    )
+    facts = tuple(
+        ObservedFact(f.key, f.label, f.value_type, f.format, value(f.value_field))
+        for f in definition.observation.facts
+    )
+    return StrategyObservation(
+        plan.strategy,
+        definition.observation.sha256,
+        plan.signal_identity,
+        plan.plan_identity,
+        plan.signal_date,
+        plan.trading_date,
+        plan.action,
+        plan.target_position,
+        series,
+        facts,
+    )
