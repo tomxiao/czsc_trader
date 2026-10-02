@@ -191,6 +191,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         execution_data=execution_data,
     )
     assert summary.manifest["strategy"]["kind"] == "CANDIDATE"
+    assert summary.output_dir.name == f"{sessions[-1]:%m%d}_01_S001-C0001"
     assert summary.manifest["application"]["runtime_engine"] == "srt"
     assert summary.manifest["audit"]["status"] == "PASS"
     published_account = pd.read_csv(summary.output_dir / "account_daily.csv")

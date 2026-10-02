@@ -290,7 +290,6 @@ def _run_backtest(
             staging,
             root,
             snapshot.identity.reference,
-            request.symbol,
             run_date,
         )
     except Exception:
