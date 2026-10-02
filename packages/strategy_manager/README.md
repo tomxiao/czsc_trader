@@ -73,7 +73,6 @@ TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告�
 | --- | --- |
 | `research/registrations/<策略ID>/candidates/` | 候选登记记录 |
 | `experiments/<策略ID>/<来源实验ID>/objects/` | 新候选载荷、源码及来源材料；schema 2登记引用这些实体 |
-| `research/registrations/objects/` | 历史schema 1候选实体，只读保留 |
 | `strategies/research_objects/` | 检验、计划引用的内容寻址证据 |
 | `strategies/research_decisions/<策略ID>/` | 用户决定及确认材料引用 |
 | `strategies/freeze_requests/<策略ID>/<请求ID>/` | 冻结请求及提交／失败事实 |
