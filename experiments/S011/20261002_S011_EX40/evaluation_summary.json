@@ -1,0 +1,59 @@
+{
+  "candidate_id": "S011-C0621",
+  "content_sha256": "83826e9264d3e48435f1d2123909e23bcfb10fb401e1e5d65560d77ee9c5ec77",
+  "start": "2025-02-06",
+  "end": "2026-09-28",
+  "sessions": 403,
+  "initial_cash": 1000000,
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.003,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  },
+  "strategy_metrics": {
+    "max_drawdown": -0.06154830526516941,
+    "calmar": 7.0037226293000865,
+    "win_loss_ratio": 2.6757332238157847,
+    "win_loss_ratio_status": "VALID",
+    "return": 0.773913885200002,
+    "sharpe": 2.5493857933313158,
+    "closed_trades": 40,
+    "win_rate": 0.7
+  },
+  "benchmark_metrics": {
+    "max_drawdown": -0.310919408097985,
+    "calmar": 0.8612045450093693,
+    "win_loss_ratio": null,
+    "win_loss_ratio_status": "NO_CLOSED_TRADES",
+    "return": 0.461437844,
+    "sharpe": 0.9256596127160124,
+    "closed_trades": 0,
+    "win_rate": null
+  },
+  "strategy_cagr": 0.4310672583807367,
+  "benchmark_cagr": 0.2677652073856076,
+  "closed_trades_per_60_sessions": 5.955334987593052,
+  "targets": {
+    "return_multiple": true,
+    "positive_and_excess_if_benchmark_nonpositive": true,
+    "strict_drawdown": true,
+    "full_frequency": true
+  },
+  "all_targets_met": true,
+  "attempt_id": "18a7d488e5fc4d18b43d158f4569758a",
+  "evaluation_id": "b38a2435cd085f05abe46be0ec7961ae7a85cf91364fd3eb0015951186bb57d5",
+  "result_hash": "f9fa3f00894c534a812d267cfa40ef1e56acc01b0defedfa2b171864c1976680",
+  "limitations": [
+    "Previously seen development data; no independent validation or new selection evidence",
+    "Neighborhood/stress diagnostics not rerun; no stage-five authorization",
+    "Historical adjusted-data publication timing remains unverified; scheduled updates do not prove historical availability"
+  ]
+}
