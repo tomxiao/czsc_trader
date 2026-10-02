@@ -1,5 +1,7 @@
 # 策略研究资料导航
 
+`research/`用于研究治理：研究意图、目标约束、确认依据、登记索引和交接导航。阶段二至五的新交付
+及候选实体跟随来源实验保存；历史原件保持原位，不因目录规则更新而搬移或重签。
 本文只提供资料入口，不重复维护策略状态、研究规则或平台接口。开始工作时以当前用户指令和相应
 角色契约确定授权；具体批次的目标、结论和下一步以其`HANDOFF.md`为准。
 
@@ -41,12 +43,18 @@
 | --- | --- |
 | 批次意图、材料和研究凭据 | `research/registrations/SXX/`、`research/SXX/materials.json` |
 | 实验问题、失败记录和机器证据 | `experiments/SXX/`中的不可变档案 |
-| 候选身份、源码与派生关系 | `research/registrations/<策略ID>/candidates/`及登记对象 |
-| 五阶段交付和自检证据 | `research/<策略ID>/deliveries/<阶段>/<修订>/`中的内容、报告、回执及附件 |
+| 候选身份与派生登记 | `research/registrations/<策略ID>/candidates/` |
+| 新登记候选的源码、载荷与来源证据 | `experiments/<策略ID>/<来源实验ID>/objects/`，通过登记引用读取 |
+| 阶段一目标、约束及确认依据 | `research/<策略ID>/mandates/<修订>/` |
+| 阶段二至五交付和自检证据 | `experiments/<策略ID>/<归属实验ID>/deliveries/<阶段>/<修订>/` |
+| 历史schema 1/2/3阶段交付 | 原`research/<策略ID>/deliveries/`，显式历史引用、只读核验 |
 | 用户决定、技术检验与冻结结果 | `strategies/research_decisions/`、`research_objects/`、`freeze_requests/`中的不可变引用及状态 |
 | 历史候选提交内容 | `research/SXX/candidates/`及对应旧候选包 |
 | 正式身份、冻结版本、SRT部署和治理证据 | `strategies/`，只由平台工具写入 |
 | 数据与可再生输出 | `data/`、`outputs/`；使用前仍须按角色契约核对因果及身份 |
+
+`HANDOFF.md`记录当前状态及精确交付引用，不另存一套正式阶段结论。实验原件与交付中的
+证据副本各自保留；本地忽略制品的备份及跨机器恢复要求见[实验档案说明](../experiments/README.md)。
 
 PTE生产状态属于独立运行环境；研究资料或Git状态不能替代生产核对。具体操作与安全边界见
 [开发运维交接](../docs/DEVELOPMENT_HANDOFF.md)。

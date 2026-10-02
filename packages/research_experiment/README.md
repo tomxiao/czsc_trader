@@ -24,6 +24,12 @@
 归档。目录和manifest要求见[实验档案说明](../../experiments/README.md)，研究判断与污染边界见
 [RSCH Agent](../../research/RSCH_AGENT.md)。
 
+执行回执完成与整个实验封存分别发生：先完成受管执行，将回执及声明制品保存到实验
+`artifacts/`中的实际归档位置，再完成候选实体保存和TDR阶段交付，最后生成
+`experiment_manifest.json`。阶段二至五交付位于归属实验的`deliveries/<阶段>/<修订>/`；
+回执完成后不能追加执行或技术检验，实验manifest生成后不能追加交付或候选对象。
+后续研究或交付修订由后继实验承接；阶段一任务与确认材料保留在研究治理区。
+
 ## 正式实验预检
 
 先阅读[公共导出](src/research_experiment/__init__.py)，沿导入核对绑定、定义和预检契约。
@@ -114,7 +120,7 @@ Optuna继续作为独立第三方库使用，研究员组织study、sampler、tr
 执行回执。技术检验须在正式执行尚未封存时完成，已存在回执或失败终态的空间拒绝追加检验。
 REX记录实际执行事实；阶段报告由TDR的`assemble_delivery`另行验证和发布。
 
-新TDR评价结果产物使用schema 3，REX执行回执仍使用schema 2，两个版本号独立。
+新TDR评价结果产物使用schema 4，REX执行回执仍使用schema 2，两个版本号独立。
 `EvaluationRecord.result_artifact`绑定评价产物路径与哈希；封存后可由TDR
 `EvaluationEvidenceReference`绑定回执、尝试与完整评价ID，在后续正式执行中恢复检验基线。
 原执行保留封存状态，新的复算和检验证据进入本次执行。构造与历史证据限制见

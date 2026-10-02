@@ -23,8 +23,9 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 `AssessmentEvidence`。SE只计算传入事实，不读取仓库、调度搜索或代替执行证据认证。
 
 `AssessmentEvidence.scenario_context`必须使用`EvaluationScenarioContext`，字段为
-`one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str`和`benchmark_kind: str`。
-费率须有限且满足`0 <= one_way_cost < 1`，其余字段须非空；由TDR从实际评价请求提取，
+`one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str`、`benchmark_kind: str`
+及`benchmark_contract_sha256: str`。后者绑定基准执行策略、参数和执行语义版本，须为合法SHA-256。
+费率须有限且满足`0 <= one_way_cost < 1`，名称字段须非空；由TDR从实际评价请求提取，
 相同场景名称不能代替实际口径一致性。
 
 `CandidateAssessment.baseline_scenario/stress_scenario`保留标准／压力场景的强类型口径；
@@ -32,7 +33,7 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 公共上下文、指标版本、频率窗口和两类场景口径；不一致返回`INCOMPARABLE`及
 `EVALUATION_CONTEXTS_DIFFER`。参数邻域要求与中心标准场景一致；研究族收益矩阵要求成员的
 标准场景一致。标准与压力场景按角色校验：标准层级为`FORMAL/SCREENING`，压力层级为
-`STRESS`且费用严格高于标准场景；基准ID、基准类型、指标版本和公共上下文须一致。
+`STRESS`且费用严格高于标准场景；基准ID、基准类型、基准合同哈希、指标版本和公共上下文须一致。
 这项角色差异仅用于标准／压力配对，候选之间及参数邻域之间仍要求场景口径严格一致。
 
 `CandidateAssessmentRequest`显式指定中心候选、账户／成交／基准证据、参数扰动关系、

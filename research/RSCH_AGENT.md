@@ -79,9 +79,26 @@
 
 `assemble_delivery(context, deliverable)`验证内容及证据，发布机器产物、人工报告和
 `DeliveryReceipt`；`validate_delivery(context, reference)`只读核验已发布修订，返回
-`DeliveryValidation`。产物位于`research/<策略ID>/deliveries/<阶段>/<修订>/`，同修订不同内容
-拒绝覆盖；修订通过`DeliveryReference`引用前驱。事实、解释、反面证据和复算要求分别使用
+`DeliveryValidation`。新交付定义和回执使用schema 4，通过强类型`owner`确定保存空间：
+
+| 阶段 | 归属契约 | 保存位置（相对仓库） |
+| --- | --- | --- |
+| 一 | `MandateOwner(strategy_id)` | `research/<策略ID>/mandates/<修订>/` |
+| 二至五 | `ExperimentOwner(strategy_id, experiment_id)` | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
+
+阶段交付归入形成该交付的实验，可引用多个来源实验。修订号在“归属＋阶段”内计数，不同实验
+可以各自从1开始；同归属、同阶段、同修订的不同内容拒绝覆盖。通过包含归属和内容哈希的
+`DeliveryReference`引用前驱，不能仅凭文件名或最新目录决定交接对象。
+交付包含机器内容、人工报告、回执、附件及声明实验的证据副本；来源实验保留原始档案。
+事实、解释、反面证据和复算要求分别使用
 `FactValue`、`Explanation`、`EvidenceRef/EvidenceFile`和`ReproductionSpec`表达。
+
+先完成受管执行，将执行回执及声明制品保存到实验归档位置，再保存需要交接的候选实体并登记、
+发布阶段交付，最后生成`experiment_manifest.json`封存整个实验。执行回执完成后不能追加执行
+或技术检验；整个实验封存后不能追加交付或候选对象，也不能覆盖已有manifest。
+后续研究和交付修订由后继实验承接；同内容的已有交付可只读核验后返回。
+历史schema 1/2/3交付保留原位，通过`LegacyDeliveryReference`只读引用，不自动搬移或重签。
+保存范围、Git忽略制品及恢复核验要求见[实验档案说明](../experiments/README.md)。
 
 `DeliveryStatus.COMPLETE/PARTIAL/BLOCKED`表达研究员声明的交付完整度；技术验证`PASS/FAIL`
 只表达结构、身份和引用是否成立。负面结论、空面板和无达标候选仍可形成完整交付。研究员负责
@@ -99,6 +116,11 @@
 #### 目标与确认项
 
 确认标的、策略职责、机制方向、可投资基准、评价期限、经济目标、硬约束、默认交易规则、数据权限及资源范围。建议与已确认要求分开记录；本阶段不筛选因子或搜索策略参数。
+
+基准执行口径用`BenchmarkRequirement(EvaluationBenchmark(...))`明确记录并确认。
+受管评价须显式传入`EvaluationRequest.benchmark`，选用`NextOpenBuyHold`或`LimitBuyHold`，
+填写`lot_size`及相应执行参数；不能仅用BuyHold名称代替具体执行合同。字段与边界见
+[TDR显式基准执行合同](../src/czsc_trader/README.md#显式基准执行合同)。
 
 #### 目标产物与交接
 
@@ -186,11 +208,15 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 交接前显式调用`register_candidate(context, CandidateRegistrationRequest(...))`登记交付候选，
 以`CandidateRegistrationOrigin`绑定实验定义、源码绑定及预检证据；通过`load_candidate`读取
 已保存的源码和载荷。同键同记录幂等，内容变更使用新身份。评价端口不自动登记每个trial。
+新`CandidateRegistration`使用schema 2：登记记录保存在`research/registrations/`，
+载荷、源码及来源证据保存在来源实验的`objects/`，记录内文件路径相对来源实验根目录。
+历史schema 1登记保持原存储和哈希，按版本只读解析。
 `CandidateSet.handoff`列出阶段四要自检的全部达标候选；研究员须核对完整性，平台只核验
 已声明身份和证据。发布时`assemble_delivery`核验交接候选已登记、内容一致且源码／依赖证据
 完整、可加载；缺失或冲突以`HANDOFF_REGISTRATION`拒绝交付。此检查只覆盖`handoff`集合，
 不能据此证明搜索记录没有遗漏或全部达标候选均已纳入。已发布候选交付按自身证据校验，
-后续清理原工作目录或登记区不改写原交付结论；继续检验或冻结仍需有效的候选登记。
+可清理临时组装源文件；归属实验绑定、已封存清单和前驱交付仍须保留。
+继续检验或冻结还需有效的候选登记及其引用实体。
 
 #### 自主使用的资源
 
@@ -262,7 +288,8 @@ TDR `build_assessment_evidence(request, result)`核验受管请求与结果，�
 [TDR说明](../src/czsc_trader/README.md#6-候选登记与自检)。
 
 `AssessmentEvidence.scenario_context`使用`EvaluationScenarioContext`绑定实际单边费用、计量
-层级、基准ID和基准类型，研究员须按既定协议解释这些口径。候选比较同时核对公共上下文及
+层级、基准ID、基准类型和`benchmark_contract_sha256`，研究员须按既定协议解释这些口径。
+阶段四以`benchmark_mandate_item_id`绑定阶段一已确认的基准合同。候选比较同时核对公共上下文及
 标准／压力场景；同名场景费用不同也会标为`INCOMPARABLE`，不能只比`context_sha256`。
 参数邻域和研究族标准场景须保持一致；标准／压力配对要求标准层级为`FORMAL/SCREENING`、
 压力层级为`STRESS`且费用严格增加，基准定义、指标版本和公共上下文保持一致。
@@ -367,12 +394,14 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 `InspectionReplay(reference, reproduction_request)`以`EvaluationEvidenceReference`引用原评价，
 以新的`EvaluationRequest`表达本次复算。原评价引用绑定`ExperimentEvidenceRef`、`attempt_id`、
 完整有序的`evaluation_ids`和`EvaluationRecord.result_artifact`对应的`CandidateEvidence`；
-研究员须在原正式执行封存后保存该引用的`to_dict()`结果，跨会话通过`from_dict()`恢复。
-实验路径相对仓库，可指向已发布交付内的实验副本；结果产物路径相对该实验工作空间。
+研究员须在原执行回执完成、回执及声明制品已归档并核验后，保存该引用的`to_dict()`结果，
+跨会话通过`from_dict()`恢复。实验路径相对仓库，指向持久归档或已发布交付内的实验副本；
+当前评价显式使用`ExperimentEvidenceUse.CURRENT_EVALUATION`，结果产物路径相对该实验工作空间。
+不得把可清理的`.tmp/`执行目录作为唯一持久引用。
 
 平台从已封存归档鉴证并读取基线，无需保留原Python请求和结果对象；研究员仍须组织本次
 复算输入及正式执行。引用须与用户选中的阶段四证据一致，回执、评价身份或产物哈希不符时
-拒绝检验。新入口要求TDR评价产物schema 3；旧产物缺少字段时，保留原件，新建正式实验和
+拒绝检验。新入口要求TDR评价产物schema 4；旧产物缺少字段时，保留原件，新建正式实验和
 交付修订重新生成证据。不得调用私有反序列化接口、补写旧字段或以新结果冒充原证据。
 
 平台核验源码／依赖、运行兼容性、覆盖、关键结果复算、独立账本审计、信号及经济账本等价性、
@@ -390,7 +419,7 @@ RSCH仍须核对声明集合覆盖全部达标候选，未完成项不能由计�
 
 - 机器产物：候选身份、证据索引、技术检验记录、用户决定、冻结回执及冻结版本引用。未冻结时显式记录当前状态和原因。
 - 人工报告：技术检验结论、剩余风险、用户决定、冻结结果及使用边界。
-- `CandidateInspectionDelivery`引用阶段四交付、完整检验报告、证据、用户决定、可选冻结回执及待决定事项。冻结前可发布待批准报告；冻结后另建修订，保留原待批准版本。
+- `CandidateInspectionDelivery`引用阶段四交付、完整检验报告、证据、用户决定、可选冻结回执及待决定事项。冻结前可发布待批准报告；冻结后另建修订，保留原待批准版本。原归属实验若已封存，新交付归入后继实验。
 - 默认报告展示用户决定、理由及确认材料链接；冻结失败或结果不确定时展示具体原因，研究员据此说明后续处理与待批准事项。
 - 新冻结版本使用schema 4的`StrategyVersion`，通过`CandidateOrigin`与`FreezeGovernance`绑定登记记录、内容、检验、选择、批准和冻结请求。提交标记决定版本可见性；历史schema 1/2/3保持原件和哈希。契约与状态定义见[SM说明](../packages/strategy_manager/README.md)。
 - 核对人工报告完整呈现用户决定、冻结状态及失败／未完成原因；默认渲染未展开的字段通过交付事实、解释和证据补齐。
@@ -465,7 +494,9 @@ Optuna独立使用，TDR/REX不接管study、trial或搜索预算；当前也未
 
 | 区域 | 规则 |
 | --- | --- |
-| `research/`、新建`experiments/`、`outputs/` | 授权任务内的研究材料、实验、候选及可再生产物；封存原件只读 |
+| `research/` | 研究治理：意图、目标约束、确认依据、阶段一任务、登记索引和交接导航；新阶段二至五交付和候选实体写入实验目录；历史原件只读 |
+| 新建`experiments/<策略ID>/<实验ID>/` | 授权范围内的研究代码、实验材料、机器证据、阶段二至五交付及候选实体；通过相应公共API登记和发布，整体封存后只读 |
+| `outputs/` | 可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
 | `.tmp/` | 一次性脚本、临时数据及工具缓存；交付不得隐含依赖未声明临时内容 |
 | `data/raw/`、`data/backtest/` | 通过已获授权的正式数据入口更新 |
 | `strategies/research_decisions/`、`strategies/research_objects/` | 在获准阶段内，通过TDR `record_research_decision/inspect_candidate`留存真实用户决定及技术检验证据；这些写入可以发生在冻结批准前，不生成冻结版本；不得人工编辑 |
@@ -495,7 +526,8 @@ Optuna独立使用，TDR/REX不接管study、trial或搜索预算；当前也未
 | CAP-07／登记、归档检验与获批冻结已实现 | TDR `register_candidate/load_candidate`、`EvaluationEvidenceReference`、`inspect_candidate`、`record_research_decision`、`freeze_candidate/get_freeze_result` | 交接前完成登记；保存原评价归档引用并准备本次复算输入；明确选型与冻结批准，仅`COMMITTED`视为完成 |
 | CAP-08／模块导航与说明已更新 | 第4节、各模块README及公共导出 | 调用前核对安装版本、签名和最小闭环；历史研究库说明中的待办不代表当前能力 |
 
-当前契约版本分别为：新REX绑定3、定义2、执行回执2；新TDR评价产物3；阶段交付回执1；新冻结版本4。
+当前契约版本分别为：新REX绑定3、定义2、执行回执2；新TDR评价产物4；
+新阶段交付定义和回执4；新候选登记2；新冻结版本4。
 各版本号独立管理，历史证据保持原格式和哈希，不补写旧字段、不重签历史原件；
 新公共契约要求的字段必须由相应版本的新执行产生。
 

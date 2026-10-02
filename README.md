@@ -35,7 +35,8 @@ CZSC Trader 是面向个人量化团队的可审计策略研发与模拟交易�
 | [REX：可执行研究实验](packages/research_experiment/README.md) | [SE：数值评价](packages/strategy_evaluator/README.md) |
 | [SM：策略身份与治理](packages/strategy_manager/README.md) | — |
 
-`research/`保存研究意图、交接和候选；`experiments/`保存不可变实验；`strategies/`是只由平台工具
+`research/`保存研究治理材料、阶段一任务及登记索引；`experiments/`保存实验、阶段二至五交付
+和候选实体，最后按实验整体封存；历史原件保持原位。`strategies/`是只由平台工具
 写入的治理区。`data/`与`outputs/`中的本地内容不能替代正式证据。运行状态和具体命令以相应
 角色说明及平台当前公共入口为准，项目首页不维护版本或账户状态快照。
 

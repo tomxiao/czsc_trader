@@ -159,7 +159,11 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 | `load_candidate(context, key)` | `CandidateKey(strategy_id, candidate_id)` → `StrategyCandidate` |
 
 来源绑定实验定义、源码绑定和预检证据。登记记录位于`research/registrations/<策略ID>/candidates/`，
-源码与载荷保存在登记区的内容寻址对象中。同一键和登记内容重复调用返回原记录；不同内容拒绝覆盖。
+新登记使用`CandidateRegistration.schema_version=2`；源码、载荷和来源证据保存在来源实验的
+`experiments/<策略ID>/<实验ID>/objects/`。登记内的文件引用相对该实验根目录，
+`CandidateRegistrationRequest`中的输入证据路径仍相对仓库。同一键和登记内容重复调用返回原记录；
+不同内容拒绝覆盖。实验封存后不得补写候选对象；已存在且一致的对象可只读复用。
+历史schema 1登记按原登记区解析，不自动搬移。继续检验或冻结需要登记记录及其引用实体完整可读。
 参数、实现或执行规则派生使用`CandidateDerivation`分别记录`PARAMETERS/IMPLEMENTATION/EXECUTION`。
 
 `EvaluationRequest`显式携带`data_cutoff`、依赖及可选`EvaluationLineage`。每次受管评价保留
@@ -169,6 +173,25 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 每条证据的`scenario_context: EvaluationScenarioContext`绑定实际单边费用、计量层级及基准定义；
 比较须同时核对公共上下文与场景口径，不能仅凭相同`scenario_id`或`context_sha256`认定可比。
 自检、排序和不确定性结果的口径见[SE说明](../../packages/strategy_evaluator/README.md)。
+
+### 显式基准执行合同
+
+`EvaluationRequest.benchmark`必填，使用`EvaluationBenchmark(execution=...)`，执行策略为
+`NextOpenBuyHold(lot_size)`或`LimitBuyHold(lot_size, premium, price_tick, price_limit_ratio,
+maximum_order_quantity)`。两者均要求显式整手单位，当前为100股的正整数倍。
+限价合同还校验溢价、价格档位、涨跌停比例和最大委托数量；研究员按已确认的执行口径选用。
+
+```python
+from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
+
+benchmark = EvaluationBenchmark(execution=NextOpenBuyHold(lot_size=100))
+# 显式传给 EvaluationRequest(..., benchmark=benchmark)。
+```
+
+基准内容身份覆盖执行策略、参数及执行语义版本，纳入评价身份和
+`EvaluationScenarioContext.benchmark_contract_sha256`。阶段一用`BenchmarkRequirement`
+记录已确认合同；阶段四通过`benchmark_mandate_item_id`绑定并校验实际基准。
+仅有相同的`BuyHold`名称不足以证明执行口径相同。
 
 ### 标准与压力场景
 
@@ -198,7 +221,7 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 | API | 返回与语义 |
 | --- | --- |
 | `assemble_delivery(context, deliverable)` | `DeliveryReceipt`；验证内容和证据后发布不可变修订，校验失败或修订冲突抛出明确异常 |
-| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验`DeliveryReference`，返回`PASS/FAIL`及问题定位 |
+| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验`DeliveryReference`或历史`LegacyDeliveryReference`，返回`PASS/FAIL`及问题定位 |
 
 | `DeliveryStage` | 对应的强类型内容 |
 | --- | --- |
@@ -208,18 +231,49 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 | `ASSESSMENT` | `CandidateAssessmentDelivery`：自检／比较请求与结果、目标绑定、反面证据及待决事项 |
 | `INSPECTION` | `CandidateInspectionDelivery`：技术检验、用户决定、可选冻结回执及待决事项 |
 
-产物发布至`research/<策略ID>/deliveries/<阶段>/<修订>/`，包含`delivery.json`、`report.md`、
-`receipt.json`及完整声明证据。`EvidenceFile.source_path`相对仓库，`EvidenceRef.path`相对
-交付目录，文件哈希必须匹配。先在`.tmp/delivery/`组装，再原子发布；同修订同内容可重复调用，
-不同内容必须使用新修订。`COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
+新`DeliveryDefinition`和`DeliveryReceipt`使用schema 4；`DeliveryDefinition`及`DeliveryReference`
+以`owner`明确归属，调用方不指定任意发布目录：
+
+| 归属类型 | 允许阶段 | 发布路径（相对仓库） |
+| --- | --- | --- |
+| `MandateOwner(strategy_id)` | `MANDATE` | `research/<策略ID>/mandates/<修订>/` |
+| `ExperimentOwner(strategy_id, experiment_id)` | 阶段二至五 | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
+
+```python
+from czsc_trader.research_tools import DeliveryDefinition, DeliveryStage, ExperimentOwner
+
+definition = DeliveryDefinition(
+    owner=ExperimentOwner("S900", "20261001_S900_EX01"),
+    stage=DeliveryStage.COMPONENTS,
+    revision=1,
+)
+# 发布前，该归属实验须已存在有效定义和源码绑定，且尚未生成实验manifest。
+```
+
+每份交付包含`delivery.json`、`report.md`、`receipt.json`及声明证据；`attachments/`保存附件，
+`experiments/`保存声明实验的回执与制品副本。`EvidenceFile.source_path`相对仓库，
+`EvidenceRef.path`相对交付目录。副本用于核验交付，来源实验保留原始档案。
+先在`.tmp/delivery/`组装，再原子发布；同归属、同阶段、同修订的不同内容拒绝覆盖。
+修订号在归属与阶段内计数，不同实验可以各自从1开始；跨实验汇总交付归入形成该交付的实验，
+通过带内容哈希的`DeliveryReference`引用前驱，通过`ExperimentEvidenceRef`声明证据来源。
+
+先完成受管执行并保存回执及制品，再保存需要交接的候选实体、发布阶段交付，最后生成
+`experiment_manifest.json`封存整个实验。封存后拒绝追加交付，后续修订由新实验承接；
+已有同内容交付可只读核验后返回。`build_experiment_manifest`也拒绝覆盖不同内容的已有清单。
+`COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
+
+历史schema 1/2/3交付保留在原`research/<策略ID>/deliveries/`目录，用
+`LegacyDeliveryReference`显式引用；`DeliveryReceipt.from_dict`可按旧回执schema恢复该引用。
+历史读取不自动搬移、补写或重签，新写入只使用schema 4。
 
 发布`CandidateSet`时，`assemble_delivery`逐项检查`handoff`候选已登记、内容哈希一致、
 登记源码及依赖证据完整且可由`load_candidate`加载。缺失或冲突返回`DeliveryValidationError`，
 问题码为`HANDOFF_REGISTRATION`；平台不自动登记搜索trial。已发布的候选交付校验依赖其自身
-证据，不因原登记区或工作目录清理而改变原交付的验证结果。
+证据，不依赖临时组装源文件或候选登记区；归属实验的有效绑定、已封存清单及前驱交付仍须保留。
 
 阶段四发布和验证都会按记录的请求复算SE结果，并绑定阶段一已确认的数值目标。阶段五复制
 检验、登记、源码、决定和确认材料闭包；可先交付待批准报告，冻结后用新修订记录实际冻结结果。
+若原归属实验已封存，冻结结果交付必须归入后继实验，不能向旧实验追加。
 阶段四报告展开逐项目标检查、排序敏感性和行为分组；阶段五报告展示用户决定、确认材料链接
 及冻结失败／结果不确定的具体原因。研究员继续补充选择代价、研究解释及待决定事项。
 技术验证不自动推进研究阶段，也不替用户选型。
@@ -255,24 +309,30 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 
 | `EvaluationEvidenceReference`字段 | 类型及含义 |
 | --- | --- |
-| `experiment` | `ExperimentEvidenceRef(experiment_id, workspace_path, receipt_sha256)`；工作空间路径相对仓库，可指向已发布交付中的实验副本 |
+| `experiment` | `ExperimentEvidenceRef(experiment_id, workspace_path, receipt_sha256, use)`；路径相对仓库，指向持久归档或已发布交付中的实验副本，当前评价使用`CURRENT_EVALUATION` |
 | `attempt_id` | 原成功评价的尝试ID |
 | `evaluation_ids` | 该次评价的完整、有序窗口／场景ID元组 |
 | `result` | `CandidateEvidence(path, sha256)`；对应`EvaluationRecord.result_artifact`，路径相对上述实验工作空间 |
 
-在原正式执行封存后构造引用并保存`to_dict()`结果。以下`record`是原成功评价的`EvaluationRecord`，
-`source_execution`及`source_receipt`属于同一次已封存执行，`reproduction_request`为本次复算请求：
+执行回执完成后，将回执及其声明的全部制品按原相对布局保存到实验的实际归档位置，并通过
+`load_experiment_input`核验，再保存引用的`to_dict()`结果。以下`record`是原成功评价记录，
+`source_receipt`属于同一次执行；示例归档位置为`artifacts/rex/`，须替换为实际位置，
+不能把可清理的`.tmp/`路径作为唯一持久引用。`reproduction_request`为本次复算请求：
 
 ```python
 from czsc_trader.application import EvaluationEvidenceReference, InspectionReplay
-from czsc_trader.research_tools import ExperimentEvidenceRef
+from czsc_trader.research_tools import ExperimentEvidenceRef, ExperimentEvidenceUse
+from research_experiment import load_experiment_input
 from strategy_manager import CandidateEvidence
 
+archived_workspace = context.experiments_root / strategy_id / record.experiment_id / "artifacts/rex"
+load_experiment_input(archived_workspace, expected_receipt_sha256=source_receipt.sha256)
 reference = EvaluationEvidenceReference(
     experiment=ExperimentEvidenceRef(
         record.experiment_id,
-        source_execution.workspace.root.relative_to(context.root).as_posix(),
+        archived_workspace.relative_to(context.root).as_posix(),
         source_receipt.sha256,
+        use=ExperimentEvidenceUse.CURRENT_EVALUATION,
     ),
     attempt_id=record.attempt_id,
     evaluation_ids=record.evaluation_ids,
@@ -287,8 +347,8 @@ replay = InspectionReplay(reference=restored, reproduction_request=reproduction_
 `inspect_candidate`核验执行回执、尝试、完整评价ID、产物哈希和阶段四选型证据，从归档读取
 复算基线，再通过当前正式上下文执行新评价。引用不符或原件被改动时拒绝检验。
 
-新TDR评价产物采用schema 3，保存请求身份、SE场景证据、复算账本输入及信号列类型；
-REX执行回执仍为schema 2。新归档检验要求评价产物schema 3，旧产物缺少字段时须新建正式
+新TDR评价产物采用schema 4，保存显式基准合同、请求身份、SE场景证据、复算账本输入及信号列类型；
+REX执行回执仍为schema 2。新归档检验要求评价产物schema 4，旧产物缺少字段时须新建正式
 实验及交付修订重新生成证据，保留旧原件。新契约不自动迁移或补写历史结果。
 
 `ResearchDecision.subject`还支持阶段推进的`StageAdvanceSubject`；`action`使用
