@@ -1,6 +1,7 @@
 from dataclasses import replace
 from hashlib import sha256
 import json
+import math
 import shutil
 
 import pytest
@@ -338,6 +339,69 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     shutil.rmtree(temporary)
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert assemble_delivery(context, Deliverable(definition, value)) == receipt
+
+
+def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(completed, monkeypatch):
+    from czsc_trader.application import delivery_service
+
+    context, _, _, _, _ = completed
+    definition, value = prepare(completed)
+    probability = 0.6396147383007816
+    saved = replace(
+        value.payload.assessment,
+        family_diagnostics=tuple(
+            replace(x, status=m.DiagnosticStatus.AVAILABLE, value=probability, reason=None)
+            if x.name == "DSR_EFFECTIVE" else x
+            for x in value.payload.assessment.family_diagnostics
+        ),
+    )
+    comparison = replace(value.payload.comparison_request, panel=saved)
+    payload = replace(
+        value.payload, assessment=saved, comparison_request=comparison,
+        comparison=compare_candidates(comparison),
+    )
+
+    def rounded_panel(probability):
+        return replace(
+            saved,
+            family_diagnostics=tuple(
+                replace(x, value=probability) if x.name == "DSR_EFFECTIVE" else x
+                for x in saved.family_diagnostics
+            ),
+        )
+
+    # A controlled numerical oracle makes the publication/read checks independent
+    # of which BLAS kernel happens to be installed on the test host.
+    rounded = rounded_panel(0.639614738300782)
+    monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: rounded)
+    receipt = assemble_delivery(context, Deliverable(definition, replace(value, payload=payload)))
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+
+    first = saved.rows[0]
+    changed_row = replace(
+        first,
+        diagnostics=tuple(
+            replace(x, value=math.nextafter(x.value, math.inf))
+            if x.metric is m.ResearchMetric.NET_ANNUAL_RETURN else x
+            for x in first.diagnostics
+        ),
+    )
+    for changed in (
+        rounded_panel(probability + 1e-6),
+        replace(saved, rows=(changed_row, *saved.rows[1:])),
+        replace(saved, request_sha256="f" * 64),
+    ):
+        monkeypatch.setattr(delivery_service, "assess_candidates", lambda _, result=changed: result)
+        checked = validate_delivery(context, receipt.reference)
+        assert checked.status is d.ValidationStatus.FAIL
+        assert checked.issues[0].code == "ASSESSMENT_RESULT"
+
+    monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: rounded)
+    artifact = published(context, receipt) / "delivery.json"
+    artifact.write_bytes(artifact.read_bytes() + b" ")
+    checked = validate_delivery(context, receipt.reference)
+    assert checked.status is d.ValidationStatus.FAIL
+    assert checked.issues[0].code == "DELIVERY_FILES"
 
 
 def test_stage_four_rejects_changed_targets_and_forged_panel(completed):

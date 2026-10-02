@@ -1,14 +1,16 @@
 """Assemble and verify immutable, self-contained stage evidence publications."""
 
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, replace
 from hashlib import sha256
 import json
+import math
 from pathlib import Path
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from research_experiment import EvaluationRecord, load_experiment_input
 from strategy_evaluator import (
     AssessmentEvidence,
+    AssessmentPanel,
     assess_candidates,
     compare_candidates,
     ResearchMetric,
@@ -334,6 +336,34 @@ def _validate_inspection_delivery(definition, content, root, context):
                 _fail("FREEZE_RECEIPT", "freeze", "frozen version report/approval differs")
 
 
+def _assessment_recomputation_matches(
+    recomputed: AssessmentPanel, published: AssessmentPanel
+) -> bool:
+    # Parallel BLAS/eigensolvers can change the last bits of the correlation-based
+    # effective trial count and hence DSR_EFFECTIVE. This is a relative numerical
+    # comparison only; persisted bytes, identities, account metrics and decisions
+    # remain exact. No absolute tolerance is applied near zero.
+    if replace(recomputed, family_diagnostics=published.family_diagnostics) != published:
+        return False
+    if len(recomputed.family_diagnostics) != len(published.family_diagnostics):
+        return False
+    for actual, expected in zip(recomputed.family_diagnostics, published.family_diagnostics):
+        if actual == expected:
+            continue
+        if (
+            actual.name != "DSR_EFFECTIVE"
+            or (actual.name, actual.status, actual.reason)
+            != (expected.name, expected.status, expected.reason)
+            or actual.value is None
+            or expected.value is None
+            or not 0.0 <= actual.value <= 1.0
+            or not 0.0 <= expected.value <= 1.0
+            or not math.isclose(actual.value, expected.value, rel_tol=1e-12, abs_tol=0.0)
+        ):
+            return False
+    return True
+
+
 def _validate_assessment_delivery(definition, payload, experiments, context):
     for ref in (payload.source_candidates, payload.source_mandate):
         if ref not in definition.predecessors:
@@ -494,7 +524,9 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
                 "incomplete",
                 "failed evaluation differs from experiment receipt",
             )
-    if assess_candidates(payload.assessment_request) != payload.assessment:
+    if not _assessment_recomputation_matches(
+        assess_candidates(payload.assessment_request), payload.assessment
+    ):
         _fail(
             "ASSESSMENT_RESULT", "assessment", "assessment differs from deterministic recomputation"
         )
@@ -936,7 +968,10 @@ def _read_delivery(context, reference, root, visited):
 def validate_delivery(
     context: RepositoryContext, reference: d.DeliveryReference
 ) -> d.DeliveryValidation:
-    """Read-only verification; never executes research code or reproduction commands."""
+    """Verify persisted bytes exactly; DSR_EFFECTIVE recomputation uses 1e-12 rtol.
+
+    Read-only: never executes research code or reproduction commands.
+    """
     if not isinstance(context, RepositoryContext) or not isinstance(
         reference, d.DeliveryReference
     ):
