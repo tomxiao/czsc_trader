@@ -1,0 +1,69 @@
+{
+  "content_sha256": "83826e9264d3e48435f1d2123909e23bcfb10fb401e1e5d65560d77ee9c5ec77",
+  "dependencies": [
+    {
+      "name": "numpy",
+      "version": "2.5.2"
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.5"
+    }
+  ],
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.003,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  },
+  "predecessors": {
+    "20261002_S011_EX40": "17af6ed7aba97677b0dad4c06aa83de3b0cee7e7d3c0d6ebc583524b48f5a9c0"
+  },
+  "perturbation_protocol_sha256": "dc7b8cb033e822b1280d965b5f270fe95a63ef23dc4ca6f13f5e725ead205847",
+  "platform_commit": "26c7f886faa8ecce37a42afc8ab6991f008343ca",
+  "source_evidence": {
+    "experiments/S011/20261002_S011_EX40/evaluation_record.json": "7543fbbb0bd2c0efd5b68e9e7724738e2eb5ad749451620acfc943db9d4e81df",
+    "experiments/S011/20261002_S011_EX38/current_candidates.json": "ef7fdd236ad32d482bea37985a7ed29aae6601916738a9737180f22374f5a6c7",
+    "research/S011/mandates/1/delivery.json": "406b596f968c729e4eebc71027b3265d4b0144863bd611a1ceb9c4a5c42a6ac1"
+  },
+  "role": "neighbors",
+  "neighbors": [
+    {
+      "slot": 10,
+      "previous_candidate_id": "C1155",
+      "candidate_id": "C1587",
+      "content_sha256": "c838a63ba94085d2f7e6cd2a5f911ce684c74f31b58752676996c2a8367821bc",
+      "parameters": {
+        "entry": 0.33,
+        "exit": 0.15,
+        "lookback": 120,
+        "max_days": 2,
+        "premium": 0.0035,
+        "spx_weight": 0.025,
+        "tail_weight": 0.6
+      }
+    },
+    {
+      "slot": 11,
+      "previous_candidate_id": "C1156",
+      "candidate_id": "C1588",
+      "content_sha256": "19054262ead6b98abaa7d6a1cadea49784b7fa843e1216dc867549c623567d59",
+      "parameters": {
+        "entry": 0.33,
+        "exit": 0.15,
+        "lookback": 140,
+        "max_days": 2,
+        "premium": 0.0025,
+        "spx_weight": 0.025,
+        "tail_weight": 0.55
+      }
+    }
+  ]
+}

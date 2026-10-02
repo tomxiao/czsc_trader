@@ -1,0 +1,79 @@
+{
+  "experiment_id": "20261002_S011_EX50",
+  "definition_sha256": "1e19940fafb2de7b938d934c5d94829f89dc34986eed7a0e09a20ad14fcb1456",
+  "source_sha256": "2226394c5a10018f34eec62bb138783899b436ef0e3303bbab343a731f70562a",
+  "resources_sha256": "c3a582e2cafbef6ee5435c4ac9ab9c292956c6de975d3b43b7a01b89dc19ab60",
+  "passed": true,
+  "checks": [
+    {
+      "code": "SOURCE_BOUND",
+      "status": "PASS",
+      "message": "source closure matches binding"
+    },
+    {
+      "code": "DEFINITION_BOUND",
+      "status": "PASS",
+      "message": "definition is stable"
+    },
+    {
+      "code": "RESOURCE_CONTRACT",
+      "status": "PASS",
+      "message": "resources match definition"
+    },
+    {
+      "code": "PREDECESSOR_CONTRACT",
+      "status": "PASS",
+      "message": "predecessor identities match"
+    },
+    {
+      "code": "ARCHIVE_IDENTITY",
+      "status": "PASS",
+      "message": "static archive identity is valid"
+    },
+    {
+      "code": "PROCESS_PAYLOAD_REVIEW",
+      "status": "WARNING",
+      "message": "test worker payload serialization and child-process data configuration: run_batch.py:52"
+    },
+    {
+      "code": "SOURCE_RISK_SCAN",
+      "status": "PASS",
+      "message": "known source patterns inspected; warnings require review"
+    },
+    {
+      "code": "DATA_READINESS",
+      "status": "WARNING",
+      "message": "no explicit data requests supplied; credentials, availability and coverage were not probed"
+    },
+    {
+      "code": "SYNTHETIC_FIXED_COVERAGE",
+      "status": "PASS",
+      "message": "16 complete fixed trials and 8 isolated process owners"
+    },
+    {
+      "code": "RESULT_SERIALIZATION",
+      "status": "PASS",
+      "message": "synthetic output JSON roundtrip passed"
+    },
+    {
+      "code": "SYNTHETIC_PRECHECK",
+      "status": "PASS",
+      "message": "synthetic precheck passed"
+    },
+    {
+      "code": "SOURCE_UNCHANGED",
+      "status": "PASS",
+      "message": "source unchanged after synthetic precheck"
+    },
+    {
+      "code": "DEFINITION_UNCHANGED",
+      "status": "PASS",
+      "message": "definition unchanged after synthetic precheck"
+    },
+    {
+      "code": "PREFLIGHT_ENFORCEMENT",
+      "status": "PASS",
+      "message": "binding schema v3 requires preflight at execution entry"
+    }
+  ]
+}
