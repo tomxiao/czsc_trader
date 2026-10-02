@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from concurrent.futures import ProcessPoolExecutor, CancelledError
+from concurrent.futures.process import BrokenProcessPool
+from contextlib import contextmanager
+from multiprocessing import get_context
+import os
+import pickle
+from threading import Lock
 from dataclasses import replace
 from datetime import datetime, timezone
 from time import perf_counter
@@ -20,6 +27,7 @@ from research_experiment import (
     ExperimentCapability,
     ExperimentDataScope,
     EvaluationRecord,
+    EvaluationOutcome,
     EvaluationAttemptStatus,
     ExperimentContext,
     ExperimentDefinition,
@@ -56,6 +64,11 @@ from .evaluation import (
 )
 from ._evaluation_records import _CallEvidence, EvaluationExecutionError
 from .preflight import preflight_experiment
+from ._evaluation_workers import pack, compute, PlatformEvaluator
+
+
+class _UnobservedEvaluation(RuntimeError):
+    """A batch stopped before the parent could authenticate this computation."""
 
 
 def _freeze_trace_json(value: Any, field_name: str) -> Any:
@@ -274,9 +287,11 @@ class _ExperimentEvaluationAccess:
         *,
         real_returns,
         sealed_validation,
+        batch_evaluator=None,
     ):
         self._definition = definition
         self._evaluator = evaluator
+        self._batch_evaluator = batch_evaluator if batch_evaluator is not None else evaluator
         self._recorder = recorder
         self._resources = resources
         self._workspace = workspace
@@ -284,8 +299,92 @@ class _ExperimentEvaluationAccess:
         self._sealed_validation = sealed_validation
         self._artifacts = []
         self._candidates = {}
+        self._owner_pid = os.getpid()
+        self._call_lock = Lock()
+
+    @contextmanager
+    def _call(self):
+        if os.getpid() != self._owner_pid:
+            raise RuntimeError("experiment evaluation context belongs to another process")
+        if not self._call_lock.acquire(blocking=False):
+            raise RuntimeError("experiment evaluation call is already active")
+        try:
+            if any(self._workspace.path(name).exists() for name in (
+                "execution_receipt.json", "execution_envelope.json",
+            )):
+                raise RuntimeError("experiment execution is already complete")
+            yield
+        finally:
+            self._call_lock.release()
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
+        with self._call():
+            prepared = self._prepare(request)
+            return self._complete(prepared, self._start(prepared), lambda: self._evaluator(prepared[0]))
+
+    def evaluate_many(
+        self, requests: tuple[EvaluationRequest, ...]
+    ) -> tuple[EvaluationOutcome[EvaluationResult], ...]:
+        """Compute a caller-selected batch; record each attempt in the owning process."""
+        with self._call():
+            if not isinstance(requests, tuple) or not requests:
+                raise ValueError("evaluate_many requires a non-empty tuple of requests")
+            if not all(isinstance(item, EvaluationRequest) for item in requests):
+                raise TypeError("evaluate_many requires EvaluationRequest values")
+            if any(item.workers != 1 for item in requests):
+                raise ValueError("batch requests require workers=1; use ExperimentResources.max_workers")
+            previous = dict(self._candidates)
+            try:
+                prepared = tuple(self._prepare(item) for item in requests)
+                # Validate transport before publishing STARTED or running any computation.
+                payloads = tuple(pack((self._batch_evaluator, item[0], self._resources.native_threads_per_worker))
+                                 for item in prepared)
+            except BaseException:
+                self._candidates = previous
+                raise
+            attempts = []
+            outcomes = []
+            def failed(error):
+                raise error
+            with ProcessPoolExecutor(
+                max_workers=min(len(requests), self._resources.max_workers),
+                mp_context=get_context("spawn"),
+            ) as pool:
+                futures = []
+                try:
+                    for item, payload in zip(prepared, payloads):
+                        attempts.append(self._start(item))
+                        futures.append(pool.submit(compute, payload))
+                    for item, attempt, future in zip(prepared, attempts, futures):
+                        try:
+                            result = self._complete(item, attempt, lambda: pickle.loads(future.result()))
+                        except EvaluationExecutionError as exc:
+                            if exc.error_code == "EVIDENCE_WRITE_FAILED":
+                                raise
+                            result = None
+                        record = next(x for x in self._recorder.evaluations if x.attempt_id == attempt[1].attempt_id)
+                        outcomes.append(EvaluationOutcome(record, result))
+                except BaseException:
+                    for future in futures:
+                        future.cancel()
+                    # Every published STARTED record must have a terminal state even if
+                    # submission, transport, cancellation or evidence publication fails.
+                    for index, (item, attempt) in enumerate(zip(prepared, attempts)):
+                        current = next(x for x in self._recorder.evaluations if x.attempt_id == attempt[1].attempt_id)
+                        if current.status is EvaluationAttemptStatus.STARTED:
+                            interrupted = (
+                                CancelledError("batch item cancelled before computation")
+                                if index < len(futures) and futures[index].cancelled()
+                                else _UnobservedEvaluation("batch stopped before result authentication")
+                            )
+                            try:
+                                self._complete(item, attempt, lambda error=interrupted: failed(error))
+                            except (EvaluationExecutionError, KeyboardInterrupt, SystemExit):
+                                pass
+                    raise
+            return tuple(outcomes)
+
+    def _prepare(self, request):
         if not isinstance(request, EvaluationRequest):
             raise TypeError("evaluation requires an EvaluationRequest")
         if request.experiment_id != self._definition.experiment_id:
@@ -351,7 +450,13 @@ class _ExperimentEvaluationAccess:
                 or parent.content_sha256 != relation.parent_content_sha256
             ):
                 raise ValueError("lineage evidence does not identify the successful parent")
+        return request, contract, binding_hash
+
+    def _start(self, prepared):
+        request, contract, binding_hash = prepared
         request_hash = canonical_sha256(contract)
+        key = request.strategy.reference_id
+        content = contract["content_sha256"]
         attempt = uuid4().hex
         evidence = _CallEvidence(self._workspace, attempt)
         started = datetime.now(timezone.utc).isoformat()
@@ -374,11 +479,21 @@ class _ExperimentEvaluationAccess:
             ) from exc
         self._recorder.record_evaluation(record)
         self._recorder.record_operation("evaluation.evaluate")
+        return evidence, record, clock
+
+    def _complete(self, prepared, attempt, calculate):
+        request, contract, binding_hash = prepared
+        dependencies = request.dependencies
+        content = contract["content_sha256"]
+        evidence, record, clock = attempt
+        request_hash = record.request_hash
+        attempt = record.attempt_id
         completed_count = None
         evaluation_ids = ()
+        writing_evidence = False
         try:
             with threadpool_limits(limits=self._resources.native_threads_per_worker):
-                result = self._evaluator(request)
+                result = calculate()
             if not isinstance(result, EvaluationResult):
                 raise TypeError("evaluation returned an invalid result")
             expected = {
@@ -423,6 +538,7 @@ class _ExperimentEvaluationAccess:
                 raise ValueError("candidate content changed during evaluation")
             completed_count = len(result.runs)
             evaluation_ids = tuple(run.identity.evaluation_id for run in result.runs)
+            writing_evidence = True
             artifact = evidence.result(result, request)
             self._artifacts.append(artifact)
             terminal = replace(
@@ -440,17 +556,18 @@ class _ExperimentEvaluationAccess:
             self._recorder.record_evaluation(terminal)
             return replace(result, attempt_id=attempt, record=reference)
         except BaseException as exc:
-            cancelled = isinstance(exc, (KeyboardInterrupt, SystemExit))
+            cancelled = isinstance(exc, (KeyboardInterrupt, SystemExit, CancelledError))
             terminal = replace(
                 record,
                 status=EvaluationAttemptStatus.CANCELLED
                 if cancelled
+                else EvaluationAttemptStatus.UNKNOWN if isinstance(exc, (BrokenProcessPool, _UnobservedEvaluation))
                 else EvaluationAttemptStatus.FAILED,
                 finished_at=datetime.now(timezone.utc).isoformat(),
                 elapsed_seconds=perf_counter() - clock,
                 completed_count=completed_count,
                 evaluation_ids=evaluation_ids,
-                error_code=type(exc).__name__,
+                error_code="EVIDENCE_WRITE_FAILED" if writing_evidence else type(exc).__name__,
                 error_message=str(exc) or type(exc).__name__,
             )
             self._recorder.record_evaluation(terminal)
@@ -462,10 +579,10 @@ class _ExperimentEvaluationAccess:
                     attempt_id=attempt,
                     error_code="EVIDENCE_WRITE_FAILED",
                 ) from exc
-            if cancelled:
+            if isinstance(exc, (KeyboardInterrupt, SystemExit)):
                 raise
             raise EvaluationExecutionError(
-                str(exc), attempt_id=attempt, error_code=type(exc).__name__
+                str(exc), attempt_id=attempt, error_code=terminal.error_code
             ) from exc
 
 
@@ -581,6 +698,7 @@ def create_formal_experiment_context(
         sealed_validation=definition.data_scope is ExperimentDataScope.SEALED_VALIDATION,
         predecessors=predecessors,
         formal=True,
+        batch_evaluator=PlatformEvaluator(Path(repository_root) / ".env", cache),
     )
 
 
@@ -597,6 +715,7 @@ def _create_experiment_context(
     sealed_validation: bool,
     predecessors: tuple[ExperimentInput, ...],
     formal: bool,
+    batch_evaluator=None,
 ) -> ExperimentContext[EvaluationRequest, EvaluationResult]:
     if not isinstance(definition, ExperimentDefinition):
         raise TypeError("experiment definition must be ExperimentDefinition")
@@ -643,6 +762,7 @@ def _create_experiment_context(
             workspace,
             real_returns=real_returns,
             sealed_validation=sealed_validation,
+            batch_evaluator=batch_evaluator,
         ),
         workspace=workspace,
         resources=resources,

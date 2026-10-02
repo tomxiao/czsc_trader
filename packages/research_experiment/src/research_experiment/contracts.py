@@ -13,7 +13,7 @@ import math
 from pathlib import Path, PurePosixPath
 import re
 from types import MappingProxyType
-from typing import Any, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 
 from dataflows import DataRequest, DataResult
 from strategy_runtime import (
@@ -25,7 +25,7 @@ from strategy_runtime import (
 )
 
 
-_EXPERIMENT_ID = re.compile(r"\d{8}_(S\d{3})_EX\d{2,}")
+_EXPERIMENT_ID = re.compile(r"(?:[0-9]{8}_(S[0-9]{3})_EX[0-9]{2,}|EX(?!000_)[0-9]{3}_[0-9]{8})")
 _STRATEGY_ID = re.compile(r"S\d{3}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _DEPENDENCY_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
@@ -322,8 +322,8 @@ class ExperimentDefinition:
         strategy_id = _text(self.strategy_id, "strategy_id")
         match = _EXPERIMENT_ID.fullmatch(experiment_id)
         if match is None:
-            raise ValueError("experiment_id must match YYYYMMDD_SNNN_EXNN")
-        if not _STRATEGY_ID.fullmatch(strategy_id) or match.group(1) != strategy_id:
+            raise ValueError("experiment_id must match EXNNN_YYYYMMDD")
+        if not _STRATEGY_ID.fullmatch(strategy_id) or match.group(1) not in (None, strategy_id):
             raise ValueError("strategy_id must match the experiment_id strategy")
         if not isinstance(self.mode, ExperimentMode):
             raise ValueError("mode must be an ExperimentMode")
@@ -355,7 +355,7 @@ class ExperimentDefinition:
         predecessors = self.protocol.predecessor_experiment_ids
         if experiment_id in predecessors:
             raise ValueError("an experiment cannot depend on itself")
-        if any(_EXPERIMENT_ID.fullmatch(item).group(1) != strategy_id for item in predecessors):
+        if any(_EXPERIMENT_ID.fullmatch(item).group(1) not in (None, strategy_id) for item in predecessors):
             raise ValueError("predecessor experiments must belong to the same strategy")
         sealed = self.data_scope is ExperimentDataScope.SEALED_VALIDATION
         if sealed:
@@ -934,10 +934,30 @@ RequestT = TypeVar("RequestT", contravariant=True)
 ResultT = TypeVar("ResultT", covariant=True)
 
 
+@dataclass(frozen=True, slots=True)
+class EvaluationOutcome(Generic[ResultT]):
+    """One terminal batch item; unsuccessful computation never carries a result."""
+
+    record: EvaluationRecord
+    result: ResultT | None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.record, EvaluationRecord):
+            raise TypeError("outcome requires EvaluationRecord")
+        if self.record.status is EvaluationAttemptStatus.STARTED:
+            raise ValueError("outcome requires a terminal record")
+        if (self.record.status is EvaluationAttemptStatus.SUCCEEDED) != (self.result is not None):
+            raise ValueError("only a successful outcome must contain a result")
+
+
 class ExperimentEvaluationPort(Protocol[RequestT, ResultT]):
     """Platform evaluation port available to research code."""
 
     def evaluate(self, request: RequestT) -> ResultT: ...
+
+    def evaluate_many(
+        self, requests: tuple[RequestT, ...]
+    ) -> tuple[EvaluationOutcome[ResultT], ...]: ...
 
 
 ContextRequestT = TypeVar("ContextRequestT")

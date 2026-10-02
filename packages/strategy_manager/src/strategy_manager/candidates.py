@@ -111,7 +111,7 @@ class CandidateRegistrationOrigin(_Record):
 
     def __post_init__(self):
         if not isinstance(self.experiment_id, str) or not re.fullmatch(
-            r"\d{8}_S\d{3}_EX\d{2,}", self.experiment_id
+            r"(?:[0-9]{8}_S[0-9]{3}_EX[0-9]{2,}|EX(?!000_)[0-9]{3}_[0-9]{8})", self.experiment_id
         ):
             raise ValidationError("invalid origin experiment_id")
         _hash(self.definition_sha256)

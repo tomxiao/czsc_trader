@@ -3,6 +3,7 @@
 from .contracts import (
     ExperimentDataScope,
     EvaluationRecord,
+    EvaluationOutcome,
     EvaluationAttemptStatus,
     ExperimentPrecheckResult,
     ExperimentArtifact,
@@ -43,6 +44,7 @@ __version__ = "0.1.0"
 __all__ = [
     "ExperimentDataScope",
     "EvaluationRecord",
+    "EvaluationOutcome",
     "EvaluationAttemptStatus",
     "ExperimentPrecheckResult",
     "ExperimentArtifact",

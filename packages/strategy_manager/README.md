@@ -18,8 +18,11 @@ SM管理策略族、候选登记、用户决定、不可变冻结版本、生命
 `CandidateEvidence(path, sha256)`中的路径相对相应API声明的证据根目录，拒绝绝对路径、越界和
 内容哈希不符。候选登记存于`research/registrations/`；同键同记录幂等，不同内容拒绝覆盖。
 派生类型明确区分`PARAMETERS`、`IMPLEMENTATION`和`EXECUTION`，绑定双方内容及变更证据。
+仅登记需要正式交接、技术检验或冻结的候选。搜索trial和邻域对象可直接通过TDR受管评价，
+其`EvaluationLineage`归入实验评价证据；不因补充派生关系重复登记同内容候选。
+来源实验ID接受新目录`EXxxx_YYYYMMDD`及保留原位的已封存目录名，定位始终使用策略ID和实验ID。
 
-`CandidateRegistration`读写只接受schema 2，内容身份使用`identity_schema_version=1`，其载荷、源码、预检及派生证据路径相对来源实验根目录
+`CandidateRegistration`读写只接受schema 2，内容身份使用`identity_schema_version=2`，其载荷、源码、预检及派生证据路径相对来源实验根目录
 `experiments/<key.strategy_id>/<origin.experiment_id>/`。候选内容身份不因保存位置改变。
 平台存储调用必须显式提供实验根目录：
 

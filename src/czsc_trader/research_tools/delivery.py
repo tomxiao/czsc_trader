@@ -185,7 +185,7 @@ class ExperimentOwner(_Record):
     def _validate(self):
         require_strategy_id(self.strategy_id)
         if not re.fullmatch(
-            rf"\d{{8}}_{re.escape(self.strategy_id)}_EX\d{{2,}}", self.experiment_id
+            rf"(?:[0-9]{{8}}_{re.escape(self.strategy_id)}_EX[0-9]{{2,}}|EX(?!000_)[0-9]{{3}}_[0-9]{{8}})", self.experiment_id
         ):
             raise ValueError("delivery experiment owner differs from strategy")
 

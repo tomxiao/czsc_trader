@@ -114,7 +114,19 @@ Optuna继续作为独立第三方库使用，研究员组织study、sampler、tr
 
 `ExperimentContext`通过强类型`ExperimentDataPort`、`ExperimentRuntimePort`和
 `ExperimentEvaluationPort`提供数据、运行和评价能力。正式评价使用
-`context.evaluation.evaluate(EvaluationRequest)`，评价本身不自动登记候选。
+`context.evaluation.evaluate(EvaluationRequest)`；批量使用
+`context.evaluation.evaluate_many(tuple[EvaluationRequest, ...])`，返回按输入顺序排列的
+`tuple[EvaluationOutcome[EvaluationResult], ...]`。`EvaluationOutcome.record`必须是终态，
+仅`SUCCEEDED`携带非空`result`。全部请求预检后才开始计算；每项独立留证，失败不影响其他项。
+进程异常退出使用`UNKNOWN`，证据写入失败抛出异常；平台不自动重试。研究员决定重试请求，
+重试生成新`attempt_id`。评价本身不自动登记候选。
+
+主进程持有唯一上下文与回执，子进程只计算；不得将上下文传入研究员自己的进程池。批量请求
+各自`workers=1`，进程数由`ExperimentResources.max_workers`限定，本地数值库线程数由
+`native_threads_per_worker`限定。每次评价的SRT临时数据目录隔离。正式入口在子进程重建
+平台DFLS配置；探索入口的自定义evaluator及provider须可序列化（模块级函数或可序列化对象），
+不支持的传输在执行前报错。Windows脚本入口使用`if __name__ == "__main__":`保护。
+新实验目录为`EXxxx_YYYYMMDD`，完整定位需策略ID；已封存目录保持原位。
 平台为真实调用保留开始及终态记录，成功、失败、取消分别表达；窗口／场景结果绑定候选内容、
 输入、协议和环境身份，重复计算不增加独立研究证据数量。
 

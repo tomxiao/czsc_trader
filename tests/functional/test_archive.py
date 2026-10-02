@@ -56,8 +56,8 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
     first = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
     second = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
     assert first.parent == experiment_root / "S002"
-    assert first.name == "20260909_S002_EX01"
-    assert second.name == "20260909_S002_EX02"
+    assert first.name == "EX001_20260909"
+    assert second.name == "EX002_20260909"
     for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
         (first / name).write_text("document\n", encoding="utf-8")
     build_experiment_manifest(

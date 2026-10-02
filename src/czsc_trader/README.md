@@ -29,7 +29,7 @@
 | --- | --- |
 | REX绑定／定义／执行回执 | 3／2／2 |
 | TDR评价产物／阶段交付定义与回执 | 4／4 |
-| SM候选登记／候选内容身份 | 2／1 |
+| SM候选登记／候选内容身份 | 2／2 |
 | SM冻结版本／SRT发布记录 | 4／4 |
 | SRT运行定义 | 2 |
 | 实验manifest／运行绑定模板 | 1／1 |
@@ -53,7 +53,7 @@ from czsc_trader.application import RepositoryContext, preflight_experiment_arch
 
 context = RepositoryContext.discover(Path.cwd())
 report = preflight_experiment_archive(
-    context, context.root / "experiments/SXXX/YYYYMMDD_SXXX_EXNN",
+    context, context.root / "experiments/SXXX/EX001_YYYYMMDD",
     max_workers=1, native_threads_per_worker=1,
 )
 ```
@@ -84,6 +84,7 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 | 用途 | API | 输出 |
 | --- | --- | --- |
 | 实验内账户评价 | `context.evaluation.evaluate(EvaluationRequest)` | `EvaluationResult`，含各窗口／成本场景的账户、基准及身份 |
+| 实验内批量评价 | `context.evaluation.evaluate_many(tuple[EvaluationRequest, ...])` | 按输入顺序返回`EvaluationOutcome`，分别携带终态记录和可选成功结果 |
 | 文件化评价及发布 | `evaluate_research_request(context, input_path)` | 实验`artifacts/evaluation/`及文件哈希 |
 | 候选或版本完整回测 | `run_backtest(context, strategy, request)` | 账户、指标、审计、报告及图表，位于返回的`artifacts.output_dir` |
 
@@ -178,9 +179,21 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 `experiments/<策略ID>/<实验ID>/objects/`。登记内的文件引用相对该实验根目录，
 `CandidateRegistrationRequest`中的输入证据路径仍相对仓库。同一键和登记内容重复调用返回原记录；
 不同内容拒绝覆盖。实验封存后不得补写候选对象；已存在且一致的对象可只读复用。
-读取与写入只接受schema 2登记；序列化记录须显式提供`schema_version=2`与`identity_schema_version=1`。
+读取与写入只接受schema 2登记；序列化记录须显式提供`schema_version=2`与`identity_schema_version=2`。
 旧登记原件保留；继续研究须在获准的后继实验中通过当前API生成来源证据和登记。
 参数、实现或执行规则派生使用`CandidateDerivation`分别记录`PARAMETERS/IMPLEMENTATION/EXECUTION`。
+搜索trial和邻域点保存在实验及评价证据中，无须登记；只有正式交接对象须登记。已有同内容候选
+的补充派生关系通过`EvaluationLineage`进入本次评价，不为补充评价关系重复登记。
+未登记对象的完整载荷、源码及依赖身份由研究编排保存为实验产物并纳入执行回执，内容哈希不能
+替代重建输入；评价接口不自动将临时对象写入注册表。
+
+批量评价由主进程统一预检、校验结果和写回执，子进程通过`spawn`执行计算，使用隔离的SRT
+临时目录。请求必须组成非空tuple，各自`workers=1`；进程数取`ExperimentResources.max_workers`。
+单项计算失败返回失败记录，进程失联返回`UNKNOWN`，证据写入失败抛出异常。研究员根据结果
+显式重试，平台生成新的`attempt_id`，不管理Optuna预算、剪枝或停止条件。
+上下文完成执行回执后拒绝追加评价，不能跨进程共享或同时提交多个调用。
+新目录通过`czsc_trader.experiment_archive.create_experiment_dir(root, run_date, strategy_id)`
+分配`EXxxx_YYYYMMDD`，编号按策略跨日期递增；同名查找显式提供`strategy_id`。
 
 `EvaluationRequest`显式携带`data_cutoff`、依赖及可选`EvaluationLineage`。每次受管评价保留
 尝试身份；每个窗口／场景的`EvaluationIdentity`绑定候选键、内容、输入、协议与环境哈希。

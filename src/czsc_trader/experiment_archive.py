@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 import json
+from hashlib import sha256
 from pathlib import Path
 import re
 
@@ -20,8 +21,9 @@ MANIFEST_NAME = "experiment_manifest.json"
 GOVERNANCE_SIDECARS = {"evaluation_acceptance.json"}
 TEXT_SUFFIXES = {".csv", ".html", ".json", ".md", ".py", ".svg", ".txt"}
 STRATEGY_EXPERIMENT_PATTERN = re.compile(
-    r"(?P<date>[0-9]{8})_(?P<strategy_id>S[0-9]{3})_EX[0-9]{2}$"
+    r"(?P<date>[0-9]{8})_(?P<strategy_id>S[0-9]{3})_EX(?P<number>[0-9]{2,})$"
 )
+EXPERIMENT_DIRECTORY_PATTERN = re.compile(r"EX(?P<number>(?!000_)[0-9]{3})_(?P<date>[0-9]{8})")
 STRATEGY_ID_PATTERN = re.compile(r"S[0-9]{3}$")
 
 
@@ -34,22 +36,30 @@ def iter_experiment_dirs(root: Path) -> tuple[Path, ...]:
         {path.parent for path in root.rglob(MANIFEST_NAME)},
         key=lambda path: path.relative_to(root).as_posix(),
     )
-    identities: dict[str, Path] = {}
+    identities: dict[tuple[str, str], Path] = {}
     for directory in directories:
         relative = directory.relative_to(root)
         if len(relative.parts) > 2:
             raise ValueError(f"experiment archive is nested too deeply: {relative.as_posix()}")
-        previous = identities.setdefault(directory.name, directory)
+        previous = identities.setdefault((directory.parent.name, directory.name), directory)
         if previous != directory:
             raise ValueError(f"duplicate experiment_id directory: {directory.name}")
     return tuple(directories)
 
 
-def resolve_experiment_dir(root: Path, experiment_id: str) -> Path:
-    """Resolve one globally unique experiment ID without exposing path traversal."""
+def resolve_experiment_dir(root: Path, experiment_id: str, *, strategy_id: str | None = None) -> Path:
+    """Resolve an experiment; require its strategy when names are ambiguous."""
     if not experiment_id or Path(experiment_id).name != experiment_id:
         raise ValueError("experiment must be a single experiment ID")
     root = Path(root).resolve()
+    if strategy_id is not None:
+        if not STRATEGY_ID_PATTERN.fullmatch(strategy_id):
+            raise ValueError("strategy_id must match S plus three digits")
+        target = (root / strategy_id / experiment_id).resolve()
+        target.relative_to(root)
+        if not target.is_dir():
+            raise ValueError(f"experiment does not exist: {strategy_id}/{experiment_id}")
+        return target
     direct = root / experiment_id
     matches = (
         [direct] if direct.is_dir() and not STRATEGY_ID_PATTERN.fullmatch(experiment_id) else []
@@ -92,26 +102,41 @@ def resolve_repository_experiment_reference(repository_root: Path, reference: st
 
 
 def create_experiment_dir(root: Path, run_date: date, strategy_id: str) -> Path:
-    """Create the next strategy-owned ``YYYYMMDD_SXXX_EXnn`` directory."""
-    root = Path(root)
-    root.mkdir(parents=True, exist_ok=True)
+    """Reserve EX001..EX999 monotonically across dates within one strategy."""
+    if type(run_date) is not date:
+        raise TypeError("run_date must be a date")
     if not STRATEGY_ID_PATTERN.fullmatch(strategy_id):
         raise ValueError("strategy_id must match S plus three digits")
-    strategy_root = root / strategy_id
-    strategy_root.mkdir(exist_ok=True)
-    prefix = f"{run_date:%Y%m%d}_{strategy_id}_EX"
-    pattern = re.compile(rf"{re.escape(prefix)}(\d{{2}})")
-    numbers = [
-        int(match.group(1))
-        for path in strategy_root.iterdir()
-        if path.is_dir() and (match := pattern.fullmatch(path.name))
-    ]
-    revision = max(numbers, default=0) + 1
-    if revision > 99:
-        raise RuntimeError(f"{prefix} has already reached EX99")
-    experiment_dir = strategy_root / f"{prefix}{revision:02d}"
-    experiment_dir.mkdir(exist_ok=False)
-    return experiment_dir
+    root = Path(root).resolve()
+    strategy_root = (root / strategy_id).resolve()
+    strategy_root.relative_to(root)
+    strategy_root.mkdir(parents=True, exist_ok=True)
+    # Exclusive allocation lock also prevents equal sequence numbers with
+    # different dates. There is no hidden wait, retry or stale-lock recovery.
+    lock_root = root.parent / ".tmp" / "experiment-allocation"
+    lock_root.mkdir(parents=True, exist_ok=True)
+    key = sha256(str(strategy_root).encode()).hexdigest()
+    lock = lock_root / f"{key}.lock"
+    lock.open("x", encoding="utf-8").close()
+    try:
+        numbers = []
+        for path in strategy_root.iterdir():
+            if not path.is_dir():
+                continue
+            match = EXPERIMENT_DIRECTORY_PATTERN.fullmatch(path.name)
+            if match is None:
+                match = STRATEGY_EXPERIMENT_PATTERN.fullmatch(path.name)
+                if match is None or match.group("strategy_id") != strategy_id:
+                    continue
+            numbers.append(int(match.group("number")))
+        number = max(numbers, default=0) + 1
+        if number > 999:
+            raise ValueError("experiment sequence exhausted at EX999")
+        directory = strategy_root / f"EX{number:03d}_{run_date:%Y%m%d}"
+        directory.mkdir(exist_ok=False)
+    finally:
+        lock.unlink()
+    return directory
 
 
 def _file_record(path: Path) -> dict[str, object]:
@@ -137,14 +162,16 @@ def _validate_strategy_experiment_identity(
     experiment_dir: Path, metadata: dict[str, object]
 ) -> None:
     match = STRATEGY_EXPERIMENT_PATTERN.fullmatch(experiment_dir.name)
-    if match is None:
+    current = EXPERIMENT_DIRECTORY_PATTERN.fullmatch(experiment_dir.name)
+    if match is None and current is None:
         return
     if metadata.get("experiment_id") != experiment_dir.name:
         raise ValueError("experiment_id must equal the strategy experiment directory")
-    if metadata.get("strategy_id") != match.group("strategy_id"):
+    owner = match.group("strategy_id") if match is not None else experiment_dir.parent.name
+    if not STRATEGY_ID_PATTERN.fullmatch(owner) or metadata.get("strategy_id") != owner:
         raise ValueError("strategy_id must equal the strategy experiment owner")
     if STRATEGY_ID_PATTERN.fullmatch(experiment_dir.parent.name) and (
-        experiment_dir.parent.name != match.group("strategy_id")
+        experiment_dir.parent.name != owner
     ):
         raise ValueError("strategy experiment directory must match the strategy owner")
     if not isinstance(metadata.get("symbol"), str) or not metadata["symbol"]:

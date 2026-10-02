@@ -309,7 +309,8 @@ def test_historical_receipt_is_rejected_without_modifying_original(tmp_path):
     assert (tmp_path / "execution_envelope.json").read_bytes() == original
 
 
-def test_executor_archives_typed_evaluation_and_rejects_partial_receipt(managed_evaluation):
+@pytest.mark.parametrize("batch_mode", [False, True])
+def test_executor_archives_typed_evaluation_and_rejects_partial_receipt(managed_evaluation, batch_mode):
     from research_experiment import experiment_source_sha256, load_experiment_input
     from czsc_trader.research_tools import execute_experiment
 
@@ -341,6 +342,15 @@ class Experiment(ResearchExperiment):
         result = context.evaluation.evaluate(self.request)
         return ExperimentResult(ExperimentOutcome.PASS, {"result_hash": result.result_hash}, {})
 """.replace("DATASETS", repr(context.definition.allowed_datasets))
+    if batch_mode:
+        from test_evaluation_batch import synthetic_evaluator
+        context.evaluation._batch_evaluator = synthetic_evaluator
+        context.resources = context.evaluation._resources = ExperimentResources(2, 1)
+        source = source.replace(
+            "result = context.evaluation.evaluate(self.request)",
+            "outcomes = context.evaluation.evaluate_many((self.request, self.request))\n"
+            "        result = outcomes[0].result",
+        )
     (root / "experiment.py").write_text(source, encoding="utf-8")
     binding = {
         "schema_version": 3,
@@ -354,6 +364,7 @@ class Experiment(ResearchExperiment):
     loaded = load_experiment(root)
     loaded.implementation.request = request
     result = execute_experiment(loaded, context)
+    assert len(result.receipt.trace.evaluations) == (2 if batch_mode else 1)
     evidence = load_experiment_input(
         context.workspace.root, expected_receipt_sha256=result.receipt.sha256
     )
