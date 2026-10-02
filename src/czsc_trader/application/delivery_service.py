@@ -66,6 +66,8 @@ def _validate_owner(context, definition, *, publishing=False):
         _resolve(root, name)
     if experiment_source_sha256(root, binding.source_files) != binding.source_sha256:
         _fail("OWNER_BINDING", "owner", "experiment source differs from binding")
+    if owner.experiment_id.startswith("EX"):
+        _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
     if (root / "experiment_manifest.json").exists():
         if publishing:
             _fail("EXPERIMENT_SEALED", "owner", "cannot publish into a sealed experiment")
@@ -102,7 +104,19 @@ def _walk(value):
             yield from _walk(item)
 
 
-def _load_experiments(definition, root: Path, *, published: bool):
+def _load_scoped_experiment(context, strategy_id, experiment_id):
+    from research_experiment import load_experiment
+
+    source = _resolve(context.root, f"experiments/{strategy_id}/{experiment_id}")
+    loaded = load_experiment(source)
+    if (loaded.definition.strategy_id, loaded.definition.experiment_id) != (
+        strategy_id, experiment_id
+    ):
+        _fail("EXPERIMENT_IDENTITY", experiment_id, "experiment definition family or ID differs")
+    return loaded
+
+
+def _load_experiments(definition, root: Path, *, published: bool, context):
     results = {}
     candidates = {}
     for ref in definition.experiments:
@@ -117,6 +131,12 @@ def _load_experiments(definition, root: Path, *, published: bool):
         if result.experiment_id != ref.experiment_id:
             _fail("EXPERIMENT_IDENTITY", relative, "experiment ID differs from reference")
         receipt = envelope["receipt"]
+        if ref.experiment_id.startswith("EX"):
+            loaded = _load_scoped_experiment(context, definition.strategy_id, ref.experiment_id)
+            if (receipt["definition_sha256"], receipt["source_sha256"]) != (
+                loaded.definition.sha256, loaded.binding.source_sha256
+            ):
+                _fail("EXPERIMENT_IDENTITY", relative, "receipt differs from bound experiment")
         if ref.use is d.ExperimentEvidenceUse.CURRENT_EVALUATION and receipt["schema_version"] != 2:
             _fail(
                 "EXPERIMENT_SCHEMA",
@@ -959,7 +979,7 @@ def _read_delivery(context, reference, root, visited):
     if (definition.owner, definition.stage, definition.revision) != identity:
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
     _validate_owner(context, definition)
-    experiments = _load_experiments(definition, root, published=True)
+    experiments = _load_experiments(definition, root, published=True, context=context)
     _validate_content(definition, content, root, experiments, context)
     if _resolve(root, "report.md").read_bytes() != _report(definition, content, root):
         _fail("REPORT_FACTS", "report.md", "report differs from machine content")
@@ -1033,7 +1053,7 @@ def assemble_delivery(
                 )
         for predecessor in definition.predecessors:
             _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
-        experiments = _load_experiments(definition, context.root, published=False)
+        experiments = _load_experiments(definition, context.root, published=False, context=context)
         if isinstance(content.payload, d.CandidateSet):
             from strategy_manager import StrategyRegistry, StrategyManagerError
             from strategy_runtime.errors import StrategyRuntimeError
@@ -1082,7 +1102,7 @@ def assemble_delivery(
                 copy(path, f"{prefix}/{name}", sha256(path.read_bytes()).hexdigest())
             for artifact in result.artifacts:
                 copy(_resolve(source, artifact.path), f"{prefix}/{artifact.path}", artifact.sha256)
-        verified = _load_experiments(definition, staging, published=True)
+        verified = _load_experiments(definition, staging, published=True, context=context)
         _validate_content(definition, content, staging, verified, context)
         document = {"schema_version": 4, "definition": definition, "content": content}
         (staging / "delivery.json").write_bytes(d._canonical(document))

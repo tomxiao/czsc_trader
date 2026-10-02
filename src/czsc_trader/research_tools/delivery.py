@@ -163,7 +163,10 @@ class ExperimentEvidenceRef(_Record):
     use: ExperimentEvidenceUse
 
     def _validate(self):
-        if not re.fullmatch(r"[0-9]{8}_S[0-9]{3}_EX[0-9]{2,}", self.experiment_id):
+        if not re.fullmatch(
+            r"(?:[0-9]{8}_S[0-9]{3}_EX[0-9]{2,}|EX(?!000_)[0-9]{3}_[0-9]{8})",
+            self.experiment_id,
+        ):
             raise ValueError("invalid experiment_id")
         _path(self.workspace_path)
         _hash(self.receipt_sha256)
@@ -243,8 +246,8 @@ class DeliveryDefinition(_Record):
                 and ref.revision >= self.revision
             ):
                 raise ValueError("same-stage predecessor must be an earlier revision")
-        if any(f"_{self.strategy_id}_" not in x.experiment_id for x in self.experiments):
-            raise ValueError("experiment family differs")
+        for ref in self.experiments:
+            ExperimentOwner(self.strategy_id, ref.experiment_id)
 
 
 class ConfirmationStatus(StrEnum):

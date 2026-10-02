@@ -165,6 +165,70 @@ def test_public_exports():
     assert DeliveryContent is d.DeliveryContent
 
 
+def new_named_experiment(context, strategy_id="S900"):
+    from test_research_experiment import _write_v3_experiment, _flows
+    from research_experiment import (
+        experiment_source_sha256, load_experiment, ExperimentWorkspace, ExperimentResources,
+    )
+    from czsc_trader.research_tools import create_experiment_context, execute_experiment
+
+    root = context.experiments_root / strategy_id / "EX078_20261003"
+    _write_v3_experiment(root)
+    source = root / "experiment.py"
+    source.write_text(
+        source.read_text().replace("20260925_S009_EX99", root.name).replace("S009", strategy_id)
+    )
+    binding_path = root / "experiment_binding.json"
+    binding = json.loads(binding_path.read_text())
+    binding["source_sha256"] = experiment_source_sha256(root, ("experiment.py",))
+    binding_path.write_text(json.dumps(binding))
+    loaded = load_experiment(root)
+    execution = create_experiment_context(
+        loaded.definition,
+        repository_root=context.root,
+        dataflows=_flows(),
+        workspace=ExperimentWorkspace(context.root / ".tmp" / strategy_id / root.name, context.root),
+        resources=ExperimentResources(1, loaded.definition.random_seed),
+    )
+    result = execute_experiment(loaded, execution)
+    shutil.copytree(execution.workspace.root, root / "artifacts")
+    return root, d.ExperimentEvidenceRef(
+        root.name, (root / "artifacts").relative_to(context.root).as_posix(),
+        result.receipt.sha256, d.ExperimentEvidenceUse.CURRENT_EVALUATION,
+    )
+
+
+def test_new_experiment_name_publishes_and_rejects_other_family_receipt(context):
+    root, ref = new_named_experiment(context)
+    defined = d.DeliveryDefinition(
+        d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1, experiments=(ref,)
+    )
+    receipt = assemble_delivery(context, Deliverable(defined, content()))
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+    _, foreign = new_named_experiment(context, "S901")
+    with pytest.raises(d.DeliveryValidationError, match="bound experiment"):
+        assemble_delivery(
+            context, Deliverable(replace(defined, revision=2, experiments=(foreign,)), content())
+        )
+
+
+def test_new_experiment_owner_rejects_definition_from_other_family(context):
+    root, _ = new_named_experiment(context, "S901")
+    target = context.experiments_root / "S900" / root.name
+    shutil.copytree(root, target)
+    defined = d.DeliveryDefinition(
+        d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1
+    )
+    with pytest.raises(d.DeliveryValidationError, match="definition strategy differs"):
+        assemble_delivery(context, Deliverable(defined, content()))
+
+
+@pytest.mark.parametrize("name", ["EX000_20261003", "EX78_20261003", "EX1000_20261003"])
+def test_experiment_evidence_rejects_invalid_sequence(name):
+    with pytest.raises(ValueError, match="invalid experiment_id"):
+        d.ExperimentEvidenceRef(name, "artifacts", "a" * 64, d.ExperimentEvidenceUse.CURRENT_EVALUATION)
+
+
 def test_negative_delivery_is_complete_idempotent_and_immutable(context):
     deliverable = Deliverable(definition(), content())
     first = assemble_delivery(context, deliverable)
