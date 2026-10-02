@@ -196,7 +196,7 @@ def main(
             shutil.copy2(virtual_host, base_host)
         bootstrap = Path(sys.base_prefix) / "pte_service_bootstrap.py"
         bootstrap.write_text(
-            build_bootstrap_source(Path(sys.exec_prefix)), encoding="utf-8"
+            build_bootstrap_source(Path(sys.exec_prefix)), encoding="utf-8", newline="\n"
         )
         path = config.save()
         action = "update" if _service_exists() else "install"

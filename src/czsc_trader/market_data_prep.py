@@ -301,16 +301,16 @@ def prepare_market_data(
             "fetch_metadata": execution_metadata,
         }
         (staging / f"{code}_manifest.json").write_text(
-            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
         )
         (staging / f"{code}_validation.json").write_text(
             json.dumps({**validation, "generated_at_utc": generated_at}, ensure_ascii=False, indent=2)
             + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (staging / f"{code}_execution_manifest.json").write_text(
             json.dumps(execution_manifest, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         candidates = [
             *[staging / filename for filename in file_records],

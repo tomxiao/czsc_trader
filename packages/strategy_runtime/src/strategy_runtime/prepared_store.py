@@ -111,7 +111,7 @@ def _ensure_workspace(root: Path, strategy: StrategyIdentity) -> None:
     manifest["manifest_sha256"] = canonical_sha256(manifest)
     path = root / _WORKSPACE_MANIFEST
     try:
-        with path.open("x", encoding="utf-8") as stream:
+        with path.open("x", encoding="utf-8", newline="\n") as stream:
             stream.write(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     except FileExistsError:
         _load_workspace(root, strategy)
@@ -246,6 +246,8 @@ def save_prepared_inputs(
             result.dataframe.to_csv(
                 staged,
                 index=False,
+                encoding="utf-8",
+                lineterminator="\n",
                 compression={"method": "gzip", "compresslevel": 6, "mtime": 0},
             )
             stored = pd.read_csv(staged)
@@ -314,7 +316,7 @@ def save_prepared_inputs(
         manifest_path = staging / _MANIFEST
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         staging.replace(prepared_root)
     finally:

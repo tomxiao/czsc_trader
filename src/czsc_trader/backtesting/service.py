@@ -58,7 +58,7 @@ class BacktestRunSummary:
 def _write_json(path: Path, value: object) -> None:
     path.write_text(
         json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n",
     )
 
 
@@ -239,11 +239,11 @@ def _run_backtest(
                 trading_days=len(result.account_daily),
                 lot_size=request.lot_size,
             ),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         (staging / "chart.html").write_text(
             render_backtest_chart_html(signals, execution_data, result, request.initial_cash),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         ma_chart_signals = benchmarks.ma_signals.set_index("date")
         write_ma_chart(

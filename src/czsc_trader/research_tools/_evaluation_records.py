@@ -44,7 +44,7 @@ class _CallEvidence:
             json.dumps(
                 payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
             ),
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary.replace(target)

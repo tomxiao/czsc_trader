@@ -409,7 +409,7 @@ class AccountChartService:
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
         try:
-            temporary.write_text(content, encoding="utf-8")
+            temporary.write_text(content, encoding="utf-8", newline="\n")
             os.replace(temporary, path)
         finally:
             temporary.unlink(missing_ok=True)

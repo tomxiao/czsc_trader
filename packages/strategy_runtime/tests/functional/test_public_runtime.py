@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gzip
 import json
 import os
 from datetime import date, datetime
@@ -181,6 +182,11 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     manifest_path = _prepared_manifest(tmp_path, window)
     assert (tmp_path / "strategy-space.json").is_file()
     assert manifest_path.is_file()
+    assert b"\r" not in manifest_path.read_bytes()
+    stored_tables = tuple(manifest_path.parent.glob("*.csv.gz"))
+    assert stored_tables
+    for path in stored_tables:
+        assert b"\r" not in gzip.decompress(path.read_bytes())
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert all(
         value["identity"]["content_sha256"] == value["content_sha256"]

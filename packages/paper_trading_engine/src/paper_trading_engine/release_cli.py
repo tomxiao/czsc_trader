@@ -368,7 +368,7 @@ def _write_build_manifest(
         },
     }
     (release_root / BUILD_MANIFEST_NAME).write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n",
     )
     return manifest
 
@@ -499,7 +499,7 @@ def _write_manifest(
         "runtime_files": dict(sorted(runtime_files.items())),
     }
     (release_root / MANIFEST_NAME).write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     return manifest
 
@@ -515,7 +515,7 @@ def _write_runtime_root(release_root: Path) -> dict[str, str]:
             },
             indent=2,
         ) + "\n",
-        encoding="utf-8",
+        encoding="utf-8", newline="\n",
     )
     return {marker.name: file_sha256(marker)}
 
@@ -643,7 +643,7 @@ def build_release(
             runner=runner,
         ).stdout
         constraints = staging / "build-constraints.txt"
-        constraints.write_text(frozen, encoding="utf-8")
+        constraints.write_text(frozen, encoding="utf-8", newline="\n")
         pip_cache = cache_root / "pip"
         uv_cache = cache_root / "uv-build"
         for project in PTE_LOCAL_PROJECTS:
@@ -781,7 +781,7 @@ def publish_release(
                     cwd=built.release_root,
                     runner=runner,
                 ).stdout,
-                encoding="utf-8",
+                encoding="utf-8", newline="\n",
             )
             runtime_files[environment_lock.name] = file_sha256(environment_lock)
             manifest = _write_manifest(

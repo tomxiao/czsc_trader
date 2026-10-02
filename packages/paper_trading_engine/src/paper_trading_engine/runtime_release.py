@@ -234,7 +234,7 @@ def activate_release(runtime_root: Path, release_id: str) -> dict[str, object]:
 
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
     temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     temporary.replace(path)
     return payload

@@ -752,7 +752,7 @@ def _atomic_execution_document(workspace, name, payload):
         json.dumps(
             payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
         ),
-        encoding="utf-8",
+        encoding="utf-8", newline="\n",
     )
     temporary.replace(workspace.path(name))
 

@@ -147,7 +147,10 @@ def publish_review_dataset(
             tables[name] = None
             continue
         filename = f"{name}.csv.gz"
-        frame.to_csv(staging / filename, index=False, compression={"method": "gzip", "mtime": 0})
+        frame.to_csv(
+            staging / filename, index=False, encoding="utf-8", lineterminator="\n",
+            compression={"method": "gzip", "mtime": 0},
+        )
         tables[name] = {"file": filename,
                         "dtypes": {col: str(dtype) for col, dtype in frame.dtypes.items()},
                         "dates": [col for col in frame if pd.api.types.is_datetime64_any_dtype(frame[col])]}
@@ -180,7 +183,7 @@ def publish_review_dataset(
         },
     }
     content["snapshot_hash"] = canonical_sha256(content)
-    (staging / MANIFEST).write_text(json.dumps(content, ensure_ascii=False, indent=2), encoding="utf-8")
+    (staging / MANIFEST).write_text(json.dumps(content, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     load_review_dataset(staging, content["snapshot_hash"])
     replace_directory(staging, directory)
     return content

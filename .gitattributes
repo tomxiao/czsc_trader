@@ -1,22 +1,6 @@
-# Repository text is LF on every platform; this overrides user core.autocrlf.
-* text=auto eol=lf
-
-# Raw market data hashes preserve the exact published bytes.
-data/raw/*.csv -text
-
-# Immutable S010 experiment manifests hash the published file bytes.
-experiments/S010/** -text -eol
-
-# Immutable S011 experiment manifests hash the published file bytes.
-experiments/S011/** -text -eol
-
-# Receipted delivery files and candidate objects retain their exact bytes.
-experiments/*/*/deliveries/** -text -eol
-experiments/*/*/objects/** -text -eol
-research/*/mandates/** -text -eol
-
-# Frozen package manifests authenticate exact bytes, including source line endings.
-strategies/*/releases/** -text -eol
+# Git preserves bytes on add, checkout and archive, independently of core.autocrlf.
+# Editors and generators own text formatting before content identities are created.
+* -text -eol
 
 # Binary artifacts always retain exact bytes.
 *.png binary

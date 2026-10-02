@@ -193,7 +193,7 @@ def prepare_intraday_research_data(
         manifest_path = staging / f"{code}_intraday_manifest.json"
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
+            encoding="utf-8", newline="\n",
         )
         published_names = sorted(file_records) + [manifest_path.name]
         for filename in published_names:

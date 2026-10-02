@@ -76,7 +76,7 @@ class ServiceConfig:
             "host": self.host,
             "port": self.port,
         }
-        destination.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        destination.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
         return destination
 
     @classmethod

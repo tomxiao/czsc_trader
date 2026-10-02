@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import replace
+import gzip
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -865,6 +866,10 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         candidate_runtime_roots={"C001": package},
     )
     restored = load_review_dataset(directory, published["snapshot_hash"])
+    stored_tables = tuple(directory.glob("*.csv.gz"))
+    assert stored_tables
+    for path in stored_tables:
+        assert b"\r" not in gzip.decompress(path.read_bytes())
     assert_frame_equal(restored.execution_daily, daily)
     assert_frame_equal(restored.adjusted_daily, daily)
     assert restored.root != pool

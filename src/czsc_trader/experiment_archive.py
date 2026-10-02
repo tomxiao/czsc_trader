@@ -198,7 +198,7 @@ def build_experiment_manifest(
         if existing != manifest:
             raise ValueError("sealed experiment manifest cannot be overwritten")
         return existing
-    with path.open("x", encoding="utf-8") as stream:
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
         stream.write(serialized)
     return manifest
 
