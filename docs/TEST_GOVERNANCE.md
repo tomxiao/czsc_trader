@@ -272,6 +272,23 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 ## 11. 最近一次治理记录
 
+2026-10-02多线程DSR复验修复验收：`scripts/test-all.ps1`全量离线回归通过，646项Python测试、
+3项控制台JavaScript测试和Ruff全部通过，总耗时246.42秒。模块数量为TDR 244、PTE 99、
+DFLS 148、FSC 2、STC 3、SM 8、REX 10、SE 81、SRT 41、TXE 10。
+日志位于`.tmp/test-regression/run-1767f9a8ac934016a581beb0ea9bc03d/`。
+
+首轮沙箱内运行出现DFLS/SRT多进程管道权限错误、TDR本地Git克隆失败及PTE图表响应耗时
+断言超限；在获准的沙箱外环境完整重跑后全部通过，未调整测试阈值或跳过用例。
+首轮日志位于`.tmp/test-regression/run-7e0073d534e24e94b96aca575f9fb700/`。
+
+本轮新增覆盖`DSR_EFFECTIVE`相对误差边界、1/2/8/16原生线程复算、其余字段严格比较和
+文件字节篡改拒绝。另有真实S011 EX37阶段四及前驱交付链通过默认16线程OpenBLAS的只读
+`validate_delivery`核验，记录位于`.tmp/s011-dsr-recomputation-fix-validation.json`；该专项
+验证独立于合成夹具回归，未改写实验或交付证据。本轮未执行在线数据、Windows生产服务或
+PTE部署验收。上述日志均为本地临时证据，不随Git分发。
+
+### 2026-10-02当前契约清理验收（此前记录）
+
 2026-10-02当前契约清理验收：`scripts/test-all.ps1`全量离线回归通过，625项Python测试、
 3项控制台JavaScript测试和Ruff全部通过，总耗时206.41秒。模块数量为TDR 223、PTE 99、
 DFLS 148、FSC 2、STC 3、SM 8、REX 10、SE 81、SRT 41、TXE 10。

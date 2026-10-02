@@ -240,6 +240,12 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 | `assemble_delivery(context, deliverable)` | `DeliveryReceipt`；验证内容和证据后发布不可变修订，校验失败或修订冲突抛出明确异常 |
 | `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验当前`DeliveryReference`，返回`PASS/FAIL`及问题定位 |
 
+`ASSESSMENT`发布与复验会重新计算自检面板。仅家族诊断`DSR_EFFECTIVE`的数值比较采用
+`rel_tol=1e-12`、`abs_tol=0.0`，用于容纳原生线程数变化引起的浮点尾差；有差异时，两侧值
+须在`[0,1]`内，诊断名称、状态、原因及顺序仍须一致。调用方无需为此强制单线程复验。
+文件原始字节及哈希、请求与协议身份、账户指标、其他诊断和候选比较结果仍精确核验。
+此规则不改变公共签名或schema，不改写已发布交付及其内容身份。
+
 | `DeliveryStage` | 对应的强类型内容 |
 | --- | --- |
 | `MANDATE` | `ResearchMandate`：研究目标、约束及逐项确认记录 |

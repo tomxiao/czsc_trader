@@ -35,7 +35,7 @@
 - 经用户批准，旧发布包、七个历史目录、13个根目录过程文件及缓存已无备份删除。此目录仅保留治理导航、批次登记说明与阶段一正式交付；阶段二至四及候选实体跟随来源实验。
 - 100条schema 1候选登记仅保留历史身份，其实体已删除；612条schema 2登记仍使用实验内实体。实验原件和现行交付附件保持原字节；部分制品受Git忽略规则管理，仅存在本机。
 - 依赖已删除路径的旧组装、统计和专项验证脚本已退役，包括EX33的`verify_deliveries.py`和EX37的`verify_completion.py`；封存README中的相应命令不再适用。
-- 当前复验使用TDR公共API `validate_delivery`及`load_candidate`。EX37须按其环境记录限制原生线程数为1；默认16线程OpenBLAS曾触发`ASSESSMENT_RESULT`，平台数值比较实现尚未调整。平台不承诺历史数据机器复验。
+- 当前复验使用TDR公共API `validate_delivery`及`load_candidate`。TDR已对`DSR_EFFECTIVE`复算采用`rel_tol=1e-12`、`abs_tol=0.0`，文件哈希、账户指标及比较结果仍精确核验，详见[TDR交付语义](../../src/czsc_trader/README.md#7-五阶段交付)。EX37阶段四及其前驱交付链已在默认16线程OpenBLAS下通过复验，无需强制单线程。原实验的单worker、原生线程数1记录保持不变；平台不承诺历史数据机器复验。
 
 ## 下一步
 

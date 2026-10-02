@@ -1,6 +1,6 @@
 # 策略评估器（SE）
 
-SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
+SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
 
 研究员通过TDR受管评价API取得SRT/TXE账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
 
@@ -52,6 +52,12 @@ SE提供确定性的指标、协议校验、比较、帕累托分层、PBO、DSR
 容差。参数邻域仅接纳真实`PARAMETERS`派生；缺失或不可比诊断保留状态和原因，失败与取消
 尝试保留记录，不填零或静默丢弃。主要结果包括净年化、回撤、已完成交易周期及频率、配对
 滚动超额收益、利润集中度、压力损失和参数退化；置信区间及家族PBO/DSR作为诊断报告。
+
+`effective_trial_count`通过收益相关矩阵的特征值估算有效试验数；原生计算库的线程数变化
+可能使该值及`DSR_EFFECTIVE`出现浮点尾差，固定协议与种子不保证跨线程配置逐位相同。
+SE保留原始计算结果，不统一舍入或强制线程数。受管交付的复算比较由
+[TDR交付API](../../src/czsc_trader/README.md#7-五阶段交付)负责，仅对`DSR_EFFECTIVE`
+应用`rel_tol=1e-12`、`abs_tol=0.0`；其余自检字段及候选比较结果仍精确核验。
 
 `CandidateComparisonRequest`显式传入比较候选集、`ResearchTargets`、自检面板和
 `ComparisonPolicy`。TDR阶段交付将数值目标绑定到阶段一已确认的`MandateItem`；纯SE请求本身
