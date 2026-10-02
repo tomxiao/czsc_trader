@@ -22,4 +22,3 @@ class StrategySnapshot:
     research_start: date | None = None
     research_end: date | None = None
     runtime_root: Path | None = None
-    chart_descriptor: dict[str, object] | None = None

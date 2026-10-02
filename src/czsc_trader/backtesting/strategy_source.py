@@ -55,7 +55,6 @@ def resolve_registered_strategy(
         research_start=None if research_window is None else research_window[0],
         research_end=None if research_window is None else research_window[1],
         runtime_root=deployment.source_root,
-        chart_descriptor=dict(deployment.binding["charts"]),
     )
 
 
@@ -67,7 +66,6 @@ def resolve_candidate_snapshot(
     source: str,
     *,
     runtime_root: Path | None = None,
-    chart_descriptor: dict[str, object] | None = None,
 ) -> StrategySnapshot:
     """Resolve a family-qualified SRT candidate; old rule-only payloads are retired."""
     if content_hash != canonical_sha256(strategy_payload):
@@ -83,5 +81,4 @@ def resolve_candidate_snapshot(
         content_hash=content_hash,
         strategy_payload=dict(strategy_payload),
         runtime_root=runtime_root,
-        chart_descriptor=chart_descriptor,
     )

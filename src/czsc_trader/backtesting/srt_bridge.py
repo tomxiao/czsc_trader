@@ -285,11 +285,6 @@ def build_srt_signal_replay(
                     "action": "INTRADAY_LONG_OVERLAY",
                 }
             )
-        chart_data = (
-            history.reindex(visible)
-            .reset_index(names="date")
-            .rename(columns={"moneyflow_breadth": "factor_score"})
-        )
     else:
         for signal_date in visible:
             row = history.loc[signal_date]
@@ -313,28 +308,6 @@ def build_srt_signal_replay(
             if not pd.isna(row["valid_session"])
             and pd.Timestamp(row["valid_session"]) in evaluation
         ]
-        chart_data = pd.DataFrame(
-            {
-                "date": visible,
-                "factor_score": [
-                    float(
-                        history.loc[item].get(
-                            "factor_score", history.loc[item].get("base_score", 0.0)
-                        )
-                    )
-                    for item in visible
-                ],
-                "target_position": [
-                    float(history.loc[item, "target_position"]) for item in visible
-                ],
-            }
-        )
-        if "confirmation_score" in history:
-            chart_data["confirmation_score"] = (
-                history.loc[visible, "confirmation_score"].astype(float).to_numpy()
-            )
-        if "regime" in history:
-            chart_data["regime"] = history.loc[visible, "regime"].astype("string").to_numpy()
     calculations = history.index
     execution = definition.execution
     target_order_types: dict[str, str | None] = {
@@ -368,7 +341,6 @@ def build_srt_signal_replay(
             "available_through": prepared.available_through.isoformat(),
             "prepared_data_identity": prepared.data_identity,
         },
-        chart_data=chart_data,
     )
     return strategy, replay
 

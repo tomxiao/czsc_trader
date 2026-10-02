@@ -53,7 +53,6 @@ class CandidateEvaluationContext:
     review_data_root: Path | None = None
     review_data_hash: str | None = None
     candidate_runtime_roots: dict[str, Path] | None = None
-    candidate_chart_descriptors: dict[str, dict[str, object]] | None = None
     dataflows: Dataflows | None = None
 
 
@@ -297,8 +296,6 @@ def _snapshot(context: CandidateEvaluationContext, item: dict[str, object]):
         candidate_id = reference.removeprefix(family + "-") if family else reference
         roots = context.candidate_runtime_roots or {}
         runtime_root = roots.get(reference) or roots.get(candidate_id)
-        descriptors = context.candidate_chart_descriptors or {}
-        chart_descriptor = descriptors.get(reference) or descriptors.get(candidate_id)
         candidate = StrategyCandidate(family, candidate_id, payload, runtime_root)
         strategy = StrategyRuntime().describe(candidate)
         identity = StrategyIdentity("CANDIDATE", candidate.reference_id, "evaluation")
@@ -306,7 +303,6 @@ def _snapshot(context: CandidateEvaluationContext, item: dict[str, object]):
     return StrategySnapshot(
         identity, source_hash, canonical_sha256(payload), payload,
         runtime_root=runtime_root if not registered else None,
-        chart_descriptor=chart_descriptor if not registered else None,
     ), strategy
 
 

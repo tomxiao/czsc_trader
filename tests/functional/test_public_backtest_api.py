@@ -94,7 +94,7 @@ def test_candidate_and_version_use_one_backtest_dispatch(
 
     with pytest.raises(ExecutionError, match="differs from the frozen registry"):
         run_backtest(context, replace(version, change_summary="changed"), request)
-    with pytest.raises(ExecutionError, match="chart override"):
+    with pytest.raises(TypeError, match="chart_descriptor"):
         run_backtest(context, version, request, chart_descriptor={})
     with pytest.raises(TypeError, match="strategy"):
         run_backtest(context, "S001-v1", request)

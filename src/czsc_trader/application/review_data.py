@@ -108,7 +108,6 @@ def publish_review_dataset(
     directory: Path,
     *,
     candidate_runtime_roots: dict[str, Path] | None = None,
-    candidate_chart_descriptors: dict[str, dict[str, object]] | None = None,
 ) -> dict:
     """Publish once; incomplete staging never becomes a usable review dataset."""
     from czsc_trader.candidate_evaluation import (
@@ -126,7 +125,6 @@ def publish_review_dataset(
         context, manifest["symbol"], manifest.get("asset_type", "etf"), periods,
         family_id=manifest["strategy_id"],
         candidate_runtime_roots=candidate_runtime_roots,
-        candidate_chart_descriptors=candidate_chart_descriptors,
     )
     snapshots = [_snapshot(run, item) for item in manifest["candidates"]]
     strategies = [item[1] for item in snapshots]

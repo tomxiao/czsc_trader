@@ -18,6 +18,7 @@ from .benchmarks import replay_benchmarks
 from .execution_data import BacktestExecutionData, prepare_backtest_execution_data
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
 from .chart import render_backtest_chart_html
+from .chart_context import build_backtest_chart_context
 from .evidence import build_manifest
 from .metrics import calculate_metrics
 from .models import StrategySnapshot
@@ -153,6 +154,8 @@ def _run_backtest(
         "strategy_reference_symbol": reference_symbol,
         "backtest_symbol": request.symbol,
         "runtime_engine": "srt",
+        "chart_renderer": "TDR",
+        "chart_contract": "tdr_backtest_chart.v1",
     }
     result = replay_srt_account(
         strategy=strategy, signals=signals, execution_data=execution_data,
@@ -242,7 +245,11 @@ def _run_backtest(
             encoding="utf-8", newline="\n",
         )
         (staging / "chart.html").write_text(
-            render_backtest_chart_html(signals, execution_data, result, request.initial_cash),
+            render_backtest_chart_html(build_backtest_chart_context(
+                signals, execution_data, result, request.initial_cash,
+                benchmark_accounts=(("BuyHold", benchmarks.buyhold_account_daily),
+                                    ("MA5/MA20", benchmarks.ma_account_daily)),
+            )),
             encoding="utf-8", newline="\n",
         )
         ma_chart_signals = benchmarks.ma_signals.set_index("date")

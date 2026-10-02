@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any
 from dataflows import Dataflows
 
 from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
@@ -29,13 +28,11 @@ def run_backtest(
     request: BacktestRequest,
     *,
     run_date: date | None = None,
-    chart_descriptor: dict[str, Any] | None = None,
     dataflows: Dataflows | None = None,
 ) -> CommandResult:
     """Replay a candidate or an authenticated frozen version through one engine.
 
-    Candidate charts must be explicitly supplied by the caller. Version charts
-    come from the authenticated deployment; overriding frozen content is refused.
+    TDR renders candidate and frozen-version charts from audited replay facts.
     This operation does not register, freeze or deploy the supplied strategy.
     """
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
@@ -55,11 +52,8 @@ def run_backtest(
                 canonical_sha256(payload),
                 f"candidate:{strategy.reference_id}",
                 runtime_root=strategy.source_root,
-                chart_descriptor=chart_descriptor,
             )
         else:
-            if chart_descriptor is not None:
-                raise ValueError("frozen version chart override is not allowed")
             stored = StrategyRegistry(context.strategy_root).get_version(
                 strategy.strategy_id,
                 strategy.version,

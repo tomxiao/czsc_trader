@@ -20,4 +20,3 @@ class SignalReplay:
     data_dir: Path
     data_identity: str
     support_data: dict[str, object] | None = None
-    chart_data: pd.DataFrame | None = None
