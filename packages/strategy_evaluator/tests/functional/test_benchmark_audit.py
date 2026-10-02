@@ -51,6 +51,7 @@ def _buyhold_evidence() -> BenchmarkEvidence:
             "win_loss_ratio": None,
             "win_loss_ratio_status": "NO_CLOSED_TRADES",
             "closed_trades": 0,
+            "win_rate": None,
         },
         lot_size=1,
     )

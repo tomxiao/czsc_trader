@@ -118,7 +118,7 @@ def strategy_comparison_metrics(
     orders: pd.DataFrame,
     init_cash: float,
 ) -> dict[str, float | str | None]:
-    """Return the five metrics shared by all comparison strategies."""
+    """Return the account and closed-trade metrics shared by comparison strategies."""
     values = equity.astype(float)
     if values.empty or not np.isfinite(values.to_numpy()).all():
         raise ValueError("equity must be finite and non-empty")
@@ -156,6 +156,7 @@ def strategy_comparison_metrics(
         "calmar": _finite_or_none(calmar),
         "win_loss_ratio": _finite_or_none(win_loss_ratio),
         "win_loss_ratio_status": win_loss_ratio_status,
+        "win_rate": float(len(wins) / len(ledger)) if len(ledger) else None,
         "return": _finite_or_none(total_return),
         "sharpe": annualized_sharpe(values, init_cash),
     }

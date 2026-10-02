@@ -251,6 +251,7 @@ def _run_backtest(
                     closed_trades=strategy_metrics["closed_trades"],
                     calmar=strategy_metrics["calmar"],
                     win_loss_ratio=strategy_metrics["win_loss_ratio"],
+                    win_rate=strategy_metrics["win_rate"],
                 ),
                 benchmark_accounts=(("BuyHold", benchmarks.buyhold_account_daily),
                                     ("MA5/MA20", benchmarks.ma_account_daily)),

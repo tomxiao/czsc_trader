@@ -1,5 +1,6 @@
 """Backtest acceptance against a freshly frozen current-contract fixture."""
 from datetime import date
+from dataclasses import replace
 import json
 import re
 import pandas as pd
@@ -9,6 +10,7 @@ from czsc_trader.application.errors import ExecutionError
 from czsc_trader.backtesting import resolve_registered_strategy
 from czsc_trader.backtesting.srt_bridge import srt_data_directory
 from strategy_runtime import RuntimeContractError
+from strategy_evaluator import AuditStatus, audit_replay
 from dataflows import Dataflows
 from test_current_contracts import (
     current_frozen as current_frozen, inspection as inspection,
@@ -48,6 +50,18 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
         raise AssertionError("TDR must not load strategy-owned chart code")
 
     monkeypatch.setattr("strategy_runtime.ChartRuntime._implementation", forbidden_renderer)
+    def check_win_rate_audit(evidence):
+        audited = audit_replay(evidence)
+        assert audited.status is AuditStatus.PASS
+        actual = evidence.metrics['win_rate']
+        for invalid in (True, -0.1, 1.1, 0.5 if actual != 0.5 else 0.):
+            altered = replace(evidence, metrics={**evidence.metrics, 'win_rate': invalid})
+            assert 'METRIC_MISMATCH' in audit_replay(altered).reason_codes
+        missing = {k: v for k, v in evidence.metrics.items() if k != 'win_rate'}
+        assert 'METRIC_MISMATCH' in audit_replay(replace(evidence, metrics=missing)).reason_codes
+        return audited
+
+    monkeypatch.setattr('czsc_trader.backtesting.service.audit_replay', check_win_rate_audit)
     result = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
     ), dataflows=execution_flows())
@@ -68,7 +82,7 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert 'data-range="all" aria-pressed="true"' in html
     assert 'forward-svg' in html and 'Plotly.newPlot' not in html
     report = (output / "report.md").read_text(encoding="utf-8")
-    assert '| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 |' in report
+    assert '| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 | 交易胜率 |' in report
     assert '夏普率' not in report
     cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
     row = next(line for line in report.splitlines() if line.startswith(f'| {version.release_id} |'))

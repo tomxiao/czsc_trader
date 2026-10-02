@@ -407,9 +407,17 @@ def _audit_intraday_overlay(
             "return": total_return,
             "sharpe": sharpe,
             "closed_trades": len(closed_returns),
+            "win_rate": len(wins) / len(closed_returns) if closed_returns else None,
         }
         for name, expected in expected_metrics.items():
             actual = evidence.metrics.get(name)
+            if name == "win_rate" and (
+                name not in evidence.metrics or (actual is not None and (
+                    isinstance(actual, bool) or not isinstance(actual, (int, float)) or not 0 <= actual <= 1
+                ))
+            ):
+                reasons.append("METRIC_MISMATCH")
+                continue
             if isinstance(expected, str) or isinstance(expected, int):
                 if actual != expected:
                     reasons.append("METRIC_MISMATCH")
@@ -690,9 +698,17 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         "return": total_return,
         "sharpe": sharpe,
         "closed_trades": len(closed_returns),
+        "win_rate": len(wins) / len(closed_returns) if closed_returns else None,
     }
     for name, expected in expected_metrics.items():
         actual = evidence.metrics.get(name)
+        if name == "win_rate" and (
+            name not in evidence.metrics or (actual is not None and (
+                isinstance(actual, bool) or not isinstance(actual, (int, float)) or not 0 <= actual <= 1
+            ))
+        ):
+            reasons.append("METRIC_MISMATCH")
+            continue
         if isinstance(expected, (str, int)):
             if actual != expected:
                 reasons.append("METRIC_MISMATCH")

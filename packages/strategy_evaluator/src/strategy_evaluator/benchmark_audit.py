@@ -99,6 +99,7 @@ def _metrics(equity: pd.Series, initial_cash: float, trades: pd.DataFrame) -> di
         "win_loss_ratio": ratio,
         "win_loss_ratio_status": status,
         "closed_trades": int(len(closed)),
+        "win_rate": float(len(wins) / len(closed)) if len(closed) else None,
     }
 
 
@@ -294,6 +295,13 @@ def audit_benchmark_replay(
     )
     for name, expected_value in expected_metrics.items():
         actual = evidence.metrics.get(name)
+        if name == "win_rate" and (
+            name not in evidence.metrics or (actual is not None and (
+                isinstance(actual, bool) or not isinstance(actual, (int, float)) or not 0 <= actual <= 1
+            ))
+        ):
+            reasons.append("BENCHMARK_METRIC_MISMATCH")
+            continue
         if isinstance(expected_value, (str, int)):
             if actual != expected_value:
                 reasons.append("BENCHMARK_METRIC_MISMATCH")

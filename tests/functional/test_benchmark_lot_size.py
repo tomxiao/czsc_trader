@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from dataclasses import replace
 
 import numpy as np
 import pandas as pd
@@ -26,6 +27,10 @@ def test_benchmark_quantities_cash_signal_timing_and_independent_audit(initial_c
     for name, item in evidence.items():
         audit = audit_benchmark_replay(item)
         assert audit.status is AuditStatus.PASS, (name, audit.reason_codes)
+        actual = item.metrics['win_rate']
+        for invalid in (True, -0.1, 1.1, 0.5 if actual != 0.5 else 0.):
+            altered = replace(item, metrics={**item.metrics, 'win_rate': invalid})
+            assert 'BENCHMARK_METRIC_MISMATCH' in audit_benchmark_replay(altered).reason_codes
         account = pd.DataFrame(item.account_daily)
         assert (account.quantity % lot_size == 0).all()
         assert (account.cash >= 0).all()

@@ -27,7 +27,7 @@ def chart_context():
          ChartFill('F2', 'D2', datetime(2026, 9, 16, 10), 'SELL', 100, 1.1, .11)),
         (ChartAccount(first, 100, 1000.), ChartAccount(second, 0, 1009.79)),
         (ChartBenchmark('BuyHold', (1000., 1010.)),),
-        BacktestChartMetrics(.00979, -.02, 1, .5, None),
+        BacktestChartMetrics(.00979, -.02, 1, .5, None, 1.),
     )
 
 
@@ -43,7 +43,7 @@ def test_chart_separates_signals_fills_and_account_facts(chart_context):
     assert payload['execution']['fills'][0]['price'] == 1.
     assert [x['quantity'] for x in payload['execution']['snapshots']] == [100, 0]
     assert payload['metrics'] == {'return': .00979, 'max_drawdown': -.02, 'closed_trades': 1,
-                                 'calmar': .5, 'win_loss_ratio': None}
+                                 'calmar': .5, 'win_loss_ratio': None, 'win_rate': 1.}
     assert payload['observations'][0]['observation']['series'][1]['value'] == .8
 
 
@@ -111,11 +111,11 @@ def test_projection_detaches_frames_and_rejects_foreign_identity(chart_context):
         build_backtest_chart_context(signals, data, result, 1000., metrics=chart_context.metrics)
 
 
-def test_chart_has_exact_five_metrics_and_pte_controls(chart_context):
+def test_chart_has_exact_six_metrics_and_pte_controls(chart_context):
     html = render_backtest_chart_html(chart_context)
     cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
     assert cards == [('收益率', '0.98%'), ('最大回撤', '-2.00%'), ('闭合交易数', '1'),
-                     ('卡玛比率', '0.500'), ('盈亏比', 'N/A')]
+                     ('卡玛比率', '0.500'), ('盈亏比', 'N/A'), ('交易胜率', '100.00%')]
     assert '夏普' not in html
     assert 'data-range="all" aria-pressed="true"' in html
     assert all(f'data-layer="{layer}"' in html for layer in ('signal', 'fill', 'position'))
@@ -126,6 +126,8 @@ def test_chart_has_exact_five_metrics_and_pte_controls(chart_context):
 @pytest.mark.parametrize('changes', [
     {'closed_trades': True}, {'closed_trades': -1}, {'total_return': float('nan')},
     {'max_drawdown': .1}, {'win_loss_ratio': -1}, {'calmar': float('inf')},
+    {'win_rate': None}, {'win_rate': -.1}, {'win_rate': 1.1}, {'win_rate': True},
+    {'win_rate': float('nan')}, {'closed_trades': 0, 'win_rate': .5},
 ])
 def test_chart_metric_contract_rejects_invalid_values(chart_context, changes):
     with pytest.raises((TypeError, ValueError)):
@@ -137,7 +139,7 @@ def test_ma_chart_preserves_next_open_dates_and_uses_own_metrics(chart_context):
 
     benchmark = BenchmarkReplay(
         metrics={'ma5_ma20': {'metrics': {'return': .01, 'max_drawdown': 0., 'closed_trades': 1,
-                                         'calmar': None, 'win_loss_ratio': None}}},
+                                         'calmar': None, 'win_loss_ratio': None, 'win_rate': 1.}}},
         buyhold_account_daily=pd.DataFrame(), buyhold_orders=pd.DataFrame(),
         ma_signals=pd.DataFrame([
             {'date': '2026-09-14', 'ma5': 12., 'ma20': 11.},
@@ -164,3 +166,9 @@ def test_ma_chart_preserves_next_open_dates_and_uses_own_metrics(chart_context):
     assert payload['execution']['fills'][0]['price'] == 1.
     assert payload['metrics']['return'] == .01 and payload['metrics']['calmar'] is None
     assert projected.identity_hash != chart_context.identity_hash
+
+
+def test_chart_win_rate_without_closed_trades_is_unavailable(chart_context):
+    metrics = replace(chart_context.metrics, closed_trades=0, win_rate=None)
+    html = render_backtest_chart_html(replace(chart_context, metrics=metrics))
+    assert '<span>交易胜率</span><strong>N/A</strong>' in html

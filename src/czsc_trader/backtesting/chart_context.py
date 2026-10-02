@@ -70,6 +70,7 @@ class BacktestChartMetrics:
     closed_trades: int
     calmar: float | None
     win_loss_ratio: float | None
+    win_rate: float | None
 
     def __post_init__(self) -> None:
         if _number(self.total_return, "return") < -1:
@@ -82,6 +83,11 @@ class BacktestChartMetrics:
             _number(self.calmar, "calmar")
         if self.win_loss_ratio is not None and _number(self.win_loss_ratio, "win_loss_ratio") < 0:
             raise ValueError("chart win_loss_ratio must be nonnegative")
+        if self.closed_trades == 0:
+            if self.win_rate is not None:
+                raise ValueError("chart win_rate must be None without closed trades")
+        elif self.win_rate is None or not 0 <= _number(self.win_rate, "win_rate") <= 1:
+            raise ValueError("chart win_rate must be in [0, 1] with closed trades")
 
 
 @dataclass(frozen=True)
@@ -279,5 +285,5 @@ def build_ma_chart_context(base: BacktestChartContext, benchmark: BenchmarkRepla
         base, reference=f"{base.reference} · MA5/MA20", identity_hash=identity,
         signals=tuple(signals), fills=fills, accounts=tuple(accounts), benchmarks=(),
         metrics=BacktestChartMetrics(facts["return"], facts["max_drawdown"], facts["closed_trades"],
-                                    facts["calmar"], facts["win_loss_ratio"]),
+                                    facts["calmar"], facts["win_loss_ratio"], facts["win_rate"]),
     )

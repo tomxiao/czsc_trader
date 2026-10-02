@@ -26,6 +26,7 @@ def _chart_payload(context: BacktestChartContext) -> dict[str, object]:
             "closed_trades": context.metrics.closed_trades,
             "calmar": context.metrics.calmar,
             "win_loss_ratio": context.metrics.win_loss_ratio,
+            "win_rate": context.metrics.win_rate,
         },
         "market_data": {
             "identity": context.market_identity,
@@ -75,6 +76,7 @@ def render_backtest_chart_html(context: BacktestChartContext) -> str:
         ("闭合交易数", str(metrics.closed_trades)),
         ("卡玛比率", "N/A" if metrics.calmar is None else f"{metrics.calmar:.3f}"),
         ("盈亏比", "N/A" if metrics.win_loss_ratio is None else f"{metrics.win_loss_ratio:.3f}"),
+        ("交易胜率", "N/A" if metrics.win_rate is None else f"{metrics.win_rate:.2%}"),
     )
     metric_html = "".join(f'<div class="backtest-metric"><span>{label}</span><strong>{value}</strong></div>'
                           for label, value in cards)
@@ -85,9 +87,9 @@ def render_backtest_chart_html(context: BacktestChartContext) -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{title} · 回测复盘</title>
   <style>{css}
-.backtest-metrics{{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;padding:12px 18px;background:var(--surface);border-bottom:1px solid var(--line)}}
+.backtest-metrics{{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;padding:12px 18px;background:var(--surface);border-bottom:1px solid var(--line)}}
 .backtest-metric span{{display:block;font-size:11px;color:var(--muted)}}.backtest-metric strong{{display:block;margin-top:5px;font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}}
-@media(max-width:700px){{.backtest-metrics{{gap:8px;padding:10px 12px}}.backtest-metric strong{{font-size:13px}}}}
+@media(max-width:700px){{.backtest-metrics{{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px}}.backtest-metric strong{{font-size:13px}}}}
   </style>
 </head>
 <body>

@@ -42,4 +42,5 @@ def calculate_metrics(result: BacktestResult, initial_cash: float) -> dict[str, 
         "return": total_return,
         "sharpe": sharpe,
         "closed_trades": int(len(closed)),
+        "win_rate": float(len(wins) / len(closed)) if len(closed) else None,
     }
