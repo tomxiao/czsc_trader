@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261001_S011_EX30\run_experiment.py", line 74, in main
+    result=execute_experiment(loaded,context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 686, in execute_experiment
+    result = experiment.implementation.execute(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261001_S011_EX30\experiment.py", line 187, in execute
+    evaluate(spec)
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261001_S011_EX30\experiment.py", line 165, in evaluate
+    pd.testing.assert_frame_equal(current_benchmark[name], old_benchmark[name], check_dtype=False, rtol=1e-12, atol=1e-8)
+  File "D:\CodeBase\czsc_trader\.venv\Lib\site-packages\pandas\util\_decorators.py", line 220, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\.venv\Lib\site-packages\pandas\_testing\asserters.py", line 1280, in assert_frame_equal
+    raise_assert_detail(
+  File "D:\CodeBase\czsc_trader\.venv\Lib\site-packages\pandas\_testing\asserters.py", line 619, in raise_assert_detail
+    raise AssertionError(msg)
+AssertionError: DataFrame are different
+
+DataFrame shape mismatch
+[left]:  (403, 6)
+[right]: (403, 7)

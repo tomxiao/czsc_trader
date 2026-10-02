@@ -1,0 +1,104 @@
+{
+  "experiment_id": "20261002_S011_EX34",
+  "definition_sha256": "f0003f0db870490c6f750546f62b96367ba50c91de3e2c923db24dfbd50746f0",
+  "source_sha256": "1475646925b4bc08ab3aa4d4bf71f855e967cef442ae319cd073ac88945a141d",
+  "resources_sha256": "420d97d198daf95bb5ec3aac4f6040211aa1703810b76d2dd0561d3361e48a4d",
+  "passed": true,
+  "checks": [
+    {
+      "code": "SOURCE_BOUND",
+      "status": "PASS",
+      "message": "source closure matches binding"
+    },
+    {
+      "code": "DEFINITION_BOUND",
+      "status": "PASS",
+      "message": "definition is stable"
+    },
+    {
+      "code": "RESOURCE_CONTRACT",
+      "status": "PASS",
+      "message": "resources match definition"
+    },
+    {
+      "code": "PREDECESSOR_CONTRACT",
+      "status": "PASS",
+      "message": "predecessor identities match"
+    },
+    {
+      "code": "ARCHIVE_IDENTITY",
+      "status": "PASS",
+      "message": "static archive identity is valid"
+    },
+    {
+      "code": "JOIN_COLUMN_COLLISION_RISK",
+      "status": "WARNING",
+      "message": "join has no explicit suffix policy; test overlapping columns: experiment.py:83"
+    },
+    {
+      "code": "NUMPY_VIEW_MUTATION_RISK",
+      "status": "WARNING",
+      "message": "to_numpy may return a read-only/shared view; test any in-place mutation: experiment.py:62, experiment.py:68, experiment.py:70, experiment.py:70, experiment.py:40, experiment.py:62, experiment.py:63, experiment.py:38"
+    },
+    {
+      "code": "SOURCE_RISK_SCAN",
+      "status": "PASS",
+      "message": "known source patterns inspected; warnings require review"
+    },
+    {
+      "code": "DATA_REQUEST_001",
+      "status": "PASS",
+      "message": "etf.ohlcv request is READY"
+    },
+    {
+      "code": "DATA_REQUEST_002",
+      "status": "PASS",
+      "message": "etf.ohlcv request is READY"
+    },
+    {
+      "code": "DATA_REQUEST_003",
+      "status": "PASS",
+      "message": "index.domestic_close_turnover_daily request is READY"
+    },
+    {
+      "code": "DATA_REQUEST_004",
+      "status": "PASS",
+      "message": "index.domestic_close_turnover_daily request is READY"
+    },
+    {
+      "code": "DATA_REQUEST_005",
+      "status": "PASS",
+      "message": "index.global_daily request is READY"
+    },
+    {
+      "code": "SYNTHETIC_ROLE_COMPUTATION",
+      "status": "PASS",
+      "message": "Causal prefix, adjustment invariance, strict prior alignment and complete numeric audit exercised"
+    },
+    {
+      "code": "RESULT_SERIALIZATION",
+      "status": "PASS",
+      "message": "synthetic output JSON roundtrip passed"
+    },
+    {
+      "code": "SYNTHETIC_PRECHECK",
+      "status": "PASS",
+      "message": "synthetic precheck passed"
+    },
+    {
+      "code": "SOURCE_UNCHANGED",
+      "status": "PASS",
+      "message": "source unchanged after synthetic precheck"
+    },
+    {
+      "code": "DEFINITION_UNCHANGED",
+      "status": "PASS",
+      "message": "definition unchanged after synthetic precheck"
+    },
+    {
+      "code": "PREFLIGHT_ENFORCEMENT",
+      "status": "PASS",
+      "message": "binding schema v3 requires preflight at execution entry"
+    }
+  ]
+}
