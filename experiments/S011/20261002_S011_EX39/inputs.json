@@ -1,0 +1,35 @@
+{
+  "candidate_id": "C0621",
+  "content_sha256": "83826e9264d3e48435f1d2123909e23bcfb10fb401e1e5d65560d77ee9c5ec77",
+  "dependencies": [
+    {
+      "name": "numpy",
+      "version": "2.5.2"
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.5"
+    }
+  ],
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.003,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  },
+  "predecessors": {
+    "20261002_S011_EX38": "6f28db1320e3f6003a83347fa57f9242f5fddceafb4ea50f50ecf961f1924c29"
+  },
+  "start": "2025-02-06",
+  "cutoff": "2026-09-28",
+  "initial_cash": 1000000,
+  "lot_size": 100,
+  "one_way_cost": 0.001
+}
