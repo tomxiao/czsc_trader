@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
 from typing import Any, Mapping
 
-from .errors import RuntimeContractError
+from strategy_runtime import RuntimeContractError
 
 
 @dataclass(frozen=True, slots=True)
