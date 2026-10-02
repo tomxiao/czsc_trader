@@ -91,7 +91,7 @@ class RuntimeBinding:
 
     def __post_init__(self):
         _require(
-            type(self.release_id) is str and re.fullmatch(r"S\d{3,}-v\d+", self.release_id),
+            type(self.release_id) is str and re.fullmatch(r"S[0-9]{3}-v[1-9][0-9]*", self.release_id),
             "invalid binding release id",
         )
         _require(

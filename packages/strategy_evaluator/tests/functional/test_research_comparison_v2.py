@@ -127,7 +127,7 @@ def test_multiple_same_metric_targets_and_missing_bound_do_not_pass():
 def test_half_up_binning_changes_layer_explicitly_and_handles_negative_ties():
     a, b = (
         row(candidate(), annual=0.125, drawdown=0.1),
-        row(candidate("C002", "b"), annual=0.124, drawdown=0.1),
+        row(candidate("C0002", "b"), annual=0.124, drawdown=0.1),
     )
     p = replace(
         partial_policy(),
@@ -152,8 +152,8 @@ def test_half_up_binning_changes_layer_explicitly_and_handles_negative_ties():
 def test_prefix_partial_order_rank_intervals_match_all_linear_extensions():
     a = row(candidate(), degradation=0.01, missing=m.ResearchMetric.STRESS_ANNUAL_LOSS)
     a = replace(a, stress_scenario=None)
-    b = row(candidate("C002", "b"), degradation=0.02)
-    c = row(candidate("C003", "c"), missing=m.ResearchMetric.PARAMETER_RETURN_DEGRADATION)
+    b = row(candidate("C0002", "b"), degradation=0.02)
+    c = row(candidate("C0003", "c"), missing=m.ResearchMetric.PARAMETER_RETURN_DEGRADATION)
     rows = (a, b, c)
     result = compare(rows, partial_policy())
     assert len(result.pairs) == 3
@@ -175,8 +175,8 @@ def test_prefix_partial_order_rank_intervals_match_all_linear_extensions():
 def test_ties_use_competition_rank_and_never_candidate_id_as_economic_tiebreak():
     a, b, c = (
         row(candidate(), degradation=0.01),
-        row(candidate("C002", "b"), degradation=0.01),
-        row(candidate("C003", "c"), degradation=0.02),
+        row(candidate("C0002", "b"), degradation=0.01),
+        row(candidate("C0003", "c"), degradation=0.02),
     )
     result = compare((c, b, a), partial_policy())
     assert [x.rank_in_layer for x in result.rows] == [1, 1, 3]

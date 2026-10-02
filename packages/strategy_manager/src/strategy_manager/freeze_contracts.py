@@ -12,6 +12,7 @@ from typing import get_args, get_origin, get_type_hints
 
 from .candidates import CandidateEvidence, CandidateKey
 from .models import canonical_sha256
+from .validation import require_strategy_id
 
 
 def _typed(value, kind):
@@ -152,7 +153,7 @@ class ResearchDecision(Record):
 
     def _validate(self):
         _id(self.decision_id)
-        CandidateKey(self.strategy_id, "Decision")
+        require_strategy_id(self.strategy_id)
         if not self.reason.strip():
             raise ValueError("decision requires reason")
         if (
@@ -191,7 +192,7 @@ class FreezeRequestId(Record):
     value: str
 
     def _validate(self):
-        CandidateKey(self.strategy_id, "Freeze")
+        require_strategy_id(self.strategy_id)
         _id(self.value)
 
 
@@ -341,7 +342,7 @@ class FrozenVersionReference(Record):
     package_hash: str
 
     def _validate(self):
-        CandidateKey(self.strategy_id, "Freeze")
+        require_strategy_id(self.strategy_id)
         _version(self.version)
         _hash(self.release_hash)
         _hash(self.package_hash)

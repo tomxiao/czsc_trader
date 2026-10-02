@@ -357,7 +357,7 @@ def _workspace(tmp_path: Path, name: str) -> ExperimentWorkspace:
 def _candidate() -> StrategyCandidate:
     return StrategyCandidate(
         strategy_family_id="S008",
-        candidate_id="synthetic",
+        candidate_id="C0001",
         payload={"runtime": {}, "parameters": {}},
     )
 
@@ -861,7 +861,7 @@ class Experiment(ResearchExperiment):
         del context
         candidate = StrategyCandidate(
             strategy_family_id='S008',
-            candidate_id='synthetic',
+            candidate_id='C0001',
             payload={'runtime': {}, 'parameters': {}},
         )
         return ExperimentResult(

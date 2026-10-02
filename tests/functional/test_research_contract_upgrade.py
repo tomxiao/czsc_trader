@@ -71,7 +71,7 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
         sessions[-1].date(),
     )
     execution = execution_data_from_replay(replay, start=sessions[1], end=sessions[-1])
-    candidate = StrategyCandidate("S900", "C001", payload, package)
+    candidate = StrategyCandidate("S900", "C0001", payload, package)
     definition = ExperimentDefinition(
         schema_version=2,
         experiment_id="20261001_S900_EX01",
@@ -245,12 +245,12 @@ def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation
 
     context, request = managed_evaluation
     parent = context.evaluation.evaluate(request)
-    child = replace(request.strategy, candidate_id="C002")
+    child = replace(request.strategy, candidate_id="C0002")
     identity = StrategyRuntime().identify(child, dependencies=())
     relation = CandidateDerivation(
-        CandidateKey("S900", "C001"),
+        CandidateKey("S900", "C0001"),
         parent.runs[0].identity.content_sha256,
-        CandidateKey("S900", "C002"),
+        CandidateKey("S900", "C0002"),
         identity.content_sha256,
         CandidateDerivationKind.PARAMETERS,
         {"threshold": {"before": 0.5, "after": 0.5}},
@@ -376,14 +376,14 @@ def test_evaluator_cannot_report_success_with_wrong_identity(managed_evaluation)
 
 def test_content_identity_is_id_and_path_independent(candidate_payload, tmp_path):
     payload, root = candidate_payload
-    candidate = StrategyCandidate("S900", "C001", payload, root)
+    candidate = StrategyCandidate("S900", "C0001", payload, root)
     runtime = StrategyRuntime()
     identity = runtime.identify(candidate, dependencies=())
     moved = tmp_path / "copy" / "strategy_runtime"
     shutil.copytree(root, moved)
     assert (
         runtime.identify(
-            replace(candidate, candidate_id="C002", source_root=moved), dependencies=()
+            replace(candidate, candidate_id="C0002", source_root=moved), dependencies=()
         )
         == identity
     )
@@ -416,7 +416,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(
     context = RepositoryContext.discover(functional_repo)
     candidate_root = functional_repo / "candidate" / "strategy_runtime"
     shutil.copytree(source, candidate_root)
-    candidate = StrategyCandidate("S009", "C001", payload, candidate_root)
+    candidate = StrategyCandidate("S009", "C0001", payload, candidate_root)
     experiment_path = context.experiments_root / "S009" / "20260925_S009_EX99"
     _write_v3_experiment(experiment_path)
     loaded = load_experiment(experiment_path)
@@ -458,11 +458,11 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(
     with pytest.raises(CandidateIdentityConflict):
         register_candidate(context, replace(request, candidate=replace(candidate, payload=changed)))
     (candidate_root / "strategies" / "candidate_fixture.py").write_text("invalid original source")
-    assert load_candidate(context, record.key).candidate_id == "C001"
+    assert load_candidate(context, record.key).candidate_id == "C0001"
     saved_source = record.source_files[0].resolve(experiment_path)
     saved_source.write_text("tampered")
     with pytest.raises(Exception, match="hash differs"):
-        load_candidate(context, CandidateKey("S009", "C001"))
+        load_candidate(context, CandidateKey("S009", "C0001"))
 
 
 def test_assessment_adapter_binds_actual_fees_for_identically_named_scenarios(managed_evaluation):
@@ -523,7 +523,7 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
     base_evidence = build_assessment_evidence(request, parent)
     child = replace(
         request.strategy,
-        candidate_id="C002",
+        candidate_id="C0002",
         payload={
             **request.strategy.payload,
             "parameters": {**request.strategy.payload["parameters"], "threshold": 0.6},
@@ -531,9 +531,9 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
     )
     identity = StrategyRuntime().identify(child, dependencies=())
     relation = CandidateDerivation(
-        CandidateKey("S900", "C001"),
+        CandidateKey("S900", "C0001"),
         parent.runs[0].identity.content_sha256,
-        CandidateKey("S900", "C002"),
+        CandidateKey("S900", "C0002"),
         identity.content_sha256,
         CandidateDerivationKind.PARAMETERS,
         {"threshold": {"before": 0.5, "after": 0.6}},

@@ -19,7 +19,7 @@ def runtime_candidate(tmp_path):
         source / "strategies/current_fixture.py",
     )
     files = ("strategies/current_fixture.py",)
-    return StrategyCandidate("S900", "C001", {
+    return StrategyCandidate("S900", "C0001", {
         "runtime": {
             "module": "strategy_runtime.strategies.current_fixture",
             "qualname": "CandidateFixture", "contract_version": 1,

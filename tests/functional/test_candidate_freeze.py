@@ -38,7 +38,7 @@ def file_ref(root, path):
 def inspection(completed):
     context, old_execution, request, result, experiment = completed
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        CandidateKey("S900", "C001"), experiments_root=context.experiments_root
+        CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
     )
     definition, content = prepare(completed)
     assemble_delivery(context, Deliverable(definition, content))

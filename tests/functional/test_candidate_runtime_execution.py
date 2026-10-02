@@ -102,7 +102,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
 
     payload, package = candidate_payload
     payload["rule"] = {"entry_threshold": 0.5, "exit_threshold": 0.5}
-    candidate = StrategyCandidate("S001", "C001", payload, package)
+    candidate = StrategyCandidate("S001", "C0001", payload, package)
     strategy = StrategyLoader().load_candidate(candidate)
     definition = strategy.definition
     sessions = pd.bdate_range("2026-09-14", periods=5)
@@ -144,7 +144,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     with pytest.raises(ValueError, match="content hash differs"):
         resolve_candidate_snapshot(context, candidate.reference_id, payload, "0" * 64, "fixture")
     with pytest.raises(ValueError, match="family-qualified"):
-        resolve_candidate_snapshot(context, "C001", payload, canonical_sha256(payload), "fixture")
+        resolve_candidate_snapshot(context, "C0001", payload, canonical_sha256(payload), "fixture")
     with pytest.raises(RuntimeContractError):
         resolve_candidate_snapshot(
             context, candidate.reference_id, {"rule": {}}, canonical_sha256({"rule": {}}), "fixture"
@@ -197,7 +197,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     assert published_account["equity"].tolist() == pytest.approx(
         replay.account_daily["equity"].tolist()
     )
-    assert "S001-C001" in (summary.output_dir / "chart.html").read_text(encoding="utf-8")
+    assert "S001-C0001" in (summary.output_dir / "chart.html").read_text(encoding="utf-8")
     assert json.loads((summary.output_dir / "audit.json").read_text())["status"] == "PASS"
     from czsc_trader.application import run_backtest
 
@@ -217,7 +217,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     assert pd.read_csv(api_output / "account_daily.csv")["equity"].tolist() == pytest.approx(
         replay.account_daily["equity"].tolist()
     )
-    assert "S001-C001" in (api_output / "chart.html").read_text(encoding="utf-8")
+    assert "S001-C0001" in (api_output / "chart.html").read_text(encoding="utf-8")
     assert not context.strategy_root.exists()
     for invalid, end, message in (
         (replace(snapshot, source_hash="0" * 64), sessions[-1], "release hashes differ"),
@@ -293,7 +293,7 @@ def test_candidate_runtime_keeps_reference_etfs_out_of_tradable_identity(
         "510300.SH",
         "159915.SZ",
     ]
-    candidate = StrategyCandidate("S900", "MULTIREF", payload, package)
+    candidate = StrategyCandidate("S900", "C0002", payload, package)
     sessions = pd.bdate_range("2026-09-14", periods=5)
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.2, 0.9, 0.0]})
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
@@ -319,12 +319,12 @@ def test_parameter_search_and_release_use_one_implementation_and_isolated_txe(
     monkeypatch,
 ):
     payload, package = candidate_payload
-    candidate = StrategyCandidate("S900", "C001", payload, package)
+    candidate = StrategyCandidate("S900", "C0001", payload, package)
     loader = StrategyLoader()
     first = loader.load_candidate(candidate)
     changed = deepcopy(payload)
     changed["parameters"]["threshold"] = 1.0
-    second_source = StrategyCandidate("S900", "C001", changed, package)
+    second_source = StrategyCandidate("S900", "C0001", changed, package)
     second = loader.load_candidate(second_source)
     assert first.definition.version is None
     assert first.definition.identity_kind == "CANDIDATE"
@@ -379,7 +379,7 @@ def test_candidate_load_fails_closed_on_source_and_parameter_identity_errors(
 ):
     payload, package = candidate_payload
     loader = StrategyLoader()
-    original = StrategyCandidate("S900", "C001", payload, package)
+    original = StrategyCandidate("S900", "C0001", payload, package)
     valid = loader.load_candidate(original)
     daily = pd.DataFrame({"dt": pd.to_datetime(["2026-09-17"]), "open": [1.0], "close": [1.0]})
     execution = dict(
@@ -409,16 +409,16 @@ def test_candidate_load_fails_closed_on_source_and_parameter_identity_errors(
     create = factory.from_candidate
     monkeypatch.setattr(factory, "from_candidate", lambda _: valid)
     with pytest.raises(RuntimeCompatibilityError, match="candidate identity"):
-        loader.load_candidate(StrategyCandidate("S900", "C001", bad_parameters, package))
+        loader.load_candidate(StrategyCandidate("S900", "C0001", bad_parameters, package))
     monkeypatch.setattr(factory, "from_candidate", create)
     wrong_closure = deepcopy(payload)
     wrong_closure["runtime"]["source_files"] = ["../secrets.py"]
     with pytest.raises(RuntimeCompatibilityError, match="unsafe path"):
-        loader.load_candidate(StrategyCandidate("S900", "C001", wrong_closure, package))
+        loader.load_candidate(StrategyCandidate("S900", "C0001", wrong_closure, package))
     missing = deepcopy(payload)
     missing["runtime"].pop("source_files")
     with pytest.raises(RuntimeCompatibilityError, match="incomplete"):
-        loader.load_candidate(StrategyCandidate("S900", "C001", missing, package))
+        loader.load_candidate(StrategyCandidate("S900", "C0001", missing, package))
     path = package / "strategies/candidate_fixture.py"
     path.write_bytes(path.read_bytes() + b"\n# changed after submission\n")
     with pytest.raises(RuntimeCompatibilityError, match="source hash differs"):
@@ -429,7 +429,7 @@ def test_candidate_load_fails_closed_on_source_and_parameter_identity_errors(
         source_root=package,
     )
     with pytest.raises(RuntimeCompatibilityError, match="fresh process"):
-        loader.load_candidate(StrategyCandidate("S900", "C001", changed, package))
+        loader.load_candidate(StrategyCandidate("S900", "C0001", changed, package))
 
 
 def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
@@ -463,7 +463,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     _install_candidate_dataflows(monkeypatch, inputs, daily)
     payloads = []
-    for candidate_id, threshold in (("C000", 1.0), ("C001", 0.5)):
+    for candidate_id, threshold in (("C0000", 1.0), ("C0001", 0.5)):
         parameters = deepcopy(payload)
         parameters["parameters"]["threshold"] = threshold
         payloads.append(
@@ -471,7 +471,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
                 "candidate_id": candidate_id,
                 "strategy_id": "S900",
                 "strategy_payload": parameters,
-                "is_incumbent": candidate_id == "C000",
+                "is_incumbent": candidate_id == "C0000",
             }
         )
     replay_data = ReplayFixture(
@@ -503,21 +503,21 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         100_000,
         frequency_window_days=3,
         family_id="S900",
-        candidate_runtime_roots={"C000": package, "C001": package},
+        candidate_runtime_roots={"C0000": package, "C0001": package},
     )
     protocol = SimpleNamespace(
         development_cutoff="2026-09-21",
-        incumbent_id="C000",
+        incumbent_id="C0000",
         experiment_id="TEST",
         execution_policy_hash="e" * 64,
         standard_version="opc-v3",
     )
     payloads = tuple(payloads)
     screening = evaluate_candidate_payloads(
-        context, protocol, payloads, ("C001", "C000"), "SCREENING"
+        context, protocol, payloads, ("C0001", "C0000"), "SCREENING"
     )
-    formal = evaluate_candidate_payloads(context, protocol, payloads, ("C001", "C000"), "FORMAL")
-    candidate = StrategyCandidate("S900", "C001", payloads[1]["strategy_payload"], package)
+    formal = evaluate_candidate_payloads(context, protocol, payloads, ("C0001", "C0000"), "FORMAL")
+    candidate = StrategyCandidate("S900", "C0001", payloads[1]["strategy_payload"], package)
     harness_request = EvaluationRequest(
         repository_root=tmp_path,
         experiment_id="TEST",
@@ -561,7 +561,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
                 harness_request,
                 runtime_binding={
                     **harness_request.runtime_binding,
-                    "candidate_id": "S900-C999",
+                    "candidate_id": "S900-C0999",
                 },
             )
         )
@@ -569,12 +569,12 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     assert formal[0].closed_trades == 1
     assert (
         evaluate_candidate_payloads(
-            replace(context, workers=2), protocol, payloads, ("C001", "C000"), "FORMAL"
+            replace(context, workers=2), protocol, payloads, ("C0001", "C0000"), "FORMAL"
         )
         == formal
     )
     stressed = evaluate_candidate_payloads(
-        context, protocol, payloads, ("C001",), "STRESS", ("total_cost_20bp",)
+        context, protocol, payloads, ("C0001",), "STRESS", ("total_cost_20bp",)
     )
     assert stressed[0].total_return < formal[0].total_return
     assert stressed[0].cost_drag > formal[0].cost_drag
@@ -585,12 +585,12 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         payloads=payloads,
         candidates=(),
         trials=(),
-        ranking=SimpleNamespace(champion_id="C001", profiles=()),
+        ranking=SimpleNamespace(champion_id="C0001", profiles=()),
         screening_profiles=(),
         formal=formal,
         repeated=(formal[0],),
         stress=stressed,
-        search_candidate_ids=("C001",),
+        search_candidate_ids=("C0001",),
     )
     assert isinstance(audit_request.execution, ReplayEvidence)
     evidence = audit_request.execution
@@ -637,10 +637,10 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     )
     with pytest.raises(ValueError, match="price-slippage"):
         evaluate_candidate_payloads(
-            context, protocol, payloads, ("C001",), "STRESS", ("slippage_15bp",)
+            context, protocol, payloads, ("C0001",), "STRESS", ("slippage_15bp",)
         )
     with pytest.raises(ValueError, match="invalid cost"):
-        evaluate_candidate_payloads(context, protocol, payloads, ("C001",), "STRESS", ("fee_xnan",))
+        evaluate_candidate_payloads(context, protocol, payloads, ("C0001",), "STRESS", ("fee_xnan",))
 
 
 def test_research_evaluate_api_publishes_complete_hashed_evidence(
@@ -676,7 +676,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
     runtime_root = experiment / "runtime" / "strategy_runtime"
     shutil.copytree(source_root, runtime_root)
     binding = {
-        "candidate_id": "S900-C001",
+        "candidate_id": "S900-C0001",
         "source_files": list(payload["runtime"]["source_files"]),
         "implementation_sha256": payload["runtime"]["source_sha256"],
     }
@@ -688,7 +688,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
         "experiment_id": experiment.name,
         "strategy": {
             "strategy_id": "S900",
-            "candidate_id": "C001",
+            "candidate_id": "C0001",
             "strategy_payload": payload,
             "runtime_root": "runtime/strategy_runtime",
             "runtime_binding": "runtime_binding.json",
@@ -827,7 +827,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         "symbol": "588080.SH",
         "asset_type": "etf",
         "windows": {"full": {"start": "2026-09-15", "end": "2026-09-21"}},
-        "candidates": [{"candidate_id": "C001", "strategy_payload": payload}],
+        "candidates": [{"candidate_id": "C0001", "strategy_payload": payload}],
         "review_data_sources": sources,
     }
     directory = tmp_path / "data" / "review" / "SGC-TEST" / ("a" * 64)
@@ -836,7 +836,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         manifest,
         protocol,
         directory,
-        candidate_runtime_roots={"C001": package},
+        candidate_runtime_roots={"C0001": package},
     )
     restored = load_review_dataset(directory, published["snapshot_hash"])
     stored_tables = tuple(directory.glob("*.csv.gz"))
@@ -856,10 +856,10 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         family_id="S900",
         review_data_root=directory,
         review_data_hash=published["snapshot_hash"],
-        candidate_runtime_roots={"C001": package},
+        candidate_runtime_roots={"C0001": package},
     )
     rows = evaluate_candidate_payloads(
-        run, protocol, tuple(manifest["candidates"]), ("C001",), "FORMAL"
+        run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
     )
     assert rows[0].closed_trades == 1
 
@@ -875,11 +875,11 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             manifest,
             protocol,
             directory,
-            candidate_runtime_roots={"C001": package},
+            candidate_runtime_roots={"C0001": package},
         )
     assert (
         evaluate_candidate_payloads(
-            run, protocol, tuple(manifest["candidates"]), ("C001",), "FORMAL"
+            run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
         )
         == rows
     )
@@ -893,7 +893,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             changed,
             protocol,
             directory,
-            candidate_runtime_roots={"C001": package},
+            candidate_runtime_roots={"C0001": package},
         )
 
     # A new preparation fails atomically when SRT cannot prepare its own inputs.
@@ -909,7 +909,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             manifest,
             protocol,
             failed_directory,
-            candidate_runtime_roots={"C001": package},
+            candidate_runtime_roots={"C0001": package},
         )
     assert not failed_directory.exists()
 
@@ -919,5 +919,5 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         verify_review_dataset(directory, published["snapshot_hash"])
     with pytest.raises(ValueError, match="file hash mismatch"):
         evaluate_candidate_payloads(
-            run, protocol, tuple(manifest["candidates"]), ("C001",), "FORMAL"
+            run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
         )

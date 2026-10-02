@@ -123,7 +123,7 @@ def test_metrics_include_initial_capital(values, expected):
     assert strategy_comparison_metrics(equity, pd.DataFrame(), 100)["max_drawdown"] == pytest.approx(expected)
     assert _metrics(equity, 100, trades)["max_drawdown"] == pytest.approx(expected)
     context = SimpleNamespace(init_cash=100, frequency_window_days=1)
-    observation = _observation(context, "C001", "test", "SCREENING", "standard", result)
+    observation = _observation(context, "C0001", "test", "SCREENING", "standard", result)
     assert observation.max_drawdown == pytest.approx(expected)
 
 

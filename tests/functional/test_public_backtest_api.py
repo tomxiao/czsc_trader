@@ -67,7 +67,7 @@ def test_candidate_and_version_use_one_backtest_dispatch(
 ):
     context, version = current_frozen
     payload, source = candidate_payload
-    candidate = StrategyCandidate("S900", "C001", payload, source)
+    candidate = StrategyCandidate("S900", "C0001", payload, source)
     request = BacktestRequest("588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 100)
     observed = []
 

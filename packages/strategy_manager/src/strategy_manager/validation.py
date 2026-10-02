@@ -41,14 +41,14 @@ def require_identifier(value: Any, field: str) -> str:
 
 def require_strategy_id(value: Any) -> str:
     text = require_string(value, "strategy_id")
-    if not STRATEGY_ID_PATTERN.fullmatch(text):
+    if value != text or not STRATEGY_ID_PATTERN.fullmatch(text):
         raise ValidationError("strategy_id must match S plus three digits")
     return text
 
 
 def require_version(value: Any) -> str:
     text = require_string(value, "version")
-    if not VERSION_PATTERN.fullmatch(text):
+    if value != text or not VERSION_PATTERN.fullmatch(text):
         raise ValidationError("version must match v plus a positive integer")
     return text
 

@@ -16,7 +16,7 @@ def test_candidate_roundtrip_revalidates_and_preserves_immutable_identity(tmp_pa
     monkeypatch.setenv("PYTHONPYCACHEPREFIX", str(tmp_path / "pycache"))
     candidate = StrategyCandidate(
         "S900",
-        "C001",
+        "C0001",
         {
             "runtime": {"module": "example"},
             "parameters": {"nested": {"threshold": 0.5}},

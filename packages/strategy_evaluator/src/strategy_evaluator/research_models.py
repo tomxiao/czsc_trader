@@ -118,8 +118,8 @@ class AssessmentCandidate(ResearchRecord):
 
     def validate(self):
         require(
-            re.fullmatch(r"S\d{3,}-[A-Za-z][A-Za-z0-9_.-]*", self.candidate_id) is not None,
-            "candidate_id must include strategy family",
+            re.fullmatch(r"S[0-9]{3}-C[0-9]{4}", self.candidate_id) is not None,
+            "candidate_id must match S plus three ASCII digits, hyphen, C plus four ASCII digits",
         )
 
 

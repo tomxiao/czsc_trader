@@ -162,7 +162,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         state=ExecutionState(3, calculated_at, 5900),
     )
 
-    assert prepared.strategy.reference_id == "S900-C001"
+    assert prepared.strategy.reference_id == "S900-C0001"
     for mode in SignalHistoryMode:
         history = strategy.inspect_signals(history_mode=mode)
         explicit = strategy.plan_at(
@@ -192,7 +192,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         value["identity"]["content_sha256"] == value["content_sha256"]
         for value in manifest["inputs"].values()
     )
-    assert plan.strategy.reference_id == "S900-C001"
+    assert plan.strategy.reference_id == "S900-C0001"
     assert plan.expected_portfolio_revision == 7
     assert plan.expected_state_revision == 3
     assert plan.actual_quantity == 5900
@@ -243,7 +243,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
 
     with pytest.raises(RuntimeContractError, match="another strategy"):
         StrategyRuntime(ROOT / "strategies").create(
-            StrategyInit(replace(runtime_candidate, candidate_id="C002"), second_window, tmp_path)
+            StrategyInit(replace(runtime_candidate, candidate_id="C0002"), second_window, tmp_path)
         ).prepare_data()
 
     input_file = manifest_path.parent / next(iter(manifest["inputs"].values()))["file"]

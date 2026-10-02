@@ -89,7 +89,7 @@ def test_c02_preparation_result_fixture_pins_the_public_field_name() -> None:
     case = CASES["c02_preparation_result_field"]
     window = TradableWindow(date(2026, 9, 2), date(2026, 9, 3))
     result = DataPreparationResult(
-        StrategyIdentity("S008", "S008-C001", "a" * 64, "b" * 64, "518880.SH"),
+        StrategyIdentity("S008", "S008-C0001", "a" * 64, "b" * 64, "518880.SH"),
         window,
         date(2026, 9, 2),
         "c" * 64,

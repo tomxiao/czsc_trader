@@ -16,6 +16,7 @@ from typing import Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 from ..backtesting.benchmark_contracts import EvaluationBenchmark
 
 from strategy_manager import CandidateKey
+from strategy_manager.validation import require_strategy_id
 from strategy_manager import CandidateInspectionReport, DecisionReference, FreezeReceipt
 from strategy_evaluator import (
     CandidateAssessmentRequest,
@@ -162,7 +163,7 @@ class ExperimentEvidenceRef(_Record):
     use: ExperimentEvidenceUse
 
     def _validate(self):
-        if not re.fullmatch(r"\d{8}_S\d{3,}_EX\d{2,}", self.experiment_id):
+        if not re.fullmatch(r"[0-9]{8}_S[0-9]{3}_EX[0-9]{2,}", self.experiment_id):
             raise ValueError("invalid experiment_id")
         _path(self.workspace_path)
         _hash(self.receipt_sha256)
@@ -173,7 +174,7 @@ class MandateOwner(_Record):
     strategy_id: str
 
     def _validate(self):
-        CandidateKey(self.strategy_id, "Delivery")
+        require_strategy_id(self.strategy_id)
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,7 +183,7 @@ class ExperimentOwner(_Record):
     experiment_id: str
 
     def _validate(self):
-        CandidateKey(self.strategy_id, "Delivery")
+        require_strategy_id(self.strategy_id)
         if not re.fullmatch(
             rf"\d{{8}}_{re.escape(self.strategy_id)}_EX\d{{2,}}", self.experiment_id
         ):

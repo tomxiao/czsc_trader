@@ -232,7 +232,7 @@ def prepare(completed):
             content(mandate, attachments=(confirmation,)),
         ),
     )
-    key = CandidateKey("S900", "C001")
+    key = CandidateKey("S900", "C0001")
     identity = d.CandidateIdentityRef(key, evidence[0].candidate.content_sha256)
     entry = d.CandidateEntry(
         identity,
@@ -299,7 +299,7 @@ def test_adapter_authenticates_requests_and_does_not_reload_source(completed, mo
     monkeypatch.setattr(StrategyRuntime, "identify", unexpected)
     evidence = build_assessment_evidence(request, result)
     assert evidence[0].evaluation_id == result.runs[0].identity.evaluation_id
-    assert evidence[0].candidate.candidate_id == "S900-C001"
+    assert evidence[0].candidate.candidate_id == "S900-C0001"
     artifact = execution.trace.evaluations[0].result_artifact
     saved = json.loads(execution.workspace.path(artifact.path).read_text())
     assert saved["schema_version"] == 4
@@ -458,7 +458,7 @@ def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
 def test_stage_four_must_cover_exact_handoff_scope(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
-    other = m.AssessmentCandidate("S900-C002", "f" * 64)
+    other = m.AssessmentCandidate("S900-C0002", "f" * 64)
     req = replace(value.payload.assessment_request, centers=(other,))
     panel = assess_candidates(req)
     comp = comparison_request(panel)
@@ -615,10 +615,10 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
     receipt = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text()))
     registry = StrategyRegistry(context.research_registry_root)
     registration = registry.get_candidate(
-        CandidateKey("S900", "C001"), experiments_root=context.experiments_root
+        CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
     )
     if damage == "missing":
-        path = context.research_registry_root / "S900/candidates/C001.json"
+        path = context.research_registry_root / "S900/candidates/C0001.json"
         path.rename(path.with_suffix(".removed"))
     elif damage == "content":
         path = registration.payload.resolve(context.experiments_root / "S900/20261001_S900_EX01")
@@ -650,4 +650,4 @@ def test_report_renders_sensitivity_rows_and_behavior_members(completed):
         definition, replace(value, payload=replace(value.payload, comparison=result)), context.root
     ).decode()
     assert "coarse-bins" in rendered and "f" * 64 in rendered
-    assert "S900-C001" in rendered and "逐项目标检查" in rendered
+    assert "S900-C0001" in rendered and "逐项目标检查" in rendered

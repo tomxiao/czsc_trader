@@ -24,7 +24,7 @@ def _release(value: str) -> tuple[str, str]:
         strategy_id, version = value.rsplit("-", 1)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("release must look like S007-v1") from exc
-    if not re.fullmatch(r"S\d{3,}", strategy_id) or not re.fullmatch(r"v\d+", version):
+    if not re.fullmatch(r"S[0-9]{3}", strategy_id) or not re.fullmatch(r"v[1-9][0-9]*", version):
         raise argparse.ArgumentTypeError("release must look like S007-v1")
     return strategy_id, version
 

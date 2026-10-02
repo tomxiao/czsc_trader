@@ -61,14 +61,13 @@ class CandidateKey(_Record):
     candidate_id: str
 
     def __post_init__(self):
-        if not isinstance(self.strategy_id, str) or not re.fullmatch(r"S\d{3,}", self.strategy_id):
+        if not isinstance(self.strategy_id, str) or not re.fullmatch(r"S[0-9]{3}", self.strategy_id):
             raise ValidationError("invalid candidate strategy_id")
         if (
             not isinstance(self.candidate_id, str)
-            or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]*", self.candidate_id)
-            or re.fullmatch(r"v\d+", self.candidate_id)
+            or not re.fullmatch(r"C[0-9]{4}", self.candidate_id)
         ):
-            raise ValidationError("invalid candidate_id")
+            raise ValidationError("candidate_id must match C plus four ASCII digits")
 
 
 @dataclass(frozen=True, slots=True)

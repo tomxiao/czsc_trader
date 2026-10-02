@@ -20,7 +20,7 @@ from czsc_trader.backtesting.chart_context import (
 def chart_context():
     first, second = date(2026, 9, 15), date(2026, 9, 16)
     return BacktestChartContext(
-        'S900-C001', 'a' * 64, 'b' * 64, '588080.SH', first, second, 1000.,
+        'S900-C0001', 'a' * 64, 'b' * 64, '588080.SH', first, second, 1000.,
         (ChartBar(first, 10., 12., 9., 11.), ChartBar(second, 11., 13., 10., 12.)),
         (ChartSignal('D1', date(2026, 9, 14), first, 1., 'BUY', (ObservedSeries('score', 'Score', .8, ()),)),
          ChartSignal('D2', first, second, 0., 'SELL', (ObservedSeries('score', 'Score', .2, ()),))),
@@ -101,9 +101,9 @@ def test_projection_detaches_frames_and_rejects_foreign_identity(chart_context):
          'target_position': 1., 'action': 'BUY', 'score': .8}]), fills=pd.DataFrame(),
         account_daily=pd.DataFrame([{'date': x.session, 'quantity': x.quantity, 'equity': x.equity}
                                     for x in chart_context.accounts]))
-    result.observations = (StrategyObservation(StrategyIdentity('S900', 'S900-C001', 'a' * 64, 'b' * 64, '588080.SH'), 'c' * 64, 'd' * 64, 'e' * 64, date(2026,9,14), date(2026,9,15), 'BUY', 1., (ObservedSeries('score','Score',.8,()),), ()),)
+    result.observations = (StrategyObservation(StrategyIdentity('S900', 'S900-C0001', 'a' * 64, 'b' * 64, '588080.SH'), 'c' * 64, 'd' * 64, 'e' * 64, date(2026,9,14), date(2026,9,15), 'BUY', 1., (ObservedSeries('score','Score',.8,()),), ()),)
     # The adapter expects a real typed result identity; only repository-independent facts are synthetic.
-    result.identity = SimpleNamespace(reference='S900-C001')
+    result.identity = SimpleNamespace(reference='S900-C0001')
     signals.snapshot.identity = result.identity
     projected = build_backtest_chart_context(signals, data, result, 1000., metrics=chart_context.metrics)
     prices.loc[0, 'close'] = 999.

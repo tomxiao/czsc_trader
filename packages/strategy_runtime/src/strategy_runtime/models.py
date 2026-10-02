@@ -20,8 +20,8 @@ from .alignment import InputAlignment
 from .observation import ObservationDefinition
 
 
-_FAMILY_ID = re.compile(r"S\d{3,}")
-_VERSION = re.compile(r"v\d+")
+_FAMILY_ID = re.compile(r"S[0-9]{3}")
+_VERSION = re.compile(r"v[1-9][0-9]*")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _A_SHARE_SYMBOL = re.compile(r"\d{6}\.(?:SH|SZ|BJ)")
 
@@ -410,10 +410,8 @@ class RuntimeDefinition:
 
 
 def _candidate_id(value: str | None) -> str:
-    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]*", value):
-        raise RuntimeContractError("candidate_id must be a safe non-empty identifier")
-    if _VERSION.fullmatch(value):
-        raise RuntimeContractError("candidate_id cannot be a frozen version")
+    if not isinstance(value, str) or not re.fullmatch(r"C[0-9]{4}", value):
+        raise RuntimeContractError("candidate_id must match C plus four ASCII digits")
     return value
 
 

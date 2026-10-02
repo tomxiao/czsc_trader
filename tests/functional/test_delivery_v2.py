@@ -25,7 +25,7 @@ def test_historical_reference_cannot_authenticate_a_current_candidate(context):
     record = failed_record()
     ref, _ = experiment(context, records=(record,))
     ref = replace(ref, use=d.ExperimentEvidenceUse.HISTORICAL_REFERENCE)
-    identity = d.CandidateIdentityRef(CandidateKey("S900", "C001"), record.content_sha256)
+    identity = d.CandidateIdentityRef(CandidateKey("S900", "C0001"), record.content_sha256)
     entry = d.CandidateEntry(
         identity, "假设", "说明", (d.EvaluationEvidenceRef(ref.experiment_id, record.attempt_id),)
     )

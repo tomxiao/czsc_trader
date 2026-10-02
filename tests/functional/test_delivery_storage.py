@@ -122,13 +122,13 @@ def test_seal_includes_deliveries_and_blocks_append_and_overwrite(context):
 def test_candidate_entities_owned_by_experiment_and_old_record_rejected(completed):
     context = completed[0]
     registry = StrategyRegistry(context.research_registry_root)
-    key = CandidateKey("S900", "C001")
+    key = CandidateKey("S900", "C0001")
     record = registry.get_candidate(key, experiments_root=context.experiments_root)
     root = context.experiments_root / "S900" / record.origin.experiment_id
     assert record.schema_version == 2
     assert (root / "objects").is_dir()
     assert not (context.research_registry_root / "objects").exists()
-    assert load_candidate(context, key).candidate_id == "C001"
+    assert load_candidate(context, key).candidate_id == "C0001"
     seal(root)
     assert registry.register_candidate(record, experiments_root=context.experiments_root) == record
     validate_experiment_archive(root)
@@ -140,7 +140,7 @@ def test_candidate_entities_owned_by_experiment_and_old_record_rejected(complete
             CandidateRegistration.from_dict(incomplete)
     raw = record.to_dict()
     raw["schema_version"] = 1
-    registration_path = context.research_registry_root / "S900/candidates/C001.json"
+    registration_path = context.research_registry_root / "S900/candidates/C0001.json"
     registration_path.write_text(json.dumps({"record": raw, "record_sha256": record.record_sha256}))
     before = tree(context.research_registry_root)
     with pytest.raises(ValidationError, match="unsupported candidate registration schema"):
@@ -157,7 +157,7 @@ def test_sealed_candidate_objects_cannot_be_extended_and_can_be_relocated(comple
     from strategy_manager import CandidateEvidence
 
     context = completed[0]
-    key = CandidateKey("S900", "C001")
+    key = CandidateKey("S900", "C0001")
     record = StrategyRegistry(context.research_registry_root).get_candidate(
         key, experiments_root=context.experiments_root
     )

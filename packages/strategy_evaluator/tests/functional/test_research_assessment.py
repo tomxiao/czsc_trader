@@ -14,7 +14,7 @@ from strategy_evaluator import (
 from strategy_evaluator import research_models as m
 
 
-def candidate(name="C001", digest="a"):
+def candidate(name="C0001", digest="a"):
     return m.AssessmentCandidate(f"S900-{name}", digest * 64)
 
 
@@ -86,7 +86,7 @@ def protocol():
 
 
 def request():
-    center, child = candidate(), candidate("C002", "b")
+    center, child = candidate(), candidate("C0002", "b")
     base = evidence(center)
     neighbor = evidence(child, (5.0, 10.0), parent=center)
     stress = evidence(center, (20.0, 30.0), "pressure")
@@ -133,7 +133,7 @@ def test_rolling_excess_uses_paired_windows_and_weights_are_explicit():
     assert values(assess_candidates(req))[
         m.ResearchMetric.ROLLING_EXCESS_Q10
     ].value == pytest.approx(expected)
-    child = candidate("C003", "c")
+    child = candidate("C0003", "c")
     extra = evidence(child, (1.0, 2.0), parent=req.centers[0])
     links = (*req.perturbations, m.PerturbationLink(req.centers[0], child, 9.0, "e" * 64))
     with pytest.raises(ValueError, match="weights"):
@@ -359,7 +359,7 @@ def compare(rows, selected_policy=None, targets=()):
 
 
 def test_raw_pareto_then_binned_seven_metrics_and_ties():
-    a, b, c = candidate(), candidate("C002", "b"), candidate("C003", "c")
+    a, b, c = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
     # A strictly dominates C even though A and C fall in the same bins.
     result = compare((row(b, 0.1002, 0.1002), row(c, 0.1000, 0.1002), row(a, 0.1001, 0.1001)))
     by_id = {x.candidate.candidate_id: x for x in result.rows}
@@ -380,7 +380,7 @@ def test_raw_pareto_then_binned_seven_metrics_and_ties():
     ],
 )
 def test_comparison_rejects_different_actual_scenario_contexts(field, change):
-    left, right = row(candidate()), row(candidate("C002", "b"))
+    left, right = row(candidate()), row(candidate("C0002", "b"))
     right = replace(right, **{field: replace(getattr(right, field), **change)})
     result = compare((left, right))
     assert all(x.status is m.ComparisonStatus.INCOMPARABLE for x in result.rows)
@@ -461,7 +461,7 @@ def test_available_diagnostics_require_explicit_scenario_context():
 
 
 def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked():
-    a, b, c = candidate(), candidate("C002", "b"), candidate("C003", "c")
+    a, b, c = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
     result = compare(
         (row(a, 0.1), row(b, 0.01), row(c, 0.2, missing=m.ResearchMetric.PROFIT_CONCENTRATION)),
         targets=(
@@ -510,7 +510,7 @@ def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked()
 
 
 def test_sensitivity_does_not_rewrite_baseline_and_context_mismatch_is_explicit():
-    a, b = candidate(), candidate("C002", "b")
+    a, b = candidate(), candidate("C0002", "b")
     rows = (row(a, 0.11, 0.2), row(b, 0.10, 0.1))
     variant = m.ComparisonVariant("swap_return_drawdown", policy().bins, 0)
     result = compare(rows, replace(policy(), sensitivities=(variant,)))

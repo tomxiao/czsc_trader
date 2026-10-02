@@ -129,7 +129,7 @@ def test_c03_alignment_contract_participates_in_input_identity() -> None:
         "observation": ObservationDefinition((),()),
         "strategy_family_id": "S008",
         "version": None,
-        "release_id": "S008-EX64INPUT",
+        "release_id": "S008-C0064",
         "release_hash": "a" * 64,
         "implementation": ImplementationRef("runtime", "Strategy", 1, "b" * 64),
         "parameters": ParameterSet({"prototype": "P04"}),
@@ -139,7 +139,7 @@ def test_c03_alignment_contract_participates_in_input_identity() -> None:
         "capabilities": RequiredCapabilities(("fx.fxcm_daily",), ("LIMIT",)),
         "tradable_symbol": "518880.SH",
         "identity_kind": "CANDIDATE",
-        "candidate_id": "EX64INPUT",
+        "candidate_id": "C0064",
     }
     unaligned = InputRequirement(
         "xauusd_daily",

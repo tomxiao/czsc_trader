@@ -77,6 +77,14 @@ class StrategyIdentity:
     symbol: str
 
     def __post_init__(self) -> None:
+        if not isinstance(self.strategy_id, str) or not re.fullmatch(r"S[0-9]{3}", self.strategy_id):
+            raise RuntimeContractError("strategy_id must match S plus three ASCII digits")
+        if not isinstance(self.reference_id, str) or not re.fullmatch(
+            rf"{self.strategy_id}-(?:C[0-9]{{4}}|v[1-9][0-9]*)", self.reference_id
+        ):
+            raise RuntimeContractError(
+                "reference_id must identify a candidate or frozen version in this family"
+            )
         for name in ("strategy_id", "reference_id", "symbol"):
             object.__setattr__(self, name, _text(getattr(self, name), name))
         object.__setattr__(self, "symbol", self.symbol.upper())

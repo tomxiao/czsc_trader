@@ -74,7 +74,7 @@ def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
 
 def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
     context = _context()
-    context["candidate"] = {"candidate_id": "S007-C001"}
+    context["candidate"] = {"candidate_id": "S007-C0001"}
 
     with pytest.raises(ValueError, match="fields are invalid"):
         render_forward_chart_html(context)
@@ -84,7 +84,8 @@ def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
 def test_forward_chart_rejects_foreign_observation(field,value):
     context = _context()
     context['observations'][0]['observation']['strategy'][field] = value
-    with pytest.raises(ValueError, match='differs'):
+    expected = 'reference_id must identify' if field == 'reference_id' else 'differs'
+    with pytest.raises(ValueError, match=expected):
         render_forward_chart_html(context)
 
 

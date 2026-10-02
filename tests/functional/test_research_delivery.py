@@ -143,7 +143,7 @@ def failed_record(number=1, digest="d" * 64):
     return EvaluationRecord(
         attempt_id="1" * 32,
         experiment_id=f"20261001_S900_EX{number:02}",
-        candidate_id="S900-C001",
+        candidate_id="S900-C0001",
         content_sha256=digest,
         request_hash="e" * 64,
         status=EvaluationAttemptStatus.FAILED,
@@ -267,7 +267,7 @@ def test_delivery_survives_source_cleanup_and_keeps_report_facts(context):
 def test_candidate_and_trial_states_remain_independent(context):
     record = failed_record()
     exp, _ = experiment(context, records=(record,))
-    identity = d.CandidateIdentityRef(CandidateKey("S900", "C001"), record.content_sha256)
+    identity = d.CandidateIdentityRef(CandidateKey("S900", "C0001"), record.content_sha256)
     evaluation = d.EvaluationEvidenceRef(exp.experiment_id, record.attempt_id)
     entry = d.CandidateEntry(identity, "固定阈值假设", "技术失败，研究结论未定", (evaluation,))
     trials = tuple(
@@ -383,7 +383,7 @@ def test_pruned_trial_retains_successful_evaluation_record(context):
         error_message=None,
     )
     exp, _ = experiment(context, records=(record,))
-    identity = d.CandidateIdentityRef(CandidateKey("S900", "C001"), record.content_sha256)
+    identity = d.CandidateIdentityRef(CandidateKey("S900", "C0001"), record.content_sha256)
     evaluation = d.EvaluationEvidenceRef(
         exp.experiment_id, record.attempt_id, record.evaluation_ids
     )
@@ -406,7 +406,7 @@ def test_pruned_trial_retains_successful_evaluation_record(context):
 
 
 def test_candidate_without_authenticated_content_is_rejected(context):
-    identity = d.CandidateIdentityRef(CandidateKey("S900", "C001"), "a" * 64)
+    identity = d.CandidateIdentityRef(CandidateKey("S900", "C0001"), "a" * 64)
     payload = d.CandidateSet(
         (d.CandidateEntry(identity, "假设", "待检验", ()),), (), (), "缺少证据"
     )
@@ -539,7 +539,7 @@ def test_search_domain_and_candidate_reference_boundaries():
     categorical = d.CategoricalParameterDomain("choice", (True, 1, "1"))
     assert len(categorical.choices) == 3
     with pytest.raises(ValueError, match="handoff"):
-        d.CandidateSet((), (CandidateKey("S900", "C001"),), (), "无可交接候选")
+        d.CandidateSet((), (CandidateKey("S900", "C0001"),), (), "无可交接候选")
 
 
 def test_catalog_component_binds_snapshot_identity(context):
