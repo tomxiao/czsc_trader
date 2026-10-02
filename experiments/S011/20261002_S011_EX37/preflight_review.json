@@ -1,0 +1,12 @@
+{
+  "status": "REVIEWED",
+  "warnings": [
+    {
+      "code": "NUMPY_VIEW_MUTATION_RISK",
+      "status": "WARNING",
+      "message": "to_numpy may return a read-only/shared view; test any in-place mutation: experiment.py:242, family_statistics.py:112, family_statistics.py:105, family_statistics.py:106, family_statistics.py:106"
+    }
+  ],
+  "judgment": "Numerical array views are read-only inputs here. All arithmetic produces new arrays; no in-place assignment to to_numpy results. 772 historical accounts and the synthetic parameter queue passed prechecks.",
+  "resource_contract": "One formal context owner; one worker and one native numerical thread."
+}

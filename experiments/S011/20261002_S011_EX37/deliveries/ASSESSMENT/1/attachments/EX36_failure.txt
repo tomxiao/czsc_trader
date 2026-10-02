@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX36\run_experiment.py", line 118, in main
+    result = execute_experiment(loaded, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 685, in execute_experiment
+    result = experiment.implementation.execute(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX36\experiment.py", line 257, in execute
+    evaluate(parents["S011-CFG-000193"], (EvaluationCost("fee_20bp", 0.002, "STRESS"),))
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX36\experiment.py", line 229, in evaluate
+    result = context.evaluation.evaluate(request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 323, in evaluate
+    contract, binding_hash = _request_contract(request)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\evaluation.py", line 726, in _request_contract
+    raise ValueError("evaluation costs require one unique standard scenario")
+ValueError: evaluation costs require one unique standard scenario

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "strategy_family": "S011",
+  "status": "USER_APPROVED_CANDIDATE_PROMOTION",
+  "stage_four_status": "CLOSED_WITH_DISCLOSED_LIMITATIONS",
+  "selected_config_ids": ["S011-CFG-000621"],
+  "selected_config_fingerprint": "594d2c76a1c328b370c3a3acbb66281c1bdedc096b636ad00366162229ea7914",
+  "source_reference": "S011-EX24T007",
+  "registry": "research/S011/stage4/iteration_04/configurations.json",
+  "supersedes_decision": "research/S011/stage4/iteration_04/decision.json",
+  "user_approval": {
+    "authority": "USER",
+    "date": "2026-09-30",
+    "timezone": "Asia/Shanghai",
+    "channel": "current_conversation",
+    "verbatim": "同意晋升621，请你先收尾阶段四",
+    "scope": "批准621晋升为开发池策略候选；本轮先收尾阶段四。"
+  },
+  "selection_basis": {
+    "type": "USER_PREFERENCE_AFTER_REVIEW",
+    "preferences": ["较低回撤", "2026近期窗口表现", "较小联合扰动年化退化"],
+    "original_ranking_preserved": true,
+    "original_first_layer_order": ["S011-CFG-000618", "S011-CFG-000624", "S011-CFG-000621", "S011-CFG-000628"],
+    "selected_original_layer": 1,
+    "selected_original_within_layer_rank": 3,
+    "original_hard_goal_status": "QUALIFIED_ON_FULL_DEVELOPMENT_WINDOW",
+    "goals_or_sorting_policy_changed": false,
+    "other_configurations": "未获本次晋升批准；保留全部身份、证据和排序，不标记为淘汰。"
+  },
+  "supplemental_backtests": [
+    {"window": ["2025-02-06", "2026-09-28"], "sessions": 403, "package": "research/S011/backtests/tdr_run_20260930"},
+    {"window": ["2026-01-05", "2026-09-28"], "sessions": 179, "package": "research/S011/backtests/tdr_ytd_20260930"},
+    {"window": ["2026-07-01", "2026-09-28"], "sessions": 63, "package": "research/S011/backtests/tdr_20260701_20260928"}
+  ],
+  "limitations": [
+    {"id": "OVERLAPPING_DEVELOPMENT_WINDOWS", "detail": "三个窗口相互重叠，其中完整开发池始于2025年；均为已见开发数据，不能视为三次独立验证。"},
+    {"id": "RETURN_OPPORTUNITY_COST", "detail": "621完整开发池年化43.11%，低于618的49.81%；原收益优先排序保留。"},
+    {"id": "JOINT_NEIGHBORHOOD", "detail": "621固定2天联合扰动仅1/16满足原全部目标，618为5/16；621联合年化退化9.26个百分点小于618的14.94个百分点，不等于全面更稳健。"},
+    {"id": "ROLLING_AND_PERTURBED_DRAWDOWN", "detail": "621滚动超额Q10为-17.37%，618为-14.63%；联合回撤恶化1.28个百分点大于618的0.99个百分点。"},
+    {"id": "RECENT_LOSS_AND_FREQUENCY", "detail": "7月起窗口621仍亏损1.30%；YTD两者频率均6.369，超过原区间上沿6，但原合同按403日完整开发池核验，子窗口不回写原达标状态。"},
+    {"id": "SEARCH_AND_COST_RISK", "detail": "反复搜索及选择偏差保留；旧PBO/DSR未覆盖全部后继研究。四中心20bp联合扰动均未达原收益目标。"},
+    {"id": "COVERAGE_GAPS", "detail": "原32个非首层配置缺主联合模块，15配置涉及9对不可比关系，000193另缺同源码成本证据；保留原additional_checks。未完成盘口、容量、延迟和独立前瞻验证，子窗口未重跑参数扰动。"}
+  ],
+  "stage_five_authorized": true,
+  "stage_five_started": false,
+  "candidate_package_created": false,
+  "candidate_id": null,
+  "cio_approved": false,
+  "frozen": false,
+  "deployed": false,
+  "platform_modified": false,
+  "next_action": "阶段四收尾交付后，按用户推进指令制作621的阶段五开发池候选包；沿用已批准的配置身份，候选ID按候选契约另行分配。"
+}
