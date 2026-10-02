@@ -63,16 +63,16 @@ def render_report(
         "",
         "## 策略比较",
         "",
-        "| 策略 | 收益率 | 最大回撤 | 卡玛比率 | 盈亏比 | 夏普率 | 闭合交易 |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
     ]
     for label, item in rows:
         if not isinstance(item, dict):
             raise TypeError("one strategy metric row is invalid")
         lines.append(
             f"| {label} | {percent(item['return'])} | {percent(item['max_drawdown'])} | "
-            f"{ratio(item['calmar'])} | {ratio(item['win_loss_ratio'])} | "
-            f"{ratio(item['sharpe'])} | {int(item['closed_trades'])} |"
+            f"{int(item['closed_trades'])} | {ratio(item['calmar'])} | "
+            f"{ratio(item['win_loss_ratio'])} |"
         )
     lines.extend(
         [

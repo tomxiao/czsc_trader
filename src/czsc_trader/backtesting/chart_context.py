@@ -1,7 +1,7 @@
 """Typed, detached plotting facts owned by TDR."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from math import isfinite
 from numbers import Real
@@ -9,6 +9,7 @@ from numbers import Real
 import pandas as pd
 
 from .execution_data import BacktestExecutionData
+from .benchmarks import BenchmarkReplay
 from .result import BacktestResult
 from .signal_replay import SignalReplay
 
@@ -42,7 +43,7 @@ class ChartSignal:
 class ChartFill:
     fill_id: str
     decision_id: str
-    time: datetime
+    time: date | datetime
     side: str
     quantity: int
     price: float
@@ -63,6 +64,27 @@ class ChartBenchmark:
 
 
 @dataclass(frozen=True)
+class BacktestChartMetrics:
+    total_return: float
+    max_drawdown: float
+    closed_trades: int
+    calmar: float | None
+    win_loss_ratio: float | None
+
+    def __post_init__(self) -> None:
+        if _number(self.total_return, "return") < -1:
+            raise ValueError("chart return must be at least -1")
+        if not -1 <= _number(self.max_drawdown, "max_drawdown") <= 0:
+            raise ValueError("chart max_drawdown must be in [-1, 0]")
+        if type(self.closed_trades) is not int or self.closed_trades < 0:
+            raise ValueError("chart closed_trades must be a nonnegative integer")
+        if self.calmar is not None:
+            _number(self.calmar, "calmar")
+        if self.win_loss_ratio is not None and _number(self.win_loss_ratio, "win_loss_ratio") < 0:
+            raise ValueError("chart win_loss_ratio must be nonnegative")
+
+
+@dataclass(frozen=True)
 class BacktestChartContext:
     reference: str
     identity_hash: str
@@ -76,8 +98,11 @@ class BacktestChartContext:
     fills: tuple[ChartFill, ...]
     accounts: tuple[ChartAccount, ...]
     benchmarks: tuple[ChartBenchmark, ...]
+    metrics: BacktestChartMetrics
 
     def __post_init__(self) -> None:
+        if not isinstance(self.metrics, BacktestChartMetrics):
+            raise TypeError("chart metrics require BacktestChartMetrics")
         if not all(isinstance(x, str) and x for x in (
             self.reference, self.identity_hash, self.market_identity, self.symbol,
         )):
@@ -134,11 +159,12 @@ class BacktestChartContext:
         if len({x.fill_id for x in self.fills}) != len(self.fills):
             raise ValueError("chart fill IDs must be unique")
         for fill in self.fills:
-            if type(fill.time) is not datetime:
-                raise TypeError("chart fills require timestamps")
+            if type(fill.time) not in (date, datetime):
+                raise TypeError("chart fills require dates or timestamps")
+            session = fill.time.date() if isinstance(fill.time, datetime) else fill.time
             if (not fill.fill_id or fill.side not in {"BUY", "SELL"}
-                    or fill.decision_id not in decisions or fill.time.date() not in sessions
-                    or fill.time.date() != decisions[fill.decision_id].valid_session
+                    or fill.decision_id not in decisions or session not in sessions
+                    or session != decisions[fill.decision_id].valid_session
                     or type(fill.quantity) is not int or fill.quantity <= 0
                     or _number(fill.price, "fill price") <= 0
                     or _number(fill.fees, "fees") < 0):
@@ -173,6 +199,7 @@ def build_backtest_chart_context(
     result: BacktestResult,
     initial_cash: float,
     *,
+    metrics: BacktestChartMetrics,
     benchmark_accounts: tuple[tuple[str, pd.DataFrame], ...] = (),
 ) -> BacktestChartContext:
     """Project audited facts without recomputing strategy or executions."""
@@ -209,5 +236,48 @@ def build_backtest_chart_context(
     return BacktestChartContext(
         result.identity.reference, signal_replay.snapshot.source_hash, execution_data.fingerprint,
         execution_data.symbol, start, end, initial_cash, bars, signals, fills, accounts,
-        tuple(benchmarks),
+        tuple(benchmarks), metrics,
+    )
+
+
+def build_ma_chart_context(base: BacktestChartContext, benchmark: BenchmarkReplay) -> BacktestChartContext:
+    """Adapt the next-open MA benchmark ledger to the same TDR view."""
+    from strategy_manager import canonical_sha256
+
+    if not isinstance(benchmark, BenchmarkReplay):
+        raise TypeError("MA chart requires BenchmarkReplay")
+    history = benchmark.ma_signals.set_index("date")
+    history.index = pd.DatetimeIndex(pd.to_datetime(history.index))
+    signals, accounts = [], []
+    previous_target = 0.0
+    for row in benchmark.ma_account_daily.to_dict("records"):
+        day, signal_day = _session(row["date"]), _session(row["signal_date"])
+        target = _number(row["target_position"], "MA target")
+        action = "BUY" if target > previous_target else "SELL" if target < previous_target else "HOLD"
+        values = history.loc[pd.Timestamp(signal_day)]
+        signals.append(ChartSignal(
+            f"MA-{signal_day}", signal_day, day, target, action,
+            tuple((key, _number(values[key], key)) for key in ("ma5", "ma20")
+                  if pd.notna(values[key])),
+        ))
+        accounts.append(ChartAccount(day, _quantity(row["quantity"]), _number(row["equity"], "MA equity")))
+        previous_target = target
+    fills = tuple(ChartFill(
+        f"MA-FILL-{index}", f"MA-{_session(row['signal_date'])}", _session(row["execution_date"]),
+        str(row["side"]).upper(), _quantity(row["size"]), _number(row["price"], "MA price"),
+        _number(row["fees"], "MA fees"),
+    ) for index, row in enumerate(benchmark.ma_orders.to_dict("records")))
+    facts = benchmark.metrics["ma5_ma20"]["metrics"]
+    identity = canonical_sha256({
+        "benchmark": "MA5/MA20", "market": base.market_identity,
+        "initial_cash": base.initial_cash,
+        "signals": benchmark.ma_signals.to_json(orient="records", date_format="iso"),
+        "orders": benchmark.ma_orders.to_json(orient="records", date_format="iso"),
+        "accounts": benchmark.ma_account_daily.to_json(orient="records", date_format="iso"),
+    })
+    return replace(
+        base, reference=f"{base.reference} · MA5/MA20", identity_hash=identity,
+        signals=tuple(signals), fills=fills, accounts=tuple(accounts), benchmarks=(),
+        metrics=BacktestChartMetrics(facts["return"], facts["max_drawdown"], facts["closed_trades"],
+                                    facts["calmar"], facts["win_loss_ratio"]),
     )

@@ -11,14 +11,13 @@ from dataflows import Dataflows
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from czsc_trader.reporting.publication import publish_run_directory
-from czsc_trader.ma_charting import write_ma_chart
 from czsc_trader.temp_workspace import create_temporary_directory
 
 from .benchmarks import replay_benchmarks
 from .execution_data import BacktestExecutionData, prepare_backtest_execution_data
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
 from .chart import render_backtest_chart_html
-from .chart_context import build_backtest_chart_context
+from .chart_context import BacktestChartMetrics, build_backtest_chart_context, build_ma_chart_context
 from .evidence import build_manifest
 from .metrics import calculate_metrics
 from .models import StrategySnapshot
@@ -244,23 +243,25 @@ def _run_backtest(
             ),
             encoding="utf-8", newline="\n",
         )
-        (staging / "chart.html").write_text(
-            render_backtest_chart_html(build_backtest_chart_context(
+        chart_context = build_backtest_chart_context(
                 signals, execution_data, result, request.initial_cash,
+                metrics=BacktestChartMetrics(
+                    total_return=strategy_metrics["return"],
+                    max_drawdown=strategy_metrics["max_drawdown"],
+                    closed_trades=strategy_metrics["closed_trades"],
+                    calmar=strategy_metrics["calmar"],
+                    win_loss_ratio=strategy_metrics["win_loss_ratio"],
+                ),
                 benchmark_accounts=(("BuyHold", benchmarks.buyhold_account_daily),
                                     ("MA5/MA20", benchmarks.ma_account_daily)),
-            )),
+        )
+        (staging / "chart.html").write_text(
+            render_backtest_chart_html(chart_context),
             encoding="utf-8", newline="\n",
         )
-        ma_chart_signals = benchmarks.ma_signals.set_index("date")
-        write_ma_chart(
-            execution_data.adjusted_daily,
-            ma_chart_signals,
-            benchmarks.ma_orders,
-            signals.evaluation_start,
-            signals.evaluation_end,
-            f"{snapshot.identity.reference}｜MA5/MA20基准",
-            staging / "ma_chart.html",
+        (staging / "ma_chart.html").write_text(
+            render_backtest_chart_html(build_ma_chart_context(chart_context, benchmarks)),
+            encoding="utf-8", newline="\n",
         )
         expected = {
             "manifest.json",

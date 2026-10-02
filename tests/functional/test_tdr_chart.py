@@ -2,13 +2,16 @@ from dataclasses import replace
 from datetime import date, datetime
 from types import SimpleNamespace
 
+import json
+import re
+
 import pandas as pd
 import pytest
 
-from czsc_trader.backtesting.chart import build_backtest_figure, render_backtest_chart_html
+from czsc_trader.backtesting.chart import render_backtest_chart_html
 from czsc_trader.backtesting.chart_context import (
-    BacktestChartContext, ChartAccount, ChartBar, ChartBenchmark, ChartFill, ChartSignal,
-    build_backtest_chart_context,
+    BacktestChartContext, BacktestChartMetrics, ChartAccount, ChartBar, ChartBenchmark, ChartFill, ChartSignal,
+    build_backtest_chart_context, build_ma_chart_context,
 )
 
 
@@ -24,29 +27,32 @@ def chart_context():
          ChartFill('F2', 'D2', datetime(2026, 9, 16, 10), 'SELL', 100, 1.1, .11)),
         (ChartAccount(first, 100, 1000.), ChartAccount(second, 0, 1009.79)),
         (ChartBenchmark('BuyHold', (1000., 1010.)),),
+        BacktestChartMetrics(.00979, -.02, 1, .5, None),
     )
 
 
+def payload_from_html(html):
+    return json.loads(re.search(r'<script id="forward-context" type="application/json">(.*?)</script>', html, re.S)[1])
+
+
 def test_chart_separates_signals_fills_and_account_facts(chart_context):
-    figure = build_backtest_figure(chart_context)
-    traces = {trace.name: trace for trace in figure.data}
-    assert tuple(traces['策略信号'].x) == ('2026-09-14', '2026-09-15')
-    assert tuple(traces['买入成交'].x) == ('2026-09-15',)
-    assert tuple(traces['买入成交'].y) == (9.,)  # Adjusted candle low, not raw fill price 1.
-    assert '未复权成交价 1' in traces['买入成交'].text[0]
-    assert tuple(traces['实际持仓'].y) == (100, 0)
-    assert tuple(traces['策略净值'].y) == (1., 1.00979)
-    assert tuple(traces['BuyHold'].y) == (1., 1.01)
-    assert tuple(traces['score'].y) == (.8, .2)
-    assert figure.layout.meta['renderer'] == 'TDR'
-    assert figure.layout.xaxis.categoryarray[0] == '2026-09-14'
+    payload = payload_from_html(render_backtest_chart_html(chart_context))
+    assert [x['signal_date'] for x in payload['observations']] == ['2026-09-14', '2026-09-15']
+    assert [x['session'] for x in payload['execution']['fills']] == ['2026-09-15', '2026-09-16']
+    assert payload['market_data']['bars'][0]['low'] == 9.
+    assert payload['execution']['fills'][0]['price'] == 1.
+    assert [x['quantity'] for x in payload['execution']['snapshots']] == [100, 0]
+    assert payload['metrics'] == {'return': .00979, 'max_drawdown': -.02, 'closed_trades': 1,
+                                 'calmar': .5, 'win_loss_ratio': None}
+    assert payload['observations'][0]['observation']['series'][1]['value'] == .8
 
 
 def test_chart_is_standalone_and_escapes_strategy_text(chart_context):
     context = replace(chart_context, reference='S900-</script><script>alert(1)</script>')
     html = render_backtest_chart_html(context)
     assert '<html lang="zh-CN">' in html
-    assert 'tdr-backtest-chart' in html and 'plotly.js' in html
+    assert 'tdr-backtest-chart' in html and 'forward-svg' in html
+    assert 'Plotly.newPlot' not in html
     assert '<script src=' not in html
     assert '</script><script>alert(1)</script>' not in html
     assert '&lt;script&gt;alert(1)&lt;/script&gt;' in html
@@ -55,8 +61,8 @@ def test_chart_is_standalone_and_escapes_strategy_text(chart_context):
 
 
 def test_no_fills_is_a_valid_chart_without_invented_transactions(chart_context):
-    figure = build_backtest_figure(replace(chart_context, fills=()))
-    assert all(not trace.x for trace in figure.data if trace.name in {'买入成交', '卖出成交'})
+    payload = payload_from_html(render_backtest_chart_html(replace(chart_context, fills=())))
+    assert payload['execution']['fills'] == []
 
 
 @pytest.mark.parametrize('change', [
@@ -97,9 +103,64 @@ def test_projection_detaches_frames_and_rejects_foreign_identity(chart_context):
     # The adapter expects a real typed result identity; only repository-independent facts are synthetic.
     result.identity = SimpleNamespace(reference='S900-C001')
     signals.snapshot.identity = result.identity
-    projected = build_backtest_chart_context(signals, data, result, 1000.)
+    projected = build_backtest_chart_context(signals, data, result, 1000., metrics=chart_context.metrics)
     prices.loc[0, 'close'] = 999.
     assert projected.bars[0].close == 11.
     result.identity = SimpleNamespace(reference='S900-OTHER')
     with pytest.raises(ValueError, match='identity differs'):
-        build_backtest_chart_context(signals, data, result, 1000.)
+        build_backtest_chart_context(signals, data, result, 1000., metrics=chart_context.metrics)
+
+
+def test_chart_has_exact_five_metrics_and_pte_controls(chart_context):
+    html = render_backtest_chart_html(chart_context)
+    cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
+    assert cards == [('收益率', '0.98%'), ('最大回撤', '-2.00%'), ('闭合交易数', '1'),
+                     ('卡玛比率', '0.500'), ('盈亏比', 'N/A')]
+    assert '夏普' not in html
+    assert 'data-range="40" aria-pressed="true"' in html
+    assert all(f'data-layer="{layer}"' in html for layer in ('signal', 'fill', 'position'))
+    unavailable = render_backtest_chart_html(replace(chart_context, metrics=replace(chart_context.metrics, calmar=None)))
+    assert '<span>卡玛比率</span><strong>N/A</strong>' in unavailable
+
+
+@pytest.mark.parametrize('changes', [
+    {'closed_trades': True}, {'closed_trades': -1}, {'total_return': float('nan')},
+    {'max_drawdown': .1}, {'win_loss_ratio': -1}, {'calmar': float('inf')},
+])
+def test_chart_metric_contract_rejects_invalid_values(chart_context, changes):
+    with pytest.raises((TypeError, ValueError)):
+        replace(chart_context.metrics, **changes)
+
+
+def test_ma_chart_preserves_next_open_dates_and_uses_own_metrics(chart_context):
+    from czsc_trader.backtesting.benchmarks import BenchmarkReplay
+
+    benchmark = BenchmarkReplay(
+        metrics={'ma5_ma20': {'metrics': {'return': .01, 'max_drawdown': 0., 'closed_trades': 1,
+                                         'calmar': None, 'win_loss_ratio': None}}},
+        buyhold_account_daily=pd.DataFrame(), buyhold_orders=pd.DataFrame(),
+        ma_signals=pd.DataFrame([
+            {'date': '2026-09-14', 'ma5': 12., 'ma20': 11.},
+            {'date': '2026-09-15', 'ma5': 10., 'ma20': 11.},
+        ]),
+        ma_orders=pd.DataFrame([
+            {'signal_date': '2026-09-14', 'execution_date': '2026-09-15',
+             'side': 'BUY', 'size': 100., 'price': 1., 'fees': .1},
+            {'signal_date': '2026-09-15', 'execution_date': '2026-09-16',
+             'side': 'SELL', 'size': 100., 'price': 1.1, 'fees': .11},
+        ]),
+        ma_account_daily=pd.DataFrame([
+            {'date': '2026-09-15', 'signal_date': '2026-09-14', 'target_position': 1.,
+             'quantity': 100., 'equity': 1000.},
+            {'date': '2026-09-16', 'signal_date': '2026-09-15', 'target_position': 0.,
+             'quantity': 0., 'equity': 1010.},
+        ]),
+        ma_trades=pd.DataFrame(), ma_audit_signals=pd.DataFrame(),
+    )
+    projected = build_ma_chart_context(chart_context, benchmark)
+    payload = payload_from_html(render_backtest_chart_html(projected))
+    assert payload['observations'][0]['signal_date'] == '2026-09-14'
+    assert payload['execution']['fills'][0]['occurred_at'] == '2026-09-15'
+    assert payload['execution']['fills'][0]['price'] == 1.
+    assert payload['metrics']['return'] == .01 and payload['metrics']['calmar'] is None
+    assert projected.identity_hash != chart_context.identity_hash

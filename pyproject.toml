@@ -39,6 +39,9 @@ test = ["pytest>=8.0", "ruff>=0.12"]
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"czsc_trader.backtesting" = ["static/*.css", "static/*.js"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests/functional"]
 addopts = "--tb=short -p no:cacheprovider"

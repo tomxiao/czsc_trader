@@ -1,6 +1,7 @@
 """Backtest acceptance against a freshly frozen current-contract fixture."""
 from datetime import date
 import json
+import re
 import pandas as pd
 import pytest
 from czsc_trader.application import BacktestRequest, run_backtest
@@ -64,7 +65,19 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert manifest["application"]["runtime_engine"] == "srt"
     html = (output / "chart.html").read_text(encoding="utf-8")
     assert 'tdr-backtest-chart' in html
-    assert 'BuyHold' in html and 'MA5/MA20' in html.replace(r'\u002f', '/')
+    assert 'data-range="40" aria-pressed="true"' in html
+    assert 'forward-svg' in html and 'Plotly.newPlot' not in html
+    report = (output / "report.md").read_text(encoding="utf-8")
+    assert '| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 |' in report
+    assert '夏普率' not in report
+    cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
+    row = next(line for line in report.splitlines() if line.startswith(f'| {version.release_id} |'))
+    assert [value for _, value in cards] == [x.strip() for x in row.split('|')[2:-1]]
+    ma_html = (output / "ma_chart.html").read_text(encoding="utf-8")
+    assert 'forward-svg' in ma_html and 'Plotly.newPlot' not in ma_html
+    ma_cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', ma_html)
+    ma_row = next(line for line in report.splitlines() if line.startswith('| MA5/MA20 |'))
+    assert [value for _, value in ma_cards] == [x.strip() for x in ma_row.split('|')[2:-1]]
 
 
 def test_chart_failure_prevents_backtest_publication(current_frozen, monkeypatch):
