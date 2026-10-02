@@ -359,9 +359,19 @@ def test_account_binding_validates_pte_frozen_release(pte_frozen, tmp_path):
     )
     assert identity["release_id"] == version.release_id
     assert identity["release_hash"] == version.release_hash
+    # Research approval evidence is outside the frozen runtime identity.
     commit = context.strategy_root / "freeze_requests/S900/request1/committed.json"
     commit.write_text("{}", encoding="utf-8")
-    with pytest.raises(RuntimeCompatibilityError, match="matching freeze commit"):
+    assert client.validate_account_binding(
+        strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
+    ) == identity
+
+    # The installed package must still match its authenticated file inventory.
+    package = context.strategy_root / "S900/releases/v1"
+    manifest = json.loads((package / "release_manifest.json").read_text(encoding="utf-8"))
+    binding = package / manifest["runtime_binding"]
+    binding.write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeCompatibilityError, match="package file differs"):
         client.validate_account_binding(
             strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
         )
