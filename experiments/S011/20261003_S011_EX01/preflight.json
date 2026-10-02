@@ -1,0 +1,89 @@
+{
+  "experiment_id": "20261003_S011_EX01",
+  "definition_sha256": "72004316f0ddabcac2a19f7e09224dbabcf2ef822a0eaae79047055152cf5dfb",
+  "source_sha256": "de79383ebe56c898c9bc3903179a920fbb3defcbf4c68f1e2d960541077bc7ce",
+  "resources_sha256": "c3a582e2cafbef6ee5435c4ac9ab9c292956c6de975d3b43b7a01b89dc19ab60",
+  "passed": true,
+  "checks": [
+    {
+      "code": "SOURCE_BOUND",
+      "status": "PASS",
+      "message": "source closure matches binding"
+    },
+    {
+      "code": "DEFINITION_BOUND",
+      "status": "PASS",
+      "message": "definition is stable"
+    },
+    {
+      "code": "RESOURCE_CONTRACT",
+      "status": "PASS",
+      "message": "resources match definition"
+    },
+    {
+      "code": "PREDECESSOR_CONTRACT",
+      "status": "PASS",
+      "message": "predecessor identities match"
+    },
+    {
+      "code": "ARCHIVE_IDENTITY",
+      "status": "PASS",
+      "message": "static archive identity is valid"
+    },
+    {
+      "code": "JOIN_COLUMN_COLLISION_RISK",
+      "status": "WARNING",
+      "message": "join has no explicit suffix policy; test overlapping columns: publication.py:118"
+    },
+    {
+      "code": "NUMPY_VIEW_MUTATION_RISK",
+      "status": "WARNING",
+      "message": "to_numpy may return a read-only/shared view; test any in-place mutation: experiment.py:86, experiment.py:87, experiment.py:87, family_statistics.py:46, family_statistics.py:39, family_statistics.py:40, family_statistics.py:40"
+    },
+    {
+      "code": "PROCESS_PAYLOAD_REVIEW",
+      "status": "WARNING",
+      "message": "test worker payload serialization and child-process data configuration: run_batch.py:49"
+    },
+    {
+      "code": "SOURCE_RISK_SCAN",
+      "status": "PASS",
+      "message": "known source patterns inspected; warnings require review"
+    },
+    {
+      "code": "DATA_READINESS",
+      "status": "WARNING",
+      "message": "no explicit data requests supplied; credentials, availability and coverage were not probed"
+    },
+    {
+      "code": "SYNTHETIC_COMPLETE_FIXED_INPUTS",
+      "status": "PASS",
+      "message": "All fixed slots completed by authenticated successor runs; initial technical failures retained"
+    },
+    {
+      "code": "RESULT_SERIALIZATION",
+      "status": "PASS",
+      "message": "synthetic output JSON roundtrip passed"
+    },
+    {
+      "code": "SYNTHETIC_PRECHECK",
+      "status": "PASS",
+      "message": "synthetic precheck passed"
+    },
+    {
+      "code": "SOURCE_UNCHANGED",
+      "status": "PASS",
+      "message": "source unchanged after synthetic precheck"
+    },
+    {
+      "code": "DEFINITION_UNCHANGED",
+      "status": "PASS",
+      "message": "definition unchanged after synthetic precheck"
+    },
+    {
+      "code": "PREFLIGHT_ENFORCEMENT",
+      "status": "PASS",
+      "message": "binding schema v3 requires preflight at execution entry"
+    }
+  ]
+}

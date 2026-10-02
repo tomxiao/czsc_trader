@@ -1,0 +1,747 @@
+{
+  "selfcheck": {
+    "baseline_window": "full",
+    "bootstrap_block_length": 20,
+    "bootstrap_repetitions": 5000,
+    "minimum_perturbations": 16,
+    "minimum_rolling_windows": 1,
+    "pbo_blocks": 10,
+    "quantile_method": "LINEAR",
+    "reconciliation_tolerance": 1e-06,
+    "rolling_step_days": 1,
+    "rolling_window_days": 60,
+    "seed": 20261001,
+    "standard_scenario": "standard",
+    "stress_scenario": "fee_20bp",
+    "type": "SelfCheckProtocol",
+    "version": "S011-migration-selfcheck-v1"
+  },
+  "targets": {
+    "frequency_window_days": 60,
+    "requirements": [
+      {
+        "lower": {
+          "inclusive": true,
+          "multiplier": 1.5,
+          "type": "BenchmarkBound"
+        },
+        "metric": "NET_ANNUAL_RETURN",
+        "target_id": "return_multiple",
+        "type": "ResearchTarget",
+        "upper": null,
+        "when": null
+      },
+      {
+        "lower": {
+          "inclusive": false,
+          "type": "ConstantBound",
+          "value": 0.0
+        },
+        "metric": "NET_ANNUAL_RETURN",
+        "target_id": "positive_if_nonpositive_benchmark",
+        "type": "ResearchTarget",
+        "upper": null,
+        "when": {
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "LE",
+          "type": "BenchmarkCondition",
+          "value": 0.0
+        }
+      },
+      {
+        "lower": {
+          "inclusive": false,
+          "multiplier": 1.0,
+          "type": "BenchmarkBound"
+        },
+        "metric": "NET_ANNUAL_RETURN",
+        "target_id": "excess_if_nonpositive_benchmark",
+        "type": "ResearchTarget",
+        "upper": null,
+        "when": {
+          "metric": "NET_ANNUAL_RETURN",
+          "operator": "LE",
+          "type": "BenchmarkCondition",
+          "value": 0.0
+        }
+      },
+      {
+        "lower": null,
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "target_id": "strict_drawdown",
+        "type": "ResearchTarget",
+        "upper": {
+          "inclusive": false,
+          "multiplier": 1.0,
+          "type": "BenchmarkBound"
+        },
+        "when": null
+      },
+      {
+        "lower": {
+          "inclusive": true,
+          "type": "ConstantBound",
+          "value": 4.0
+        },
+        "metric": "FULL_SAMPLE_FREQUENCY",
+        "target_id": "full_frequency",
+        "type": "ResearchTarget",
+        "upper": {
+          "inclusive": true,
+          "type": "ConstantBound",
+          "value": 6.0
+        },
+        "when": null
+      }
+    ],
+    "type": "ResearchTargets"
+  },
+  "comparison_policy": {
+    "bins": [
+      {
+        "metric": "NET_ANNUAL_RETURN",
+        "origin": 0.0,
+        "resolution": 0.001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "origin": 0.0,
+        "resolution": 0.0001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "PARAMETER_RETURN_DEGRADATION",
+        "origin": 0.0,
+        "resolution": 0.001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+        "origin": 0.0,
+        "resolution": 0.0001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "ROLLING_EXCESS_Q10",
+        "origin": 0.0,
+        "resolution": 0.001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "STRESS_ANNUAL_LOSS",
+        "origin": 0.0,
+        "resolution": 0.001,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      },
+      {
+        "metric": "PROFIT_CONCENTRATION",
+        "origin": 0.0,
+        "resolution": 0.01,
+        "rounding": "NEAREST_HALF_UP",
+        "type": "MetricBinSpec"
+      }
+    ],
+    "missing_evidence_policy": "PREFIX_PARTIAL",
+    "pareto_basis": "BINNED",
+    "sensitivities": [
+      {
+        "adjacent_swap": null,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 1e-10,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "fine_10dec",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": null,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.0005,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 5e-05,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0005,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 5e-05,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.0005,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.0005,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.005,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "finer_half_steps",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": null,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.002,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.02,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "coarser_double_steps",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": null,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0005,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 5e-05,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0005,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 5e-05,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0005,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0005,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.005,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "half_cell_shift",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 0,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_1_2",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 1,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_2_3",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 2,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_3_4",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 3,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_4_5",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 4,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_5_6",
+        "type": "ComparisonVariant"
+      },
+      {
+        "adjacent_swap": 5,
+        "bins": [
+          {
+            "metric": "NET_ANNUAL_RETURN",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_RETURN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PARAMETER_DRAWDOWN_DEGRADATION",
+            "origin": 0.0,
+            "resolution": 0.0001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "ROLLING_EXCESS_Q10",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "STRESS_ANNUAL_LOSS",
+            "origin": 0.0,
+            "resolution": 0.001,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          },
+          {
+            "metric": "PROFIT_CONCENTRATION",
+            "origin": 0.0,
+            "resolution": 0.01,
+            "rounding": "NEAREST_HALF_UP",
+            "type": "MetricBinSpec"
+          }
+        ],
+        "name": "priority_swap_6_7",
+        "type": "ComparisonVariant"
+      }
+    ],
+    "type": "ComparisonPolicy",
+    "version": "S011-iteration04-migrated-v1"
+  },
+  "target_bindings": [
+    {
+      "mandate_item_id": "return",
+      "target_id": "return_multiple",
+      "type": "TargetMandateBinding"
+    },
+    {
+      "mandate_item_id": "return",
+      "target_id": "positive_if_nonpositive_benchmark",
+      "type": "TargetMandateBinding"
+    },
+    {
+      "mandate_item_id": "return",
+      "target_id": "excess_if_nonpositive_benchmark",
+      "type": "TargetMandateBinding"
+    },
+    {
+      "mandate_item_id": "drawdown",
+      "target_id": "strict_drawdown",
+      "type": "TargetMandateBinding"
+    },
+    {
+      "mandate_item_id": "frequency",
+      "target_id": "full_frequency",
+      "type": "TargetMandateBinding"
+    }
+  ],
+  "frequency_window_item_id": "frequency_window",
+  "benchmark_mandate_item_id": "benchmark"
+}

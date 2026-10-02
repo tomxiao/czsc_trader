@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX68\run_experiment.py", line 80, in main
+    result = execute_experiment(loaded, context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\src\czsc_trader\research_tools\experiment.py", line 685, in execute_experiment
+    result = experiment.implementation.execute(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX68\experiment.py", line 191, in execute
+    expanded = expanded_statistics(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\experiments\S011\20261002_S011_EX68\family_statistics.py", line 38, in expanded_statistics
+    assert np.allclose(f.fees, f.quantity * f.price * 0.001, rtol=0, atol=1e-8)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\.venv\Lib\site-packages\numpy\_core\numeric.py", line 2312, in allclose
+    res = all(isclose(a, b, rtol=rtol, atol=atol, equal_nan=equal_nan))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\CodeBase\czsc_trader\.venv\Lib\site-packages\numpy\_core\numeric.py", line 2444, in isclose
+    & isfinite(y)
+      ^^^^^^^^^^^
+TypeError: ufunc 'isfinite' not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule ''safe''
