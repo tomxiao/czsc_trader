@@ -1,6 +1,7 @@
 from dataclasses import replace
 from hashlib import sha256
 import json
+import shutil
 
 import pytest
 from research_experiment import load_experiment, ExperimentResources, ExperimentWorkspace
@@ -21,6 +22,7 @@ from czsc_trader.application import (
     record_research_decision,
     freeze_candidate,
     get_freeze_result,
+    RepositoryContext,
 )
 from czsc_trader.research_tools import create_formal_experiment_context
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
@@ -92,6 +94,29 @@ def inspection(completed):
         ("合成结果不代表收益证据",),
     )
     return context, inspection_request, source
+
+
+@pytest.fixture
+def inspected_candidate(request, tmp_path, frozen_seed_root):
+    """Copy real, hash-valid inspection evidence for freeze persistence tests.
+
+    Inspection scenarios still use ``inspection`` and run the full protocol.
+    Each consumer owns its copied files; approvals and freeze journals start empty.
+    """
+    seed = frozen_seed_root / "inspection"
+    report_path = frozen_seed_root / "inspection-report.json"
+    if not seed.exists():
+        context, inspection_request, _ = request.getfixturevalue("inspection")
+        report = inspect_candidate(context, inspection_request)
+        assert report.status is f.InspectionStatus.PASS
+        shutil.copytree(context.root, seed)
+        report_path.write_text(json.dumps(report.to_dict()), encoding="utf-8")
+    root = tmp_path / "inspected-repo"
+    shutil.copytree(seed, root)
+    report = f.CandidateInspectionReport.from_dict(
+        json.loads(report_path.read_text(encoding="utf-8"))
+    )
+    return RepositoryContext.discover(root), report, root / ".tmp/user-confirmation.json"
 
 
 def approve(context, report, source, decision_id="freeze1", request_id="request1"):
@@ -169,11 +194,10 @@ def test_strong_contracts_reject_untyped_approval_and_bad_receipt():
 
 
 @pytest.mark.parametrize("after_commit", [False, True])
-def test_process_interruption_obeys_commit_visibility(inspection, monkeypatch, after_commit):
+def test_process_interruption_obeys_commit_visibility(inspected_candidate, monkeypatch, after_commit):
     from strategy_manager import freeze_store
 
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+    context, report, source = inspected_candidate
     operation = approve(context, report, source)
     original = freeze_store._durable
 
@@ -210,11 +234,11 @@ def test_process_interruption_obeys_commit_visibility(inspection, monkeypatch, a
             )
 
 
-def test_failed_commit_stays_invisible_and_is_not_retried(inspection, monkeypatch):
+def test_failed_commit_stays_invisible_and_is_not_retried(inspected_candidate, monkeypatch):
     from strategy_manager import freeze_store
 
-    context, request, source = inspection
-    operation = approve(context, inspect_candidate(context, request), source)
+    context, report, source = inspected_candidate
+    operation = approve(context, report, source)
     original = freeze_store._durable
 
     def fail(path, value, **kwargs):
@@ -230,14 +254,13 @@ def test_failed_commit_stays_invisible_and_is_not_retried(inspection, monkeypatc
     assert StrategyRegistry(context.strategy_root).versions("S900") == ()
 
 
-def test_approval_identity_and_version_conflicts(inspection):
+def test_approval_identity_and_version_conflicts(inspected_candidate):
     from strategy_manager import RegistryError
 
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+    context, report, source = inspected_candidate
     operation = approve(context, report, source)
     with pytest.raises(ValueError, match="matching approval"):
-        freeze_candidate(context, replace(operation, approval=request.selection))
+        freeze_candidate(context, replace(operation, approval=report.selection))
     assert freeze_candidate(context, operation).status is f.FreezeStatus.COMMITTED
     with pytest.raises(RegistryError, match="target version"):
         freeze_candidate(context, replace(operation, request_id=f.FreezeRequestId("S900", "other")))
@@ -261,9 +284,8 @@ def test_approval_identity_and_version_conflicts(inspection):
         )
 
 
-def test_changed_inspected_file_is_rejected(inspection):
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+def test_changed_inspected_file_is_rejected(inspected_candidate):
+    context, report, source = inspected_candidate
     operation = approve(context, report, source)
     file = report.plan.source_files[0].source.resolve(context.root)
     file.write_bytes(file.read_bytes() + b"\n# altered\n")
@@ -274,15 +296,14 @@ def test_changed_inspected_file_is_rejected(inspection):
     assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
 
 
-def test_stage_five_delivery_captures_report_and_decision_closure(inspection, monkeypatch):
+def test_stage_five_delivery_captures_report_and_decision_closure(inspected_candidate, monkeypatch):
     from czsc_trader.research_tools import delivery as d
     from czsc_trader.application import validate_delivery
     from czsc_trader.application.delivery_service import _walk
     from czsc_trader.application.research_evidence import read_decision
     from test_research_delivery import content
 
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+    context, report, source = inspected_candidate
     from czsc_trader.application import delivery_service
 
     def forbidden(_):
@@ -290,11 +311,11 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspection, mo
 
     monkeypatch.setattr(delivery_service, "assess_candidates", forbidden)
     monkeypatch.setattr(delivery_service, "compare_candidates", forbidden)
-    selection = read_decision(context.root, request.selection)
+    selection = read_decision(context.root, report.selection)
     assessment = d.DeliveryReceipt.from_dict(
         json.loads(selection.subject.delivery.resolve(context.root).read_text())
     ).reference
-    refs = [report.reference, request.selection.evidence, selection.confirmation_source]
+    refs = [report.reference, report.selection.evidence, selection.confirmation_source]
     refs.extend(x for x in _walk(report) if isinstance(x, f.ResearchEvidenceRef))
     attachments = {}
     for ref in refs:
@@ -363,14 +384,14 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspection, mo
     assert published.read_bytes() == before
 
 
-def test_runtime_deployment_is_independent_of_research_commit_marker(inspection):
+def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_candidate):
     from czsc_trader.application import deploy_strategy, validate_release_package
     from strategy_runtime import load_strategy_deployment
     from strategy_runtime.prepare_cli import _load_release
     from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
-    context, request, source = inspection
-    operation = approve(context, inspect_candidate(context, request), source)
+    context, report, source = inspected_candidate
+    operation = approve(context, report, source)
     receipt = freeze_candidate(context, operation)
     validate_release_package(context, "S900-v1")
     # This is an isolated synthetic repository, never a production deployment.
@@ -416,10 +437,10 @@ def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch)
         inspect_candidate(context, request)
 
 
-def test_corrupt_research_commit_does_not_change_runtime_version(inspection):
+def test_corrupt_research_commit_does_not_change_runtime_version(inspected_candidate):
 
-    context, request, source = inspection
-    operation = approve(context, inspect_candidate(context, request), source)
+    context, report, source = inspected_candidate
+    operation = approve(context, report, source)
     freeze_candidate(context, operation)
     path = context.research_root / "S900/freeze_requests/request1/committed.json"
     path.write_text("{malformed")
@@ -713,11 +734,11 @@ def test_reproduction_cutoff_conflict_starts_no_evaluation(inspection):
     assert not context.strategy_root.exists()
 
 
-def test_failed_version_publication_returns_unknown_not_stale_in_progress(inspection, monkeypatch):
+def test_failed_version_publication_returns_unknown_not_stale_in_progress(inspected_candidate, monkeypatch):
     from strategy_manager import freeze_store
 
-    context, request, source = inspection
-    operation = approve(context, inspect_candidate(context, request), source)
+    context, report, source = inspected_candidate
+    operation = approve(context, report, source)
     durable = freeze_store._durable
 
     def fail(path, value, **kwargs):
@@ -733,9 +754,9 @@ def test_failed_version_publication_returns_unknown_not_stale_in_progress(inspec
     assert StrategyRegistry(context.strategy_root).versions("S900") == ()
 
 
-def test_corrupt_publication_request_remains_unknown_without_retry(inspection):
-    context, request, source = inspection
-    operation = approve(context, inspect_candidate(context, request), source)
+def test_corrupt_publication_request_remains_unknown_without_retry(inspected_candidate):
+    context, report, source = inspected_candidate
+    operation = approve(context, report, source)
     freeze_candidate(context, operation)
     journal = context.research_root / "S900/freeze_requests/request1/request.json"
     journal.write_text("{malformed")
