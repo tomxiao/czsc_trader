@@ -49,7 +49,12 @@ export const systemEventLabel = value => ({
 }[value]||auditEventLabel(value));
 export const systemAlertCount = value => (value?.alerts?.length||0)+(value?.scheduler_failures?.length||0);
 export const releaseVersionLabel = value => value?.release?.release_id||'版本未知';
-export const chooseAccountId = (requested, accounts, defaultAccountId) => accounts.some(item=>item.account_id===requested)?requested:defaultAccountId;
+export function chooseAccountId(requested, accounts, defaultAccountId){
+  const visible=accounts.filter(item=>item.status!=='RETIRED');
+  if(visible.some(item=>item.account_id===requested))return requested;
+  if(visible.some(item=>item.account_id===defaultAccountId))return defaultAccountId;
+  return sortVirtualAccounts(visible)[0]?.account_id??null;
+}
 export const navigationOptions = renderedScope => ({showLoading:renderedScope==null,forceRender:false});
 export const channelOrderAccountLabel = order => order?.account_id||order?.virtual_account_id||'历史未记录';
 export const displayFillId = value => value?`FIL-${String(value).split('-',1)[0].toUpperCase()}`:'—';
@@ -127,10 +132,10 @@ export function sortVirtualAccounts(accounts){
   const compare=(left,right)=>String(left||'\uffff').localeCompare(String(right||'\uffff'),'en',{numeric:true,sensitivity:'base'});
   return [...(accounts||[])].sort((left,right)=>compare(left.symbol,right.symbol)||compare(left.strategy_id||left.release_id,right.strategy_id||right.release_id)||compare(left.account_id,right.account_id));
 }
-export function accountMarkup(snapshot){
+export function accountMarkup(snapshot,accountList=state.accounts){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
   const executionState=decisionExecutionLabel(d,intents);
-  const accounts=sortVirtualAccounts(state.accounts);
+  const accounts=sortVirtualAccounts(accountList.filter(item=>item.status!=='RETIRED'));
   return `<div class="layout" data-account-page data-account-id="${esc(scope.account_id)}"><aside class="sidebar" data-account-section="sidebar"><h2>虚拟账户</h2>${accounts.map(item=>`<button class="account-card ${item.account_id===scope.account_id?'active':''}" data-account="${esc(item.account_id)}"><strong>${esc(item.name)}</strong><small>${esc(item.account_id)} · ${esc(item.release_id)}</small><small>${item.status==='RETIRED'?'已退出':item.paused?'已暂停':statusLabel(item.health)} · 资产 ${money(item.total_assets)}</small></button>`).join('')}</aside><div class="workspace"><section class="panel hero" data-account-section="hero"><div><div class="eyebrow">虚拟账户 · ${esc(scope.account_id)}</div><h1>${esc(a.name)}</h1><div class="subtle">${esc(a.strategy_name_snapshot)} · ${esc(scope.release_id)} · ${shortHash(scope.release_hash)} · ${esc(qualificationLabel(a.qualification_snapshot))}</div><div class="subtle">交易标的 ${esc(a.symbol)} · 执行渠道 Futu · 选择截止 ${esc(a.selection_data_cutoff)} · 观察起点 ${esc(a.observation_start)} · 账务更新 ${esc(formatBeijingTime(a.updated_at))} · 日终估值 ${esc(a.last_settlement_session)}</div></div><button id="accountSwitch" ${a.status==='RETIRED'?'disabled':''} class="switch ${a.paused?'paused':''}" role="switch" aria-checked="${!a.paused}">${a.status==='RETIRED'?'已退出 · 资金已回收':a.paused?'已暂停 · 点击恢复':'自动运行 · 点击暂停'}</button></section><div data-account-section="alerts">${alerts(snapshot.alerts)}</div><div class="grid" data-account-section="metrics">${metric(a.status==='RETIRED'?'已回收资金':'总资产',money(a.status==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',money(a.cash))}${metric('冻结资金',money(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}${metric('当前累计收益',pct(m.current_total_return))}</div><section class="panel section" data-account-section="decision"><div class="section-head"><h2>最新决策</h2><span class="badge">${esc(scope.account_id)}</span></div><div class="decision"><div class="decision-action">${esc(actionLabel(d.action))}</div><div class="kv"><div><span>决策ID</span>${esc(d.decision_id)}</div><div><span>信号日期</span>${esc(d.signal_date)}</div><div><span>有效交易日</span>${esc(d.valid_session)}</div><div><span>目标持仓</span>${formatQuantity(d.target_quantity)}</div><div><span>执行参考价</span>${formatPrice(d.execution_reference_price)}</div><div><span>执行状态</span>${esc(executionState)}</div></div></div></section><section class="panel section" data-account-section="intents"><div class="section-head"><h2>订单意图</h2><span class="badge">决策到下单的可审计状态</span></div>${rowsTable([['决策ID',r=>r.decision_id],['计划环节',r=>planRoleLabel(r.payload?.role)],['计划时点',r=>r.payload?.checkpoint||'—'],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['有效交易日',r=>r.valid_session],['状态',r=>statusLabel(r.status)],['Futu订单',r=>r.channel_order_id||'—']],intents)}</section><section class="panel section account-chart" data-account-section="chart"><div class="section-head"><h2>前瞻观察</h2><span class="badge">${esc(scope.release_id)} · 选择截止 ${esc(a.selection_data_cutoff)}</span></div><div class="chart-governance">截止线左侧仅作行情背景；右侧为该策略版本的前瞻观察记录。</div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section><section class="panel section" data-account-section="orders"><div class="section-head"><h2>订单</h2><span class="badge">账户 ${esc(scope.account_id)}</span></div>${rowsTable([['账户',r=>r.account_id],['Futu订单',r=>r.channel_order_id],['下单时间',r=>formatBeijingTime(r.created_at)],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['状态',r=>statusLabel(r.status)]],orders)}</section><section class="panel section" data-account-section="fills"><div class="section-head"><h2>成交</h2><span class="badge">账户 ${esc(scope.account_id)}</span></div>${rowsTable([['账户',r=>r.account_id],['成交ID',r=>displayFillId(r.fill_id),r=>r.fill_id],['时间',r=>formatBeijingTime(r.occurred_at)],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['价格',r=>formatPrice(r.price)]],fills)}</section><section class="panel section" data-account-section="performance"><div class="section-head"><h2>日终绩效与审计</h2><span class="badge">截至 ${esc(m.observation_end)}</span></div><div class="grid">${metric('日终累计收益',pct(m.total_return))}${metric('最大回撤',pct(m.maximum_drawdown))}${metric('卡玛比率',m.calmar_ratio==null?'不可用':Number(m.calmar_ratio).toFixed(3))}${metric('盈亏比',m.win_loss_ratio==null?'不可用':Number(m.win_loss_ratio).toFixed(3))}${metric('已闭合交易',esc(m.closed_trades||0))}</div>${rowsTable([['时间',r=>formatBeijingTime(r.occurred_at||r.created_at)],['事件',r=>auditEventLabel(r.event_type)],['内容',r=>auditSummary(r)]],snapshot.events)}</section></div></div>`;
 }
 function replaceAccountSections(markup,accountId){
@@ -226,7 +231,14 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
     if(route.page==='account'){
       const requested=route.accountId||localStorage.getItem('pte.lastAccountId');
       const id=chooseAccountId(requested,state.accounts,accountIndex.default_account_id);
-      if(!id)throw new Error('尚无虚拟账户');
+      if(!id){
+        document.querySelector('#app').innerHTML='<section class="panel"><h1>虚拟账户</h1><p>暂无可展示的虚拟账户。</p></section>';
+        document.querySelector('#pollWarning').hidden=true;
+        localStorage.removeItem('pte.lastAccountId');
+        if(route.accountId)history.replaceState({},'','/accounts/');
+        state.renderedScope=null;state.fingerprint=null;state.chart=null;
+        return;
+      }
       if(route.accountId!==id){navigate(`/accounts/${encodeURIComponent(id)}`,true);return;}
     }
     scope=route.page==='account'?route.accountId:`${route.page}${location.search}`;

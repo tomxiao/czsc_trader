@@ -137,6 +137,29 @@ test('retired account shows recovered cash and cannot be resumed', () => {
   assert.equal(accountOperatingStatus({status:'RETIRED',paused:true}), '已退出');
 });
 
+test('virtual account navigation excludes retired accounts and stale selections', () => {
+  const accounts = [
+    {account_id:'s002-v1',release_id:'S002-v1',status:'RETIRED',symbol:'510500.SH'},
+    {account_id:'s011-v1',release_id:'S011-v1',status:'RUNNING',symbol:'159326.SZ'},
+    {account_id:'s003-v1',release_id:'S003-v1',status:'RUNNING',paused:true,symbol:'510500.SH'},
+  ];
+  assert.equal(chooseAccountId('s002-v1',accounts,'s002-v1'),'s011-v1');
+  assert.equal(chooseAccountId(null,accounts,'s002-v1'),'s011-v1');
+  assert.equal(chooseAccountId('s003-v1',accounts,'s011-v1'),'s003-v1');
+  assert.equal(chooseAccountId('missing',accounts,'s003-v1'),'s003-v1');
+  assert.equal(chooseAccountId('s002-v1',[accounts[0]],'s002-v1'),null);
+  assert.equal(chooseAccountId(null,[],null),null);
+  const html = accountMarkup({
+    scope:{account_id:'s011-v1',release_id:'S011-v1'},
+    account:{account_id:'s011-v1',status:'RUNNING'},
+  },accounts);
+  assert.doesNotMatch(html,/data-account="s002-v1"/);
+  assert.doesNotMatch(html,/S002-v1/);
+  assert.match(html,/data-account="s011-v1"/);
+  assert.match(html,/data-account="s003-v1"/);
+  assert.equal(accounts.length,3);
+});
+
 test('channel summary keeps four core metrics and moves reconciliation into details', () => {
   const snapshot = {
     account:{cash:756290.717,total_assets:1002769.617,market_value:246478.9},
