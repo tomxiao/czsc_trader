@@ -1,0 +1,61 @@
+{
+  "research_state": "RESEARCHING",
+  "research_intent": {
+    "stage": "COMPONENTS",
+    "status": "COMPLETE",
+    "symbol": "518850.SH",
+    "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+    "confirmed_targets": {
+      "net_annual_return": ">= BuyHold * 1.5",
+      "drawdown_magnitude": "< BuyHold",
+      "full_sample_frequency": ">= 5 closed cycles per 60 trading days"
+    },
+    "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+    "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+    "observed_daily_coverage": {
+      "start": "2020-06-05",
+      "end": "2026-09-30",
+      "sessions": 1535
+    },
+    "confirmation_sources": [
+      "research/S012/materials/user_confirmation_20261004_01.json",
+      "research/S012/materials/user_confirmation_20261004_02.json",
+      "research/S012/materials/user_confirmation_20261004_03.json",
+      "research/S012/materials/stage2_authorization_20261004.json"
+    ],
+    "delivery": {
+      "type": "DeliveryReference",
+      "owner": {
+        "type": "ExperimentOwner",
+        "strategy_id": "S012",
+        "experiment_id": "EX005_20261004"
+      },
+      "stage": "COMPONENTS",
+      "revision": 1,
+      "content_sha256": "e23f28dde9be22f04bc3331c0cc47a99c136084ba0de0ffc0d71762a39a6b258"
+    },
+    "pending": [],
+    "next_stage": "等待用户批准阶段二交付进入阶段三，构建完整可证伪策略。",
+    "confirmed_capital_and_benchmark": {
+      "initial_capital_cny": 100000,
+      "strategy_lot_size": 100,
+      "benchmark": {
+        "type": "NextOpenBuyHold",
+        "lot_size": 100
+      },
+      "buy_fee_rate": 0.001,
+      "cash_remainder": "保留",
+      "terminal_valuation": "持仓按市值评价"
+    },
+    "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+    "confirmed_data_and_resources": "既有获授权DFLS/Tushare数据、公开文献及现有研究依赖；已查看历史属于开发池；本机半核并发预算；新增外部数据源或依赖另行申请。",
+    "research_summary": "3个核心风险/状态组件、2个弱入场候选；完整保留无效、冗余及技术失败。用户三项经济目标尚未在完整账户验证。",
+    "experiments": [
+      "EX001_20261004",
+      "EX002_20261004",
+      "EX003_20261004",
+      "EX004_20261004",
+      "EX005_20261004"
+    ]
+  }
+}
