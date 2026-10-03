@@ -46,6 +46,8 @@ def test_chart_separates_signals_fills_and_account_facts(chart_context):
     assert payload['metrics'] == {'return': .00979, 'max_drawdown': -.02, 'closed_trades': 1,
                                  'calmar': .5, 'win_loss_ratio': None, 'win_rate': 1.}
     assert payload['observations'][0]['observation']['series'][0]['value'] == .8
+    empty = payload_from_html(render_backtest_chart_html(replace(chart_context, fills=())))
+    assert empty['execution']['fills'] == []
 
 
 def test_chart_is_standalone_and_escapes_strategy_text(chart_context):
@@ -59,11 +61,6 @@ def test_chart_is_standalone_and_escapes_strategy_text(chart_context):
     assert '&lt;script&gt;alert(1)&lt;/script&gt;' in html
     with pytest.raises(TypeError, match='BacktestChartContext'):
         render_backtest_chart_html({})
-
-
-def test_no_fills_is_a_valid_chart_without_invented_transactions(chart_context):
-    payload = payload_from_html(render_backtest_chart_html(replace(chart_context, fills=())))
-    assert payload['execution']['fills'] == []
 
 
 @pytest.mark.parametrize('change', [
@@ -123,6 +120,9 @@ def test_chart_has_exact_six_metrics_and_pte_controls(chart_context):
     assert all(f'data-layer="{layer}"' in html for layer in ('signal', 'fill', 'position'))
     unavailable = render_backtest_chart_html(replace(chart_context, metrics=replace(chart_context.metrics, calmar=None)))
     assert '<span>卡玛比率</span><strong>N/A</strong>' in unavailable
+    no_closed_trades = replace(chart_context.metrics, closed_trades=0, win_rate=None)
+    html = render_backtest_chart_html(replace(chart_context, metrics=no_closed_trades))
+    assert '<span>交易胜率</span><strong>N/A</strong>' in html
 
 
 @pytest.mark.parametrize('changes', [
@@ -168,9 +168,3 @@ def test_ma_chart_preserves_next_open_dates_and_uses_own_metrics(chart_context):
     assert payload['execution']['fills'][0]['price'] == 1.
     assert payload['metrics']['return'] == .01 and payload['metrics']['calmar'] is None
     assert projected.identity_hash != chart_context.identity_hash
-
-
-def test_chart_win_rate_without_closed_trades_is_unavailable(chart_context):
-    metrics = replace(chart_context.metrics, closed_trades=0, win_rate=None)
-    html = render_backtest_chart_html(replace(chart_context, metrics=metrics))
-    assert '<span>交易胜率</span><strong>N/A</strong>' in html

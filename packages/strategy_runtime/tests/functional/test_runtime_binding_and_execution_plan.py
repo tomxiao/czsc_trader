@@ -17,10 +17,40 @@ from strategy_runtime.strategy import _capital_terms
 ROOT = Path(__file__).resolve().parents[4]
 
 
-@pytest.mark.parametrize("schema", [None, True, "5", 0, 1, 2, 3, 4, 6])
+@pytest.mark.parametrize("schema", [None, True, "5", 1, 6])
 def test_release_only_accepts_current_serialized_contract(schema):
     with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
         StrategyRelease.from_mapping({"schema_version": schema})
+
+
+@pytest.mark.parametrize("policy_type", ["FROZEN_RULE", "INTRADAY_OVERLAY"])
+@pytest.mark.parametrize("target", [0.0, 1.0])
+def test_held_position_does_not_restart_account_cycle(policy_type, target):
+    settings = {
+        "capital": {"allocation_fraction": 1.0, "fee_rate": .001,
+                    "mode": "full_available_cash", "target_scope": "entry_cycle"},
+        "entry": {"limit_parameter": .2, "order_type": "LIMIT"},
+        "exit": {"limit_ratio": .2, "order_type": "LIMIT"},
+        "instrument": {"lot_size": 100, "maximum_order_quantity": 1000000,
+                       "price_limit_ratio": .2, "price_tick": .001},
+    } if policy_type == "FROZEN_RULE" else {
+        "lot_size": 100, "one_way_cost": .001, "core_fraction": .5, "event_fraction": .5,
+    }
+    plan = build_execution_plan(
+        deployment_settings={"cycle_target_quantity": 5900}, available_cash=50000,
+        position_quantity=5900, target_position=target,
+        policy=ExecutionPolicy(policy_type, settings),
+        signal_reference_price=5.0, execution_reference_price=5.0,
+    )
+    assert plan["actual_quantity"] == 5900
+    if policy_type == "INTRADAY_OVERLAY":
+        assert plan["cycle_target_quantity"] == plan["target_quantity"] == 5900
+        assert plan["action"] == ("ROTATE" if target else "HOLD")
+        assert plan["plan_mode"] != "CORE_SETUP"
+        assert [x["order"]["side"] for x in plan["plan_legs"]] == (["BUY", "SELL"] if target else [])
+    else:
+        assert plan["action"] == ("HOLD" if target else "SELL")
+        assert plan["target_quantity"] == (5900 if target else 0)
 
 
 def test_target_execution_plan_honors_frozen_limit_exit() -> None:

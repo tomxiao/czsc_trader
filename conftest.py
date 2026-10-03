@@ -28,6 +28,33 @@ if Path(sys.prefix).resolve() != _EXPECTED_VENV:
 sys.pycache_prefix = str(_PYTHON_CACHE_ROOT)
 
 
+def pytest_addoption(parser):
+    parser.addoption("--release-acceptance", action="store_true",
+                     help="Include checks against the repository's registered frozen packages")
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--release-acceptance"):
+        return
+    selected, deferred = [], []
+    for item in items:
+        (deferred if item.get_closest_marker("release_acceptance") else selected).append(item)
+    items[:] = selected
+    config.hook.pytest_deselected(items=deferred)
+
+
+@pytest.fixture(scope="session", params=sorted(
+    (_REPOSITORY_ROOT / "strategies").glob("S*/versions/v*.json")
+), ids=lambda path: f"{path.parent.parent.name}-{path.stem}")
+def registered_release(request):
+    from strategy_manager import StrategyRegistry
+
+    path = request.param
+    return StrategyRegistry(_REPOSITORY_ROOT / "strategies").get_version(
+        path.parent.parent.name, path.stem,
+    )
+
+
 def _create_directory(path: Path) -> None:
     """Create a private directory while retaining inherited ACLs on Windows."""
 
@@ -44,6 +71,14 @@ def tmp_path() -> Iterator[Path]:
     path = _PYTEST_RUN / f"case-{uuid4().hex}"
     _create_directory(path)
     yield path
+
+
+@pytest.fixture(scope="session")
+def frozen_seed_root() -> Path:
+    """Keep the immutable runtime seed inside this process's managed workspace."""
+    path = _PYTEST_RUN / "frozen-seed"
+    _create_directory(path)
+    return path
 
 
 def pytest_sessionfinish() -> None:

@@ -103,11 +103,11 @@ def test_candidate_and_version_use_one_backtest_dispatch(
     assert len(observed) == 2
 
 
-def test_unknown_cli_version_is_a_validation_failure(functional_repo, monkeypatch, capsys):
+def test_unknown_cli_version_is_a_validation_failure(minimal_repo, monkeypatch, capsys):
     import json
     from czsc_trader.cli.main import main
 
-    monkeypatch.chdir(functional_repo)
+    monkeypatch.chdir(minimal_repo)
     assert (
         main(
             [

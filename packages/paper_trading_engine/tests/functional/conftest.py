@@ -7,11 +7,12 @@ import pytest
 PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PACKAGE_ROOT / "src"))
 
-# Reuse the actual inspect -> approve -> freeze -> deploy fixture; no repository releases.
+# Each test copies a current runtime package generated once by the real freeze pipeline.
 sys.path.insert(0, str(PACKAGE_ROOT.parents[1] / "tests/functional"))
 from current_contract_support import candidate_payload as candidate_payload  # noqa: E402
 from test_current_contracts import (  # noqa: E402
     current_frozen as current_frozen,
+    freshly_frozen as freshly_frozen,
     inspection as inspection,
     completed as completed,
     managed_evaluation as managed_evaluation,

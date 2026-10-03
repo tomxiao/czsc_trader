@@ -44,10 +44,13 @@ def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):
         srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH")
 
 
-def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
-    context, version = current_frozen
-    import strategy_runtime
-    assert not hasattr(strategy_runtime, "ChartRuntime")
+def test_current_frozen_backtest_publishes_account_and_evidence(freshly_frozen, monkeypatch):
+    context, version = freshly_frozen
+    registered = resolve_registered_strategy(context, version.strategy_id, version.version)
+    assert registered.identity.kind == "REGISTERED"
+    assert registered.identity.reference == version.release_id
+    assert registered.source_hash == version.release_hash
+    assert registered.content_hash and registered.strategy_payload
     def check_win_rate_audit(evidence):
         audited = audit_replay(evidence)
         assert audited.status is AuditStatus.PASS

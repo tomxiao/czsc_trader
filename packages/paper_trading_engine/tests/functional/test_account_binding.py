@@ -50,7 +50,8 @@ def test_binding_rejects_invalid_fields(field, value):
 def test_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkeypatch, tmp_path):
     context, version = pte_frozen
     monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: pytest.fail("no CLI subprocess"))
-    binding = SrtAdviceClient(repo_root=context.root, data_dir=tmp_path).validate_account_binding(
+    client = SrtAdviceClient(repo_root=context.root, data_dir=tmp_path)
+    binding = client.validate_account_binding(
         strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf"
     )
     assert type(binding) is AccountStrategyBinding
@@ -58,10 +59,16 @@ def test_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkey
     assert binding.release_hash == version.release_hash
     assert binding.qualification is Qualification.PAPER_READY
     assert binding.selection_data_cutoff == date.fromisoformat(version.selection_data_cutoff)
+    commit = context.research_root / "S900/freeze_requests/request1/committed.json"
+    commit.parent.mkdir(parents=True)
+    commit.write_text("{}", encoding="utf-8")
+    assert client.validate_account_binding(
+        strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
+    ) == binding
 
 
 @pytest.mark.parametrize(
-    "failure", ["missing_deployment", "wrong_deployment_hash", "stale_approval", "symbol", "asset"]
+    "failure", ["missing_deployment", "wrong_deployment_hash", "stale_approval", "symbol", "asset", "package"]
 )
 def test_real_binding_rejects_invalid_runtime_or_approval(pte_frozen, tmp_path, failure):
     context, _ = pte_frozen
@@ -78,11 +85,16 @@ def test_real_binding_rejects_invalid_runtime_or_approval(pte_frozen, tmp_path, 
         rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
         rows[-1]["release_hash"] = "0" * 64
         path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    elif failure == "package":
+        package = context.strategy_root / "S900/releases/v1"
+        manifest = json.loads((package / "release_manifest.json").read_text(encoding="utf-8"))
+        (package / manifest["runtime_binding"]).write_text("{}", encoding="utf-8")
     else:
         kwargs[failure] = "510500.SH" if failure == "symbol" else "stock"
     from strategy_runtime import RuntimeCompatibilityError, RuntimeContractError
 
-    with pytest.raises((AdviceClientError, RuntimeCompatibilityError, RuntimeContractError)):
+    match = "package file differs" if failure == "package" else None
+    with pytest.raises((AdviceClientError, RuntimeCompatibilityError, RuntimeContractError), match=match):
         SrtAdviceClient(repo_root=context.root, data_dir=tmp_path).validate_account_binding(
             **kwargs
         )

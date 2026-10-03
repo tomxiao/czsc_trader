@@ -12,7 +12,7 @@ from strategy_runtime import StrategyRelease, StrategyRuntime, load_strategy_dep
 
 
 ROOT = Path(__file__).resolve().parents[2]
-RELEASES = (("S001", "v1"), ("S001", "v2"), ("S002", "v1"), ("S003", "v1"), ("S007", "v1"))
+pytestmark = pytest.mark.release_acceptance
 
 
 def test_frozen_relative_imports_resolve_inside_the_package():
@@ -29,12 +29,11 @@ def test_frozen_relative_imports_resolve_inside_the_package():
             )
 
 
-@pytest.mark.parametrize(("strategy_id", "version"), RELEASES)
-def test_frozen_source_imports_without_closure_aliases(strategy_id, version, monkeypatch):
+def test_frozen_source_imports_without_closure_aliases(registered_release, monkeypatch):
     monkeypatch.syspath_prepend(str(ROOT))
     monkeypatch.setattr("sys.dont_write_bytecode", True)
-    prefix = f"strategies.{strategy_id}.releases.{version}.runtime.strategy_runtime"
-    source = ROOT / "strategies" / strategy_id / "releases" / version / "runtime/strategy_runtime"
+    source = load_strategy_deployment(ROOT / "strategies", registered_release.release_id).source_root
+    prefix = ".".join(source.relative_to(ROOT).parts)
     for path in sorted(source.rglob("*.py")):
         if path.name == "__init__.py":
             continue
@@ -43,10 +42,11 @@ def test_frozen_source_imports_without_closure_aliases(strategy_id, version, mon
         assert Path(module.__file__).resolve() == path.resolve()
 
 
-@pytest.mark.parametrize(("strategy_id", "version"), RELEASES)
-def test_frozen_source_keeps_authenticated_runtime_loading(strategy_id, version):
+def test_frozen_source_keeps_authenticated_runtime_loading(registered_release):
     context = RepositoryContext.discover(ROOT)
-    stored = StrategyRegistry(context.strategy_root).get_version(strategy_id, version)
+    stored = StrategyRegistry(context.strategy_root).get_version(
+        registered_release.strategy_id, registered_release.version,
+    )
     manifest, binding, source = validate_release_package(context, stored.release_id)
     deployment = load_strategy_deployment(context.strategy_root, stored.release_id)
     definition = StrategyRuntime().describe(

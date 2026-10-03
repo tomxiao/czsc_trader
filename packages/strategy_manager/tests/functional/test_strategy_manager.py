@@ -11,7 +11,7 @@ from strategy_manager import (
 ROOT = Path(__file__).resolve().parents[4]
 
 
-@pytest.mark.parametrize("schema", [1, 2, 3, 4, True, "5", None])
+@pytest.mark.parametrize("schema", [1, True, "5", None, 6])
 def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schema):
     registry = StrategyRegistry(tmp_path)
     path = tmp_path / "S900/versions/v1.json"

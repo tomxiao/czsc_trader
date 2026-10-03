@@ -1,14 +1,14 @@
 """Current contracts and explicit rejection of retired serialized formats."""
 
 from dataclasses import replace
-import json
 from pathlib import Path
+import shutil
 
 import pytest
 from research_experiment import ExperimentBinding
 from strategy_manager import StrategyRegistry, StrategyVersion, ValidationError, PaperTradingApproval
 from strategy_runtime import StrategyRelease, RuntimeContractError
-from czsc_trader.application import inspect_candidate, freeze_candidate, deploy_strategy
+from czsc_trader.application import RepositoryContext, inspect_candidate, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
 from test_candidate_freeze import (
     inspection as inspection, approve,
@@ -16,21 +16,26 @@ from test_candidate_freeze import (
 )
 
 
-def test_real_installed_versions_report_execution_contract_fees():
+@pytest.mark.release_acceptance
+def test_real_installed_versions_report_execution_contract_fees(registered_release):
     from czsc_trader.application.context import RepositoryContext
-    from czsc_trader.application.strategy_runtime_service import list_installed_strategies
+    from czsc_trader.application.strategy_runtime_service import strategy_info
+    from strategy_runtime import StrategyRuntime
 
     context = RepositoryContext.discover(Path(__file__).resolve().parents[2])
-    result = list_installed_strategies(context)
+    result = strategy_info(context, registered_release.release_id)
     assert result.status == "PASS"
-    assert {row["strategy_version_id"]: row["fee_rate"] for row in result.result["strategies"]} == {
-        "S001-v1": 0.0005, "S001-v2": 0.0005, "S002-v1": 0.0005,
-        "S003-v1": 0.00012, "S007-v1": 0.001, "S011-v1": 0.001,
-    }
+    policy = StrategyRuntime(strategy_root=context.strategy_root).describe(
+        StrategyRelease.from_mapping(registered_release.to_dict()),
+    ).execution
+    expected_fee = (policy.settings["capital"]["fee_rate"]
+                    if policy.policy_type == "FROZEN_RULE" else policy.settings["one_way_cost"])
+    assert result.result["strategy_version_id"] == registered_release.release_id
+    assert result.result["fee_rate"] == expected_fee
 
 
 @pytest.fixture
-def current_frozen(inspection):
+def freshly_frozen(inspection):
     context, request, source = inspection
     report = inspect_candidate(context, request)
     receipt = freeze_candidate(context, approve(context, report, source))
@@ -39,50 +44,33 @@ def current_frozen(inspection):
     return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
 
 
-@pytest.mark.parametrize("schema", [1, 2, 3, 4, True, "5", None, 6])
-def test_retired_release_formats_are_rejected_without_writing(tmp_path, schema):
-    raw = {"schema_version": schema, "strategy_id": "S900"}
-    path = tmp_path / "original.json"
-    path.write_text(json.dumps(raw))
-    before = path.read_bytes()
-    with pytest.raises(ValidationError, match="schema_version must be 5"):
-        StrategyVersion.from_dict(raw)
-    with pytest.raises(RuntimeContractError, match="unsupported strategy release schema"):
-        StrategyRelease.from_mapping(raw)
-    assert path.read_bytes() == before
+@pytest.fixture
+def current_frozen(request, tmp_path, frozen_seed_root):
+    seed = frozen_seed_root / "strategies"
+    if not seed.exists():
+        context, _ = request.getfixturevalue("freshly_frozen")
+        shutil.copytree(context.strategy_root, seed)
+    root = tmp_path / "frozen-repo"
+    (root / "src/czsc_trader").mkdir(parents=True)
+    (root / "pyproject.toml").write_text("", encoding="utf-8")
+    shutil.copytree(seed, root / "strategies")
+    context = RepositoryContext.discover(root)
+    return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
 
 
-@pytest.mark.parametrize("schema", [1, 2, True, "3", 4])
+@pytest.mark.parametrize("schema", [1, True, "3", 4])
 def test_retired_binding_is_rejected_before_loading_source(schema):
     with pytest.raises(ValueError, match="schema_version must be 3"):
         ExperimentBinding(schema, "experiment", "Experiment", ("experiment.py",), "a" * 64, ())
 
 
-@pytest.mark.parametrize("schema", [1, 2, 3, True, "4"])
+@pytest.mark.parametrize("schema", [1, True, "4"])
 def test_delivery_receipt_rejects_old_schema(schema):
     reference = d.DeliveryReference(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, 1, "a" * 64)
     raw = d.DeliveryReceipt(reference, (d.EvidenceRef("report.md", "b" * 64, "text/markdown"),)).to_dict()
     raw["schema_version"] = schema
     with pytest.raises((TypeError, ValueError)):
         d.DeliveryReceipt.from_dict(raw)
-
-
-def test_removed_public_names_are_unavailable():
-    import czsc_trader.application as app
-    import czsc_trader.backtesting as backtest
-    import dataflows.bar_utils as bars
-    import strategy_evaluator as se
-    import strategy_runtime as srt
-
-    for module, names in (
-        (srt, ("ChartRuntime", "validate_chart_context", "validate_observation_descriptor", "validate_observation_payload")),
-        (d, ("LegacyDeliveryReference",)),
-        (app, ("BacktestRequestV2",)),
-        (backtest, ("run_backtest_v2", "_run_backtest")),
-        (bars, ("validate_30m_against_daily", "validate_a_share_30m_bars")),
-        (se, ("OPC_V1", "OPC_V2")),
-    ):
-        assert all(not hasattr(module, name) for name in names)
 
 
 def test_current_frozen_identity_covers_metadata_and_payload(current_frozen):

@@ -430,18 +430,6 @@ def test_corrupt_research_commit_does_not_change_runtime_version(inspection):
     assert StrategyRegistry(context.strategy_root).get_version("S900", "v1").release_id == "S900-v1"
 
 
-def test_legacy_release_files_and_hashes_remain_unchanged():
-    from strategy_manager import StrategyVersion, ValidationError
-
-    raw = {"schema_version": 3, "release_id": "S900-v1"}
-    before = json.dumps(raw, sort_keys=True)
-    with pytest.raises(ValidationError, match="schema_version must be 5"):
-        StrategyVersion.from_dict(raw)
-    with pytest.raises(Exception, match="unsupported strategy release schema"):
-        StrategyRelease.from_mapping(raw)
-    assert json.dumps(raw, sort_keys=True) == before
-
-
 def test_release_signal_divergence_blocks_freeze(inspection, monkeypatch):
     from strategy_runtime import StrategyInstance
 

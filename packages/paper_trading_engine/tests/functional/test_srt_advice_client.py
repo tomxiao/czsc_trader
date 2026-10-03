@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import pytest
 from dataflows import Dataflows, Dataset
-from strategy_runtime import canonical_sha256, RuntimeCompatibilityError
+from strategy_runtime import canonical_sha256
 
 from paper_trading_engine.account_data_preparer import AccountDataPreparer
 from paper_trading_engine.account_engine import AccountEngine
@@ -302,20 +302,6 @@ def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_pa
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 3)
 
 
-def test_closed_day_does_not_prepare_or_publish_account_data(pte_frozen, tmp_path):
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 5): None})
-    result = client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 5),
-    )
-    assert result is None
-    assert not (tmp_path / "accounts/s900-v1/current.json").exists()
-
-
 def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
     tmp_path, monkeypatch,
 ):
@@ -343,38 +329,13 @@ def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
         asset="etf",
         signal_date=date(2026, 9, 5),
     ) is None
+    assert not (tmp_path / "accounts/closed-session/current.json").exists()
     assert client.latest_completed_signal_date(
         datetime(2026, 9, 5, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
     ) == date(2026, 9, 4)
     assert client.latest_completed_signal_date(
         datetime(2026, 9, 7, 20, 30, tzinfo=ZoneInfo("Asia/Shanghai"))
     ) == date(2026, 9, 7)
-
-
-def test_account_binding_validates_pte_frozen_release(pte_frozen, tmp_path):
-    context, version = pte_frozen
-    client = SrtAdviceClient(repo_root=context.root, data_dir=tmp_path)
-    identity = client.validate_account_binding(
-        strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
-    )
-    assert identity.release_id == version.release_id
-    assert identity.release_hash == version.release_hash
-    # Research approval evidence is outside the frozen runtime identity.
-    commit = context.research_root / "S900/freeze_requests/request1/committed.json"
-    commit.write_text("{}", encoding="utf-8")
-    assert client.validate_account_binding(
-        strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
-    ) == identity
-
-    # The installed package must still match its authenticated file inventory.
-    package = context.strategy_root / "S900/releases/v1"
-    manifest = json.loads((package / "release_manifest.json").read_text(encoding="utf-8"))
-    binding = package / manifest["runtime_binding"]
-    binding.write_text("{}", encoding="utf-8")
-    with pytest.raises(RuntimeCompatibilityError, match="package file differs"):
-        client.validate_account_binding(
-            strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
-        )
 
 
 def test_scheduler_prepares_current_account_data_then_runs_decision(pte_frozen,

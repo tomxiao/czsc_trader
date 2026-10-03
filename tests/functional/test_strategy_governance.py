@@ -22,10 +22,10 @@ def _write_json(path: Path, value: dict) -> Path:
     return path
 
 
-def test_research_family_can_start_a_second_governed_batch(functional_repo: Path) -> None:
-    context = RepositoryContext.discover(functional_repo)
+def test_research_family_can_start_a_second_governed_batch(minimal_repo: Path) -> None:
+    context = RepositoryContext.discover(minimal_repo)
     first = _write_json(
-        functional_repo / "first-batch.json",
+        minimal_repo / "first-batch.json",
         {
             "strategy_id": "S910",
             "name": "多批次研究策略",
@@ -35,7 +35,7 @@ def test_research_family_can_start_a_second_governed_batch(functional_repo: Path
     )
     create_research_batch(context, first, actor="tester", reason="批准首轮研究")
     second = _write_json(
-        functional_repo / "second-batch.json",
+        minimal_repo / "second-batch.json",
         {
             "strategy_id": "S910",
             "name": "多批次研究策略",
@@ -49,7 +49,7 @@ def test_research_family_can_start_a_second_governed_batch(functional_repo: Path
         context,
         "S910",
         _write_json(
-            functional_repo / "intent-update.json",
+            minimal_repo / "intent-update.json",
             {
                 "research_intent": {"objective": "等待新数据继续研究"},
                 "research_state": "PAUSED",
@@ -59,7 +59,7 @@ def test_research_family_can_start_a_second_governed_batch(functional_repo: Path
         reason="暂停等待新数据",
     )
 
-    registry = StrategyRegistry(functional_repo / "research" / "registrations")
+    registry = StrategyRegistry(minimal_repo / "research" / "registrations")
     assert registry.get_family("S910").research_intent == {"objective": "等待新数据继续研究"}
     assert (
         registry.get_governance_credential("S910", "SGC-S910-001").stage
@@ -71,4 +71,4 @@ def test_research_family_can_start_a_second_governed_batch(functional_repo: Path
     )
     assert result.result["research_batch_document"] == ("research/S910/batches/SGC-S910-002.md")
     assert updated.result["family"]["research_state"] == "PAUSED"
-    assert not (functional_repo / "strategies" / "S910").exists()
+    assert not (minimal_repo / "strategies" / "S910").exists()

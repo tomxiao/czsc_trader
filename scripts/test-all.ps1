@@ -49,7 +49,7 @@ try {
                     Label = 'TDR'
                     Executable = $Python
                     Arguments = @(
-                        '-m', 'pytest', '-c', 'pyproject.toml', 'tests', '-q', '--durations=5'
+                        '-m', 'pytest', '-c', 'pyproject.toml', 'tests', '-q', '--durations=5', '--release-acceptance'
                     )
                 })
             }
@@ -59,7 +59,7 @@ try {
                     Executable = $Python
                     Arguments = @(
                         '-m', 'pytest', '-c', 'pyproject.toml',
-                        'packages\paper_trading_engine\tests', '-q', '--durations=5'
+                        'packages\paper_trading_engine\tests', '-q', '--durations=5', '--release-acceptance'
                     )
                 })
                 $Steps.Add([pscustomobject]@{
@@ -87,7 +87,7 @@ try {
                         Executable = $Python
                         Arguments = @(
                             '-m', 'pytest', '-c', 'pyproject.toml', $Suite.Path, '-q',
-                            '--durations=5'
+                            '--durations=5', '--release-acceptance'
                         )
                     })
                 }

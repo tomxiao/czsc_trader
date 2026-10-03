@@ -14,20 +14,20 @@ EXPECTED_ACTIONS = {"backtest": {"run"}}
 
 
 def test_repository_context_loads_dotenv_without_overriding_process_environment(
-    functional_repo: Path,
+    minimal_repo: Path,
     monkeypatch,
 ) -> None:
-    (functional_repo / ".env").write_text(
+    (minimal_repo / ".env").write_text(
         "TUSHARE_TOKEN=repository-token\nSRT_TEST_SETTING=repository-value\n",
         encoding="utf-8",
     )
     monkeypatch.setenv("TUSHARE_TOKEN", "process-token")
     monkeypatch.delenv("SRT_TEST_SETTING", raising=False)
 
-    monkeypatch.chdir(functional_repo)
+    monkeypatch.chdir(minimal_repo)
     context = _context(argparse.Namespace())
 
-    assert context.root == functional_repo.resolve()
+    assert context.root == minimal_repo.resolve()
     assert os.environ["TUSHARE_TOKEN"] == "process-token"
     assert os.environ["SRT_TEST_SETTING"] == "repository-value"
 
@@ -111,7 +111,7 @@ def test_public_business_exports_resolve_existing_implementations() -> None:
     assert "extract_news" not in api.__all__
 
 
-def test_public_research_apis_preserve_validation(functional_repo, tmp_path) -> None:
+def test_public_research_apis_preserve_validation(minimal_repo, tmp_path) -> None:
     import pytest
     from czsc_trader.application import (
         RepositoryContext,
@@ -135,7 +135,7 @@ def test_public_research_apis_preserve_validation(functional_repo, tmp_path) -> 
     )
     assert report.status == "PASS" and report.warnings
     with pytest.raises(ValidationError) as error:
-        evaluate_research_request(RepositoryContext.discover(functional_repo), Path("missing.json"))
+        evaluate_research_request(RepositoryContext.discover(minimal_repo), Path("missing.json"))
     assert error.value.code == "research_evaluation_failed"
     assert validate_catalog(context).status == "PASS"
     assert (
