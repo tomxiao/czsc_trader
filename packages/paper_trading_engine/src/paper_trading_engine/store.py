@@ -21,6 +21,7 @@ from .audit import (
     AuditSeverity,
     redact_details,
 )
+from .account_binding import AccountBindingUpdate, AccountStrategyBinding
 from .broker import (
     ATTENTION_REQUIRED_INTENT_STATUSES,
     TERMINAL_INTENT_STATUSES,
@@ -43,6 +44,73 @@ RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2)
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _update_account_bindings(
+    connection: sqlite3.Connection,
+    bindings: tuple[tuple[AccountBindingUpdate, AccountStrategyBinding], ...],
+) -> None:
+    """Apply to an existing exclusive transaction; caller owns commit/rollback."""
+    from decimal import Decimal
+
+    if not connection.in_transaction:
+        raise RuntimeError("account binding update requires a transaction")
+    for update, binding in bindings:
+        account_id = update.account_id
+        account = connection.execute(
+            "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,),
+        ).fetchone()
+        if (
+            account is None or account["account_type"] != STRATEGY_ACCOUNT_TYPE
+            or account["status"] == "RETIRED"
+        ):
+            raise ValueError(f"{account_id}: requires an existing non-retired strategy account")
+        require_futu_simulate_cn(account["channel_id"])
+        if account["release_hash"] != update.expected_release_hash:
+            raise ValueError(f"{account_id}: current release hash differs from expected hash")
+        if binding.release_hash != update.target_release_hash:
+            raise ValueError(f"{account_id}: target release hash differs from installed strategy")
+        if (
+            account["strategy_id"], account["strategy_version"], account["symbol"],
+            account["selection_data_cutoff"], account["asset_type"],
+        ) != (
+            binding.strategy_id, binding.version, binding.symbol,
+            binding.selection_data_cutoff.isoformat(), "etf",
+        ):
+            raise ValueError(f"{account_id}: strategy identity, symbol or selection cutoff differs")
+        if Decimal(account["frozen_cash"]) != 0:
+            raise ValueError(f"{account_id}: frozen cash blocks binding update")
+        intents = connection.execute(
+            "SELECT status,attention_required FROM intents WHERE account_id=?", (account_id,),
+        ).fetchall()
+        if any(row["status"] not in TERMINAL_INTENT_STATUSES or row["attention_required"] for row in intents):
+            raise ValueError(f"{account_id}: unfinished or unresolved intents block binding update")
+        orders = connection.execute(
+            "SELECT payload FROM orders WHERE account_id=?", (account_id,),
+        ).fetchall()
+        if any(json.loads(row["payload"]).get("status") not in TERMINAL_ORDER_STATUSES for row in orders):
+            raise ValueError(f"{account_id}: unfinished orders block binding update")
+        changed = connection.execute(
+            "UPDATE virtual_accounts SET release_hash=?,strategy_name_snapshot=?,"
+            "qualification_snapshot=?,last_decision_id=NULL,last_decision_payload=NULL,"
+            "updated_at=? WHERE account_id=? AND release_hash=?",
+            (binding.release_hash, binding.name, binding.qualification.value,
+             _utc_now(), account_id, update.expected_release_hash),
+        ).rowcount
+        if changed != 1:
+            raise ValueError(f"{account_id}: account binding changed concurrently")
+        connection.execute(
+            "UPDATE decisions SET status='INVALIDATED' WHERE account_id=? AND status='ACTIVE'",
+            (account_id,),
+        )
+        connection.executemany(
+            "DELETE FROM settings WHERE key=?",
+            [(f"{prefix}:{account_id}",) for prefix in (
+                "last_account_decision_date", "last_account_schedule_skip_date",
+                "last_prepared_data_id", "last_data_prepare_date",
+                "last_data_preparation", "data_preparation_error",
+            )],
+        )
 
 
 def _validate_database_schema(connection: sqlite3.Connection) -> None:
@@ -1384,6 +1452,12 @@ class PaperStore:
         intent_id = "PTE-" + hashlib.sha256(identity).hexdigest()[:20].upper()
         now = _utc_now()
         with self._lock, self._connection:
+            decision = self._connection.execute(
+                "SELECT status FROM decisions WHERE account_id=? AND decision_id=?",
+                (account_id, decision_id),
+            ).fetchone()
+            if decision is not None and decision["status"] != "ACTIVE":
+                raise ValueError("inactive decision cannot create order intents")
             existing = self._connection.execute(
                 "SELECT * FROM intents WHERE account_id=? AND decision_id=? AND order_sequence=?",
                 (account_id, decision_id, order_sequence),
@@ -1909,7 +1983,7 @@ class PaperStore:
             ).fetchone()
             if existing is not None:
                 if existing["status"] != "ACTIVE":
-                    raise ValueError("superseded decision cannot become active again")
+                    raise ValueError("inactive decision cannot become active again")
                 previous = json.loads(existing["payload"])
                 current = json.loads(encoded)
                 runtime_fields = {

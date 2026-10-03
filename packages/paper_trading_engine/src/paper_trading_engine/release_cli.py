@@ -906,15 +906,16 @@ def verify_release_configuration(
         "require(str(dotenv_values(env_file).get('TUSHARE_TOKEN') or '').strip(),'PTE release verification found no TUSHARE_TOKEN')\n"
         "connection=sqlite3.connect(f'file:{database.resolve().as_posix()}?mode=ro',uri=True)\n"
         "try:\n"
-        "    rows=connection.execute(\"SELECT account_id,strategy_id,strategy_version,release_hash,symbol,asset_type FROM virtual_accounts WHERE account_type='STRATEGY' AND status<>'RETIRED'\").fetchall()\n"
+        "    rows=connection.execute(\"SELECT account_id,strategy_id,strategy_version,release_hash,symbol,asset_type,selection_data_cutoff FROM virtual_accounts WHERE account_type='STRATEGY' AND status<>'RETIRED'\").fetchall()\n"
         "finally:\n"
         "    connection.close()\n"
         "require(rows,'PTE release verification found no active strategy accounts')\n"
         "client=SrtAdviceClient(repo_root=root,data_dir=data)\n"
         "validated=[]\n"
-        "for account_id,strategy_id,version,release_hash,symbol,asset in rows:\n"
+        "for account_id,strategy_id,version,release_hash,symbol,asset,cutoff in rows:\n"
         "    identity=client.validate_account_binding(strategy_id=strategy_id,strategy_version=version,symbol=symbol,asset=asset)\n"
         "    require(identity.release_hash==release_hash,f'{account_id}: account release hash differs from frozen strategy')\n"
+        "    require(identity.selection_data_cutoff.isoformat()==cutoff,f'{account_id}: selection cutoff differs from frozen strategy')\n"
         "    validated.append(identity.release_id)\n"
         "print(json.dumps({'accounts':len(rows),'releases':sorted(set(validated))}))\n"
     )
@@ -954,6 +955,7 @@ def deploy_release(
         raise RuntimeError(f"PTE release is already active: {release_id}")
     database = runtime_root / "shared" / "state" / "runtime.db"
     _require_database_compatibility(target, database)
+    verify_release_configuration(runtime_root, release_id, runner=runner)
     activate_release(runtime_root, release_id)
     try:
         _run(
@@ -967,7 +969,15 @@ def deploy_release(
                 f"PTE health reported release {observed!r}, expected {release_id!r}"
             )
     except Exception as deployment_error:
-        _require_database_compatibility(previous, database)
+        try:
+            _require_database_compatibility(previous, database)
+            verify_release_configuration(runtime_root, previous.release_id, runner=runner)
+        except Exception as compatibility_error:
+            raise RuntimeError(
+                f"PTE deployment failed ({deployment_error}); rollback blocked by "
+                f"release/account compatibility ({compatibility_error}); "
+                "active release was not switched back"
+            ) from compatibility_error
         activate_release(runtime_root, previous.release_id)
         try:
             _run(

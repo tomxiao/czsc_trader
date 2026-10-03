@@ -365,7 +365,9 @@ def test_pte_deployment_verifies_release_and_rolls_back(pte_frozen, tmp_path):
 
     def run(command, **_kwargs):
         commands.append(command)
-        return subprocess.CompletedProcess(command, 0, stdout="{}", stderr="")
+        return subprocess.CompletedProcess(
+            command, 0, stdout='{"accounts":1,"releases":["S900-v1"]}', stderr="",
+        )
 
     result = deploy_release(
         runtime_root,
@@ -419,6 +421,38 @@ def test_pte_deployment_verifies_release_and_rolls_back(pte_frozen, tmp_path):
             running_release=lambda _host, _port: "v0.5.0",
         )
     assert resolve_active_release(runtime_root).release_id == "v0.4.2"
+
+
+@pytest.mark.parametrize("reject_rollback", [False, True])
+def test_deployment_binding_failure_never_activates_incompatible_release(
+    pte_frozen, tmp_path, monkeypatch, reject_rollback,
+):
+    runtime = tmp_path / "runtime"
+    (runtime / "shared/config").mkdir(parents=True)
+    (runtime / "shared/config/.env").write_text("TUSHARE_TOKEN=test", encoding="utf-8")
+    for release_id, marker in (("v0.4.1", "a"), ("v0.4.2", "b")):
+        create_release(pte_frozen[0].strategy_root, runtime, release_id, marker)
+    activate_release(runtime, "v0.4.1")
+    verified = []
+    restarted = []
+
+    def verify(_root, release_id, **kwargs):
+        verified.append(release_id)
+        if release_id == ("v0.4.1" if reject_rollback else "v0.4.2"):
+            raise RuntimeError("account release hash differs from frozen strategy")
+        return {"accounts": 1, "releases": ["S900-v1"]}
+
+    monkeypatch.setattr("paper_trading_engine.release_cli.verify_release_configuration", verify)
+
+    def runner(command, **kwargs):
+        restarted.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout="{}", stderr="")
+
+    with pytest.raises(RuntimeError, match="rollback blocked" if reject_rollback else "hash differs"):
+        deploy_release(runtime, "v0.4.2", runner=runner, running_release=lambda *_: None)
+    assert resolve_active_release(runtime).release_id == ("v0.4.2" if reject_rollback else "v0.4.1")
+    assert len(restarted) == int(reject_rollback)
+    assert verified == (["v0.4.2", "v0.4.1"] if reject_rollback else ["v0.4.2"])
 
 
 def test_ft_pte06_business_health_exposes_stalled_scheduler(tmp_path):

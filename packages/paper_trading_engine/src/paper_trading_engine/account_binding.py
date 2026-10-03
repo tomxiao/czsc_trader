@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date
+from enum import StrEnum
 import math
 import re
 
@@ -48,3 +49,30 @@ class AccountStrategyBinding:
     @property
     def release_id(self) -> str:
         return f"{self.strategy_id}-{self.version}"
+
+
+@dataclass(frozen=True, slots=True)
+class AccountBindingUpdate:
+    account_id: str
+    expected_release_hash: str
+    target_release_hash: str
+
+    def __post_init__(self) -> None:
+        if type(self.account_id) is not str or not self.account_id.strip():
+            raise ValueError("account binding update requires an account id")
+        for name in ("expected_release_hash", "target_release_hash"):
+            value = getattr(self, name)
+            if type(value) is not str or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+                raise ValueError(f"invalid account binding update {name}")
+        if self.expected_release_hash == self.target_release_hash:
+            raise ValueError("account binding update requires a different target hash")
+
+
+class AccountBindingUpdateStatus(StrEnum):
+    COMMITTED = "COMMITTED"
+
+
+@dataclass(frozen=True, slots=True)
+class AccountBindingUpdateResult:
+    status: AccountBindingUpdateStatus
+    account_ids: tuple[str, ...]
