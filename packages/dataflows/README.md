@@ -2,7 +2,7 @@
 
 本文面向策略研究员（RSCH）和平台开发者（DEV）。DFLS发布经过校验、带来源与时间身份的行情
 及支持数据；策略特征、因果滞后和决策由SRT负责。安装、凭据配置、供应商适配及补丁维护见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)。
 
 ## RSCH：取得可用数据
 

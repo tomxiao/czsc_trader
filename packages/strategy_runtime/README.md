@@ -1,7 +1,7 @@
 # 策略运行时（Strategy Runtime，SRT）
 
 本文面向策略研究员（RSCH）。安装、源码维护及包级验证见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)。
 
 SRT 是研究、回测、模拟交易及未来实盘共用的策略计算锚点。它把一个候选或冻结策略转换为
 `StrategyInstance`，由实例自主准备计算数据、执行策略计算，并输出与渠道无关的执行计划。

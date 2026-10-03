@@ -1,7 +1,7 @@
 # 因子与信号目录（Factor & Signal Catalog，FSC）
 
 本文面向策略研究员（RSCH）和平台开发者（DEV）。平台安装、源码维护和验证见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)。
 
 FSC是项目级“弹药目录”。它记录信息族、因子和信号的稳定定义，让TDR和各策略研究线能够
 查询、引用和复用同一份语义契约。

@@ -1,7 +1,7 @@
 # 策略模板目录（Strategy Template Catalog，STC）
 
 本文面向策略研究员（RSCH）和平台开发者（DEV）；安装、源码维护及验证见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)。
 
 STC 是项目级策略函数模板目录。FSC 回答“可使用哪些输入 `x`”，STC 回答“用哪种受控结构
 `F` 组合输入”。研究员可独立使用Optuna搜索参数，再将模板实例化为具体函数 `f`。提供五类模板：

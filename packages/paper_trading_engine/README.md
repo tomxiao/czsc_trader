@@ -2,7 +2,7 @@
 
 本文面向策略研究员（RSCH），说明前瞻观察事实的含义与使用边界。
 账户、服务、Futu渠道和生产发布的操作属于独立授权的DEV/运维任务，见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)及[PTE运维手册](../../docs/PTE_OPERATIONS.md)。
 
 ## 何时使用
 

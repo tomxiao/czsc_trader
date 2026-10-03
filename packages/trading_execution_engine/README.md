@@ -1,7 +1,7 @@
 # 交易执行引擎（Trading Execution Engine，TXE）
 
 本文面向策略研究员（RSCH）和平台开发者（DEV）。平台实现与测试入口见
-[开发运维交接](../../docs/DEVELOPMENT_HANDOFF.md)。
+[DEV Agent](../../docs/DEV_AGENT.md)。
 
 TXE 是统一成交执行器，位于 DFLS 同一基础能力层。它接收SRT决策及执行计划，生成可审计的
 订单、成交、费用、现金、持仓和净值事实，供研究复算及候选／版本回测共同使用。

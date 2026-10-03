@@ -12,7 +12,7 @@
 | 五阶段研究、自检、技术检验及获批冻结 | [RSCH Agent](RSCH_AGENT.md) |
 | 不可变正式实验的目录和归档合同 | [实验档案说明](../experiments/README.md) |
 | 当前公共契约、五阶段交付与冻结API | [TDR使用说明](../src/czsc_trader/README.md) |
-| 平台架构与开发运维 | [开发运维交接](../docs/DEVELOPMENT_HANDOFF.md) |
+| 平台工程决策、架构与开发环境 | [DEV Agent](../docs/DEV_AGENT.md) |
 
 新流程由用户批准阶段推进、选择候选并决定是否冻结；研究员执行研究、自检、技术检验及获批冻结。
 `StrategyCandidate`身份贯穿阶段三至五，通过TDR显式登记。当前已实现的接口以模块README和
@@ -59,4 +59,4 @@
 证据副本各自保留；本地忽略制品的备份及跨机器恢复要求见[实验档案说明](../experiments/README.md)。
 
 PTE生产状态属于独立运行环境；研究资料或Git状态不能替代生产核对。具体操作与安全边界见
-[开发运维交接](../docs/DEVELOPMENT_HANDOFF.md)。
+[PTE运维手册](../docs/PTE_OPERATIONS.md)。

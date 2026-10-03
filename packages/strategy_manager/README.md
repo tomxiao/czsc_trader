@@ -98,4 +98,4 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 新冻结版本初始为`RESEARCH`；获准后平台可用`approve_paper_trading(PaperTradingApproval)`
 绑定准确发布哈希授予`PAPER_READY`，部署和PTE账户创建仍需各自授权。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。
-操作遵守[RSCH契约](../../research/RSCH_AGENT.md)和[开发安全边界](../../docs/DEVELOPMENT_HANDOFF.md)。
+角色分工与工程决策见[RSCH契约](../../research/RSCH_AGENT.md)和[DEV Agent](../../docs/DEV_AGENT.md)。

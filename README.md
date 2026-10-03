@@ -19,13 +19,14 @@ CZSC Trader 是面向个人量化团队的可审计策略研发与模拟交易�
 | RSCH 研究方法、权限和交付 | [研究员 Agent](research/RSCH_AGENT.md) |
 | TDR实验、候选评价、回测及证据工具 | [TDR使用说明](src/czsc_trader/README.md) |
 | 不可变实验档案 | [实验档案说明](experiments/README.md) |
-| DEV 跨机跨会话恢复、架构、测试与发布 | [开发运维交接](docs/DEVELOPMENT_HANDOFF.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
+| DEV 工程决策、架构与开发环境 | [DEV Agent](docs/DEV_AGENT.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
+| PTE 发布、账户、服务与恢复 | [PTE运维手册](docs/PTE_OPERATIONS.md) |
 
 ## 子包使用说明
 
 以下 README 面向研究员，说明各公共能力的适用场景、入口和边界。研究与策略发布API只支持各对象的当前契约；
 历史证据原件及哈希保留供人工查阅，平台不承诺历史数据机器复验。当前版本及证据要求见TDR说明。平台开发、环境恢复、
-包级验证与 PTE 运维统一查阅[开发运维交接](docs/DEVELOPMENT_HANDOFF.md)。
+包级验证见[DEV Agent](docs/DEV_AGENT.md)；PTE操作见[PTE运维手册](docs/PTE_OPERATIONS.md)。
 
 | 研究与治理能力 | 执行与观察能力 |
 | --- | --- |
