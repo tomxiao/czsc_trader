@@ -612,6 +612,7 @@ class AccountEngine:
         payload = account.pop("last_decision_payload", None)
         return {
             **account,
+            "released_cash": self.store._retirement_cash(account_id),
             "last_decision": json.loads(payload) if payload else None,
             "orders": self.store.account_orders(account_id),
             "fills": self.store.account_fills(account_id),

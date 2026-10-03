@@ -11,7 +11,7 @@ from paper_trading_engine import (
 )
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
-from paper_trading_engine.store import PaperStore
+from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from strategy_manager import Qualification
 from pte_support import decision, FakeAdvice, preparation
 
@@ -36,7 +36,7 @@ def maintenance(tmp_path, monkeypatch):
         )
     release = SimpleNamespace(
         runtime_root=runtime, release_root=runtime / "releases/v1.0.0",
-        manifest={"database_schema": {"compatible": [2]}}, manifest_sha256="d" * 64,
+        manifest={"database_schema": {"compatible": [RUNTIME_DATABASE_SCHEMA_VERSION]}}, manifest_sha256="d" * 64,
     )
     monkeypatch.setattr(module, "load_release", lambda *_: release)
     monkeypatch.setattr(module, "SrtAdviceClient", lambda **_: SimpleNamespace(

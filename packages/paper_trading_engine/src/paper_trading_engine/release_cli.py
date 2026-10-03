@@ -909,7 +909,6 @@ def verify_release_configuration(
         "    rows=connection.execute(\"SELECT account_id,strategy_id,strategy_version,release_hash,symbol,asset_type,selection_data_cutoff FROM virtual_accounts WHERE account_type='STRATEGY' AND status<>'RETIRED'\").fetchall()\n"
         "finally:\n"
         "    connection.close()\n"
-        "require(rows,'PTE release verification found no active strategy accounts')\n"
         "client=SrtAdviceClient(repo_root=root,data_dir=data)\n"
         "validated=[]\n"
         "for account_id,strategy_id,version,release_hash,symbol,asset,cutoff in rows:\n"
@@ -931,8 +930,13 @@ def verify_release_configuration(
         result = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         raise RuntimeError("PTE release verification returned invalid output") from exc
-    if not isinstance(result, dict) or not result.get("releases"):
-        raise RuntimeError("PTE release verification validated no strategy releases")
+    if (
+        not isinstance(result, dict) or type(result.get("accounts")) is not int
+        or result["accounts"] < 0 or not isinstance(result.get("releases"), list)
+        or (result["accounts"] > 0 and not result["releases"])
+        or (result["accounts"] == 0 and result["releases"])
+    ):
+        raise RuntimeError("PTE release verification returned invalid account bindings")
     return result
 
 

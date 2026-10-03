@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.resources import files
 import json
@@ -15,6 +16,7 @@ from uuid import uuid4
 
 
 from .web_api import PteWebApi, ResourceNotFound
+from .account_retirement import AccountRetirementRequest
 
 
 class Operations(Protocol):
@@ -207,6 +209,16 @@ def create_server(
                         result = operations.pause_virtual(account_id)
                     elif parts[3] == "resume":
                         result = operations.resume_virtual(account_id)
+                    elif parts[3] == "retire":
+                        supplied = self.headers.get("X-PTE-Control-Token", "")
+                        if control_token is None or not secrets.compare_digest(supplied, control_token):
+                            self._json(403, {"error": "invalid PTE control token"})
+                            return
+                        if set(body) != {"expected_release_hash", "actor", "reason"}:
+                            raise ValueError("retirement requires expected_release_hash, actor and reason")
+                        result = asdict(operations.retire_account(AccountRetirementRequest(
+                            account_id, body["expected_release_hash"], body["actor"], body["reason"],
+                        )))
                     else:
                         self._json(404, {"error": "not found"})
                         return

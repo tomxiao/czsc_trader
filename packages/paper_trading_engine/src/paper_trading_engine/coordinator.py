@@ -4,6 +4,7 @@ from threading import RLock
 
 from .account_engine import AccountRefreshBatchError
 from .audit import AuditRecorder
+from .account_retirement import AccountRetirementRequest, AccountRetirementResult
 from .futu_gateway import FutuGatewayError
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID
 from .trading_window import shanghai_now
@@ -37,6 +38,8 @@ class UnavailableExecution:
     def acknowledge_execution_gap(self, account_id, intent_id, resolution_note):
         raise RuntimeError("channel is unavailable")
     def repair_account_ledger(self, account_id, intent_id):
+        raise RuntimeError("channel is unavailable")
+    def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
         raise RuntimeError("channel is unavailable")
     def begin_shutdown(self): return None
     def close(self): self.store.close()
@@ -109,6 +112,8 @@ class ReconnectableExecution:
         return self._call("acknowledge_execution_gap", account_id, intent_id, resolution_note)
     def repair_account_ledger(self, account_id, intent_id):
         return self._call("repair_account_ledger", account_id, intent_id)
+    def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
+        return self._call("retire_account", request)
     def begin_shutdown(self):
         if self._delegate is not None:
             self._delegate.begin_shutdown()
@@ -295,6 +300,10 @@ class PteCoordinator:
         }
 
     def pause(self): return self.execution.pause()
+    def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
+        # Use the same lock order as decision generation: account engine, then store.
+        with self.accounts._decision_lock:
+            return self.execution.retire_account(request)
     def resume(self): return self.execution.resume()
     def issue_cancel_token(self, account_id, channel_order_id):
         return self.execution.issue_cancel_token(account_id, channel_order_id)

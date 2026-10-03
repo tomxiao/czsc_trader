@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 import json
 
 from .audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
-from .store import DEFAULT_FUTU_CAPITAL_POOL
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE
 from .trading_window import SHANGHAI
 
@@ -217,6 +216,7 @@ class PteWebApi:
                 "release_id": f'{row["strategy_id"]}-{row["strategy_version"]}',
                 "release_hash": row["release_hash"], "paused": bool(row["paused"]),
                 "health": row["health"], "total_assets": row["total_assets"],
+                "status": row["status"],
                 "quantity": row["quantity"], "latest_action": decision.get("action"),
                 "alert_count": int(bool(row.get("last_error"))) + int(bool(chart_error)),
             })
@@ -244,14 +244,15 @@ class PteWebApi:
             "frozen_cash", "total_assets", "quantity", "average_cost", "realized_pnl",
             "cycle_target", "paused", "observation_start", "last_settlement_session", "health",
             "last_error", "channel_id", "status", "created_at", "updated_at",
-            "selection_data_cutoff",
+            "selection_data_cutoff", "released_cash",
         }
         events = self.store.query_audit_events(account_id=account_id, limit=200)
         chart_error = self._account_chart_error(account_id)
         metrics = dict(status.get("metrics", {}))
         initial_cash = float(status["initial_cash"])
+        ending_assets = status["released_cash"] if status.get("status") == "RETIRED" else status["total_assets"]
         metrics["current_total_return"] = (
-            float(status["total_assets"]) / initial_cash - 1 if initial_cash else None
+            float(ending_assets) / initial_cash - 1 if initial_cash else None
         )
         account_alerts = []
         if status.get("last_error"):
@@ -334,12 +335,11 @@ class PteWebApi:
             if row.get("channel_id") == FUTU_SIMULATE_CN_CHANNEL_ID
             and row.get("status") != "RETIRED"
         ]
-        capital_pool = float(
-            self.store.get_setting("futu_capital_pool") or DEFAULT_FUTU_CAPITAL_POOL
-        )
-        allocated = sum(float(row["initial_cash"]) for row in channel_accounts)
-        strategy_allocated = sum(float(row["initial_cash"]) for row in accounts)
-        unallocated = capital_pool - allocated
+        pool = self.store.capital_pool_balance()
+        capital_pool = float(pool.registered_capital)
+        allocated = float(pool.allocated_capital)
+        strategy_allocated = sum(float(row["initial_cash"]) for row in accounts if row["status"] != "RETIRED")
+        unallocated = float(pool.unallocated_cash)
         # PTE reserves cash before a future-session order reaches Futu.  The
         # reservation changes the virtual account's available cash, but the
         # money is still present in the shared broker account.  Include both
@@ -369,6 +369,7 @@ class PteWebApi:
             "account": status.get("account"), "actual_quantity": status.get("actual_quantity"),
             "accounts": accounts,
             "capital_pool": capital_pool,
+            "recovered_pnl": float(pool.recovered_pnl),
             "allocated_capital": allocated,
             "strategy_allocated_capital": strategy_allocated,
             "unallocated_capital": unallocated,

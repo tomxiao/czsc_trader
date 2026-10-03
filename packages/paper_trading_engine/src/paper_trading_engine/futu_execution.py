@@ -10,6 +10,7 @@ import math
 import secrets
 
 from .audit import AuditRecorder
+from .account_retirement import AccountRetirementRequest, AccountRetirementResult
 from .broker import (
     BrokerOrderRejectedError,
     KNOWN_ORDER_STATUSES,
@@ -64,13 +65,8 @@ class FutuExecution:
             raise PaperTradingSafetyError("broker environment must be SIMULATE")
         if snapshot.account.market != "CN":
             raise PaperTradingSafetyError("broker market must be CN")
-        allocated = sum(
-            float(row["initial_cash"])
-            for row in self.store.virtual_accounts()
-            if row.get("status") != "RETIRED"
-        )
-        capital_pool = float(self.store.get_setting("futu_capital_pool") or 0)
-        if capital_pool <= 0 or allocated > capital_pool + 0.01:
+        pool = self.store.capital_pool_balance()
+        if pool.registered_capital <= 0 or pool.unallocated_cash < Decimal("-0.01"):
             raise ChannelReconciliationError("虚拟账户分配资金超过PTE登记的Futu资金池")
         self._snapshot = snapshot
         self.store.mark_reconciled()
@@ -322,9 +318,9 @@ class FutuExecution:
             Decimal(row["frozen_cash"]) != 0 for row in accounts
         ):
             return
-        capital_pool = Decimal(self.store.get_setting("futu_capital_pool") or "0")
-        allocated = sum((Decimal(row["initial_cash"]) for row in accounts), Decimal("0"))
-        logical_cash = capital_pool - allocated + sum(
+        pool = self.store.capital_pool_balance()
+        capital_pool = pool.registered_capital
+        logical_cash = pool.unallocated_cash + sum(
             (Decimal(row["cash"]) for row in accounts), Decimal("0")
         )
         broker_cash = Decimal(str(self._snapshot.account.cash)).quantize(Decimal("0.0001"))
@@ -472,11 +468,15 @@ class FutuExecution:
             raise ValueError("sell average fill price is below limit")
 
     def refresh_orders(self):
+        return self._refresh_orders(expire_orders=True)
+
+    def _refresh_orders(self, *, expire_orders: bool):
         require_futu_simulate_cn_broker(self.broker)
         moment = self.now()
         if moment.tzinfo is None:
             raise ValueError("reconciliation clock must be timezone-aware")
-        self._expire_unsubmitted_intents(moment)
+        if expire_orders:
+            self._expire_unsubmitted_intents(moment)
         previous_reconciliation = self.store.get_setting("channel_reconciliation_status")
         orders = self._order_snapshot()
         seen_intents: set[str] = set()
@@ -583,7 +583,8 @@ class FutuExecution:
                         "cumulative_quantity": order.cumulative_filled_quantity,
                     },
                 )
-        self._cancel_expired_planned_orders(self.now())
+        if expire_orders:
+            self._cancel_expired_planned_orders(self.now())
         missing = [
             row for row in self.store.account_intents()
             if row["status"] not in TERMINAL_INTENT_STATUSES
@@ -878,6 +879,31 @@ class FutuExecution:
         self.refresh_orders()
         self.submit_pending(reconcile=False)
         return self.status()
+
+    def retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
+        """Reconcile live channel facts, then return an idle account's cash atomically."""
+        if type(request) is not AccountRetirementRequest:
+            raise TypeError("retirement requires AccountRetirementRequest")
+        if self._draining:
+            raise RuntimeError("PTE is stopping; account retirement is unavailable")
+        with self.store._lock:
+            account = self.store.virtual_account(request.account_id)
+            if account["status"] != "RUNNING" or not account["paused"]:
+                raise ValueError("retirement requires a paused running account")
+            if account["release_hash"] != request.expected_release_hash:
+                raise ValueError("retirement release hash differs from account")
+            if account["quantity"] or Decimal(account["frozen_cash"]) != 0:
+                raise ValueError("retirement requires no position or frozen cash")
+            # Reconcile only. Retirement must never submit or liquidate orders.
+            self._refresh_orders(expire_orders=False)
+            accounts = [row for row in self.store.virtual_accounts() if row["status"] != "RETIRED"]
+            expected_cash = self.store.capital_pool_balance().unallocated_cash + sum(
+                (Decimal(row["cash"]) + Decimal(row["frozen_cash"]) for row in accounts), Decimal("0"),
+            )
+            actual_cash = Decimal(str(self._snapshot.account.cash))
+            if not actual_cash.is_finite() or abs(actual_cash - expected_cash) > Decimal("0.01"):
+                raise ChannelReconciliationError("cash reconciliation differs before retirement")
+            return self.store._retire_account(request)
 
     def status(self):
         account = None if self._snapshot is None else asdict(self._snapshot.account)

@@ -62,6 +62,8 @@ class AccountStrategyCycle:
         operator_drive: bool,
     ):
         account = self.store.virtual_account(account_id)
+        if account["status"] != "RUNNING":
+            raise ValueError("inactive account cannot prepare strategy data")
         cutoff = signal_date.isoformat()
         error_key = f"data_preparation_error:{account_id}"
         try:

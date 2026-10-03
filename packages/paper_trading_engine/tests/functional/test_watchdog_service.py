@@ -241,7 +241,7 @@ def test_runtime_database_migrates_v1_decisions_to_supersession_schema(tmp_path)
     connection.close()
 
     store = PaperStore(database)
-    assert store.get_setting("runtime_database_schema_version") == "2"
+    assert store.get_setting("runtime_database_schema_version") == str(RUNTIME_DATABASE_SCHEMA_VERSION)
     columns = {
         row["name"] for row in store._connection.execute("PRAGMA table_info(decisions)")
     }
@@ -411,9 +411,9 @@ def test_pte_deployment_verifies_release_and_rolls_back(pte_frozen, tmp_path):
 
     incompatible_manifest = runtime_root / "releases" / "v0.5.0" / "release-manifest.json"
     incompatible = json.loads(incompatible_manifest.read_text(encoding="utf-8"))
-    incompatible["database_schema"] = {"current": 3, "compatible": [3]}
+    incompatible["database_schema"] = {"current": 99, "compatible": [99]}
     incompatible_manifest.write_text(json.dumps(incompatible), encoding="utf-8")
-    with pytest.raises(RuntimeError, match="does not support database schema 2"):
+    with pytest.raises(RuntimeError, match=f"does not support database schema {RUNTIME_DATABASE_SCHEMA_VERSION}"):
         deploy_release(
             runtime_root,
             "v0.5.0",

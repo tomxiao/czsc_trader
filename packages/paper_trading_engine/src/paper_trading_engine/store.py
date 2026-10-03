@@ -22,6 +22,9 @@ from .audit import (
     redact_details,
 )
 from .account_binding import AccountBindingUpdate, AccountStrategyBinding
+from .account_retirement import (
+    AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
+)
 from .broker import (
     ATTENTION_REQUIRED_INTENT_STATUSES,
     TERMINAL_INTENT_STATUSES,
@@ -38,8 +41,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 2
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2)
+RUNTIME_DATABASE_SCHEMA_VERSION = 3
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3)
 
 
 def _utc_now() -> str:
@@ -180,6 +183,13 @@ class PaperStore:
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS account_retirements (
+                account_id TEXT PRIMARY KEY,
+                release_hash TEXT NOT NULL,
+                initial_cash TEXT NOT NULL,
+                released_cash TEXT NOT NULL,
+                retired_at TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -929,6 +939,8 @@ class PaperStore:
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
         now = _utc_now()
         with self._lock, self._connection:
+            if cash > self.capital_pool_balance().unallocated_cash:
+                raise ValueError("initial cash exceeds unallocated capital pool cash")
             self._connection.execute(
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
                 "strategy_id,strategy_name_snapshot,strategy_version,release_hash,"
@@ -1072,6 +1084,8 @@ class PaperStore:
             ).fetchone()
             if source is None:
                 raise KeyError(old_account_id)
+            if source["status"] == "RETIRED":
+                raise ValueError("retired account cannot be renamed")
             if old_account_id != account_id and self._connection.execute(
                 "SELECT 1 FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone() is not None:
@@ -1184,6 +1198,88 @@ class PaperStore:
             if row.get("account_type", STRATEGY_ACCOUNT_TYPE) == STRATEGY_ACCOUNT_TYPE
         ]
 
+    def capital_pool_balance(self) -> CapitalPoolBalance:
+        from decimal import Decimal
+
+        with self._lock:
+            registered = Decimal(self._setting("futu_capital_pool"))
+            allocated = sum((Decimal(row[0]) for row in self._connection.execute(
+                "SELECT initial_cash FROM virtual_accounts WHERE status<>'RETIRED'"
+            )), Decimal("0"))
+            recovered = sum((Decimal(row[1]) - Decimal(row[0]) for row in self._connection.execute(
+                "SELECT initial_cash,released_cash FROM account_retirements"
+            )), Decimal("0"))
+        return CapitalPoolBalance(registered, allocated, recovered)
+
+    def _retirement_cash(self, account_id: str) -> str | None:
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT released_cash FROM account_retirements WHERE account_id=?", (account_id,),
+            ).fetchone()
+        return None if row is None else str(row[0])
+
+    def _retire_account(self, request: AccountRetirementRequest) -> AccountRetirementResult:
+        from decimal import Decimal
+
+        with self.atomic_decision_update():
+            account = self.virtual_account(request.account_id)
+            if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["status"] != "RUNNING":
+                raise ValueError("retirement requires a running strategy account")
+            if account["release_hash"] != request.expected_release_hash:
+                raise ValueError("retirement release hash differs from account")
+            if not account["paused"]:
+                raise ValueError("pause the account before retirement")
+            if account["quantity"] != 0 or Decimal(account["frozen_cash"]) != 0:
+                raise ValueError("retirement requires no position or frozen cash")
+            if account["health"] == "BLOCKED":
+                raise ValueError("blocked account cannot retire")
+            if any(row["status"] not in TERMINAL_INTENT_STATUSES or row["attention_required"]
+                   for row in self.account_intents(request.account_id)):
+                raise ValueError("unfinished or unresolved intents block retirement")
+            if any(row["status"] not in TERMINAL_ORDER_STATUSES
+                   for row in self.account_orders(request.account_id)):
+                raise ValueError("unfinished orders block retirement")
+            if any(self._setting(key) != "OK" for key in (
+                "channel_reconciliation_status", "futu_cash_reconciliation_status",
+            )) or self.account_invariant_violations():
+                raise ValueError("successful channel and ledger reconciliation required")
+            cash = Decimal(account["cash"])
+            if not cash.is_finite() or cash < 0:
+                raise ValueError("retirement requires finite nonnegative cash")
+            now = _utc_now()
+            self._connection.execute(
+                "INSERT INTO account_retirements VALUES(?,?,?,?,?)",
+                (request.account_id, request.expected_release_hash, account["initial_cash"], str(cash), now),
+            )
+            self._connection.execute(
+                "INSERT INTO account_ledger(ledger_entry_id,account_id,entry_type,cash_delta,"
+                "frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at) "
+                "VALUES(?,?,'CAPITAL_RETURN',?,'0.0000',0,'0.0000','0.0000',0,?)",
+                (f"retirement:{request.account_id}", request.account_id, str(-cash), now),
+            )
+            self._connection.execute(
+                "UPDATE virtual_accounts SET status='RETIRED',cash='0.0000',total_assets='0.0000',"
+                "cycle_target=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
+                "WHERE account_id=?", (now, request.account_id),
+            )
+            self._connection.execute(
+                "UPDATE decisions SET status='INVALIDATED' WHERE account_id=? AND status='ACTIVE'",
+                (request.account_id,),
+            )
+            self._insert_audit_event(self._new_audit_event(
+                "ACCOUNT_RETIRED", source="account_retirement", actor_type="OPERATOR",
+                correlation_id=f"retirement:{request.account_id}", account_id=request.account_id,
+                strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
+                release_hash=request.expected_release_hash,
+                details={"released_cash": str(cash), "reason": request.reason, "actor": request.actor},
+            ))
+            remaining = self._connection.execute(
+                "SELECT COUNT(*) FROM virtual_accounts WHERE strategy_id=? AND strategy_version=? "
+                "AND status<>'RETIRED'",
+                (account["strategy_id"], account["strategy_version"]),
+            ).fetchone()[0]
+        return AccountRetirementResult(AccountRetirementStatus.RETIRED, request.account_id, cash, remaining)
+
     def channel_reconciliation_account(self, channel_id: str = FUTU_SIMULATE_CN_CHANNEL_ID):
         require_futu_simulate_cn(channel_id)
         with self._lock:
@@ -1196,10 +1292,12 @@ class PaperStore:
     def set_virtual_paused(self, account_id: str, paused: bool):
         with self._lock, self._connection:
             account = self._connection.execute(
-                "SELECT account_type FROM virtual_accounts WHERE account_id=?", (account_id,)
+                "SELECT account_type,status FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()
             if account is not None and account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("system reconciliation account cannot be paused")
+            if account is not None and account["status"] == "RETIRED":
+                raise ValueError("retired account cannot be paused or resumed")
             changed = self._connection.execute(
                 "UPDATE virtual_accounts SET paused=?, updated_at=? WHERE account_id=?",
                 (int(paused), _utc_now(), account_id),
@@ -1968,6 +2066,9 @@ class PaperStore:
             # The planned quantity remains available in the immutable decision payload.
             cycle_target = None
         with self._lock, self._write_context(_in_transaction):
+            account = self.virtual_account(account_id)
+            if account["status"] != "RUNNING":
+                raise ValueError("inactive account cannot save decisions")
             same_session = self._connection.execute(
                 "SELECT decision_id FROM decisions "
                 "WHERE account_id=? AND signal_date=? AND status='ACTIVE'",

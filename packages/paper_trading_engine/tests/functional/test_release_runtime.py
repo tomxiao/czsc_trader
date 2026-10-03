@@ -196,8 +196,9 @@ def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tmp_path):
         _verify_strategy_runtime_wheel_boundary(tmp_path)
 
 
+@pytest.mark.parametrize("account_count", [0, 1])
 def test_release_verifies_configuration_and_bindings_without_preparing_data(
-    tmp_path, monkeypatch,
+    tmp_path, monkeypatch, account_count,
 ):
     runtime = tmp_path / "runtime"
     release_root = runtime / "releases" / "v0.6.0"
@@ -220,14 +221,14 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
 
     def runner(command, **_kwargs):
         calls.append(list(command))
-        output = {"accounts": 1, "releases": ["S003-v1"]}
+        output = {"accounts": account_count, "releases": ["S003-v1"] if account_count else []}
         return subprocess.CompletedProcess(
             command, 0, stdout=json.dumps(output), stderr="",
         )
 
     verified = verify_release_configuration(runtime, "v0.6.0", runner=runner)
 
-    assert verified == {"accounts": 1, "releases": ["S003-v1"]}
+    assert verified == {"accounts": account_count, "releases": ["S003-v1"] if account_count else []}
     assert "validate_account_binding" in calls[0][2]
     assert "prepare_account_data" not in calls[0][2]
     assert "current.json" not in calls[0][2]

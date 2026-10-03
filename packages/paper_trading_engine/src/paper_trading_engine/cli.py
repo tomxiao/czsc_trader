@@ -8,6 +8,7 @@ from decimal import Decimal
 import json
 from pathlib import Path
 import socket
+import sqlite3
 import secrets
 import sys
 from threading import Event, Thread
@@ -22,6 +23,7 @@ from dotenv import load_dotenv
 from .audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
 from .account_binding import AccountStrategyBinding
+from .account_retirement import AccountRetirementRequest
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
 from .account_engine import AccountEngine
@@ -147,6 +149,14 @@ def build_parser() -> argparse.ArgumentParser:
     _common(reconciliation)
     reconciliation.add_argument("--host", default="127.0.0.1")
     reconciliation.add_argument("--port", default=8080, type=int)
+    retire = control_actions.add_parser("retire-account")
+    _common(retire)
+    retire.add_argument("--host", default="127.0.0.1")
+    retire.add_argument("--port", default=8080, type=int)
+    retire.add_argument("--account-id", required=True)
+    retire.add_argument("--expected-release-hash", required=True)
+    retire.add_argument("--actor", required=True)
+    retire.add_argument("--reason", required=True)
     return parser
 
 
@@ -248,6 +258,8 @@ def _strategy_deployments(
     bindings = {}
     deployments = {}
     for account in accounts:
+        if account.get("status") == "RETIRED":
+            continue
         key = (
             account["strategy_id"], account["strategy_version"],
             account["symbol"], account["asset_type"],
@@ -336,6 +348,8 @@ def _backfill_selection_cutoffs(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
+        if account.get("status") == "RETIRED":
+            continue
         if account.get("selection_data_cutoff"):
             continue
         try:
@@ -377,6 +391,8 @@ def _synchronize_strategy_names(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
+        if account.get("status") == "RETIRED":
+            continue
         try:
             identity = deployments.get(str(account["account_id"]))
             if identity is None:
@@ -499,6 +515,31 @@ def _repair_running_ledger(args: argparse.Namespace) -> dict[str, object]:
     return result
 
 
+def _retire_running_account(args: argparse.Namespace) -> dict[str, object]:
+    if args.host != "127.0.0.1":
+        raise ValueError("PTE control host must be 127.0.0.1")
+    retirement = AccountRetirementRequest(
+        args.account_id, args.expected_release_hash, args.actor, args.reason,
+    )
+    connection = sqlite3.connect(args.database.resolve().as_uri() + "?mode=ro", uri=True)
+    try:
+        row = connection.execute("SELECT value FROM settings WHERE key='control_token'").fetchone()
+    finally:
+        connection.close()
+    if row is None or not row[0]:
+        raise RuntimeError("PTE control token is unavailable")
+    url = f"http://{args.host}:{args.port}/api/virtual-accounts/{quote(retirement.account_id, safe='')}/retire"
+    payload = {"expected_release_hash": retirement.expected_release_hash,
+               "actor": retirement.actor, "reason": retirement.reason}
+    request = Request(url, data=json.dumps(payload).encode(), method="POST", headers={
+        "Content-Type": "application/json", "X-PTE-Control-Token": row[0],
+    })
+    _, result = _read_json(url, request=request)
+    if result.get("status") != "RETIRED" or result.get("account_id") != retirement.account_id:
+        raise RuntimeError("PTE account retirement did not complete")
+    return result
+
+
 def _create_running_reconciliation_account(args: argparse.Namespace) -> dict[str, object]:
     if args.host != "127.0.0.1":
         raise ValueError("PTE control host must be 127.0.0.1")
@@ -612,6 +653,8 @@ def main(
                 result = _restart_running_pte(args)
             elif args.control_action == "create-reconciliation":
                 result = _create_running_reconciliation_account(args)
+            elif args.control_action == "retire-account":
+                result = _retire_running_account(args)
             else:
                 result = _repair_running_ledger(args)
             _write({

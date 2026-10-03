@@ -123,6 +123,20 @@ test('virtual account orders show order time and remain newest first', () => {
   assert.ok(html.indexOf('2026-09-17 09:31:00') < html.indexOf('2026-09-17 09:30:00'));
 });
 
+test('retired account shows recovered cash and cannot be resumed', () => {
+  const html = accountMarkup({
+    scope: {account_id:'closed',release_id:'S001-v1'},
+    account: {account_id:'closed',status:'RETIRED',paused:true,initial_cash:'100000',
+      cash:'0',total_assets:'0',released_cash:'101250.4321'},
+    metrics: {current_total_return:0.012504321},
+  });
+  assert.match(html, /id="accountSwitch" disabled/);
+  assert.match(html, /已退出 · 资金已回收/);
+  assert.match(html, /已回收资金/);
+  assert.doesNotMatch(html, /点击恢复/);
+  assert.equal(accountOperatingStatus({status:'RETIRED',paused:true}), '已退出');
+});
+
 test('channel summary keeps four core metrics and moves reconciliation into details', () => {
   const snapshot = {
     account:{cash:756290.717,total_assets:1002769.617,market_value:246478.9},
