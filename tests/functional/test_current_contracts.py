@@ -25,7 +25,7 @@ def test_real_installed_versions_report_execution_contract_fees():
     assert result.status == "PASS"
     assert {row["strategy_version_id"]: row["fee_rate"] for row in result.result["strategies"]} == {
         "S001-v1": 0.0005, "S001-v2": 0.0005, "S002-v1": 0.0005,
-        "S003-v1": 0.00012, "S007-v1": 0.001,
+        "S003-v1": 0.00012, "S007-v1": 0.001, "S011-v1": 0.001,
     }
 
 
