@@ -309,7 +309,7 @@ def test_hung_account_preparation_does_not_block_other_accounts():
         def prepare(self, account, *, signal_date):
             if account["account_id"] == "s007-v1":
                 blocked.set()
-                assert release.wait(2)
+                assert release.wait(5)
             return _prepared(
                 f"{account['strategy_id']}-{account['strategy_version']}",
                 signal_date,
@@ -321,24 +321,37 @@ def test_hung_account_preparation_does_not_block_other_accounts():
         engine, Preparer(), store, preparation_time="00:00"
     )
     scheduler.tick_daily(datetime(2026, 9, 18, 20, 30))
-    assert blocked.wait(1)
-    _wait_until(lambda: ("decision", "s003-v1") in engine.calls)
-    assert ("decision", "s007-v1") not in engine.calls
-    release.set()
+    try:
+        assert blocked.wait(1)
+        _wait_until(lambda: ("decision", "s003-v1") in engine.calls)
+        assert ("decision", "s007-v1") not in engine.calls
+    finally:
+        release.set()
     _wait_until(lambda: ("decision", "s007-v1") in engine.calls)
 
 
 def test_slow_preparation_does_not_stop_order_reconciliation():
     entered, release, stopped = Event(), Event(), Event()
+    reconciled = Event()
+
+    class ReconciliationEngine(Engine):
+        blocked_order_calls = 0
+
+        def refresh_orders(self):
+            super().refresh_orders()
+            if entered.is_set() and not release.is_set():
+                self.blocked_order_calls += 1
+                if self.blocked_order_calls >= 2:
+                    reconciled.set()
 
     class Preparer:
         def prepare(self, account, *, signal_date):
             del account, signal_date
             entered.set()
-            assert release.wait(2)
+            assert release.wait(5)
             raise RuntimeError("test stop")
 
-    engine, store = Engine(), Store()
+    engine, store = ReconciliationEngine(), Store()
     store.accounts = [_account()]
     scheduler = _scheduler(
         engine,
@@ -350,13 +363,14 @@ def test_slow_preparation_does_not_stop_order_reconciliation():
     )
     worker = Thread(target=scheduler.run, args=(stopped,))
     worker.start()
-    assert entered.wait(1)
-    time.sleep(0.65)
-    order_calls = engine.calls.count("orders")
-    release.set()
-    stopped.set()
-    worker.join(2)
-    assert not worker.is_alive() and order_calls >= 2
+    try:
+        assert entered.wait(1), "account preparation did not start"
+        assert reconciled.wait(2), "order reconciliation stopped during blocked preparation"
+    finally:
+        stopped.set()
+        release.set()
+        worker.join(2)
+    assert not worker.is_alive()
 
 
 def test_scheduler_rejects_malformed_persisted_failure_state():

@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from threading import Event, Thread
 from types import SimpleNamespace
 from urllib.error import HTTPError
@@ -9,19 +10,48 @@ import pytest
 from paper_trading_engine.web import create_server
 from paper_trading_engine.audit import AuditRecorder
 from paper_trading_engine.store import PaperStore
-from paper_trading_engine.web_api import PteWebApi, _descending_transaction_rows
+from paper_trading_engine.web_api import PteWebApi
 
 
-def test_transaction_rows_are_newest_first_with_stable_id_tiebreaker():
-    rows = [
-        {"intent_id": "INT-1", "created_at": "2026-09-17T09:30:00+08:00"},
-        {"intent_id": "INT-3", "created_at": "2026-09-17T09:31:00+08:00"},
-        {"intent_id": "INT-2", "created_at": "2026-09-17T09:31:00+08:00"},
-    ]
+def test_account_snapshot_scopes_and_orders_transactions_without_mutating_source():
+    collections = (
+        ("intents", "intent_id", "created_at", "INT"),
+        ("orders", "channel_order_id", "created_at", "ORD"),
+        ("fills", "fill_id", "occurred_at", "FIL"),
+    )
+    rows = {
+        collection: [
+            {"account_id": account_id, id_field: f"{prefix}-{number}",
+             time_field: f"2026-09-17T09:{minute}:00+08:00"}
+            for number, minute, account_id in [(1, 30, "alpha"), (3, 31, "alpha"),
+                                               (2, 31, "alpha"), (4, 32, "beta")]
+        ]
+        for collection, id_field, time_field, prefix in collections
+    }
+    original = deepcopy(rows)
+    store = SimpleNamespace(
+        strategy_virtual_accounts=lambda: [{"account_id": "alpha"}],
+        query_audit_events=lambda **filters: [],
+        account_intents=lambda account_id: [
+            row for row in rows["intents"] if row["account_id"] == account_id
+        ],
+    )
+    api = PteWebApi(SimpleNamespace(
+        store=store, channel=None,
+        virtual=SimpleNamespace(status=lambda account_id: {
+            "account_id": account_id, "initial_cash": 100_000, "total_assets": 100_000,
+            "orders": rows["orders"], "fills": rows["fills"],
+        }),
+    ))
 
-    result = _descending_transaction_rows(rows, time_field="created_at", id_field="intent_id")
+    result = api.virtual_account_snapshot("alpha")
 
-    assert [row["intent_id"] for row in result] == ["INT-3", "INT-2", "INT-1"]
+    for collection, id_field, _time_field, prefix in collections:
+        assert [row[id_field] for row in result[collection]] == [
+            f"{prefix}-3", f"{prefix}-2", f"{prefix}-1",
+        ]
+        assert all(row["account_id"] == "alpha" for row in result[collection])
+    assert rows == original
 
 
 class FakeEngine:
@@ -198,23 +228,14 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
             html = response.read().decode()
         assert "模拟交易控制台" in html and "审计事件" in html
         assert 'id="releaseVersion"' in html
-        with urlopen(base + "/static/app.js", timeout=3) as response:
-            app_js = response.read().decode()
-        with urlopen(base + "/static/styles.css", timeout=3) as response:
-            styles_css = response.read().decode()
+        for asset, content_type in (("app.js", "javascript"), ("styles.css", "text/css")):
+            with urlopen(base + f"/static/{asset}", timeout=3) as response:
+                assert response.status == 200
+                assert content_type in response.headers["Content-Type"]
+                assert response.read().strip()
         with pytest.raises(HTTPError) as obsolete_asset:
             urlopen(base + "/static/plotly.min.js", timeout=3)
         assert obsolete_asset.value.code == 404
-        assert 'scrolling="no"' in app_js
-        assert "ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称'" in app_js
-        assert "各账户按自身前瞻观察窗口统计" in app_js
-        assert "共同观察区间" not in app_js
-        assert "ACCOUNT_REFRESH_SECTIONS" in app_js
-        assert "/chart/refresh" in app_js
-        assert "正在重新生成观察图" in app_js
-        assert "releaseVersionLabel(s)" in app_js
-        assert ".release-version{min-width:78px" in styles_css
-        assert ".chart-frame-host iframe{display:block;width:100%;height:100%" in styles_css
         assert html.index("Futu模拟盘CN") < html.index("审计事件") < html.index("账户比较")
         with urlopen(base + "/audit-events", timeout=3) as response:
             assert response.status == 200

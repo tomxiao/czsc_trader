@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 import pytest
@@ -23,7 +24,6 @@ from research_experiment import (
     ExperimentStage,
     ExperimentWorkspace,
     LoadedExperiment,
-    ResearchExperiment,
     experiment_source_sha256,
     load_experiment,
 )
@@ -53,12 +53,28 @@ def _definition() -> ExperimentDefinition:
     )
 
 
-def test_rex_has_no_tdr_imports() -> None:
-    package_root = Path(research_experiment.__file__).resolve().parent
+def test_rex_public_contracts_import_without_tdr() -> None:
+    source_root = Path(research_experiment.__file__).resolve().parent.parent
+    script = """
+import importlib.abc
+import sys
 
-    assert ResearchExperiment.__module__.startswith("research_experiment.")
-    for source in package_root.glob("*.py"):
-        assert "czsc_trader" not in source.read_text(encoding="utf-8")
+class NoTdrImports(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split('.')[0] == 'czsc_trader':
+            raise AssertionError('REX loaded TDR: ' + fullname)
+
+sys.meta_path.insert(0, NoTdrImports())
+sys.path.insert(0, sys.argv[1])
+import research_experiment
+for name in research_experiment.__all__:
+    getattr(research_experiment, name)
+assert not any(name.split('.')[0] == 'czsc_trader' for name in sys.modules)
+"""
+    subprocess.run(
+        [sys.executable, "-I", "-B", "-c", script, str(source_root)],
+        check=True, timeout=30,
+    )
 
 
 @pytest.mark.parametrize("changes", [{"schema_version": 1}, {"schema_version": True}, {"data_scope": None}])
