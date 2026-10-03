@@ -78,8 +78,10 @@
 | 五 | `INSPECTION` | `CandidateInspectionDelivery` |
 
 `assemble_delivery(context, deliverable)`验证内容及证据，发布机器产物、人工报告和
-`DeliveryReceipt`；`validate_delivery(context, reference)`只读核验已发布修订，返回
-`DeliveryValidation`。新交付定义和回执使用schema 4，通过强类型`owner`确定保存空间：
+`DeliveryReceipt`；`validate_delivery(context, reference, *, scope=DeliveryValidationScope.FULL)`
+只读核验已发布修订，返回包含实际范围的`DeliveryValidation`。`INTEGRITY`核验结构、身份、
+引用及文件哈希；默认`FULL`还复算本次阶段四的SE结果，前驱只做完整性核验，均不重新运行账户回测。
+新交付定义和回执使用schema 4，通过强类型`owner`确定保存空间：
 
 | 阶段 | 归属契约 | 保存位置（相对仓库） |
 | --- | --- | --- |
@@ -277,6 +279,10 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 
 排序精度和敏感性方案预先写入协议，披露精度及优先级变化对排名的影响。先逐配置比较，再按同口径行为分组并保留全部成员；原候选身份和账本保持不变，不得跨源码补证。影响比较的缺失值标记不可比，不填零或静默跳过。
 
+按本节政策构造`ComparisonPolicy`时，显式使用`ParetoBasis.RAW`和
+`MissingEvidencePolicy.REQUIRE_COMPLETE`。平台还支持分箱分层和缺失证据下的部分排序；
+这些能力不自动改变本节研究政策，采用其他政策须先获用户批准并另立协议版本。
+
 沿用上述排序政策，不另设回撤优先榜或加权总分。不得根据已见结果回写政策；获准调整时另立版本，用户选择单独记录，保留原排序结果。
 
 #### 输出产物
@@ -396,8 +402,9 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 | `outputs/` | 可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
 | `.tmp/` | 一次性脚本、临时数据及工具缓存；交付不得隐含依赖未声明临时内容 |
 | `data/raw/`、`data/backtest/` | 通过已获授权的正式数据入口更新 |
-| `strategies/research_decisions/`、`strategies/research_objects/` | 在获准阶段内，通过TDR `record_research_decision/inspect_candidate`留存真实用户决定及技术检验证据；这些写入可以发生在冻结批准前，不生成冻结版本；不得人工编辑 |
-| `strategies/freeze_requests/`、`strategies/<策略ID>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`写入；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |
+| `research/<策略ID>/decisions/`及其`objects/` | 在获准阶段内，通过TDR `record_research_decision`留存真实用户决定和确认材料；不得人工编辑 |
+| 当前正式实验的`objects/inspection/` | 在获准阶段内，通过TDR `inspect_candidate`保存检验、计划及证据；可在冻结批准前写入，不生成冻结版本；实验封存后只读 |
+| `research/<策略ID>/freeze_requests/`、`strategies/<策略ID>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`保存研究侧事务日志及运行发布；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |
 | `strategies/`其他治理与部署区域 | 按相应公共操作及授权边界处理，不因研究或冻结授权取得任意写入权限 |
 | 平台模块、第三方依赖、生产环境 | 按DEV及生产安全规则另行授权 |
 

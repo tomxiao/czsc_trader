@@ -63,11 +63,25 @@ SE保留原始计算结果，不统一舍入或强制线程数。受管交付的
 `ComparisonPolicy`。TDR阶段交付将数值目标绑定到阶段一已确认的`MandateItem`；纯SE请求本身
 不证明目标已获用户确认。诊断指标不自动升级为研究硬门。
 
-比较先按原始净年化和回撤作帕累托分层，再按七项指标的显式分箱顺序比较：净年化、回撤、
-参数收益退化、参数回撤退化、滚动超额Q10、压力年化损失、利润集中度。分箱由
-`MetricBinSpec`指定分辨率、原点及舍入规则；同层同箱保留并列，候选ID只用于稳定展示。
+`ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=())`
+必须显式声明分层基础及缺失证据政策：
+
+| 字段 | 支持选项与语义 |
+| --- | --- |
+| `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
+| `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求七项排序指标齐备；`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
+
+层内按七项指标的显式分箱顺序比较：净年化、回撤、参数收益退化、参数回撤退化、滚动超额Q10、
+压力年化损失、利润集中度。`MetricBinSpec`指定分辨率、原点及舍入规则；同层同箱保留并列，
+候选ID只用于稳定展示。结果包含`pairs`两两比较关系以及每个候选的`rank_min/rank_max`；
+`rank_in_layer`仅在能确定名次时填写，完整并列采用竞赛排名。状态为
+`TARGET_NOT_MET/INCOMPARABLE/RANKED/TIED/PARTIALLY_ORDERED`，缺失值不填零。
 交易频率用于目标核验，不参与上述层内排序；未达标、证据不足和不可比候选仍保留结果。
+采用部分排序时，目标、净年化和回撤仍须可核验；评价口径不一致的候选保留为不可比。
 敏感性方案另列，不改写基准排序；输出不自动产生入选或冻结决定。
+
+平台提供上述政策能力；当前RSCH研究政策使用原始值分层及完整证据比较，具体以
+[RSCH排序规则](../../research/RSCH_AGENT.md#排序规则)和获批协议为准，调用方不得据工具能力自行改政策。
 
 ## `compare_ledgers`：保留原始身份的账本比较
 

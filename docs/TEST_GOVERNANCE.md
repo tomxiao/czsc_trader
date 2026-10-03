@@ -1,7 +1,7 @@
 # 测试用例治理
 
 本文规定CZSC Trader仓库的测试用例如何创建、收敛、执行和周期性审查。目标是在保护
-TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同时，控制TDD带来的
+TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力的同时，控制TDD带来的
 用例数量、回归耗时和维护成本。
 
 这是一份面向个人量化团队（OPC）的操作规范。判断标准是业务风险和维护价值，不追求用例
@@ -60,6 +60,7 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 
 - TDR：`tests/functional/`；
 - SM：`packages/strategy_manager/tests/functional/`；
+- REX：`packages/research_experiment/tests/functional/`；
 - SE：`packages/strategy_evaluator/tests/functional/`；
 - FSC：`packages/factor_signal_catalog/tests/functional/`；
 - STC：`packages/strategy_template_catalog/tests/functional/`；
@@ -73,7 +74,7 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 
 ### 2.3 跨模块端到端用例
 
-端到端用例只保留少量关键调用链，例如TDR三节点治理、SRT与TXE回放，以及PTE消费SRT决策并写入虚拟账户审计。
+端到端用例只保留少量关键调用链，例如TDR候选注册、交付、检验和冻结链路、SRT与TXE回放，以及PTE消费SRT决策并写入虚拟账户审计。
 它用于发现契约断裂，不重复模块内部已经覆盖的所有边界条件。
 
 涉及真实行情、Futu或Windows服务的在线检查属于交付验证，不进入默认自动回归套件。
@@ -107,7 +108,7 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 3. 将必要断言合并到主场景，复用已有夹具和数据准备；
 4. 删除重复的临时用例、重复夹具和只验证实现细节的断言；
 5. 单独运行主场景，确认删除前后的业务保护范围一致；
-6. 执行受影响模块的完整功能测试。
+6. 按受影响行为运行最小聚焦测试；大范围治理或版本验收时执行完整回归。
 
 可以删除的典型对象：
 
@@ -124,8 +125,8 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 | 时机 | 最低验证范围 |
 | --- | --- |
 | TDD开发中 | 当前失败用例和直接相关场景 |
-| 功能完成或缺陷修复后 | 受影响模块的全部功能用例 |
-| 提交前 | 受影响模块功能用例及Ruff |
+| 功能完成或缺陷修复后 | 覆盖受影响行为、输入输出边界、异常及必要跨模块契约的最小聚焦测试 |
+| 提交前 | 聚焦测试及变更范围Ruff；实现未变化时复用本轮有效结果 |
 | 版本验收或重大架构变更 | 全部模块功能用例、PTE前端用例及Ruff；按变更范围增加完整链路验收 |
 | 已验收后的纯文档提交、合并或推送 | 检查文档、链接和差异；实现未变化时复用已验收测试结果 |
 | 服务或外部渠道变更交付 | 完整离线回归后，再执行明确授权的在线验证 |
@@ -136,8 +137,13 @@ TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同
 .\scripts\test-all.ps1
 ```
 
-脚本固定运行TDR、PTE和其余子包三条通道，各通道使用独立Pytest工作区和Python字节码缓存；
-PTE通道同时运行控制台Node测试。所有通道结束后统一运行Ruff、输出每条通道的耗时和退出码，
+日常Pytest默认排除标记为`release_acceptance`的昂贵验收场景；显式传入
+`--release-acceptance`时包含这些场景。完整回归脚本为所有Pytest进程传入该参数。
+
+脚本固定运行`TDR_FREEZE`、`TDR`、`PTE`和`PACKAGES`四条通道：冻结及评估交付测试单独运行，
+其余TDR测试在另一通道运行，PTE通道同时运行控制台Node测试，其余八个子包在包通道内串行运行。
+各进程使用独立Pytest工作区、禁用Python字节码写入，并将BLAS等原生计算线程数设为1。
+所有通道结束后统一运行Ruff、输出每条通道的耗时和退出码，
 并把完整日志写入`.tmp/test-regression/`。任一通道、Node测试或Ruff失败时，脚本整体返回失败。
 
 需要定位失败模块时，使用以下串行命令单独复现：
@@ -146,6 +152,7 @@ PTE通道同时运行控制台Node测试。所有通道结束后统一运行Ruff
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q
+.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\research_experiment\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q
@@ -155,10 +162,13 @@ PTE通道同时运行控制台Node测试。所有通道结束后统一运行Ruff
 node --test-isolation=none --test packages\paper_trading_engine\tests\functional\console_state.test.mjs
 .\.venv\Scripts\python.exe -m ruff check `
   src tests packages\factor_signal_catalog packages\strategy_template_catalog `
-  packages\strategy_manager packages\strategy_evaluator `
+  packages\strategy_manager packages\research_experiment packages\strategy_evaluator `
   packages\dataflows packages\strategy_runtime packages\trading_execution_engine `
   packages\paper_trading_engine\src packages\paper_trading_engine\tests
 ```
+
+上述Pytest命令执行日常范围；复现验收场景时补充`--release-acceptance`。
+沙箱权限导致的管道、进程或本地Git失败，应与业务断言失败分开记录。
 
 ## 6. 周期性治理
 
@@ -186,13 +196,14 @@ node --test-isolation=none --test packages\paper_trading_engine\tests\functional
 rg -n "TEMP-TDD" tests packages -g "*.py" -g "*.mjs"
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests packages\strategy_manager\tests `
   packages\dataflows\tests packages\strategy_evaluator\tests packages\factor_signal_catalog\tests `
-  packages\strategy_template_catalog\tests `
+  packages\strategy_template_catalog\tests packages\research_experiment\tests `
   packages\strategy_runtime\tests packages\trading_execution_engine\tests `
   packages\paper_trading_engine\tests `
-  --collect-only -q
+  --release-acceptance --collect-only -q
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q }
+Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\research_experiment\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q }
@@ -217,7 +228,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 - 删除该用例后，哪个主场景继续保护其业务风险？
 - 失败信息能否直接指向模块、契约或状态转换？
 
-审查范围包括TDR、DFLS、FSC、STC、SM、SE、SRT、TXE和PTE（含WDG）。一次可以只治理一个
+审查范围包括TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE和PTE（含WDG）。一次可以只治理一个
 模块，完成验证和记录后再进入下一模块，避免大规模删除导致覆盖范围难以复核。
 
 ## 8. 治理记录模板
@@ -226,7 +237,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 ```text
 日期：YYYY-MM-DD
-范围：TDR / DFLS / FSC / STC / SM / SE / SRT / TXE / PTE
+范围：TDR / DFLS / FSC / STC / SM / REX / SE / SRT / TXE / PTE
 触发原因：月度检查 / 耗时增长 / 重构前 / 其他
 
 治理前：测试文件__个，测试项__个，完整耗时__秒
@@ -250,7 +261,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 1. 所有删除行为都有明确的长期场景承接，或确认已无业务价值；
 2. 没有无说明残留的`TEMP-TDD`；
-3. 受影响模块完整功能测试通过；
+3. 覆盖受影响行为和边界的聚焦测试通过；
 4. 大范围测试治理或版本验收时，完整离线回归通过；
 5. 治理前后数量、耗时和关键取舍已有简短记录。
 
@@ -271,6 +282,21 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 保留独立人工验收脚本。任何PTE部署或运行状态变更需要独立授权。
 
 ## 11. 最近一次治理记录
+
+### 2026-10-04测试分层与执行预算验收
+
+本地既有验收日志记录：`scripts/test-all.ps1`全量离线回归通过，883项Python测试、
+7项控制台JavaScript测试和Ruff全部通过，总耗时104.10秒。Python测试包含843项日常场景及
+40项`release_acceptance`场景。模块数量为TDR 378、PTE 172、DFLS 148、FSC 2、STC 3、
+SM 7、REX 10、SE 81、SRT 72、TXE 10。
+
+四条通道耗时分别为`TDR_FREEZE` 102.96秒、`TDR` 98.60秒、`PTE` 93.61秒、
+`PACKAGES` 33.88秒。日志位于`.tmp/test-budget/full-final.log`及
+`.tmp/test-regression/run-53eed5aedd274b81a6733e10b7f91949/`。
+这些是此前实现验收的历史证据；本次文档修订只验证文档链接、示例和契约，未重跑完整回归。
+日志均为本地临时证据，不随Git分发。
+
+### 2026-10-02多线程DSR复验修复验收（此前记录）
 
 2026-10-02多线程DSR复验修复验收：`scripts/test-all.ps1`全量离线回归通过，646项Python测试、
 3项控制台JavaScript测试和Ruff全部通过，总耗时246.42秒。模块数量为TDR 244、PTE 99、

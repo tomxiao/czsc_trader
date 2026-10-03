@@ -1,6 +1,6 @@
 # 策略管理器（SM）
 
-SM管理策略族、候选登记、用户决定、不可变冻结版本、生命周期和绩效证据。
+SM提供研究登记、冻结发布及生命周期所需的强类型契约和存储能力；研究证据与运行发布分别保存。
 研究员从[公共导出](src/strategy_manager/__init__.py)导入契约，经[TDR业务API](../../src/czsc_trader/README.md)
 执行登记、决定留痕和冻结；SM存储API供平台实现使用。
 
@@ -9,14 +9,15 @@ SM管理策略族、候选登记、用户决定、不可变冻结版本、生命
 | 工作 | 强类型契约 | 平台存储API |
 | --- | --- | --- |
 | 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate` |
-| 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | `StrategyRegistry.record_research_decision` |
-| 技术检验记录 | `InspectionProtocol`、`InspectionCheckResult`、`CandidateInspectionReport`、`FreezePlan` | TDR `inspect_candidate`执行计算，SM保存和验证引用 |
+| 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | TDR `record_research_decision`核验并写入研究目录 |
+| 技术检验记录 | `InspectionProtocol`、`InspectionCheckResult`、`CandidateInspectionReport`、`FreezePlan` | TDR `inspect_candidate`执行计算并保存实验内证据 |
 | 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeGovernance`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
 | 策略身份查询 | `StrategyFamily`、`StrategyVersion` | `StrategyRegistry.list_families/get_family/get_version/versions` |
-| 治理与生命周期 | 版本、绩效证据及生命周期契约 | `validate_version_governance/validate_all`、`evidence/lifecycle_events/current_qualification` |
+| 生命周期与运行资格 | `PaperTradingApproval`、版本及绩效证据 | `validate_all/evidence/lifecycle_events/current_qualification/approve_paper_trading` |
 
 `CandidateEvidence(path, sha256)`中的路径相对相应API声明的证据根目录，拒绝绝对路径、越界和
 内容哈希不符。候选登记存于`research/registrations/`；同键同记录幂等，不同内容拒绝覆盖。
+`CandidateKey`由策略ID和`C`加四位数字的候选编号组成，例如`S900`与`C0001`。
 派生类型明确区分`PARAMETERS`、`IMPLEMENTATION`和`EXECUTION`，绑定双方内容及变更证据。
 仅登记需要正式交接、技术检验或冻结的候选。搜索trial和邻域对象可直接通过TDR受管评价，
 其`EvaluationLineage`归入实验评价证据；不因补充派生关系重复登记同内容候选。
@@ -43,20 +44,28 @@ SM据登记中的策略和来源实验定位实体并校验哈希；序列化记
 - `FreezeSubject`：候选内容、检验报告、冻结计划哈希和明确版本。
 
 决定必须留存`confirmation_source`和原因；同一决定ID内容冲突拒绝写入。宿主负责核验真实用户
-授权，SM验证记录与引用的一致性。决定留痕不自动驱动研究阶段或参数搜索。
+授权，TDR验证决定及引用并保存到`research/<策略ID>/decisions/`。确认材料及检验证据使用
+`ResearchEvidenceRef(owner, path, sha256)`，路径相对`ResearchEvidenceOwner`，以仓库根目录解析。
+决定留痕不自动驱动研究阶段或参数搜索。
 
 ## 原子冻结与查询状态
 
 TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告；用户随后批准该确切计划。
-`CandidateOrigin`保存登记记录的文件引用，连同预检、派生材料组成可读取的证据闭包。
-`FreezeVersionRequest(request, staged_package, candidate_registry_root, experiments_root)`携带
-业务请求、暂存发布包、候选登记根目录和实验根目录；SM在已有写锁内按当前登记契约解析实体，
-再次核验登记、载荷和拟冻结计划。
+`FreezePlan.origin`使用`CandidateOrigin`绑定登记键、内容指纹、登记记录及其哈希；TDR验证
+检验闭包、实际选型和精确冻结批准，并在发布前再次核验候选及依赖。
+平台存储请求`FreezeVersionRequest(request_id, request_sha256, version, family, staged_package,
+package_sha256, journal_root)`携带已准备的schema 5版本、族、发布包和独立事务日志目录。
+SM在写锁内核验发布身份及文件闭包；研究批准的认证由TDR业务入口负责。
 
-发布包和schema 4版本文件准备完成后，最后原子写入`committed.json`作为提交可见性标记。
-`get_version`、`versions`、部署和治理读取共同核验提交身份，未提交版本不可作为可用版本读取。
-`StrategyVersion`只接受schema 4，`origin: CandidateOrigin`和`governance: FreezeGovernance`必填。
-`release_hash`覆盖来源、检验和用户决定等完整版本内容；旧schema 1/2/3在读取边界拒绝。
+事务日志位于`research/<策略ID>/freeze_requests/<请求ID>/`，与运行注册表分离。平台先完成发布包，
+写入日志中的`committed.json`，再原子写入版本文件。版本文件是运行侧可见性边界；
+冻结查询继续核验日志、版本及发布包，只有一致时返回`COMMITTED`。
+`get_version/versions`读取版本及其内容哈希，运行加载和部署另核验发布包及部署身份，均不读取研究日志。
+
+`StrategyVersion`只接受schema 5，保存来源实验、来源候选编号、选择截止日、前瞻起始日、固定
+策略载荷和发布元数据；不包含`CandidateOrigin/FreezeGovernance`。`release_hash`覆盖完整版本
+内容并排除哈希自身，追加研究决定不改变发布身份。旧schema 1/2/3/4在读取边界拒绝。
+SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志根目录；研究员使用TDR查询入口。
 
 | `FreezeStatus` | 含义及调用方处理 |
 | --- | --- |
@@ -76,14 +85,17 @@ TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告�
 | --- | --- |
 | `research/registrations/<策略ID>/candidates/` | 候选登记记录 |
 | `experiments/<策略ID>/<来源实验ID>/objects/` | 新候选载荷、源码及来源材料；schema 2登记引用这些实体 |
-| `strategies/research_objects/` | 检验、计划引用的内容寻址证据 |
-| `strategies/research_decisions/<策略ID>/` | 用户决定及确认材料引用 |
-| `strategies/freeze_requests/<策略ID>/<请求ID>/` | 冻结请求及提交／失败事实 |
+| `experiments/<策略ID>/<检验实验ID>/objects/inspection/` | 检验、计划引用的内容寻址证据 |
+| `research/<策略ID>/decisions/`及其`objects/` | 用户决定及确认材料 |
+| `research/<策略ID>/freeze_requests/<请求ID>/` | 冻结请求及提交／失败事实 |
 | `strategies/<策略ID>/versions/`、`releases/` | 不可变版本和发布文件闭包 |
 | `strategies/deployments/` | 单独授权产生的SRT部署凭据 |
 
 历史`credentials/`、`freeze_approvals.jsonl`、`lifecycle.jsonl`及`evidence.jsonl`保留原件和哈希。
 旧候选包、CIO类型及历史解码分支已删除。原件供人工查阅，平台不承诺历史机器复验。
-当前研究立项仍使用`StrategyGovernanceSeal/StrategyGovernanceCredential`；该能力不承担旧冻结治理解码。
+当前研究立项仍使用`StrategyGovernanceSeal/StrategyGovernanceCredential`，登记位于
+`research/registrations/`；运行注册表在首次冻结发布时登记策略族。研究认证不进入运行发布合同。
+新冻结版本初始为`RESEARCH`；获准后平台可用`approve_paper_trading(PaperTradingApproval)`
+绑定准确发布哈希授予`PAPER_READY`，部署和PTE账户创建仍需各自授权。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。
 操作遵守[RSCH契约](../../research/RSCH_AGENT.md)和[开发安全边界](../../docs/DEVELOPMENT_HANDOFF.md)。

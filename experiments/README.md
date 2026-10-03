@@ -83,7 +83,7 @@ Git保存研究定义、程序、结论、合同、交付报告／回执及候�
 from pathlib import Path
 from czsc_trader.application import RepositoryContext, validate_archives
 context = RepositoryContext.discover(Path.cwd())
-validate_archives(context, archive=context.experiments_root / "SXXX/YYYYMMDD_SXXX_EXNN")
+validate_archives(context, archive=context.experiments_root / "S900/EX001_20261004")
 ```
 
 `all_archives=True`仍可扫描全库；包含不支持的旧格式时明确失败，不视为历史复验保证。

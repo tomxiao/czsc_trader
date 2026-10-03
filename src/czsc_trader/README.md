@@ -30,9 +30,9 @@
 | REX绑定／定义／执行回执 | 3／2／2 |
 | TDR评价产物／阶段交付定义与回执 | 4／4 |
 | SM候选登记／候选内容身份 | 2／2 |
-| SM冻结版本／SRT发布记录 | 4／4 |
-| SRT运行定义 | 2 |
-| 实验manifest／运行绑定模板 | 1／1 |
+| SM冻结版本／SRT发布记录 | 5／5 |
+| SRT运行定义 | 3 |
+| 实验manifest／运行绑定 | 1／2 |
 | SE评价标准 | `opc-v3` |
 
 ## 2. 公共输入与执行约定
@@ -88,7 +88,9 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 | 文件化评价及发布 | `evaluate_research_request(context, input_path)` | 实验`artifacts/evaluation/`及文件哈希 |
 | 候选或版本完整回测 | `run_backtest(context, strategy, request)` | 账户、指标、审计、报告及图表，位于返回的`artifacts.output_dir` |
 
-`run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequest`。候选图表描述通过`chart_descriptor`显式传入；版本使用认证后的原图表，不允许覆盖。两类对象共用底层回放流程，保留各自身份。
+`run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequest`。
+两类对象共用底层回放流程，保留各自身份；TDR根据SRT观察事实、行情和账户账本统一绘图，
+输出`tdr_backtest_chart.v1`。调用方不传入图表描述或策略专属绘图代码。
 
 业务执行只使用`application.run_backtest`；底层回放函数不再公开，请求类型不保留带版本后缀的别名。
 
@@ -168,6 +170,9 @@ result = run_backtest(context, strategy, request, dataflows=flows)
 
 以下业务函数从`czsc_trader.application`导入；`CandidateKey`、`CandidateRegistrationOrigin`、
 `CandidateDerivation`从`strategy_manager`导入，候选与依赖类型从`strategy_runtime`导入。
+
+候选编号固定为`C`加四位数字，例如`C0001`；`CandidateKey`同时包含策略ID，不能用自由命名
+的候选编号替代。实现、有效参数或固定交易规则变化时创建新候选身份。
 
 | API | 请求与返回 |
 | --- | --- |
@@ -251,9 +256,13 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 | API | 返回与语义 |
 | --- | --- |
 | `assemble_delivery(context, deliverable)` | `DeliveryReceipt`；验证内容和证据后发布不可变修订，校验失败或修订冲突抛出明确异常 |
-| `validate_delivery(context, reference)` | `DeliveryValidation`；只读核验当前`DeliveryReference`，返回`PASS/FAIL`及问题定位 |
+| `validate_delivery(context, reference, *, scope=DeliveryValidationScope.FULL)` | `DeliveryValidation`；只读核验当前`DeliveryReference`，返回`PASS/FAIL`、实际范围及问题定位 |
 
-`ASSESSMENT`发布与复验会重新计算自检面板。仅家族诊断`DSR_EFFECTIVE`的数值比较采用
+`DeliveryValidationScope`从`czsc_trader.research_tools`导入。`INTEGRITY`验证文件哈希、身份、
+引用及结构；默认`FULL`还复算本次`ASSESSMENT`的SE自检与比较结果。前驱交付按`INTEGRITY`
+验证，两种范围均不重新运行账户回测；必要时加载实验定义核验源码和归属。
+
+`ASSESSMENT`发布与`FULL`复验会重新计算自检面板。仅家族诊断`DSR_EFFECTIVE`的数值比较采用
 `rel_tol=1e-12`、`abs_tol=0.0`，用于容纳原生线程数变化引起的浮点尾差；有差异时，两侧值
 须在`[0,1]`内，诊断名称、状态、原因及顺序仍须一致。调用方无需为此强制单线程复验。
 文件原始字节及哈希、请求与协议身份、账户指标、其他诊断和候选比较结果仍精确核验。
@@ -279,7 +288,7 @@ SE自检协议中的标准／压力场景ID须与评价请求一致；标准／�
 from czsc_trader.research_tools import DeliveryDefinition, DeliveryStage, ExperimentOwner
 
 definition = DeliveryDefinition(
-    owner=ExperimentOwner("S900", "20261001_S900_EX01"),
+    owner=ExperimentOwner("S900", "EX001_20261004"),
     stage=DeliveryStage.COMPONENTS,
     revision=1,
 )
@@ -306,7 +315,7 @@ definition = DeliveryDefinition(
 问题码为`HANDOFF_REGISTRATION`；平台不自动登记搜索trial。已发布的候选交付校验依赖其自身
 证据，不依赖临时组装源文件或候选登记区；归属实验的有效绑定、已封存清单及前驱交付仍须保留。
 
-阶段四发布和验证都会按记录的请求复算SE结果，并绑定阶段一已确认的数值目标。阶段五复制
+阶段四发布和`FULL`验证按记录的请求复算SE结果，并绑定阶段一已确认的数值目标。阶段五复制
 检验、登记、源码、决定和确认材料闭包；可先交付待批准报告，冻结后用新修订记录实际冻结结果。
 若原归属实验已封存，冻结结果交付必须归入后继实验，不能向旧实验追加。
 阶段四报告展开逐项目标检查、排序敏感性和行为分组；阶段五报告展示用户决定、确认材料链接
@@ -330,7 +339,8 @@ definition = DeliveryDefinition(
 
 1. 留存用户对阶段四交付中候选的选择，以`CandidateSelectionSubject`绑定交付、候选键和内容哈希。
 2. `CandidateInspectionRequest`传入选择记录、`InspectionProtocol`、正在执行的正式REX上下文、
-   `InspectionReplay`元组、明确的版本／父版本、选择截止日、前瞻起始日和运行绑定模板。
+   `InspectionReplay`元组、明确的版本／父版本、版本说明、选择截止日和前瞻起始日；
+   可选附加文件与剩余风险通过`additional_files/remaining_risks`声明。运行绑定由平台生成。
    每个回放项为`InspectionReplay(reference, reproduction_request)`：原评价使用已封存归档引用，
    本次复算使用新的`EvaluationRequest`，无需保留原Python请求或结果对象。
 3. `inspect_candidate`核验候选及依赖、覆盖、运行定义、复算、独立账本审计、候选与拟冻结版本的
@@ -390,14 +400,24 @@ REX执行回执仍为schema 2。新归档检验要求评价产物schema 4，旧�
 `APPROVE/REJECT/DEFER`。宿主负责取得和核验真实用户授权，平台校验确认材料及其引用，
 调用者填写的批准字段本身不构成人员身份认证。
 
-运行绑定模板使用schema 1，字段为`schema_version/source_files/implementation_sha256/install_files/charts/observation`；
-发布身份由冻结生成。TDR输入模板、附加文件和确认材料的路径相对仓库；API返回的检验、决定和
-计划证据相对`strategies/`，调用方应直接复用返回引用。
+平台从已登记候选及附加文件构造`RuntimeBindingSpec`，schema 2包含
+`source_files/implementation_sha256/install_files/observation_sha256`；冻结时添加
+`release_id/release_hash`形成`RuntimeBinding`。观察定义绑定到候选内容，不保存策略绘图代码。
 
-仅`COMMITTED`表示版本完成冻结；新版本使用schema 4，绑定来源登记、检验、批准和请求身份。
+检验、计划和确认材料使用`ResearchEvidenceRef(owner, path, sha256)`，`path`相对其强类型归属。
+用户决定及确认材料存于`research/<策略ID>/decisions/`；检验证据存于当前正式实验的
+`objects/inspection/`；冻结请求与查询事实存于`research/<策略ID>/freeze_requests/<请求ID>/`。
+调用方直接复用API返回的引用，通过`resolve(context.root)`核验，不自行拼接`strategies/`路径。
+`CandidateEvidence`仍用于原评价产物及登记输入，路径按对应接口声明的根目录解析。
+
+仅`COMMITTED`表示版本完成冻结；新版本使用schema 5，保留来源实验、候选编号及固定运行内容。
+检验、用户批准及请求身份由研究证据和冻结日志分别绑定；`StrategyVersion`不嵌入
+`CandidateOrigin/FreezeGovernance`，发布哈希不随追加研究决定改变。
 同一请求同内容返回既有状态，内容冲突或版本冲突明确失败。中断、证据损坏或未完成提交返回
 `UNKNOWN`时保留现场，不自动重试、回滚或换版本。冻结不会自动获得`PAPER_READY`资格或执行部署。
-版本读取、回测和部署只接受schema 4及完整冻结提交链。旧版本和治理原件保持不变；
+平台先完成发布包和研究日志中的提交标记，再原子写入版本文件；版本文件是运行侧可见性边界。
+版本读取、回测和部署只接受schema 5，并按各自入口核验版本、发布包及部署身份；运行侧不读取
+研究批准或冻结日志。旧格式证据不自动升级；
 若需在当前平台执行，须另行授权重新检验及生成当前发布，不能通过改字段或重签原件绕过合同。
 
 ## 9. 使用与维护边界

@@ -48,9 +48,11 @@
 | 阶段一目标、约束及确认依据 | `research/<策略ID>/mandates/<修订>/` |
 | 阶段二至五交付和自检证据 | `experiments/<策略ID>/<归属实验ID>/deliveries/<阶段>/<修订>/` |
 | 历史schema 1/2/3阶段交付 | 原`research/<策略ID>/deliveries/`，原件保留供人工查阅 |
-| 用户决定、技术检验与冻结结果 | `strategies/research_decisions/`、`research_objects/`、`freeze_requests/`中的不可变引用及状态 |
+| 用户决定及确认材料 | `research/<策略ID>/decisions/`及其`objects/`，使用带归属和哈希的研究证据引用 |
+| 技术检验与冻结计划 | `experiments/<策略ID>/<检验实验ID>/objects/inspection/` |
+| 冻结请求及结果查询 | `research/<策略ID>/freeze_requests/<请求ID>/`，通过TDR查询实际状态 |
 | 历史候选提交内容 | `research/SXX/candidates/`及对应旧候选包 |
-| 正式身份、冻结版本、SRT部署和治理证据 | `strategies/`，只由平台工具写入 |
+| 运行策略族、冻结版本、SRT部署及生命周期 | `strategies/`，只由平台工具写入；运行合同不依赖研究批准目录 |
 | 数据与可再生输出 | `data/`、`outputs/`；使用前仍须按角色契约核对因果及身份 |
 
 `HANDOFF.md`记录当前状态及精确交付引用，不另存一套正式阶段结论。实验原件与交付中的

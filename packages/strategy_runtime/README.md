@@ -59,25 +59,33 @@ prepared = instance.prepare_data()
 - `tradable_window`：需要生成执行计划的闭区间，端点必须是`date`类型的可交易日，拒绝字符串和`datetime`；
 - `data_dir`：由主调方分配、可写且与其他实例隔离的数据空间；
 - `symbol`：仅用于冻结版本的显式标的绑定；不支持候选策略静默换标的；
-- `execution_policy`：只允许在保持原策略执行策略类型不变时覆盖，用于受控复算。
+- `execution_policy`：只允许在保持原策略执行策略类型不变时覆盖，用于受控复算；
+- `source_root/runtime_binding`：用于平台在隔离空间加载拟冻结发布，分别使用源码根目录和
+  强类型`RuntimeBinding`；候选拒绝这两项覆盖，普通部署按已认证的发布包加载。
 
 调用方不需要理解策略依赖哪些数据集，也不传入“初始信号日”或“回看窗口”。这些范围由策略实现
 根据交易窗口和交易日历自行推导。
 
 ## 策略实现契约
 
-每个策略实现必须派生 `StrategyImplementation`，并实现四项职责：
+每个策略实现必须派生`StrategyImplementation`，并实现五项职责：
 
-1. `definition`：声明不可变身份、参数、输入、决策、执行和能力契约；
-2. `calendar_window(...)`：推导解析交易窗口所需的交易日历范围；
-3. `derive_calculation_scope(...)`：推导信号日、初始计算日及每项输入的准确范围；
-4. `calculate_history(...)`：使用已准备输入计算渠道无关的目标仓位和诊断信息。
+1. 类方法`from_parameters(parameters: ParameterSet)`：从显式参数构造同一业务实现，返回本类实例；
+2. 只读`definition`：返回`StrategyDefinition`，声明参数、输入、决策、执行、能力、历史及观察契约；
+3. `calendar_window(...)`：推导解析交易窗口所需的交易日历范围；
+4. `derive_calculation_scope(...)`：推导信号日、初始计算日及每项输入的准确范围；
+5. `calculate_history(...)`：使用已准备输入计算渠道无关的目标仓位和诊断信息。
+
+候选和冻结版本通过同一构造方法执行；定义参数必须与输入`ParameterSet`一致。
+`StrategyDefinition.observation`必填，使用`ObservationDefinition`绑定解释序列、事实及展示语义。
+SRT加载器将业务定义与候选或发布身份组装为`RuntimeDefinition`，策略实现不自行构造运行身份。
+支持部署时换标的的实现须显式覆盖`from_parameters_for_symbol`；默认实现明确拒绝换标的。
 
 候选实现只从 `strategy_runtime` 顶层导入策略编写合同。稳定的编写接口包括：
 
 - 定义合同：`CutoffRule`、`InputRequirement`、`InputContract`、`ImplementationRef`、
   `ParameterSet`、`HistoryPolicy`、`DecisionContract`、`ExecutionPolicy`、`MonitoringPolicy`、
-  `RequiredCapabilities`和`RuntimeDefinition`；
+  `RequiredCapabilities`、`StrategyDefinition`和`ObservationDefinition`；
 - 跨市场对齐：`AlignmentRule`、`InputAlignment`、`AlignedInput`和
   `align_input_history`；
 - 计算范围：`CalendarWindow`、`CalculationScope`、`InputRange`、
@@ -87,6 +95,7 @@ prepared = instance.prepare_data()
 
 候选代码只从`strategy_runtime`顶层导入公共符号，不依赖`StrategyLoader`或各内部子模块。
 候选由`StrategyRuntime.create(StrategyInit(...))`加载和运行。
+候选编号为`C`加四位数字，例如`C0001`；完整引用包含策略ID，例如`S900-C0001`。
 
 `StrategyCandidate`支持标准库pickle及进程spawn传输，重建时重新验证候选合同并保持嵌套参数
 不可变、源码根目录和身份不变。该能力仅覆盖候选对象；调用方仍须验证自己的完整worker载荷，
@@ -169,18 +178,18 @@ SRT 计算目标仓位、订单数量、委托类型、委托价和生效时点�
 - 策略实现及其声明源码闭包的 `source_sha256`；
 - 参数身份和完整运行定义。
 
-三者形成`runtime_sha256`。`RuntimeDefinition`只接受schema 2，按完整运行定义计算身份。
+三者形成`runtime_sha256`。`RuntimeDefinition`只接受schema 3，按完整运行定义及观察定义计算身份。
 源码、资源文件或绑定发生变化时须通过获准的当前检验与冻结流程形成新发布；原冻结证据保持不可变。
 加载时任何哈希不一致都会失败。
 
-冻结binding还包含两类展示契约：`charts`锁定TDR回测图实现及其源码闭包，`observation`声明
-SRT决策需要输出的展示无关观察序列。SRT只负责校验并物化观察事实；PTE使用自己的统一渲染器
-生成前瞻观察图，不调用策略回测图代码，也不读取未冻结候选包。
+`RuntimeBindingSpec`使用schema 2，绑定`source_files/implementation_sha256/install_files/observation_sha256`；
+`RuntimeBinding`再绑定发布ID和哈希。平台从候选定义生成绑定，加载时核对观察定义哈希。
+SRT物化`strategy_observation.v1`事实；TDR和PTE各自统一渲染回测及前瞻图，冻结包不绑定策略绘图代码。
 
 冻结版本的可用性以当前治理事实和TDR `strategy_info` API查询为准，不以本说明中的历史版本清单判断。
 
-`StrategyRelease.from_mapping`只接受显式整数`schema_version=4`；旧版本、缺失、
-布尔值、字符串或未知版本立即失败。发布记录包含强类型来源和冻结治理身份；准备、加载和部署均会
-核对冻结请求、`committed.json`、版本及发布包哈希，拒绝未提交或证据损坏的版本。
+`StrategyRelease.from_mapping`只接受显式整数`schema_version=5`；旧版本、缺失、
+布尔值、字符串或未知版本立即失败。发布记录保存来源实验、候选编号和固定策略载荷；研究检验、
+批准与冻结日志独立保存。部署加载核对版本、发布包、运行绑定及部署凭据哈希，不读取研究日志。
 TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不等于已冻结或已部署。
 历史发布原件保留供人工查阅，平台不承诺机器复验或在当前运行时执行；升级须单独授权。

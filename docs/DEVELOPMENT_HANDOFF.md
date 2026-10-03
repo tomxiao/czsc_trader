@@ -37,9 +37,9 @@ PTE生产活动版本都可能变化，必须在接手时按任务范围分别�
 Futu中国市场模拟交易；实际服务与渠道健康以运行环境状态为准。
 
 当前冻结入口绑定候选身份、技术检验和用户明确批准，只有`COMMITTED`表示完成。普通SRT决策使用`advice.v4`，原子时点计划
-使用`advice.v5`；TDR回测图消费`strategy_chart.v1`，PTE以独立DFLS行情和SRT输出的
-`strategy_observation.v1`生成`pte_forward_chart.v1`前瞻图。PTE不读取未冻结候选包或
-策略专属前瞻图代码。
+使用`advice.v5`；TDR和PTE均消费SRT输出的`strategy_observation.v1`事实，分别统一生成
+`tdr_backtest_chart.v1`回测图和`pte_forward_chart.v1`前瞻图。图表结合各自的行情与账户事实，
+冻结包不绑定策略绘图代码。
 
 每次接手先执行：
 
@@ -72,7 +72,10 @@ git rev-list --left-right --count origin/master...master
 - **REX**位于`packages/research_experiment/`。它定义可执行研究实验的声明、能力、输入与
   回执合同，并隔离加载经过源码哈希校验的实验实现；TDR的`research_tools`提供平台上下文、
   受控数据访问及执行适配。REX不替研究员判断机制或改变实验档案。
-- **SM**位于`packages/strategy_manager/`。管理策略族、候选登记、用户决定、当前冻结版本、证据、生命周期及治理验证。`StrategyVersion`只支持schema 4，候选登记只支持schema 2；旧冻结治理解码已删除，原件保留。
+- **SM**位于`packages/strategy_manager/`。提供研究登记、发布及生命周期契约和存储能力。
+  研究注册表位于`research/registrations/`；首次冻结时在`strategies/`登记运行策略族。
+  `StrategyVersion`只支持schema 5，候选登记只支持schema 2。TDR保存研究决定和技术检验证据，
+  运行注册表保存版本、发布包、资格及生命周期；研究批准不嵌入运行发布身份。
 - **SE**位于`packages/strategy_evaluator/`。它接收TDR提供的结构化事实，执行筛劣、Pareto
   排名、PBO、DSR、Bootstrap、参数邻域和成本压力等确定性数值计算；它不读取仓库、不理解
   金融语义，也不签发TDR裁决或改变SM、PTE状态。
@@ -99,8 +102,9 @@ git rev-list --left-right --count origin/master...master
   Tushare股票与ETF适配、源时间元数据和历史补丁分别在`packages/dataflows/src/dataflows/`
   的供应商模块、`facade.py`及`history_patches/`维护；补丁只匹配已登记的异常签名，修复后
   必须重新校验，未知异常明确失败。研究正式输入优先走DFLS公共门面。
-正式实验档案按`experiments/<策略ID>/<实验ID>/`保存。实验ID全局唯一，TDR按ID定位
-嵌套档案；历史SM证据中的旧路径字符串随原件保留，不由当前API兼容解码。
+正式实验档案按`experiments/<策略ID>/<实验ID>/`保存。完整定位键为“策略ID＋实验ID”，
+不同策略可有同名实验；存在歧义时必须显式提供策略ID。新实验编号按策略跨日期递增，
+目录为`EXxxx_YYYYMMDD`；历史档案保持原位，旧来源字符串不由当前API自动迁移。
 
 依赖方向保持为：`TDR → REX/FSC/STC/SM/SE/TXE/SRT/DFLS`、`REX → SRT`、`TXE → SRT`、
 `SRT → DFLS`、`PTE → SRT`、`WDG → PTE进程`。TXE与DFLS同层，TDR和研究脚本可以调用；
@@ -127,9 +131,11 @@ PTE的账户事实仍以渠道回报为准。
 7. WDG只负责PTE进程启动、探活和故障拉起，不包含交易、数据发布或账户状态判断。
 8. 批处理只有全部目标完成才可更新成功日期或成功状态。部分策略数据准备成功、部分账户决策成功、
    渠道仅受理委托或外部结果未知，都不能汇总成全局成功；失败事实必须进入审计、告警和退避。
-9. 当前`StrategyVersion`使用schema 4，`release_hash`覆盖完整版本内容；`CandidateOrigin`与
-   `FreezeGovernance`绑定登记、检验、批准及冻结请求。版本查询、加载和部署核验
-   `committed.json`与发布包身份。历史格式明确拒绝，原件保持不可变。
+9. 当前`StrategyVersion`使用schema 5，`release_hash`覆盖固定运行内容及发布元数据。
+   研究侧计划、检验、批准及冻结日志分别绑定登记和请求，不进入运行版本字段。
+   冻结流程先完成发布包和研究日志的`committed.json`，再原子写入版本文件作为运行可见性边界。
+   查询冻结状态须核验日志、版本和发布包；运行加载、回测及部署核验各自的版本、包和部署身份，
+   不读取研究批准目录。旧格式在相应边界明确拒绝。
 10. 跨机器文件身份统一复用`src/czsc_trader/identity.py`：普通文本归一化换行为LF，JSON按语义
     计算SHA-256，原始行情与二进制按字节计算SHA-256；既有实验档案保持原样。
 
@@ -140,8 +146,15 @@ PTE的账户事实仍以渠道回报为准。
 3. `run_backtest(context, strategy, request)`接受`StrategyCandidate`或`StrategyVersion`，共用SRT/TXE回放；用户CLI当前解析已登记版本。请求使用`BacktestRequest`，显式提供`lot_size`；候选通过Python API登记和加载。
 4. 已登记版本回测仍使用现有SRT部署凭据，缺少时明确失败，不自动部署。
 5. `deploy_strategy`仅在独立授权后调用；PTE账户、服务和生产状态不随研究授权开放。
-6. 旧CIO、候选包、裁定及冻结执行路径已删除，不提供回退。历史版本、发布清单、批准和凭据保持不可变；当前API不承担历史解码或机器复验。
+6. 旧CIO、候选包、裁定及冻结执行路径已删除，不提供回退。历史研究证据保持不可变；
+   当前API不承担旧格式解码或机器复验，运行发布以当前版本及其认证文件为准。
 7. 用户选型后调用`inspect_candidate`；取得绑定检验计划的明确冻结批准后调用`freeze_candidate`。仅`COMMITTED`表示完成，不确定时以同一请求ID查询。
+
+用户决定与确认材料位于`research/<策略ID>/decisions/`；检验证据位于当前正式实验的
+`objects/inspection/`；冻结请求及结果位于`research/<策略ID>/freeze_requests/<请求ID>/`。
+研究证据使用带归属的`ResearchEvidenceRef`，调用方以仓库根解析返回引用。
+发布版本采用schema 5，SRT运行定义采用schema 3，运行绑定采用schema 2；
+字段及调用方式见[TDR说明](../src/czsc_trader/README.md)和[SRT说明](../packages/strategy_runtime/README.md)。
 
 研究员直接使用所属模块API或TDR公共业务入口，不拼装CLI。历史实验原件保留供人工查阅，不承诺机器复验；继续研究需生成符合当前契约的新证据。
 
@@ -226,7 +239,7 @@ Invoke-RestMethod http://127.0.0.1:8080/api/system/status
 ```
 
 发布构建会把`strategies/`中的冻结发布包和部署凭据完整复制到PTE版本快照，并逐个调用SRT
-校验运行时、源码闭包、图表及观察契约。发布脚本拒绝轻量tag、提交不匹配、策略快照漂移、
+校验运行时、源码闭包、运行绑定及观察契约。发布脚本拒绝轻量tag、提交不匹配、策略快照漂移、
 制品损坏和不完整的既有版本。生产目录只保留`host/`、`releases/`和`shared/`；构建过程与缓存
 不写入生产目录。
 
@@ -244,7 +257,6 @@ $RuntimeArgs = @(
   '--database'; (Join-Path $PteRoot 'shared\state\runtime.db')
   '--data-dir'; (Join-Path $PteRoot 'shared\data')
   '--config-root'; (Join-Path $PteRoot 'shared\config')
-  '--advice-executable'; (Join-Path $ReleaseRoot '.venv\Scripts\czsc-trader.exe')
   '--release-manifest'; (Join-Path $ReleaseRoot 'release-manifest.json')
 )
 ```
@@ -274,11 +286,13 @@ Content-Type: application/json
 `DECISION_SUPERSEDED`或`DECISION_AND_INTENTS_SUPERSEDED`。只有尚未提交渠道且没有
 `channel_order_id`的订单意图可以随旧决策失效；已有渠道订单或结果未知时返回冲突。
 
-冻结策略不会自动进入SRT或PTE；获准的DEV通过`deploy_strategy` API写入SRT部署凭据，创建PTE账户
-仍是独立授权动作。暂停只阻止新单，已有订单继续对账。PTE日调度为每个账户创建隔离的SRT
+冻结策略不会自动进入SRT或PTE；新版本初始资格为`RESEARCH`。获准的DEV通过SM
+`approve_paper_trading(PaperTradingApproval)`绑定发布哈希授予`PAPER_READY`，通过
+`deploy_strategy` API写入SRT部署凭据；创建PTE账户仍是独立授权动作。PTE在进程内调用SRT，
+不接受`--advice-executable`参数。暂停只阻止新单，已有订单继续对账。PTE日调度为每个账户创建隔离的SRT
 实例并调用`prepare_data()`，准备成功后才执行账户决策；`srt-prepare`只用于人工诊断或独立准备。
 准备异常必须先于账户决策明确暴露。
-需要把模拟盘里程碑写回策略生命周期时，先导出自包含证据，再由TDR登记：
+需要把模拟盘里程碑写回策略生命周期时，先导出自包含证据，再由获准的DEV通过SM登记：
 
 ```powershell
 & $Pte performance export @RuntimeArgs `
@@ -353,8 +367,10 @@ Get-Content (Join-Path $PteRoot 'shared\logs\pte.log') -Tail 100
 
 最近一次仓库级全量回归结果、治理记录和未覆盖在线检查以
 [测试用例治理](TEST_GOVERNANCE.md)的“最近一次治理记录”章节为准，不在本文复制快照。
-完整离线回归默认运行`.\scripts\test-all.ps1`，三条模块通道全部结束后统一汇总退出码并运行
-Ruff；通道日志位于`.tmp/test-regression/`。子包聚焦验证可从仓库根目录运行：
+完整离线回归运行`.\scripts\test-all.ps1`，`TDR_FREEZE/TDR/PTE/PACKAGES`四条任务全部结束后
+统一汇总退出码并运行Ruff；包含发布验收用例，日志位于`.tmp/test-regression/`。
+日常聚焦验证默认不包含标记为`release_acceptance`的真实冻结包验收；需要时显式传入
+`--release-acceptance`。子包聚焦验证可从仓库根目录运行：
 
 ```powershell
 $PackageName = "dataflows"  # 按需改为目标子包名
@@ -393,10 +409,12 @@ PTE控制台另有Node测试；完整命令、版本验收边界及单模块失�
 | 评价路径等价 | 研究与候选侧已复用评价Harness，尚无公开的加速/完整路径逐日等价检查；仅在下一批研究需要加速评价时实施 | 固定参数下逐日对齐目标仓位、账户净值与指标，并保存两侧结果身份（C05/C06） |
 | 联合搜索执行器 | 当前没有公共`run_search`；只有重复的大规模搜索确实产生并发、复现或账本问题时再建设 | 固定种子下1与多worker的trial编号、参数和裁决一致；失败trial进入账本（C06） |
 | 研究状态与数据能力查询 | `research status`及`data capabilities`入口尚不存在；出现反复的状态误读或数据合同试错时分别评审 | 只读派生权威实验状态或合法数据集/时间语义，不泄露凭据、不改数据 |
-| `expr_codegen`研究依赖 | 根`research` extra未声明该库；新机制确需表达式生成时由RSCH给出可复现用途，再确认distribution、版本和兼容性 | 生成代码与研究表达式逐值一致，冻结运行时不依赖该库 |
 
 原S008的C01-C03已有部分合成夹具和测试；C04-C06应随对应议题补齐，不为维持历史清单单独
 开发。断点恢复、worker共享和环境快照仅在出现明确成本或故障证据时另行立项。
+
+`expr_codegen==0.16.6`已在根`research` extra声明，是现有研究工具。使用前核对当前支持后端，
+生成代码与参考计算逐值验证；研究依赖不自动进入冻结运行时或PTE发布闭包。
 
 ## 详细资料入口
 
