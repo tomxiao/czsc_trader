@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
+import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
 
 test('FT-PTEJS01 console state preserves scope, stable polling and Chinese presentation', () => {
   assert.deepEqual(parseRoute('/accounts/s001-v2'), {page: 'account', accountId: 's001-v2'});
@@ -176,4 +176,36 @@ test('channel summary keeps four core metrics and moves reconciliation into deta
   assert.match(html,/<summary class="reconciliation-bar">/);
   assert.match(html,/<span class="reconciliation-trigger">查看明细<\/span>/);
   assert.match(channelMarkup(snapshot,true),/class="reconciliation-details" open/);
+});
+
+
+test('account record pagination bounds pages without losing or duplicating rows', () => {
+  const rows=Array.from({length:25},(_,id)=>({id}));
+  assert.deepEqual([1,2,3].flatMap(page=>recordPage(rows,page).rows),rows);
+  assert.equal(recordPage(rows,100).page,3);
+  assert.equal(recordPage(rows,-1).page,1);
+  assert.equal(recordPage(rows,NaN).page,1);
+  assert.deepEqual(recordPage([],2),{rows:[],page:1,pages:1,total:0});
+  assert.equal(recordPage(rows.slice(0,5),3).page,1);
+  assert.equal(rows.length,25);
+});
+
+test('account view separates history and preserves explicit reading state', () => {
+  const snapshot={scope:{account_id:'demo',release_id:'S003-v1'},account:{account_id:'demo',symbol:'510500.SH'},
+    orders:Array.from({length:25},(_,i)=>({channel_order_id:`ORDER-${i}`})),
+    events:[{event_type:'HISTORICAL_SENTINEL'}],
+    intents:[{attention_required:true,attention_reason:'REVIEW_REQUIRED',intent_id:'I1'}]};
+  const html=accountMarkup(snapshot,[],{tab:'records',records:'orders',pages:{orders:2},accountDetails:true,decisionDetails:true});
+  assert.match(html,/data-account-panel="chart" hidden/);
+  assert.match(html,/S003-v1 · 510500.SH · Futu/);
+  assert.match(html,/data-account-panel="records" >/);
+  assert.match(html,/data-account-details="accountDetails" open/);
+  assert.match(html,/data-account-details="decisionDetails" open/);
+  assert.match(html,/第 2 \/ 3 页/);
+  assert.match(html,/ORDER-10/);
+  assert.doesNotMatch(html,/ORDER-20/);
+  assert.doesNotMatch(html,/HISTORICAL_SENTINEL/);
+  assert.match(html,/href="\/audit-events\?account_id=demo"/);
+  assert.ok(html.indexOf('REVIEW_REQUIRED')<html.indexOf('role="tablist"'));
+  assert.match(accountMarkup(snapshot,[]),/data-account-panel="records" hidden/);
 });

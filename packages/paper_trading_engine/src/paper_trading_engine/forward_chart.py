@@ -78,7 +78,7 @@ def render_forward_chart_html(value: object) -> str:
       <svg id="forward-svg" role="img" aria-label="交易日K线、策略信号、成交、持仓及逐日解释"></svg>
       <div class="forward-tooltip" id="forward-tooltip" role="tooltip" hidden></div>
     </section>
-    <footer><span>截止线左侧仅作行情背景；右侧为冻结版本前瞻记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span></footer>
+    <footer><span>截止线左侧仅作行情背景；右侧为冻结版本前瞻记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>
   <script src="/static/forward-chart.js"></script>

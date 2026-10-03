@@ -4,6 +4,8 @@
   const svg=document.querySelector('#forward-svg');
   const tooltip=document.querySelector('#forward-tooltip');
   const context=JSON.parse(document.querySelector('#forward-context').textContent);
+  const embedded=window.parent!==window;
+  if(embedded)root.classList.add('embedded');
   const NS='http://www.w3.org/2000/svg';
   const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
@@ -57,8 +59,8 @@
     const rows=visibleBars();if(!rows.length)return;
     const width=Math.max(320,stage.clientWidth),compact=width<700;
     const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
-    const priceTop=34,priceH=compact?250:285,signalTop=priceTop+priceH+20,signalH=compact?92:105;
-    const positionTop=signalTop+signalH+18,positionH=compact?0:68;
+    const priceTop=34,priceH=embedded?Math.max(180,Math.min(285,window.parent.innerHeight-540)):(compact?250:285),signalTop=priceTop+priceH+20,signalH=embedded?70:(compact?92:105);
+    const positionTop=signalTop+signalH+18,positionH=compact?0:(embedded?50:68);
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
     const explanations=rows.map(row=>wrapExplanation(explanation(byDate.get(row.date)?.observation),innerW-24,measure));
@@ -76,7 +78,9 @@
     const visibleCutoff=rows.findIndex(row=>row.date>cutoff);
     if(visibleCutoff>=0){const cutoffX=visibleCutoff?x(visibleCutoff-.5):x(0);add(el('rect',{x:cutoffX,y:priceTop,width:left+innerW-cutoffX,height:explainTop+explainH-priceTop,fill:css('--forward')}));add(el('line',{x1:cutoffX,x2:cutoffX,y1:priceTop,y2:explainTop+explainH,class:'cutoff'}));add(el('text',{x:cutoffX+6,y:priceTop+12,class:'cutoff-label'},'冻结后前瞻区间'));}
     const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
-    add(el('text',{x:12,y:priceTop+12,class:'panel-label'},'价格'));add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));if(!compact)add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'解释'));
+    const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
+    priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));
+    add(el('text',{x:12,y:signalTop+12,class:'panel-label'},'信号'));if(!compact)add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'解释'));
     const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
     const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
     if(state.layers.signal)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY')return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value)]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value)]);}});if(points.length)add(el('path',{d:linePath(points),fill:'none',stroke:css(seriesColors[seriesIndex%seriesColors.length]),'stroke-width':2}));guidePoints.forEach(guide=>{if(guide.points.length)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));});});
@@ -86,12 +90,33 @@
     [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{if(compact&&index===1)return;add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
     const tickCount=compact?4:7;for(let i=0;i<tickCount;i++){const index=Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
     const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2})),main=add(el('text',{x:left+12,y:explainTop+22,class:'explain-main'})),sub=add(el('text',{x:left+12,y:explainTop+42,class:'explain-sub'}));
-    function select(index,pointer){index=Math.max(0,Math.min(rows.length-1,index));state.selected=rows[index].date;const row=rows[index],decision=byDate.get(row.date),observation=decision?.observation;cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));const first=observation?.status==='READY'?observation.series?.[0]:null;signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}const event=decision?actionLabel(decision.action):'无新增事件';main.textContent=`${row.date} · ${event}`;sub.replaceChildren(...explanations[index].map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));tooltip.innerHTML=`<div class="head"><span>${safe(row.date)}</span><span>${safe(event)}</span></div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span><span>目标持仓</span><span>${Number(decision?.target_quantity||0).toLocaleString('zh-CN')} 股</span></div>`;if(pointer){tooltip.hidden=false;const tooltipWidth=250,leftPos=pointer[0]+18;tooltip.style.left=`${leftPos+tooltipWidth>width?pointer[0]-tooltipWidth-18:leftPos}px`;tooltip.style.top=`${Math.max(18,Math.min(height-175,pointer[1]-34))}px`;}}
+    function select(index,pointer){
+      index=Math.max(0,Math.min(rows.length-1,index));state.selected=rows[index].date;
+      const row=rows[index],decision=byDate.get(row.date),observation=decision?.observation;
+      const dayFills=fills.filter(item=>String(item.occurred_at||item.session).slice(0,10)===row.date);
+      cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
+      const first=observation?.status==='READY'?observation.series?.[0]:null;
+      signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
+      const event=decision?actionLabel(decision.action):(dayFills.length?'成交事件':'无新增事件');
+      main.textContent=`${row.date} · ${event}`;
+      sub.replaceChildren(...explanations[index].map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
+      const fillDetails=dayFills.map(item=>`<span>${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${Number(item.quantity).toLocaleString('zh-CN')} 股</span><span>${fmt(item.price)}</span>`).join('');
+      tooltip.innerHTML=`<div class="head"><span>${safe(row.date)}</span><span>${safe(event)}</span></div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span><span>目标持仓</span><span>${Number(decision?.target_quantity||0).toLocaleString('zh-CN')} 股</span></div>${dayFills.length?`<div class="head">成交价（不复权）</div><div class="grid">${fillDetails}</div><div>箭头仅标记成交日期，纵坐标不代表成交价。</div>`:''}`;
+      if(pointer){
+        tooltip.hidden=false;
+        const tooltipWidth=tooltip.offsetWidth,leftPos=pointer[0]+18;
+        tooltip.style.left=`${Math.max(0,leftPos+tooltipWidth>width?pointer[0]-tooltipWidth-18:leftPos)}px`;
+        tooltip.style.top=`${Math.max(0,Math.min(height-tooltip.offsetHeight,pointer[1]-34))}px`;
+      }
+    }
     const selectedIndex=rows.findIndex(row=>row.date===state.selected);
     select(selectedIndex<0?rows.length-1:selectedIndex,null);
     const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
   document.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
   document.querySelectorAll('[data-layer]').forEach(button=>button.addEventListener('click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
+  const viewportWindow=embedded?window.parent:window;
+  viewportWindow.addEventListener('resize',render);
+  window.addEventListener('pagehide',()=>viewportWindow.removeEventListener('resize',render),{once:true});
   new ResizeObserver(render).observe(stage);render();
 })();

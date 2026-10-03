@@ -206,7 +206,6 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
             urlopen(base + "/static/plotly.min.js", timeout=3)
         assert obsolete_asset.value.code == 404
         assert 'scrolling="no"' in app_js
-        assert "交易标的 ${esc(a.symbol)}" in app_js
         assert "ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称'" in app_js
         assert "各账户按自身前瞻观察窗口统计" in app_js
         assert "共同观察区间" not in app_js
@@ -215,7 +214,6 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
         assert "正在重新生成观察图" in app_js
         assert "releaseVersionLabel(s)" in app_js
         assert ".release-version{min-width:78px" in styles_css
-        assert ".chart-frame-host{height:820px;min-height:820px" in styles_css
         assert ".chart-frame-host iframe{display:block;width:100%;height:100%" in styles_css
         assert html.index("Futu模拟盘CN") < html.index("审计事件") < html.index("账户比较")
         with urlopen(base + "/audit-events", timeout=3) as response:

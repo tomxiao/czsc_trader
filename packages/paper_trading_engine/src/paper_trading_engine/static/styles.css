@@ -72,7 +72,7 @@ tr:last-child td{border:0}
 .comparison-select label{padding:10px 13px;border:1px solid var(--line);border-radius:8px}
 .chart-governance,.chart-message{color:var(--muted);font-size:13px;margin:-4px 0 12px}
 .chart-message{color:#ffd68d}
-.chart-frame-host{height:820px;min-height:820px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#07101d}
+.chart-frame-host{height:clamp(460px,65vh,740px);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#07101d}
 .chart-frame-host iframe{display:block;width:100%;height:100%;border:0;overflow:hidden;background:#07101d}
 .chart-frame-host .loading,.chart-frame-host .error{height:100%;min-height:0;display:grid;place-content:center;gap:12px}
 .toast{position:fixed;right:24px;bottom:24px;background:#183153;border:1px solid #315b91;border-radius:9px;padding:12px 16px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
@@ -90,4 +90,57 @@ main{padding:14px}
 .hero{flex-direction:column}
 .decision{grid-template-columns:1fr}
 .kv{grid-template-columns:1fr}
+}
+[hidden]{display:none!important}
+.account-layout{grid-template-columns:220px minmax(0,1fr);gap:16px}
+.account-layout .sidebar{position:sticky;top:100px;height:calc(100dvh - 124px)}
+.account-picker{display:none}
+.account-hero{padding:12px 16px;gap:8px 16px;flex-wrap:wrap;align-items:center}
+.account-hero h1{font-size:20px;margin:0 0 4px}
+.account-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.account-actions a{text-decoration:none;font-size:12px}
+.account-actions .switch{font-size:12px;padding:8px 12px}
+.account-details{flex-basis:100%;font-size:12px;color:var(--muted)}
+.account-details summary{cursor:pointer;width:fit-content}
+.account-details .kv{margin-top:10px;grid-template-columns:repeat(2,minmax(0,1fr));color:var(--text)}
+.account-layout .kv div{overflow-wrap:anywhere;font-size:12px}
+.account-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:8px}
+.account-metrics .metric{padding:10px 12px}
+.account-metrics .metric strong{margin-top:5px;font-size:19px;overflow-wrap:anywhere}
+.account-decision{padding:10px 14px;margin-top:8px;font-size:13px}
+.account-decision summary{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;cursor:pointer}
+.account-decision summary strong{color:#9dc4ff}
+.account-decision .kv{margin-top:10px}
+.account-tabs,.record-tabs{display:flex;gap:4px;margin-top:12px;border-bottom:1px solid var(--line)}
+.account-tabs button,.record-tabs button{background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;padding:10px 16px;cursor:pointer;font:inherit;font-size:14px}
+.account-tabs button[aria-selected=true],.record-tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--blue)}
+.account-tabs button:focus-visible,.record-tabs button:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.record-tabs{margin-top:4px}
+.record-tabs button{font-size:13px;padding:8px 14px}
+.account-layout .section{margin-top:8px;padding:12px}
+.account-chart .section-head{margin-bottom:8px;gap:8px}
+.account-chart .button{font-size:12px;padding:5px 8px;text-decoration:none;white-space:nowrap}
+.record-pagination{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
+.record-pagination span{margin-right:auto}
+.record-pagination button:disabled{opacity:.4;cursor:default}
+@media(max-width:1100px){.account-actions{margin-left:0}.account-metrics .metric strong{font-size:17px}}
+@media(max-width:900px){
+.account-layout{grid-template-columns:1fr;gap:8px}
+.account-layout .sidebar{position:static;height:auto;padding:8px 12px;display:block}
+.account-cards{display:none}
+.account-picker{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+.account-picker select{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px;font:inherit}
+.account-hero{flex-direction:row}
+.account-heading{flex:1;min-width:180px}
+.account-details .kv{grid-template-columns:1fr}
+.account-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.system-bar{grid-template-columns:1fr auto;gap:8px;padding:10px 14px}
+.system-bar nav{grid-row:2;grid-column:1/-1}
+.system-bar nav a{padding:6px 10px;font-size:13px}
+}
+@media(max-width:480px){
+.account-metrics .metric{padding:8px}
+.account-metrics .metric strong{font-size:15px}
+.account-decision summary{gap:8px 12px;font-size:12px}
+.record-pagination{flex-wrap:wrap}
 }
