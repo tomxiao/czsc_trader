@@ -4,7 +4,7 @@
 
 - 身份 RSCH，研究分支 `codex/s011-research-resume`；策略族 S011，批次 `SGC-S011-001`，交易标的 `159326.SZ`。
 - 阶段三交付 36 个中心候选；阶段四覆盖 36 个中心、576 个联合邻域点及 36 份成本压力账户，共 648 个账户坐标。阶段三、四交付均通过 FULL 校验。
-- 用户已选择 `S011-C0618` 并授权阶段五技术检验。八项技术检查均 PASS，冻结计划等待用户批准；尚未生成 `S011-v1`，未部署或启用生产。
+- 用户已选择 `S011-C0618`，八项技术检查均 PASS；获用户明确批准后已冻结为 `S011-v1`，状态 COMMITTED。未部署或启用生产。
 
 | 阶段 | 当前交付入口 |
 | --- | --- |
@@ -12,7 +12,7 @@
 | 二：有效信息组件 | [组件报告](../../experiments/S011/20261002_S011_EX37/deliveries/COMPONENTS/1/report.md) |
 | 三：策略与参数优化 | [候选报告](../../experiments/S011/20261002_S011_EX59/deliveries/CANDIDATES/1/report.md) |
 | 四：自检、比较与选型依据 | [自检报告](../../experiments/S011/20261003_S011_EX01/deliveries/ASSESSMENT/1/report.md) |
-| 五：技术检验与冻结计划 | [检验报告](../../experiments/S011/EX078_20261003/deliveries/INSPECTION/1/report.md) |
+| 五：技术检验与冻结 | [最终报告](../../experiments/S011/EX078_20261003/deliveries/INSPECTION/2/report.md)、[冻结回执](../../experiments/S011/EX078_20261003/freeze_receipt.json) |
 
 ## 用户目标与执行边界
 
@@ -41,4 +41,4 @@
 
 ## 下一步
 
-请批准或拒绝检验报告中的精确冻结计划 `267c76ae30e813ca43ad4f52bc1017b81feb32d5c6ab520a95698f4f6f343fad`，目标为将当前 C0618 冻结为 `S011-v1`。阶段五执行回执及当前交付修订固定，实验整体等待冻结决定。合并、tag、推送及生产操作按各自授权边界处理。
+用户已批准精确计划 `267c76ae30e813ca43ad4f52bc1017b81feb32d5c6ab520a95698f4f6f343fad`，冻结版本见 [S011-v1](../../strategies/S011/versions/v1.json)。后续如开展前瞻，先确认 PTE 环境、账户与运行参数并取得部署授权；合并、tag、推送及生产操作按各自授权边界处理。

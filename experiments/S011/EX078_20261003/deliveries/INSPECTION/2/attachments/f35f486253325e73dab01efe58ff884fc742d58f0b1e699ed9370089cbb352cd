@@ -1,0 +1,74 @@
+{
+  "experiment_id": "20261002_S011_EX59",
+  "definition_sha256": "4835496b39dea548418cebc8da27f386b92802834b2e19afd2ee2c0a6e3a30e5",
+  "source_sha256": "a9db3940f08f53b358d3b39c15d906dfc35182ee18160f4a5414048dd15c1378",
+  "resources_sha256": "50703b259ede0fe53c37ed65540bf1b68fa8f8def2975c55103faffa49c2576e",
+  "passed": true,
+  "checks": [
+    {
+      "code": "SOURCE_BOUND",
+      "status": "PASS",
+      "message": "source closure matches binding"
+    },
+    {
+      "code": "DEFINITION_BOUND",
+      "status": "PASS",
+      "message": "definition is stable"
+    },
+    {
+      "code": "RESOURCE_CONTRACT",
+      "status": "PASS",
+      "message": "resources match definition"
+    },
+    {
+      "code": "PREDECESSOR_CONTRACT",
+      "status": "PASS",
+      "message": "predecessor identities match"
+    },
+    {
+      "code": "ARCHIVE_IDENTITY",
+      "status": "PASS",
+      "message": "static archive identity is valid"
+    },
+    {
+      "code": "SOURCE_RISK_SCAN",
+      "status": "PASS",
+      "message": "known source patterns inspected; warnings require review"
+    },
+    {
+      "code": "DATA_READINESS",
+      "status": "WARNING",
+      "message": "no explicit data requests supplied; credentials, availability and coverage were not probed"
+    },
+    {
+      "code": "SYNTHETIC_SEARCH_HISTORY",
+      "status": "PASS",
+      "message": "573 historical complete proposals and 3 failed proposals retained"
+    },
+    {
+      "code": "RESULT_SERIALIZATION",
+      "status": "PASS",
+      "message": "synthetic output JSON roundtrip passed"
+    },
+    {
+      "code": "SYNTHETIC_PRECHECK",
+      "status": "PASS",
+      "message": "synthetic precheck passed"
+    },
+    {
+      "code": "SOURCE_UNCHANGED",
+      "status": "PASS",
+      "message": "source unchanged after synthetic precheck"
+    },
+    {
+      "code": "DEFINITION_UNCHANGED",
+      "status": "PASS",
+      "message": "definition unchanged after synthetic precheck"
+    },
+    {
+      "code": "PREFLIGHT_ENFORCEMENT",
+      "status": "PASS",
+      "message": "binding schema v3 requires preflight at execution entry"
+    }
+  ]
+}
