@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from .runtime_release import RuntimeRelease, resolve_active_release
+from .runtime_release import RuntimeRelease, _resolve_active_release_for_host
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,7 @@ class ServiceConfig:
         return self.runtime_root / "shared"
 
     def active_release(self) -> RuntimeRelease:
-        return resolve_active_release(self.runtime_root)
+        return _resolve_active_release_for_host(self.runtime_root)
 
     def _serve_arguments(self, release: RuntimeRelease) -> list[str]:
         return [

@@ -8,10 +8,9 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
-from typing import Any
-
-from strategy_runtime import deployment_inventory
+from typing import Any, Callable
 
 
 MANIFEST_NAME = "release-manifest.json"
@@ -115,6 +114,15 @@ class RuntimeRelease:
 
 
 def load_release(runtime_root: Path, release_id: str) -> RuntimeRelease:
+    from strategy_runtime import deployment_inventory
+
+    return _load_release(runtime_root, release_id, deployment_inventory)
+
+
+def _load_release(
+    runtime_root: Path, release_id: str,
+    inventory_reader: Callable[[Path], dict[str, str]],
+) -> RuntimeRelease:
     runtime_root = Path(runtime_root).resolve()
     release_id = _safe_release_id(release_id)
     releases_root = (runtime_root / "releases").resolve()
@@ -148,7 +156,7 @@ def load_release(runtime_root: Path, release_id: str) -> RuntimeRelease:
     expected_strategy_releases = manifest.get("strategy_releases")
     if (
         expected_strategy_releases is not None
-        and deployment_inventory(strategies) != expected_strategy_releases
+        and inventory_reader(strategies) != expected_strategy_releases
     ):
         raise RuntimeError("PTE release strategy inventory differs from manifest")
     runtime_files = manifest.get("runtime_files")
@@ -195,11 +203,43 @@ def active_release_path(runtime_root: Path) -> Path:
 
 
 def resolve_active_release(runtime_root: Path) -> RuntimeRelease:
+    return _resolve_active_release(runtime_root, load_release)
+
+
+def _installed_strategy_inventory(strategies: Path) -> dict[str, str]:
+    """Run SRT validation inside the selected runtime, outside the lean host."""
+    release_root = strategies.parent
+    scripts = release_root / '.venv' / ('Scripts' if sys.platform == 'win32' else 'bin')
+    python = scripts / ('python.exe' if sys.platform == 'win32' else 'python')
+    completed = subprocess.run(
+        [str(python), '-I', '-B', '-c',
+         'import json,sys; from pathlib import Path; '
+         'from strategy_runtime import deployment_inventory; '
+         'print(json.dumps(deployment_inventory(Path(sys.argv[1]))))', str(strategies)],
+        cwd=release_root, capture_output=True, text=True, timeout=60, check=True,
+    )
+    result = json.loads(completed.stdout)
+    if not isinstance(result, dict) or not all(
+        isinstance(key, str) and isinstance(value, str) for key, value in result.items()
+    ):
+        raise RuntimeError('installed runtime returned invalid strategy inventory')
+    return result
+
+
+def _resolve_active_release_for_host(runtime_root: Path) -> RuntimeRelease:
+    return _resolve_active_release(runtime_root, lambda root, release_id: _load_release(
+        root, release_id, _installed_strategy_inventory,
+    ))
+
+
+def _resolve_active_release(
+    runtime_root: Path, loader: Callable[[Path, str], RuntimeRelease],
+) -> RuntimeRelease:
     active_path = active_release_path(runtime_root)
     active = _read_object(active_path)
     if active.get("schema_version") != 1:
         raise RuntimeError("unsupported active PTE release schema")
-    release = load_release(runtime_root, _safe_release_id(active.get("release_id")))
+    release = loader(runtime_root, _safe_release_id(active.get("release_id")))
     if active.get("manifest_sha256") != release.manifest_sha256:
         raise RuntimeError("active PTE release manifest identity differs")
     return release

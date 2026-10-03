@@ -110,7 +110,10 @@ def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_pat
         load_release(runtime_root, "v0.4.1")
 
 
-def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path):
+def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        'paper_trading_engine.runtime_release._installed_strategy_inventory', deployment_inventory,
+    )
     audit_store = PaperStore(tmp_path / "lifecycle.db")
     _record_service_lifecycle(
         AuditRecorder(audit_store), "SERVICE_STARTED", "instance-1", port=8080,
@@ -277,7 +280,10 @@ def test_pythonservice_executable_uses_pywin32_venv_layout(tmp_path):
         find_pythonservice_executable(tmp_path / "missing")
 
 
-def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_path):
+def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        'paper_trading_engine.runtime_release._installed_strategy_inventory', deployment_inventory,
+    )
     runtime_root = (tmp_path / "runtime").resolve()
     (runtime_root / "shared" / "config").mkdir(parents=True)
     (runtime_root / "shared" / "config" / ".env").write_text(

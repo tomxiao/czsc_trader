@@ -154,7 +154,7 @@ class FakeReleaseRunner:
             for name in ("pte.exe", "czsc-trader.exe", "pte-watchdog.exe"):
                 (scripts / name).write_bytes(b"launcher")
             return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-        if command[1] == "-c":
+        if command[1] == "-c" or command[1:4] == ["-I", "-B", "-c"]:
             return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
         raise AssertionError(command)
 

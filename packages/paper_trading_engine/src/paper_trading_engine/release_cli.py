@@ -536,6 +536,13 @@ def _initialize_service_host(
             no_dependencies=("paper-trading-engine==0.1.0",),
         )
         _verify_service_host(host)
+        _run(
+            [str(_python_in(host / '.venv')), '-I', '-B', '-c',
+             'import paper_trading_engine.service_config; '
+             'import paper_trading_engine.watchdog'
+             + ('; import paper_trading_engine.windows_service' if os.name == 'nt' else '')],
+            cwd=host, runner=runner,
+        )
     except Exception:
         shutil.rmtree(host)
         raise
