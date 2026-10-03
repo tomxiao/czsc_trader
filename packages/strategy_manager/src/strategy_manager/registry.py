@@ -12,8 +12,6 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .freeze_contracts import (
-        ResearchDecision,
-        DecisionReference,
         FreezeReceipt,
         FreezeRequestId,
     )
@@ -82,21 +80,15 @@ class StrategyRegistry:
         self._write_lock = RegistryWriteLock(self.root)
 
     @registry_write
-    def record_research_decision(self, decision: ResearchDecision) -> DecisionReference:
-        from .freeze_store import record_decision
-
-        return record_decision(self, decision)
-
-    @registry_write
     def freeze_version(self, request: FreezeVersionRequest) -> FreezeReceipt:
         from .freeze_store import freeze
 
         return freeze(self, request)
 
-    def get_freeze_result(self, request_id: FreezeRequestId) -> FreezeReceipt:
+    def get_freeze_result(self, request_id: FreezeRequestId, *, journal_root: Path) -> FreezeReceipt:
         from .freeze_store import query
 
-        return query(self, request_id)
+        return query(self, request_id, journal_root=journal_root)
 
     @registry_write
     def register_candidate(

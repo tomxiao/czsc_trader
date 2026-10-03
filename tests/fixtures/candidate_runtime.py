@@ -14,14 +14,12 @@ from strategy_runtime import (
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
-    ImplementationRef,
     InputContract,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
-    StrategyCandidate,
+    StrategyDefinition,
     StrategyImplementation,
     TradableWindow,
     next_session_calculation_scope,
@@ -30,11 +28,8 @@ from strategy_runtime import (
 
 
 class CandidateFixture(StrategyImplementation):
-    def __init__(self, identity):
-        candidate = isinstance(identity, StrategyCandidate)
-        payload = identity.payload
-        ref = payload["runtime"]
-        reference_symbols = tuple(payload["parameters"].get("reference_symbols", ()))
+    def __init__(self, parameters: ParameterSet):
+        reference_symbols = tuple(parameters.values.get("reference_symbols", ()))
         requirements = [
             InputRequirement(
                 "flow",
@@ -80,20 +75,9 @@ class CandidateFixture(StrategyImplementation):
             )
             for index, symbol in enumerate(reference_symbols, start=1)
         )
-        self._definition = RuntimeDefinition(
-            schema_version=3,
+        self._definition = StrategyDefinition(
             observation=ObservationDefinition((ObservationSeries("fixture", "合成信号", "fixture_signal"),), ()),
-            strategy_family_id=identity.strategy_family_id,
-            version=None if candidate else identity.version,
-            release_id=identity.reference_id if candidate else identity.release_id,
-            release_hash=identity.runtime_identity_sha256 if candidate else identity.release_hash,
-            implementation=ImplementationRef(
-                ref["module"],
-                ref["qualname"],
-                ref["contract_version"],
-                ref["source_sha256"],
-            ),
-            parameters=ParameterSet(payload["parameters"]),
+            parameters=parameters,
             inputs=InputContract(tuple(requirements)),
             decision=DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION"),
             execution=ExecutionPolicy(
@@ -105,7 +89,7 @@ class CandidateFixture(StrategyImplementation):
                         "target_scope": "entry_cycle",
                     },
                     "entry": {
-                        "limit_parameter": payload["parameters"].get("entry_premium", 0.0),
+                        "limit_parameter": parameters.values.get("entry_premium", 0.0),
                         "order_type": "LIMIT",
                     },
                     "exit": {"limit_ratio": 0.1, "order_type": "MARKET"},
@@ -129,17 +113,11 @@ class CandidateFixture(StrategyImplementation):
                 ("LIMIT", "MARKET"),
             ),
             tradable_symbol="588080.SH",
-            identity_kind="CANDIDATE" if candidate else "RELEASE",
-            candidate_id=identity.candidate_id if candidate else None,
         )
 
     @classmethod
-    def from_candidate(cls, candidate):
-        return cls(candidate)
-
-    @classmethod
-    def from_release(cls, release):
-        return cls(release)
+    def from_parameters(cls, parameters: ParameterSet):
+        return cls(parameters)
 
     @property
     def definition(self):

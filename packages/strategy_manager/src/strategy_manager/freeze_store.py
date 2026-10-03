@@ -1,16 +1,15 @@
-"""Research freeze persistence; publish the runtime version only after durable acceptance."""
+"""Publish prepared runtime packages with a separately located transaction journal."""
 
-from dataclasses import dataclass, replace
-from hashlib import sha256
+from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
 import shutil
 
 from . import freeze_contracts as f
-from .candidates import CandidateEvidence, CandidateRegistration, _registration_evidence_root
+from .candidates import CandidateEvidence
 from .errors import RegistryError, ValidationError
-from .models import StrategyVersion, canonical_sha256
+from .models import StrategyFamily, StrategyVersion, canonical_sha256
 
 _ACTIVE: set[Path] = set()
 
@@ -42,139 +41,67 @@ def _durable(path, value, *, temporary_root):
         temporary.unlink(missing_ok=True)
 
 
-def read_decision(root, ref):
-    if type(ref) is not f.DecisionReference:
-        raise TypeError("decision requires DecisionReference")
-    decision = f.ResearchDecision.from_dict(_read(ref.evidence.resolve(root)))
-    if ref.decision_id != decision.decision_id:
-        raise ValueError("decision identity differs")
-    decision.confirmation_source.resolve(root)
-    return decision
-
-
-def record_decision(registry, decision):
-    if type(decision) is not f.ResearchDecision:
-        raise TypeError("record_research_decision requires ResearchDecision")
-    decision.confirmation_source.resolve(registry.root)
-    relative = f"research_decisions/{decision.strategy_id}/{decision.decision_id}.json"
-    path = registry.root / relative
-    encoded = _bytes(decision.to_dict())
-    ref = f.DecisionReference(
-        decision.decision_id, CandidateEvidence(relative, sha256(encoded).hexdigest())
-    )
-    if path.exists():
-        ref.evidence.resolve(registry.root)
-    else:
-        _durable(path, decision.to_dict(), temporary_root=registry.root.parent / ".tmp/freeze")
-    return ref
-
-
-def validate_inspection(root, reference):
-    report = f.CandidateInspectionReport.from_dict(_read(reference.resolve(root)))
-    plan = report.plan
-    registration = CandidateRegistration.from_dict(_read(plan.origin.registration.resolve(root)))
-    if (
-        registration.key != plan.origin.candidate
-        or registration.content_sha256 != plan.origin.content_sha256
-        or registration.record_sha256 != plan.origin.registration_sha256
-        or registration.payload.sha256 != plan.payload.sha256
-        or registration.origin.experiment_id != plan.source_experiment
-    ):
-        raise ValueError("inspection registration origin differs")
-    required = {registration.origin.preflight.sha256}
-    if registration.derivation:
-        required.add(registration.derivation.evidence.sha256)
-    if {ref.sha256 for ref in plan.registration_evidence} != required:
-        raise ValueError("inspection registration evidence closure differs")
-    selection = read_decision(root, report.selection)
-    if (
-        selection.action is not f.DecisionAction.APPROVE
-        or type(selection.subject) is not f.CandidateSelectionSubject
-        or selection.subject.candidate != plan.origin.candidate
-        or selection.subject.content_sha256 != plan.origin.content_sha256
-    ):
-        raise ValueError("inspection selection differs")
-    for ref in (
-        plan.payload,
-        plan.runtime_binding,
-        *plan.registration_evidence,
-        *(x.source for x in plan.source_files),
-    ):
-        ref.resolve(root)
-    for check in report.checks:
-        for ref in check.evidence:
-            ref.resolve(root)
-    return report
-
-
-def validate_approval(root, request):
-    report = validate_inspection(root, request.inspection)
-    approval = read_decision(root, request.approval)
-    plan = report.plan
-    expected = f.FreezeSubject(
-        plan.origin.candidate,
-        plan.origin.content_sha256,
-        request.inspection,
-        plan.sha256,
-        plan.version,
-    )
-    if (
-        report.status is not f.InspectionStatus.PASS
-        or approval.action is not f.DecisionAction.APPROVE
-        or approval.subject != expected
-        or request.request_id.strategy_id != plan.origin.candidate.strategy_id
-    ):
-        raise ValueError("freeze requires matching approval and complete passing inspection")
-    return report
-
-
-def build_version(root, request):
-    report = validate_approval(root, request)
-    plan = report.plan
-    candidate = plan.origin.candidate
-    version = StrategyVersion(
-        5,
-        candidate.strategy_id,
-        plan.version,
-        f"{candidate.strategy_id}-{plan.version}",
-        plan.parent_version,
-        plan.change_summary,
-        plan.source_experiment,
-        candidate.candidate_id,
-        plan.selection_data_cutoff,
-        plan.forward_start,
-        _read(plan.payload.resolve(root)),
-        "0" * 64,
-    )
-    return StrategyVersion.from_dict(
-        replace(version, release_hash=canonical_sha256(version.release_payload())).to_dict()
-    )
-
-
 @dataclass(frozen=True, slots=True)
 class FreezeVersionRequest:
-    request: f.FreezeCandidateRequest
+    request_id: f.FreezeRequestId
+    request_sha256: str
+    version: StrategyVersion
+    family: StrategyFamily
     staged_package: Path
-    candidate_registry_root: Path
-    experiments_root: Path
+    package_sha256: str
+    journal_root: Path
 
     def __post_init__(self):
         if (
-            type(self.request) is not f.FreezeCandidateRequest
+            type(self.request_id) is not f.FreezeRequestId
+            or type(self.version) is not StrategyVersion
+            or type(self.family) is not StrategyFamily
             or not isinstance(self.staged_package, Path)
-            or not isinstance(self.candidate_registry_root, Path)
-            or not isinstance(self.experiments_root, Path)
+            or not isinstance(self.journal_root, Path)
         ):
-            raise TypeError("freeze_version requires typed request and paths")
+            raise TypeError("freeze_version requires typed publication and paths")
+        f._hash(self.request_sha256)
+        f._hash(self.package_sha256)
+        StrategyVersion.from_dict(self.version.to_dict())
+        StrategyFamily.from_dict(self.family.to_dict())
+        if (
+            self.request_id.strategy_id != self.version.strategy_id
+            or self.family.strategy_id != self.version.strategy_id
+        ):
+            raise ValueError("freeze publication family differs")
+
+    def journal_record(self):
+        return {
+            "request_id": self.request_id.to_dict(),
+            "request_sha256": self.request_sha256,
+            "version": self.version.to_dict(),
+            "package_sha256": self.package_sha256,
+        }
 
 
-def _transaction_root(registry, request_id):
-    if type(request_id) is not f.FreezeRequestId:
-        raise TypeError("freeze query requires FreezeRequestId")
-    return registry.root / "freeze_requests" / request_id.strategy_id / request_id.value
+def _transaction_root(registry, request_id, journal_root):
+    if type(request_id) is not f.FreezeRequestId or not isinstance(journal_root, Path):
+        raise TypeError("freeze query requires FreezeRequestId and journal_root Path")
+    root = journal_root.resolve()
+    if root.is_relative_to(registry.root.resolve()) or registry.root.resolve().is_relative_to(root):
+        raise ValueError("freeze journal must be separate from runtime registry")
+    return root / request_id.value
 
 
-def _package(root, expected_version, plan):
+def _request(path):
+    value = _read(path)
+    if set(value) != {"request_id", "request_sha256", "version", "package_sha256"}:
+        raise ValueError("freeze journal request fields differ")
+    request_id = f.FreezeRequestId.from_dict(value["request_id"])
+    version = StrategyVersion.from_dict(value["version"])
+    if version.strategy_id != request_id.strategy_id:
+        raise ValueError("freeze journal version family differs")
+    f._hash(value["request_sha256"])
+    f._hash(value["package_sha256"])
+    return value
+
+
+def _package(root, expected_version, expected_hash):
     manifest = _read(root / "release_manifest.json")
     expected_fields = {
         "schema_version",
@@ -195,14 +122,15 @@ def _package(root, expected_version, plan):
         raise ValueError("freeze package manifest fields differ")
     if (
         manifest["source_candidate_id"]
-        != f"{plan.origin.candidate.strategy_id}-{plan.origin.candidate.candidate_id}"
-        or manifest["candidate_package_hash"] != plan.sha256
+        != f"{expected_version.strategy_id}-{expected_version.source_candidate}"
     ):
-        raise ValueError("freeze package plan/candidate differs")
+        raise ValueError("freeze package candidate differs")
+    f._hash(manifest["candidate_package_hash"])
     identity = dict(manifest)
     package_hash = identity.pop("package_hash")
     if (
-        package_hash != canonical_sha256(identity)
+        package_hash != expected_hash
+        or package_hash != canonical_sha256(identity)
         or manifest["strategy_version_hash"] != expected_version.release_hash
         or manifest["strategy_version_id"] != expected_version.release_id
     ):
@@ -219,23 +147,23 @@ def _package(root, expected_version, plan):
         or manifest["runtime_binding"] != "runtime_binding.json"
     ):
         raise ValueError("freeze package layout differs")
-    expected = {f"src/strategy_runtime/{x.path}": x.source.sha256 for x in plan.source_files}
-    if manifest["files"] != {
-        **expected,
-        "runtime_binding.json": manifest["files"].get("runtime_binding.json"),
-    }:
-        raise ValueError("freeze package differs from approved file closure")
+    binding = _read(root / "runtime_binding.json")
+    if (
+        binding["release_id"] != expected_version.release_id
+        or binding["release_hash"] != expected_version.release_hash
+    ):
+        raise ValueError("runtime binding differs from version")
     return package_hash
 
 
-def query(registry, request_id):
-    root = _transaction_root(registry, request_id)
+def query(registry, request_id, *, journal_root):
+    root = _transaction_root(registry, request_id, journal_root)
     try:
-        return _query(registry, request_id)
+        return _query(registry, request_id, journal_root=journal_root)
     except (OSError, ValueError, TypeError, KeyError, ValidationError) as exc:
         request_hash = None
         try:
-            request_hash = f.FreezeCandidateRequest.from_dict(_read(root / "request.json")).sha256
+            request_hash = _request(root / "request.json")["request_sha256"]
         except (OSError, ValueError, TypeError, KeyError, ValidationError):
             pass
         return f.FreezeReceipt(
@@ -246,36 +174,39 @@ def query(registry, request_id):
         )
 
 
-def _query(registry, request_id):
-    root = _transaction_root(registry, request_id)
+def _query(registry, request_id, *, journal_root):
+    root = _transaction_root(registry, request_id, journal_root)
     if not (root / "request.json").exists():
         if (root / "committed.json").exists() or (root / "failed.json").exists():
             raise ValueError("terminal freeze record has no request")
         return f.FreezeReceipt(request_id, f.FreezeStatus.NOT_FOUND)
-    request = f.FreezeCandidateRequest.from_dict(_read(root / "request.json"))
-    if request.request_id != request_id:
+    request = _request(root / "request.json")
+    if f.FreezeRequestId.from_dict(request["request_id"]) != request_id:
         raise ValueError("stored freeze request identity differs")
     if (root / "committed.json").exists():
         receipt = f.FreezeReceipt.from_dict(_read(root / "committed.json"))
         if (
             receipt.status is not f.FreezeStatus.COMMITTED
-            or receipt.request_sha256 != request.sha256
+            or receipt.request_sha256 != request["request_sha256"]
             or receipt.request_id != request_id
         ):
             raise ValueError("freeze commit marker differs")
         version_path = registry._version_path(request_id.strategy_id, receipt.version.version)
         if not version_path.exists() and root.resolve() in _ACTIVE:
-            return f.FreezeReceipt(request_id, f.FreezeStatus.IN_PROGRESS, request.sha256)
+            return f.FreezeReceipt(
+                request_id, f.FreezeStatus.IN_PROGRESS, request["request_sha256"]
+            )
         version = StrategyVersion.from_dict(_read(version_path))
-        expected = build_version(registry.root, request)
+        expected = StrategyVersion.from_dict(request["version"])
         if (
             version.to_dict() != expected.to_dict()
             or receipt.version.release_hash != version.release_hash
         ):
             raise ValueError("committed version differs")
-        plan = validate_approval(registry.root, request).plan
         package_hash = _package(
-            registry.root / request_id.strategy_id / "releases" / version.version, version, plan
+            registry.root / request_id.strategy_id / "releases" / version.version,
+            version,
+            request["package_sha256"],
         )
         if receipt.version.package_hash != package_hash:
             raise ValueError("committed package differs")
@@ -285,92 +216,58 @@ def _query(registry, request_id):
         if (
             receipt.status is not f.FreezeStatus.FAILED
             or receipt.request_id != request_id
-            or receipt.request_sha256 != request.sha256
+            or receipt.request_sha256 != request["request_sha256"]
         ):
             raise ValueError("failed freeze receipt differs")
         return receipt
     if root.resolve() in _ACTIVE:
-        return f.FreezeReceipt(request_id, f.FreezeStatus.IN_PROGRESS, request.sha256)
+        return f.FreezeReceipt(request_id, f.FreezeStatus.IN_PROGRESS, request["request_sha256"])
     # A durable STARTED record cannot prove that its former owner is alive.
     return f.FreezeReceipt(
         request_id,
         f.FreezeStatus.UNKNOWN,
-        request.sha256,
+        request["request_sha256"],
         reason="freeze has no terminal commit record; explicit investigation required",
     )
 
 
 def freeze(registry, request):
-    from .registry import StrategyRegistry
-
     if type(request) is not FreezeVersionRequest:
         raise TypeError("freeze_version requires FreezeVersionRequest")
-    operation = request.request
-    existing = query(registry, operation.request_id)
+    request_id = request.request_id
+    journal_root = request.journal_root
+    existing = query(registry, request_id, journal_root=journal_root)
     if existing.status is not f.FreezeStatus.NOT_FOUND:
-        if existing.request_sha256 != operation.sha256:
+        if existing.request_sha256 is not None and existing.request_sha256 != request.request_sha256:
             raise ValueError("freeze request ID already binds different content")
+        if existing.status is f.FreezeStatus.UNKNOWN:
+            return existing
+        saved = _request(_transaction_root(registry, request_id, journal_root) / "request.json")
+        if saved != request.journal_record():
+            raise ValueError("freeze publication differs from registered request")
         return existing
-    report = validate_approval(registry.root, operation)
-    plan = report.plan
-    research = StrategyRegistry(request.candidate_registry_root)
-    registration = research.get_candidate(
-        plan.origin.candidate, experiments_root=request.experiments_root
-    )
-    evidence_root = _registration_evidence_root(
-        registration, request.experiments_root
-    )
-    if (
-        registration.record_sha256 != plan.origin.registration_sha256
-        or registration.content_sha256 != plan.origin.content_sha256
-    ):
-        raise ValueError("candidate changed since inspection")
-    if (
-        registration.payload.resolve(evidence_root).read_bytes()
-        != plan.payload.resolve(registry.root).read_bytes()
-    ):
-        raise ValueError("freeze payload differs from registered candidate")
-    runtime = _read(plan.payload.resolve(registry.root))["runtime"]
-    planned = {x.path: x.source.sha256 for x in plan.source_files}
-    source_prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
-    if {x.path.removeprefix(source_prefix): x.sha256 for x in registration.source_files} != {
-        name: planned.get(name) for name in runtime["source_files"]
-    }:
-        raise ValueError("freeze source differs from registration")
-    version = build_version(registry.root, operation)
-    requests_root = registry.root / "freeze_requests" / version.strategy_id
-    for path in requests_root.glob("*/request.json"):
-        prior = f.FreezeCandidateRequest.from_dict(_read(path))
-        prior_report = validate_inspection(registry.root, prior.inspection)
-        if prior_report.plan.version == version.version and query(
-            registry, prior.request_id
+    version, family = request.version, request.family
+    for path in journal_root.glob("*/request.json"):
+        prior = _request(path)
+        if prior["version"]["version"] == version.version and query(
+            registry, f.FreezeRequestId.from_dict(prior["request_id"]), journal_root=journal_root
         ).status in {f.FreezeStatus.UNKNOWN, f.FreezeStatus.IN_PROGRESS}:
             raise RegistryError("target version is reserved by an unresolved freeze request")
-    package_hash = _package(request.staged_package, version, plan)
-    # The inspected binding template fixes all fields except the release identity.
-    binding = _read(request.staged_package / "runtime_binding.json")
-    template = _read(plan.runtime_binding.resolve(registry.root))
-    if binding != {
-        **template,
-        "release_id": version.release_id,
-        "release_hash": version.release_hash,
-    }:
-        raise ValueError("runtime binding differs from inspected plan")
+    package_hash = _package(request.staged_package, version, request.package_sha256)
     version_path = registry._version_path(version.strategy_id, version.version)
     package_path = registry.root / version.strategy_id / "releases" / version.version
     if version_path.exists() or package_path.exists():
         raise RegistryError("target version already exists; explicit version required")
-    if plan.parent_version is not None:
-        registry.get_version(version.strategy_id, plan.parent_version)
-    family = research.get_family(version.strategy_id)
+    if version.parent_version is not None:
+        registry.get_version(version.strategy_id, version.parent_version)
     registered = {x.strategy_id for x in registry.list_families()}
     if family.strategy_id in registered:
         if registry.get_family(family.strategy_id).name != family.name:
             raise ValueError("research and release family identity differ")
-    root = _transaction_root(registry, operation.request_id)
+    root = _transaction_root(registry, request_id, journal_root)
     _durable(
         root / "request.json",
-        operation.to_dict(),
+        request.journal_record(),
         temporary_root=registry.root.parent / ".tmp/freeze",
     )
     _ACTIVE.add(root.resolve())
@@ -383,11 +280,11 @@ def freeze(registry, request):
             if path.is_file():
                 with path.open("r+b") as stream:
                     os.fsync(stream.fileno())
-        _package(package_path, version, plan)
+        _package(package_path, version, request.package_sha256)
         receipt = f.FreezeReceipt(
-            operation.request_id,
+            request_id,
             f.FreezeStatus.COMMITTED,
-            operation.sha256,
+            request.request_sha256,
             f.FrozenVersionReference(
                 version.strategy_id, version.version, version.release_hash, package_hash
             ),
@@ -397,18 +294,19 @@ def freeze(registry, request):
             receipt.to_dict(),
             temporary_root=registry.root.parent / ".tmp/freeze",
         )
-        # Publish the version last: registry/runtime readers need no research transaction.
+        # Version is the runtime visibility boundary; runtime readers need no journal.
         _durable(
             version_path, version.to_dict(), temporary_root=registry.root.parent / ".tmp/freeze"
         )
         return receipt
     except Exception as exc:
         if (root / "committed.json").exists():
-            return query(registry, operation.request_id)
+            _ACTIVE.discard(root.resolve())
+            return query(registry, request_id, journal_root=journal_root)
         failure = f.FreezeReceipt(
-            operation.request_id,
+            request_id,
             f.FreezeStatus.FAILED,
-            operation.sha256,
+            request.request_sha256,
             reason=f"{type(exc).__name__}: {exc}",
         )
         _durable(

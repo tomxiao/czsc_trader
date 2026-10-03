@@ -286,6 +286,40 @@ class RequiredCapabilities:
 
 
 @dataclass(frozen=True, slots=True)
+class StrategyDefinition:
+    """Strategy-owned behavior; executable identity is bound exclusively by SRT."""
+
+    parameters: ParameterSet
+    inputs: InputContract
+    decision: DecisionContract
+    execution: ExecutionPolicy
+    monitoring: MonitoringPolicy
+    capabilities: RequiredCapabilities
+    tradable_symbol: str
+    observation: ObservationDefinition
+    state_mode: str = "STATELESS"
+    history: HistoryPolicy = field(default_factory=HistoryPolicy)
+
+    def __post_init__(self) -> None:
+        for name, kind in (
+            ("parameters", ParameterSet), ("inputs", InputContract),
+            ("decision", DecisionContract), ("execution", ExecutionPolicy),
+            ("monitoring", MonitoringPolicy), ("capabilities", RequiredCapabilities),
+            ("observation", ObservationDefinition), ("history", HistoryPolicy),
+        ):
+            if type(getattr(self, name)) is not kind:
+                raise RuntimeContractError(f"strategy definition {name} requires {kind.__name__}")
+        symbol = _text(self.tradable_symbol, "tradable_symbol").upper()
+        if _A_SHARE_SYMBOL.fullmatch(symbol) is None:
+            raise RuntimeContractError("tradable_symbol must be a canonical A-share instrument")
+        object.__setattr__(self, "tradable_symbol", symbol)
+        if not {x.dataset for x in self.inputs.requirements}.issubset(self.capabilities.datasets):
+            raise RuntimeContractError("input datasets must be declared as required capabilities")
+        if self.state_mode not in {"STATELESS", "PERSISTED"}:
+            raise RuntimeContractError("runtime state_mode must be STATELESS or PERSISTED")
+
+
+@dataclass(frozen=True, slots=True)
 class RuntimeDefinition:
     schema_version: int
     strategy_family_id: str

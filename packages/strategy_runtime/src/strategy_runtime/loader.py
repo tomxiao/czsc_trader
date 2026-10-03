@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass, fields
+import inspect
 from pathlib import Path, PurePosixPath
 
 from .deployment import load_strategy_deployment
@@ -10,8 +12,33 @@ from .binding import RuntimeBinding
 from .errors import RuntimeCompatibilityError
 from .implementation_identity import implementation_sha256, strategy_source_root
 from .isolated_import import load_closure_module
-from .models import ImplementationRef, StrategyCandidate, StrategyRelease, canonical_sha256
+from .models import (
+    ImplementationRef,
+    StrategyCandidate,
+    StrategyRelease,
+    ParameterSet,
+    StrategyDefinition,
+    RuntimeDefinition,
+)
 from .algorithm import StrategyImplementation
+
+
+@dataclass(frozen=True)
+class _BoundStrategy:
+    implementation: StrategyImplementation
+    definition: RuntimeDefinition
+
+    def calendar_window(self, window):
+        return self.implementation.calendar_window(window)
+
+    def derive_calculation_scope(self, window, calendar_dates):
+        return self.implementation.derive_calculation_scope(window, calendar_dates)
+
+    def calculate_history(self, inputs, sessions):
+        return self.implementation.calculate_history(inputs, sessions)
+
+    def calculate_window_history(self, inputs, sessions):
+        return self.implementation.calculate_window_history(inputs, sessions)
 
 
 class StrategyLoader:
@@ -60,18 +87,23 @@ class StrategyLoader:
             raise RuntimeCompatibilityError("frozen loading requires a validated StrategyRelease")
         root, binding = self._release_source(release, source_root, runtime_binding)
         descriptor = release.payload.get("runtime")
-        if (not isinstance(descriptor, Mapping) or
-            tuple(descriptor.get("source_files", ())) != binding.spec.source_files or
-            descriptor.get("source_sha256") != binding.spec.implementation_sha256):
+        if (
+            not isinstance(descriptor, Mapping)
+            or tuple(descriptor.get("source_files", ())) != binding.spec.source_files
+            or descriptor.get("source_sha256") != binding.spec.implementation_sha256
+        ):
             raise RuntimeCompatibilityError("runtime binding differs from declared source closure")
         module_name, class_name, factory = self._declared_factory(
-            release.payload, source_root=root,
+            release.payload,
+            source_root=root,
         )
         return module_name, class_name, factory, root, binding
 
     @staticmethod
     def _declared_factory(
-        payload: Mapping, *, source_root: Path | None = None,
+        payload: Mapping,
+        *,
+        source_root: Path | None = None,
     ):
         """Load the declared closure, with no convention fallback on invalid metadata."""
         descriptor = payload.get("runtime")
@@ -102,7 +134,13 @@ class StrategyLoader:
             )
         for name in source_files:
             path = PurePosixPath(name)
-            if path.is_absolute() or ".." in path.parts or str(path) != name or "\\" in name or ":" in name:
+            if (
+                path.is_absolute()
+                or ".." in path.parts
+                or str(path) != name
+                or "\\" in name
+                or ":" in name
+            ):
                 raise RuntimeCompatibilityError("runtime source closure contains an unsafe path")
         implementation_file = ref.module.removeprefix("strategy_runtime.").replace(".", "/") + ".py"
         if implementation_file not in source_files:
@@ -134,6 +172,13 @@ class StrategyLoader:
             raise RuntimeCompatibilityError(
                 f"declared strategy is unavailable: {ref.module}.{ref.qualname}"
             ) from exc
+        if not isinstance(factory, type) or not issubclass(factory, StrategyImplementation):
+            raise RuntimeCompatibilityError("declared class must inherit StrategyImplementation")
+        if inspect.isabstract(factory):
+            raise RuntimeCompatibilityError(
+                "incomplete strategy implementation: "
+                + ", ".join(sorted(factory.__abstractmethods__))
+            )
         factory.__module__ = ref.module
         if factory.__module__ != ref.module or factory.__qualname__ != ref.qualname:
             raise RuntimeCompatibilityError(
@@ -144,148 +189,66 @@ class StrategyLoader:
         return ref.module, ref.qualname, factory
 
     @staticmethod
-    def _validate_declared_content(
-        payload: Mapping, strategy: StrategyImplementation
-    ) -> None:
-        descriptor = payload["runtime"]
+    def _construct(identity, factory, root, *, symbol=None):
+        parameters = ParameterSet(identity.payload["parameters"])
+        with strategy_source_root(root):
+            strategy = factory.from_parameters(parameters)
+            if not isinstance(strategy, StrategyImplementation):
+                raise RuntimeCompatibilityError("factory must return StrategyImplementation")
+            if type(strategy.definition) is not StrategyDefinition:
+                raise RuntimeCompatibilityError("implementation must declare StrategyDefinition")
+            if symbol is not None and strategy.definition.tradable_symbol != symbol.upper():
+                strategy = factory.from_parameters_for_symbol(parameters, symbol.upper())
+        if not isinstance(strategy, StrategyImplementation):
+            raise RuntimeCompatibilityError("factory must return StrategyImplementation")
         definition = strategy.definition
-        if definition.schema_version != 3:
-            raise RuntimeCompatibilityError("declared implementations must use runtime schema 3")
-        actual = definition.implementation
-        for key in ("module", "qualname", "contract_version", "source_sha256"):
-            if getattr(actual, key) != descriptor[key]:
-                raise RuntimeCompatibilityError(
-                    "runtime definition differs from declared implementation"
-                )
-        parameters = payload.get("parameters")
-        if not isinstance(parameters, Mapping) or definition.parameters.sha256 != canonical_sha256(
-            parameters
-        ):
+        if type(definition) is not StrategyDefinition:
+            raise RuntimeCompatibilityError("implementation must declare StrategyDefinition")
+        if definition.parameters.sha256 != parameters.sha256:
             raise RuntimeCompatibilityError(
                 "runtime parameters differ from the supplied parameter set"
             )
+        if symbol is not None and definition.tradable_symbol != symbol.upper():
+            raise RuntimeCompatibilityError("runtime tradable symbol differs from deployment")
+        candidate = isinstance(identity, StrategyCandidate)
+        descriptor = identity.payload["runtime"]
+        runtime = RuntimeDefinition(
+            schema_version=3,
+            strategy_family_id=identity.strategy_family_id,
+            version=None if candidate else identity.version,
+            release_id=identity.reference_id if candidate else identity.release_id,
+            release_hash=identity.runtime_identity_sha256 if candidate else identity.release_hash,
+            implementation=ImplementationRef(
+                **{
+                    k: descriptor[k]
+                    for k in ("module", "qualname", "contract_version", "source_sha256")
+                }
+            ),
+            identity_kind="CANDIDATE" if candidate else "RELEASE",
+            candidate_id=identity.candidate_id if candidate else None,
+            **{f.name: getattr(definition, f.name) for f in fields(StrategyDefinition)},
+        )
+        return _BoundStrategy(strategy, runtime)
 
-    def load_candidate(self, candidate: StrategyCandidate) -> StrategyImplementation:
-        """Run a parameterized candidate before submission without creating a frozen version."""
+    def load_candidate(self, candidate: StrategyCandidate) -> _BoundStrategy:
         if not isinstance(candidate, StrategyCandidate):
             raise RuntimeCompatibilityError("candidate loading requires a StrategyCandidate")
-        module_name, class_name, factory = self._declared_factory(
-            candidate.payload, source_root=candidate.source_root,
-        )
-        create = getattr(factory, "from_candidate", None)
-        if not callable(create):
-            raise RuntimeCompatibilityError(
-                f"candidate implementation has no from_candidate factory: {class_name}"
-            )
-        with strategy_source_root(candidate.source_root):
-            strategy = create(candidate)
-        if not isinstance(strategy, StrategyImplementation):
-            raise RuntimeCompatibilityError(
-                "candidate does not inherit StrategyImplementation"
-            )
-        definition = strategy.definition
-        if (
-            definition.identity_kind != "CANDIDATE"
-            or definition.version is not None
-            or definition.strategy_family_id != candidate.strategy_family_id
-            or definition.candidate_id != candidate.candidate_id
-            or definition.release_id != candidate.reference_id
-            or definition.release_hash != candidate.runtime_identity_sha256
-        ):
-            raise RuntimeCompatibilityError("loaded runtime differs from candidate identity")
-        self._validate_declared_content(candidate.payload, strategy)
-        return strategy
-
-    def _validate(
-        self,
-        release: StrategyRelease,
-        strategy: StrategyImplementation,
-        module_name: str,
-        class_name: str,
-        *,
-        source_root: Path,
-        binding: RuntimeBinding,
-    ) -> StrategyImplementation:
-        if not isinstance(strategy, StrategyImplementation):
-            raise RuntimeCompatibilityError(
-                f"loaded object does not inherit StrategyImplementation: {class_name}"
-            )
-        definition = strategy.definition
-        if (
-            definition.strategy_family_id != release.strategy_family_id
-            or definition.identity_kind != "RELEASE"
-            or definition.version != release.version
-            or definition.release_id != release.release_id
-            or definition.release_hash != release.release_hash
-        ):
-            raise RuntimeCompatibilityError("loaded strategy identity differs from release")
-        if (
-            definition.implementation.module != module_name
-            or definition.implementation.qualname != class_name
-        ):
-            raise RuntimeCompatibilityError(
-                "loaded implementation differs from declared identity"
-            )
-        if definition.observation.sha256 != binding.spec.observation_sha256:
-            raise RuntimeCompatibilityError("observation definition differs from binding")
-        if definition.implementation.source_sha256 != binding.spec.implementation_sha256:
-            raise RuntimeCompatibilityError("implementation differs from binding")
-        self._validate_declared_content(release.payload, strategy)
-        return strategy
+        _, _, factory = self._declared_factory(candidate.payload, source_root=candidate.source_root)
+        return self._construct(candidate, factory, candidate.source_root)
 
     def load(
-        self,
-        release: StrategyRelease,
-        *,
-        source_root: Path | None = None,
-        runtime_binding: RuntimeBinding | None = None,
-    ) -> StrategyImplementation:
-        module_name, class_name, factory, root, binding = self._load_factory(
-            release, source_root, runtime_binding,
-        )
-        from_release = getattr(factory, "from_release", None)
-        if not callable(from_release):
-            raise RuntimeCompatibilityError(
-                f"strategy implementation has no from_release factory: {class_name}"
-            )
-        with strategy_source_root(root):
-            strategy = from_release(release)
-        return self._validate(
-            release, strategy, module_name, class_name,
-            source_root=root, binding=binding,
-        )
+        self, release: StrategyRelease, *, source_root=None, runtime_binding=None
+    ) -> _BoundStrategy:
+        return self._load_release(release, source_root, runtime_binding)
 
     def load_for_symbol(
-        self,
-        release: StrategyRelease,
-        symbol: str,
-        *,
-        source_root: Path | None = None,
-        runtime_binding: RuntimeBinding | None = None,
-    ) -> StrategyImplementation:
-        """Bind a formula-compatible release to one explicit deployment symbol.
+        self, release: StrategyRelease, symbol: str, *, source_root=None, runtime_binding=None
+    ) -> _BoundStrategy:
+        return self._load_release(release, source_root, runtime_binding, symbol=symbol)
 
-        A strategy must opt in by implementing ``from_release_for_symbol``.
-        Symbol-specific mechanisms therefore fail closed instead of silently
-        replaying their frozen source instrument against another price series.
-        """
-
-        module_name, class_name, factory, root, binding = self._load_factory(
-            release, source_root, runtime_binding,
-        )
-        binder = getattr(factory, "from_release_for_symbol", None)
-        if not callable(binder):
-            strategy = self.load(
-                release, source_root=root, runtime_binding=binding,
-            )
-            if strategy.definition.tradable_symbol == symbol.upper():
-                return strategy
-            raise RuntimeCompatibilityError(
-                f"{release.release_id} does not support deployment symbol rebinding"
-            )
-        with strategy_source_root(root):
-            strategy = binder(release, symbol.upper())
-        return self._validate(
-            release, strategy, module_name, class_name,
-            source_root=root, binding=binding,
-        )
+    def _load_release(self, release, source_root, runtime_binding, *, symbol=None):
+        _, _, factory, root, binding = self._load_factory(release, source_root, runtime_binding)
+        strategy = self._construct(release, factory, root, symbol=symbol)
+        if strategy.definition.observation.sha256 != binding.spec.observation_sha256:
+            raise RuntimeCompatibilityError("observation definition differs from binding")
+        return strategy

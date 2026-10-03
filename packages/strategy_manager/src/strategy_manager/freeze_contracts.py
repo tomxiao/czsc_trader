@@ -102,6 +102,57 @@ class Record:
         return canonical_sha256(self.to_dict())
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchEvidenceOwner(Record):
+    strategy_id: str
+    experiment_id: str | None = None
+
+    def _validate(self):
+        require_strategy_id(self.strategy_id)
+        if self.experiment_id is not None:
+            match = re.fullmatch(r"(?:[0-9]{8}_(S[0-9]{3})_EX[0-9]{2,}|EX(?!000_)[0-9]{3}_[0-9]{8})", self.experiment_id)
+            if match is None or (match[1] is not None and match[1] != self.strategy_id):
+                raise ValueError("invalid research evidence experiment owner")
+
+    @property
+    def repository_path(self):
+        if self.experiment_id is None:
+            return f"research/{self.strategy_id}"
+        return f"experiments/{self.strategy_id}/{self.experiment_id}"
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchEvidenceRef(Record):
+    """Owner-relative immutable evidence, resolved only from a repository root."""
+
+    owner: ResearchEvidenceOwner
+    path: str
+    sha256: str
+
+    def _validate(self):
+        CandidateEvidence(self.path, self.sha256)
+
+    @property
+    def repository_path(self):
+        return f"{self.owner.repository_path}/{self.path}"
+
+    def resolve(self, repository_root):
+        from pathlib import Path
+        from .errors import ValidationError
+
+        root = Path(repository_root).resolve()
+        target = root / self.repository_path
+        for parent in (target, *target.parents):
+            if parent == root:
+                break
+            if parent.is_symlink() or parent.is_junction():
+                raise ValidationError("research evidence path contains a link")
+        owner = (root / self.owner.repository_path).resolve()
+        if not owner.is_relative_to(root):
+            raise ValidationError("research evidence owner escapes repository")
+        return CandidateEvidence(self.path, self.sha256).resolve(owner)
+
+
 class DecisionAction(StrEnum):
     APPROVE = "APPROVE"
     REJECT = "REJECT"
@@ -132,7 +183,7 @@ class CandidateSelectionSubject(Record):
 class FreezeSubject(Record):
     candidate: CandidateKey
     content_sha256: str
-    inspection: CandidateEvidence
+    inspection: ResearchEvidenceRef
     plan_sha256: str
     version: str
 
@@ -148,7 +199,7 @@ class ResearchDecision(Record):
     strategy_id: str
     action: DecisionAction
     subject: StageAdvanceSubject | CandidateSelectionSubject | FreezeSubject
-    confirmation_source: CandidateEvidence
+    confirmation_source: CandidateEvidence | ResearchEvidenceRef
     reason: str
 
     def _validate(self):
@@ -166,7 +217,7 @@ class ResearchDecision(Record):
 @dataclass(frozen=True, slots=True)
 class DecisionReference(Record):
     decision_id: str
-    evidence: CandidateEvidence
+    evidence: ResearchEvidenceRef
 
     def _validate(self):
         _id(self.decision_id)
@@ -176,7 +227,7 @@ class DecisionReference(Record):
 class CandidateOrigin(Record):
     candidate: CandidateKey
     content_sha256: str
-    registration: CandidateEvidence
+    registration: ResearchEvidenceRef
 
     def _validate(self):
         _hash(self.content_sha256)
@@ -199,7 +250,7 @@ class FreezeRequestId(Record):
 @dataclass(frozen=True, slots=True)
 class FreezeFile(Record):
     path: str
-    source: CandidateEvidence
+    source: CandidateEvidence | ResearchEvidenceRef
 
     def _validate(self):
         CandidateEvidence(self.path, self.source.sha256)
@@ -220,10 +271,10 @@ class FreezePlan(Record):
     source_experiment: str
     selection_data_cutoff: str
     forward_start: str
-    payload: CandidateEvidence
+    payload: ResearchEvidenceRef
     source_files: tuple[FreezeFile, ...]
-    runtime_binding: CandidateEvidence
-    registration_evidence: tuple[CandidateEvidence, ...]
+    runtime_binding: ResearchEvidenceRef
+    registration_evidence: tuple[ResearchEvidenceRef, ...]
 
     def _validate(self):
         _version(self.version)
@@ -287,7 +338,7 @@ class InspectionProtocol(Record):
 class InspectionCheckResult(Record):
     check: InspectionCheck
     status: InspectionStatus
-    evidence: tuple[CandidateEvidence, ...]
+    evidence: tuple[ResearchEvidenceRef, ...]
     detail: str
 
     def _validate(self):
@@ -303,9 +354,12 @@ class CandidateInspectionReport(Record):
     request_sha256: str
     checks: tuple[InspectionCheckResult, ...]
     remaining_risks: tuple[str, ...]
+    owner: ResearchEvidenceOwner
 
     def _validate(self):
         _hash(self.request_sha256)
+        if self.owner.experiment_id is None or self.owner.strategy_id != self.plan.origin.candidate.strategy_id:
+            raise ValueError("inspection must belong to its candidate research experiment")
         if len({x.check for x in self.checks}) != len(self.checks):
             raise ValueError("duplicate inspection check")
         if any(not x.strip() for x in self.remaining_risks):
@@ -322,8 +376,8 @@ class CandidateInspectionReport(Record):
         return InspectionStatus.PASS
 
     @property
-    def reference(self) -> CandidateEvidence:
-        return CandidateEvidence(f"research_objects/{self.sha256}", self.sha256)
+    def reference(self) -> ResearchEvidenceRef:
+        return ResearchEvidenceRef(self.owner, f"objects/inspection/{self.sha256}", self.sha256)
 
 
 class FreezeStatus(StrEnum):
@@ -379,5 +433,5 @@ class FreezeReceipt(Record):
 @dataclass(frozen=True, slots=True)
 class FreezeCandidateRequest(Record):
     request_id: FreezeRequestId
-    inspection: CandidateEvidence
+    inspection: ResearchEvidenceRef
     approval: DecisionReference

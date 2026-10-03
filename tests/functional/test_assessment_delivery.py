@@ -651,3 +651,40 @@ def test_report_renders_sensitivity_rows_and_behavior_members(completed):
     ).decode()
     assert "coarse-bins" in rendered and "f" * 64 in rendered
     assert "S900-C0001" in rendered and "逐项目标检查" in rendered
+
+
+def test_validation_scope_controls_recomputation_and_always_checks_hashes(completed, monkeypatch):
+    from czsc_trader.application import delivery_service
+
+    context = completed[0]
+    definition, value = prepare(completed)
+    receipt = assemble_delivery(context, Deliverable(definition, value))
+    calls = []
+    assess, compare = delivery_service.assess_candidates, delivery_service.compare_candidates
+
+    def counted_assess(request):
+        calls.append("assessment")
+        return assess(request)
+
+    def counted_compare(request):
+        calls.append("comparison")
+        return compare(request)
+
+    monkeypatch.setattr(delivery_service, "assess_candidates", counted_assess)
+    monkeypatch.setattr(delivery_service, "compare_candidates", counted_compare)
+    integrity = validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY)
+    assert integrity.status is d.ValidationStatus.PASS
+    assert integrity.scope is d.DeliveryValidationScope.INTEGRITY
+    assert calls == []
+    full = validate_delivery(context, receipt.reference)
+    assert full.status is d.ValidationStatus.PASS
+    assert full.scope is d.DeliveryValidationScope.FULL
+    assert calls == ["assessment", "comparison"]
+    assert d.DeliveryValidation.from_dict(full.to_dict()) == full
+    with pytest.raises(TypeError, match="scope"):
+        validate_delivery(context, receipt.reference, scope="INTEGRITY")
+    path = delivery_service._delivery_path(context, receipt.reference) / "report.md"
+    path.write_bytes(path.read_bytes() + b"altered")
+    calls.clear()
+    assert validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY).status is d.ValidationStatus.FAIL
+    assert calls == []

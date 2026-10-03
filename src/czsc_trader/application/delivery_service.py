@@ -181,7 +181,7 @@ def _check_evaluation(ref, candidate, experiments):
         _fail("EVALUATION_REFERENCE", ref.attempt_id, "evaluation ID is absent from this attempt")
 
 
-def _validate_content(definition, content, root, experiments, context):
+def _validate_content(definition, content, root, experiments, context, scope=d.DeliveryValidationScope.FULL):
     expected = {
         d.DeliveryStage.MANDATE: d.ResearchMandate,
         d.DeliveryStage.COMPONENTS: d.ComponentPanel,
@@ -288,27 +288,29 @@ def _validate_content(definition, content, root, experiments, context):
                 for ref in trial.evaluations:
                     _check_evaluation(ref, trial.candidate, experiments)
     if isinstance(content.payload, d.CandidateAssessmentDelivery):
-        _validate_assessment_delivery(definition, content.payload, experiments, context)
+        _validate_assessment_delivery(definition, content.payload, experiments, context, scope)
     if isinstance(content.payload, d.CandidateInspectionDelivery):
         _validate_inspection_delivery(definition, content, root, context)
 
 
 def _validate_inspection_delivery(definition, content, root, context):
-    from strategy_manager import CandidateEvidence, StrategyRegistry
+    from strategy_manager import ResearchEvidenceRef
     from strategy_manager import freeze_contracts as f
-    from strategy_manager.freeze_store import read_decision, validate_inspection
+    from .research_evidence import read_decision, validate_inspection
 
     payload = content.payload
+    if (payload.inspection.owner.strategy_id, payload.inspection.owner.experiment_id) != (definition.strategy_id, definition.owner.experiment_id):
+        _fail("INSPECTION_OWNER", "inspection", "inspection and delivery experiment differ")
     if payload.source_assessment not in definition.predecessors:
         _fail("INSPECTION_SOURCE", "source_assessment", "assessment predecessor missing")
     report = f.CandidateInspectionReport.from_dict(
         json.loads(_read_evidence(root, payload.inspection_evidence))
     )
     if report != payload.inspection or report != validate_inspection(
-        context.strategy_root, report.reference
+        context.root, report.reference
     ):
         _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
-    selection = read_decision(context.strategy_root, report.selection)
+    selection = read_decision(context.root, report.selection)
     receipt_path = _delivery_path(context, payload.source_assessment) / "receipt.json"
     if (
         selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
@@ -321,13 +323,13 @@ def _validate_inspection_delivery(definition, content, root, context):
     }
     records = [report]
     for ref in (report.selection, *payload.decisions):
-        record = read_decision(context.strategy_root, ref)
+        record = read_decision(context.root, ref)
         if record.strategy_id != definition.strategy_id:
             _fail("INSPECTION_DECISION", ref.decision_id, "decision family differs")
         for evidence in (ref.evidence, record.confirmation_source):
             if (
                 evidence.sha256,
-                evidence.resolve(context.strategy_root).read_bytes(),
+                evidence.resolve(context.root).read_bytes(),
             ) not in attached:
                 _fail("INSPECTION_EVIDENCE", evidence.path, "decision evidence must be attached")
         if (
@@ -336,19 +338,17 @@ def _validate_inspection_delivery(definition, content, root, context):
         ):
             _fail("INSPECTION_DECISION", ref.decision_id, "freeze decision report differs")
     for value in _walk(records[0]):
-        if isinstance(value, CandidateEvidence):
-            if (value.sha256, value.resolve(context.strategy_root).read_bytes()) not in attached:
+        if isinstance(value, ResearchEvidenceRef):
+            if (value.sha256, value.resolve(context.root).read_bytes()) not in attached:
                 _fail("INSPECTION_EVIDENCE", value.path, "inspection evidence must be attached")
     if payload.freeze is not None:
-        receipt = StrategyRegistry(context.strategy_root).get_freeze_result(
-            payload.freeze.request_id
-        )
+        from .inspection_service import get_freeze_result
+        receipt = get_freeze_result(context, payload.freeze.request_id)
         if receipt != payload.freeze:
             _fail("FREEZE_RECEIPT", "freeze", "freeze receipt differs from actual result")
         if receipt.status is f.FreezeStatus.COMMITTED:
-            request_path = (context.strategy_root / "freeze_requests"
-                            / receipt.request_id.strategy_id / receipt.request_id.value
-                            / "request.json")
+            request_path = (context.research_root / receipt.request_id.strategy_id
+                            / "freeze_requests" / receipt.request_id.value / "research_request.json")
             request = f.FreezeCandidateRequest.from_dict(
                 json.loads(request_path.read_text(encoding="utf-8")))
             if (
@@ -387,7 +387,7 @@ def _assessment_recomputation_matches(
     return True
 
 
-def _validate_assessment_delivery(definition, payload, experiments, context):
+def _validate_assessment_delivery(definition, payload, experiments, context, scope):
     for ref in (payload.source_candidates, payload.source_mandate):
         if ref not in definition.predecessors:
             _fail(
@@ -547,6 +547,8 @@ def _validate_assessment_delivery(definition, payload, experiments, context):
                 "incomplete",
                 "failed evaluation differs from experiment receipt",
             )
+    if scope is d.DeliveryValidationScope.INTEGRITY:
+        return
     if not _assessment_recomputation_matches(
         assess_candidates(payload.assessment_request), payload.assessment
     ):
@@ -948,7 +950,7 @@ def _manifest(root: Path) -> tuple[d.EvidenceRef, ...]:
     return tuple(result)
 
 
-def _read_delivery(context, reference, root, visited):
+def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidationScope.INTEGRITY):
     document = _read_json(_resolve(root, "delivery.json"))
     version = document.get("schema_version") if type(document) is dict else None
     if type(version) is not int or version != 4:
@@ -980,7 +982,7 @@ def _read_delivery(context, reference, root, visited):
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
     _validate_owner(context, definition)
     experiments = _load_experiments(definition, root, published=True, context=context)
-    _validate_content(definition, content, root, experiments, context)
+    _validate_content(definition, content, root, experiments, context, scope)
     if _resolve(root, "report.md").read_bytes() != _report(definition, content, root):
         _fail("REPORT_FACTS", "report.md", "report differs from machine content")
     for predecessor in definition.predecessors:
@@ -989,24 +991,28 @@ def _read_delivery(context, reference, root, visited):
 
 
 def validate_delivery(
-    context: RepositoryContext, reference: d.DeliveryReference
+    context: RepositoryContext, reference: d.DeliveryReference, *,
+    scope: d.DeliveryValidationScope = d.DeliveryValidationScope.FULL,
 ) -> d.DeliveryValidation:
-    """Verify persisted bytes exactly; DSR_EFFECTIVE recomputation uses 1e-12 rtol.
+    """Verify evidence integrity; FULL also recomputes this delivery's assessment.
 
-    Read-only: never executes research code or reproduction commands.
+    Predecessors receive integrity validation. Neither scope reruns account backtests.
+    Experiment definitions may be loaded to verify source and owner binding.
     """
+    if type(scope) is not d.DeliveryValidationScope:
+        raise TypeError("scope requires DeliveryValidationScope")
     if not isinstance(context, RepositoryContext) or not isinstance(
         reference, d.DeliveryReference
     ):
         raise TypeError("validate_delivery requires RepositoryContext and DeliveryReference")
     try:
-        _read_delivery(context, reference, _delivery_path(context, reference), set())
-        return d.DeliveryValidation(d.ValidationStatus.PASS)
+        _read_delivery(context, reference, _delivery_path(context, reference), set(), scope)
+        return d.DeliveryValidation(d.ValidationStatus.PASS, scope)
     except d.DeliveryValidationError as exc:
-        return d.DeliveryValidation(d.ValidationStatus.FAIL, exc.issues)
+        return d.DeliveryValidation(d.ValidationStatus.FAIL, scope, exc.issues)
     except (OSError, ValueError, TypeError, KeyError) as exc:
         return d.DeliveryValidation(
-            d.ValidationStatus.FAIL, (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),)
+            d.ValidationStatus.FAIL, scope, (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),)
         )
 
 

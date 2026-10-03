@@ -28,6 +28,7 @@ from .candidates import (
     CandidateDerivation, CandidateDerivationKind, CandidateIdentityConflict,
 )
 from .freeze_contracts import (
+    ResearchEvidenceOwner, ResearchEvidenceRef,
     CandidateOrigin, CandidateInspectionReport, CandidateSelectionSubject,
     DecisionAction, DecisionReference, FreezeCandidateRequest, FreezeFile,
     FreezePlan, FreezeReceipt, FreezeRequestId, FreezeStatus,
@@ -38,6 +39,7 @@ from .freeze_contracts import (
 from .freeze_store import FreezeVersionRequest
 
 __all__ = [
+    "ResearchEvidenceOwner", "ResearchEvidenceRef",
     "CandidateOrigin", "CandidateInspectionReport", "CandidateSelectionSubject",
     "DecisionAction", "DecisionReference", "FreezeCandidateRequest", "FreezeFile",
     "FreezePlan", "FreezeReceipt", "FreezeRequestId", "FreezeStatus",

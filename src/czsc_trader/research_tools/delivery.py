@@ -817,9 +817,15 @@ class DeliveryIssue(_Record):
     message: str
 
 
+class DeliveryValidationScope(StrEnum):
+    INTEGRITY = "INTEGRITY"
+    FULL = "FULL"
+
+
 @dataclass(frozen=True, slots=True)
 class DeliveryValidation(_Record):
     status: ValidationStatus
+    scope: DeliveryValidationScope
     issues: tuple[DeliveryIssue, ...] = ()
 
     def _validate(self):

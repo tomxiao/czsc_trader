@@ -22,8 +22,10 @@ from strategy_evaluator import (
 )
 from strategy_manager import StrategyRegistry, CandidateEvidence, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
-from strategy_manager.freeze_store import (
-    FreezeVersionRequest,
+from strategy_manager.freeze_store import FreezeVersionRequest, _durable
+from strategy_manager.write_lock import RegistryWriteLock
+from .research_evidence import (
+    record_decision,
     build_version,
     read_decision,
     validate_inspection,
@@ -69,27 +71,36 @@ def _read(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _store(context, data):
-    digest = sha256(data).hexdigest()
-    ref = CandidateEvidence(f"research_objects/{digest}", digest)
-    target = context.strategy_root / ref.path
-    registry = StrategyRegistry(context.strategy_root)
-    with registry._write_lock.hold():
-        if target.exists():
-            ref.resolve(context.strategy_root)
-        else:
-            stage = create_temporary_directory(context.root, "inspection-object") / "object"
-            with stage.open("xb") as stream:
-                stream.write(data)
-                stream.flush()
-                os.fsync(stream.fileno())
-            target.parent.mkdir(parents=True, exist_ok=True)
-            stage.replace(target)
-    return ref
+@dataclass(frozen=True)
+class _EvidenceStore:
+    context: RepositoryContext
+    owner: f.ResearchEvidenceOwner
 
+    def put(self, data):
+        digest = sha256(data).hexdigest()
+        prefix = "objects/inspection" if self.owner.experiment_id else "decisions/objects"
+        ref = f.ResearchEvidenceRef(self.owner, f"{prefix}/{digest}", digest)
+        target = _resolve(self.context.root, ref.repository_path)
+        lock = RegistryWriteLock(self.context.root / ".tmp/research-locks" / self.owner.strategy_id)
+        with lock.hold():
+            if self.owner.experiment_id and (
+                self.context.root / self.owner.repository_path / "experiment_manifest.json"
+            ).exists():
+                raise ValueError("inspection cannot write into a sealed experiment")
+            if target.exists():
+                ref.resolve(self.context.root)
+            else:
+                stage = create_temporary_directory(self.context.root, "inspection-object") / "object"
+                with stage.open("xb") as stream:
+                    stream.write(data)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                target.parent.mkdir(parents=True, exist_ok=True)
+                stage.replace(target)
+        return ref
 
-def _store_json(context, value):
-    return _store(context, _bytes(value))
+    def put_json(self, value):
+        return self.put(_bytes(value))
 
 
 def _delivery(context, ref):
@@ -97,7 +108,7 @@ def _delivery(context, ref):
     receipt = d.DeliveryReceipt.from_dict(_read(path))
     if path != (_delivery_path(context, receipt.reference) / "receipt.json").resolve():
         raise ValueError("decision delivery must reference its published receipt")
-    checked = validate_delivery(context, receipt.reference)
+    checked = validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY)
     if checked.status is not d.ValidationStatus.PASS:
         raise ValueError(f"decision delivery is invalid: {checked.issues}")
     document = _read(path.parent / "delivery.json")
@@ -127,7 +138,7 @@ def record_research_decision(
             ):
                 raise ValueError("selected candidate is absent from assessment")
     else:
-        report = validate_inspection(context.strategy_root, subject.inspection)
+        report = validate_inspection(context.root, subject.inspection)
         plan = report.plan
         if subject != f.FreezeSubject(
             plan.origin.candidate,
@@ -137,10 +148,9 @@ def record_research_decision(
             plan.version,
         ):
             raise ValueError("freeze decision does not match inspected plan")
-    source = _store(context, decision.confirmation_source.resolve(context.root).read_bytes())
-    return StrategyRegistry(context.strategy_root).record_research_decision(
-        replace(decision, confirmation_source=source)
-    )
+    store = _EvidenceStore(context, f.ResearchEvidenceOwner(decision.strategy_id))
+    source = store.put(decision.confirmation_source.resolve(context.root).read_bytes())
+    return record_decision(context, replace(decision, confirmation_source=source))
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,11 +219,11 @@ class CandidateInspectionRequest:
             f._version(self.parent_version)
 
 
-def _copy_plan(context, request, registration):
+def _copy_plan(context, request, registration, store):
     evidence_root = _registered_root(context, registration)
 
     def copy(ref, root):
-        return _store(context, ref.resolve(root).read_bytes())
+        return store.put(ref.resolve(root).read_bytes())
 
     prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
     files = tuple(
@@ -234,7 +244,7 @@ def _copy_plan(context, request, registration):
         f.CandidateOrigin(
             registration.key,
             registration.content_sha256,
-            _store_json(context, registration.to_dict()),
+            store.put_json(registration.to_dict()),
         ),
         request.version,
         request.parent_version,
@@ -244,7 +254,7 @@ def _copy_plan(context, request, registration):
         request.forward_start,
         copy(registration.payload, evidence_root),
         files,
-        _store_json(context, binding.to_dict()),
+        store.put_json(binding.to_dict()),
         tuple(
             copy(ref, evidence_root)
             for ref in (
@@ -262,14 +272,14 @@ def _materialize(context, plan):
         if not target.resolve().is_relative_to(stage.resolve()):
             raise ValueError("freeze file escapes staging")
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(file.source.resolve(context.strategy_root).read_bytes())
+        target.write_bytes(file.source.resolve(context.root).read_bytes())
     return stage
 
 
 def _binding(context, plan):
-    template = _read(plan.runtime_binding.resolve(context.strategy_root))
+    template = _read(plan.runtime_binding.resolve(context.root))
     RuntimeBindingSpec.from_dict(template)
-    payload = _read(plan.payload.resolve(context.strategy_root))
+    payload = _read(plan.payload.resolve(context.root))
     runtime = payload["runtime"]
     if (
         template["source_files"] != runtime["source_files"]
@@ -290,7 +300,7 @@ def _binding(context, plan):
     return template
 
 
-def _authenticate(context, request, result, workspace):
+def _authenticate(context, request, result, workspace, store):
     projection = build_assessment_evidence(request, result)
     root = workspace.resolve()
     if not root.is_relative_to(context.root.resolve()) or result.record is None:
@@ -310,10 +320,10 @@ def _authenticate(context, request, result, workspace):
         x.to_dict() for x in projection
     ]:
         raise ValueError("inspection evaluation artifact differs")
-    return projection, _store_json(context, {"record": record.to_dict(), "result": value})
+    return projection, store.put_json({"record": record.to_dict(), "result": value})
 
 
-def _load_reference(context, reference):
+def _load_reference(context, reference, store):
     root = _resolve(context.root, reference.experiment.workspace_path)
     _resolve(root, "execution_receipt.json")
     envelope = _read(_resolve(root, "execution_envelope.json"))
@@ -356,7 +366,7 @@ def _load_reference(context, reference):
         for x in projection
     ):
         raise ValueError("reference assessment identity differs")
-    return value, projection, _store_json(context, {"record": record.to_dict(), "result": value})
+    return value, projection, store.put_json({"record": record.to_dict(), "result": value})
 
 
 def _replay_evidence(request, run):
@@ -529,11 +539,19 @@ def inspect_candidate(
         for name in ("execution_receipt.json", "execution_envelope.json", "execution_failure.json")
     ):
         raise ValueError("inspection cannot append to a sealed experiment workspace")
+    owner = f.ResearchEvidenceOwner(request.candidate.strategy_id, request.execution.definition.experiment_id)
+    if request.execution.definition.strategy_id != owner.strategy_id:
+        raise ValueError("inspection experiment family differs")
+    from .delivery_service import _load_scoped_experiment
+    loaded = _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
+    if loaded.definition != request.execution.definition:
+        raise ValueError("inspection execution differs from bound experiment")
+    store = _EvidenceStore(context, owner)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
         request.candidate, experiments_root=context.experiments_root
     )
     candidate = load_candidate(context, request.candidate)
-    selection = read_decision(context.strategy_root, request.selection)
+    selection = read_decision(context.root, request.selection)
     if (
         selection.action is not f.DecisionAction.APPROVE
         or type(selection.subject) is not f.CandidateSelectionSubject
@@ -543,8 +561,8 @@ def inspect_candidate(
         raise ValueError("inspection requires matching candidate selection")
     _, assessment = _delivery(context, selection.subject.delivery)
     selected_evidence = assessment.payload.assessment_request.evidence
-    plan = _copy_plan(context, request, registration)
-    evidence = _store_json(context, plan.to_dict())
+    plan = _copy_plan(context, request, registration, store)
+    evidence = store.put_json(plan.to_dict())
     checks = []
 
     def check(kind, status, detail, refs=(evidence,)):
@@ -579,7 +597,7 @@ def inspect_candidate(
             version=plan.version,
             release_id=f"{request.candidate.strategy_id}-{plan.version}",
             release_hash=plan.sha256,
-            payload=_read(plan.payload.resolve(context.strategy_root)),
+            payload=_read(plan.payload.resolve(context.root)),
         )
         binding = RuntimeBinding(release.release_id, release.release_hash, RuntimeBindingSpec.from_dict(_binding(context, plan)))
         runtime = request.execution.runtime
@@ -599,14 +617,15 @@ def inspect_candidate(
     comparisons, audits, signals, sources, release_replays = [], [], [], [], []
     errors = []
     signal_errors = []
-    for replay in request.replays:
+    static_ready = all(x.status is f.InspectionStatus.PASS for x in checks)
+    for replay in request.replays if static_ready else ():
         new_request = replay.reproduction_request
         if (new_request.strategy.strategy_family_id, new_request.strategy.candidate_id) != (
             request.candidate.strategy_id,
             request.candidate.candidate_id,
         ) or Path(new_request.repository_root).resolve() != context.root.resolve():
             raise ValueError("inspection replay candidate/repository differs")
-        baseline, projection, ref = _load_reference(context, replay.reference)
+        baseline, projection, ref = _load_reference(context, replay.reference, store)
         if (
             baseline["request_identity"]["data_cutoff"] > plan.selection_data_cutoff
             or new_request.data_cutoff.isoformat() > plan.selection_data_cutoff
@@ -625,7 +644,7 @@ def inspect_candidate(
             current_request = replace(new_request, strategy=candidate)
             current = request.execution.evaluation.evaluate(current_request)
             _, current_ref = _authenticate(
-                context, current_request, current, request.execution.workspace.root
+                context, current_request, current, request.execution.workspace.root, store
             )
             sources.append(current_ref)
             old = {(x["window_id"], x["scenario_id"]): x for x in baseline["runs"]}
@@ -694,8 +713,7 @@ def inspect_candidate(
             StrategyRuntimeError,
         ) as exc:
             errors.append(f"{type(exc).__name__}: {exc}")
-    detail = _store_json(
-        context,
+    detail = store.put_json(
         {
             "coverage": [x.to_dict() for x in covered],
             "audits": audits,
@@ -722,7 +740,10 @@ def inspect_candidate(
         f.InspectionStatus.FAIL
         if errors
         else (f.InspectionStatus.PASS if complete else f.InspectionStatus.INCOMPLETE),
-        "; ".join(errors) or "fresh managed evaluations persisted",
+        "; ".join(errors) or (
+            "fresh managed evaluations persisted" if static_ready
+            else "reproduction not started because static inspection failed"
+        ),
         refs,
     )
     for kind, values in (
@@ -758,8 +779,9 @@ def inspect_candidate(
         request_hash,
         tuple(checks),
         request.remaining_risks,
+        owner,
     )
-    _store_json(context, report.to_dict())
+    store.put_json(report.to_dict())
     _archive_inspection(context, request.execution, report)
     return report
 
@@ -768,7 +790,7 @@ def _archive_inspection(context, execution, report):
     """Make platform-produced inspection evidence part of the eventual REX receipt."""
 
     def references(value):
-        if isinstance(value, CandidateEvidence):
+        if isinstance(value, f.ResearchEvidenceRef):
             yield value
         elif is_dataclass(value):
             for field in fields(value):
@@ -777,12 +799,12 @@ def _archive_inspection(context, execution, report):
             for item in value:
                 yield from references(item)
 
-    selection = read_decision(context.strategy_root, report.selection)
+    selection = read_decision(context.root, report.selection)
     refs = (report.reference, selection.confirmation_source, *references(report))
     for ref in dict.fromkeys(refs):
         relative = f"inspections/{report.sha256}/{ref.path}"
         destination = execution.workspace.path(relative)
-        data = ref.resolve(context.strategy_root).read_bytes()
+        data = ref.resolve(context.root).read_bytes()
         if destination.exists():
             if destination.read_bytes() != data:
                 raise ValueError("inspection archive conflict")
@@ -801,25 +823,39 @@ def freeze_candidate(
     if type(request) is not f.FreezeCandidateRequest:
         raise TypeError("freeze_candidate requires FreezeCandidateRequest")
     registry = StrategyRegistry(context.strategy_root)
-    existing = registry.get_freeze_result(request.request_id)
+    existing = get_freeze_result(context, request.request_id)
     if existing.status is not f.FreezeStatus.NOT_FOUND:
-        if existing.request_sha256 != request.sha256:
+        if existing.request_sha256 is not None and existing.request_sha256 != request.sha256:
             raise ValueError("freeze request ID already binds different content")
         return existing
-    report = validate_approval(context.strategy_root, request)
+    report = validate_approval(context.root, request)
     # Revalidate the selected delivery and registered candidate before materialization.
-    selection = read_decision(context.strategy_root, report.selection)
+    selection = read_decision(context.root, report.selection)
     _delivery(context, selection.subject.delivery)
     load_candidate(context, report.plan.origin.candidate)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
         report.plan.origin.candidate, experiments_root=context.experiments_root
     )
+    plan = report.plan
+    evidence_root = _registered_root(context, registration)
+    if (registration.record_sha256 != plan.origin.registration_sha256
+        or registration.content_sha256 != plan.origin.content_sha256):
+        raise ValueError("candidate changed since inspection")
+    if registration.payload.resolve(evidence_root).read_bytes() != plan.payload.resolve(context.root).read_bytes():
+        raise ValueError("freeze payload differs from registered candidate")
+    runtime_descriptor = _read(plan.payload.resolve(context.root))["runtime"]
+    planned = {x.path: x.source.sha256 for x in plan.source_files}
+    prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
+    if {x.path.removeprefix(prefix): x.sha256 for x in registration.source_files} != {
+        name: planned.get(name) for name in runtime_descriptor["source_files"]
+    }:
+        raise ValueError("freeze source differs from registration")
     for name, expected in registration.dependencies:
         if metadata.version(name) != expected:
             raise ValueError(f"installed dependency changed since inspection: {name}")
     stage = _materialize(context, report.plan)
     template = _binding(context, report.plan)
-    version = build_version(context.strategy_root, request)
+    version = build_version(context.root, request)
     binding = {**template, "release_id": version.release_id, "release_hash": version.release_hash}
     (stage / "runtime_binding.json").write_bytes(_bytes(binding))
     runtime = StrategyRuntime()
@@ -846,12 +882,38 @@ def freeze_candidate(
     }
     manifest["package_hash"] = canonical_sha256(manifest)
     (stage / "release_manifest.json").write_bytes(_bytes(manifest))
-    return registry.freeze_version(
-        FreezeVersionRequest(
-            request, stage, context.research_registry_root, context.experiments_root
-        )
-    )
+    journal_root = _journal_root(context, request.request_id)
+    operation_path = journal_root / request.request_id.value / "research_request.json"
+    lock = RegistryWriteLock(context.root / ".tmp/freeze-locks" / request.request_id.strategy_id)
+    with lock.hold():
+        if operation_path.exists():
+            if f.FreezeCandidateRequest.from_dict(_read(operation_path)) != request:
+                raise ValueError("freeze request ID already binds different content")
+        else:
+            _durable(operation_path, request.to_dict(), temporary_root=context.root / ".tmp/freeze")
+        return registry.freeze_version(FreezeVersionRequest(
+            request.request_id, request.sha256, version,
+            StrategyRegistry(context.research_registry_root).get_family(version.strategy_id),
+            stage, manifest["package_hash"], journal_root,
+        ))
+
+
+def _journal_root(context, request_id):
+    if type(request_id) is not f.FreezeRequestId:
+        raise TypeError("freeze query requires FreezeRequestId")
+    return _resolve(context.root, f"research/{request_id.strategy_id}/freeze_requests")
 
 
 def get_freeze_result(context: RepositoryContext, request_id: f.FreezeRequestId) -> f.FreezeReceipt:
-    return StrategyRegistry(context.strategy_root).get_freeze_result(request_id)
+    journal_root = _journal_root(context, request_id)
+    receipt = StrategyRegistry(context.strategy_root).get_freeze_result(request_id, journal_root=journal_root)
+    if receipt.status is f.FreezeStatus.NOT_FOUND:
+        return receipt
+    try:
+        request = f.FreezeCandidateRequest.from_dict(_read(journal_root / request_id.value / "research_request.json"))
+        if request.request_id != request_id or request.sha256 != receipt.request_sha256:
+            raise ValueError("research freeze request differs from publication")
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        return f.FreezeReceipt(request_id, f.FreezeStatus.UNKNOWN, receipt.request_sha256,
+                               reason=f"research freeze request cannot be verified: {exc}")
+    return receipt

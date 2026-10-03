@@ -4,22 +4,34 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import Mapping
+from typing import Mapping, Self
 
 import pandas as pd
 
 from .calculation import CalculationScope, CalendarWindow
 from .contracts import TradableWindow
-from .models import RuntimeDefinition
+from .models import ParameterSet, StrategyDefinition
+from .errors import RuntimeCompatibilityError
 
 
 class StrategyImplementation(ABC):
     """Base class that makes every strategy-owned responsibility explicit."""
 
+    @classmethod
+    @abstractmethod
+    def from_parameters(cls, parameters: ParameterSet) -> Self:
+        """Construct identical business behavior for candidate and release execution."""
+        raise NotImplementedError
+
+    @classmethod
+    def from_parameters_for_symbol(cls, parameters: ParameterSet, symbol: str) -> Self:
+        """Explicit opt-in for deployment on an instrument different from the declaration."""
+        raise RuntimeCompatibilityError("strategy does not support deployment symbol rebinding")
+
     @property
     @abstractmethod
-    def definition(self) -> RuntimeDefinition:
-        """Return the immutable identity, inputs and execution contracts."""
+    def definition(self) -> StrategyDefinition:
+        """Return immutable strategy-owned business contracts."""
 
         raise NotImplementedError
 

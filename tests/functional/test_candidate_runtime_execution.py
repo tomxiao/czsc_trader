@@ -406,12 +406,12 @@ def test_candidate_load_fails_closed_on_source_and_parameter_identity_errors(
         HistoricalExecutor(**execution, fee_rate_override=0.003)
     bad_parameters = deepcopy(payload)
     bad_parameters["parameters"]["threshold"] = 0.9
-    factory = type(valid)
-    create = factory.from_candidate
-    monkeypatch.setattr(factory, "from_candidate", lambda _: valid)
-    with pytest.raises(RuntimeCompatibilityError, match="candidate identity"):
+    factory = type(valid.implementation)
+    create = factory.from_parameters
+    monkeypatch.setattr(factory, "from_parameters", lambda _: valid.implementation)
+    with pytest.raises(RuntimeCompatibilityError, match="runtime parameters"):
         loader.load_candidate(StrategyCandidate("S900", "C0001", bad_parameters, package))
-    monkeypatch.setattr(factory, "from_candidate", create)
+    monkeypatch.setattr(factory, "from_parameters", create)
     wrong_closure = deepcopy(payload)
     wrong_closure["runtime"]["source_files"] = ["../secrets.py"]
     with pytest.raises(RuntimeCompatibilityError, match="unsafe path"):
@@ -922,3 +922,22 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         evaluate_candidate_payloads(
             run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
         )
+
+
+def test_missing_parameter_factory_is_rejected_before_runtime_creation(candidate_payload):
+    from copy import deepcopy
+    from strategy_runtime import StrategyCandidate, RuntimeCompatibilityError
+    from strategy_runtime.loader import StrategyLoader
+    from strategy_runtime.implementation_identity import implementation_sha256
+
+    payload, package = candidate_payload
+    source = package / "strategies/candidate_fixture.py"
+    source.write_text(source.read_text(encoding="utf-8").replace(
+        "def from_parameters(cls, parameters: ParameterSet):", "def from_candidate(cls, parameters: ParameterSet):"
+    ), encoding="utf-8")
+    payload = deepcopy(payload)
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        tuple(payload["runtime"]["source_files"]), source_root=package
+    )
+    with pytest.raises(RuntimeCompatibilityError, match="from_parameters"):
+        StrategyLoader().load_candidate(StrategyCandidate("S900", "C0001", payload, package))
