@@ -32,6 +32,7 @@ from .models import (
     LifecycleEvent,
     PerformanceEvidence,
     Qualification,
+    PaperTradingApproval,
     ResearchState,
     StrategyFamily,
     StrategyGovernanceCredential,
@@ -672,8 +673,11 @@ class StrategyRegistry:
             raise RegistryError(f"invalid lifecycle history: {strategy_id}") from exc
 
     def current_qualification(self, strategy_id: str, version: str) -> Qualification:
-        self.get_version(strategy_id, version)
-        events = [event for event in self.lifecycle_events(strategy_id) if event.version == version]
+        frozen = self.get_version(strategy_id, version)
+        events = [
+            event for event in self.lifecycle_events(strategy_id)
+            if event.version == version and event.release_hash == frozen.release_hash
+        ]
         if not events:
             return Qualification.RESEARCH
         return events[-1].to_state
@@ -733,6 +737,24 @@ class StrategyRegistry:
         return model
 
     @registry_write
+    def approve_paper_trading(self, approval: PaperTradingApproval) -> LifecycleEvent:
+        """Grant paper eligibility to exact frozen content after explicit user approval."""
+        if type(approval) is not PaperTradingApproval:
+            raise TypeError("approve_paper_trading requires PaperTradingApproval")
+        frozen = self.get_version(approval.strategy_id, approval.version)
+        if frozen.release_hash != approval.expected_release_hash:
+            raise RegistryError("paper approval release hash differs from frozen version")
+        if (
+            self.current_qualification(approval.strategy_id, approval.version)
+            is not Qualification.RESEARCH
+        ):
+            raise InvalidTransitionError("paper approval requires RESEARCH qualification")
+        return self._transition(
+            approval.strategy_id, approval.version, Qualification.PAPER_READY,
+            "PAPER_APPROVED", approval.actor, approval.reason, [],
+        )
+
+    @registry_write
     def promote_version(
         self,
         strategy_id: str,
@@ -763,6 +785,8 @@ class StrategyRegistry:
         reason: str,
         evidence_ids: list[str],
     ) -> LifecycleEvent:
+        if self.current_qualification(strategy_id, version) is not Qualification.LIVE_READY:
+            raise InvalidTransitionError("downgrade requires LIVE_READY qualification")
         if not evidence_ids:
             raise EvidenceRequiredError("downgrade requires related evidence")
         return self._transition(

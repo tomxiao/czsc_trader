@@ -35,7 +35,6 @@ class ServiceConfig:
             "--database", str(self.shared_root / "state" / "runtime.db"),
             "--data-dir", str(self.shared_root / "data"),
             "--config-root", str(self.shared_root / "config"),
-            "--advice-executable", str(release.trader_executable),
             "--release-manifest", str(release.manifest_path),
             "--host", self.host,
             "--port", str(self.port),

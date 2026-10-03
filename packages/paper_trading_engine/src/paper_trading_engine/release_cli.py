@@ -914,8 +914,8 @@ def verify_release_configuration(
         "validated=[]\n"
         "for account_id,strategy_id,version,release_hash,symbol,asset in rows:\n"
         "    identity=client.validate_account_binding(strategy_id=strategy_id,strategy_version=version,symbol=symbol,asset=asset)\n"
-        "    require(identity['release_hash']==release_hash,f'{account_id}: account release hash differs from frozen strategy')\n"
-        "    validated.append(identity['release_id'])\n"
+        "    require(identity.release_hash==release_hash,f'{account_id}: account release hash differs from frozen strategy')\n"
+        "    validated.append(identity.release_id)\n"
         "print(json.dumps({'accounts':len(rows),'releases':sorted(set(validated))}))\n"
     )
     completed = _run(

@@ -156,7 +156,6 @@ def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path
         "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
         "--data-dir", str(runtime_root / "shared" / "data"),
         "--config-root", str(runtime_root / "shared" / "config"),
-        "--advice-executable", str(release / ".venv" / "Scripts" / "czsc-trader.exe"),
         "--release-manifest", str(release / "release-manifest.json"),
         "--host", "127.0.0.1", "--port", "8080",
     ]
@@ -295,7 +294,6 @@ def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_pa
         "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
         "--data-dir", str(runtime_root / "shared" / "data"),
         "--config-root", str(runtime_root / "shared" / "config"),
-        "--advice-executable", str(first / ".venv" / "Scripts" / "czsc-trader.exe"),
         "--release-manifest", str(first / "release-manifest.json"),
         "--host", "127.0.0.1", "--port", "8080",
     ]

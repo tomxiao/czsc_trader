@@ -9,7 +9,6 @@ import json
 from pathlib import Path
 import socket
 import secrets
-import subprocess
 import sys
 from threading import Event, Thread
 import time
@@ -22,6 +21,7 @@ from dotenv import load_dotenv
 
 from .audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
+from .account_binding import AccountStrategyBinding
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
 from .account_engine import AccountEngine
@@ -85,7 +85,6 @@ def _common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--config-root", type=Path)
     parser.add_argument("--release-manifest", type=Path)
-    parser.add_argument("--advice-executable", type=Path)
     parser.add_argument("--opend-host", default="127.0.0.1")
     parser.add_argument("--opend-port", default=11111, type=int)
 
@@ -151,12 +150,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _default_executable(repo_root: Path) -> Path:
-    name = "czsc-trader.exe" if sys.platform == "win32" else "czsc-trader"
-    scripts = "Scripts" if sys.platform == "win32" else "bin"
-    return repo_root / ".venv" / scripts / name
-
-
 def build_engine(args: argparse.Namespace):
     startup_timings: dict[str, float] = {}
     stage_started = time.perf_counter()
@@ -175,6 +168,15 @@ def build_engine(args: argparse.Namespace):
         audit=audit,
     )
     startup_timings["store_and_advice_ms"] = round(
+        (time.perf_counter() - stage_started) * 1000, 1,
+    )
+    stage_started = time.perf_counter()
+    try:
+        deployments = _strategy_deployments(advice, store.strategy_virtual_accounts())
+    except Exception:
+        store.close()
+        raise
+    startup_timings["strategy_deployments_ms"] = round(
         (time.perf_counter() - stage_started) * 1000, 1,
     )
 
@@ -199,30 +201,6 @@ def build_engine(args: argparse.Namespace):
             store, args.symbol, connect_execution, initial=initial_execution,
         )
     startup_timings["execution_initialize_ms"] = round(
-        (time.perf_counter() - stage_started) * 1000, 1,
-    )
-    accounts = store.strategy_virtual_accounts()
-    stage_started = time.perf_counter()
-    try:
-        deployments = _strategy_deployments(
-            args.advice_executable or _default_executable(args.repo_root),
-            args.repo_root,
-            [
-                (str(account["strategy_id"]), str(account["strategy_version"]))
-                for account in accounts
-            ],
-        )
-    except Exception as exc:
-        deployments = {}
-        audit.record(
-            "DEPENDENCY_DEGRADED",
-            source="cli",
-            outcome="FAILURE",
-            actor_type="ENGINE",
-            actor_id="strategy_manager",
-            details={"operation": "strategy_deployments", "error": str(exc)},
-        )
-    startup_timings["strategy_deployments_ms"] = round(
         (time.perf_counter() - stage_started) * 1000, 1,
     )
     stage_started = time.perf_counter()
@@ -263,104 +241,41 @@ def build_engine(args: argparse.Namespace):
     )
 
 
-def _strategy_info(
-    executable: Path, repo_root: Path, strategy_version_id: str,
-) -> dict[str, object]:
-    command = [
-        str(executable), "strategy", "info", strategy_version_id,
-        "--repo-root", str(repo_root),
-    ]
-    completed = subprocess.run(
-        command,
-        check=False, capture_output=True, text=True, encoding="utf-8", timeout=30,
-    )
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(completed.stderr.strip() or "strategy validation returned invalid JSON") from exc
-    if completed.returncode or payload.get("status") != "PASS":
-        error = payload.get("error", {})
-        raise RuntimeError(error.get("message") or "strategy validation failed")
-    result = payload.get("result", {})
-    if result.get("strategy_version_id") != strategy_version_id:
-        raise RuntimeError("strategy deployment identity differs from requested release")
-    if result.get("deployment_state") != "SRT_DEPLOYED":
-        raise RuntimeError("strategy version is not deployed to SRT")
-    qualification = result.get("qualification")
-    if qualification not in {"PAPER_READY", "LIVE_READY"}:
-        raise RuntimeError(f"strategy qualification cannot enter paper trading: {qualification}")
-    if not result.get("selection_data_cutoff"):
-        raise RuntimeError("strategy release has no selection_data_cutoff")
-    return result
-
-
 def _strategy_deployments(
-    executable: Path,
-    repo_root: Path,
-    releases: list[tuple[str, str]],
-) -> dict[tuple[str, str], dict[str, object]]:
-    unique_releases = list(dict.fromkeys(releases))
-    if not unique_releases:
-        return {}
-    command = [str(executable), "strategy", "list", "--repo-root", str(repo_root)]
-    try:
-        completed = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=30,
+    client: SrtAdviceClient,
+    accounts: list[dict[str, object]],
+) -> dict[str, AccountStrategyBinding]:
+    bindings = {}
+    deployments = {}
+    for account in accounts:
+        key = (
+            account["strategy_id"], account["strategy_version"],
+            account["symbol"], account["asset_type"],
         )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError("strategy deployment query timed out") from exc
-    try:
-        payload = json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            completed.stderr.strip() or "strategy deployment query returned invalid JSON"
-        ) from exc
-    if completed.returncode or payload.get("status") != "PASS":
-        error = payload.get("error", {})
-        raise RuntimeError(error.get("message") or "strategy deployment query failed")
-    rows = payload.get("result", {}).get("strategies")
-    if not isinstance(rows, list):
-        raise RuntimeError("strategy deployment query returned invalid deployments")
-    deployments: dict[tuple[str, str], dict[str, object]] = {}
-    for row in rows:
-        if not isinstance(row, dict):
-            raise RuntimeError("strategy deployment query returned an invalid identity")
-        key = (str(row.get("strategy_id")), str(row.get("version")))
-        if key not in unique_releases:
-            continue
-        if key in deployments:
-            raise RuntimeError("strategy deployment query returned an unexpected identity")
-        if row.get("deployment_state") != "SRT_DEPLOYED":
-            raise RuntimeError("strategy version is not deployed to SRT")
-        qualification = row.get("qualification")
-        if qualification not in {"PAPER_READY", "LIVE_READY"}:
-            raise RuntimeError(
-                f"strategy qualification cannot enter paper trading: {qualification}"
+        if key not in bindings:
+            bindings[key] = client.validate_account_binding(
+                strategy_id=key[0], strategy_version=key[1], symbol=key[2], asset=key[3],
             )
-        if not row.get("selection_data_cutoff"):
-            raise RuntimeError("strategy release has no selection_data_cutoff")
-        deployments[key] = row
-    if set(deployments) != set(unique_releases):
-        raise RuntimeError("strategy deployment query omitted a requested identity")
+        binding = bindings[key]
+        if binding.release_hash != account["release_hash"]:
+            raise RuntimeError(f"{account['account_id']}: account release hash differs from frozen strategy")
+        cutoff = account.get("selection_data_cutoff")
+        if cutoff and cutoff != binding.selection_data_cutoff.isoformat():
+            raise RuntimeError(f"{account['account_id']}: account selection cutoff differs from frozen strategy")
+        deployments[str(account["account_id"])] = binding
     return deployments
 
 
-def _validate_strategy(args: argparse.Namespace) -> dict[str, object]:
-    return _strategy_info(
-        args.advice_executable or _default_executable(args.repo_root),
-        args.repo_root,
-        f"{args.strategy}-{args.strategy_version}",
+def _validate_strategy(args: argparse.Namespace) -> AccountStrategyBinding:
+    return SrtAdviceClient(repo_root=args.repo_root, data_dir=args.data_dir).validate_account_binding(
+        strategy_id=args.strategy, strategy_version=args.strategy_version,
+        symbol=args.symbol, asset=args.asset,
     )
 
 
 def _preflight_strategy_account(
     args: argparse.Namespace,
-    identity: dict[str, object],
+    identity: AccountStrategyBinding,
 ) -> None:
     """Prove prepared SRT data and the advice contract before account creation."""
     initial_cash = Decimal(args.initial_cash).quantize(Decimal("0.0001"))
@@ -371,8 +286,8 @@ def _preflight_strategy_account(
         )
         prepared = client.prepare_account_data(
             account_id=args.account_id,
-            strategy_id=str(identity["strategy_id"]),
-            strategy_version=str(identity["version"]),
+            strategy_id=str(identity.strategy_id),
+            strategy_version=str(identity.version),
             symbol=args.symbol,
             asset=args.asset,
             signal_date=client.latest_completed_signal_date(shanghai_now()),
@@ -387,8 +302,8 @@ def _preflight_strategy_account(
             trading_date=trading_date,
             portfolio_revision=0,
             state_revision=0,
-            strategy_id=str(identity["strategy_id"]),
-            strategy_version=str(identity["version"]),
+            strategy_id=str(identity.strategy_id),
+            strategy_version=str(identity.version),
             account_id=args.account_id,
             symbol=args.symbol,
             asset=args.asset,
@@ -399,7 +314,7 @@ def _preflight_strategy_account(
             f"{args.symbol}: valid prepared SRT data is required before account creation: {exc}"
         ) from exc
     expected_strategy = (
-        identity["strategy_id"], identity["version"], identity["strategy_version_hash"],
+        identity.strategy_id, identity.version, identity.release_hash,
     )
     actual_strategy = (
         decision.strategy.get("strategy_id"),
@@ -410,30 +325,29 @@ def _preflight_strategy_account(
         raise RuntimeError("strategy advice identity differs from frozen release")
     if decision.symbol != args.symbol.upper():
         raise RuntimeError("strategy advice data identity differs from virtual account")
-    expected_fee = identity.get("fee_rate")
-    if expected_fee is not None and decision.fee_rate != float(expected_fee):
+    expected_fee = identity.fee_rate
+    if decision.fee_rate != float(expected_fee):
         raise RuntimeError("strategy advice fee rate differs from frozen release")
 
 
 def _backfill_selection_cutoffs(
     store: PaperStore,
     audit: AuditRecorder,
-    deployments: dict[tuple[str, str], dict[str, object]],
+    deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
         if account.get("selection_data_cutoff"):
             continue
         try:
-            key = (str(account["strategy_id"]), str(account["strategy_version"]))
-            identity = deployments.get(key)
+            identity = deployments.get(str(account["account_id"]))
             if identity is None:
                 raise RuntimeError("strategy deployment identity is unavailable")
-            if identity["strategy_version_hash"] != account["release_hash"]:
+            if identity.release_hash != account["release_hash"]:
                 raise RuntimeError("stored release hash does not match strategy registry")
             if not store.backfill_account_selection_cutoff(
                 account["account_id"],
                 account["release_hash"],
-                identity["selection_data_cutoff"],
+                identity.selection_data_cutoff.isoformat(),
             ):
                 raise RuntimeError("selection cutoff backfill was not applied")
             store.set_setting(f"selection_cutoff_error:{account['account_id']}", "")
@@ -460,20 +374,19 @@ def _backfill_selection_cutoffs(
 def _synchronize_strategy_names(
     store: PaperStore,
     audit: AuditRecorder,
-    deployments: dict[tuple[str, str], dict[str, object]],
+    deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
         try:
-            key = (str(account["strategy_id"]), str(account["strategy_version"]))
-            identity = deployments.get(key)
+            identity = deployments.get(str(account["account_id"]))
             if identity is None:
                 raise RuntimeError("strategy deployment identity is unavailable")
-            if identity["strategy_version_hash"] != account["release_hash"]:
+            if identity.release_hash != account["release_hash"]:
                 raise RuntimeError("stored release hash does not match strategy registry")
             store.synchronize_account_strategy_name(
                 str(account["account_id"]),
                 str(account["release_hash"]),
-                str(identity["name"]),
+                str(identity.name),
             )
             store.set_setting(f"strategy_name_sync_error:{account['account_id']}", "")
         except Exception as exc:
@@ -619,8 +532,8 @@ def _run_account_command(args: argparse.Namespace) -> dict[str, object] | list[d
         if args.account_action == "create-reconciliation":
             return store.create_channel_reconciliation_account(account_id=args.account_id)
         identity = _validate_strategy(args)
-        baseline_version = identity["strategy_version_id"]
-        baseline_hash = identity["strategy_version_hash"]
+        baseline_version = identity.release_id
+        baseline_hash = identity.release_hash
         existing = None
         try:
             existing = store.virtual_account(args.account_id)
@@ -633,23 +546,23 @@ def _run_account_command(args: argparse.Namespace) -> dict[str, object] | list[d
                 existing["symbol"], existing["asset_type"], existing["initial_cash"],
                 existing["selection_data_cutoff"],
             ) != (
-                identity["strategy_id"], identity["version"],
-                identity["strategy_version_hash"],
+                identity.strategy_id, identity.version,
+                identity.release_hash,
                 args.name, args.symbol.upper(), args.asset,
                 str(Decimal(args.initial_cash).quantize(Decimal("0.0001"))),
-                identity["selection_data_cutoff"],
+                identity.selection_data_cutoff.isoformat(),
             ):
                 raise ValueError("account id already exists with a different immutable identity")
             return existing
         _preflight_strategy_account(args, identity)
         created = store.create_virtual_account(
             args.account_id, args.name, baseline_version, baseline_hash, args.initial_cash,
-            strategy_id=identity["strategy_id"],
-            strategy_name_snapshot=identity["name"],
-            strategy_version=identity["version"],
-            release_hash=identity["strategy_version_hash"],
-            qualification_snapshot=identity["qualification"],
-            selection_data_cutoff=identity["selection_data_cutoff"],
+            strategy_id=identity.strategy_id,
+            strategy_name_snapshot=identity.name,
+            strategy_version=identity.version,
+            release_hash=identity.release_hash,
+            qualification_snapshot=identity.qualification.value,
+            selection_data_cutoff=identity.selection_data_cutoff.isoformat(),
             symbol=args.symbol,
             asset_type=args.asset,
         )

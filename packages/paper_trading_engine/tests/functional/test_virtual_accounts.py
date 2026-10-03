@@ -14,6 +14,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
+from paper_trading_engine import AccountStrategyBinding
+from strategy_manager import Qualification
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
@@ -32,25 +34,28 @@ def create_account(store, account_id, version, marker):
 
 @pytest.mark.parametrize("accounts", [[], [{"strategy_id": "S001", "strategy_version": "v1", "release_hash": "e" * 64}]])
 def test_startup_reads_existing_bindings_without_default_account_writes(tmp_path, monkeypatch, accounts):
-    class ReachedDeploymentValidation(BaseException):
+    class ReachedDeploymentValidation(RuntimeError):
         pass
 
     # A read-only surface deliberately offers no account creation/rename/migration methods.
-    store = SimpleNamespace(strategy_virtual_accounts=lambda: accounts)
+    closed = []
+    store = SimpleNamespace(strategy_virtual_accounts=lambda: accounts, close=lambda: closed.append(True))
     monkeypatch.setattr(pte_cli, "PaperStore", lambda _: store)
     for name in ("AuditRecorder", "SrtAdviceClient", "FutuGateway", "FutuExecution", "ReconnectableExecution"):
         monkeypatch.setattr(pte_cli, name, lambda *args, **kwargs: SimpleNamespace())
+    monkeypatch.setattr(pte_cli, "FutuGateway", lambda **_: pytest.fail("invalid bindings must block connection"))
 
-    def validate(executable, root, references):
-        assert references == [(x["strategy_id"], x["strategy_version"]) for x in accounts]
+    def validate(client, references):
+        assert references == accounts
         raise ReachedDeploymentValidation()
 
     monkeypatch.setattr(pte_cli, "_strategy_deployments", validate)
     args = Namespace(action="once", database=tmp_path / "runtime.db", repo_root=tmp_path,
                      data_dir=tmp_path / "data", asset="ETF", symbol="588080.SH",
-                     opend_host="127.0.0.1", opend_port=11111, advice_executable=None)
+                     opend_host="127.0.0.1", opend_port=11111)
     with pytest.raises(ReachedDeploymentValidation):
         pte_cli.build_engine(args)
+    assert closed == [True]
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows extended-path regression")
@@ -78,6 +83,9 @@ def test_pte_cli_rejects_retired_account_and_scheduler_aliases(tmp_path):
     assert current.data_prepare_interval == 7
 
     with pytest.raises(SystemExit):
+        parser.parse_args(["serve", "--repo-root", str(tmp_path), "--advice-executable", "old.exe"])
+
+    with pytest.raises(SystemExit):
         parser.parse_args([
             "account", "create", "--repo-root", str(tmp_path),
             "--account-id", "legacy", "--name", "Legacy",
@@ -100,75 +108,29 @@ def test_pte_cli_rejects_retired_account_and_scheduler_aliases(tmp_path):
         ])
 
 
-def test_ft_pte01_strategy_account_requires_srt_deployment(monkeypatch, tmp_path):
-    payload = {
-        "status": "PASS",
-        "result": {
-            "strategy_id": "S008",
-            "version": "v1",
-            "strategy_version_hash": "a" * 64,
-            "qualification": "PAPER_READY",
-            "selection_data_cutoff": "2026-09-02",
-            "strategy_version_id": "S008-v1",
-        },
-    }
-    monkeypatch.setattr(
-        subprocess,
-        "run",
-        lambda *args, **kwargs: SimpleNamespace(
-            returncode=0, stdout=json.dumps(payload), stderr=""
-        ),
-    )
-    with pytest.raises(RuntimeError, match="not deployed"):
-        pte_cli._strategy_info(tmp_path / "czsc-trader", tmp_path, "S008-v1")
-
-    payload["result"]["deployment_state"] = "SRT_DEPLOYED"
-    assert pte_cli._strategy_info(
-        tmp_path / "czsc-trader", tmp_path, "S008-v1"
-    )["deployment_state"] == "SRT_DEPLOYED"
-
-
-def test_strategy_deployments_queries_all_accounts_in_one_process(monkeypatch, tmp_path):
+def test_strategy_bindings_reuse_same_coordinate_and_validate_each_account(monkeypatch):
     calls = []
-    payload = {
-        "status": "PASS",
-        "result": {
-            "strategies": [
-                {
-                    "strategy_id": strategy_id,
-                    "version": version,
-                    "strategy_version_id": f"{strategy_id}-{version}",
-                    "strategy_version_hash": marker * 64,
-                    "qualification": "PAPER_READY",
-                    "governance_status": "SGC_VALIDATED",
-                    "selection_data_cutoff": "2026-09-02",
-                    "deployment_state": "SRT_DEPLOYED",
-                }
-                for strategy_id, version, marker in (
-                    ("S001", "v1", "a"), ("S007", "v1", "b"),
-                )
-            ]
-        },
-    }
-
-    def run(command, **kwargs):
-        calls.append((command, kwargs))
-        return SimpleNamespace(returncode=0, stdout=json.dumps(payload), stderr="")
-
-    monkeypatch.setattr(subprocess, "run", run)
-    result = pte_cli._strategy_deployments(
-        tmp_path / "czsc-trader",
-        tmp_path,
-        [("S001", "v1"), ("S007", "v1"), ("S001", "v1")],
-    )
-
-    assert set(result) == {("S001", "v1"), ("S007", "v1")}
-    assert len(calls) == 1
-    assert calls[0][0] == [
-        str(tmp_path / "czsc-trader"), "strategy", "list",
-        "--repo-root", str(tmp_path),
-    ]
-    assert calls[0][1]["timeout"] == 30
+    def validate(**kwargs):
+        calls.append(kwargs)
+        return AccountStrategyBinding("S001", "v1", "a" * 64, "Test", Qualification.PAPER_READY,
+                                      date(2026, 9, 2), kwargs["symbol"], .001)
+    client = SimpleNamespace(validate_account_binding=validate)
+    accounts = [dict(account_id=name, strategy_id="S001", strategy_version="v1", release_hash="a" * 64,
+                     symbol=symbol, asset_type="etf", selection_data_cutoff="2026-09-02")
+                for name, symbol in (("one", "588080.SH"), ("two", "588080.SH"), ("three", "510500.SH"))]
+    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: pytest.fail("binding must not spawn a process"))
+    bindings = pte_cli._strategy_deployments(client, accounts)
+    assert set(bindings) == {"one", "two", "three"}
+    assert bindings["one"] is bindings["two"]
+    assert bindings["three"].symbol == "510500.SH"
+    assert len(calls) == 2
+    accounts[1]["release_hash"] = "b" * 64
+    with pytest.raises(RuntimeError, match="account release hash differs"):
+        pte_cli._strategy_deployments(client, accounts)
+    accounts[1]["release_hash"] = "a" * 64
+    accounts[1]["selection_data_cutoff"] = "2026-09-03"
+    with pytest.raises(RuntimeError, match="selection cutoff differs"):
+        pte_cli._strategy_deployments(client, accounts)
 
 
 def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path):
@@ -838,22 +800,15 @@ def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     release_hash = "7" * 64
-    identity = {
-        "strategy_id": "S007",
-        "name": "多源机会风险门控",
-        "version": "v1",
-        "strategy_version_id": "S007-v1",
-        "strategy_version_hash": release_hash,
-        "qualification": "PAPER_READY",
-        "selection_data_cutoff": "2026-09-02",
-        "fee_rate": 0.001,
-    }
+    identity = AccountStrategyBinding(
+        "S007", "v1", release_hash, "多源机会风险门控", Qualification.PAPER_READY,
+        date(2026, 9, 2), "588080.SH", .001,
+    )
     args = Namespace(
         account_action="create",
         database=tmp_path / "runtime.db",
         data_dir=data_dir,
         repo_root=tmp_path,
-        advice_executable=Path("czsc-trader"),
         account_id="s007-v1",
         name="S007-v1模拟账户",
         strategy="S007",

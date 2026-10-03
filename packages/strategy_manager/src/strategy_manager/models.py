@@ -28,6 +28,28 @@ class Qualification(str, Enum):
     RETIRED = "RETIRED"
 
 
+@dataclass(frozen=True, slots=True)
+class PaperTradingApproval:
+    """Explicit permission for the exact frozen content to enter paper trading."""
+
+    strategy_id: str
+    version: str
+    expected_release_hash: str
+    actor: str
+    reason: str
+
+    def __post_init__(self) -> None:
+        require_strategy_id(self.strategy_id)
+        require_version(self.version)
+        if (
+            require_sha256(self.expected_release_hash, "expected_release_hash")
+            != self.expected_release_hash
+        ):
+            raise ValidationError("expected_release_hash must be canonical")
+        require_string(self.actor, "actor")
+        require_string(self.reason, "reason")
+
+
 class EvidencePhase(str, Enum):
     RESEARCH_BACKTEST = "RESEARCH_BACKTEST"
     PAPER_FORWARD = "PAPER_FORWARD"

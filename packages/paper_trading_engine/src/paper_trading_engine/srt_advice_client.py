@@ -32,10 +32,12 @@ from strategy_runtime import (
     RuntimeDefinition, RuntimeContractError,
 )
 from dataflows import Dataflows, DataRequest, Dataset
+from strategy_manager import Qualification, StrategyRegistry
 
 from .audit import AuditRecorder
 from .contracts import AdviceContractError, AdviceDecision
 from .errors import AdviceClientError
+from .account_binding import AccountStrategyBinding
 
 
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
@@ -78,22 +80,21 @@ def _load_manifest(path: Path) -> dict[str, object]:
 
 
 def _strategy_identity(repo_root: Path, release: StrategyRelease) -> dict[str, str]:
-    root = repo_root / "strategies" / release.strategy_family_id
-    family = _load_manifest(root / "family.json")
-    qualification = None
-    for line in (root / "lifecycle.jsonl").read_text(encoding="utf-8").splitlines():
-        event = json.loads(line)
-        if event.get("version") == release.version and event.get("release_hash") == release.release_hash:
-            qualification = event.get("to_state")
-    if qualification not in {"PAPER_READY", "LIVE_READY"}:
+    registry = StrategyRegistry(repo_root / "strategies")
+    stored = registry.get_version(release.strategy_family_id, release.version)
+    if stored.release_hash != release.release_hash:
+        raise AdviceClientError("strategy registry differs from loaded release")
+    family = registry.get_family(release.strategy_family_id)
+    qualification = registry.current_qualification(release.strategy_family_id, release.version)
+    if qualification not in {Qualification.PAPER_READY, Qualification.LIVE_READY}:
         raise AdviceClientError(f"{release.release_id} is not approved for paper trading")
     return {
         "strategy_id": release.strategy_family_id,
-        "name": str(family["name"]),
+        "name": family.name,
         "version": release.version,
         "release_id": release.release_id,
         "release_hash": release.release_hash,
-        "qualification": str(qualification),
+        "qualification": qualification.value,
     }
 
 
@@ -512,15 +513,31 @@ class SrtAdviceClient:
         strategy_version: str,
         symbol: str,
         asset: str,
-    ) -> dict[str, str]:
+    ) -> AccountStrategyBinding:
         """Validate one account's frozen strategy binding without preparing data."""
         if asset != "etf":
             raise AdviceClientError("PTE currently requires one ETF strategy")
         release = self._load_release(strategy_id, strategy_version)
-        StrategyRuntime(self.repo_root / "strategies").describe(
+        definition = StrategyRuntime(self.repo_root / "strategies").describe(
             release, symbol=symbol.upper(),
         )
-        return _strategy_identity(self.repo_root, release)
+        if definition.tradable_symbol != symbol.upper():
+            raise AdviceClientError("SRT execution-pricing symbol differs from account")
+        identity = _strategy_identity(self.repo_root, release)
+        stored = StrategyRegistry(self.repo_root / "strategies").get_version(strategy_id, strategy_version)
+        if stored.release_hash != release.release_hash:
+            raise AdviceClientError("strategy changed during account binding validation")
+        execution = definition.execution
+        fee_rate = (
+            execution.settings.get("capital", {}).get("fee_rate")
+            if execution.policy_type == "FROZEN_RULE"
+            else execution.settings.get("one_way_cost")
+        )
+        return AccountStrategyBinding(
+            strategy_id, strategy_version, release.release_hash, identity["name"],
+            Qualification(identity["qualification"]), date.fromisoformat(stored.selection_data_cutoff),
+            definition.tradable_symbol, fee_rate,
+        )
 
     def _audit_call(self, started: float, *, error=None, **scope) -> None:
         if self.audit is None or error is None:

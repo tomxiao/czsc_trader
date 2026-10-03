@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from research_experiment import ExperimentBinding
-from strategy_manager import StrategyRegistry, StrategyVersion, ValidationError
+from strategy_manager import StrategyRegistry, StrategyVersion, ValidationError, PaperTradingApproval
 from strategy_runtime import StrategyRelease, RuntimeContractError
 from czsc_trader.application import inspect_candidate, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
@@ -113,7 +113,7 @@ def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
 
     context, version = current_frozen
     registry = StrategyRegistry(context.strategy_root)
-    registry._transition("S900", "v1", Qualification.PAPER_READY, "PAPER_APPROVED", "test", "synthetic approval", [])
+    registry.approve_paper_trading(PaperTradingApproval("S900", "v1", version.release_hash, "test", "synthetic approval"))
     with pytest.raises(EvidenceRequiredError, match="PAPER_FORWARD"):
         registry.promote_version("S900", "v1", actor="test", reason="missing", evidence_ids=[])
     evidence = PerformanceEvidence.from_dict({
@@ -137,6 +137,10 @@ def test_current_version_lifecycle_requires_forward_evidence(current_frozen):
         registry.promote_version("S900", "v1", actor="test", reason="stale", evidence_ids=[historical.evidence_id])
     registry.promote_version("S900", "v1", actor="test", reason="forward", evidence_ids=[evidence.evidence_id])
     assert registry.current_qualification("S900", "v1") is Qualification.LIVE_READY
+    with pytest.raises(InvalidTransitionError, match="RESEARCH"):
+        registry.approve_paper_trading(PaperTradingApproval("S900", "v1", version.release_hash, "test", "repeat"))
+    registry.downgrade_version("S900", "v1", actor="test", reason="paper only", evidence_ids=[evidence.evidence_id])
+    assert registry.current_qualification("S900", "v1") is Qualification.PAPER_READY
     registry.retire_version("S900", "v1", actor="test", reason="retire")
     with pytest.raises(InvalidTransitionError):
         registry.promote_version("S900", "v1", actor="test", reason="invalid", evidence_ids=[])

@@ -357,10 +357,10 @@ def test_account_binding_validates_pte_frozen_release(pte_frozen, tmp_path):
     identity = client.validate_account_binding(
         strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",
     )
-    assert identity["release_id"] == version.release_id
-    assert identity["release_hash"] == version.release_hash
+    assert identity.release_id == version.release_id
+    assert identity.release_hash == version.release_hash
     # Research approval evidence is outside the frozen runtime identity.
-    commit = context.strategy_root / "freeze_requests/S900/request1/committed.json"
+    commit = context.research_root / "S900/freeze_requests/request1/committed.json"
     commit.write_text("{}", encoding="utf-8")
     assert client.validate_account_binding(
         strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf",

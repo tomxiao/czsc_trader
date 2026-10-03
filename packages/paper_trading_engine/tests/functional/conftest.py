@@ -16,14 +16,13 @@ from test_current_contracts import (  # noqa: E402
     completed as completed,
     managed_evaluation as managed_evaluation,
 )
-from strategy_manager import Qualification, StrategyRegistry  # noqa: E402
+from strategy_manager import PaperTradingApproval, StrategyRegistry  # noqa: E402
 
 
 @pytest.fixture
 def pte_frozen(current_frozen):
     context, version = current_frozen
-    StrategyRegistry(context.strategy_root)._transition(
-        "S900", "v1", Qualification.PAPER_READY, "PAPER_APPROVED", "test",
-        "synthetic paper approval", [],
-    )
+    StrategyRegistry(context.strategy_root).approve_paper_trading(PaperTradingApproval(
+        "S900", "v1", version.release_hash, "test", "synthetic paper approval",
+    ))
     return context, version

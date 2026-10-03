@@ -15,6 +15,7 @@ from .models import (
     LifecycleEvent,
     PerformanceEvidence,
     Qualification,
+    PaperTradingApproval,
     ResearchState,
     StrategyFamily,
     StrategyGovernanceCredential,
@@ -39,6 +40,7 @@ from .freeze_contracts import (
 from .freeze_store import FreezeVersionRequest
 
 __all__ = [
+    "PaperTradingApproval",
     "ResearchEvidenceOwner", "ResearchEvidenceRef",
     "CandidateOrigin", "CandidateInspectionReport", "CandidateSelectionSubject",
     "DecisionAction", "DecisionReference", "FreezeCandidateRequest", "FreezeFile",
