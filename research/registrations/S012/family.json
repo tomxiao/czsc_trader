@@ -5,8 +5,22 @@
   "research_intent": {
     "confirmation_sources": [
       "research/S012/materials/user_confirmation_20261004_01.json",
-      "research/S012/materials/user_confirmation_20261004_02.json"
+      "research/S012/materials/user_confirmation_20261004_02.json",
+      "research/S012/materials/user_confirmation_20261004_03.json"
     ],
+    "confirmed_capital_and_benchmark": {
+      "benchmark": {
+        "lot_size": 100,
+        "type": "NextOpenBuyHold"
+      },
+      "buy_fee_rate": 0.001,
+      "cash_remainder": "保留",
+      "initial_capital_cny": 100000,
+      "strategy_lot_size": 100,
+      "terminal_valuation": "持仓按市值评价"
+    },
+    "confirmed_data_and_resources": "既有获授权DFLS/Tushare数据、公开文献及现有研究依赖；已查看历史属于开发池；本机半核并发预算；新增外部数据源或依赖另行申请。",
+    "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
     "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
     "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
     "confirmed_targets": {
@@ -15,29 +29,25 @@
       "net_annual_return": ">= BuyHold * 1.5"
     },
     "delivery": {
-      "content_sha256": "55e51380d10e8c1b7a04327083feb251fd4eca370198317dfb6ef9d7bd83c679",
+      "content_sha256": "6e2f856f79f4211f0f6532b3349b33a2f35cd881fd8c4a687d020dff5bb46435",
       "owner": {
         "strategy_id": "S012",
         "type": "MandateOwner"
       },
-      "revision": 2,
+      "revision": 3,
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_stage": "合同完整交付获用户批准后另行进入阶段二；当前不开展研究实验。",
+    "next_stage": "阶段一完整合同已交付；等待用户批准精确修订3进入阶段二，并确认重型研究Git分支选择。",
     "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
     "observed_daily_coverage": {
       "end": "2026-09-30",
       "sessions": 1535,
       "start": "2020-06-05"
     },
-    "pending": [
-      "用户确认策略与基准初始资金、100份交易单位及基准余款和期末估值方式。",
-      "用户确认策略执行细节由研究决定的范围，或指定固定参数。",
-      "用户确认研究机制、开发池、数据及资源范围。"
-    ],
+    "pending": [],
     "stage": "MANDATE",
-    "status": "PARTIAL",
+    "status": "COMPLETE",
     "symbol": "518850.SH"
   },
   "research_state": "RESEARCHING",
@@ -46,5 +56,5 @@
     "518850.SH"
   ],
   "strategy_id": "S012",
-  "updated_at": "2026-10-04T04:02:06+08:00"
+  "updated_at": "2026-10-04T04:05:50+08:00"
 }

@@ -1,0 +1,29 @@
+{
+  "source": "当前会话用户对阶段一问题的直接回复",
+  "recorded_date": "2026-10-04",
+  "timezone": "Asia/Shanghai",
+  "answers": [
+    {
+      "question": "S012 的成功标准是什么？请给出期望的净年化收益、最大回撤上限，以及交易频率要求（例如每 20 个交易日几次完整买卖）；尚未确定的项目可写‘待研究’。",
+      "answer": "年化收益>=buyhold*1.5；最大回撤<buyhold；平均60交易日闭合交易>=5"
+    },
+    {
+      "question": "S012 希望评价哪段历史？",
+      "answer": "全部可用历史，核验覆盖后确认具体起止日期"
+    },
+    {
+      "question": "是否采用以下阶段一建议：以 518850.SH 买入持有为可投资基准（评价首个可成交日开盘买入并持有）；策略沿用单标的、只做多、不加杠杆、每侧成交额 0.1% 成本、限价买入及市价卖出的默认口径？基准交易单位、资金和执行参数将一并列入待确认合同。",
+      "answer": "采用，具体参数继续确认"
+    }
+  ],
+  "normalized_confirmations": {
+    "net_annual_return": {"operator": ">=", "benchmark_multiplier": 1.5},
+    "drawdown_magnitude": {"operator": "<", "benchmark_multiplier": 1.0},
+    "full_sample_closed_trade_frequency": {"operator": ">=", "value": 5, "window_trading_days": 60},
+    "history": "全部可用历史；具体起止待覆盖核验后确认",
+    "benchmark": "518850.SH评价首个可成交日开盘买入持有",
+    "trading_rules": {"single_symbol": true, "long_only": true, "leverage": false,
+                      "cost_per_side": 0.001, "buy_order": "LIMIT", "sell_order": "MARKET"}
+  },
+  "not_yet_confirmed": ["资金", "交易单位", "策略执行细节", "具体评价日期", "机制和数据资源范围"]
+}
