@@ -14,7 +14,6 @@ from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.account_strategy_cycle import AccountStrategyCycle
 from paper_trading_engine.scheduler import RuntimeScheduler
 from paper_trading_engine.srt_advice_client import SrtAdviceClient
-from paper_trading_engine.store import PaperStore
 
 
 
@@ -338,7 +337,7 @@ def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
     ) == date(2026, 9, 7)
 
 
-def test_scheduler_prepares_current_account_data_then_runs_decision(pte_frozen,
+def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, pte_frozen,
     tmp_path, monkeypatch,
 ):
     monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
@@ -347,7 +346,7 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(pte_frozen,
     )
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    store = PaperStore(tmp_path / "runtime.db")
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s900-v1",
         "S900-v1模拟账户",

@@ -9,7 +9,6 @@ import pytest
 
 from paper_trading_engine.web import create_server
 from paper_trading_engine.audit import AuditRecorder
-from paper_trading_engine.store import PaperStore
 from paper_trading_engine.web_api import PteWebApi
 
 
@@ -165,8 +164,8 @@ def request_json(url, method="GET", payload=None, token=None):
         return response.status, json.loads(response.read())
 
 
-def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
-    store = PaperStore(tmp_path / "audit.db")
+def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, tmp_path):
+    store = new_store(tmp_path / "audit.db")
     recorder = AuditRecorder(store)
     recorder.record(
         "DECISION_GENERATED", source="test", account_id="alpha",
@@ -198,7 +197,7 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
     assert "quote_health" not in channel_api.channel_snapshot("futu_simulate_cn")
     store.close()
 
-    account_store = PaperStore(tmp_path / "account-index.db")
+    account_store = new_store(tmp_path / "account-index.db")
     account_store.create_virtual_account(
         "s007-v1", "S007-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S007", strategy_name_snapshot="多源机会风险门控",
@@ -347,8 +346,8 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(tmp_path):
         thread.join(timeout=3)
 
 
-def test_channel_capital_uses_static_principal_allocations(tmp_path):
-    store = PaperStore(tmp_path / "capital.db")
+def test_channel_capital_uses_static_principal_allocations(new_store, tmp_path):
+    store = new_store(tmp_path / "capital.db")
     for account_id in ("s001-v1", "s001-v2"):
         store.create_virtual_account(
             account_id, account_id, "legacy", "a" * 64, 100_000,
@@ -390,8 +389,8 @@ def test_channel_capital_uses_static_principal_allocations(tmp_path):
     store.close()
 
 
-def test_channel_cash_reconciliation_includes_internal_frozen_cash(tmp_path):
-    store = PaperStore(tmp_path / "frozen-cash.db")
+def test_channel_cash_reconciliation_includes_internal_frozen_cash(new_store, tmp_path):
+    store = new_store(tmp_path / "frozen-cash.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",

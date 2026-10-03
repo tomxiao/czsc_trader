@@ -52,8 +52,8 @@ def _operator_coordinator(accounts, store):
     return PteCoordinator(accounts, object(), strategy_cycle=cycle)
 
 
-def test_blocked_or_draining_account_cannot_complete_a_decision_generation(tmp_path):
-    store = PaperStore(tmp_path / "decision-gate.db")
+def test_blocked_or_draining_account_cannot_complete_a_decision_generation(new_store, tmp_path):
+    store = new_store(tmp_path / "decision-gate.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -100,8 +100,8 @@ def test_blocked_or_draining_account_cannot_complete_a_decision_generation(tmp_p
     store.close()
 
 
-def test_immediate_split_order_intents_are_persisted_atomically(tmp_path, monkeypatch):
-    store = PaperStore(tmp_path / "split-order-atomic.db")
+def test_immediate_split_order_intents_are_persisted_atomically(new_store, tmp_path, monkeypatch):
+    store = new_store(tmp_path / "split-order-atomic.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -177,8 +177,8 @@ def intraday_setup_decision(strategy: dict[str, str]) -> AdviceDecision:
     )
 
 
-def test_recovered_buy_uses_a_new_reservation_generation_and_release(tmp_path):
-    store = PaperStore(tmp_path / "generation.db")
+def test_recovered_buy_uses_a_new_reservation_generation_and_release(new_store, tmp_path):
+    store = new_store(tmp_path / "generation.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -216,8 +216,8 @@ def test_recovered_buy_uses_a_new_reservation_generation_and_release(tmp_path):
     store.close()
 
 
-def test_missing_recovered_release_can_be_repaired_once_with_audit(tmp_path):
-    store = PaperStore(tmp_path / "repair.db")
+def test_missing_recovered_release_can_be_repaired_once_with_audit(new_store, tmp_path):
+    store = new_store(tmp_path / "repair.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -255,8 +255,8 @@ def test_missing_recovered_release_can_be_repaired_once_with_audit(tmp_path):
     store.close()
 
 
-def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(tmp_path):
-    store = PaperStore(tmp_path / "runtime.db")
+def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_store, tmp_path):
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -356,8 +356,8 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(tmp_p
     assert len(reopened.account_fills("s001-v1")) == 2
     reopened.close()
 
-def test_account_snapshot_values_position_with_execution_price(tmp_path):
-    store = PaperStore(tmp_path / "valuation.db")
+def test_account_snapshot_values_position_with_execution_price(new_store, tmp_path):
+    store = new_store(tmp_path / "valuation.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -384,8 +384,8 @@ def test_account_snapshot_values_position_with_execution_price(tmp_path):
     store.close()
 
 
-def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(tmp_path):
-    store = PaperStore(tmp_path / "runtime.db")
+def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_store, tmp_path):
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -508,8 +508,8 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(tmp_pa
     store.close()
 
 
-def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(tmp_path):
-    store = PaperStore(tmp_path / "runtime.db")
+def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(new_store, tmp_path):
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S003", strategy_name_snapshot="成分资金流宽度早盘延续",
@@ -618,8 +618,8 @@ def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(tmp_path):
     store.close()
 
 
-def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(tmp_path):
-    store = PaperStore(tmp_path / "runtime.db")
+def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(new_store, tmp_path):
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -649,8 +649,8 @@ def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(tmp_
     store.close()
 
 
-def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(tmp_path):
-    store = PaperStore(tmp_path / "manual-decision.db")
+def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(new_store, tmp_path):
+    store = new_store(tmp_path / "manual-decision.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -706,8 +706,8 @@ def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(
     store.close()
 
 
-def test_operator_supersedes_unsubmitted_intents_and_releases_reservations(tmp_path):
-    store = PaperStore(tmp_path / "supersede-intents.db")
+def test_operator_supersedes_unsubmitted_intents_and_releases_reservations(new_store, tmp_path):
+    store = new_store(tmp_path / "supersede-intents.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -746,8 +746,8 @@ def test_operator_supersedes_unsubmitted_intents_and_releases_reservations(tmp_p
     store.close()
 
 
-def test_operator_supersession_projects_s003_style_reserved_cash(tmp_path):
-    store = PaperStore(tmp_path / "supersession-s003-cash.db")
+def test_operator_supersession_projects_s003_style_reserved_cash(new_store, tmp_path):
+    store = new_store(tmp_path / "supersession-s003-cash.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 55_076.373,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -787,8 +787,8 @@ def test_operator_supersession_projects_s003_style_reserved_cash(tmp_path):
     store.close()
 
 
-def test_operator_supersession_calculation_failure_preserves_old_reservation(tmp_path):
-    store = PaperStore(tmp_path / "supersession-calculation-failure.db")
+def test_operator_supersession_calculation_failure_preserves_old_reservation(new_store, tmp_path):
+    store = new_store(tmp_path / "supersession-calculation-failure.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -821,8 +821,8 @@ def test_operator_supersession_calculation_failure_preserves_old_reservation(tmp
     store.close()
 
 
-def test_operator_supersession_rejects_intent_claimed_during_calculation(tmp_path):
-    store = PaperStore(tmp_path / "supersession-concurrent-claim.db")
+def test_operator_supersession_rejects_intent_claimed_during_calculation(new_store, tmp_path):
+    store = new_store(tmp_path / "supersession-concurrent-claim.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -856,8 +856,8 @@ def test_operator_supersession_rejects_intent_claimed_during_calculation(tmp_pat
     store.close()
 
 
-def test_operator_cannot_supersede_claimed_intent(tmp_path):
-    store = PaperStore(tmp_path / "claimed-intent.db")
+def test_operator_cannot_supersede_claimed_intent(new_store, tmp_path):
+    store = new_store(tmp_path / "claimed-intent.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",
@@ -885,8 +885,8 @@ def test_operator_cannot_supersede_claimed_intent(tmp_path):
     store.close()
 
 
-def test_operator_supersession_rolls_back_as_one_transaction(tmp_path, monkeypatch):
-    store = PaperStore(tmp_path / "supersession-rollback.db")
+def test_operator_supersession_rolls_back_as_one_transaction(new_store, tmp_path, monkeypatch):
+    store = new_store(tmp_path / "supersession-rollback.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略",

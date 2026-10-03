@@ -19,7 +19,7 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
 }
 New-Item -ItemType Directory -Path $RunRoot -Force | Out-Null
 
-$LaneNames = @('TDR', 'PTE', 'PACKAGES')
+$LaneNames = @('TDR_FREEZE', 'TDR', 'PTE', 'PACKAGES')
 $Jobs = @()
 $Results = @()
 $Total = [System.Diagnostics.Stopwatch]::StartNew()
@@ -36,21 +36,36 @@ try {
             $ErrorActionPreference = 'Stop'
             Set-Location $RepoRoot
             # Prevent NumPy/BLAS inside each pytest process from multiplying the
-            # three repository-level workers into dozens of competing threads.
+            # four repository-level workers into dozens of competing threads.
             $env:OMP_NUM_THREADS = '1'
             $env:OPENBLAS_NUM_THREADS = '1'
             $env:MKL_NUM_THREADS = '1'
             $env:NUMEXPR_NUM_THREADS = '1'
+            # Tests use fresh bytecode paths per process; writing those throwaway
+            # caches adds disk contention without benefiting another test run.
+            $env:PYTHONDONTWRITEBYTECODE = '1'
             $env:CZSC_PYTEST_RUN_ID = "$RunId-$LaneName"
 
             $Steps = [System.Collections.Generic.List[object]]::new()
-            if ($LaneName -eq 'TDR') {
+            if ($LaneName -in @('TDR_FREEZE', 'TDR')) {
+                # Keep the shared research fixtures together. The other lane
+                # discovers all remaining tests, including newly added files.
+                $FreezeTests = @(
+                    'tests/functional/test_candidate_freeze.py',
+                    'tests/functional/test_assessment_delivery.py'
+                )
+                $TestSelection = if ($LaneName -eq 'TDR_FREEZE') {
+                    $FreezeTests
+                }
+                else {
+                    @('tests') + @($FreezeTests | ForEach-Object { "--ignore=$_" })
+                }
                 $Steps.Add([pscustomobject]@{
-                    Label = 'TDR'
+                    Label = $LaneName
                     Executable = $Python
                     Arguments = @(
-                        '-m', 'pytest', '-c', 'pyproject.toml', 'tests', '-q', '--durations=5', '--release-acceptance'
-                    )
+                        '-m', 'pytest', '-c', 'pyproject.toml', '-q', '--durations=5', '--release-acceptance'
+                    ) + $TestSelection
                 })
             }
             elseif ($LaneName -eq 'PTE') {
@@ -156,11 +171,8 @@ try {
 }
 finally {
     $Jobs | Remove-Job -Force -ErrorAction SilentlyContinue
-    foreach ($Target in @(
-        (Join-Path $PytestRoot "run-$RunId-TDR"),
-        (Join-Path $PytestRoot "run-$RunId-PTE"),
-        (Join-Path $PytestRoot "run-$RunId-PACKAGES")
-    )) {
+    foreach ($LaneName in $LaneNames) {
+        $Target = Join-Path $PytestRoot "run-$RunId-$LaneName"
         $ResolvedTarget = [System.IO.Path]::GetFullPath($Target)
         $ExpectedPrefix = $PytestRoot.TrimEnd('\') + '\'
         if (-not $ResolvedTarget.StartsWith(

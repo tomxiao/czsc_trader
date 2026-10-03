@@ -6,10 +6,9 @@ import pytest
 
 from paper_trading_engine.audit import AuditContractError, AuditEvent, AuditRecorder
 from paper_trading_engine.performance_export import export_performance
-from paper_trading_engine.store import PaperStore
 
 
-def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(tmp_path):
+def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(new_store, tmp_path):
     class CaptureStore:
         def __init__(self):
             self.events = []
@@ -41,7 +40,7 @@ def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(tmp_p
         capture.events[0].event_type = "CHANGED"
     assert isinstance(capture.events[0], AuditEvent)
 
-    store = PaperStore(tmp_path / "runtime.db")
+    store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s001-forward", "S001-v1模拟账户", "baseline", "a" * 64, 100_000,
         strategy_id="S001", strategy_name_snapshot="综合基线策略", strategy_version="v1",

@@ -12,7 +12,6 @@ from paper_trading_engine import AccountRetirementRequest, AccountRetirementStat
 from paper_trading_engine.cli import _strategy_deployments, _retire_running_account, build_parser
 from paper_trading_engine.futu_execution import FutuExecution, ChannelReconciliationError
 from paper_trading_engine.account_engine import AccountEngine
-from paper_trading_engine.store import PaperStore
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
 from pte_support import FakeBroker, decision
@@ -28,8 +27,8 @@ def create(store, account_id="one", capital=100000):
 
 
 @pytest.fixture
-def setup(tmp_path):
-    store = PaperStore(tmp_path / "runtime.db")
+def setup(new_store, tmp_path):
+    store = new_store(tmp_path / "runtime.db")
     create(store)
     store.set_virtual_paused("one", True)
     broker = FakeBroker()

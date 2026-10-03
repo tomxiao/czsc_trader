@@ -11,18 +11,18 @@ from paper_trading_engine import (
 )
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
-from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from paper_trading_engine.store import RUNTIME_DATABASE_SCHEMA_VERSION
 from strategy_manager import Qualification
 from pte_support import decision, FakeAdvice, preparation
 
 
 @pytest.fixture
-def maintenance(tmp_path, monkeypatch):
+def maintenance(new_store, tmp_path, monkeypatch):
     from paper_trading_engine import account_maintenance as module
 
     runtime = tmp_path / "runtime"
     database = runtime / "shared/state/runtime.db"
-    store = PaperStore(database)
+    store = new_store(database)
     binding = AccountStrategyBinding(
         "S001", "v1", "b" * 64, "current strategy", Qualification.PAPER_READY,
         date(2026, 9, 2), "588080.SH", 0.0005,
@@ -185,13 +185,13 @@ def test_preflight_failure_does_not_change_database(maintenance, monkeypatch, fa
     assert list(m.store._connection.iterdump()) == before
 
 
-def test_real_installed_package_binding_is_validated(pte_frozen, tmp_path):
+def test_real_installed_package_binding_is_validated(new_store, pte_frozen, tmp_path):
     from test_watchdog_service import create_release
 
     context, version = pte_frozen
     runtime = tmp_path / "runtime"
     create_release(context.strategy_root, runtime, "v1.0.0", "a")
-    store = PaperStore(runtime / "shared/state/runtime.db")
+    store = new_store(runtime / "shared/state/runtime.db")
     try:
         store.create_virtual_account(
             "one", "one", "S900-v1", "a" * 64, 100000,

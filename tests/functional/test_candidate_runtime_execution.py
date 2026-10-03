@@ -494,7 +494,13 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     def forbidden(*args, **kwargs):
         raise AssertionError("evaluation must not invoke the old simple backtest")
 
-    monkeypatch.setattr("czsc_trader.research_backtest.run_period_backtests", forbidden)
+    # Reject legacy execution without importing its unrelated vectorbt/Numba stack.
+    import sys
+
+    monkeypatch.setitem(
+        sys.modules, "czsc_trader.research_backtest",
+        SimpleNamespace(run_period_backtests=forbidden),
+    )
     context = CandidateEvaluationContext(
         SimpleNamespace(root=tmp_path),
         "588080.SH",

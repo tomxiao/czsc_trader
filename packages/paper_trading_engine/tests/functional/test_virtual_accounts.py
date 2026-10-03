@@ -192,8 +192,8 @@ def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path)
     store.close()
 
 
-def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(tmp_path):
-    store = PaperStore(tmp_path / "strategy-name.db")
+def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(new_store, tmp_path):
+    store = new_store(tmp_path / "strategy-name.db")
     create_account(store, "s001-v1", "v1", "a")
 
     assert store.synchronize_account_strategy_name(
@@ -218,8 +218,8 @@ def test_strategy_name_sync_is_release_guarded_idempotent_and_audited(tmp_path):
     store.close()
 
 
-def test_account_metrics_use_prior_snapshot_as_window_baseline(tmp_path):
-    store = PaperStore(tmp_path / "window-metrics.db")
+def test_account_metrics_use_prior_snapshot_as_window_baseline(new_store, tmp_path):
+    store = new_store(tmp_path / "window-metrics.db")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_snapshot("s001-v2", "2026-09-09", {
         "quantity": 0, "total_assets": "102000.0000",
@@ -239,8 +239,8 @@ def test_account_metrics_use_prior_snapshot_as_window_baseline(tmp_path):
     store.close()
 
 
-def test_account_comparison_uses_each_accounts_observation_window(tmp_path):
-    store = PaperStore(tmp_path / "comparison-metrics.db")
+def test_account_comparison_uses_each_accounts_observation_window(new_store, tmp_path):
+    store = new_store(tmp_path / "comparison-metrics.db")
     create_account(store, "s001-v1", "v1", "a")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_snapshot("s001-v1", "2026-09-03", {
@@ -269,11 +269,11 @@ def test_account_comparison_uses_each_accounts_observation_window(tmp_path):
     store.close()
 
 
-def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(tmp_path, monkeypatch):
+def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store, tmp_path, monkeypatch):
     from paper_trading_engine import account_chart
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart.db")
+    store = new_store(tmp_path / "chart.db")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -440,10 +440,10 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(tmp_path, 
     migrated.close()
 
 
-def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(tmp_path):
+def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-thread.db")
+    store = new_store(tmp_path / "chart-thread.db")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -521,10 +521,10 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(tmp_path
 
 
 @pytest.mark.parametrize("old_content", [False, True])
-def test_account_chart_uses_only_active_decisions(tmp_path, old_content):
+def test_account_chart_uses_only_active_decisions(new_store, tmp_path, old_content):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-active-decisions.db")
+    store = new_store(tmp_path / "chart-active-decisions.db")
     create_account(store, "s001-v2", "v2", "b")
 
     def decision_payload(decision_id, signal_date, value):
@@ -610,12 +610,12 @@ def test_account_chart_uses_only_active_decisions(tmp_path, old_content):
     store.close()
 
 
-def test_account_chart_waits_for_first_observation_without_rejecting_legacy_decision(
+def test_account_chart_waits_for_first_observation_without_rejecting_legacy_decision(new_store,
     tmp_path,
 ):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-legacy-decision.db")
+    store = new_store(tmp_path / "chart-legacy-decision.db")
     create_account(store, "s001-v2", "v2", "b")
     store.save_account_decision(
         "s001-v2",
@@ -666,10 +666,10 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
     store.close()
 
 
-def test_account_chart_persists_unexpected_executor_failure(tmp_path):
+def test_account_chart_persists_unexpected_executor_failure(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-executor-failure.db")
+    store = new_store(tmp_path / "chart-executor-failure.db")
     create_account(store, "s001-v2", "v2", "b")
 
     class FailingExecutor:
@@ -696,10 +696,10 @@ def test_account_chart_persists_unexpected_executor_failure(tmp_path):
     store.close()
 
 
-def test_account_chart_dfls_timeout_is_reported(tmp_path):
+def test_account_chart_dfls_timeout_is_reported(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-timeout.db")
+    store = new_store(tmp_path / "chart-timeout.db")
     create_account(store, "s001-v2", "v2", "b")
     entered = Event()
     release = Event()
@@ -731,10 +731,10 @@ def test_account_chart_dfls_timeout_is_reported(tmp_path):
     store.close()
 
 
-def test_account_chart_close_does_not_wait_for_stuck_dfls(tmp_path):
+def test_account_chart_close_does_not_wait_for_stuck_dfls(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
-    store = PaperStore(tmp_path / "chart-close.db")
+    store = new_store(tmp_path / "chart-close.db")
     create_account(store, "s001-v2", "v2", "b")
     entered = Event()
     release = Event()
@@ -764,8 +764,8 @@ def test_account_chart_close_does_not_wait_for_stuck_dfls(tmp_path):
     assert elapsed < 0.2
 
 
-def test_ft_pte02_selection_cutoff_is_required_immutable_and_safely_backfilled(tmp_path):
-    store = PaperStore(tmp_path / "cutoff.db")
+def test_ft_pte02_selection_cutoff_is_required_immutable_and_safely_backfilled(new_store, tmp_path):
+    store = new_store(tmp_path / "cutoff.db")
     columns = {
         row[1] for row in store._connection.execute("PRAGMA table_info(virtual_accounts)")
     }

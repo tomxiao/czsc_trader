@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 import sys
 
 import pytest
@@ -27,3 +28,29 @@ def pte_frozen(current_frozen):
         "S900", "v1", version.release_hash, "test", "synthetic paper approval",
     ))
     return context, version
+
+
+@pytest.fixture(scope="session")
+def empty_paper_database(frozen_seed_root):
+    """Build the current schema once using the real disk-backed store."""
+    from paper_trading_engine.store import PaperStore
+
+    path = frozen_seed_root / "empty-paper.db"
+    store = PaperStore(path)
+    store.close()  # Checkpoint WAL before copying the main database file.
+    return path
+
+
+@pytest.fixture
+def new_store(empty_paper_database):
+    """Create a private database; retain normal WAL, commits and reopen behavior."""
+    from paper_trading_engine.store import PaperStore
+
+    def create(path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Refuse to overwrite a database: restart/migration tests open it directly.
+        with empty_paper_database.open("rb") as source, path.open("xb") as target:
+            shutil.copyfileobj(source, target)
+        return PaperStore(path)
+
+    return create

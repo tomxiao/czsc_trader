@@ -110,11 +110,11 @@ def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_pat
         load_release(runtime_root, "v0.4.1")
 
 
-def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path, monkeypatch):
+def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_frozen, tmp_path, monkeypatch):
     monkeypatch.setattr(
         'paper_trading_engine.runtime_release._installed_strategy_inventory', deployment_inventory,
     )
-    audit_store = PaperStore(tmp_path / "lifecycle.db")
+    audit_store = new_store(tmp_path / "lifecycle.db")
     _record_service_lifecycle(
         AuditRecorder(audit_store), "SERVICE_STARTED", "instance-1", port=8080,
     )
@@ -461,8 +461,8 @@ def test_deployment_binding_failure_never_activates_incompatible_release(
     assert verified == (["v0.4.2", "v0.4.1"] if reject_rollback else ["v0.4.2"])
 
 
-def test_ft_pte06_business_health_exposes_stalled_scheduler(tmp_path):
-    store = PaperStore(tmp_path / "health.db")
+def test_ft_pte06_business_health_exposes_stalled_scheduler(new_store, tmp_path):
+    store = new_store(tmp_path / "health.db")
     store.set_setting("scheduler_heartbeat_at", "2026-09-01T00:00:00+00:00")
 
     class Channel:
@@ -492,8 +492,8 @@ def test_ft_pte06_business_health_exposes_stalled_scheduler(tmp_path):
     store.close()
 
 
-def test_business_health_treats_missing_heartbeat_and_channel_alert_as_degraded(tmp_path):
-    store = PaperStore(tmp_path / "missing-heartbeat.db")
+def test_business_health_treats_missing_heartbeat_and_channel_alert_as_degraded(new_store, tmp_path):
+    store = new_store(tmp_path / "missing-heartbeat.db")
 
     class Channel:
         @staticmethod
