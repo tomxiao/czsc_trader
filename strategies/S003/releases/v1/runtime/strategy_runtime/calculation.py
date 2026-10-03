@@ -11,7 +11,7 @@ from dataflows import Dataset
 
 from strategy_runtime import TradableWindow
 from strategy_runtime import RuntimeContractError
-from strategy_runtime import CutoffRule, RuntimeDefinition
+from strategy_runtime import CutoffRule, StrategyDefinition
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,7 +81,7 @@ class CalculationScope:
 
 
 def next_session_calendar_window(
-    definition: RuntimeDefinition,
+    definition: StrategyDefinition,
     tradable_window: TradableWindow,
 ) -> CalendarWindow:
     """Return the calendar range selected by a next-session strategy."""
@@ -103,7 +103,7 @@ def next_session_calendar_window(
 
 
 def next_session_calculation_scope(
-    definition: RuntimeDefinition,
+    definition: StrategyDefinition,
     tradable_window: TradableWindow,
     calendar_dates: tuple[date, ...],
 ) -> CalculationScope:

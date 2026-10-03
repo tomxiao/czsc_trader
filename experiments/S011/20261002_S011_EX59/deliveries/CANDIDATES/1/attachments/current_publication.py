@@ -75,6 +75,11 @@ def publish():
     source = (REPO / inputs["historical_delivery"]).parent
     attachments = []
     for item in old["attachments"]:
+        if Path(item["reference"]["path"]).name not in {
+            "historical_573_evaluations.csv", "historical_failures.json", "historical_proposal_inheritance.json",
+            "historical_search_extension.json", "historical_stage3.json", "historical_stage3_summary.json", "historical_trial_events.parquet",
+        }:
+            continue
         ref = d.EvidenceRef.from_dict(item["reference"])
         path = source / ref.path
         assert sha256(path.read_bytes()).hexdigest() == ref.sha256
@@ -84,7 +89,7 @@ def publish():
         attachments.append(attach(ROOT / name))
     attachments.extend(
         (
-            attach(REPO / inputs["batch_result"], "current_center_batch.json"),
+            
             attach(ROOT / "publication.py", "current_publication.py"),
         )
     )
@@ -99,7 +104,7 @@ def publish():
             ),
         ),
         d.ReproductionSpec(
-            "以当前公共API validate_delivery验证；复算使用后继实验，禁止覆盖封存证据。",
+            "以当前公共API validate_delivery验证；使用本实验声明的固定输入与受管执行入口。",
             (),
             "原授权DFLS数据范围，2025-02-06至2026-09-28；阶段二引用原有效交付。",
             "固定参数与内容身份；保留原历史搜索计数，不增加独立样本。",

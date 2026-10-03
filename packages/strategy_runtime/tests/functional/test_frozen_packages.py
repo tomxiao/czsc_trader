@@ -1,5 +1,5 @@
 """Current real frozen packages load and preserve account execution semantics."""
-from dataclasses import replace
+from dataclasses import fields, replace
 from pathlib import Path
 
 import pytest
@@ -8,6 +8,8 @@ from strategy_manager import StrategyRegistry
 from strategy_runtime import (
     RuntimeCompatibilityError,
     StrategyIdentity,
+    StrategyCandidate,
+    StrategyDefinition,
     StrategyRelease,
     StrategyRuntime,
     load_strategy_deployment,
@@ -19,6 +21,38 @@ from test_observation_contract import observed_plan
 
 ROOT = Path(__file__).resolve().parents[4] / "strategies"
 RELEASES = ("S001-v1", "S001-v2", "S002-v1", "S003-v1", "S007-v1")
+
+
+@pytest.mark.parametrize("release_id", RELEASES)
+def test_real_package_behavior_is_independent_of_candidate_or_release_identity(release_id):
+    family, version = release_id.split("-")
+    record = StrategyRegistry(ROOT).get_version(family, version)
+    deployment = load_strategy_deployment(ROOT, release_id)
+    runtime = StrategyRuntime(strategy_root=ROOT)
+    release = runtime.describe(StrategyRelease.from_mapping(record.to_dict()))
+    candidate = runtime.describe(
+        StrategyCandidate(family, "C0001", record.strategy_payload, deployment.source_root)
+    )
+    for field in fields(StrategyDefinition):
+        assert getattr(candidate, field.name) == getattr(release, field.name)
+    assert candidate.identity_kind == "CANDIDATE"
+    assert candidate.release_id == f"{family}-C0001"
+    assert release.identity_kind == "RELEASE"
+    assert release.release_id == release_id
+
+
+@pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2", "S002-v1"))
+def test_real_rebindable_package_uses_parameter_factory(release_id):
+    family, version = release_id.split("-")
+    record = StrategyRegistry(ROOT).get_version(family, version)
+    runtime = StrategyRuntime(strategy_root=ROOT)
+    release = StrategyRelease.from_mapping(record.to_dict())
+    original = runtime.describe(release)
+    rebound = runtime.describe(release, symbol="510500.SH")
+    assert rebound.tradable_symbol == "510500.SH"
+    assert rebound.parameters == original.parameters
+    assert rebound.release_hash == original.release_hash
+    assert rebound.release_id == original.release_id
 
 
 def definition(release_id):

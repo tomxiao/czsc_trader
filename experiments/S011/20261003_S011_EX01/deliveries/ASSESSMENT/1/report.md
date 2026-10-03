@@ -9,40 +9,10 @@
 
 ## 阶段内容
 
-- 实验证据：20261002_S011_EX38；用途：CURRENT_EVALUATION；回执：`6f28db1320e3f6003a83347fa57f9242f5fddceafb4ea50f50ecf961f1924c29`
-- 实验证据：20261002_S011_EX40；用途：CURRENT_EVALUATION；回执：`17af6ed7aba97677b0dad4c06aa83de3b0cee7e7d3c0d6ebc583524b48f5a9c0`
-- 实验证据：20261002_S011_EX41；用途：CURRENT_EVALUATION；回执：`103fe198d96903cc93eedb9392820d2967bb9669a7fa4994ced5977c8554aa2c`
-- 实验证据：20261002_S011_EX42；用途：CURRENT_EVALUATION；回执：`7e019306cb1ee8fd03126d1cf712d3f09f06869b09e6456eaf6f2a8a2c244748`
-- 实验证据：20261002_S011_EX43；用途：CURRENT_EVALUATION；回执：`f2b1b088286b6c2f8167ecb5bd59a7e88906e141f2f0c2b9a969d1af43504875`
-- 实验证据：20261002_S011_EX44；用途：CURRENT_EVALUATION；回执：`7b4278b37e1f91137f7888086231c1ea47c877a20c4ca2666fffc14ddfcf97e2`
-- 实验证据：20261002_S011_EX45；用途：CURRENT_EVALUATION；回执：`6242fc67251d66ddd19b2de8db61e06757aaec2812032eabb4f84dd00e0f4d19`
-- 实验证据：20261002_S011_EX46；用途：CURRENT_EVALUATION；回执：`ae64bf32c216af14f5ca0d370b9ab1ef12d56eeae5cf98cb0fa539c1c94e568d`
-- 实验证据：20261002_S011_EX47；用途：CURRENT_EVALUATION；回执：`ac9acc4afd920fdcfc0aab22a018e3c32177e485b4065cb3f9b80679289fa19a`
-- 实验证据：20261002_S011_EX48；用途：CURRENT_EVALUATION；回执：`e180affe60db1b67b943ce32f9478b16ca90e2fc5b2c11fe565062772fe6a2b7`
-- 实验证据：20261002_S011_EX49；用途：CURRENT_EVALUATION；回执：`d502a0eed929864f7d54bd1f13a72691b5f470a0c08e7e37405d2fe1c0f38938`
-- 实验证据：20261002_S011_EX51；用途：CURRENT_EVALUATION；回执：`fdabe5d9f759f2da07828f66fd8d0458dadb0a71dfc03ca05915217598f3701b`
-- 实验证据：20261002_S011_EX52；用途：CURRENT_EVALUATION；回执：`eceb63269dc7653487dccc3a1e85644b8421a0f70dc729acfca5858e4ee13aa1`
-- 实验证据：20261002_S011_EX53；用途：CURRENT_EVALUATION；回执：`067d503ad518f8c17b557735b371c7dd0c9e41433a3652a3df91f6aceeb1cfb3`
-- 实验证据：20261002_S011_EX54；用途：CURRENT_EVALUATION；回执：`94c3863615cd5cc22248a8396fb99c47d495cdc6513118c5fc56d2b67182d507`
-- 实验证据：20261002_S011_EX55；用途：CURRENT_EVALUATION；回执：`e8b8c9cf228fe5834e0913cfe494e8b49da6f108d69b7e7ef8b1e41ed7fc1c8b`
-- 实验证据：20261002_S011_EX56；用途：CURRENT_EVALUATION；回执：`b34a55911b265c8f220d57fdc00483c78c7b181176ffff91729454a71836ccc5`
-- 实验证据：20261002_S011_EX57；用途：CURRENT_EVALUATION；回执：`0e77494409a7147578cb2a7eaa5720abd175f2b9ac355bcf7283a19373f56a35`
-- 实验证据：20261002_S011_EX58；用途：CURRENT_EVALUATION；回执：`aaa6ca6080ee642848b5e60ee8a51a581643ec9de193e2cc5f2a3ec019978365`
-- 实验证据：20261002_S011_EX59；用途：CURRENT_EVALUATION；回执：`93109fb170d20e39ee14293de683a3fb7cc59c5c74c402f72dbdc89654bee378`
-- 实验证据：20261002_S011_EX60；用途：CURRENT_EVALUATION；回执：`c0eddf0bf29999a69c37ed6d114827ff411a1486b1b54d6eddfb028f03251486`
-- 实验证据：20261002_S011_EX66；用途：CURRENT_EVALUATION；回执：`f9141411867e2956994ac139cac50bffe1ec41d780b07751714731473a188134`
-- 实验证据：20261002_S011_EX69；用途：CURRENT_EVALUATION；回执：`385591122e52884fb2d4a3244b4bff8e50e2fa32a369c124450be8dab588149a`
-- 实验证据：20261002_S011_EX70；用途：CURRENT_EVALUATION；回执：`54aead6919de7435ddf0a725643030e08aec12419d42dc486342f3367dc036ca`
-- 实验证据：20261002_S011_EX71；用途：CURRENT_EVALUATION；回执：`cb63b51b70a8f72ffe2b5b5d21621af2e2283c019731d68528e42fb2c8ab17dd`
-- 实验证据：20261002_S011_EX72；用途：CURRENT_EVALUATION；回执：`c8b14206546d1a0659413a36e3dec6baac58645e7996630ba7ec6eb8f483832d`
-- 实验证据：20261002_S011_EX73；用途：CURRENT_EVALUATION；回执：`f5697fea72827ae06d2215882ec5afeb0162828cd6185b6c5f7fef3b8640f8d8`
-- 实验证据：20261002_S011_EX74；用途：CURRENT_EVALUATION；回执：`2de6b5049b1b160fe48ac930f0caf369ef53a25e3dee3f517fd1ef9edcae2c38`
-- 实验证据：20261002_S011_EX75；用途：CURRENT_EVALUATION；回执：`ce7098f181ce571760cc30de8637c926c0b077ebaf0b8091ff2bae7a301edd2c`
-- 实验证据：20261002_S011_EX76；用途：CURRENT_EVALUATION；回执：`dfefcf1bc1b43ed48fb4bcd3e16ddf75fefa11d432ba4bc72970479cc4cb8f4a`
-- 实验证据：20261002_S011_EX77；用途：CURRENT_EVALUATION；回执：`76f31477bb032b9901ab2f041d516e2ae1b9ddcea60a1a22577265881bb8d1af`
-- 实验证据：20261003_S011_EX01；用途：CURRENT_EVALUATION；回执：`4a334e0a593e67759f2264dc4701521cb9239c36f22e437eac9c887e205d3d5f`
+- 实验证据：20261002_S011_EX59；用途：CURRENT_EVALUATION；回执：`4dba7c910b59ede5a692d646527d00edbec92f7fcde817f9f8e385ff61b2db71`
+- 实验证据：20261003_S011_EX01；用途：CURRENT_EVALUATION；回执：`7e47e61b0bb62cd4dade99a925a358dd0d5c70014e14754128d7323921f9be30`
 
-阶段三与四完整就绪；建议用户结合36中心排序及C0621邻域敏感性，确认阶段五选择。无需新增搜索，当前不执行阶段五。
+阶段三与四完整就绪；用户已选择C0618，接续阶段五技术检验。
 
 | 候选 | 状态 | 绩效层 | 层内名次 | 原因 |
 | --- | --- | --- | --- | --- |
@@ -1888,8 +1858,8 @@
 统计限制与研究族诊断：
 
 - PBO：AVAILABLE；0.876984126984127；—
-- DSR_RAW：AVAILABLE；0.2991365372766082；—
-- DSR_EFFECTIVE：AVAILABLE；0.6396147383007816；—
+- DSR_RAW：AVAILABLE；0.42903734365278356；—
+- DSR_EFFECTIVE：AVAILABLE；0.7599329192512368；—
 - Current diagnostic cohort only; full historical search correction supplied separately.
 - Includes repeated economic behaviors; current replay does not add independent samples.
 
@@ -1897,12 +1867,11 @@
 
 - [attachments/expanded_family_statistics.json](<attachments/expanded_family_statistics.json>)
 - [attachments/joint_goal_coverage.json](<attachments/joint_goal_coverage.json>)
-- [attachments/neighbors_batch_result.json](<attachments/neighbors_batch_result.json>)
 - [attachments/COMPLETION_REPORT.md](<attachments/COMPLETION_REPORT.md>)
 
 待用户决定：
 
-- 请确认是否选择S011-C0621进入阶段五技术检验；本次未新增用户批准或冻结记录。
+- 阶段五技术检验通过后，请用户评审精确冻结计划。
 
 ## 事实
 
@@ -1913,17 +1882,16 @@
 
 **RESEARCH_JUDGMENT**：36中心648账户覆盖完整，所有自检、比较和不确定性可用。已见开发池、历史选择偏差、复权历史可得时点未核实及局部设计差异持续披露。
 
-- 支持证据：[attachments/expanded_family_statistics.json](<attachments/expanded_family_statistics.json>) `ef9be2dad4d1ab6c874e8c87284a4347b8e459a4c8b170f0862d4f68045db2b3`
+- 支持证据：[attachments/expanded_family_statistics.json](<attachments/expanded_family_statistics.json>) `f7682794d9ba0619ac371151b4eb7f3c93914493a352be528461f727aa5d9a00`
 - 支持证据：[attachments/joint_goal_coverage.json](<attachments/joint_goal_coverage.json>) `71cbadbb3811c78d28667e995c8c0667450f9012bd870543b6fc7b7812691224`
-- 支持证据：[attachments/neighbors_batch_result.json](<attachments/neighbors_batch_result.json>) `bcab9e08c06d4df51d451aebd0ad56dd7306d5e8df6a13e5d7a0333a1037e042`
-- 支持证据：[attachments/COMPLETION_REPORT.md](<attachments/COMPLETION_REPORT.md>) `3fc8b47df989416dc8cd221df2bddafb7f076f2ef74c1026c7b4c1bcd1ec01b7`
+- 支持证据：[attachments/COMPLETION_REPORT.md](<attachments/COMPLETION_REPORT.md>) `b3c12b4dbfef2cb47a8444175518d1663366bce274ee7b41ca2f9df193b0047b`
 
 ## 未完成事项
 
 
 ## 复算
 
-通过当前公共API validate_delivery核验；复算使用后继实验，不覆盖封存证据。
+通过当前公共API validate_delivery核验；使用本实验声明的固定输入与受管执行入口。
 
 数据访问：原授权DFLS输入；历史数值由研究代码审计，不冒充当前运行认证。
 

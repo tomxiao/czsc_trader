@@ -21,21 +21,18 @@ from ..calculation import (
 from strategy_runtime import TradableWindow
 from strategy_runtime import RuntimeContractError
 from ..execution_rules import effective_target_order_type
-from strategy_runtime import implementation_sha256
 from strategy_runtime import ObservationDefinition
 from strategy_runtime import (
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
     HistoryPolicy,
-    ImplementationRef,
     InputContract,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
-    StrategyRelease,
+    StrategyDefinition,
 )
 
 
@@ -91,18 +88,6 @@ _FALLBACK_WEIGHTS = {
     "raw__daily__pressure_support_V240406__di_1__w_20": 0.19030485504343062,
     "raw__weekly__cxt_bi_status_V230101": 0.04757621376085765,
 }
-
-
-def _source_sha256(strategy_class: type) -> str:
-    wrapper = strategy_class.__module__.rsplit(".", 1)[-1]
-    return implementation_sha256(
-        (
-            f"strategies/{wrapper}.py",
-            "strategies/s001_common.py",
-            "calculation.py",
-            "execution_rules.py",
-        )
-    )
 
 
 def _object(value: Any, field_name: str) -> Mapping[str, Any]:
@@ -355,14 +340,8 @@ def calculate_s001_history(
 class S001Base(StrategyImplementation):
     """Common executable behavior for immutable S001 releases."""
 
-    expected_release_id = ""
-
-    def __init__(self, release: StrategyRelease, deployment_symbol: str | None = None) -> None:
-        if release.release_id != self.expected_release_id:
-            raise RuntimeContractError(
-                f"{self.__class__.__name__} can only load {self.expected_release_id}"
-            )
-        payload = _object(release.payload["parameters"], "strategy parameters")
+    def __init__(self, parameters: ParameterSet, deployment_symbol: str | None = None) -> None:
+        payload = _object(parameters.values, "strategy parameters")
         rule = _object(payload.get("rule"), "S001 rule")
         execution = _object(rule.get("execution"), "S001 execution")
         instrument = _object(execution.get("instrument"), "S001 instrument")
@@ -370,9 +349,8 @@ class S001Base(StrategyImplementation):
         if frozen_symbol != "588080.SH":
             raise RuntimeContractError("S001 frozen symbol must be 588080.SH")
         symbol = (deployment_symbol or frozen_symbol).upper()
-        if not re.fullmatch(r"\d{6}\.(?:SH|SZ)", symbol):
+        if not re.fullmatch("\\d{6}\\.(?:SH|SZ)", symbol):
             raise RuntimeContractError("S001 deployment symbol must be an A-share instrument")
-        self._release = release
         self._rule = rule
         self._symbol = symbol
         order_types = tuple(
@@ -388,18 +366,7 @@ class S001Base(StrategyImplementation):
             Dataset.ETF_UNADJUSTED_DAILY.value,
             Dataset.TRADING_CALENDAR.value,
         )
-        self._definition = RuntimeDefinition(
-            3,
-            release.strategy_family_id,
-            release.version,
-            release.release_id,
-            release.release_hash,
-            ImplementationRef(
-                self.__class__.__module__,
-                self.__class__.__name__,
-                1,
-                _source_sha256(self.__class__),
-            ),
+        self._definition = StrategyDefinition(
             ParameterSet(payload),
             InputContract(
                 (
@@ -452,23 +419,47 @@ class S001Base(StrategyImplementation):
             RequiredCapabilities(datasets, order_types),
             tradable_symbol=symbol,
             history=HistoryPolicy(
-                "CANONICAL_REPLAY",
-                _HISTORY_START.isoformat(),
-                _HISTORY_START.isoformat(),
+                "CANONICAL_REPLAY", _HISTORY_START.isoformat(), _HISTORY_START.isoformat()
             ),
-            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'entry_threshold', 'label': '买入阈值', 'value': 0.175, 'kind': 'CONSTANT'}, {'key': 'exit_threshold', 'label': '卖出阈值', 'value': 0.025, 'kind': 'CONSTANT'}], 'key': 'factor_score', 'label': '策略得分', 'value_field': 'factor_score'}], 'facts': []}),
+            observation=ObservationDefinition.from_dict(
+                {
+                    "contract_version": "strategy_observation.v2",
+                    "series": [
+                        {
+                            "guides": [
+                                {
+                                    "key": "entry_threshold",
+                                    "label": "买入阈值",
+                                    "value": 0.175,
+                                    "kind": "CONSTANT",
+                                },
+                                {
+                                    "key": "exit_threshold",
+                                    "label": "卖出阈值",
+                                    "value": 0.025,
+                                    "kind": "CONSTANT",
+                                },
+                            ],
+                            "key": "factor_score",
+                            "label": "策略得分",
+                            "value_field": "factor_score",
+                        }
+                    ],
+                    "facts": [],
+                }
+            ),
         )
 
     @classmethod
-    def from_release(cls, release: StrategyRelease) -> "S001Base":
-        return cls(release)
+    def from_parameters(cls, parameters: ParameterSet) -> "S001Base":
+        return cls(parameters)
 
     @classmethod
-    def from_release_for_symbol(cls, release: StrategyRelease, symbol: str) -> "S001Base":
-        return cls(release, symbol)
+    def from_parameters_for_symbol(cls, parameters: ParameterSet, symbol: str) -> "S001Base":
+        return cls(parameters, symbol)
 
     @property
-    def definition(self) -> RuntimeDefinition:
+    def definition(self) -> StrategyDefinition:
         return self._definition
 
     def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
@@ -482,9 +473,7 @@ class S001Base(StrategyImplementation):
         tradable_window: TradableWindow,
         calendar_dates: tuple[date, ...],
     ) -> CalculationScope:
-        trading_dates = tuple(
-            item for item in calendar_dates if tradable_window.contains(item)
-        )
+        trading_dates = tuple(item for item in calendar_dates if tradable_window.contains(item))
         if (
             not trading_dates
             or trading_dates[0] != tradable_window.start
@@ -503,9 +492,7 @@ class S001Base(StrategyImplementation):
         calculation_dates = tuple(
             item for item in calendar_dates if _HISTORY_START <= item <= last_signal
         )
-        requirements = {
-            item.name: item for item in self._definition.inputs.requirements
-        }
+        requirements = {item.name: item for item in self._definition.inputs.requirements}
         ranges = {
             name: InputRange(
                 calendar_dates[0] if name == _CALENDAR else _HISTORY_START,

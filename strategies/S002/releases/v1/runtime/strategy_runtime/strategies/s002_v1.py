@@ -20,32 +20,23 @@ from ..calculation import (
 from strategy_runtime import TradableWindow
 from strategy_runtime import RuntimeContractError
 from ..execution_rules import effective_target_order_type
-from strategy_runtime import implementation_sha256
 from strategy_runtime import ObservationDefinition
 from strategy_runtime import (
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
-    ImplementationRef,
     InputContract,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
-    StrategyRelease,
+    StrategyDefinition,
 )
 
 
 _INPUT_DAILY = "adjusted_daily"
 _INPUT_EXECUTION = "execution_daily"
 _INPUT_CALENDAR = "trading_calendar"
-
-
-def _source_sha256() -> str:
-    return implementation_sha256(
-        ("strategies/s002_v1.py", "calculation.py", "execution_rules.py")
-    )
 
 
 def _object(value: Any, field_name: str) -> Mapping[str, Any]:
@@ -159,8 +150,8 @@ def _calculate_target_history(
 class S002V1(StrategyImplementation):
     """Executable S002-v1 implementation with no TDR dependency."""
 
-    def __init__(self, release: StrategyRelease, deployment_symbol: str | None = None) -> None:
-        payload = _object(release.payload["parameters"], "strategy parameters")
+    def __init__(self, parameters: ParameterSet, deployment_symbol: str | None = None) -> None:
+        payload = _object(parameters.values, "strategy parameters")
         if payload.get("strategy_kind") != "czsc_event_hold":
             raise RuntimeContractError("S002-v1 strategy_kind must be czsc_event_hold")
         rule = _object(payload.get("rule"), "S002-v1 rule")
@@ -175,7 +166,7 @@ class S002V1(StrategyImplementation):
         ):
             raise RuntimeContractError("S002-v1 frozen symbol must be 510500.SH")
         symbol = (deployment_symbol or frozen_symbol).upper()
-        if not re.fullmatch(r"\d{6}\.(?:SH|SZ)", symbol):
+        if not re.fullmatch("\\d{6}\\.(?:SH|SZ)", symbol):
             raise RuntimeContractError("S002-v1 deployment symbol must be an A-share instrument")
         if signal.get("trigger") != "fresh_transition":
             raise RuntimeContractError("S002-v1 requires fresh_transition")
@@ -183,7 +174,6 @@ class S002V1(StrategyImplementation):
             raise RuntimeContractError("S002-v1 must ignore entries while holding")
         if portfolio.get("require_fresh_transition_after_exit") is not True:
             raise RuntimeContractError("S002-v1 must require a fresh transition after exit")
-        self._release = release
         self._rule = rule
         self._signal = signal
         self._portfolio = portfolio
@@ -196,15 +186,7 @@ class S002V1(StrategyImplementation):
                 }
             )
         )
-        self._definition = RuntimeDefinition(
-            schema_version=3,
-            strategy_family_id=release.strategy_family_id,
-            version=release.version,
-            release_id=release.release_id,
-            release_hash=release.release_hash,
-            implementation=ImplementationRef(
-                __name__, self.__class__.__name__, 1, _source_sha256()
-            ),
+        self._definition = StrategyDefinition(
             parameters=ParameterSet(payload),
             inputs=InputContract(
                 (
@@ -246,23 +228,39 @@ class S002V1(StrategyImplementation):
                 order_types,
             ),
             tradable_symbol=symbol,
-            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'signal_active', 'label': '信号激活值', 'value': 1.0, 'kind': 'CONSTANT'}], 'key': 'event_state', 'label': '事件状态', 'value_field': 'factor_score'}], 'facts': []}),
+            observation=ObservationDefinition.from_dict(
+                {
+                    "contract_version": "strategy_observation.v2",
+                    "series": [
+                        {
+                            "guides": [
+                                {
+                                    "key": "signal_active",
+                                    "label": "信号激活值",
+                                    "value": 1.0,
+                                    "kind": "CONSTANT",
+                                }
+                            ],
+                            "key": "event_state",
+                            "label": "事件状态",
+                            "value_field": "factor_score",
+                        }
+                    ],
+                    "facts": [],
+                }
+            ),
         )
 
     @classmethod
-    def from_release(cls, release: StrategyRelease) -> "S002V1":
-        if release.release_id != "S002-v1":
-            raise RuntimeContractError("S002V1 can only load S002-v1")
-        return cls(release)
+    def from_parameters(cls, parameters: ParameterSet) -> "S002V1":
+        return cls(parameters)
 
     @classmethod
-    def from_release_for_symbol(cls, release: StrategyRelease, symbol: str) -> "S002V1":
-        if release.release_id != "S002-v1":
-            raise RuntimeContractError("S002V1 can only load S002-v1")
-        return cls(release, symbol)
+    def from_parameters_for_symbol(cls, parameters: ParameterSet, symbol: str) -> "S002V1":
+        return cls(parameters, symbol)
 
     @property
-    def definition(self) -> RuntimeDefinition:
+    def definition(self) -> StrategyDefinition:
         return self._definition
 
     def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
@@ -298,22 +296,20 @@ class S002V1(StrategyImplementation):
         sessions: pd.DatetimeIndex,
     ) -> pd.DataFrame:
         states = _calculate_signal_states(
-            inputs[_INPUT_DAILY], symbol=self._symbol, signal=self._signal,
+            inputs[_INPUT_DAILY],
+            symbol=self._symbol,
+            signal=self._signal,
         )
         requested = pd.DatetimeIndex(sessions).tz_localize(None).normalize()
         missing = requested.difference(states.index)
         if not missing.empty:
-            raise RuntimeContractError(
-                "S002-v1 prepared history misses evaluation sessions"
-            )
+            raise RuntimeContractError("S002-v1 prepared history misses evaluation sessions")
         history = _target_history(
             states.reindex(requested),
             str(self._signal.get("entry_state", "")),
             int(self._portfolio.get("holding_sessions", 0)),
         )
         history["factor_score"] = (
-            history["signal_state"]
-            .eq(str(self._signal.get("entry_state", "")))
-            .astype(float)
+            history["signal_state"].eq(str(self._signal.get("entry_state", ""))).astype(float)
         )
         return history

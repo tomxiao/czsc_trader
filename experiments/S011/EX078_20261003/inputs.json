@@ -1,6 +1,6 @@
 {
   "candidate_id": "C0618",
-  "content_sha256": "a3cffbaa193522db6f81e8da2cdff4ca5116d85d1d49cf6796580130d3bf7a29",
+  "content_sha256": "ef4ba51984b8766bb02b4ac212fb8eee24b902eadb0e89f04f2130486eb92cfe",
   "dependencies": [
     {
       "name": "numpy",
@@ -25,30 +25,30 @@
     }
   },
   "assessment_receipt": "experiments/S011/20261003_S011_EX01/deliveries/ASSESSMENT/1/receipt.json",
-  "assessment_receipt_sha256": "c5b673bde2480c4cfd004534f22345c290bcfee18e65fc4959327d799a9dbf0d",
-  "baseline_workspace": "experiments/S011/20261002_S011_EX58/artifacts",
-  "baseline_receipt_sha256": "aaa6ca6080ee642848b5e60ee8a51a581643ec9de193e2cc5f2a3ec019978365",
+  "assessment_receipt_sha256": "55cf093a39269484d96743db680128cba4870a2ea3ee1c8a4917be1014a2bb34",
+  "baseline_workspace": "experiments/S011/20261002_S011_EX59/artifacts",
+  "baseline_receipt_sha256": "4dba7c910b59ede5a692d646527d00edbec92f7fcde817f9f8e385ff61b2db71",
   "baseline_record": {
-    "attempt_id": "fbef9b8c32134310ad9a2b5a425cc4f0",
-    "experiment_id": "20261002_S011_EX58",
+    "attempt_id": "2cd13d104a874b49ba4dfa8db5241f38",
+    "experiment_id": "20261002_S011_EX59",
     "candidate_id": "S011-C0618",
-    "content_sha256": "a3cffbaa193522db6f81e8da2cdff4ca5116d85d1d49cf6796580130d3bf7a29",
-    "request_hash": "236f55f62e397f85d22941bb2acd5dbf71c59f33cd45c24eee8fda4e24e94aac",
+    "content_sha256": "ef4ba51984b8766bb02b4ac212fb8eee24b902eadb0e89f04f2130486eb92cfe",
+    "request_hash": "8c83ecff683a850b5e3c5e7190ad0df24563f81ad260e484b5e8af8046f43816",
     "status": "SUCCEEDED",
-    "started_at": "2026-10-02T15:30:46.219019+00:00",
+    "started_at": "2026-10-03T13:48:48.036851+00:00",
     "requested_count": 2,
     "completed_count": 2,
-    "finished_at": "2026-10-02T15:30:58.038806+00:00",
-    "elapsed_seconds": 11.819747599998664,
+    "finished_at": "2026-10-03T13:49:16.696796+00:00",
+    "elapsed_seconds": 28.660353799990844,
     "evaluation_ids": [
-      "1183f5952772c93e2648212321536f4b471ed4c43febf888110182ae88e08e1f",
-      "04e12be9bfff9ce97ab013b57cc6834bbf3d8c4e92faa59af0ca17fc732dca5d"
+      "b641883698123f27e1b19e6efdef21973747e1bcda4ecf23b6225f4c292fcf12",
+      "17c0878d9f0d8f72b40f519d0cc6596cbe0835f89ed2ea7903f49bde403bb779"
     ],
-    "result_hash": "695cf0bfac350165a2c96a7b0b6623f70cf0a06b3d297be58bf0423695501073",
+    "result_hash": "2af41c7a1bb040f538f0e7fba724aac32f90abe2e7c2d29a73ae0694ca191993",
     "result_artifact": {
-      "path": "evaluations/fbef9b8c32134310ad9a2b5a425cc4f0/result.json",
+      "path": "evaluations/2cd13d104a874b49ba4dfa8db5241f38/result.json",
       "kind": "evaluation_result",
-      "sha256": "febd1ec92b81077f4b8dd56b069ee2c70671b0603d6acdf774fe71d7d333327f"
+      "sha256": "6a74e73677f2c60b2336f9f138f3b1e9914235c4bdda60fbb54875391c44c7e3"
     },
     "error_code": null,
     "error_message": null
@@ -61,7 +61,7 @@
   "remaining_risks": [
     "本次核验使用已见开发池；历史选择偏差及重叠样本限制仍存在，技术检验不构成独立收益验证。",
     "原始复权数据历史发布时间尚未逐日核实，不能据此证明全部历史信息当时可得。",
-    "C0618阶段四联合邻域仅5/16满足原目标，参数稳健性仍有限；此次沿用原选择，不重复优化。",
+    "C0618阶段四联合邻域5/16满足原目标，参数稳健性仍有限；此次沿用原选择，不重复优化。",
     "基线账户截至2026-09-28；选型已见数据包含截至2026-09-30的补充回测，前瞻起点拟为DFLS日历所示下一交易日2026-10-08。",
     "冻结初始资格为RESEARCH；资格晋级、SRT部署及PTE账户操作需独立证据和授权。"
   ],
@@ -69,9 +69,14 @@
     "type": "DecisionReference",
     "decision_id": "S011-C0618-selection-20261003",
     "evidence": {
-      "type": "CandidateEvidence",
-      "path": "research_decisions/S011/S011-C0618-selection-20261003.json",
-      "sha256": "85fe3b3704ab781ccf95533c1a317b7165edba70c7737f857dc4d9860578e434"
+      "type": "ResearchEvidenceRef",
+      "owner": {
+        "type": "ResearchEvidenceOwner",
+        "strategy_id": "S011",
+        "experiment_id": null
+      },
+      "path": "decisions/S011-C0618-selection-20261003.json",
+      "sha256": "9e9e5ad30dd3856fee85f49b84ec491a026fa96dda46ed49b53cce3155dbe9e6"
     }
   }
 }

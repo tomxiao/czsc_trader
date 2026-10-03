@@ -34,6 +34,7 @@ from strategy_evaluator import (
     compare_candidates,
 )
 from .family_statistics import expanded_statistics
+from .evaluation_batch import evaluate_fixed
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[2]
@@ -62,7 +63,13 @@ class Experiment(ResearchExperiment):
                 "Missing coordinate or incompatible evidence",
                 "Identity, target or ranking-policy drift",
             ),
-            allowed_datasets=("etf.ohlcv", "etf.unadjusted_daily", "calendar.trading_sessions"),
+            allowed_datasets=(
+                "etf.ohlcv",
+                "etf.unadjusted_daily",
+                "index.domestic_close_turnover_daily",
+                "index.global_daily",
+                "calendar.trading_sessions",
+            ),
             dependencies=tuple(ExperimentDependency(**x) for x in INPUTS["dependencies"]),
             capabilities=ExperimentCapabilities(reads_real_returns=True),
             protocol=ExperimentProtocol(
@@ -88,38 +95,52 @@ class Experiment(ResearchExperiment):
             rtol=0,
             atol=1e-8,
         )
-        for rel, digest in INPUTS["source_evidence"].items():
-            assert sha256((REPO / rel).read_bytes()).hexdigest() == digest, rel
-        for stage, expected in [("centers", 35), ("recovery", 420)]:
-            batch = read(ROOT / f"{stage}_batch_result.json")
-            assert not batch["errors"] and len(batch["trials"]) == expected
-            assert all(t["state"] == "COMPLETE" for t in batch["trials"])
-        original = read(ROOT / "neighbors_batch_result.json")
-        successful = {x["candidate"] for x in original["trials"] if x["state"] == "COMPLETE"}
-        restored = {x["candidate"] for x in read(ROOT / "recovery_batch_result.json")["trials"]}
-        assert len(successful) == 140 and len(original["errors"]) == 6
-        assert not successful & restored
-        assert successful | restored == {
-            x["candidate_id"] for x in read(ROOT / "neighborhood_mapping.json")
-        }
+        from strategy_runtime import StrategyRuntime, StrategyCandidate, ImplementationDependency
+        from strategy_manager import CandidateKey
+        from czsc_trader.application import RepositoryContext, load_candidate
+
+        repository = RepositoryContext.discover(REPO)
+        runtime = StrategyRuntime()
+        dependencies = tuple(ImplementationDependency(**x) for x in INPUTS["dependencies"])
+        parents = {}
+        for spec in INPUTS["centers"]:
+            parent = load_candidate(repository, CandidateKey("S011", spec["candidate_id"]))
+            assert (
+                runtime.identify(parent, dependencies=dependencies).content_sha256
+                == spec["content_sha256"]
+            )
+            parents[spec["candidate_id"]] = parent
+        for spec in INPUTS["neighbors"]:
+            parent = parents[spec["parent_candidate_id"]]
+            payload = json.loads(json.dumps(dict(parent.payload), default=dict))
+            payload["parameters"] = spec["parameters"]
+            runtime.describe(
+                StrategyCandidate("S011", spec["candidate_id"], payload, parent.source_root)
+            )
+            assert (
+                spec["protocol_sha256"]
+                == sha256((ROOT / "neighborhood_protocol.json").read_bytes()).hexdigest()
+            )
+        assert len(INPUTS["neighbors"]) == 576
         assert len(INPUTS["centers"]) == 36 and len(INPUTS["extensions"]) == 512
         return ExperimentPrecheckResult(
             (
                 ExperimentPreflightCheck(
                     "COMPLETE_FIXED_INPUTS",
                     ExperimentPreflightStatus.PASS,
-                    "All fixed slots completed by authenticated successor runs; initial technical failures retained",
+                    "36 fixed centers and 576 declared neighborhoods; current managed execution",
                 ),
             ),
             ExperimentResult(ExperimentOutcome.PASS, {"centers": 36, "neighbors": 576}, {}),
         )
 
     def execute(self, context):
+        execution_artifacts = evaluate_fixed(context, ROOT, INPUTS)
         evidence = []
         summaries = []
         relations = []
         for ex in INPUTS["evaluation_experiments"]:
-            source = ROOT.parent / ex / "artifacts"
+            source = context.workspace.root if ex == ROOT.name else ROOT.parent / ex / "artifacts"
             summaries.extend(read(source / "summaries.json"))
             relations.extend(read(source / "derivations.json"))
             for p in sorted((source / "assessment").glob("*.json")):
@@ -147,7 +168,7 @@ class Experiment(ResearchExperiment):
                 for x in standard
             ]
         )
-        selected = next(c for c in centers if c.candidate_id == "S011-C0621")
+        selected = next(c for c in centers if c.candidate_id == "S011-C0618")
         family = FamilyReturnEvidence(
             tuple(x.candidate for x in standard),
             tuple(a.session for a in standard[0].account),
@@ -186,7 +207,7 @@ class Experiment(ResearchExperiment):
         )
         comparison = compare_candidates(comparison_request)
         assert all(x.pareto_layer is not None for x in comparison.rows)
-        artifacts = []
+        artifacts = list(execution_artifacts)
 
         def save(name, value):
             context.workspace.path(name).write_text(

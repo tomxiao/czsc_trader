@@ -9,20 +9,996 @@
       "version": "3.0.5"
     }
   ],
-  "predecessors": {
-    "20261002_S011_EX41": "103fe198d96903cc93eedb9392820d2967bb9669a7fa4994ced5977c8554aa2c",
-    "20261002_S011_EX51": "fdabe5d9f759f2da07828f66fd8d0458dadb0a71dfc03ca05915217598f3701b",
-    "20261002_S011_EX52": "eceb63269dc7653487dccc3a1e85644b8421a0f70dc729acfca5858e4ee13aa1",
-    "20261002_S011_EX53": "067d503ad518f8c17b557735b371c7dd0c9e41433a3652a3df91f6aceeb1cfb3",
-    "20261002_S011_EX54": "94c3863615cd5cc22248a8396fb99c47d495cdc6513118c5fc56d2b67182d507",
-    "20261002_S011_EX55": "e8b8c9cf228fe5834e0913cfe494e8b49da6f108d69b7e7ef8b1e41ed7fc1c8b",
-    "20261002_S011_EX56": "b34a55911b265c8f220d57fdc00483c78c7b181176ffff91729454a71836ccc5",
-    "20261002_S011_EX57": "0e77494409a7147578cb2a7eaa5720abd175f2b9ac355bcf7283a19373f56a35",
-    "20261002_S011_EX58": "aaa6ca6080ee642848b5e60ee8a51a581643ec9de193e2cc5f2a3ec019978365"
-  },
+  "predecessors": {},
   "historical_delivery": "experiments/S011/20261002_S011_EX37/deliveries/CANDIDATES/1/delivery.json",
   "historical_sha256": "ad2ad8bc0ca593af31ebcc86f9e773216c1e9c21bf9fa21f4f2f5085103579d4",
   "mandate_receipt": "research/S011/mandates/1/receipt.json",
   "component_receipt": "experiments/S011/20261002_S011_EX37/deliveries/COMPONENTS/1/receipt.json",
-  "batch_result": "experiments/S011/20261002_S011_EX68/centers_batch_result.json"
+  "centers": [
+    {
+      "candidate_id": "C0137",
+      "payload": {
+        "parameters": {
+          "entry": 0.3,
+          "exit": 0.0,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.15,
+          "tail_weight": 0.75
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "845348c7afd69f3f1175cb7fdef06064118a034c2ce1db1b4a82b11bfcfe54d6"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/bounded/strategy_runtime",
+      "content_sha256": "c7446f56eca2ae33bc531a881f5d4f1ecfe2785f0a12bca9cc3fa5336a006a16"
+    },
+    {
+      "candidate_id": "C0193",
+      "payload": {
+        "parameters": {
+          "entry": 0.3,
+          "exit": 0.0,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.15,
+          "tail_weight": 0.75
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "e878dff2bcf1cd331e5375fcd3ea371b14b9770d22004460908e531818d637bd"
+    },
+    {
+      "candidate_id": "C0204",
+      "payload": {
+        "parameters": {
+          "entry": 0.3,
+          "exit": 0.0,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.004,
+          "spx_weight": 0.15,
+          "tail_weight": 0.75
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "3ebd0fc187e2efdb1ddc915ad1ed8a70bce6a45d197ab40f12b9e10bdd263c70"
+    },
+    {
+      "candidate_id": "C0244",
+      "payload": {
+        "parameters": {
+          "entry": 0.28,
+          "exit": 0.0,
+          "lookback": 60,
+          "max_days": 2,
+          "premium": 0.005,
+          "spx_weight": 0.2,
+          "tail_weight": 0.625
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "470075c1b71c78fff264a45b7f555b5ad610296ebfaa461bf900182d6062da75"
+    },
+    {
+      "candidate_id": "C0247",
+      "payload": {
+        "parameters": {
+          "entry": 0.335,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.005,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "49e85dd727ca5bce0eb482bde0f009aa22b1b224a0ef2cbd77b0a5ab9bcca4df"
+    },
+    {
+      "candidate_id": "C0590",
+      "payload": {
+        "parameters": {
+          "entry": 0.335,
+          "exit": 0.0,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.005,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "a69b607d57bd2412239d898b81665a949aaea6e6f883285aee20fd4b0370a7be"
+    },
+    {
+      "candidate_id": "C0617",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.002,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "a17c24798d5039febe454c16a460704d96a243e9021a41fed2aa3a679615a294"
+    },
+    {
+      "candidate_id": "C0618",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "ef4ba51984b8766bb02b4ac212fb8eee24b902eadb0e89f04f2130486eb92cfe"
+    },
+    {
+      "candidate_id": "C0620",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.002,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "492c3313af61a3e3ae3ca94fe92ceab94814440f99283a5b634f02410e0949ae"
+    },
+    {
+      "candidate_id": "C0621",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "57725b2782ff4538ec13613c6e6eae54d74ff7040008e7d93f7ab3cfb8104c33"
+    },
+    {
+      "candidate_id": "C0623",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.002,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "0123597f9271deb1057ae203c736af6a0752d6630558fde49076434e6a42b406"
+    },
+    {
+      "candidate_id": "C0624",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "fcd5038f0625575f4de3d0a21f4b186059b663f9e69108c755c7798a4127e8c0"
+    },
+    {
+      "candidate_id": "C0627",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.002,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "0c5e108c0aa7e986a1c1b4fff47848daab32b160711a15460a83ae345478bf26"
+    },
+    {
+      "candidate_id": "C0628",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "52ccea1392191da4771542f83a94826add66b224d4590c7df1f0404cf7137f1d"
+    },
+    {
+      "candidate_id": "C0632",
+      "payload": {
+        "parameters": {
+          "entry": 0.335,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "e571a9ba6dabd73b37438f3d20940e96e17b80454c56ded4118a179b87665234"
+    },
+    {
+      "candidate_id": "C0633",
+      "payload": {
+        "parameters": {
+          "entry": 0.335,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.004,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "a560e5921d5bc8b5df71b9a20d0bee9de5e4d0104f5e3eea6e39c6317c439635"
+    },
+    {
+      "candidate_id": "C0643",
+      "payload": {
+        "parameters": {
+          "entry": 0.32,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "4232da04a0b029b42a7e189487c59c7f2aacd547d535f7daed9cd41762b6077b"
+    },
+    {
+      "candidate_id": "C0645",
+      "payload": {
+        "parameters": {
+          "entry": 0.32,
+          "exit": 0.1,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "9692ad25e07b995e2ce9723ef5767a2c47171cc2a3fcee9163e46180417325e8"
+    },
+    {
+      "candidate_id": "C0647",
+      "payload": {
+        "parameters": {
+          "entry": 0.32,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "592fedce9ad07047220817a617247af165543231338961de93fafb92b448e1cc"
+    },
+    {
+      "candidate_id": "C0649",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "dd776a2f9e33bcef9d48dd9f2863f6c8d0fe4903e2eaa26cd274a3636cbd148e"
+    },
+    {
+      "candidate_id": "C0650",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.1,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "44561e0f196fad724ff8db61369623c7fb89034822fb025d15863c30972ad0e4"
+    },
+    {
+      "candidate_id": "C0651",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.1,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "2a7af7cdc8b608f04040f8423359c1710a9258e90557cd0b26f771ad27769b5d"
+    },
+    {
+      "candidate_id": "C0652",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "9aad13747bdeaad39865e6ac169fb0dff636a19a69677c84987d8c965263b351"
+    },
+    {
+      "candidate_id": "C0653",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "7185ad4db7eff48a9c900aa69a6b2316dd844b8d8bdee7c3f33fd9ec92485ce1"
+    },
+    {
+      "candidate_id": "C0654",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.1,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "1a6eaa6bb12d3158457a237d40a890b8abd64fa5576e122b55faf6285c812171"
+    },
+    {
+      "candidate_id": "C0655",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.1,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.003,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "41eaf52c19ef4a85475010b4a01dbadec4d4ed6d74e3f42312bdf0657bbd983d"
+    },
+    {
+      "candidate_id": "C0656",
+      "payload": {
+        "parameters": {
+          "entry": 0.33,
+          "exit": 0.175,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "77540dd81a5da2e93bfa3ff10488ad82c255666afc44327cc23e24eee7d2e983"
+    },
+    {
+      "candidate_id": "C0657",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.55
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "d7bb330a1ba171603370451a81d07905ef4d6742fe8a7b9d684ba20b3f77262c"
+    },
+    {
+      "candidate_id": "C0658",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.075,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "e394e78b5b624010d3a4c1889e149d5b5fd694560a86e3d144070f790a66b125"
+    },
+    {
+      "candidate_id": "C0659",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 140,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "5035ed3c2aa70491d3972fa96902927860ea4363635615b237b364f0331c36ae"
+    },
+    {
+      "candidate_id": "C0660",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.05,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "ef236c4c1ccc5b387d1fc38a4b0e941f48d58959a3fb1a647409e4804c726a9d"
+    },
+    {
+      "candidate_id": "C0661",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.025,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "517ab9f7d1a895d28480e671fda6fa6fde59786d0e2f5fff0ab344ffedfde254"
+    },
+    {
+      "candidate_id": "C0662",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.6
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "6f2d8a1b99a2eaef570fd35b6715eda64adb68c75e1d94abba6a39f1189cf625"
+    },
+    {
+      "candidate_id": "C0663",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.0,
+          "lookback": 130,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "19bcd2421ceecf5a59fc22cf1247b7fe3903ddc4134cb3c8d36fdf730ac83ad9"
+    },
+    {
+      "candidate_id": "C0664",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 130,
+          "max_days": 3,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "aadf5e0b9efde582e951540c7f624265531c94762b6775a62437821bc23d0a87"
+    },
+    {
+      "candidate_id": "C0665",
+      "payload": {
+        "parameters": {
+          "entry": 0.325,
+          "exit": 0.025,
+          "lookback": 120,
+          "max_days": 2,
+          "premium": 0.0025,
+          "spx_weight": 0.05,
+          "tail_weight": 0.575
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s011_reversal",
+          "qualname": "S011Reversal",
+          "source_files": [
+            "strategies/s011_reversal.py"
+          ],
+          "source_sha256": "07902e23452985fb3d6f10e1e077b4e6044a6b02ac763d28c499f967fbdcf9f8"
+        },
+        "strategy_kind": "s011_short_pressure_reversal",
+        "symbol": "159326.SZ"
+      },
+      "runtime_root": "runtime/wide/strategy_runtime",
+      "content_sha256": "5bc8833ed54b4ddf0f4697e69be9c7e44ac59dc8aafc5cdf42142b692ec5f647"
+    }
+  ],
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.003,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  }
 }

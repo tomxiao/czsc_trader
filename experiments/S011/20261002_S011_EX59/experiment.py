@@ -19,7 +19,8 @@ from research_experiment import (
 )
 from strategy_manager import CandidateKey
 from czsc_trader.application import RepositoryContext, load_candidate
-from strategy_runtime import StrategyRuntime, ImplementationDependency
+from strategy_runtime import StrategyRuntime, ImplementationDependency, StrategyCandidate
+from .evaluation_batch import evaluate_fixed
 import czsc_trader.research_tools as d
 
 ROOT = Path(__file__).resolve().parent
@@ -42,21 +43,24 @@ class Experiment(ResearchExperiment):
             research_question="Can all 36 centers be handed off with current-content evaluation evidence?",
             hypothesis="All fixed centers have valid standard-cost evidence and preserve original targets.",
             falsification_conditions=("Candidate content differs or an original target fails",),
-            allowed_datasets=("etf.ohlcv", "etf.unadjusted_daily", "calendar.trading_sessions"),
+            allowed_datasets=('etf.ohlcv', 'etf.unadjusted_daily', 'index.domestic_close_turnover_daily', 'index.global_daily', 'calendar.trading_sessions'),
             dependencies=tuple(ExperimentDependency(**x) for x in INPUTS["dependencies"]),
-            capabilities=ExperimentCapabilities(reads_real_returns=True),
+            capabilities=ExperimentCapabilities(reads_real_returns=True, creates_candidate=True),
             protocol=ExperimentProtocol(
                 ExperimentStage.CANDIDATE,
                 ("Known development sample",),
                 ("Current authenticated center results and historical research records",),
                 ("No new parameter search",),
                 ("Complete current CandidateSet handoff",),
-                ("Aggregate validated predecessors, preserve original history",),
+                ("Evaluate fixed centers through managed parallel requests",),
                 tuple(INPUTS["predecessors"]),
             ),
         )
 
     def synthetic_precheck(self):
+        for spec in INPUTS["centers"]:
+            item = StrategyCandidate("S011", spec["candidate_id"], spec["payload"], ROOT / spec["runtime_root"])
+            assert StrategyRuntime().identify(item, dependencies=tuple(ImplementationDependency(**x) for x in INPUTS["dependencies"])).content_sha256 == spec["content_sha256"]
         source = REPO / INPUTS["historical_delivery"]
         assert sha256(source.read_bytes()).hexdigest() == INPUTS["historical_sha256"]
         old = json.loads(source.read_text(encoding="utf-8"))["content"]["payload"]
@@ -75,6 +79,7 @@ class Experiment(ResearchExperiment):
         )
 
     def execute(self, context):
+        execution_artifacts = evaluate_fixed(context, ROOT, INPUTS)
         old = json.loads((REPO / INPUTS["historical_delivery"]).read_text(encoding="utf-8"))[
             "content"
         ]["payload"]
@@ -83,8 +88,8 @@ class Experiment(ResearchExperiment):
         summary = []
         repo = RepositoryContext.discover(REPO)
         deps = tuple(ImplementationDependency(**x) for x in INPUTS["dependencies"])
-        for ex in INPUTS["predecessors"]:
-            source = ROOT.parent / ex / "artifacts"
+        for ex in (ROOT.name,):
+            source = context.workspace.root
             records = json.loads((source / "evaluation_records.json").read_text())
             rows = json.loads((source / "summaries.json").read_text())
             for record in records:
@@ -131,7 +136,7 @@ class Experiment(ResearchExperiment):
             tuple(d.SearchRecord.from_dict(x) for x in old["searches"]),
             "完整交接36个当前登记中心；均已在现行契约下满足原标准成本目标。保留573条完成、3条失败历史提议及后续扩展台账，不将复算计作新搜索。阶段四必须覆盖全部36中心。",
         )
-        artifacts = []
+        artifacts = list(execution_artifacts)
         for name, value in [
             ("candidate_set.json", payload.to_dict()),
             ("identity_mapping.json", mapping),

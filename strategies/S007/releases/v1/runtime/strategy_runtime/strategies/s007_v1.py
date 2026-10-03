@@ -20,21 +20,18 @@ from ..calculation import (
 from strategy_runtime import TradableWindow
 from strategy_runtime import RuntimeContractError
 from ..execution_rules import effective_target_order_type
-from strategy_runtime import implementation_sha256
 from strategy_runtime import ObservationDefinition
 from strategy_runtime import (
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
     HistoryPolicy,
-    ImplementationRef,
     InputContract,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
-    StrategyRelease,
+    StrategyDefinition,
 )
 
 
@@ -149,10 +146,7 @@ def _seed_panel(seed: pd.DataFrame, features: list[str]) -> pd.DataFrame:
     for feature in features:
         panel[feature] = pd.to_numeric(panel[feature], errors="coerce")
     panel = panel.set_index("Date").sort_index()
-    if (
-        panel.index.min() != _FROZEN_HISTORY_START
-        or panel.index.max() > _FROZEN_HISTORY_END
-    ):
+    if panel.index.min() != _FROZEN_HISTORY_START or panel.index.max() > _FROZEN_HISTORY_END:
         raise RuntimeContractError("S007-v1 feature seed has an invalid frozen range")
     return panel
 
@@ -224,9 +218,7 @@ def resolve_s007_feature_panel(
         raise RuntimeContractError("S007-v1 incremental inputs are incomplete")
     if present:
         materialized = materialize_s007_features(inputs)
-        additions = materialized.loc[
-            materialized.index > _FROZEN_HISTORY_END, features
-        ]
+        additions = materialized.loc[materialized.index > _FROZEN_HISTORY_END, features]
         panel = pd.concat([panel, additions])
     return panel[~panel.index.duplicated(keep="last")].sort_index()
 
@@ -234,8 +226,8 @@ def resolve_s007_feature_panel(
 class S007V1(StrategyImplementation):
     """Executable S007-v1; every feature is materialized from DFLS inputs."""
 
-    def __init__(self, release: StrategyRelease) -> None:
-        payload = _object(release.payload["parameters"], "strategy parameters")
+    def __init__(self, parameters: ParameterSet) -> None:
+        payload = _object(parameters.values, "strategy parameters")
         if payload.get("strategy_kind") != "causal_feature_gate":
             raise RuntimeContractError("S007-v1 strategy_kind differs")
         rule = _object(payload.get("rule"), "S007-v1 rule")
@@ -245,12 +237,11 @@ class S007V1(StrategyImplementation):
         self._symbol = str(rule.get("symbol", "")).upper()
         if self._symbol != "588080.SH":
             raise RuntimeContractError("S007-v1 frozen symbol must be 588080.SH")
-        self._release = release
         requirements = (
             InputRequirement(
                 _SEED,
                 Dataset.STRATEGY_FEATURE_EVIDENCE.value,
-                release.release_id,
+                "S007-v1",
                 "daily",
                 0,
                 CutoffRule.LATEST_AVAILABLE,
@@ -308,25 +299,7 @@ class S007V1(StrategyImplementation):
                 CutoffRule.LATEST_AVAILABLE,
             ),
         )
-        self._definition = RuntimeDefinition(
-            3,
-            release.strategy_family_id,
-            release.version,
-            release.release_id,
-            release.release_hash,
-            ImplementationRef(
-                __name__,
-                self.__class__.__name__,
-                1,
-                implementation_sha256(
-                    (
-                        "strategies/s007_v1.py",
-                        "calculation.py",
-                        "execution_rules.py",
-                        "resources/s007_v1_seed.csv.gz",
-                    )
-                ),
-            ),
+        self._definition = StrategyDefinition(
             ParameterSet(payload),
             InputContract(requirements),
             DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION_OPEN"),
@@ -345,17 +318,54 @@ class S007V1(StrategyImplementation):
             ),
             tradable_symbol=self._symbol,
             history=HistoryPolicy("CANONICAL_REPLAY", "2021-01-04", "2020-12-01"),
-            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'entry_threshold', 'label': '入场阈值', 'value': 0.10449974411727908, 'kind': 'CONSTANT'}, {'key': 'exit_threshold', 'label': '退出阈值', 'value': 0.047857421473087296, 'kind': 'CONSTANT'}], 'key': 'base_score', 'label': '基础分', 'value_field': 'base_score'}, {'guides': [{'key': 'confirmation_threshold', 'label': '确认门', 'value': -0.012073272333918687, 'kind': 'CONSTANT'}], 'key': 'confirmation_score', 'label': '确认分', 'value_field': 'confirmation_score'}], 'facts': []}),
+            observation=ObservationDefinition.from_dict(
+                {
+                    "contract_version": "strategy_observation.v2",
+                    "series": [
+                        {
+                            "guides": [
+                                {
+                                    "key": "entry_threshold",
+                                    "label": "入场阈值",
+                                    "value": 0.10449974411727908,
+                                    "kind": "CONSTANT",
+                                },
+                                {
+                                    "key": "exit_threshold",
+                                    "label": "退出阈值",
+                                    "value": 0.047857421473087296,
+                                    "kind": "CONSTANT",
+                                },
+                            ],
+                            "key": "base_score",
+                            "label": "基础分",
+                            "value_field": "base_score",
+                        },
+                        {
+                            "guides": [
+                                {
+                                    "key": "confirmation_threshold",
+                                    "label": "确认门",
+                                    "value": -0.012073272333918687,
+                                    "kind": "CONSTANT",
+                                }
+                            ],
+                            "key": "confirmation_score",
+                            "label": "确认分",
+                            "value_field": "confirmation_score",
+                        },
+                    ],
+                    "facts": [],
+                }
+            ),
         )
 
     @classmethod
-    def from_release(cls, release: StrategyRelease) -> "S007V1":
-        if release.release_id != "S007-v1":
-            raise RuntimeContractError("S007V1 can only load S007-v1")
-        return cls(release)
+    def from_parameters(cls, parameters: ParameterSet) -> "S007V1":
+        return cls(parameters)
 
     @property
-    def definition(self) -> RuntimeDefinition:
+    def definition(self) -> StrategyDefinition:
         return self._definition
 
     def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
@@ -373,9 +383,7 @@ class S007V1(StrategyImplementation):
         )
         first_signal = base.signal_dates[base.trading_dates[0]]
         last_signal = base.signal_dates[base.trading_dates[-1]]
-        calculation_start = date.fromisoformat(
-            self._definition.history.canonical_start
-        )
+        calculation_start = date.fromisoformat(self._definition.history.canonical_start)
         calculation_dates = tuple(
             item for item in calendar_dates if calculation_start <= item <= last_signal
         )
@@ -395,9 +403,7 @@ class S007V1(StrategyImplementation):
                     "S007-v1 trading calendar cannot satisfy incremental feature history"
                 )
             feature_start = available[-21]
-            ranges[_MARKET] = InputRange(
-                min(first_signal, feature_start), last_signal, last_signal
-            )
+            ranges[_MARKET] = InputRange(min(first_signal, feature_start), last_signal, last_signal)
             ranges[_SHIBOR] = InputRange(feature_start, last_signal, last_signal)
             ranges[_CHINEXT] = InputRange(feature_start, last_signal, last_signal)
             previous = tuple(item for item in calendar_dates if item < last_signal)
@@ -406,9 +412,7 @@ class S007V1(StrategyImplementation):
                     "S007-v1 trading calendar has no prior share publication session"
                 )
             ranges[_SHARES] = InputRange(feature_start, previous[-1], previous[-1])
-            ranges[_SPX] = InputRange(
-                feature_start - timedelta(days=7), last_signal, None
-            )
+            ranges[_SPX] = InputRange(feature_start - timedelta(days=7), last_signal, None)
         else:
             ranges[_MARKET] = InputRange(first_signal, last_signal, last_signal)
             ranges[_SHIBOR] = None

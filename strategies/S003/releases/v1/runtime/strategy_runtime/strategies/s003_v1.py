@@ -19,20 +19,17 @@ from ..calculation import (
 )
 from strategy_runtime import TradableWindow
 from strategy_runtime import RuntimeContractError
-from strategy_runtime import implementation_sha256
 from strategy_runtime import ObservationDefinition
 from strategy_runtime import (
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
-    ImplementationRef,
     InputContract,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition,
-    StrategyRelease,
+    StrategyDefinition,
 )
 
 
@@ -68,9 +65,7 @@ def _seed_history(seed: pd.DataFrame) -> pd.DataFrame:
     history["observed_weight_ratio"] = pd.to_numeric(
         history["observed_weight_ratio"], errors="raise"
     )
-    history["moneyflow_breadth"] = pd.to_numeric(
-        history["moneyflow_breadth"], errors="raise"
-    )
+    history["moneyflow_breadth"] = pd.to_numeric(history["moneyflow_breadth"], errors="raise")
     if history["date"].duplicated().any():
         raise RuntimeContractError("S003-v1 seed history contains duplicate sessions")
     return history.set_index("date").sort_index()
@@ -142,9 +137,7 @@ def _incremental_history(
                 f"S003-v1 has no constituent snapshot before {session.date().isoformat()}"
             )
         snapshot_date = eligible.max()
-        members = snapshots.loc[
-            snapshots["snapshot_date"].eq(snapshot_date), ["symbol", "weight"]
-        ]
+        members = snapshots.loc[snapshots["snapshot_date"].eq(snapshot_date), ["symbol", "weight"]]
         selected = members.merge(
             flows.loc[flows["date"].eq(session), ["symbol", "net_moneyflow"]],
             on="symbol",
@@ -189,8 +182,8 @@ def _decision_history(history: pd.DataFrame, feature: Mapping[str, Any]) -> pd.D
 class S003V1(StrategyImplementation):
     """Executable S003-v1 with an immutable seed and point-in-time increments."""
 
-    def __init__(self, release: StrategyRelease) -> None:
-        payload = _object(release.payload["parameters"], "strategy parameters")
+    def __init__(self, parameters: ParameterSet) -> None:
+        payload = _object(parameters.values, "strategy parameters")
         if payload.get("strategy_kind") != "constituent_moneyflow_intraday_overlay":
             raise RuntimeContractError("S003-v1 strategy_kind differs")
         rule = _object(payload.get("rule"), "S003-v1 rule")
@@ -203,7 +196,7 @@ class S003V1(StrategyImplementation):
             InputRequirement(
                 _SEED,
                 Dataset.STRATEGY_FEATURE_EVIDENCE.value,
-                release.release_id,
+                "S003-v1",
                 "daily",
                 0,
                 CutoffRule.LATEST_AVAILABLE,
@@ -250,47 +243,47 @@ class S003V1(StrategyImplementation):
                 CutoffRule.LATEST_AVAILABLE,
             ),
         )
-        self._definition = RuntimeDefinition(
-            3,
-            release.strategy_family_id,
-            release.version,
-            release.release_id,
-            release.release_hash,
-            ImplementationRef(
-                __name__,
-                self.__class__.__name__,
-                1,
-                implementation_sha256(
-                    (
-                        "strategies/s003_v1.py",
-                        "calculation.py",
-                        "execution_rules.py",
-                        "resources/s003_v1_seed.csv.gz",
-                    )
-                ),
-            ),
+        self._definition = StrategyDefinition(
             ParameterSet(payload),
             InputContract(requirements),
             DecisionContract("INTRADAY_OVERLAY", 0.0, 1.0, "NEXT_SESSION_OPEN_TO_11_30"),
             ExecutionPolicy("INTRADAY_OVERLAY", execution),
             MonitoringPolicy("FORWARD_OBSERVATION", {"frozen": True}),
             RequiredCapabilities(
-                tuple(item.dataset for item in requirements),
+                tuple((item.dataset for item in requirements)),
                 ("LIMIT", "MARKET"),
                 ("OPEN", "11:30_CLOSE"),
             ),
             tradable_symbol=self._symbol,
-            observation=ObservationDefinition.from_dict({'contract_version': 'strategy_observation.v2', 'series': [{'guides': [{'key': 'dynamic_threshold', 'label': '动态阈值', 'value_field': 'threshold', 'kind': 'EVIDENCE'}], 'key': 'moneyflow_breadth', 'label': '资金流宽度', 'value_field': 'moneyflow_breadth'}], 'facts': []}),
+            observation=ObservationDefinition.from_dict(
+                {
+                    "contract_version": "strategy_observation.v2",
+                    "series": [
+                        {
+                            "guides": [
+                                {
+                                    "key": "dynamic_threshold",
+                                    "label": "动态阈值",
+                                    "value_field": "threshold",
+                                    "kind": "EVIDENCE",
+                                }
+                            ],
+                            "key": "moneyflow_breadth",
+                            "label": "资金流宽度",
+                            "value_field": "moneyflow_breadth",
+                        }
+                    ],
+                    "facts": [],
+                }
+            ),
         )
 
     @classmethod
-    def from_release(cls, release: StrategyRelease) -> "S003V1":
-        if release.release_id != "S003-v1":
-            raise RuntimeContractError("S003V1 can only load S003-v1")
-        return cls(release)
+    def from_parameters(cls, parameters: ParameterSet) -> "S003V1":
+        return cls(parameters)
 
     @property
-    def definition(self) -> RuntimeDefinition:
+    def definition(self) -> StrategyDefinition:
         return self._definition
 
     def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
@@ -323,9 +316,7 @@ class S003V1(StrategyImplementation):
         ranges = dict(base.inputs)
         seed_start = max(_SEED_START, calculation_start)
         seed_end = min(_SEED_CUTOFF, last_signal)
-        ranges[_SEED] = (
-            InputRange(seed_start, seed_end, None) if seed_start <= seed_end else None
-        )
+        ranges[_SEED] = InputRange(seed_start, seed_end, None) if seed_start <= seed_end else None
         incremental_dates = tuple(item for item in calculation_dates if item > _SEED_CUTOFF)
         if incremental_dates:
             incremental_start = incremental_dates[0]
@@ -333,9 +324,7 @@ class S003V1(StrategyImplementation):
             ranges[_WEIGHTS] = InputRange(
                 incremental_start - timedelta(days=370), incremental_end, None
             )
-            ranges[_MONEYFLOW] = InputRange(
-                incremental_start, incremental_end, incremental_end
-            )
+            ranges[_MONEYFLOW] = InputRange(incremental_start, incremental_end, incremental_end)
         else:
             ranges[_WEIGHTS] = None
             ranges[_MONEYFLOW] = None
@@ -357,9 +346,7 @@ class S003V1(StrategyImplementation):
             history = _seed_history(seed)
         else:
             seed = pd.DataFrame()
-            history = pd.DataFrame(
-                columns=["observed_weight_ratio", "moneyflow_breadth"]
-            )
+            history = pd.DataFrame(columns=["observed_weight_ratio", "moneyflow_breadth"])
         has_weights = _WEIGHTS in inputs
         has_moneyflow = _MONEYFLOW in inputs
         if has_weights != has_moneyflow:

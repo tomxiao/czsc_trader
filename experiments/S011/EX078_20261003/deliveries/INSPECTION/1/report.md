@@ -1,6 +1,6 @@
 # S011 · INSPECTION · 1
 
-研究员声明状态：BLOCKED
+研究员声明状态：COMPLETE
 归属：EX078_20261003
 
 技术校验验证结构、身份与证据引用；阶段推进和研究结论由研究员与用户决定。
@@ -9,37 +9,37 @@
 
 ## 阶段内容
 
-- 实验证据：EX078_20261003；用途：CURRENT_EVALUATION；回执：`646e99df255e76b81f2be08a02d2326a236a3ebf5b30528b30ebb8aa6489aa66`
+- 实验证据：EX078_20261003；用途：CURRENT_EVALUATION；回执：`480a8473eb228e9cb40bfc220407ff80459783e9e4f0785f2ad472ff4fdfb7e1`
 
 候选：S011-C0618
 
-内容指纹：`a3cffbaa193522db6f81e8da2cdff4ca5116d85d1d49cf6796580130d3bf7a29`
+内容指纹：`ef4ba51984b8766bb02b4ac212fb8eee24b902eadb0e89f04f2130486eb92cfe`
 
-拟冻结版本：v1；计划摘要：`d43538cbfc5f4d144481dd2abddcf1bb19ceb641c92171f084d24826804f4d09`
+拟冻结版本：v1；计划摘要：`267c76ae30e813ca43ad4f52bc1017b81feb32d5c6ab520a95698f4f6f343fad`
 
-技术检验：FAIL；方法：candidate-inspection-v1
+技术检验：PASS；方法：candidate-inspection-v1
 
 | 检验项 | 状态 | 说明 |
 | --- | --- | --- |
 | CONTENT | PASS | registered candidate source, payload and installed dependencies verified |
 | PACKAGE | PASS | source, observation and install closure verified |
-| RUNTIME | FAIL | strategy implementation has no from_release factory: S011Reversal |
-| COVERAGE | INCOMPLETE | actual reproduction coverage compared with explicit protocol |
-| REPRODUCTION | FAIL | ValueError: evaluation request data cutoff differs |
-| LEDGER_AUDIT | INCOMPLETE | 0/0 reproduction coordinates passed |
-| LEDGER_EQUIVALENCE | INCOMPLETE | 0/0 reproduction coordinates passed |
-| SIGNAL_EQUIVALENCE | INCOMPLETE | 0/0 reproduction coordinates passed |
+| RUNTIME | PASS | candidate and prospective release runtime contracts match |
+| COVERAGE | PASS | actual reproduction coverage compared with explicit protocol |
+| REPRODUCTION | PASS | fresh managed evaluations persisted |
+| LEDGER_AUDIT | PASS | 4/4 reproduction coordinates passed |
+| LEDGER_EQUIVALENCE | PASS | 4/4 reproduction coordinates passed |
+| SIGNAL_EQUIVALENCE | PASS | 4/4 reproduction coordinates passed |
 
 剩余风险：
 - 本次核验使用已见开发池；历史选择偏差及重叠样本限制仍存在，技术检验不构成独立收益验证。
 - 原始复权数据历史发布时间尚未逐日核实，不能据此证明全部历史信息当时可得。
-- C0618阶段四联合邻域仅5/16满足原目标，参数稳健性仍有限；此次沿用原选择，不重复优化。
+- C0618阶段四联合邻域5/16满足原目标，参数稳健性仍有限；此次沿用原选择，不重复优化。
 - 基线账户截至2026-09-28；选型已见数据包含截至2026-09-30的补充回测，前瞻起点拟为DFLS日历所示下一交易日2026-10-08。
 - 冻结初始资格为RESEARCH；资格晋级、SRT部署及PTE账户操作需独立证据和授权。
 
 冻结状态：尚未请求
 
-待用户决定：技术检验存在失败或未完成项，须处理后重新检验。
+待用户决定：是否批准按计划267c76ae30e813ca43ad4f52bc1017b81feb32d5c6ab520a95698f4f6f343fad将当前C0618冻结为S011-v1？
 
 ### 用户决定与确认来源
 
@@ -57,11 +57,10 @@
 
 ## 未完成事项
 
-- 技术检验未通过，不能申请冻结。
 
 ## 复算
 
-依据本实验inputs.json的原评价引用及experiment.py通过公开inspect_candidate重建后继实验；禁止覆盖已执行工作空间。报告与计划、来源及复算证据均附于交付。
+依据本实验inputs.json的原评价引用及experiment.py通过公开inspect_candidate执行技术一致性检验。报告与计划、来源及复算证据均附于交付。
 
 数据访问：既有DFLS授权数据及缓存；原账户窗口2025-02-06至2026-09-28，共403交易日。
 
