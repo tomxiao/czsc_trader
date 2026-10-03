@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "command": "research.intent.update",
+  "result": {
+    "family": {
+      "schema_version": 2,
+      "strategy_id": "S012",
+      "name": "华夏黄金ETF研究",
+      "scope": [
+        "518850.SH"
+      ],
+      "research_intent": {
+        "stage": "MANDATE",
+        "status": "PARTIAL",
+        "symbol": "518850.SH",
+        "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+        "confirmed_targets": {
+          "net_annual_return": ">= BuyHold * 1.5",
+          "drawdown_magnitude": "< BuyHold",
+          "full_sample_frequency": ">= 5 closed cycles per 60 trading days"
+        },
+        "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+        "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+        "observed_daily_coverage": {
+          "start": "2020-06-05",
+          "end": "2026-09-30",
+          "sessions": 1535
+        },
+        "confirmation_sources": [
+          "research/S012/materials/user_confirmation_20261004_01.json",
+          "research/S012/materials/user_confirmation_20261004_02.json"
+        ],
+        "delivery": {
+          "type": "DeliveryReference",
+          "owner": {
+            "type": "MandateOwner",
+            "strategy_id": "S012"
+          },
+          "stage": "MANDATE",
+          "revision": 2,
+          "content_sha256": "55e51380d10e8c1b7a04327083feb251fd4eca370198317dfb6ef9d7bd83c679"
+        },
+        "pending": [
+          "用户确认策略与基准初始资金、100份交易单位及基准余款和期末估值方式。",
+          "用户确认策略执行细节由研究决定的范围，或指定固定参数。",
+          "用户确认研究机制、开发池、数据及资源范围。"
+        ],
+        "next_stage": "合同完整交付获用户批准后另行进入阶段二；当前不开展研究实验。"
+      },
+      "research_state": "RESEARCHING",
+      "created_at": "2026-10-04T03:56:59+08:00",
+      "created_by": "RSCH",
+      "updated_at": "2026-10-04T04:02:06+08:00"
+    }
+  },
+  "artifacts": {},
+  "warnings": []
+}
