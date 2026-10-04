@@ -138,6 +138,7 @@ class AccountChartService:
         self._jobs: dict[str, Future[None]] = {}
         self._last_submit: dict[str, float] = {}
         self._source_refresh_pending: set[str] = set()
+        self._source_refresh_running: set[str] = set()
         self._guard = RLock()
         self._store_guard = RLock()
         self._fetch_guard = RLock()
@@ -571,11 +572,14 @@ class AccountChartService:
                 "chart_url": f"/charts/{account_id}/observation.html?v={fingerprint}",
                 "fingerprint": fingerprint,
                 "message": "正在刷新观察图" if refreshing else (
-                    observation_message if has_observation else (
+                    (observation_message if has_observation else (
                         observation_message or "等待第一条策略观察事实"
+                    )) if has_forward else (
+                        observation_message or (
+                            f"研究截止日为 {account['selection_data_cutoff']}；"
+                            "等待此后交易日的完整收盘行情"
+                        )
                     )
-                ) if has_forward else (
-                    observation_message or "等待新的完整收盘数据"
                 ),
             }
         return {
@@ -605,6 +609,7 @@ class AccountChartService:
             if job is not None and job.done():
                 self._consume_job(account, job)
                 self._jobs.pop(account_id, None)
+                self._source_refresh_running.discard(account_id)
                 job = None
             last_submit = self._last_submit.get(account_id)
             if job is None and (
@@ -615,13 +620,21 @@ class AccountChartService:
                 refresh_source = account_id in self._source_refresh_pending
                 job = self._executor.submit(self._refresh, dict(account), refresh_source)
                 self._source_refresh_pending.discard(account_id)
+                if refresh_source:
+                    self._source_refresh_running.add(account_id)
                 self._jobs[account_id] = job
                 self._last_submit[account_id] = now
                 if job.done():
                     self._consume_job(account, job)
                     self._jobs.pop(account_id, None)
+                    self._source_refresh_running.discard(account_id)
                     job = None
-            return self._status_from_cache(account, refreshing=job is not None)
+            # Background polling preserves the cached chart's semantic state;
+            # only an operator-requested refresh announces progress.
+            return self._status_from_cache(account, refreshing=job is not None and (
+                account_id in self._source_refresh_running
+                or account_id in self._source_refresh_pending
+            ))
 
     def refresh(self, account_id: str) -> dict[str, object]:
         """Refresh source data and rebuild asynchronously without changing trading state."""

@@ -452,6 +452,66 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     migrated.close()
 
 
+@pytest.mark.parametrize("has_forward", [True, False])
+def test_cached_chart_background_checks_are_quiet_and_manual_refresh_is_visible(
+    new_store, tmp_path, monkeypatch, has_forward,
+):
+    from paper_trading_engine.account_chart import AccountChartService
+
+    class QueuedExecutor:
+        def __init__(self):
+            self.jobs = []
+
+        def submit(self, fn, *args):
+            future = Future()
+            self.jobs.append(future)
+            return future
+
+    store = new_store(tmp_path / "chart-progress.db")
+    create_account(store, "s001-v2", "v2", "b")
+    executor = QueuedExecutor()
+    clock = [100.0]
+    monkeypatch.setattr("paper_trading_engine.account_chart.time.monotonic", lambda: clock[0])
+    service = AccountChartService(
+        store, market_data=SimpleNamespace(), cache_dir=tmp_path / "charts", executor=executor,
+    )
+    directory = tmp_path / "charts" / "s001-v2"
+    directory.mkdir(parents=True)
+    fingerprint = "a" * 64
+    (directory / f"{fingerprint}.html").write_text("<html>cached chart</html>", encoding="utf-8")
+    (directory / "observation.meta.json").write_text(json.dumps({
+        "fingerprint": fingerprint, "has_forward": has_forward,
+        "has_observation": has_forward,
+    }), encoding="utf-8")
+    expected = "READY" if has_forward else "EMPTY"
+
+    automatic = service.status("s001-v2")
+    assert automatic["status"] == expected
+    assert automatic["message"] is None if has_forward else (
+        "2026-09-02" in automatic["message"] and "此后交易日" in automatic["message"]
+    )
+    assert len(executor.jobs) == 1 and not executor.jobs[0].done()
+    manual = service.refresh("s001-v2")
+    assert manual["status"] == "REFRESHING" and manual["message"] == "正在刷新观察图"
+    assert manual["chart_url"] == automatic["chart_url"]
+    assert len(executor.jobs) == 1  # Manual intent waits for the background job.
+    executor.jobs[0].set_result(None)
+    assert service.status("s001-v2")["status"] == "REFRESHING"
+    assert len(executor.jobs) == 2
+    executor.jobs[1].set_result(None)
+    assert service.status("s001-v2")["status"] == expected
+
+    clock[0] += 61
+    assert service.status("s001-v2")["status"] == expected
+    executor.jobs[2].set_exception(ValueError("source unavailable"))
+    failed = service.status("s001-v2")
+    assert failed["status"] == "UNAVAILABLE" and failed["message"] == "source unavailable"
+    clock[0] += 61
+    assert service.status("s001-v2")["status"] == "UNAVAILABLE"
+    service.close()
+    store.close()
+
+
 def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
