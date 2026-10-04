@@ -354,9 +354,59 @@ def test_one_vendor_symbol_patch_handles_multiple_series_repairs() -> None:
     )
 
     assert len(records) == 1
-    assert records[0].patch_id == "TUSHARE_510500_V1"
+    assert records[0].patch_id == "TUSHARE_510500_V2"
     assert records[0].affected_dates == (volume_date, missing_date)
     assert inspect_intraday_against_daily(repaired, daily, "15m").passed
+
+
+@pytest.mark.parametrize("frequency", ["5m", "15m", "30m"])
+def test_510500_extrema_repair_uses_complete_minute_evidence(frequency: str) -> None:
+    days = ["2020-09-11", "2020-10-30", "2020-11-02"]
+    daily = _daily(days)
+    minute = pd.concat([_one_minute_day(day) for day in days], ignore_index=True)
+    minute.loc[:, ["Open", "High", "Low", "Close"]] = 6.9
+    # Inactive auction quotes cannot locate an extreme; regular bar evidence can.
+    minute.loc[minute.Date.eq(pd.Timestamp("2020-09-11 09:37:00")), "Low"] = 6.829
+    minute.loc[minute.Date.eq(pd.Timestamp("2020-10-30 09:37:00")), "High"] = 6.939
+    daily.loc[:, ["Open", "High", "Low", "Close"]] = 6.9
+    daily.loc[daily.Date.eq(days[0]), "Low"] = 6.829
+    daily.loc[daily.Date.eq(days[1]), "High"] = 6.939
+    good = rebuild_intraday_from_1m(minute, daily, frequency, dates=days)
+    # Retain valid coarse observations beyond the independently sampled extrema.
+    good.loc[good.Date.eq(pd.Timestamp(f"{days[0]} 15:00:00")), "Low"] = 6.88
+    good.loc[good.Date.eq(pd.Timestamp(f"{days[1]} 15:00:00")), "High"] = 6.91
+    bad = good.copy()
+    dates = pd.to_datetime(bad.Date).dt.strftime("%Y-%m-%d")
+    bad.loc[dates.eq(days[0]), "Low"] = bad.loc[dates.eq(days[0]), "Low"].clip(lower=6.837)
+    bad.loc[dates.eq(days[1]), "High"] = bad.loc[dates.eq(days[1]), "High"].clip(upper=6.925)
+    findings = inspect_intraday_against_daily(bad, daily, frequency).findings
+    series = SeriesKey("tushare", "etf_mins", "510500.SH", "etf.ohlcv", frequency, "none")
+    references = {"1m": minute, "daily": daily}
+
+    repaired, records = apply_repairs_once(bad, series, findings, references=references)
+
+    pd.testing.assert_frame_equal(repaired, good)
+    pd.testing.assert_frame_equal(bad.loc[dates.eq(days[2])], repaired.loc[dates.eq(days[2])])
+    assert inspect_intraday_against_daily(repaired, daily, frequency).passed
+    assert records[0].patch_version == 2
+    assert records[0].affected_dates == tuple(days[:2])
+    assert records[0].raw_content_sha256 != records[0].repaired_content_sha256
+    for invalid_references in ({"daily": daily}, {"daily": daily, "1m": minute.iloc[2:]}):
+        with pytest.raises(DataRepairError):
+            apply_repairs_once(bad, series, findings, references=invalid_references)
+    drifted = bad.copy()
+    drifted.loc[dates.eq(days[0]), "Low"] = 6.84
+    with pytest.raises(DataRepairError, match="unknown extrema signature"):
+        apply_repairs_once(drifted, series, findings, references=references)
+    # These daily extremes are absent from the 1m source: keep the failure.
+    unknown = _daily(["2020-03-17"])
+    unknown_minute = _one_minute_day("2020-03-17").iloc[1:].reset_index(drop=True)
+    unknown.loc[0, "High"] = 10.01
+    unknown_findings = inspect_intraday_against_daily(unknown_minute, unknown, "1m").findings
+    with pytest.raises(DataRepairError, match="no repair patch matched"):
+        apply_repairs_once(unknown_minute, SeriesKey("tushare", "etf_mins", "510500.SH",
+                           "etf.ohlcv", "1m", "none"), unknown_findings,
+                           references={"daily": unknown})
 
 
 def test_repair_is_not_executed_without_a_validation_finding() -> None:
@@ -443,7 +493,7 @@ def test_repair_registry_is_managed_by_vendor_and_symbol() -> None:
         (patch.vendor, patch.symbol): patch.patch_id for patch in REPAIR_PATCHES
     } == {
         ("tushare", "159326.SZ"): "TUSHARE_159326_V1",
-        ("tushare", "510500.SH"): "TUSHARE_510500_V1",
+        ("tushare", "510500.SH"): "TUSHARE_510500_V2",
         ("tushare", "512100.SH"): "TUSHARE_512100_V1",
         ("tushare", "515050.SH"): "TUSHARE_515050_V1",
         ("tushare", "518800.SH"): "TUSHARE_518800_V1",
