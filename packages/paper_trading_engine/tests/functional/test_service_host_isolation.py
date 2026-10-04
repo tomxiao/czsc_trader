@@ -5,10 +5,11 @@ import sys
 
 import pytest
 
-from paper_trading_engine.runtime_release import _installed_strategy_inventory
+from paper_trading_engine.service_config import ServiceConfig
+from paper_trading_engine.runtime_release import file_sha256
 
 
-def test_service_host_imports_without_trading_dependencies():
+def test_service_host_launches_without_trading_dependencies_or_pte_config(tmp_path):
     source = Path(__file__).resolve().parents[2] / 'src'
     script = '''
 import importlib.abc, sys
@@ -20,34 +21,50 @@ class NoTradingImports(importlib.abc.MetaPathFinder):
             raise AssertionError('service host loaded ' + fullname)
 sys.meta_path.insert(0, NoTradingImports())
 sys.path.insert(0, sys.argv[1])
-import paper_trading_engine.service_config
+from pathlib import Path
+from paper_trading_engine.service_config import ServiceConfig
 import paper_trading_engine.watchdog
 if sys.platform == 'win32':
     import paper_trading_engine.windows_service
+command = ServiceConfig(Path(sys.argv[2])).pte_command()
+assert command[1:] == ['serve-runtime', '--runtime-root', sys.argv[2]]
+assert 'paper_trading_engine.runtime_config' not in sys.modules
 '''
-    subprocess.run([sys.executable, '-I', '-B', '-c', script, str(source)], check=True)
+    root = _selection(tmp_path)
+    # WDG does not interpret even a future PTE configuration schema.
+    (root / 'shared/config/pte.json').write_text('{"schema_version":999}', encoding='utf-8')
+    subprocess.run([sys.executable, '-I', '-B', '-c', script, str(source), str(root)], check=True)
 
 
-@pytest.mark.parametrize('payload', [{'S900-v1': 'hash'}, [], {'S900-v1': 123}])
-def test_host_inventory_uses_target_interpreter_and_validates_result(tmp_path, monkeypatch, payload):
-    strategies = tmp_path / 'release' / 'strategies'
-    def run(command, **kwargs):
-        assert Path(command[0]).is_relative_to(strategies.parent / '.venv')
-        assert command[1:4] == ['-I', '-B', '-c']
-        assert command[-1] == str(strategies)
-        assert kwargs['check'] and kwargs['timeout'] == 60
-        return subprocess.CompletedProcess(command, 0, json.dumps(payload), '')
-    monkeypatch.setattr(subprocess, 'run', run)
-    if payload == {'S900-v1': 'hash'}:
-        assert _installed_strategy_inventory(strategies) == payload
+def _selection(root):
+    config = root / 'shared/config'
+    config.mkdir(parents=True)
+    release = root / 'releases/v9.8.7'
+    executable = release / '.venv' / ('Scripts/pte.exe' if sys.platform == 'win32' else 'bin/pte')
+    executable.parent.mkdir(parents=True)
+    executable.write_bytes(b'launch')
+    manifest = release / 'release-manifest.json'
+    manifest.write_text('{"schema_version":999,"future_manifest":true}', encoding='utf-8')
+    (config / 'active-release.json').write_text(json.dumps({
+        'schema_version': 1, 'release_id': 'v9.8.7', 'manifest_sha256': file_sha256(manifest),
+    }), encoding='utf-8')
+    return root
+
+
+@pytest.mark.parametrize('damage', ['hash', 'path', 'missing_executable', 'selection_schema'])
+def test_watchdog_rejects_invalid_launch_selection(tmp_path, damage):
+    root = _selection(tmp_path)
+    active_path = root / 'shared/config/active-release.json'
+    active = json.loads(active_path.read_text())
+    if damage == 'hash':
+        active['manifest_sha256'] = '0' * 64
+    elif damage == 'path':
+        active['release_id'] = '../outside'
+    elif damage == 'selection_schema':
+        active['schema_version'] = True
     else:
-        with pytest.raises(RuntimeError, match='invalid strategy inventory'):
-            _installed_strategy_inventory(strategies)
-
-
-def test_host_inventory_propagates_runtime_validation_failure(tmp_path, monkeypatch):
-    def run(command, **kwargs):
-        raise subprocess.CalledProcessError(1, command, stderr='package hash mismatch')
-    monkeypatch.setattr(subprocess, 'run', run)
-    with pytest.raises(subprocess.CalledProcessError):
-        _installed_strategy_inventory(tmp_path / 'strategies')
+        executable = Path(ServiceConfig(root).pte_command()[0])
+        executable.unlink()
+    active_path.write_text(json.dumps(active), encoding='utf-8')
+    with pytest.raises(ValueError):
+        ServiceConfig(root).pte_command()

@@ -8,7 +8,6 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
-import subprocess
 import sys
 from typing import Any, Callable
 
@@ -204,32 +203,6 @@ def active_release_path(runtime_root: Path) -> Path:
 
 def resolve_active_release(runtime_root: Path) -> RuntimeRelease:
     return _resolve_active_release(runtime_root, load_release)
-
-
-def _installed_strategy_inventory(strategies: Path) -> dict[str, str]:
-    """Run SRT validation inside the selected runtime, outside the lean host."""
-    release_root = strategies.parent
-    scripts = release_root / '.venv' / ('Scripts' if sys.platform == 'win32' else 'bin')
-    python = scripts / ('python.exe' if sys.platform == 'win32' else 'python')
-    completed = subprocess.run(
-        [str(python), '-I', '-B', '-c',
-         'import json,sys; from pathlib import Path; '
-         'from strategy_runtime import deployment_inventory; '
-         'print(json.dumps(deployment_inventory(Path(sys.argv[1]))))', str(strategies)],
-        cwd=release_root, capture_output=True, text=True, timeout=60, check=True,
-    )
-    result = json.loads(completed.stdout)
-    if not isinstance(result, dict) or not all(
-        isinstance(key, str) and isinstance(value, str) for key, value in result.items()
-    ):
-        raise RuntimeError('installed runtime returned invalid strategy inventory')
-    return result
-
-
-def _resolve_active_release_for_host(runtime_root: Path) -> RuntimeRelease:
-    return _resolve_active_release(runtime_root, lambda root, release_id: _load_release(
-        root, release_id, _installed_strategy_inventory,
-    ))
 
 
 def _resolve_active_release(

@@ -20,6 +20,7 @@ import win32service
 import win32serviceutil
 
 from .service_config import ServiceConfig
+from .host_manifest import validate_watchdog_host_manifest
 from .runtime_release import (
     editable_installations,
     file_sha256,
@@ -170,6 +171,7 @@ def _validate_service_host(runtime_root: Path) -> Path:
         raise RuntimeError(
             f"PTE watchdog service host contains runtime dependencies: {heavyweight}"
         )
+    validate_watchdog_host_manifest(actual.parent)
     return actual
 
 
@@ -183,12 +185,12 @@ def main(
             return 5
         parser = argparse.ArgumentParser(prog="pte-watchdog install-config")
         parser.add_argument("--runtime-root", required=True, type=Path)
-        parser.add_argument("--data-space", type=Path, default=Path("market"))
+        parser.add_argument("--health-url", default="http://127.0.0.1:8080/api/health")
         options = parser.parse_args(arguments[1:])
         runtime_root = options.runtime_root.resolve()
         _validate_service_host(runtime_root)
-        config = ServiceConfig(runtime_root=runtime_root, data_space=options.data_space)
-        config.active_release()
+        config = ServiceConfig(runtime_root=runtime_root, health_url=options.health_url)
+        config.pte_command()
         prepare_service_host(Path(servicemanager.__file__), Path(sys.exec_prefix))
         prepare_service_host(Path(servicemanager.__file__), Path(sys.base_prefix))
         virtual_host = find_pythonservice_executable(Path(sys.exec_prefix))

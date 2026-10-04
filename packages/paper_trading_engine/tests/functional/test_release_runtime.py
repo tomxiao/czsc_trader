@@ -18,9 +18,12 @@ from paper_trading_engine.release_cli import (
     build_release,
     load_built_release,
     publish_release,
+    publish_watchdog_host,
+    main,
     verify_release_configuration,
 )
 from paper_trading_engine.runtime_release import load_release
+from paper_trading_engine.host_manifest import validate_watchdog_host_manifest
 from czsc_trader.application.context import RepositoryContext
 
 
@@ -232,6 +235,7 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
     assert "validate_account_binding" in calls[0][2]
     assert "prepare_account_data" not in calls[0][2]
     assert "current.json" not in calls[0][2]
+    assert "PteRuntimeConfig.load(config/'pte.json')" in calls[0][2]
     assert calls[0][-1] == str(runtime / "shared" / "config")
 
 
@@ -296,14 +300,10 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
     assert (release.release_root / "environment.lock").read_text(encoding="utf-8") == (
         "paper-trading-engine==0.1.0\n"
     )
-    assert (
-        runtime / "host" / "releases" / "v0.4.1" / ".venv" / "Scripts"
-        / "pte-watchdog.exe"
-    ).is_file()
+    assert not (runtime / "host").exists()
     venv_targets = [Path(command[2]) for command in runner.commands if command[1] == "venv"]
     assert venv_targets == [
         runtime / "releases" / "v0.4.1" / ".venv",
-        runtime / "host" / "releases" / "v0.4.1" / ".venv",
     ]
     installs = [command for command in runner.commands if command[1:3] == ["pip", "install"]]
     assert all(
@@ -320,7 +320,7 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
     assert all("vectorbt" not in " ".join(command).lower() for command in installs)
 
 
-def test_publish_rejects_tampered_build_and_existing_service_host(tmp_path, pte_frozen):
+def test_publish_rejects_tampered_build_and_ignores_existing_service_host(tmp_path, pte_frozen):
     repo = (tmp_path / "repo").resolve()
     build_root = (repo / ".build" / "pte").resolve()
     runtime = (tmp_path / "pte-runtime").resolve()
@@ -349,14 +349,116 @@ def test_publish_rejects_tampered_build_and_existing_service_host(tmp_path, pte_
             runner=runner,
         )
     artifact.write_bytes(original)
-    (runtime / "host" / "releases" / "v0.4.1").mkdir(parents=True)
-    with pytest.raises(RuntimeError, match="service host already exists"):
-        publish_release(
-            build_root=build_root,
-            runtime_root=runtime,
-            release_id="v0.4.1",
-            source_python=Path("C:/Python/python.exe"),
-            uv_executable=Path("C:/uv/uv.exe"),
-            runner=runner,
-        )
-    assert not (runtime / "releases" / "v0.4.1").exists()
+    existing_host = runtime / "host" / "releases" / "v0.4.1"
+    existing_host.mkdir(parents=True)
+    marker = existing_host / "untouched.txt"
+    marker.write_bytes(b"existing host")
+    publish_release(
+        build_root=build_root,
+        runtime_root=runtime,
+        release_id="v0.4.1",
+        source_python=Path("C:/Python/python.exe"),
+        uv_executable=Path("C:/uv/uv.exe"),
+        runner=runner,
+    )
+    assert (runtime / "releases" / "v0.4.1").exists()
+    assert list(existing_host.iterdir()) == [marker]
+    assert marker.read_bytes() == b"existing host"
+
+
+def test_publish_watchdog_host_has_independent_identity_and_rejects_tampering(
+    tmp_path, pte_frozen,
+):
+    repo = (tmp_path / "repo").resolve()
+    build_root = repo / ".build" / "pte"
+    runtime = tmp_path / "runtime"
+    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
+    runner = FakeReleaseRunner()
+    fetch_sdist, pinned_runner = _source_build_fakes(runner)
+    build_release(
+        repo_root=repo, build_root=build_root, release_id="v0.4.1",
+        uv_executable=Path("uv"), runner=pinned_runner,
+        source_distribution_fetcher=fetch_sdist,
+    )
+    kwargs = dict(
+        build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
+        host_version="v1.0.0", uv_executable=Path("uv"), runner=runner,
+    )
+    result = publish_watchdog_host(**kwargs)
+    host = runtime / "host" / "releases" / "v1.0.0"
+    assert result["host_version"] == "v1.0.0"
+    assert result["source_release_id"] == "v0.4.1"
+    assert result["active"] is False
+    assert not (runtime / "releases").exists()
+    assert not (runtime / "shared").exists()
+    assert not (runtime / "host" / "releases" / "v0.4.1").exists()
+    manifest = validate_watchdog_host_manifest(host)
+    assert manifest["kind"] == "wdg-host"
+    assert manifest["host_version"] != manifest["source_release_id"]
+    installs = [c for c in runner.commands if c[1:3] == ["pip", "install"]]
+    assert any("--no-deps" in c and "paper-trading-engine==0.1.0" in c for c in installs)
+    assert not any("czsc-strategy-runtime" in " ".join(c) for c in installs)
+    with pytest.raises(RuntimeError, match="host already exists"):
+        publish_watchdog_host(**kwargs)
+
+    def broken_host_runner(command, **options):
+        if command[1:4] == ["-I", "-B", "-c"]:
+            return subprocess.CompletedProcess(
+                command, 1, stdout="", stderr="host import failure",
+            )
+        return runner(command, **options)
+
+    with pytest.raises(RuntimeError, match="host import failure"):
+        publish_watchdog_host(**{
+            **kwargs, "host_version": "v2.0.0", "runner": broken_host_runner,
+        })
+    assert not (runtime / "host" / "releases" / "v2.0.0").exists()
+    artifact = next((host / "artifacts").glob("*.whl"))
+    original = artifact.read_bytes()
+    artifact.write_bytes(b"tampered")
+    with pytest.raises(RuntimeError, match="artifact differs"):
+        validate_watchdog_host_manifest(host)
+    artifact.write_bytes(original)
+    source = host / "build-manifest.json"
+    original_source = source.read_bytes()
+    source.write_text("{}", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="source build differs"):
+        validate_watchdog_host_manifest(host)
+    source.write_bytes(original_source)
+    path = host / "host-manifest.json"
+    manifest["schema_version"] = True
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="identity differ"):
+        validate_watchdog_host_manifest(host)
+    manifest["schema_version"] = 1
+    manifest["host_version"] = "v9.0.0"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="identity differ"):
+        validate_watchdog_host_manifest(host)
+    with pytest.raises(RuntimeError, match="invalid WDG host version"):
+        publish_watchdog_host(**{**kwargs, "host_version": "../v1.0.0"})
+    source_artifact = next((build_root / "releases" / "v0.4.1" / "artifacts").glob("*.whl"))
+    source_artifact.write_bytes(b"tampered")
+    with pytest.raises(RuntimeError, match="artifact differs"):
+        publish_watchdog_host(**{**kwargs, "host_version": "v1.1.0"})
+    assert not (runtime / "host" / "releases" / "v1.1.0").exists()
+
+
+def test_publish_host_cli_requires_explicit_version_and_dispatches(tmp_path, monkeypatch):
+    calls = []
+
+    def publish(**kwargs):
+        calls.append(kwargs)
+        return {"host_version": kwargs["host_version"]}
+
+    monkeypatch.setattr("paper_trading_engine.release_cli.publish_watchdog_host", publish)
+    argv = [
+        "publish-host", "--build-root", str(tmp_path / "build"),
+        "--runtime-root", str(tmp_path / "runtime"), "--release", "v0.6.0",
+    ]
+    with pytest.raises(SystemExit):
+        main(argv)
+    assert not calls
+    assert main([*argv, "--host-version", "v1.0.0"]) == 0
+    assert calls[0]["host_version"] == "v1.0.0"
+    assert calls[0]["release_id"] == "v0.6.0"

@@ -111,9 +111,6 @@ def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_pat
 
 
 def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_frozen, tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        'paper_trading_engine.runtime_release._installed_strategy_inventory', deployment_inventory,
-    )
     audit_store = new_store(tmp_path / "lifecycle.db")
     _record_service_lifecycle(
         AuditRecorder(audit_store), "SERVICE_STARTED", "instance-1", port=8080,
@@ -154,27 +151,22 @@ def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_froze
     config = ServiceConfig(runtime_root=runtime_root)
     path = tmp_path / "service.json"
     config.save(path)
-    assert ServiceConfig.load(path).serve_arguments() == [
-        "serve", "--repo-root", str(release),
-        "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
-        "--data-dir", str(runtime_root / "shared" / "data"),
-        "--data-space", "market",
-        "--config-root", str(runtime_root / "shared" / "config"),
-        "--release-manifest", str(release / "release-manifest.json"),
-        "--host", "127.0.0.1", "--port", "8080",
+    assert ServiceConfig.load(path).pte_command() == [
+        str(release / ".venv" / "Scripts" / "pte.exe"),
+        "serve-runtime", "--runtime-root", str(runtime_root),
     ]
     assert set(json.loads(path.read_text()).keys()) == {
-        "schema_version", "runtime_root", "host", "port", "data_space",
+        "schema_version", "runtime_root", "health_url",
     }
     assert config.health_url == "http://127.0.0.1:8080/api/health"
     with pytest.raises(ValueError, match="localhost"):
-        ServiceConfig(runtime_root=runtime_root, host="0.0.0.0")
+        ServiceConfig(runtime_root=runtime_root, health_url="http://0.0.0.0:8080/api/health")
     legacy = tmp_path / "legacy-service.json"
     legacy.write_text(
         json.dumps({"schema_version": 1, "repo_root": str(tmp_path.resolve())}),
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="repository-backed service config"):
+    with pytest.raises(ValueError, match="watchdog configuration fields"):
         ServiceConfig.load(legacy)
 
     command = service_failure_command()
@@ -282,9 +274,6 @@ def test_pythonservice_executable_uses_pywin32_venv_layout(tmp_path):
 
 
 def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        'paper_trading_engine.runtime_release._installed_strategy_inventory', deployment_inventory,
-    )
     runtime_root = (tmp_path / "runtime").resolve()
     (runtime_root / "shared" / "config").mkdir(parents=True)
     (runtime_root / "shared" / "config" / ".env").write_text(
@@ -295,16 +284,11 @@ def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_pa
     activate_release(runtime_root, "v0.4.1")
     config = ServiceConfig(runtime_root=runtime_root)
     assert config.pte_command()[0] == str(first / ".venv" / "Scripts" / "pte.exe")
-    assert config.serve_arguments() == [
-        "serve",
-        "--repo-root", str(first),
-        "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
-        "--data-dir", str(runtime_root / "shared" / "data"),
-        "--data-space", "market",
-        "--config-root", str(runtime_root / "shared" / "config"),
-        "--release-manifest", str(first / "release-manifest.json"),
-        "--host", "127.0.0.1", "--port", "8080",
-    ]
+    assert config.pte_command()[1:] == ["serve-runtime", "--runtime-root", str(runtime_root)]
+    config_path = config.save()
+    original_config = config_path.read_bytes()
+    pte_settings = runtime_root / "shared/config/pte.json"
+    pte_settings.write_text('{"schema_version":1,"data_space":"market"}', encoding="utf-8")
 
     launches = []
     processes = [Process(0), Process()]
@@ -318,13 +302,16 @@ def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_pa
     )
     watchdog.start_child()
     activate_release(runtime_root, "v0.4.2")
+    # A target-specific future config does not require any WDG configuration change.
+    pte_settings.write_text('{"schema_version":999,"new_field":true}', encoding="utf-8")
     watchdog.check_once()
     assert launches[0][0][0] == str(first / ".venv" / "Scripts" / "pte.exe")
     assert launches[1][0][0] == str(second / ".venv" / "Scripts" / "pte.exe")
     assert launches[1][1] == runtime_root
 
     rollback_release(runtime_root)
-    assert config.active_release().release_id == "v0.4.1"
+    assert config.pte_command()[0] == str(first / ".venv" / "Scripts" / "pte.exe")
+    assert config_path.read_bytes() == original_config
     (first / "strategies" / "registry.json").write_text("{}", encoding="utf-8")
     with pytest.raises(RuntimeError, match="strategy snapshot"):
         load_release(runtime_root, "v0.4.1")

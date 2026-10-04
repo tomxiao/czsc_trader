@@ -9,22 +9,21 @@ import pytest
 from dataflows import DataSpace
 from paper_trading_engine import data_space
 from paper_trading_engine.cli import build_parser
-from paper_trading_engine.service_config import ServiceConfig
+from paper_trading_engine.runtime_config import PteRuntimeConfig
 from paper_trading_engine.errors import AdviceClientError
 from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
-def test_service_data_space_round_trips_as_environment_relative_path(tmp_path):
-    config = ServiceConfig(runtime_root=tmp_path, data_space=Path("markets/hk"))
-    path = config.save(tmp_path / "service.json")
-    assert ServiceConfig.load(path) == config
-    assert config.shared_root == tmp_path / "shared"
+def test_runtime_data_space_round_trips_as_environment_relative_path(tmp_path):
+    config = PteRuntimeConfig(data_space=Path("markets/hk"))
+    path = config.save(tmp_path / "shared/config/pte.json")
+    assert PteRuntimeConfig.load(path) == config
 
 
 @pytest.mark.parametrize("value", [Path("."), Path("../other"), Path("C:/market")])
-def test_service_rejects_nonrelative_or_escaping_data_space(tmp_path, value):
+def test_runtime_rejects_nonrelative_or_escaping_data_space(value):
     with pytest.raises(ValueError):
-        ServiceConfig(runtime_root=tmp_path, data_space=value)
+        PteRuntimeConfig(data_space=value)
 
 
 def test_cli_converts_environment_space_to_typed_contract(tmp_path):
@@ -34,12 +33,12 @@ def test_cli_converts_environment_space_to_typed_contract(tmp_path):
     assert args.data_space == DataSpace(Path("markets/cn"))
 
 
-def test_old_service_config_requires_explicit_reconfiguration(tmp_path):
-    path = tmp_path / "service.json"
+def test_old_service_config_cannot_be_used_as_pte_runtime_config(tmp_path):
+    path = tmp_path / "pte.json"
     path.write_text(json.dumps({"schema_version": 2, "runtime_root": str(tmp_path)}),
                     encoding="utf-8")
-    with pytest.raises(ValueError, match="unsupported service config schema"):
-        ServiceConfig.load(path)
+    with pytest.raises(ValueError, match="unsupported PTE runtime config schema"):
+        PteRuntimeConfig.load(path)
 
 
 def test_advice_data_access_requires_host_injection(tmp_path):

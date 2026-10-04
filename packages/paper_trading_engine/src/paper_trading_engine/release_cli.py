@@ -25,6 +25,7 @@ from strategy_runtime import (
     deployment_inventory,
 )
 
+from .host_manifest import HOST_MANIFEST_NAME, validate_watchdog_host_manifest
 from .runtime_release import (
     MANIFEST_NAME,
     RELEASE_ID_PATTERN,
@@ -510,7 +511,7 @@ def _write_runtime_root(release_root: Path) -> dict[str, str]:
 
 def _initialize_service_host(
     runtime_root: Path,
-    release_id: str,
+    host_version: str,
     artifacts: Path,
     cache_dir: Path,
     uv_executable: Path,
@@ -518,7 +519,7 @@ def _initialize_service_host(
     repo_root: Path,
     runner: Runner,
 ) -> None:
-    host = runtime_root / "host" / "releases" / release_id
+    host = _watchdog_host_root(runtime_root, host_version)
     if host.exists():
         raise RuntimeError(f"PTE service host already exists: {host}")
     host.parent.mkdir(parents=True, exist_ok=True)
@@ -565,6 +566,80 @@ def _verify_service_host(host: Path) -> None:
     heavyweight = service_host_runtime_dependencies(site_packages)
     if heavyweight:
         raise RuntimeError(f"PTE service host contains runtime dependencies: {heavyweight}")
+
+
+def _watchdog_host_root(runtime_root: Path, host_version: str) -> Path:
+    host = (runtime_root / "host" / "releases" / host_version).resolve()
+    if not host.is_relative_to(runtime_root.resolve()):
+        raise RuntimeError("WDG host path escapes runtime root")
+    return host
+
+
+def publish_watchdog_host(
+    *,
+    build_root: Path,
+    runtime_root: Path,
+    release_id: str,
+    host_version: str,
+    source_python: Path = Path(sys.executable),
+    uv_executable: Path | None = None,
+    runner: Runner = subprocess.run,
+) -> dict[str, object]:
+    """Publish an independently versioned WDG host from a verified build bundle."""
+    if not isinstance(host_version, str) or not RELEASE_ID_PATTERN.fullmatch(host_version):
+        raise RuntimeError(f"invalid WDG host version: {host_version}")
+    build_root = build_root.resolve()
+    runtime_root = runtime_root.resolve()
+    built = load_built_release(build_root, release_id)
+    host = _watchdog_host_root(runtime_root, host_version)
+    if host.exists():
+        raise RuntimeError(f"WDG host already exists: {host}")
+    wheel = _wheel_path(built.release_root / "artifacts", "paper-trading-engine")
+    if uv_executable is None:
+        discovered_uv = shutil.which("uv")
+        if discovered_uv is None:
+            raise RuntimeError("WDG publication requires uv on PATH")
+        uv_executable = Path(discovered_uv)
+    uv_version = _run(
+        [str(uv_executable), "--version"], cwd=built.release_root, runner=runner,
+    ).stdout.strip()
+    if not uv_version.startswith("uv "):
+        raise RuntimeError(f"WDG publication found an invalid uv executable: {uv_version}")
+    _initialize_service_host(
+        runtime_root, host_version, built.release_root / "artifacts",
+        build_root.parent.parent / ".tmp" / "pte-release" / "uv",
+        uv_executable, source_python, built.release_root, runner,
+    )
+    try:
+        (host / "artifacts").mkdir()
+        shutil.copy2(wheel, host / "artifacts" / wheel.name)
+        shutil.copy2(built.manifest_path, host / BUILD_MANIFEST_NAME)
+        manifest = {
+            "schema_version": 1,
+            "kind": "wdg-host",
+            "host_version": host_version,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "source_release_id": release_id,
+            "source_git_commit": built.manifest["git_commit"],
+            "source_build_sha256": file_sha256(built.manifest_path),
+            "artifacts": {wheel.name: built.manifest["artifacts"][wheel.name]},
+        }
+        (host / HOST_MANIFEST_NAME).write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8", newline="\n",
+        )
+        validate_watchdog_host_manifest(host)
+    except Exception:
+        shutil.rmtree(host)
+        raise
+    return {
+        "host_version": host_version,
+        "host_root": str(host),
+        "manifest_sha256": file_sha256(host / HOST_MANIFEST_NAME),
+        "source_release_id": release_id,
+        "builder": uv_version,
+        "active": False,
+    }
 
 
 def build_release(
@@ -733,9 +808,6 @@ def publish_release(
     destination = runtime_root / "releases" / release_id
     if destination.exists():
         raise RuntimeError(f"PTE release already exists: {destination}")
-    host = runtime_root / "host" / "releases" / release_id
-    if host.exists():
-        raise RuntimeError(f"PTE service host already exists: {host}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     staging = destination.parent / f".{release_id}-{uuid4().hex}"
     staging.mkdir()
@@ -795,16 +867,6 @@ def publish_release(
         try:
             for directory in ("config", "data", "logs", "state"):
                 (runtime_root / "shared" / directory).mkdir(parents=True, exist_ok=True)
-            _initialize_service_host(
-                runtime_root,
-                release_id,
-                release.release_root / "artifacts",
-                uv_cache,
-                uv_executable,
-                source_python,
-                built.release_root,
-                runner,
-            )
         except Exception:
             shutil.rmtree(destination)
             raise
@@ -902,8 +964,10 @@ def verify_release_configuration(
         "import json,sqlite3,sys\n"
         "from pathlib import Path\n"
         "from dotenv import dotenv_values\n"
+        "from paper_trading_engine.runtime_config import PteRuntimeConfig\n"
         "from paper_trading_engine.srt_advice_client import SrtAdviceClient\n"
         "root=Path(sys.argv[1]); data=Path(sys.argv[2]); database=Path(sys.argv[3]); config=Path(sys.argv[4])\n"
+        "PteRuntimeConfig.load(config/'pte.json')\n"
         "def require(condition,message):\n"
         "    if not condition: raise RuntimeError(message)\n"
         "require(database.is_file(),'PTE release verification found no runtime database')\n"
@@ -1055,6 +1119,13 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--release", required=True)
     publish.add_argument("--python", type=Path, default=Path(sys.executable))
     publish.add_argument("--uv", type=Path)
+    publish_host = actions.add_parser("publish-host")
+    publish_host.add_argument("--build-root", required=True, type=Path)
+    publish_host.add_argument("--runtime-root", required=True, type=Path)
+    publish_host.add_argument("--release", required=True)
+    publish_host.add_argument("--host-version", required=True)
+    publish_host.add_argument("--python", type=Path, default=Path(sys.executable))
+    publish_host.add_argument("--uv", type=Path)
     for action in ("activate", "verify", "deploy", "rollback", "status"):
         leaf = actions.add_parser(action)
         leaf.add_argument("--runtime-root", required=True, type=Path)
@@ -1083,6 +1154,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 build_root=args.build_root,
                 runtime_root=args.runtime_root,
                 release_id=args.release,
+                source_python=args.python,
+                uv_executable=args.uv,
+            )
+        elif args.action == "publish-host":
+            result = publish_watchdog_host(
+                build_root=args.build_root,
+                runtime_root=args.runtime_root,
+                release_id=args.release,
+                host_version=args.host_version,
                 source_python=args.python,
                 uv_executable=args.uv,
             )

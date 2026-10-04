@@ -40,7 +40,8 @@ from .web import create_server
 from .coordinator import PteCoordinator, ReconnectableExecution
 from .runtime_lock import RuntimeDatabaseLock
 from .trading_window import shanghai_now
-from .runtime_release import load_manifest_identity
+from .runtime_config import PteRuntimeConfig
+from .runtime_release import load_manifest_identity, resolve_active_release
 
 
 class PortUnavailableError(RuntimeError):
@@ -62,6 +63,8 @@ def probe_port(host: str, port: int) -> None:
 class PteParser(argparse.ArgumentParser):
     def parse_args(self, args=None, namespace=None):
         result = super().parse_args(args, namespace)
+        if result.action == "serve-runtime":
+            return _parse_runtime_arguments(result.runtime_root)
         result.repo_root = result.repo_root.resolve()
         result.config_root = (
             result.config_root.resolve() if result.config_root else result.repo_root
@@ -98,6 +101,8 @@ def _common(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = PteParser(prog="pte")
     actions = parser.add_subparsers(dest="action", required=True)
+    runtime = actions.add_parser("serve-runtime")
+    runtime.add_argument("--runtime-root", required=True, type=Path)
     once = actions.add_parser("once")
     _common(once)
     serve = actions.add_parser("serve")
@@ -162,6 +167,29 @@ def build_parser() -> argparse.ArgumentParser:
     retire.add_argument("--actor", required=True)
     retire.add_argument("--reason", required=True)
     return parser
+
+
+def _parse_runtime_arguments(runtime_root: Path) -> argparse.Namespace:
+    """Resolve the stable host command using this PTE version's own contract."""
+    if not runtime_root.is_absolute():
+        raise ValueError("PTE runtime root must be absolute")
+    runtime_root = runtime_root.resolve()
+    release = resolve_active_release(runtime_root)
+    environment = (release.release_root / ".venv").resolve()
+    if (Path(sys.prefix).resolve() != environment
+            or not Path(__file__).resolve().is_relative_to(environment)):
+        raise RuntimeError("running PTE module does not belong to the active release")
+    shared = runtime_root / "shared"
+    config = PteRuntimeConfig.load(shared / "config" / "pte.json")
+    return build_parser().parse_args([
+        "serve", "--repo-root", str(release.release_root),
+        "--database", str(shared / "state" / "runtime.db"),
+        "--data-dir", str(shared / "data"),
+        "--data-space", config.data_space.as_posix(),
+        "--config-root", str(shared / "config"),
+        "--release-manifest", str(release.manifest_path),
+        "--host", config.host, "--port", str(config.port),
+    ])
 
 
 def build_engine(args: argparse.Namespace):
