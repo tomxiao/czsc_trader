@@ -110,6 +110,32 @@ def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_pat
         load_release(runtime_root, "v0.4.1")
 
 
+def test_backup_runtime_database_retains_latest_by_default(new_store, tmp_path):
+    source_path = tmp_path / "runtime.db"
+    store = new_store(source_path)
+    _record_service_lifecycle(
+        AuditRecorder(store), "SERVICE_STARTED", "instance-1", port=8080,
+    )
+    first = backup_runtime_database(source_path, retention=2)
+    second = backup_runtime_database(source_path, retention=2)
+    assert first is not None and second is not None
+    assert set((tmp_path / "backups").glob("*.db")) == {first, second}
+
+    _record_service_lifecycle(
+        AuditRecorder(store), "SERVICE_STARTED", "instance-2", port=8080,
+    )
+    latest = backup_runtime_database(source_path)
+    assert latest is not None
+    assert list((tmp_path / "backups").glob("*.db")) == [latest]
+    reopened = PaperStore(latest)
+    try:
+        assert reopened.recent_events(2) == store.recent_events(2)
+        assert len(reopened.recent_events(2)) == 2
+    finally:
+        reopened.close()
+        store.close()
+
+
 def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_frozen, tmp_path, monkeypatch):
     audit_store = new_store(tmp_path / "lifecycle.db")
     _record_service_lifecycle(

@@ -138,8 +138,8 @@ def _validate_database_schema(connection: sqlite3.Connection) -> None:
         )
 
 
-def backup_runtime_database(path: Path, *, retention: int = 3) -> Path | None:
-    """Create a consistent pre-start SQLite backup and retain a small rolling set."""
+def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
+    """Create a consistent pre-start SQLite backup; retain only the latest by default."""
     source_path = Path(path)
     if not source_path.is_file():
         return None
