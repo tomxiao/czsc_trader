@@ -10,6 +10,7 @@ from .tushare_512100 import PATCH as TUSHARE_512100
 from .tushare_515050 import PATCH as TUSHARE_515050
 from .tushare_518800 import PATCH as TUSHARE_518800
 from .tushare_518880 import PATCH as TUSHARE_518880
+from .tushare_518850 import PATCH as TUSHARE_518850
 from .tushare_588080 import PATCH as TUSHARE_588080
 
 
@@ -20,6 +21,7 @@ REPAIR_PATCHES: tuple[RepairPatch, ...] = (
     TUSHARE_515050,
     TUSHARE_518800,
     TUSHARE_518880,
+    TUSHARE_518850,
     TUSHARE_588080,
 )
 

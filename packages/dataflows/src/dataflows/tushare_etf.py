@@ -18,7 +18,8 @@ from .bar_utils import (
     standardize_vendor_ohlcv,
     with_scheduled_hfq_availability,
 )
-from .errors import EmptyDataError
+from .contract import ETF_INTRADAY_OBSERVATION_RULE
+from .errors import DataContractError, EmptyDataError
 from .formatting import format_dataframe_report
 from .history_repair import (
     SeriesKey,
@@ -401,6 +402,50 @@ def fetch_etf_ohlcv(
     if repair_records:
         metadata["repair_records"] = repair_records
     return dataframe.copy(), metadata
+
+
+def fetch_etf_unadjusted_intraday(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    period: str,
+    *,
+    env_file: str | Path | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Raw executable bars, with explicit assumed market observation timing.
+
+    AvailableDate models completed market bars. It does not claim that the
+    historical Tushare API published each bar in real time. Daily reconciliation
+    remains mandatory; unresolved source defects prevent publication.
+    """
+    if period not in INTRADAY_PERIOD_MINUTES:
+        raise DataContractError("unadjusted ETF intraday requires 1m/5m/15m/30m")
+    dataframe, market, ts_code = _fetch_tushare_etf_ohlcv(
+        symbol, start_date, end_date, period=period, env_file=env_file,
+    )
+    if dataframe.empty:
+        raise EmptyDataError(f"Tushare returned no data for {symbol} {period}")
+    validation = inspect_ohlcv_frame(dataframe, period, require_complete_days=True)
+    validation.require_pass()
+    metadata: dict[str, Any] = {
+        "vendor": "tushare", "market": market, "vendor_symbol": ts_code,
+        "period": period, "asset_type": "etf", "adjustment": "none",
+        "source_calendar": "SSE" if ts_code.endswith(".SH") else "SZSE",
+        "source_time_field": "Date", "availability_time_field": "AvailableDate",
+        "available_at": ETF_INTRADAY_OBSERVATION_RULE,
+        "availability_basis": "MARKET_BAR_CLOSE_ASSUMPTION",
+        "source_publication_timestamp_verified": False,
+        "historical_revision_history_verified": False,
+        "live_feed_latency_verified": False,
+        "vendor_history_update_window": "post-session 17:00-21:00 Asia/Shanghai",
+        "validation": validation.to_dict(),
+    }
+    for name in ("reference_daily_sha256", "repair_records"):
+        if name in dataframe.attrs:
+            metadata[name] = dataframe.attrs[name]
+    dataframe = dataframe.copy()
+    dataframe["AvailableDate"] = pd.to_datetime(dataframe["Date"])
+    return dataframe, metadata
 
 
 def fetch_etf_unadjusted_daily(

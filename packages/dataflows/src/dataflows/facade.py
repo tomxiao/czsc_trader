@@ -16,6 +16,7 @@ import numpy as np
 from .cache import CacheError, LocalCacheConfig, fetch_cached
 
 from .contract import (
+    ETF_INTRADAY_OBSERVATION_RULE,
     FXCM_AVAILABILITY_RULE,
     DataError,
     DataIdentity,
@@ -125,6 +126,7 @@ def _lineage_metadata(
 
 
 _OHLCV_DATASETS = {
+    Dataset.ETF_UNADJUSTED_INTRADAY.value,
     Dataset.ETF_OHLCV.value,
     Dataset.ETF_UNADJUSTED_DAILY.value,
     Dataset.STOCK_OHLCV.value,
@@ -370,6 +372,7 @@ def _validate_provider_output(
             dataset
             in {
                 Dataset.ETF_UNADJUSTED_DAILY.value,
+                Dataset.ETF_UNADJUSTED_INTRADAY.value,
                 Dataset.STOCK_UNADJUSTED_DAILY.value,
             }
             and metadata.get("adjustment") != "none"
@@ -378,6 +381,21 @@ def _validate_provider_output(
                 "unadjusted dataset provider did not declare adjustment=none",
                 dataset=dataset,
             )
+        if dataset == Dataset.ETF_UNADJUSTED_INTRADAY.value:
+            available = pd.to_datetime(dataframe.get("AvailableDate"), errors="coerce")
+            source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+            if (
+                frequency not in {"1m", "5m", "15m", "30m"}
+                or metadata.get("availability_time_field") != "AvailableDate"
+                or metadata.get("available_at") != ETF_INTRADAY_OBSERVATION_RULE
+                or metadata.get("availability_basis") != "MARKET_BAR_CLOSE_ASSUMPTION"
+                or metadata.get("source_publication_timestamp_verified") is not False
+                or metadata.get("historical_revision_history_verified") is not False
+                or metadata.get("live_feed_latency_verified") is not False
+                or not isinstance(available, pd.Series)
+                or not available.equals(source_dates)
+            ):
+                raise DataContractError("unadjusted ETF intraday observation contract differs")
         if metadata.get("vendor") == "tushare" and dataset in {
             Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value,
         } and (dataset == Dataset.ETF_OHLCV.value or metadata.get("market") == MARKET_A_SHARE):
@@ -1031,6 +1049,14 @@ def _default_providers() -> dict[str, Provider]:
             env_file=_env_file(request),
         )
 
+    def etf_unadjusted_intraday(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        from .tushare_etf import fetch_etf_unadjusted_intraday
+
+        return fetch_etf_unadjusted_intraday(
+            _required_symbol(request), request.start, request.end,
+            request.frequency, env_file=_env_file(request),
+        )
+
     def etf_creation_redemption_basket(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         if request.frequency != "daily":
             raise DataContractError("ETF creation/redemption basket requires daily frequency")
@@ -1254,6 +1280,7 @@ def _default_providers() -> dict[str, Provider]:
     return {
         Dataset.ETF_OHLCV.value: etf_ohlcv,
         Dataset.ETF_UNADJUSTED_DAILY.value: etf_unadjusted,
+        Dataset.ETF_UNADJUSTED_INTRADAY.value: etf_unadjusted_intraday,
         Dataset.ETF_CREATION_REDEMPTION_BASKET.value: etf_creation_redemption_basket,
         Dataset.STOCK_OHLCV.value: stock_ohlcv,
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,

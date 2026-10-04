@@ -1,0 +1,85 @@
+{
+  "research_state": "RESEARCHING",
+  "research_intent": {
+    "stage": "COMPONENTS",
+    "status": "BLOCKED",
+    "symbol": "518850.SH",
+    "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+    "confirmed_targets": {
+      "net_annual_return": ">= BuyHold * 1.5",
+      "drawdown_magnitude": "< BuyHold",
+      "full_sample_frequency": ">= 5 closed cycles per 60 trading days"
+    },
+    "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+    "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+    "observed_daily_coverage": {
+      "start": "2020-06-05",
+      "end": "2026-09-30",
+      "sessions": 1535
+    },
+    "confirmation_sources": [
+      "research/S012/materials/user_confirmation_20261004_01.json",
+      "research/S012/materials/user_confirmation_20261004_02.json",
+      "research/S012/materials/user_confirmation_20261004_03.json",
+      "research/S012/materials/stage2_authorization_20261004.json",
+      "research/S012/materials/opportunity_authorization_20261004.json",
+      "research/S012/materials/intraday_authorization_20261004.json",
+      "research/S012/materials/intraday_scope_confirmation_20261004.json"
+    ],
+    "delivery": {
+      "type": "DeliveryReference",
+      "owner": {
+        "type": "ExperimentOwner",
+        "strategy_id": "S012",
+        "experiment_id": "EX012_20261004"
+      },
+      "stage": "COMPONENTS",
+      "revision": 1,
+      "content_sha256": "68b039e183d50562596cd40ec256ef96c42b8e2fc6accdc86043d4538b88948f"
+    },
+    "pending": [
+      "补充目标52日可信分钟/逐笔证据并修复，复验全历史后才能检验收益。",
+      "期货分钟权限缺失；新增数据来源或依赖需用户授权。"
+    ],
+    "next_stage": "继续阶段二全历史数据核验，未批准阶段三。",
+    "confirmed_capital_and_benchmark": {
+      "initial_capital_cny": 100000,
+      "strategy_lot_size": 100,
+      "benchmark": {
+        "type": "NextOpenBuyHold",
+        "lot_size": 100
+      },
+      "buy_fee_rate": 0.001,
+      "cash_remainder": "保留",
+      "terminal_valuation": "持仓按市值评价"
+    },
+    "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+    "confirmed_data_and_resources": "既有获授权DFLS/Tushare数据、公开文献及现有研究依赖；已查看历史属于开发池；本机半核并发预算；新增外部数据源或依赖另行申请。",
+    "research_summary": "全历史分钟数据门未通过：7日成交量已修复，518850仍有52日价格冲突。518880全期1535日通过；收益检验0。保留EX010原组件结论。",
+    "experiments": [
+      "EX001_20261004",
+      "EX002_20261004",
+      "EX003_20261004",
+      "EX004_20261004",
+      "EX005_20261004",
+      "EX006_20261004",
+      "EX007_20261004",
+      "EX008_20261004",
+      "EX009_20261004",
+      "EX010_20261004",
+      "EX011_20261004",
+      "EX012_20261004"
+    ],
+    "prior_component_delivery": {
+      "type": "DeliveryReference",
+      "owner": {
+        "type": "ExperimentOwner",
+        "strategy_id": "S012",
+        "experiment_id": "EX010_20261004"
+      },
+      "stage": "COMPONENTS",
+      "revision": 1,
+      "content_sha256": "fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532"
+    }
+  }
+}

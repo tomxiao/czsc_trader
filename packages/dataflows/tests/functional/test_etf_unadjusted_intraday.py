@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+import pandas as pd
+import pytest
+
+from dataflows import Dataflows, DataRequest, DataStatus, Dataset
+from dataflows import tushare_etf
+
+
+class FakePro:
+    def __init__(self, *, mismatch=False):
+        self.mismatch = mismatch
+        self.calls = 0
+
+    def etf_mins(self, **kwargs):
+        self.calls += 1
+        times = pd.date_range("2026-09-29 09:35", "2026-09-29 11:30", freq="5min").append(
+            pd.date_range("2026-09-29 13:05", "2026-09-29 15:00", freq="5min")
+        )
+        return pd.DataFrame({"trade_time": times, "open": 4., "high": 4.,
+                             "low": 4., "close": 4., "vol": 100., "amount": 400.})
+
+    def fund_daily(self, **kwargs):
+        return pd.DataFrame([{"trade_date": "20260929", "open": 4., "high": 4.,
+                              "low": 4., "close": 4., "vol": 48. if not self.mismatch else 49.,
+                              "amount": 19.2}])
+
+    def fund_adj(self, **kwargs):
+        pytest.fail("Raw minute prices must not fetch adjustment factors")
+
+
+def request(frequency="5m"):
+    return DataRequest(Dataset.ETF_UNADJUSTED_INTRADAY, "518850.SH", "2026-09-29",
+                       "2026-09-29", None, frequency=frequency)
+
+
+def test_raw_intraday_routes_validates_and_preserves_market_timing(monkeypatch):
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
+    result = Dataflows().fetch(request())
+    assert result.status is DataStatus.READY, result.error
+    assert len(result.dataframe) == 48
+    assert result.dataframe.Close.eq(4.).all()
+    assert result.dataframe.Volume.sum() == 4800.
+    pd.testing.assert_series_equal(result.dataframe.AvailableDate,
+                                   pd.to_datetime(result.dataframe.Date), check_names=False)
+    meta = result.identity.metadata
+    assert meta["availability_basis"] == "MARKET_BAR_CLOSE_ASSUMPTION"
+    assert meta["source_publication_timestamp_verified"] is False
+    assert meta["live_feed_latency_verified"] is False
+    assert meta["adjustment"] == "none"
+    assert len(meta["reference_daily_sha256"]) == 64
+
+
+def test_raw_intraday_preserves_cross_frequency_failure(monkeypatch):
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro(mismatch=True))
+    result = Dataflows().fetch(request())
+    assert result.status is DataStatus.FAILED
+    assert result.dataframe.empty
+    assert result.error.code == "DATA_REPAIR_FAILED"
+
+
+@pytest.mark.parametrize("frequency", ["daily", "weekly", "60m"])
+def test_raw_intraday_rejects_nonintraday_frequency_before_fetch(monkeypatch, frequency):
+    def forbidden(_):
+        pytest.fail("Invalid frequency must fail before supplier access")
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", forbidden)
+    result = Dataflows().fetch(request(frequency))
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+
+
+@pytest.mark.parametrize("mutation", ["early", "missing", "hfq", "verified", "basis"])
+def test_raw_intraday_facade_rejects_false_timing_or_price_claims(monkeypatch, mutation):
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
+    frame, meta = tushare_etf.fetch_etf_unadjusted_intraday(
+        "518850.SH", "2026-09-29", "2026-09-29", "5m")
+    if mutation == "early":
+        frame.AvailableDate -= pd.Timedelta(minutes=5)
+    elif mutation == "missing":
+        frame = frame.drop(columns="AvailableDate")
+    elif mutation == "hfq":
+        meta["adjustment"] = "hfq"
+    elif mutation == "verified":
+        meta["source_publication_timestamp_verified"] = True
+    else:
+        meta["availability_basis"] = "VERIFIED_LIVE_FEED"
+    flows = Dataflows({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (frame, meta)})
+    result = flows.fetch(request())
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"

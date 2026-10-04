@@ -12,6 +12,7 @@ from .common import (
     replace_intraday_from_1m,
 )
 from .model import RepairPatch, SeriesKey
+from .gold_etf_volume import matches_volume_series, repair_volume, volume_reference_dates
 
 
 _DAILY_SERIES = SeriesKey(
@@ -175,6 +176,8 @@ def _reference_dates(
     findings: Sequence[ValidationFinding],
 ) -> tuple[str, ...]:
     del patch
+    if matches_volume_series(series):
+        return volume_reference_dates(daily, series, findings)
     if series != _30M_SERIES or not {
         item.code for item in findings
     }.intersection(_REBUILD_FINDINGS):
@@ -190,6 +193,8 @@ def _execute(
     references: Mapping[str, pd.DataFrame],
 ) -> tuple[pd.DataFrame, tuple[str, ...]]:
     finding_codes = {item.code for item in findings}
+    if matches_volume_series(series):
+        return repair_volume(dataframe, patch, series, findings, references)
     if series == _DAILY_SERIES and "KNOWN_SOURCE_ANOMALY" in finding_codes:
         return _replace_exact_fields(dataframe)
     if series == _30M_SERIES and finding_codes.intersection(_REBUILD_FINDINGS):
@@ -203,8 +208,8 @@ def _execute(
 
 
 PATCH = RepairPatch(
-    "TUSHARE_518880_V1",
-    1,
+    "TUSHARE_518880_V2",
+    2,
     "tushare",
     "518880.SH",
     _execute,

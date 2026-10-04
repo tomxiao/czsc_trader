@@ -14,6 +14,11 @@ FXCM_AVAILABILITY_RULE = (
     "vendor publication timestamp unverified"
 )
 
+ETF_INTRADAY_OBSERVATION_RULE = (
+    "unadjusted bar close Asia/Shanghai market-observation assumption; "
+    "historical vendor publication and live-feed latency unverified"
+)
+
 
 class DataStatus(StrEnum):
     """Outcome of one data publication request."""
@@ -30,6 +35,7 @@ class Dataset(StrEnum):
 
     ETF_OHLCV = "etf.ohlcv"
     ETF_UNADJUSTED_DAILY = "etf.unadjusted_daily"
+    ETF_UNADJUSTED_INTRADAY = "etf.unadjusted_intraday"
     ETF_CREATION_REDEMPTION_BASKET = "etf.creation_redemption_basket"
     STOCK_OHLCV = "stock.ohlcv"
     STOCK_UNADJUSTED_DAILY = "stock.unadjusted_daily"

@@ -80,7 +80,7 @@ def test_known_source_anomaly_fails_before_exact_repair() -> None:
     assert [item.code for item in findings] == ["KNOWN_SOURCE_ANOMALY"]
     assert repaired.loc[0, "Low"] == 3.548
     assert len(records) == 1
-    assert records[0].patch_id == "TUSHARE_518880_V1"
+    assert records[0].patch_id == "TUSHARE_518880_V2"
     assert records[0].raw_content_sha256 != records[0].repaired_content_sha256
     assert records[0].to_dict()["affected_date_count"] == 1
     assert not inspect_registered_source_anomalies(repaired, series)
@@ -447,6 +447,39 @@ def test_repair_registry_is_managed_by_vendor_and_symbol() -> None:
         ("tushare", "512100.SH"): "TUSHARE_512100_V1",
         ("tushare", "515050.SH"): "TUSHARE_515050_V1",
         ("tushare", "518800.SH"): "TUSHARE_518800_V1",
-        ("tushare", "518880.SH"): "TUSHARE_518880_V1",
+        ("tushare", "518880.SH"): "TUSHARE_518880_V2",
+        ("tushare", "518850.SH"): "TUSHARE_518850_V1",
         ("tushare", "588080.SH"): "TUSHARE_588080_V1",
     }
+
+
+@pytest.mark.parametrize("symbol", ["518850.SH", "518880.SH"])
+def test_gold_5m_volume_repair_requires_independent_bar_evidence(symbol):
+    day = "2024-04-03"
+    daily = _daily([day])
+    minute = _one_minute_day(day)
+    good = rebuild_intraday_from_1m(minute, daily, "5m", dates=(day,))
+    bad = good.assign(Volume=good.Volume * 100)
+    series = SeriesKey("tushare", "etf_mins", symbol, "etf.ohlcv", "5m", "none")
+    findings = inspect_intraday_against_daily(bad, daily, "5m").findings
+    fixed, records = apply_repairs_once(bad, series, findings,
+                                        references={"daily": daily, "1m": minute})
+    pd.testing.assert_frame_equal(fixed, good)
+    assert records[0].affected_dates == (day,)
+    assert records[0].raw_content_sha256 != records[0].repaired_content_sha256
+    with pytest.raises(DataRepairError, match="1m volume evidence"):
+        apply_repairs_once(bad, series, findings, references={"daily": daily})
+    with pytest.raises(DataRepairError, match="unknown 100x volume signature"):
+        apply_repairs_once(bad.assign(Volume=bad.Volume * 2), series, findings,
+                           references={"daily": daily, "1m": minute})
+
+
+def test_gold_5m_price_defects_are_not_overwritten_by_volume_patch():
+    day = "2024-04-03"
+    daily = _daily([day]); minute = _one_minute_day(day)
+    bad = rebuild_intraday_from_1m(minute, daily, "5m", dates=(day,))
+    bad.loc[0, ["Open", "High"]] = 11.
+    series = SeriesKey("tushare", "etf_mins", "518850.SH", "etf.ohlcv", "5m", "none")
+    findings = inspect_intraday_against_daily(bad, daily, "5m").findings
+    with pytest.raises(DataRepairError, match="no repair patch matched"):
+        apply_repairs_once(bad, series, findings, references={"daily": daily, "1m": minute})
