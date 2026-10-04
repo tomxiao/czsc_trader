@@ -607,6 +607,7 @@ def test_search_domain_and_candidate_reference_boundaries():
 
 
 def test_catalog_component_binds_snapshot_identity(context):
+    shutil.copytree(Path(__file__).parents[2] / "catalog", context.root / "catalog")
     source = json.loads(
         (Path(__file__).parents[2] / "catalog/factors/definitions.json").read_text(encoding="utf-8")
     )["items"][0]
@@ -629,6 +630,13 @@ def test_catalog_component_binds_snapshot_identity(context):
     )
     receipt = assemble_delivery(context, Deliverable(definition(), partial))
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+    # A later catalog revision cannot invalidate a published historical snapshot.
+    canonical = context.root / "catalog/factors/definitions.json"
+    current = json.loads(canonical.read_text(encoding="utf-8"))
+    current["items"][0]["version"] += 1
+    canonical.write_text(json.dumps(current), encoding="utf-8")
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+    assert assemble_delivery(context, Deliverable(definition(), partial)) == receipt
     bad = replace(component, definition=replace(ref, definition_sha256="f" * 64))
     with pytest.raises(d.DeliveryValidationError, match="catalog definition"):
         assemble_delivery(
@@ -638,6 +646,43 @@ def test_catalog_component_binds_snapshot_identity(context):
                 replace(partial, payload=d.ComponentPanel((bad,), "错误指纹")),
             ),
         )
+
+
+@pytest.mark.parametrize("kind", [d.CatalogDefinitionKind.FACTOR, d.CatalogDefinitionKind.SIGNAL])
+@pytest.mark.parametrize("mutation", ["valid", "unknown_id", "wrong_version", "experiment_implementation"])
+def test_new_catalog_reference_requires_real_fsc_membership(context, kind, mutation):
+    shutil.copytree(Path(__file__).parents[2] / "catalog", context.root / "catalog")
+    group = "factors" if kind is d.CatalogDefinitionKind.FACTOR else "signals"
+    cls = FactorDefinition if kind is d.CatalogDefinitionKind.FACTOR else SignalDefinition
+    identity_key = "factor_id" if group == "factors" else "signal_id"
+    source = json.loads((context.root / "catalog" / group / "definitions.json").read_text(
+        encoding="utf-8",
+    ))["items"][0]
+    if mutation == "unknown_id":
+        source[identity_key] = "UNREGISTERED-COMPONENT"
+    elif mutation == "wrong_version":
+        source["version"] += 1
+    elif mutation == "experiment_implementation":
+        source["implementation"] = "experiments/S900/20261001_S900_EX01/experiment.py"
+    snapshot = cls.from_dict(source)
+    evidence = attachment(context, "definition.json", source)
+    reference = d.CatalogDefinitionRef(
+        kind, source[identity_key], snapshot.version, snapshot.definition_sha256, evidence.reference,
+    )
+    component = d.ComponentEntry(
+        "c", reference, "信息", "标签", "1日", "常量", "T+1", "前复权", "开发池", "尚未检验", (),
+    )
+    package = replace(
+        content(d.ComponentPanel((component,), "自定义定义"), attachments=(evidence,)),
+        status=d.DeliveryStatus.PARTIAL, incomplete_items=("尚无检验结果",),
+    )
+    if mutation == "valid":
+        receipt = assemble_delivery(context, Deliverable(definition(), package))
+        assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+        return
+    with pytest.raises(d.DeliveryValidationError, match="registered FSC"):
+        assemble_delivery(context, Deliverable(definition(), package))
+    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
 
 
 @pytest.mark.parametrize(

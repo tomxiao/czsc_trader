@@ -6,7 +6,9 @@ import json
 import math
 from pathlib import Path
 
-from factor_signal_catalog import FactorDefinition, SignalDefinition
+from factor_signal_catalog import (
+    CatalogRegistry, CatalogValidationError, FactorDefinition, SignalDefinition,
+)
 from research_experiment import EvaluationRecord, load_experiment_input
 from strategy_evaluator import (
     AssessmentEvidence,
@@ -1016,6 +1018,32 @@ def validate_delivery(
         )
 
 
+def _validate_new_catalog_references(content: d.DeliveryContent, context: RepositoryContext) -> None:
+    references = [value for value in _walk(content) if isinstance(value, d.CatalogDefinitionRef)]
+    if not references:
+        return
+    try:
+        registry = CatalogRegistry(context.root / "catalog")
+    except CatalogValidationError as exc:
+        _fail("COMPONENT_DEFINITION", "catalog", f"cannot verify catalog definition: {exc}")
+    definitions = {
+        (d.CatalogDefinitionKind.FACTOR, value.factor_id): value for value in registry.factors
+    }
+    definitions.update({
+        (d.CatalogDefinitionKind.SIGNAL, value.signal_id): value for value in registry.signals
+    })
+    for reference in references:
+        registered = definitions.get((reference.kind, reference.catalog_id))
+        if registered is None or (
+            registered.version, registered.definition_sha256
+        ) != (reference.version, reference.definition_sha256):
+            _fail(
+                "COMPONENT_DEFINITION", reference.catalog_id,
+                "catalog definition must match the registered FSC kind, version and hash; "
+                "experiment-owned definitions require ExperimentDefinitionRef",
+            )
+
+
 def assemble_delivery(
     context: RepositoryContext, deliverable: d.ResearchDeliverable
 ) -> d.DeliveryReceipt:
@@ -1048,6 +1076,7 @@ def assemble_delivery(
                 )
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
             return _read_delivery(context, receipt.reference, destination, set())
+        _validate_new_catalog_references(content, context)
         owner_root = _validate_owner(context, definition, publishing=True)
         if owner_root is not None:
             from research_experiment import load_experiment
