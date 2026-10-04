@@ -302,6 +302,8 @@ class DataRequest:
             frequencies = {"daily", "weekly", *intraday}
         elif dataset in {Dataset.ETF_UNADJUSTED_INTRADAY, Dataset.STOCK_UNADJUSTED_INTRADAY}:
             frequencies = intraday
+        elif dataset is Dataset.INDEX_CONSTITUENT_WEIGHT:
+            frequencies = {"daily", "snapshot"}
         if not isinstance(self.frequency, str) or self.frequency not in frequencies:
             raise ValueError(f"{dataset} frequency must be one of {sorted(frequencies)}")
         allowed = {

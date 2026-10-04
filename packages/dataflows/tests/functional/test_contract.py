@@ -289,6 +289,51 @@ def test_default_registry_covers_all_active_frozen_strategy_inputs(flow_factory)
     assert expected.issubset(flow_factory().datasets)
 
 
+def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monkeypatch) -> None:
+    from pathlib import Path
+    from dataflows import Dataflows, DataSpace, PreparePolicy, ProviderConfig
+    from dataflows import tushare_strategy_data
+
+    frame = pd.DataFrame({
+        "Date": pd.to_datetime(["2026-08-31", "2026-08-31", "2026-09-15"]),
+        "ConstituentSymbol": ["000001.SZ", "600000.SH", "000001.SZ"],
+        "Weight": [1.2, 2.3, 1.5],
+    })
+    calls = []
+
+    def provider(symbol, start, end, **kwargs):
+        calls.append((symbol, start, end))
+        return frame.copy(), {"vendor": "test", "frequency": "snapshot",
+                              "primary_key": ["Date", "ConstituentSymbol"]}
+
+    monkeypatch.setattr(tushare_strategy_data, "fetch_index_constituent_weight", provider)
+    request = DataRequest(Dataset.INDEX_CONSTITUENT_WEIGHT, "000905.SH",
+                          "2026-08-01", "2026-09-30", None, frequency="snapshot")
+    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")),
+                     providers=ProviderConfig())
+    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
+    assert prepared.ready
+    assert calls == [("000905.SH", "2026-08-01", "2026-09-30")]
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")),
+                       providers=ProviderConfig({}))
+    result = offline.fetch(request, prepared=prepared.reference)
+    assert result.ready
+    pd.testing.assert_frame_equal(result.dataframe.reset_index(drop=True), frame)
+    assert result.identity.metadata["frequency"] == "snapshot"
+    assert calls == [("000905.SH", "2026-08-01", "2026-09-30")]
+
+
+@pytest.mark.parametrize("dataset,frequency", [
+    (Dataset.INDEX_CONSTITUENT_WEIGHT, "monthly"),
+    (Dataset.INDEX_CONSTITUENT_WEIGHT, "30m"),
+    (Dataset.ETF_OHLCV, "snapshot"),
+])
+def test_snapshot_frequency_is_dataset_specific(dataset, frequency) -> None:
+    with pytest.raises(ValueError, match="frequency must be"):
+        DataRequest(dataset, "000905.SH", "2026-08-01", "2026-09-30", None,
+                    frequency=frequency)
+
+
 def test_strategy_feature_evidence_is_hash_pinned_and_bounded(flow_factory, publish_data, tmp_path) -> None:
     source = tmp_path / "evidence.csv"
     source.write_text(
