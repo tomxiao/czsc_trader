@@ -38,10 +38,13 @@ $Active = Get-Content (Join-Path $PteRoot 'shared\config\active-release.json') -
   ConvertFrom-Json
 $ReleaseRoot = Join-Path $PteRoot "releases\$($Active.release_id)"
 $Pte = Join-Path $ReleaseRoot '.venv\Scripts\pte.exe'
+$PteConfig = Get-Content (Join-Path $PteRoot 'shared\config\pte.json') -Raw |
+  ConvertFrom-Json
 $RuntimeArgs = @(
   '--repo-root'; $ReleaseRoot
   '--database'; (Join-Path $PteRoot 'shared\state\runtime.db')
   '--data-dir'; (Join-Path $PteRoot 'shared\data')
+  '--data-space'; $PteConfig.data_space
   '--config-root'; (Join-Path $PteRoot 'shared\config')
   '--release-manifest'; (Join-Path $ReleaseRoot 'release-manifest.json')
 )
@@ -92,7 +95,12 @@ Content-Type: application/json
 ### WDG、健康检查与故障处理
 
 首次发布完成后，管理员PowerShell从已发布的轻量宿主安装WDG。普通PTE版本和策略发布继续
-复用该宿主；只有WDG依赖或服务配置变化时重新执行`install-config`：
+复用该宿主；只有WDG依赖或服务配置变化时重新执行`install-config`。
+
+WDG配置为`shared/config/watchdog.json`，PTE配置为`shared/config/pte.json`，两者当前均为
+schema 1。WDG按`shared/config/active-release.json`选择并核验PTE发布，再调用该发布的
+`pte serve-runtime --runtime-root`；PTE在自己的解释器内读取配置并校验发布、策略及数据空间。
+WDG宿主独立版本化，普通PTE升级不要求发布相同版本号的WDG。首次安装及服务控制命令：
 
 ```powershell
 $Watchdog = Get-ChildItem (Join-Path $PteRoot 'host\releases') `
@@ -132,8 +140,29 @@ Get-Content (Join-Path $PteRoot 'shared\logs\pte.log') -Tail 100
   --account-id s003-v1 --intent-id PTE-XXXXXXXXXXXXXXXXXXXX
 ```
 
-成功返回`REPAIRED`，重复执行返回`ALREADY_REPAIRED`，证据不完整时明确失败。PTE每次启动
-前创建SQLite备份并滚动保留3份；备份不替代Futu事实核对。
+成功返回`REPAIRED`，重复执行返回`ALREADY_REPAIRED`，证据不完整时明确失败。
+
+## 数据目录与备份保留
+
+以下路径相对于生产根目录。`shared/data/`整体保留，按用途管理：
+
+| 路径 | 用途与保留要求 |
+| --- | --- |
+| `shared/data/market/` | 当前配置的DFLS数据空间，包含行情、日历及准备引用关联的数据资产；由DFLS管理。 |
+| `shared/data/input-bindings/` | SRT共享输入绑定，记录请求范围、数据身份及准备引用；用于重试和重启复用。 |
+| `shared/data/accounts/` | 各账户准备索引、历史准备记录及计算上下文；支持账户运行与审计追溯。 |
+| `shared/data/`根目录旧文件 | 旧CSV、压缩数据及发布清单。当前版本不将其作为行情来源，历史审计仍有引用，继续保留。 |
+
+数据资产、输入绑定和账户记录不适用数据库备份的滚动保留规则。清理时须区分当前引用、历史
+审计材料及可重建的临时内容；保留旧数据不要求实现旧格式兼容。后续如需归档或删除历史文件，
+应先明确追溯影响及目标清单，再按生产变更授权执行。
+
+PTE每次启动前使用SQLite备份接口创建一致性备份，存入`shared/state/backups/`。当前源码
+默认仅保留最新1份同名运行库的启动前备份；新备份成功完成并关闭后，才清理超出保留数量的
+旧备份。启动前备份不替代Futu事实核对，也不包含数据目录及配置；跨机恢复仍须完整迁移共享状态。
+
+截至2026-10-05，prod活动版本为v0.6.5，其自动备份默认仍保留3份。保留1份的源码修改尚未
+发布；文档及本地提交不改变prod行为，须在后续获授权发布后生效。
 
 ## 生产状态与跨机恢复
 

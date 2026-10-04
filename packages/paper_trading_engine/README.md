@@ -38,12 +38,15 @@ DFLS独立获取的行情背景，以及账户订单、成交和持仓。图表�
 
 ## 数据空间与输入绑定
 
-PTE环境配置`shared/config/service.json`使用schema 3，其中`data_space`声明相对于
+PTE环境配置`shared/config/pte.json`使用schema 1，其中`data_space`声明相对于
 `shared/data`的DFLS数据空间，例如`"data_space": "market"`。它必须是非空相对路径，
 不能包含`..`或越出数据根目录。空间独立于发布目录，同一环境的日历、策略准备和图表
 共用宿主创建的DFLS实例；不同环境使用各自的数据根目录。
 
-WDG将配置传给PTE的`--data-space`参数；直接运行PTE时也可通过该参数指定空间，基准为
+WDG使用独立的schema 1配置`shared/config/watchdog.json`，只管理生产根目录及健康检查地址。
+每次启动时，WDG核验活动发布身份，调用该发布的`pte serve-runtime`；PTE自行读取`pte.json`，
+并转换为`--data-space`等运行参数。WDG宿主与PTE发布独立版本化，不绑定PTE版本。
+直接运行PTE时也可通过`--data-space`指定空间，基准为
 `--data-dir`。PTE将配置转换为强类型`DataSpace`，供应商配置由宿主提供。业务层只调用
 `prepare`和绑定准备引用的`fetch`，不直接解析DFLS内部文件。
 
@@ -53,9 +56,15 @@ PTE先准备日历，再让SRT推导完整输入需求，将整批准备结果�
 新的信号日按新需求准备数据。决策及`MARKET_DATA_PREPARED`审计记录保存完整准备引用，
 可关联空间身份、准备记录身份和清单哈希；图表数据不改变这份决策输入。
 
-升级要求：旧schema 2服务配置及旧账户准备索引不自动转换。需明确配置数据空间、重新生成
-schema 3服务配置，并安排账户准备记录的切换；历史数据和证据原件保留。新版本不读取旧SRT
+升级要求：旧服务配置及旧账户准备索引不自动转换。需分别生成WDG和PTE配置，明确数据空间，
+并安排schema 3账户准备索引及输入绑定的切换；历史数据和证据原件保留。新版本不读取旧SRT
 CSV作为行情来源。生产配置更新、准备记录切换和服务部署仍按独立授权执行。
+
+`shared/data/market/`保存DFLS管理的数据资产；`shared/data/input-bindings/`保存共享输入绑定；
+`shared/data/accounts/`保存账户准备索引、记录及计算上下文。这些共同支持策略运行、重启恢复
+及审计追溯，不能按临时缓存整体清理。根目录的旧CSV、压缩数据及发布清单继续保留，供历史
+审计查阅；保留原件不要求当前版本读取旧格式。目录维护与数据库备份保留策略见
+[PTE运维手册](../../docs/PTE_OPERATIONS.md)。
 
 ## 阅读决策与绩效
 
