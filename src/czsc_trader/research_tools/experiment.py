@@ -23,10 +23,9 @@ from typing import Any
 from ..backtesting import _dataflows
 
 from dataflows import (
-    DataRequest, DataResult, Dataflows, DataSpace, Dataset, PreparePolicy, PrepareResult,
+    DataRequest, DataResult, Dataflows, DataSpace, PreparePolicy, PrepareResult,
     PreparedDataRef, ProviderConfig,
 )
-import pandas as pd
 from research_experiment import (
     ExperimentCapability,
     ExperimentDataScope,
@@ -138,62 +137,36 @@ class _TraceRecorder:
 
 
 class _ExperimentDataAccess:
-    """Capability- and cutoff-aware DFLS adapter."""
+    """Record DFLS operations without interpreting research authorization."""
 
     def __init__(
         self,
-        definition: ExperimentDefinition,
         dataflows: Dataflows,
         recorder: _TraceRecorder,
         *,
         real_returns: bool,
         sealed_validation: bool,
-        calendar_requests: tuple[DataRequest, ...] = (),
     ) -> None:
-        self._calendar_requests = calendar_requests
-        self._definition = definition
         self._dataflows = dataflows
         self._recorder = recorder
         self._real_returns = real_returns
         self._sealed_validation = sealed_validation
 
-    def _authorize(self, request: DataRequest) -> None:
+    def _record_access(self, request: DataRequest) -> None:
         if not isinstance(request, DataRequest):
-            raise TypeError("data fetch requires a DataRequest")
-        if request.dataset not in self._definition.allowed_datasets:
-            raise PermissionError(f"dataset was not declared: {request.dataset}")
-        governed_cutoff = (
-            self._definition.validation_cutoff
-            if self._sealed_validation
-            else self._definition.development_cutoff
-        )
-        cutoff = governed_cutoff
-        is_srt_calendar = (
-            request.dataset == Dataset.TRADING_CALENDAR
-            and request in self._calendar_requests
-        )
-        if not is_srt_calendar and pd.Timestamp(request.end).date() > cutoff:
-            raise PermissionError("data request exceeds the development cutoff")
-        if not is_srt_calendar and request.required_cutoff is not None and (
-            pd.Timestamp(request.required_cutoff).date() > cutoff
+            raise TypeError("data access requires a DataRequest")
+        for enabled, capability in (
+            (self._real_returns, ExperimentCapability.READ_REAL_RETURNS),
+            (self._sealed_validation, ExperimentCapability.READ_SEALED_VALIDATION),
         ):
-            raise PermissionError("required cutoff exceeds the development cutoff")
-        if self._real_returns:
-            _require_capability(
-                self._definition, self._recorder, ExperimentCapability.READ_REAL_RETURNS
-            )
-        if self._sealed_validation:
-            _require_capability(
-                self._definition,
-                self._recorder,
-                ExperimentCapability.READ_SEALED_VALIDATION,
-            )
+            if enabled:
+                self._recorder.record_capability(capability)
 
     def prepare(self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy) -> PrepareResult:
         if not isinstance(requests, tuple) or not requests:
             raise TypeError("data prepare requires a non-empty tuple of DataRequest")
         for request in requests:
-            self._authorize(request)
+            self._record_access(request)
         result = self._dataflows.prepare(requests, policy=policy)
         self._recorder.record_operation("data.prepare")
         for item in result.items:
@@ -201,7 +174,7 @@ class _ExperimentDataAccess:
         return result
 
     def fetch(self, request: DataRequest, *, prepared: PreparedDataRef) -> DataResult:
-        self._authorize(request)
+        self._record_access(request)
         result = self._dataflows.fetch(request, prepared=prepared)
         self._recorder.record_operation("data.fetch")
         self._record(request, result, prepared, "fetch")
@@ -257,11 +230,10 @@ class _ExperimentRuntimeAccess:
     """Tracked adapter over the public SRT runtime surface."""
 
     def __init__(
-        self, runtime: StrategyRuntime, recorder: _TraceRecorder, definition: ExperimentDefinition
+        self, runtime: StrategyRuntime, recorder: _TraceRecorder
     ) -> None:
         self._runtime = runtime
         self._recorder = recorder
-        self._definition = definition
 
     def describe(
         self,
@@ -283,28 +255,6 @@ class _ExperimentRuntimeAccess:
     def create(self, request: StrategyInit) -> StrategyInstance:
         if not isinstance(request, StrategyInit):
             raise TypeError("runtime create requires a StrategyInit")
-        definition = self._runtime.describe(
-            request.source,
-            symbol=request.symbol,
-            source_root=request.source_root,
-            runtime_binding=request.runtime_binding,
-        )
-        if not {item.dataset for item in definition.inputs.requirements}.issubset(
-            self._definition.allowed_datasets
-        ):
-            raise PermissionError("runtime input datasets were not declared")
-        cutoff = (
-            self._definition.validation_cutoff
-            if self._definition.data_scope is ExperimentDataScope.SEALED_VALIDATION
-            else self._definition.development_cutoff
-        )
-        if request.tradable_window.end > cutoff:
-            raise PermissionError("runtime window exceeds the declared data scope")
-        if (
-            self._definition.data_scope is ExperimentDataScope.SEALED_VALIDATION
-            and request.tradable_window.start <= self._definition.development_cutoff
-        ):
-            raise PermissionError("validation runtime window includes development sessions")
         result = self._runtime.create(request)
         self._recorder.record_operation("runtime.create")
         return result
@@ -433,25 +383,14 @@ class _ExperimentEvaluationAccess:
             raise ValueError("evaluation request belongs to another experiment")
         if request.strategy.strategy_family_id != self._definition.strategy_id:
             raise ValueError("evaluation candidate belongs to another strategy family")
-        cutoff = (
-            self._definition.validation_cutoff
-            if self._sealed_validation
-            else self._definition.development_cutoff
-        )
-        if request.data_cutoff != cutoff:
-            raise ValueError("evaluation request data cutoff differs")
         if request.workers > self._resources.max_workers:
             raise PermissionError("evaluation workers exceed the per-call execution configuration")
-        if self._sealed_validation and any(
-            window.start <= self._definition.development_cutoff for window in request.windows
-        ):
-            raise ValueError("validation evaluation windows must follow development cutoff")
         for enabled, capability in (
             (self._real_returns, ExperimentCapability.READ_REAL_RETURNS),
             (self._sealed_validation, ExperimentCapability.READ_SEALED_VALIDATION),
         ):
             if enabled:
-                _require_capability(self._definition, self._recorder, capability)
+                self._recorder.record_capability(capability)
         dependencies = tuple(
             ImplementationDependency(item.name, item.version)
             for item in self._definition.dependencies
@@ -462,15 +401,6 @@ class _ExperimentEvaluationAccess:
             raise ValueError("evaluation dependencies differ from experiment declaration")
         request = replace(request, dependencies=dependencies)
         contract, binding_hash = _request_contract(request, require_execution=False)
-        runtime_definition = StrategyRuntime().describe(request.strategy)
-        required_datasets = {item.dataset for item in runtime_definition.inputs.requirements}
-        required_datasets.update((
-            Dataset.TRADING_CALENDAR,
-            Dataset.ETF_OHLCV if request.asset_type == "etf" else Dataset.STOCK_OHLCV,
-            Dataset.ETF_UNADJUSTED_DAILY if request.asset_type == "etf" else Dataset.STOCK_UNADJUSTED_DAILY,
-        ))
-        if not required_datasets.issubset(self._definition.allowed_datasets):
-            raise PermissionError("evaluation input datasets were not declared")
         key = request.strategy.reference_id
         content = contract["content_sha256"]
         if key in self._candidates and self._candidates[key] != content:
@@ -676,21 +606,9 @@ class _PlatformExperimentContext:
     def trace(self) -> ExperimentTrace:
         return self._recorder.snapshot()
 
-    def require_capability(self, capability: ExperimentCapability) -> None:
-        """Declare an imminent third-party action and fail before unauthorized work."""
-
-        _require_capability(self.definition, self._recorder, capability)
-
-
-def _require_capability(
-    definition: ExperimentDefinition,
-    recorder: _TraceRecorder,
-    capability: ExperimentCapability,
-) -> None:
-    capability = ExperimentCapability(capability)
-    if not definition.capabilities.allows(capability):
-        raise PermissionError(f"experiment did not declare capability: {capability.value}")
-    recorder.record_capability(capability)
+    def record_capability(self, capability: ExperimentCapability) -> None:
+        """Record a research operation; authorization belongs to the researcher."""
+        self._recorder.record_capability(ExperimentCapability(capability))
 
 
 def create_experiment_context(
@@ -706,7 +624,11 @@ def create_experiment_context(
     sealed_validation: bool = False,
     predecessors: tuple[ExperimentInput, ...] = (),
 ) -> ExperimentContext[EvaluationRequest, EvaluationResult]:
-    """Wire discovery adapters into one capability- and resource-tracked context."""
+    """Wire discovery adapters into an operation- and resource-tracked context.
+
+    ``real_returns`` and ``sealed_validation`` label trace observations only.
+    Researchers own authorization and the meaning of their declared data scope.
+    """
 
     if definition.mode is ExperimentMode.FORMAL:
         raise ValueError("FORMAL experiments require create_formal_experiment_context")
@@ -781,8 +703,6 @@ def _create_experiment_context(
         raise TypeError("experiment resources must be ExperimentResources")
     if definition.schema_version != 2:
         raise ValueError("new execution contexts require experiment definition schema 2")
-    if sealed_validation != (definition.data_scope is ExperimentDataScope.SEALED_VALIDATION):
-        raise ValueError("context data scope differs from experiment definition")
     inputs = tuple(predecessors)
     if not all(isinstance(item, ExperimentInput) for item in inputs):
         raise TypeError("predecessors must contain ExperimentInput values")
@@ -805,31 +725,22 @@ def _create_experiment_context(
     backtest_flows = _dataflows.create_backtest_dataflows(Path(repository_root), read_only=True)
     if input_preparer is _prepare_evaluation_inputs:
         def prepare_managed_inputs(request):
-            from strategy_runtime import StrategyInit, TradableWindow
             flows = _dataflows.create_backtest_dataflows(Path(repository_root))
-            calendars = tuple(
-                StrategyRuntime(dataflows=flows).create(StrategyInit(
-                    request.strategy, TradableWindow(window.start, window.end),
-                    Path(repository_root) / "data/backtest/contexts/authorization",
-                )).calendar_request()
-                for window in request.windows
+            tracked = _ExperimentDataAccess(
+                flows, recorder, real_returns=real_returns,
+                sealed_validation=sealed_validation,
             )
-            governed = _ExperimentDataAccess(
-                definition, flows, recorder, real_returns=real_returns,
-                sealed_validation=sealed_validation, calendar_requests=calendars,
-            )
-            return _bind_evaluation_inputs(request, dataflows=governed)
+            return _bind_evaluation_inputs(request, dataflows=tracked)
         input_preparer = prepare_managed_inputs
     return _PlatformExperimentContext(
         definition,
         data=_ExperimentDataAccess(
-            definition,
             dataflows,
             recorder,
             real_returns=real_returns,
             sealed_validation=sealed_validation,
         ),
-        runtime=_ExperimentRuntimeAccess(runtime or StrategyRuntime(), recorder, definition),
+        runtime=_ExperimentRuntimeAccess(runtime or StrategyRuntime(), recorder),
         evaluation=_ExperimentEvaluationAccess(
             definition,
             evaluator,
@@ -848,11 +759,11 @@ def _create_experiment_context(
         predecessors=by_id,
         formal=formal,
         backtest_data=_ExperimentDataAccess(
-            definition, backtest_flows, recorder,
+            backtest_flows, recorder,
             real_returns=real_returns, sealed_validation=sealed_validation,
         ),
         backtest_runtime=_ExperimentRuntimeAccess(
-            StrategyRuntime(dataflows=backtest_flows), recorder, definition,
+            StrategyRuntime(dataflows=backtest_flows), recorder,
         ),
     )
 
@@ -911,7 +822,7 @@ def execute_experiment(
         artifacts[item.path] = item
     result = replace(result, artifacts=tuple(artifacts.values()))
     if result.candidate is not None:
-        context.require_capability(ExperimentCapability.CREATE_CANDIDATE)
+        context.record_capability(ExperimentCapability.CREATE_CANDIDATE)
     for artifact in result.artifacts:
         context.workspace.validate_artifact(artifact)
     if result.receipt is not None:

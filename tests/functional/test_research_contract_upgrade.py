@@ -191,18 +191,16 @@ def test_failed_record_publication_cannot_return_success(managed_evaluation, mon
     assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.FAILED
 
 
-def test_scope_and_date_contracts_fail_before_execution(managed_evaluation):
+def test_research_declarations_do_not_replace_request_date_validation(managed_evaluation):
     context, request = managed_evaluation
-    with pytest.raises(ValueError, match="cannot search"):
-        replace(
-            context.definition,
-            data_scope=ExperimentDataScope.SEALED_VALIDATION,
-            validation_cutoff=date(2026, 10, 1),
-            capabilities=ExperimentCapabilities(
-                reads_real_returns=True, reads_sealed_validation=True, searches_parameters=True
-            ),
-        )
-    with pytest.raises(ValueError, match="data cutoff"):
+    declaration = replace(
+        context.definition,
+        data_scope=ExperimentDataScope.SEALED_VALIDATION,
+        validation_cutoff=date(2026, 10, 1),
+        capabilities=ExperimentCapabilities(searches_parameters=True),
+    )
+    assert declaration.capabilities.searches_parameters
+    with pytest.raises(ValueError, match="execution data identity"):
         context.evaluation.evaluate(replace(request, data_cutoff=date(2026, 10, 1)))
     with pytest.raises(TypeError, match="date"):
         replace(request, data_cutoff=datetime(2026, 9, 21))
@@ -210,7 +208,7 @@ def test_scope_and_date_contracts_fail_before_execution(managed_evaluation):
         replace(context.definition, data_scope="DEVELOPMENT")
 
 
-def test_sealed_window_cannot_include_development_returns(managed_evaluation):
+def test_researcher_owns_window_selection_and_platform_records_execution(managed_evaluation):
     context, request = managed_evaluation
     definition = replace(
         context.definition,
@@ -226,9 +224,10 @@ def test_sealed_window_cannot_include_development_returns(managed_evaluation):
         resources=ExperimentResources(1, 1),
         workspace=context.workspace,
     )
-    with pytest.raises(ValueError, match="windows must follow"):
-        sealed.evaluation.evaluate(request)
-    assert sealed.trace.evaluations == ()
+    result = sealed.evaluation.evaluate(request)
+    assert result.runs
+    assert sealed.trace.data_scope is ExperimentDataScope.SEALED_VALIDATION
+    assert sealed.trace.evaluations[-1].status is EvaluationAttemptStatus.SUCCEEDED
 
 
 def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation):
@@ -645,19 +644,23 @@ def test_unprepared_evaluation_rejects_cutoff_before_preparation(managed_evaluat
         context.evaluation.evaluate(request)
 
 
-def test_evaluation_authorizes_execution_datasets_before_preparation(managed_evaluation, monkeypatch):
+def test_evaluation_records_inputs_without_deciding_research_authorization(managed_evaluation):
     from dataflows import Dataset
-    from czsc_trader.research_tools import evaluation
     context, request = managed_evaluation
-    context.evaluation._definition = replace(context.definition, allowed_datasets=tuple(
-        value for value in context.definition.allowed_datasets
-        if value != Dataset.ETF_UNADJUSTED_DAILY
-    ))
-    def forbidden(*args, **kwargs):
-        raise AssertionError("undeclared data must fail before data preparation")
-    monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
-    with pytest.raises(PermissionError, match="datasets"):
-        context.evaluation.evaluate(replace(request, execution_data=None))
+    definition = replace(
+        context.definition, allowed_datasets=(Dataset.ETF_OHLCV,),
+        capabilities=ExperimentCapabilities(), development_cutoff=date(2026, 9, 1),
+    )
+    context = create_formal_experiment_context(
+        definition, repository_root=request.repository_root,
+        data_space=DataSpace(Path("data/research")), resources=context.resources,
+        workspace=context.workspace,
+    )
+    result = context.evaluation.evaluate(replace(request, execution_data=None))
+    assert result.runs
+    assert any(item["dataset"] == Dataset.ETF_UNADJUSTED_DAILY
+               for item in context.trace.data_requests)
+    assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.SUCCEEDED
 
 
 def test_evaluation_rejects_foreign_repository_before_preparation(managed_evaluation, monkeypatch):

@@ -6,13 +6,13 @@ import json
 from pathlib import Path
 import shutil
 
-from dataflows import (DataRequest, Dataflows, DataSpace, Dataset, ProviderConfig, ProviderBinding, PreparePolicy, PreparedDataRef)
+from dataflows import (DataRequest, Dataflows, DataSpace, Dataset, ProviderConfig, ProviderBinding, PreparePolicy)
 from uuid import uuid4
 import pandas as pd
 import pytest
 
 from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
-from strategy_runtime import StrategyCandidate
+from strategy_runtime import StrategyCandidate, StrategyInit, TradableWindow
 
 from research_experiment import (
     ExperimentPrecheckResult,
@@ -269,8 +269,8 @@ def test_preflight_successful_explicit_data_probe(tmp_path):
     assert next(item for item in report.checks if item.code == "DATA_REQUEST_001").status is ExperimentPreflightStatus.PASS
 
 
-@pytest.mark.parametrize("real_data,end,expected_calls", [(False, "2026-09-15", 0), (True, "2026-09-25", 0), (True, "2026-09-15", 1)])
-def test_preflight_data_readiness_is_explicit_and_governed(tmp_path, real_data, end, expected_calls):
+@pytest.mark.parametrize("real_data,end", [(False, "2026-09-15"), (True, "2026-09-25"), (True, "2026-09-15")])
+def test_preflight_data_readiness_reports_dfls_result_without_authorization(tmp_path, real_data, end):
     loaded = _preflight_fixture(tmp_path, real_data=real_data)
     calls = []
     def empty(request):
@@ -280,11 +280,10 @@ def test_preflight_data_readiness_is_explicit_and_governed(tmp_path, real_data, 
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99),
         dataflows=_configured_flows(tmp_path, empty), data_requests=(request,))
     assert not report.passed
-    assert len(calls) == expected_calls
+    assert len(calls) == 1
     check = next(item for item in report.checks if item.code == "DATA_REQUEST_001")
     assert check.status is ExperimentPreflightStatus.FAIL
-    if expected_calls:
-        assert "EMPTY" in check.message
+    assert "EMPTY" in check.message
     with pytest.raises(ValueError, match="configured Dataflows"):
         preflight_experiment(loaded, resources=ExperimentResources(1, 99), data_requests=(request,))
 
@@ -302,16 +301,16 @@ def _definition(
         strategy_id="S008",
         mode=mode,
         data_scope=ExperimentDataScope.SEALED_VALIDATION if validation_cutoff else ExperimentDataScope.DEVELOPMENT,
-        research_question="Does the public experiment boundary reject undeclared behavior?",
-        hypothesis="Every sensitive operation is checked before execution.",
-        falsification_conditions=("An undeclared operation reaches its provider",),
+        research_question="Does the public experiment boundary track operations?",
+        hypothesis="Every data operation is recorded for research review.",
+        falsification_conditions=("A data operation has no trace",),
         development_cutoff=date(2026, 9, 2),
         random_seed=98,
         allowed_datasets=("etf.ohlcv",),
         protocol=protocol
         or ExperimentProtocol(
             stage=ExperimentStage.PROTOTYPE,
-            first_principles=("Sensitive research actions require platform boundaries",),
+            first_principles=("Research decisions remain with researchers",),
             information_paths=("Declared input -> platform adapter -> immutable result",),
             stage_objectives=("Exercise the experiment execution boundary",),
             observation_metrics=("execution outcome",),
@@ -368,9 +367,8 @@ def test_data_prepare_checks_whole_batch_before_any_source_access(tmp_path):
         resources=ExperimentResources(1, 98),
     )
     valid = DataRequest("etf.ohlcv", "518880.SH", "2026-09-01", "2026-09-02", "2026-09-02")
-    future = replace(valid, end="2026-09-03", required_cutoff="2026-09-03")
-    with pytest.raises(PermissionError, match="development cutoff"):
-        context.data.prepare((valid, future), policy=PreparePolicy.REUSE)
+    with pytest.raises(TypeError, match="DataRequest"):
+        context.data.prepare((valid, object()), policy=PreparePolicy.REUSE)
     assert calls == [] and context.trace.data_requests == ()
 
 
@@ -568,17 +566,14 @@ def test_formal_mode_requires_platform_owned_context(tmp_path: Path) -> None:
     assert context.definition.mode is ExperimentMode.FORMAL
 
 
-def test_formal_definition_rejects_parameter_search() -> None:
-    with pytest.raises(ValueError, match="cannot search or select parameters"):
-        _definition(
-            mode=ExperimentMode.FORMAL,
-            validation_cutoff=date(2026, 9, 18),
-            capabilities=ExperimentCapabilities(
-                reads_real_returns=True,
-                reads_sealed_validation=True,
-                searches_parameters=True,
-            ),
-        )
+def test_formal_definition_records_parameter_search_declaration() -> None:
+    definition = _definition(
+        mode=ExperimentMode.FORMAL,
+        validation_cutoff=date(2026, 9, 18),
+        capabilities=ExperimentCapabilities(searches_parameters=True),
+    )
+    assert definition.capabilities.searches_parameters
+    assert definition.data_scope is ExperimentDataScope.SEALED_VALIDATION
 
 
 def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
@@ -631,97 +626,51 @@ def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
         ExperimentInput()
 
 
-def test_data_adapter_blocks_undeclared_dataset_before_provider(
-    tmp_path: Path,
-) -> None:
-    calls: list[DataRequest] = []
-    definition = _definition()
-    context = create_experiment_context(
-        definition,
-        repository_root=tmp_path,
-        dataflows=_flows(tmp_path, calls),
-        workspace=_workspace(tmp_path, "undeclared-dataset"),
-        resources=ExperimentResources(max_workers=1, random_seed=98),
-    )
-
-    with pytest.raises(PermissionError, match="dataset was not declared"):
-        context.data.fetch(
-            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
-            request=            DataRequest(
-                dataset="fx.fxcm_daily",
-                symbol="XAU/USD",
-                start="2026-09-01",
-                end="2026-09-02",
-                required_cutoff="2026-09-02",
-            )
-        )
-
-    assert calls == []
-
-
-def test_data_adapter_blocks_future_data_before_provider(tmp_path: Path) -> None:
-    calls: list[DataRequest] = []
-    definition = _definition()
-    context = create_experiment_context(
-        definition,
-        repository_root=tmp_path,
-        dataflows=_flows(tmp_path, calls),
-        workspace=_workspace(tmp_path, "future-data"),
-        resources=ExperimentResources(max_workers=1, random_seed=98),
-    )
-
-    with pytest.raises(PermissionError, match="development cutoff"):
-        context.data.fetch(
-            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
-            request=            DataRequest(
-                dataset="etf.ohlcv",
-                symbol="518880.SH",
-                start="2026-09-01",
-                end="2026-09-03",
-                required_cutoff="2026-09-03",
-            )
-        )
-
-    assert calls == []
-
-
 @pytest.mark.parametrize(
-    ("real_returns", "sealed_validation", "missing"),
+    "declared_datasets,end,real_returns,sealed_validation",
     [
-        (True, False, "reads_real_returns"),
+        (("fx.fxcm_daily",), "2026-09-02", False, False),
+        (("etf.ohlcv",), "2026-09-03", False, False),
+        (("etf.ohlcv",), "2026-09-02", True, False),
+        (("etf.ohlcv",), "2026-09-02", False, True),
     ],
 )
-def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
-    tmp_path: Path,
-    real_returns: bool,
-    sealed_validation: bool,
-    missing: str,
-) -> None:
-    calls: list[DataRequest] = []
-    definition = _definition()
+def test_data_access_records_operations_without_interpreting_research_declarations(
+    tmp_path, declared_datasets, end, real_returns, sealed_validation,
+):
+    calls = []
+    def provider(request):
+        calls.append(request)
+        frame = _frame()
+        frame.loc[1, "Date"] = pd.Timestamp(end)
+        return frame, {"vendor": "synthetic"}
+    definition = replace(_definition(), allowed_datasets=declared_datasets)
     context = create_experiment_context(
-        definition,
-        repository_root=tmp_path,
-        dataflows=_flows(tmp_path, calls),
-        workspace=_workspace(tmp_path, f"missing-{missing}"),
-        resources=ExperimentResources(max_workers=1, random_seed=98),
-        real_returns=real_returns,
-        sealed_validation=sealed_validation,
+        definition, repository_root=tmp_path,
+        dataflows=_configured_flows(tmp_path, provider),
+        workspace=_workspace(tmp_path, "research-declarations"),
+        resources=ExperimentResources(1, 98),
+        real_returns=real_returns, sealed_validation=sealed_validation,
     )
-
-    with pytest.raises(PermissionError, match=missing):
-        context.data.fetch(
-            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
-            request=            DataRequest(
-                dataset="etf.ohlcv",
-                symbol="518880.SH",
-                start="2026-09-01",
-                end="2026-09-02",
-                required_cutoff="2026-09-02",
-            )
-        )
-
-    assert calls == []
+    request = DataRequest("etf.ohlcv", "518880.SH", "2026-09-01", end, end)
+    prepared = context.data.prepare((request,), policy=PreparePolicy.REUSE)
+    assert prepared.ready
+    result = context.data.fetch(request, prepared=prepared.reference)
+    assert result.ready
+    assert len(calls) == 1
+    assert calls[0].symbol == request.symbol and calls[0].end == request.end
+    assert context.trace.operations == ("data.prepare", "data.fetch")
+    assert len(context.trace.data_requests) == 2
+    expected = tuple(capability for enabled, capability in (
+        (real_returns, ExperimentCapability.READ_REAL_RETURNS),
+        (sealed_validation, ExperimentCapability.READ_SEALED_VALIDATION),
+    ) if enabled)
+    assert context.trace.capabilities == expected
+    # Explicit action recording has no dependency on declaration flags.
+    context.record_capability(ExperimentCapability.SEARCH_PARAMETERS)
+    assert ExperimentCapability.SEARCH_PARAMETERS in context.trace.capabilities
+    with pytest.raises(ValueError):
+        context.record_capability("not-a-capability")
 
 
 def test_context_tracks_runtime_and_evaluation_public_adapters(
@@ -736,6 +685,10 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
             del source, kwargs
             runtime_calls.append("describe")
             return "runtime-definition"
+
+        def create(self, request):
+            runtime_calls.append("create")
+            return request
 
     def evaluator(request: EvaluationRequest) -> EvaluationResult:
         evaluation_calls.append(request.experiment_id)
@@ -768,12 +721,19 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
     )
 
     assert context.runtime.describe(candidate) == "runtime-definition"
+    runtime_request = StrategyInit(
+        candidate, TradableWindow(date(2026, 9, 1), date(2026, 9, 3)),
+        tmp_path / "runtime",
+    )
+    assert context.runtime.create(runtime_request) is runtime_request
+    with pytest.raises(TypeError, match="StrategyInit"):
+        context.runtime.create(object())
     with pytest.raises(ValueError, match="sourced StrategyCandidate"):
         context.evaluation.evaluate(request)
-    assert runtime_calls == ["describe"]
+    assert runtime_calls == ["describe", "create"]
     assert evaluation_calls == []
     assert context.trace.capabilities == (ExperimentCapability.READ_REAL_RETURNS,)
-    assert context.trace.operations == ("runtime.describe",)
+    assert context.trace.operations == ("runtime.describe", "runtime.create")
 
 
 def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
@@ -852,7 +812,7 @@ def test_execute_rejects_unbound_experiment(tmp_path: Path) -> None:
         execute_experiment(_CandidateExperiment(definition), context)
 
 
-def test_bound_candidate_result_requires_declared_capability(
+def test_bound_candidate_result_records_creation_without_permission_gate(
     tmp_path: Path,
 ) -> None:
     root = tmp_path / ".tmp" / "bound-candidate" / "S008" / "20260924_S008_EX98"
@@ -876,19 +836,19 @@ class Experiment(ResearchExperiment):
             strategy_id='S008',
             mode=ExperimentMode.DISCOVERY,
             data_scope=ExperimentDataScope.DEVELOPMENT,
-            research_question='Does candidate creation require a declared capability?',
-            hypothesis='The platform rejects undeclared candidate creation.',
-            falsification_conditions=('An undeclared candidate is accepted',),
+            research_question='Does candidate creation leave a trace?',
+            hypothesis='The platform records candidate creation.',
+            falsification_conditions=('A candidate has no creation trace',),
             development_cutoff=date(2026, 9, 2),
             random_seed=98,
             allowed_datasets=('etf.ohlcv',),
             subjects=('518880.SH',),
             protocol=ExperimentProtocol(
                 stage=ExperimentStage.CANDIDATE,
-                first_principles=('Candidate creation is a governed action',),
+                first_principles=('Candidate creation is a research action',),
                 information_paths=('Experiment result -> candidate boundary',),
-                stage_objectives=('Verify candidate capability enforcement',),
-                observation_metrics=('permission outcome',),
+                stage_objectives=('Verify candidate creation trace',),
+                observation_metrics=('operation trace',),
                 methodology=('Return one synthetic candidate',),
             ),
             capabilities=ExperimentCapabilities(),
@@ -931,8 +891,10 @@ class Experiment(ResearchExperiment):
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
-    with pytest.raises(PermissionError, match="creates_candidate"):
-        execute_experiment(experiment, context)
+    result = execute_experiment(experiment, context)
+    assert result.candidate is not None
+    assert context.trace.capabilities == (ExperimentCapability.CREATE_CANDIDATE,)
+    assert result.receipt.trace == context.trace
 
 
 def test_workspace_rejects_escape_and_detects_artifact_change(

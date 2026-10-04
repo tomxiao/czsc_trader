@@ -63,7 +63,7 @@ class Experiment(ResearchExperiment):
         assert self.definition.subjects == ("518880.SH",)
 
     def execute(self, context) -> ExperimentResult:
-        context.require_capability(ExperimentCapability.SEARCH_PARAMETERS)
+        context.record_capability(ExperimentCapability.SEARCH_PARAMETERS)
         request = DataRequest(
                 dataset="etf.ohlcv",
                 symbol="518880.SH",

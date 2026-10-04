@@ -741,7 +741,7 @@ def test_reproduction_cutoff_conflict_starts_no_evaluation(inspection):
     report = inspect_candidate(context, replace(request, replays=(replay,)))
     assert report.status is f.InspectionStatus.FAIL
     assert request.execution.trace.evaluations == ()
-    assert any("data cutoff differs" in x.detail for x in report.checks)
+    assert any("execution data identity differs" in x.detail for x in report.checks)
     assert not context.strategy_root.exists()
 
 

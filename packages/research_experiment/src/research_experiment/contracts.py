@@ -203,7 +203,7 @@ class ExperimentPreflightReport:
 
 
 class ExperimentCapability(StrEnum):
-    """Sensitive research actions that must be declared before execution."""
+    """Research actions declared or recorded for traceability."""
 
     READ_REAL_RETURNS = "reads_real_returns"
     SEARCH_PARAMETERS = "searches_parameters"
@@ -365,18 +365,8 @@ class ExperimentDefinition:
                 raise ValueError(
                     "FORMAL experiments require validation_cutoff after development_cutoff"
                 )
-            if not (
-                self.capabilities.reads_real_returns and self.capabilities.reads_sealed_validation
-            ):
-                raise ValueError(
-                    "FORMAL experiments require real-return and sealed-validation capabilities"
-                )
-            if self.capabilities.searches_parameters or self.capabilities.selects_parameters:
-                raise ValueError("FORMAL experiments cannot search or select parameters")
-        elif self.validation_cutoff is not None or self.capabilities.reads_sealed_validation:
-            raise ValueError("DEVELOPMENT cannot declare validation_cutoff or sealed capability")
-        if self.mode is ExperimentMode.FORMAL and not self.capabilities.reads_real_returns:
-            raise ValueError("FORMAL requires real-return capability")
+        elif self.validation_cutoff is not None:
+            raise ValueError("DEVELOPMENT cannot declare validation_cutoff")
         object.__setattr__(self, "experiment_id", experiment_id)
         object.__setattr__(self, "strategy_id", strategy_id)
         object.__setattr__(
@@ -910,7 +900,7 @@ class ExperimentWorkspace:
 
 
 class ExperimentDataPort(Protocol):
-    """Research-authorized preparation and explicitly bound local reads."""
+    """Tracked preparation and explicitly bound local reads."""
 
     def prepare(self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy) -> PrepareResult: ...
 
@@ -980,7 +970,7 @@ class ExperimentContext(Protocol[ContextRequestT, ContextResultT]):
     @property
     def trace(self) -> ExperimentTrace: ...
 
-    def require_capability(self, capability: ExperimentCapability) -> None: ...
+    def record_capability(self, capability: ExperimentCapability) -> None: ...
 
 
 class ResearchExperiment(ABC):

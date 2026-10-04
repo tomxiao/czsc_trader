@@ -6,7 +6,6 @@ from collections.abc import Callable
 import ast
 import json
 
-import pandas as pd
 from dataflows import Dataflows, DataRequest, PreparePolicy
 
 from research_experiment import (
@@ -200,13 +199,6 @@ def preflight_experiment(
         def data_ready(request=request) -> None:
             if any(item.status is ExperimentPreflightStatus.FAIL for item in checks):
                 raise ValueError("data probe skipped because prerequisite checks failed")
-            definition = experiment.definition
-            if request.dataset not in definition.allowed_datasets:
-                raise PermissionError("preflight dataset was not declared")
-            if not definition.capabilities.reads_real_returns:
-                raise PermissionError("data readiness probe requires reads_real_returns capability")
-            if pd.Timestamp(request.end).date() > definition.development_cutoff:
-                raise PermissionError("preflight request exceeds development cutoff")
             prepared = dataflows.prepare((request,), policy=PreparePolicy.REUSE)
             if not prepared.ready:
                 item = prepared.items[0]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 import json
 from pathlib import Path
@@ -79,10 +80,35 @@ assert not any(name.split('.')[0] == 'czsc_trader' for name in sys.modules)
 
 @pytest.mark.parametrize("changes", [{"schema_version": 1}, {"schema_version": True}, {"data_scope": None}])
 def test_definition_rejects_retired_or_implicit_scope(changes):
-    from dataclasses import replace
-
     with pytest.raises((TypeError, ValueError)):
         replace(_definition(), **changes)
+
+
+def test_definition_records_research_declarations_without_authorizing_actions() -> None:
+    formal = replace(
+        _definition(), mode=ExperimentMode.FORMAL, capabilities=ExperimentCapabilities()
+    )
+    sealed = replace(
+        formal,
+        data_scope=ExperimentDataScope.SEALED_VALIDATION,
+        validation_cutoff=date(2026, 9, 3),
+        capabilities=ExperimentCapabilities(searches_parameters=True, selects_parameters=True),
+    )
+    declared = replace(
+        formal, capabilities=ExperimentCapabilities(reads_sealed_validation=True)
+    )
+
+    assert not sealed.capabilities.reads_real_returns
+    assert not sealed.capabilities.reads_sealed_validation
+    assert len({formal.sha256, sealed.sha256, declared.sha256}) == 3
+    with pytest.raises(ValueError, match="validation_cutoff after development_cutoff"):
+        replace(sealed, validation_cutoff=sealed.development_cutoff)
+    with pytest.raises(ValueError, match="DEVELOPMENT cannot declare validation_cutoff"):
+        replace(formal, validation_cutoff=date(2026, 9, 3))
+    with pytest.raises(ValueError, match="must be boolean"):
+        ExperimentCapabilities(reads_real_returns="yes")
+    with pytest.raises(ValueError, match="unique"):
+        replace(formal, allowed_datasets=("etf.ohlcv", "etf.ohlcv"))
 
 
 def test_loaded_experiment_cannot_be_constructed_directly() -> None:
