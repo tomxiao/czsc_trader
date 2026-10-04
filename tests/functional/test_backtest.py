@@ -29,11 +29,23 @@ def execution_flows(root):
             dates = pd.DatetimeIndex([day + pd.Timedelta(hours=h, minutes=m) for day in dates for h, m in ((10, 0), (10, 30), (11, 0), (11, 30), (13, 30), (14, 0), (14, 30), (15, 0))])
             volume = 1000
         frame = pd.DataFrame({"Date": dates, "Open": 1., "Close": 1., "High": 1., "Low": 1., "Volume": volume, "Amount": volume, "Flow": 0.8, "TotalShare": 1.0})
-        return frame, {"vendor": "test", "adjustment": "none" if "unadjusted" in str(request.dataset) else "hfq"}
+        metadata = {"vendor": "test", "adjustment": "none" if "unadjusted" in str(request.dataset) else "hfq"}
+        if request.dataset is Dataset.ETF_UNADJUSTED_INTRADAY:
+            from dataflows.contract import ETF_INTRADAY_OBSERVATION_RULE
+
+            frame["AvailableDate"] = frame["Date"]
+            metadata.update(
+                availability_time_field="AvailableDate", available_at=ETF_INTRADAY_OBSERVATION_RULE,
+                availability_basis="MARKET_BAR_CLOSE_ASSUMPTION",
+                source_publication_timestamp_verified=False,
+                historical_revision_history_verified=False, live_feed_latency_verified=False,
+            )
+        return frame, metadata
     return Dataflows(base_dir=root, space=DataSpace(Path("data/backtest")),
-                    providers=ProviderConfig(bindings={name: ProviderBinding("synthetic", "v1", fetch)
+                    providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
-                                     Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_SHARE_SIZE)}))
+                                     Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
+                                     Dataset.ETF_SHARE_SIZE)}))
 
 
 def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):

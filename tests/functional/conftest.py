@@ -96,10 +96,9 @@ def functional_repo(minimal_repo: Path, monkeypatch) -> Path:
 
     flows = Dataflows(base_dir=root, space=DataSpace(Path("data/test-market")),
                       providers=ProviderConfig(bindings={Dataset(key[0]): ProviderBinding("fixture", "v1", fetch) for key in frames}))
-    monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
-    monkeypatch.setattr("czsc_trader.research_tools.evaluation.Dataflows", lambda **kwargs: flows)
     monkeypatch.setattr(
-        "czsc_trader.backtesting.execution_data.Dataflows", lambda **kwargs: flows
+        "czsc_trader.backtesting._dataflows.create_backtest_dataflows",
+        lambda repository_root, **kwargs: flows,
     )
     for relative in (
         Path("S001/0824_EX04/artifacts/frozen_challenger.json"),

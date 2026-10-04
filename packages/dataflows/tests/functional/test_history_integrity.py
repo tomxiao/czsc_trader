@@ -476,7 +476,8 @@ def test_gold_5m_volume_repair_requires_independent_bar_evidence(symbol):
 
 def test_gold_5m_price_defects_are_not_overwritten_by_volume_patch():
     day = "2024-04-03"
-    daily = _daily([day]); minute = _one_minute_day(day)
+    daily = _daily([day])
+    minute = _one_minute_day(day)
     bad = rebuild_intraday_from_1m(minute, daily, "5m", dates=(day,))
     bad.loc[0, ["Open", "High"]] = 11.
     series = SeriesKey("tushare", "etf_mins", "518850.SH", "etf.ohlcv", "5m", "none")
