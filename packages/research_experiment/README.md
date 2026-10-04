@@ -1,14 +1,14 @@
 # 研究实验（Research Experiment，REX）
 
 本文面向策略研究员（RSCH）。REX给一个可证伪实验提供可执行锚点、
-能力边界和结果身份；研究问题、金融机制与是否继续研究仍由研究员判断。安装、源码维护及
+执行契约和结果身份；研究问题、金融机制与是否继续研究仍由研究员判断。安装、源码维护及
 测试见[DEV Agent](../../docs/DEV_AGENT.md)。
 
 ## RSCH：定义并执行实验
 
 从`research_experiment`顶层导入`ResearchExperiment`，实现只读`definition`属性和
 `execute(context)`。`ExperimentDefinition`在执行前写明问题、假设、证伪条件、数据范围、
-开发截止、随机种子、阶段协议与允许的能力；`ExperimentResult`返回机器事实、诊断及声明的
+开发截止、随机种子、阶段协议与研究操作声明；`ExperimentResult`返回机器事实、诊断及声明的
 产物。研究员只通过平台提供的`ExperimentContext`访问数据、SRT运行、评价、前驱证据和工作
 空间，不自行构造平台回执。
 
@@ -16,7 +16,7 @@
 `load_experiment(...)`核对哈希并隔离加载。探索使用
 `czsc_trader.research_tools.create_experiment_context(...)`，正式实验使用
 `create_formal_experiment_context(...)`；两者不可互换。`execute_experiment(...)`核对定义、
-能力、产物及资源使用，并生成平台回执。公共导出和类型签名以
+源码身份、产物及资源使用，并生成平台回执。公共导出和类型签名以
 [`research_experiment`顶层](src/research_experiment/__init__.py)及
 [`czsc_trader.research_tools`顶层](../../src/czsc_trader/research_tools/__init__.py)为准。
 
@@ -47,8 +47,13 @@
 旧格式不自动解码、升级或补齐字段；原件供人工查阅，平台不承诺历史机器复验。
 
 `ExperimentMode.FORMAL`声明受管执行方式；`ExperimentDataScope.DEVELOPMENT`声明开发数据范围，
-`SEALED_VALIDATION`声明封存验证范围。正式开发实验可以搜索参数；封存验证必须使用正式模式、
-显式验证截止日及读取能力，并禁止搜索和选择参数。数据门属于执行契约，不构成Python代码安全沙箱。
+`SEALED_VALIDATION`声明封存验证范围，并要求正式模式及晚于开发截止日的验证截止日。
+`allowed_datasets`和`capabilities`保留为研究声明。研究员负责研究授权、数据范围及搜索、选型
+约束；平台不以这些声明批准或拒绝数据访问、策略运行或评价，仍检查类型、身份、请求自身
+的时间与数据契约以及资源限制。
+
+使用`context.record_capability(ExperimentCapability.SEARCH_PARAMETERS)`记录第三方研究操作。
+记录不表示取得授权；`real_returns`和`sealed_validation`上下文参数仅用于标记调用追踪。
 
 - 实验必须显式实现`synthetic_precheck`，缺失时预检失败。
 - 合成预检必须覆盖输入结构、边界、时间对齐和实际计算路径。
@@ -82,10 +87,11 @@
 需要显式探测数据可用性时，使用底层公共
 `czsc_trader.research_tools.preflight_experiment(loaded, resources=resources,
 dataflows=flows, data_requests=requests)`。`requests`必须是`DataRequest`元组，
-且必须提供已配置的`Dataflows`。探测只允许声明过的数据集、已声明的`reads_real_returns`能力
-及开发截止日内的请求；仅`READY`通过。不传请求时报告`DATA_READINESS`警告，不隐式联网。
+且必须提供已配置的`Dataflows`。研究员确认请求范围，平台核验显式请求的DFLS结果；
+仅`READY`通过。不传请求时报告`DATA_READINESS`警告，不隐式联网。
 `preflight_experiment_archive`当前不接收这两个探测参数。
-缓存命中不验证源凭据；需要验证源访问时，使用未启用缓存或`REFRESH`配置的DFLS。
+资产复用不验证源凭据；需要验证源访问时，显式执行
+`flows.prepare(requests, policy=PreparePolicy.REFRESH)`并检查结果。
 
 预检还扫描绑定的Python源码，报告以下风险位置：
 
@@ -102,9 +108,9 @@ dataflows=flows, data_requests=requests)`。`requests`必须是`DataRequest`元�
 
 ## 数据空间、两阶段访问与第三方搜索
 
-探索上下文的必填`dataflows`参数同时用于默认SRT和默认评价器；显式提供自定义运行时或评价器时，
-调用方负责它们的数据配置。正式上下文必须指定`data_space: DataSpace`，由平台创建DFLS并共享给
-SRT和评价器。路径相对显式传入的仓库根目录，研究任务默认使用`data/research/<策略ID>/`：
+探索上下文的必填`dataflows`参数用于`context.data`和默认SRT运行时；显式提供自定义运行时或
+评价器时，调用方负责其实现。正式上下文必须指定`data_space: DataSpace`，用于研究数据端口
+和SRT运行时。路径相对显式传入的仓库根目录，研究任务默认使用`data/research/<策略ID>/`：
 
 ```python
 from pathlib import Path
@@ -124,7 +130,7 @@ context = create_formal_experiment_context(
 显式初始化，随后将实例注入`create_experiment_context`。供应商与凭据属于宿主配置；数据选择
 与覆盖要求属于`DataRequest`。完整强类型契约见[DFLS说明](../dataflows/README.md)。
 
-实验的数据端口保留两阶段调用。下例中的`request`为实验已声明且在授权截止范围内的`DataRequest`：
+实验的数据端口保留两阶段调用。下例中的`request`是研究员已确认使用范围的`DataRequest`：
 
 ```python
 from dataflows import PreparePolicy
@@ -137,10 +143,15 @@ if not publication.ready:
     raise RuntimeError(f"prepared data read failed: {publication.error}")
 ```
 
-`prepare`在访问供应商前核验全部请求的研究权限；`fetch`只读指定引用，不隐式取数。
+`prepare`按请求准备数据；`fetch`只读指定引用，不隐式取数。
 两阶段的请求、状态、实际数据身份和准备引用进入trace。`REFRESH`重新访问供应商，
 旧引用仍定位原数据版本。DFLS统一管理数据资产，不承担研究封存；研究业务负责保存输入清单，
-保留其引用的数据空间。当前review快照也依赖原DFLS空间，归档中的引用不是数据资产副本。
+保留其引用的数据空间。
+
+TDR的账户评价与候选、冻结策略回测统一使用`data/backtest/`，由平台内部初始化，
+独立于上述研究任务空间。`evaluate_strategy(request)`不接收DFLS或空间参数；
+`EvaluationRequest.execution_data`可省略，由评价过程准备。返回结果可与原请求直接传给
+`build_assessment_evidence`。当前review快照依赖该回测空间中的原资产，归档引用不包含资产副本。
 
 Optuna继续作为独立第三方库使用，研究员组织study、sampler、trial、预算、剪枝、重试和停止条件。
 `ExperimentResources(max_workers, random_seed, native_threads_per_worker=1)`配置单次执行资源，
@@ -160,7 +171,7 @@ Optuna继续作为独立第三方库使用，研究员组织study、sampler、tr
 主进程持有唯一上下文与回执，子进程只计算；不得将上下文传入研究员自己的进程池。批量请求
 各自`workers=1`，进程数由`ExperimentResources.max_workers`限定，本地数值库线程数由
 `native_threads_per_worker`限定。父进程统一准备各窗口的`StrategyInputBinding`，子进程在同一
-数据空间中只读已绑定输入，正式worker不配置供应商。每次评价的SRT计算临时目录隔离；
+`data/backtest/`中只读已绑定输入，正式worker不配置供应商。每次评价的SRT计算临时目录隔离；
 成功返回结果后回收，失败目录保留供诊断。探索入口的自定义evaluator及provider须可序列化
 （模块级函数或可序列化对象），
 不支持的传输在执行前报错。Windows脚本入口使用`if __name__ == "__main__":`保护。
@@ -180,8 +191,9 @@ REX记录实际执行事实；阶段报告由TDR的`assemble_delivery`另行验�
 
 ## 阅读实验来源
 
-研究员核对候选所指向的实验问题、数据门、源码绑定、执行回执和结果身份。
-REX执行成功只证明实验按声明运行；其结果不自动成为可交易Alpha、候选资格或冻结授权。
+研究员核对候选所指向的实验问题、数据使用范围、源码绑定、执行回执和结果身份。
+REX执行成功说明计算及产物通过执行契约校验；研究授权与阶段约束由研究员核对，
+结果不自动成为可交易Alpha、候选资格或冻结授权。
 
 ## 实验协议与选择历史
 

@@ -9,14 +9,13 @@
 | 任务 | 公共入口 | 说明 |
 | --- | --- | --- |
 | 完整业务操作 | [application](application/__init__.py) | 选择性导出现有应用服务，不重复包装实现 |
-| 正式实验与账户评价 | [research_tools](research_tools/__init__.py) | REX受管上下文、数据范围及实际执行追踪 |
+| 正式实验与账户评价 | [research_tools](research_tools/__init__.py) | REX受管上下文、执行契约及实际调用追踪 |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 显式保存候选身份、来源和源码；评价不自动登记 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 强类型内容、证据闭包和不可变修订 |
 | 自检证据适配 | `research_tools.build_assessment_evidence` | 将受管评价事实转换为SE的`AssessmentEvidence` |
 | 技术检验与获批冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 用户选型、检验、冻结批准分别绑定证据 |
 | 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放类型；业务执行使用`application.run_backtest` |
 | 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
-| 数据准备与校验 | `PrepareDataCommand`、`prepare_data`、`validate_data` | 准备行情可能联网并写入数据目录 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | 完整模板操作包含跨FSC绑定校验 |
 | 档案校验 | `validate_archives` | 只读验证；不重签原件 |
 | 版本查询与部署 | `list_installed_strategies`、`strategy_info`、`deploy_strategy` | 部署单独授权；不操作PTE账户 |
@@ -37,11 +36,16 @@
 
 ## 2. 公共输入与执行约定
 
-- `RepositoryContext.discover`只定位仓库路径，不加载凭据；数据入口按其签名接收仓库环境文件。
+- `RepositoryContext.discover`只定位仓库路径，不加载凭据；回测宿主在执行时配置DFLS，并使用仓库`.env`作为凭据文件。
 - API输入遵循公开类型；现有文件化API仍接收JSON文件路径，不要求经由CLI。
 - 目录、回测等既有服务返回`CommandResult`；候选、交付、检验与冻结服务返回各自强类型结果，具体见下文。调用方须核对状态及异常。
 - 路径相对性按接口签名处理。临时工作空间放在`.tmp/`，不得覆盖封存实验。
 - API返回成功不替代研究结论判断、用户批准或生产授权。
+
+TDR提供研究执行、评价、回测及证据业务接口。独立取数使用DFLS的`prepare/fetch`，
+实验内通过`context.data`调用并记录请求、结果和准备引用。TDR不提供独立行情准备、CSV加载
+或数据校验API。研究员负责取得研究授权、选择可用数据范围并遵守阶段约束；TDR校验请求
+自身的数据身份、日期范围、资源配置和执行证据，不将研究声明作为权限门槛。
 
 ## 3. 实验预检与执行
 
@@ -61,7 +65,8 @@ report = preflight_experiment_archive(
 路径和单次执行资源配置是示例，须替换为实际值。前驱通过`PredecessorEvidence`绑定回执哈希。
 新执行上下文要求`ExperimentDefinition.schema_version=2`，显式区分`DEVELOPMENT`开发数据与
 `SEALED_VALIDATION`封存验证数据。`FORMAL`表示受管执行方式，开发数据也可以正式执行；
-封存验证要求专属能力和截止日，并禁止参数搜索与选择。
+封存验证要求正式模式及合法的验证截止日。封存数据的使用权限、搜索和选型限制由研究员按
+研究合同保证；`allowed_datasets`和`capabilities`记录研究声明，平台不据此批准或拒绝执行。
 
 合成预检可返回`ExperimentPrecheckResult`，列出检查项并提供合成`ExperimentResult`样本做严格
 JSON往返校验。预检还报告共享数组修改、列名冲突、进程载荷、浅层序列化及trial身份风险。
@@ -69,11 +74,15 @@ JSON往返校验。预检还报告共享数组修改、列名冲突、进程载�
 
 如需验证凭据、数据可用性和覆盖，显式调用
 `research_tools.preflight_experiment(loaded, resources=resources, dataflows=flows,
-data_requests=(request,))`。数据请求必须满足实验允许的数据集、真实收益读取能力和开发截止日。
+data_requests=(request,))`。研究员确认探测范围；平台校验显式请求及DFLS就绪结果。
 未传探测请求时保留`DATA_READINESS`警告；上面的档案应用API当前不接收探测参数。
-缓存命中只证明缓存请求可用；验证源凭据和实时可达性时，使用未启用缓存或`REFRESH`配置的DFLS。
+复用资产只证明该请求的数据可用；验证源访问时，显式调用DFLS
+`prepare(requests, policy=PreparePolicy.REFRESH)`并检查返回状态。
 
-实验使用`load_experiment`加载，按模式通过`create_formal_experiment_context`或`create_experiment_context`建立上下文，再调用`execute_experiment`。正式评价使用`context.evaluation.evaluate(request)`，校验身份、数据范围、截止日及单次执行资源。平台记录实际成功、失败和取消尝试，生成schema 2回执；执行回执不允许由研究实现伪造。
+实验使用`load_experiment`加载，按模式通过`create_formal_experiment_context`或`create_experiment_context`建立上下文，再调用`execute_experiment`。正式评价使用`context.evaluation.evaluate(request)`，校验身份、请求窗口与数据截止日的一致性及单次执行资源。平台记录实际成功、失败和取消尝试，生成schema 2回执；执行回执不允许由研究实现伪造。
+
+第三方研究操作可通过`context.record_capability(ExperimentCapability.SEARCH_PARAMETERS)`记录。
+该方法仅记录操作类型，不检查授权；实际数据和评价调用由端口自动追踪。
 
 Optuna维持独立第三方库使用方式。研究员负责study、trial、搜索预算、剪枝、重试和停止条件。
 `ExperimentResources`只声明`max_workers`、`random_seed`和`native_threads_per_worker`；
@@ -128,29 +137,27 @@ result = run_backtest(
 CLI的`--lot-size`必填且必须大于零。BuyHold、MA5/MA20与策略使用相同整手单位，基准通过TXE
 记录实际现金、持仓、费用及净值，SE独立复算审计。底层`replay_buyhold`和`replay_benchmarks`
 同样要求关键字参数`lot_size`。回测manifest使用`schema_version=4`并记录`request.lot_size`；
-研究指标语义版本为`candidate-srt-txe-v3-lot-size`；结果比较要求双方均符合当前证据合同及计算口径。
+研究指标语义版本为`candidate-srt-txe-v4-explicit-benchmark`；结果比较要求双方均符合当前证据合同及计算口径。
 
-### 配置数据入口与本地缓存
+### 回测数据空间
 
 ```python
-from datetime import timedelta
-from pathlib import Path
-from dataflows import CachePolicy, Dataflows, LocalCacheConfig
-
-cache = LocalCacheConfig(
-    root=Path(".tmp/dataflows-cache"), namespace="research-provider-v1",
-    max_age=timedelta(hours=24), policy=CachePolicy.READ_THROUGH,
-)
-flows = Dataflows(env_file=context.root / ".env", cache=cache)
-result = run_backtest(context, strategy, request, dataflows=flows)
+# context、strategy、request按上面的回测契约构造。
+result = run_backtest(context, strategy, request)
 ```
 
-`run_backtest`、`evaluate_strategy`和`CandidateEvaluationContext`支持宿主
-显式传入`dataflows`，同一配置贯穿输入准备和默认评价执行链。默认入口使用仓库环境文件且不启用缓存。
-探索使用`create_experiment_context(..., dataflows=flows)`；正式实验通过
-`create_formal_experiment_context(..., cache=cache)`由平台创建数据入口。
-缓存策略、有效期、命名空间及错误码见[DFLS说明](../../packages/dataflows/README.md#dev配置本地缓存)。
-缓存配置属于执行宿主配置，不替代数据身份，也不写入评价请求身份。
+候选、冻结版本、研究内评价及文件化评价统一使用仓库根目录下的`data/backtest/`。
+TDR内部创建DFLS，调用方无需指定空间；`run_backtest`、`evaluate_strategy(request)`和
+`CandidateEvaluationContext`均不接收`dataflows`参数。
+
+`EvaluationRequest.execution_data`可省略，平台根据策略和评价窗口准备执行行情及策略输入，
+再以固定引用计算。已有执行数据和输入绑定须来自同一回测空间，引用无效、跨空间或内容变化
+时明确失败。研究评价返回的结果可直接与原请求一起传给`build_assessment_evidence`。
+
+研究过程的独立取数仍使用任务指定的空间，例如`data/research/<策略ID>/`；
+上下文的数据端口与账户评价使用不同空间。配置和两阶段示例见[REX说明](../../packages/research_experiment/README.md#数据空间两阶段访问与第三方搜索)。
+DFLS统一管理数据资产及复用，TDR不再生成供独立取数使用的CSV副本。
+回测复算和review证据重放依赖`data/backtest/`中的原资产，须保留完整空间。
 
 ## 5. 证据读取与失败语义
 
