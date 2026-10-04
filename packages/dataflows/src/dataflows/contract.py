@@ -143,18 +143,28 @@ class DataTemporalRequirement:
 
 @dataclass(frozen=True, slots=True)
 class DataCoverageRequirement:
-    """Minimum history coverage required before DFLS may return READY."""
+    """Minimum history coverage required before DFLS may return READY.
 
-    maximum_start_lag_days: int = 0
+    Observation/session minima count Date values through observations_through
+    (inclusive; an ISO date includes the whole day), or the full request if None.
+    A None start lag inherits the provider's declared start-range constraint.
+    """
+
+    maximum_start_lag_days: int | None = 0
     minimum_observations: int = 1
     minimum_sessions: int = 0
+    observations_through: str | None = None
 
     def __post_init__(self) -> None:
         for field_name in ("maximum_start_lag_days", "minimum_observations", "minimum_sessions"):
             value = getattr(self, field_name)
+            if field_name == "maximum_start_lag_days" and value is None:
+                continue  # Inherit the provider's declared start-range constraint.
             minimum = 1 if field_name == "minimum_observations" else 0
             if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
                 raise ValueError(f"{field_name} must be an integer >= {minimum}")
+        if self.observations_through is not None:
+            _timestamp(self.observations_through, "observations_through")
 
 
 def _timestamp(value: str, name: str) -> pd.Timestamp:
@@ -278,6 +288,14 @@ class DataRequest:
                 raise ValueError("required_cutoff must fall within start and end")
         if self.coverage is not None and not isinstance(self.coverage, DataCoverageRequirement):
             raise TypeError("coverage must be DataCoverageRequirement or None")
+        if self.coverage is not None and self.coverage.observations_through is not None:
+            through = _timestamp(self.coverage.observations_through, "observations_through")
+            if len(self.coverage.observations_through) == 10:
+                through += pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)
+            if str(through.tzinfo) != str(start.tzinfo):
+                raise ValueError("observations_through must use the request timezone")
+            if not start <= through <= end:
+                raise ValueError("observations_through must fall within start and end")
         intraday = {"1m", "5m", "15m", "30m"}
         frequencies = {"daily"}
         if dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:

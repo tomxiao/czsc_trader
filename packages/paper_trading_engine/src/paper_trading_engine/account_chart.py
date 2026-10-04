@@ -137,6 +137,7 @@ class AccountChartService:
         self._owns_executor = executor is None
         self._jobs: dict[str, Future[None]] = {}
         self._last_submit: dict[str, float] = {}
+        self._source_refresh_pending: set[str] = set()
         self._guard = RLock()
         self._store_guard = RLock()
         self._fetch_guard = RLock()
@@ -213,7 +214,7 @@ class AccountChartService:
                     if active is not None and active[1] is result:
                         self._market_fetches.pop(fetch_key, None)
 
-    def _market_data(self, account: dict[str, Any]) -> tuple[str, list[dict[str, object]]]:
+    def _market_data(self, account: dict[str, Any], *, refresh_source: bool = False) -> tuple[str, list[dict[str, object]]]:
         cutoff = date.fromisoformat(str(account["selection_data_cutoff"])).isoformat()
         price_identity, frame = self._bounded_market_history(
             str(account["account_id"]),
@@ -221,6 +222,7 @@ class AccountChartService:
             asset=str(account["asset_type"]),
             selection_data_cutoff=cutoff,
             context_sessions=self.context_sessions,
+            refresh_source=refresh_source,
         )
         frame = frame.rename(
             columns={
@@ -316,7 +318,7 @@ class AccountChartService:
             if (observed := self._fact_date(row, fields)) is not None and observed > cutoff
         ]
 
-    def _request(self, account: dict[str, Any]) -> tuple[dict[str, object], bool]:
+    def _request(self, account: dict[str, Any], *, refresh_source: bool = False) -> tuple[dict[str, object], bool]:
         account_id = str(account["account_id"])
         cutoff_value = account.get("selection_data_cutoff")
         if not cutoff_value:
@@ -376,7 +378,7 @@ class AccountChartService:
                 snapshot_rows, cutoff, ("session",),
             )
         ]
-        market_identity, bars = self._market_data(account)
+        market_identity, bars = self._market_data(account, refresh_source=refresh_source)
         if self._closing.is_set():
             raise _RefreshCancelled
         release_id = f'{account["strategy_id"]}-{account["strategy_version"]}'
@@ -457,12 +459,12 @@ class AccountChartService:
                 except Exception:
                     return
 
-    def _refresh(self, account: dict[str, Any]) -> None:
+    def _refresh(self, account: dict[str, Any], refresh_source: bool = False) -> None:
         account_id = str(account["account_id"])
         meta_path = self._meta_path(account_id)
         old_meta = self._load_meta(meta_path)
         try:
-            request, has_forward = self._request(account)
+            request, has_forward = self._request(account, refresh_source=refresh_source)
             encoded = json.dumps(
                 request, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
                 allow_nan=False, default=str,
@@ -597,6 +599,8 @@ class AccountChartService:
         with self._guard:
             if self._closing.is_set():
                 return self._status_from_cache(account, refreshing=False)
+            if force:
+                self._source_refresh_pending.add(account_id)
             job = self._jobs.get(account_id)
             if job is not None and job.done():
                 self._consume_job(account, job)
@@ -604,11 +608,13 @@ class AccountChartService:
                 job = None
             last_submit = self._last_submit.get(account_id)
             if job is None and (
-                force
+                account_id in self._source_refresh_pending
                 or last_submit is None
                 or now - last_submit >= self.refresh_interval_seconds
             ):
-                job = self._executor.submit(self._refresh, dict(account))
+                refresh_source = account_id in self._source_refresh_pending
+                job = self._executor.submit(self._refresh, dict(account), refresh_source)
+                self._source_refresh_pending.discard(account_id)
                 self._jobs[account_id] = job
                 self._last_submit[account_id] = now
                 if job.done():
@@ -618,7 +624,7 @@ class AccountChartService:
             return self._status_from_cache(account, refreshing=job is not None)
 
     def refresh(self, account_id: str) -> dict[str, object]:
-        """Force one asynchronous rebuild without mutating trading state."""
+        """Refresh source data and rebuild asynchronously without changing trading state."""
 
         return self.status(account_id, force=True)
 

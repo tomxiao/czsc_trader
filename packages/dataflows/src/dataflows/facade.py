@@ -844,7 +844,7 @@ def _date_bounds(
         )
     maximum_start_lag_days = (
         request.coverage.maximum_start_lag_days
-        if request.coverage is not None
+        if request.coverage is not None and request.coverage.maximum_start_lag_days is not None
         else metadata.get("maximum_start_lag_days")
     )
     if maximum_start_lag_days is not None:
@@ -929,16 +929,23 @@ def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
     coverage = request.coverage
     if coverage is None:
         return
+    if coverage.observations_through is not None:
+        frame = frame.loc[
+            pd.to_datetime(frame["Date"], errors="raise")
+            <= _end_timestamp(coverage.observations_through)
+        ]
     if len(frame) < coverage.minimum_observations:
         raise IncompleteDataError(
             "published dataframe has fewer observations than required",
             minimum_observations=coverage.minimum_observations, actual_observations=len(frame),
+            observations_through=coverage.observations_through,
         )
     sessions = pd.to_datetime(frame["Date"], errors="raise").dt.normalize().nunique()
     if sessions < coverage.minimum_sessions:
         raise IncompleteDataError(
             "published dataframe has fewer sessions than required",
             minimum_sessions=coverage.minimum_sessions, actual_sessions=int(sessions),
+            observations_through=coverage.observations_through,
         )
 
 

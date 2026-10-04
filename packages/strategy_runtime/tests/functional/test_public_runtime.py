@@ -211,6 +211,13 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(tmp_pat
     request = strategy.calendar_request()
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     plan = strategy.plan_inputs(flows.fetch(request, prepared=prepared.reference))
+    for name, item in plan.requests.items():
+        if name == plan.calendar_name:
+            assert item.coverage is None
+        else:
+            assert item.coverage.minimum_sessions == 1
+            assert item.coverage.observations_through == "2026-09-02"
+            assert item.coverage.maximum_start_lag_days is None
     batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
     assert batch.ready
     binding = StrategyInputBinding(plan, batch.reference)
@@ -220,6 +227,35 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(tmp_pat
     assert not (tmp_path / "input-bindings").exists()
     strategy.prepare_data(binding=binding)
     assert strategy.input_binding == binding
+
+
+def test_latest_available_request_carries_source_freshness_into_preparation(
+    tmp_path, runtime_candidate,
+) -> None:
+    from strategy_runtime import implementation_sha256
+
+    descriptor = dict(runtime_candidate.payload["runtime"])
+    source = runtime_candidate.source_root / descriptor["source_files"][0]
+    source.write_text(source.read_text(encoding="utf-8").replace(
+        "CutoffRule.SIGNAL_SESSION,", "CutoffRule.LATEST_AVAILABLE,\n                3,",
+    ), encoding="utf-8")
+    descriptor["source_sha256"] = implementation_sha256(
+        tuple(descriptor["source_files"]), source_root=runtime_candidate.source_root,
+    )
+    candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, "runtime": descriptor})
+    flows = _flows(tmp_path)
+    strategy = StrategyRuntime(dataflows=flows).create(StrategyInit(
+        candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path / "context",
+    ))
+    request = strategy.calendar_request()
+    calendars = flows.prepare((request,), policy=PreparePolicy.REUSE)
+    plan = strategy.plan_inputs(flows.fetch(request, prepared=calendars.reference))
+    assert plan.requests["market"].required_cutoff == "2026-08-30"
+    assert plan.requests["market"].coverage.observations_through == "2026-09-02"
+    batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
+    assert batch.ready
+    prepared = strategy.prepare_data(binding=StrategyInputBinding(plan, batch.reference))
+    assert prepared.available_through == date(2026, 9, 2)
 
 
 def test_session_depth_counts_days_before_first_signal() -> None:

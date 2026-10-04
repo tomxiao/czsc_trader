@@ -50,6 +50,58 @@ def test_refresh_deduplicates_acquisition_but_checks_each_coverage(flow_factory)
     assert [item.status for item in rejected.items] == [DataStatus.READY, DataStatus.INCOMPLETE]
 
 
+def test_anchored_coverage_recovers_without_counting_later_observations(flow_factory):
+    calls = []
+    source = _rates().iloc[[0, 2]].copy()
+
+    def provider(request):
+        calls.append(request)
+        return source, {"vendor": "fixture"}
+
+    flows = flow_factory({Dataset.SHIBOR_DAILY: provider})
+    original = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    assert original.ready
+    required = replace(_request(), coverage=DataCoverageRequirement(
+        minimum_observations=2, minimum_sessions=2, observations_through="2026-09-15",
+    ))
+    rejected = flows.prepare((required,), policy=PreparePolicy.REUSE)
+    assert rejected.status is PrepareStatus.FAILED and rejected.reference is None
+    assert rejected.items[0].status is DataStatus.INCOMPLETE
+    assert rejected.items[0].error.context["actual_observations"] == 1
+    assert rejected.items[0].error.context["observations_through"] == "2026-09-15"
+    source = _rates()
+    repaired = flows.prepare((required,), policy=PreparePolicy.REUSE)
+    assert repaired.ready and len(calls) == 3
+    assert len(flows.fetch(required, prepared=repaired.reference).dataframe) == 3
+    assert len(flows.fetch(_request(), prepared=original.reference).dataframe) == 2
+    assert len(calls) == 3
+
+
+@pytest.mark.parametrize("provider_lag, ready", [(None, True), (1, True), (0, False)])
+def test_coverage_can_inherit_provider_start_lag(flow_factory, provider_lag, ready):
+    metadata = {"vendor": "fixture"}
+    if provider_lag is not None:
+        metadata["maximum_start_lag_days"] = provider_lag
+    flows = flow_factory({Dataset.SHIBOR_DAILY: lambda request: (_rates().iloc[1:], metadata)})
+    request = replace(_request(), coverage=DataCoverageRequirement(
+        maximum_start_lag_days=None, minimum_sessions=2,
+    ))
+    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
+    assert prepared.ready is ready
+
+
+@pytest.mark.parametrize("through", ["2026-09-13", "2026-09-17", "2026-09-15T00:00:00+08:00"])
+def test_observation_boundary_must_match_request_range_and_timezone(through):
+    with pytest.raises(ValueError, match="observations_through"):
+        replace(_request(), coverage=DataCoverageRequirement(observations_through=through))
+
+
+@pytest.mark.parametrize("through", ["yesterday", "2026-02-30", 20260915, ""])
+def test_observation_boundary_requires_explicit_valid_timestamp(through):
+    with pytest.raises(ValueError, match="observations_through"):
+        DataCoverageRequirement(observations_through=through)
+
+
 def test_conflicting_overlap_prevents_batch_publication(flow_factory):
     calls = []
 
@@ -134,6 +186,18 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
     result = flows.fetch(subset, prepared=prepared.reference)
     assert result.ready and len(calls) == 1
     assert result.dataframe.Date.tolist() == times[1:4].tolist()
+
+    whole_day = replace(request, coverage=DataCoverageRequirement(
+        minimum_observations=8, minimum_sessions=1, observations_through="2026-09-14",
+    ))
+    assert flows.fetch(whole_day, prepared=prepared.reference).ready
+    morning = replace(request, coverage=DataCoverageRequirement(
+        minimum_observations=5, observations_through="2026-09-14 11:30",
+    ))
+    assert flows.fetch(morning, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    sessions = replace(whole_day, coverage=replace(whole_day.coverage, minimum_sessions=2))
+    assert flows.fetch(sessions, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("missing_bar", [False, True])

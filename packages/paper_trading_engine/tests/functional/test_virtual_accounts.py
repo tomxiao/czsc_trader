@@ -323,12 +323,16 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
                 "close": close,
             }
         )
-    market_data = SimpleNamespace(
-        history=lambda **_kwargs: (
-            "a" * 64,
-            pd.DataFrame(rows),
-        )
-    )
+    market_requests = []
+    source_fails = [False]
+
+    def history(**kwargs):
+        market_requests.append(kwargs)
+        if source_fails[0]:
+            raise ValueError("supplier daily publication unavailable")
+        return "a" * 64, pd.DataFrame(rows)
+
+    market_data = SimpleNamespace(history=history)
     calls = []
 
     def renderer(request):
@@ -377,6 +381,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     second = service.status("s001-v2")
     assert second["fingerprint"] == first["fingerprint"]
     assert len(calls) == 1
+    assert [item["refresh_source"] for item in market_requests] == [False]
 
     monkeypatch.setattr(
         store,
@@ -400,12 +405,18 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     assert len(calls) == 1
 
     refreshed = service.refresh("s001-v2")
+    assert [item["refresh_source"] for item in market_requests] == [False, True]
     assert refreshed["fingerprint"] != first["fingerprint"]
     assert len(calls) == 2
     refreshed_path = service.chart_path("s001-v2", refreshed["fingerprint"])
     assert refreshed_path != first_path
     assert refreshed_path.read_text(encoding="utf-8") == "<html>chart-2</html>"
     assert first_path.read_text(encoding="utf-8") == "<html>chart-1</html>"
+    source_fails[0] = True
+    assert service.refresh("s001-v2")["status"] == "UNAVAILABLE"
+    source_fails[0] = False
+    assert service.refresh("s001-v2")["status"] == "READY"
+    assert all(item["refresh_source"] for item in market_requests[1:])
     service.close()
     store.close()
 
@@ -475,6 +486,7 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     entered = Event()
     release = Event()
     worker_ids = []
+    source_refreshes = []
     frame = pd.DataFrame(
         [
             {"dt": "2026-09-02", "open": 1, "high": 1.1, "low": 0.9, "close": 1},
@@ -482,8 +494,9 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
         ]
     )
 
-    def history(**_kwargs):
+    def history(**kwargs):
         worker_ids.append(("dfls", get_ident()))
+        source_refreshes.append(kwargs["refresh_source"])
         entered.set()
         assert release.wait(2)
         return "a" * 64, frame
@@ -507,6 +520,8 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     assert first["status"] == "BUILDING"
     assert elapsed < 0.5
     assert entered.wait(1)
+    assert service.refresh("s001-v2")["status"] == "BUILDING"
+    assert source_refreshes == [False]
     release.set()
     deadline = time.monotonic() + 2
     ready = service.status("s001-v2")
@@ -514,9 +529,10 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
         time.sleep(0.01)
         ready = service.status("s001-v2")
     assert ready["status"] == "READY"
+    assert source_refreshes == [False, True]
     assert {name for name, _thread_id in worker_ids} == {"dfls", "render"}
     assert all(thread_id != caller for _name, thread_id in worker_ids)
-    assert len({thread_id for _name, thread_id in worker_ids}) == 2
+    assert len({thread_id for name, thread_id in worker_ids if name == "render"}) == 1
     service.close()
     store.close()
 

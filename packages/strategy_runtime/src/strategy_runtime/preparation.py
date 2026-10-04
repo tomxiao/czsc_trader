@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from datetime import date
+from datetime import date, timedelta
 from importlib.resources import files
 from pathlib import Path
 import sys
@@ -12,6 +12,7 @@ import sys
 import pandas as pd
 from dataflows import (
     DataRequest,
+    DataCoverageRequirement,
     EvidenceParameters, MoneyflowParameters, NoParameters, PreparePolicy,
     DataResult,
     DataStatus,
@@ -168,6 +169,7 @@ def plan_inputs(*, strategy: StrategyIdentity, algorithm: StrategyImplementation
     if set(scope.inputs) != set(requirements):
         raise RuntimeContractError("strategy calculation scope differs from input contract")
     requests = {calendar_name: request}
+    first_signal = min(scope.signal_dates.values())
     for name, requirement in requirements.items():
         if name == calendar_name or scope.inputs[name] is None:
             continue
@@ -176,11 +178,31 @@ def plan_inputs(*, strategy: StrategyIdentity, algorithm: StrategyImplementation
         if requirement.dataset == Dataset.STOCK_MONEYFLOW.value and requirement.subject is None:
             parameters = MoneyflowParameters(tuple(item.isoformat() for item in dates
                                                    if input_range.start <= item <= input_range.end))
+        required_cutoff = input_range.required_cutoff
+        if (requirement.cutoff_rule is CutoffRule.LATEST_AVAILABLE
+                and requirement.maximum_staleness_days):
+            freshness_cutoff = scope.available_through - timedelta(
+                days=requirement.maximum_staleness_days,
+            )
+            required_cutoff = max(
+                input_range.start, freshness_cutoff,
+                required_cutoff or input_range.start,
+            )
+            if required_cutoff > input_range.end:
+                raise RuntimeContractError(f"input range cannot satisfy maximum staleness: {name}")
+        coverage = None
+        if requirement.lookback_sessions > 0:
+            coverage = DataCoverageRequirement(
+                maximum_start_lag_days=None,
+                minimum_observations=requirement.lookback_sessions,
+                minimum_sessions=requirement.lookback_sessions,
+                observations_through=min(first_signal, input_range.end).isoformat(),
+            )
         requests[name] = DataRequest(
             requirement.dataset, requirement.subject, input_range.start.isoformat(),
             input_range.end.isoformat(),
-            None if input_range.required_cutoff is None else input_range.required_cutoff.isoformat(),
-            requirement.frequency, parameters,
+            None if required_cutoff is None else required_cutoff.isoformat(),
+            requirement.frequency, parameters, coverage=coverage,
         )
     return StrategyInputPlan(strategy, tradable_window, calendar_name,
                              result.identity.content_sha256, requests, dates,

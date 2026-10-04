@@ -19,7 +19,7 @@ from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
 
-def _flows(tmp_path) -> Dataflows:
+def _flows(tmp_path, *, publication=None) -> Dataflows:
     dates = pd.bdate_range(end="2026-09-04", periods=700)
     bars = pd.DataFrame(
         {
@@ -37,6 +37,10 @@ def _flows(tmp_path) -> Dataflows:
         frame = bars.loc[
             pd.to_datetime(bars["Date"]).between(request.start, request.end)
         ].copy()
+        if publication is not None and request.dataset is Dataset.ETF_UNADJUSTED_DAILY:
+            publication["calls"] += 1
+            if not publication["complete"]:
+                frame = frame.iloc[[0, -1]].copy()
         return frame, {
             "vendor": "test",
             "adjustment": "none" if "unadjusted" in request.dataset else "hfq",
@@ -409,6 +413,48 @@ def test_restart_restores_exact_input_binding_without_prepare(pte_frozen, tmp_pa
     assert restored.data_identity == original.data_identity
     assert restored.data_reference == original.data_reference
     assert len(list((tmp_path / "accounts/s900-v1/preparation-records").glob("*.json"))) == 1
+
+
+def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
+    candidate_payload, tmp_path,
+):
+    from strategy_runtime import (
+        StrategyCandidate, StrategyInit, StrategyRuntime, TradableWindow, implementation_sha256,
+    )
+    from paper_trading_engine.srt_advice_client import AdviceClientError
+
+    payload, source_root = candidate_payload
+    source = source_root / payload["runtime"]["source_files"][0]
+    source.write_text(source.read_text(encoding="utf-8").replace(
+        "                1,\n                CutoffRule.SIGNAL_SESSION,",
+        "                3,\n                CutoffRule.SIGNAL_SESSION,",
+    ), encoding="utf-8")
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        tuple(payload["runtime"]["source_files"]), source_root=source_root,
+    )
+    candidate = StrategyCandidate("S900", "C0001", payload, source_root)
+    publication = {"complete": False, "calls": 0}
+    flows = _flows(tmp_path, publication=publication)
+    context = tmp_path / "context"
+    init = StrategyInit(candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), context)
+    client = SrtAdviceClient(repo_root=tmp_path, data_dir=tmp_path / "pte", dataflows=flows)
+
+    with pytest.raises(AdviceClientError, match="preparation failed"):
+        client._prepare_strategy(StrategyRuntime(dataflows=flows).create(init))
+    assert publication["calls"] == 1
+    publication["complete"] = True
+    strategy = StrategyRuntime(dataflows=flows).create(init)
+    prepared = client._prepare_strategy(strategy)
+    assert publication["calls"] == 2
+    requirement = strategy.input_binding.plan.requests["execution"].coverage
+    assert requirement.minimum_sessions == 3
+    assert requirement.observations_through == "2026-09-02"
+
+    # Reopen the provider-free space: successful pinned inputs remain usable offline.
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
+    restored = StrategyRuntime(dataflows=offline).create(init)
+    assert restored.prepare_data(binding=strategy.input_binding) == prepared
+    assert publication["calls"] == 2
 
 
 def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen,tmp_path,monkeypatch):
