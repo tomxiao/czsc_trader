@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows import tushare_etf
 
 
-def test_etf_long_history_fetch_segments_adjustment_factors(monkeypatch) -> None:
+def test_etf_long_history_fetch_segments_adjustment_factors(flow_factory, publish_data, monkeypatch) -> None:
     class FakePro:
         def __init__(self) -> None:
             self.factor_requests: list[tuple[str, str]] = []
@@ -53,7 +53,7 @@ def test_etf_long_history_fetch_segments_adjustment_factors(monkeypatch) -> None
     request = DataRequest(
         Dataset.ETF_OHLCV, "510500.SH", "2013-03-15", "2026-09-08", "2026-09-08"
     )
-    ready = Dataflows({Dataset.ETF_OHLCV.value: lambda ignored: (bars, metadata)}).fetch(request)
+    ready = publish_data(flow_factory({Dataset.ETF_OHLCV.value: lambda ignored: (bars, metadata)}), request)
     assert ready.status is DataStatus.READY
     assert ready.identity is not None
     assert ready.identity.temporal_contract.availability_time_field == "AvailableDate"
@@ -62,8 +62,8 @@ def test_etf_long_history_fetch_segments_adjustment_factors(monkeypatch) -> None
         (bars, {**metadata, "adjustment_factor_publication_timestamp_verified": True}),
         (bars.assign(AvailableDate=bars["AvailableDate"] - pd.Timedelta(hours=7)), metadata),
     ):
-        failed = Dataflows({
+        failed = publish_data(flow_factory({
             Dataset.ETF_OHLCV.value: lambda ignored: (changed_frame, changed_metadata)
-        }).fetch(request)
+        }), request)
         assert failed.status is DataStatus.FAILED
         assert failed.error is not None and failed.error.code == "DATA_CONTRACT_MISMATCH"

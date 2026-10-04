@@ -5,7 +5,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
 
 
@@ -81,9 +81,9 @@ def test_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> Non
     assert len(frame) == 2
 
 
-def test_fred_policy_uncertainty_facade_publishes_typed_identity(monkeypatch) -> None:
+def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
             "2024-01-01",
             "2024-01-03",
@@ -91,7 +91,7 @@ def test_fred_policy_uncertainty_facade_publishes_typed_identity(monkeypatch) ->
         )
     })
 
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         None,
         "2024-01-01",
@@ -106,9 +106,9 @@ def test_fred_policy_uncertainty_facade_publishes_typed_identity(monkeypatch) ->
     assert result.identity.temporal_contract.availability_time_field == "AvailableDate"
 
 
-def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(monkeypatch) -> None:
+def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
-    symbol_result = Dataflows().fetch(DataRequest(
+    symbol_result = publish_data(flow_factory(), DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         "OTHER",
         "2024-01-01",
@@ -124,7 +124,7 @@ def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(monkeypatch) -
         "AvailableDate": [pd.Timestamp("2024-01-02")],
         "PolicyUncertaintyIndex": [100.0],
     })
-    wrong_lineage = Dataflows({
+    wrong_lineage = publish_data(flow_factory({
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: (
             frame,
             {
@@ -138,7 +138,7 @@ def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(monkeypatch) -
                 "available_at": "initial release date reported by ALFRED",
             },
         )
-    }).fetch(DataRequest(
+    }), DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         None,
         "2024-01-01",
@@ -150,18 +150,18 @@ def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(monkeypatch) -
     assert wrong_lineage.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_fred_policy_uncertainty_maps_source_failure_without_fake_success(monkeypatch) -> None:
+def test_fred_policy_uncertainty_maps_source_failure_without_fake_success(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
 
     def unavailable(*args: Any, **kwargs: Any) -> FakeResponse:
         raise requests.ConnectionError("offline")
 
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
             "2024-01-01", "2024-01-03", http_get=unavailable
         )
     })
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         None,
         "2024-01-01",
@@ -175,11 +175,11 @@ def test_fred_policy_uncertainty_maps_source_failure_without_fake_success(monkey
     assert result.error is not None and result.error.retryable
 
 
-def test_fred_policy_uncertainty_rejects_truncated_response(monkeypatch) -> None:
+def test_fred_policy_uncertainty_rejects_truncated_response(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
     payload = _payload()
     payload["count"] = 4
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
             "2024-01-01",
             "2024-01-03",
@@ -187,7 +187,7 @@ def test_fred_policy_uncertainty_rejects_truncated_response(monkeypatch) -> None
         )
     })
 
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         None,
         "2024-01-01",
@@ -200,7 +200,7 @@ def test_fred_policy_uncertainty_rejects_truncated_response(monkeypatch) -> None
     assert result.error.code == "INCOMPLETE_DATA"
 
 
-def test_fred_policy_uncertainty_blocks_missing_history_start(monkeypatch) -> None:
+def test_fred_policy_uncertainty_blocks_missing_history_start(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
     payload = {
         "count": 1,
@@ -208,7 +208,7 @@ def test_fred_policy_uncertainty_blocks_missing_history_start(monkeypatch) -> No
             {"date": "2024-01-10", "realtime_start": "2024-01-10", "value": "100.0"}
         ],
     }
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
             "2024-01-01",
             "2024-01-10",
@@ -216,7 +216,7 @@ def test_fred_policy_uncertainty_blocks_missing_history_start(monkeypatch) -> No
         )
     })
 
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
         None,
         "2024-01-01",
@@ -229,5 +229,5 @@ def test_fred_policy_uncertainty_blocks_missing_history_start(monkeypatch) -> No
     assert result.error.code == "INCOMPLETE_DATA"
 
 
-def test_default_registry_exposes_fred_policy_uncertainty() -> None:
-    assert Dataset.US_POLICY_UNCERTAINTY_DAILY.value in Dataflows().datasets
+def test_default_registry_exposes_fred_policy_uncertainty(flow_factory) -> None:
+    assert Dataset.US_POLICY_UNCERTAINTY_DAILY.value in flow_factory().datasets

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.tushare_strategy_data import fetch_us_cpi_release
 
 
@@ -86,17 +86,17 @@ def test_us_cpi_release_splits_vendor_queries_by_year() -> None:
         ([_row("20240112", "21:30")], True, DataStatus.INCOMPLETE),
     ],
 )
-def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(
+def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(flow_factory, publish_data,
     rows: list[dict[str, str]], calendar_gap: bool, expected_status: DataStatus
 ) -> None:
     pro = FakeCpiPro(rows, calendar_gap=calendar_gap)
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
             "2024-01-12", "2024-01-12", pro=pro
         )
     })
 
-    result = flow.fetch(DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None))
+    result = publish_data(flow, DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None))
 
     assert result.status is expected_status
     assert result.dataframe.empty
@@ -104,18 +104,18 @@ def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(
     assert result.error is not None
 
 
-def test_us_cpi_release_rejects_missing_monthly_history() -> None:
+def test_us_cpi_release_rejects_missing_monthly_history(flow_factory, publish_data) -> None:
     pro = FakeCpiPro([
         _row("20240112", "21:30"),
         _row("20240312", "20:30"),
     ])
 
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
             "2024-01-12", "2024-03-12", pro=pro
         )
     })
-    result = flow.fetch(
+    result = publish_data(flow,
         DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-03-12", None)
     )
 
@@ -123,15 +123,15 @@ def test_us_cpi_release_rejects_missing_monthly_history() -> None:
     assert result.identity is None
 
 
-def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast() -> None:
+def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_factory, publish_data) -> None:
     pro = FakeCpiPro([_row("20240112", "21:30")])
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
             "2024-01-12", "2024-01-12", pro=pro
         )
     })
 
-    result = flow.fetch(
+    result = publish_data(flow,
         DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", "2024-01-12")
     )
 
@@ -142,13 +142,13 @@ def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast() -> Non
     assert "Forecast" not in result.dataframe.columns
 
 
-def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider() -> None:
+def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider(flow_factory, publish_data) -> None:
     pro = FakeCpiPro([_row("20240112", "21:30")])
     frame, metadata = fetch_us_cpi_release("2024-01-12", "2024-01-12", pro=pro)
     frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
-    flow = Dataflows({Dataset.US_CPI_RELEASE.value: lambda _: (frame, metadata)})
+    flow = flow_factory({Dataset.US_CPI_RELEASE.value: lambda _: (frame, metadata)})
 
-    result = flow.fetch(
+    result = publish_data(flow,
         DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None)
     )
 

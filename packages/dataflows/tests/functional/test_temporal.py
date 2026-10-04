@@ -9,7 +9,6 @@ from dataflows import (
     DataStatus,
     DataTemporalContract,
     DataTemporalRequirement,
-    Dataflows,
     Dataset,
     RequestRangePolicy,
     TemporalAlignment,
@@ -93,7 +92,7 @@ def test_alignment_rejects_undeclared_warmup_and_stale_values() -> None:
         )
 
 
-def test_strict_coverage_blocks_truncated_history_without_provider_hint() -> None:
+def test_strict_coverage_blocks_truncated_history_without_provider_hint(flow_factory, publish_data) -> None:
     frame = pd.DataFrame({"Date": ["2026-09-10"], "OvernightRate": [1.5]})
     request = DataRequest(
         Dataset.SHIBOR_DAILY,
@@ -104,20 +103,20 @@ def test_strict_coverage_blocks_truncated_history_without_provider_hint() -> Non
         coverage=DataCoverageRequirement(maximum_start_lag_days=1),
     )
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.SHIBOR_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(request)
+    ), request)
 
     assert result.status is DataStatus.INCOMPLETE
     assert result.error is not None
     assert result.error.context["maximum_start_lag_days"] == 1
 
 
-def test_ready_identity_exposes_typed_temporal_contract() -> None:
+def test_ready_identity_exposes_typed_temporal_contract(flow_factory, publish_data) -> None:
     frame = pd.DataFrame({"Date": ["2026-09-01"], "OvernightRate": [1.5]})
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.SHIBOR_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(
+    ),
         DataRequest(
             Dataset.SHIBOR_DAILY,
             None,

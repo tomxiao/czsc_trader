@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.tushare_strategy_data import (
     fetch_cn_cpi_monthly,
     fetch_cn_money_monthly,
@@ -160,10 +160,10 @@ def test_fxcm_available_timestamp_blocks_next_morning_and_allows_declared_bounda
 
 
 @pytest.mark.parametrize("dataset,symbol", [(Dataset.FXCM_DAILY,"XAUUSD.FXCM"),(Dataset.USDCNH_DAILY,None)])
-def test_fxcm_facade_rejects_missing_or_early_availability(dataset, symbol) -> None:
+def test_fxcm_facade_rejects_missing_or_early_availability(flow_factory, publish_data, dataset, symbol) -> None:
     frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
     request = DataRequest(dataset, symbol, "2026-09-15", "2026-09-15", None)
-    def publish(f): return Dataflows({dataset.value: lambda _: (f, metadata)}).fetch(request)
+    def publish(f): return publish_data(flow_factory({dataset.value: lambda _: (f, metadata)}), request)
     assert publish(frame).status is DataStatus.READY
     assert publish(frame.drop(columns="AvailableDate")).status is DataStatus.FAILED
     early = frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
@@ -198,7 +198,7 @@ def test_long_vendor_histories_are_split_by_calendar_year() -> None:
     ]
 
 
-def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
+def test_facade_rejects_crossed_usdcnh_close_quotes(flow_factory, publish_data) -> None:
     from dataflows.contract import FXCM_AVAILABILITY_RULE
     frame = pd.DataFrame(
         {
@@ -217,9 +217,9 @@ def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
     frame["AvailableDate"] = pd.Timestamp("2026-09-17 08:00")
     metadata = {"vendor": "test", "availability_time_field": "AvailableDate",
                 "availability_timezone": "Asia/Shanghai", "available_at": FXCM_AVAILABILITY_RULE}
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.USDCNH_DAILY.value: lambda ignored: (frame, metadata)}
-    ).fetch(
+    ),
         DataRequest(
             Dataset.USDCNH_DAILY,
             None,
@@ -239,7 +239,7 @@ def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
     ("low", "expected_status"),
     [(245.40, DataStatus.READY), (245.50, DataStatus.FAILED)],
 )
-def test_sge_daily_allows_only_one_tick_vendor_rounding(low, expected_status) -> None:
+def test_sge_daily_allows_only_one_tick_vendor_rounding(flow_factory, publish_data, low, expected_status) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2014-10-22"],
@@ -251,9 +251,9 @@ def test_sge_daily_allows_only_one_tick_vendor_rounding(low, expected_status) ->
             "Amount": [5246170684.2],
         }
     )
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.SGE_GOLD_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(
+    ),
         DataRequest(
             Dataset.SGE_GOLD_DAILY,
             "Au99.99",

@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from collections.abc import Callable
 from enum import StrEnum
+from pathlib import Path, PureWindowsPath
+import re
 from types import MappingProxyType
 from typing import Any, Mapping
+from uuid import UUID
 
 import pandas as pd
 
@@ -141,14 +145,92 @@ class DataCoverageRequirement:
     """Minimum history coverage required before DFLS may return READY."""
 
     maximum_start_lag_days: int = 0
-    minimum_rows: int = 1
+    minimum_observations: int = 1
+    minimum_sessions: int = 0
 
     def __post_init__(self) -> None:
-        for field_name in ("maximum_start_lag_days", "minimum_rows"):
+        for field_name in ("maximum_start_lag_days", "minimum_observations", "minimum_sessions"):
             value = getattr(self, field_name)
-            minimum = 0 if field_name == "maximum_start_lag_days" else 1
+            minimum = 1 if field_name == "minimum_observations" else 0
             if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
                 raise ValueError(f"{field_name} must be an integer >= {minimum}")
+
+
+def _timestamp(value: str, name: str) -> pd.Timestamp:
+    """Accept explicit ISO dates/timestamps, never locale-dependent dates."""
+    if not isinstance(value, str) or not re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?(?:Z|[+-]\d{2}:\d{2})?)?",
+        value,
+    ):
+        raise ValueError(f"{name} must be an ISO date or timestamp")
+    try:
+        result = pd.Timestamp(value)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError(f"{name} must be a valid ISO date or timestamp") from exc
+    if pd.isna(result):
+        raise ValueError(f"{name} must be a valid timestamp")
+    return result
+
+
+def _relative_path(path: Path, name: str) -> None:
+    if not isinstance(path, Path):
+        raise TypeError(f"{name} must be a Path")
+    windows = PureWindowsPath(str(path))
+    if (not path.parts or path.is_absolute() or windows.drive or windows.root
+            or ".." in path.parts or ".." in windows.parts):
+        raise ValueError(f"{name} must be a non-empty relative path without '..'")
+
+
+def _sha256(value: str, name: str) -> None:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise ValueError(f"{name} must be a lowercase SHA-256 hexadecimal digest")
+
+
+@dataclass(frozen=True, slots=True)
+class NoParameters:
+    """A dataset without additional source parameters."""
+
+
+@dataclass(frozen=True, slots=True)
+class PcfParameters:
+    verify_official_pcf_components: bool = False
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.verify_official_pcf_components, bool):
+            raise TypeError("verify_official_pcf_components must be bool")
+
+
+@dataclass(frozen=True, slots=True)
+class MoneyflowParameters:
+    trading_dates: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.trading_dates, tuple) or not self.trading_dates:
+            raise ValueError("trading_dates must be a non-empty tuple")
+        for value in self.trading_dates:
+            _timestamp(value, "trading_dates item")
+            if len(value) != 10:
+                raise ValueError("trading_dates items must be ISO dates")
+        if tuple(sorted(set(self.trading_dates))) != self.trading_dates:
+            raise ValueError("trading_dates must be unique and ascending")
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceParameters:
+    repository_root: Path
+    source_path: str
+    source_sha256: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.repository_root, Path) or not self.repository_root.is_absolute():
+            raise ValueError("repository_root must be an absolute Path")
+        if not isinstance(self.source_path, str) or not self.source_path.strip():
+            raise ValueError("source_path must be a non-empty relative path")
+        _relative_path(Path(self.source_path), "source_path")
+        _sha256(self.source_sha256, "source_sha256")
+
+
+DataParameters = NoParameters | PcfParameters | MoneyflowParameters | EvidenceParameters
 
 
 @dataclass(frozen=True, slots=True)
@@ -161,31 +243,58 @@ class DataRequest:
     end: str
     required_cutoff: str | None
     frequency: str = "daily"
-    options: Mapping[str, Any] = field(default_factory=dict)
+    parameters: DataParameters = field(default_factory=NoParameters)
     coverage: DataCoverageRequirement | None = None
 
     def __post_init__(self) -> None:
-        dataset = str(self.dataset)
+        dataset = Dataset(self.dataset)
+        if self.symbol is not None and not isinstance(self.symbol, str):
+            raise TypeError("symbol must be None or a non-empty string")
         symbol = None if self.symbol is None else self.symbol.strip()
-        if not dataset:
-            raise ValueError("dataset must not be empty")
         if self.symbol is not None and not symbol:
             raise ValueError("symbol must be None or a non-empty string")
-        start = pd.Timestamp(self.start)
-        end = pd.Timestamp(self.end)
-        if pd.isna(start) or pd.isna(end):
-            raise ValueError("start and end must be valid timestamps")
+        start = _timestamp(self.start, "start")
+        end = _timestamp(self.end, "end")
+        if len(self.end) == 10:
+            end += pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)
+        if str(start.tzinfo) != str(end.tzinfo):
+            raise ValueError("start and end must use the same timezone")
         if start > end:
             raise ValueError("start must not be after end")
         if self.required_cutoff is not None:
-            required_cutoff = pd.Timestamp(self.required_cutoff)
-            if pd.isna(required_cutoff) or not start <= required_cutoff <= end:
+            required_cutoff = _timestamp(self.required_cutoff, "required_cutoff")
+            if str(required_cutoff.tzinfo) != str(start.tzinfo):
+                raise ValueError("required_cutoff must use the request timezone")
+            if not start <= required_cutoff <= end:
                 raise ValueError("required_cutoff must fall within start and end")
         if self.coverage is not None and not isinstance(self.coverage, DataCoverageRequirement):
             raise TypeError("coverage must be DataCoverageRequirement or None")
+        intraday = {"1m", "5m", "15m", "30m"}
+        frequencies = {"daily"}
+        if dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:
+            frequencies = {"daily", "weekly", *intraday}
+        elif dataset is Dataset.ETF_UNADJUSTED_INTRADAY:
+            frequencies = intraday
+        if not isinstance(self.frequency, str) or self.frequency not in frequencies:
+            raise ValueError(f"{dataset} frequency must be one of {sorted(frequencies)}")
+        allowed = {
+            Dataset.ETF_CREATION_REDEMPTION_BASKET: (NoParameters, PcfParameters),
+            Dataset.STOCK_MONEYFLOW: (NoParameters, MoneyflowParameters),
+            Dataset.STRATEGY_FEATURE_EVIDENCE: (EvidenceParameters,),
+        }.get(dataset, (NoParameters,))
+        if type(self.parameters) not in allowed:
+            raise TypeError(f"parameters are not valid for {dataset}")
+        if isinstance(self.parameters, MoneyflowParameters):
+            if symbol is not None:
+                raise ValueError("explicit trading_dates require an all-market request")
+            for value in self.parameters.trading_dates:
+                day = pd.Timestamp(value)
+                if start.tzinfo is not None:
+                    day = day.tz_localize(start.tzinfo)
+                if not start.normalize() <= day <= end.normalize():
+                    raise ValueError("trading_dates must fall within the request range")
         object.__setattr__(self, "dataset", dataset)
         object.__setattr__(self, "symbol", symbol)
-        object.__setattr__(self, "options", MappingProxyType(dict(self.options)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -248,6 +357,7 @@ class DataResult:
     identity: DataIdentity | None = None
     error: DataError | None = None
     warnings: tuple[str, ...] = ()
+    prepared: PreparedDataRef | None = None
 
     def __post_init__(self) -> None:
         ready = self.status is DataStatus.READY
@@ -257,7 +367,136 @@ class DataResult:
             raise ValueError("non-READY result must not expose data or identity")
         if not ready and self.error is None:
             raise ValueError(f"{self.status} requires an error")
+        if self.prepared is not None and (not ready or not isinstance(self.prepared, PreparedDataRef)):
+            raise ValueError("prepared reference requires a READY result and PreparedDataRef")
 
     @property
     def ready(self) -> bool:
         return self.status is DataStatus.READY
+
+
+@dataclass(frozen=True, slots=True)
+class DataSpace:
+    """Relative storage location owned and managed by one DFLS instance."""
+
+    path: Path
+
+    def __post_init__(self) -> None:
+        _relative_path(self.path, "DataSpace.path")
+
+
+class PreparePolicy(StrEnum):
+    REUSE = "REUSE"
+    REFRESH = "REFRESH"
+
+
+class PrepareStatus(StrEnum):
+    READY = "READY"
+    PARTIAL = "PARTIAL"
+    FAILED = "FAILED"
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedDataRef:
+    """Stable, serializable locator for one complete preparation record."""
+
+    space_id: UUID
+    preparation_id: UUID
+    manifest_sha256: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.space_id, UUID) or not isinstance(self.preparation_id, UUID):
+            raise TypeError("space_id and preparation_id must be UUID instances")
+        _sha256(self.manifest_sha256, "manifest_sha256")
+
+
+@dataclass(frozen=True, slots=True)
+class ItemPrepareResult:
+    request: DataRequest
+    status: DataStatus
+    identity: DataIdentity | None = None
+    error: DataError | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.request, DataRequest) or not isinstance(self.status, DataStatus):
+            raise TypeError("request and status must be DataRequest and DataStatus")
+        if self.status is DataStatus.READY:
+            if not isinstance(self.identity, DataIdentity) or self.error is not None:
+                raise ValueError("READY preparation item requires identity without error")
+            if self.identity.dataset != self.request.dataset or self.identity.symbol != self.request.symbol:
+                raise ValueError("preparation identity must match the request")
+        elif self.identity is not None or not isinstance(self.error, DataError):
+            raise ValueError("non-READY preparation item requires error without identity")
+
+    @property
+    def ready(self) -> bool:
+        return self.status is DataStatus.READY
+
+
+@dataclass(frozen=True, slots=True)
+class PrepareResult:
+    status: PrepareStatus
+    items: tuple[ItemPrepareResult, ...]
+    reference: PreparedDataRef | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, PrepareStatus):
+            raise TypeError("status must be PrepareStatus")
+        if not isinstance(self.items, tuple) or not self.items:
+            raise ValueError("items must be a non-empty tuple")
+        if any(not isinstance(item, ItemPrepareResult) for item in self.items):
+            raise TypeError("items must contain ItemPrepareResult instances")
+        successful = sum(item.ready for item in self.items)
+        expected = (PrepareStatus.READY if successful == len(self.items)
+                    else PrepareStatus.PARTIAL if successful else PrepareStatus.FAILED)
+        if self.status is not expected:
+            raise ValueError("preparation status must match item outcomes")
+        if self.status is PrepareStatus.READY:
+            if not isinstance(self.reference, PreparedDataRef):
+                raise ValueError("READY preparation requires PreparedDataRef")
+        elif self.reference is not None:
+            raise ValueError("incomplete preparation must not publish a reference")
+
+    @property
+    def ready(self) -> bool:
+        return self.status is PrepareStatus.READY
+
+
+Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderBinding:
+    """Provider implementation and revision used to identify prepared assets."""
+
+    name: str
+    revision: str
+    fetch: Provider
+
+    def __post_init__(self) -> None:
+        for name in ("name", "revision"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"provider {name} must be a non-empty string")
+            object.__setattr__(self, name, value.strip())
+        if not callable(self.fetch):
+            raise TypeError("provider fetch must be callable")
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderConfig:
+    """Host-owned credentials and optional explicit dataset bindings."""
+
+    bindings: Mapping[Dataset, ProviderBinding] | None = None
+    env_file: Path | None = None
+
+    def __post_init__(self) -> None:
+        if self.env_file is not None and not isinstance(self.env_file, Path):
+            raise TypeError("env_file must be Path or None")
+        if self.bindings is not None:
+            if not isinstance(self.bindings, Mapping):
+                raise TypeError("bindings must be a Mapping or None")
+            for dataset, binding in self.bindings.items():
+                if not isinstance(dataset, Dataset) or not isinstance(binding, ProviderBinding):
+                    raise TypeError("bindings must map Dataset to ProviderBinding")
+            object.__setattr__(self, "bindings", MappingProxyType(dict(self.bindings)))

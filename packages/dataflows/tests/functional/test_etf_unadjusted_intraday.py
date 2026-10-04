@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import Dataflows, DataRequest, DataStatus, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows import tushare_etf
 
 
@@ -34,9 +34,9 @@ def request(frequency="5m"):
                        "2026-09-29", None, frequency=frequency)
 
 
-def test_raw_intraday_routes_validates_and_preserves_market_timing(monkeypatch):
+def test_raw_intraday_routes_validates_and_preserves_market_timing(flow_factory, publish_data, monkeypatch):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
-    result = Dataflows().fetch(request())
+    result = publish_data(flow_factory(), request())
     assert result.status is DataStatus.READY, result.error
     assert len(result.dataframe) == 48
     assert result.dataframe.Close.eq(4.).all()
@@ -51,9 +51,9 @@ def test_raw_intraday_routes_validates_and_preserves_market_timing(monkeypatch):
     assert len(meta["reference_daily_sha256"]) == 64
 
 
-def test_raw_intraday_preserves_cross_frequency_failure(monkeypatch):
+def test_raw_intraday_preserves_cross_frequency_failure(flow_factory, publish_data, monkeypatch):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro(mismatch=True))
-    result = Dataflows().fetch(request())
+    result = publish_data(flow_factory(), request())
     assert result.status is DataStatus.FAILED
     assert result.dataframe.empty
     assert result.error.code == "DATA_REPAIR_FAILED"
@@ -64,13 +64,12 @@ def test_raw_intraday_rejects_nonintraday_frequency_before_fetch(monkeypatch, fr
     def forbidden(_):
         pytest.fail("Invalid frequency must fail before supplier access")
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", forbidden)
-    result = Dataflows().fetch(request(frequency))
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    with pytest.raises(ValueError):
+        request(frequency)
 
 
 @pytest.mark.parametrize("mutation", ["early", "missing", "hfq", "verified", "basis"])
-def test_raw_intraday_facade_rejects_false_timing_or_price_claims(monkeypatch, mutation):
+def test_raw_intraday_facade_rejects_false_timing_or_price_claims(flow_factory, publish_data, monkeypatch, mutation):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
     frame, meta = tushare_etf.fetch_etf_unadjusted_intraday(
         "518850.SH", "2026-09-29", "2026-09-29", "5m")
@@ -84,7 +83,7 @@ def test_raw_intraday_facade_rejects_false_timing_or_price_claims(monkeypatch, m
         meta["source_publication_timestamp_verified"] = True
     else:
         meta["availability_basis"] = "VERIFIED_LIVE_FEED"
-    flows = Dataflows({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (frame, meta)})
-    result = flows.fetch(request())
+    flows = flow_factory({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (frame, meta)})
+    result = publish_data(flows, request())
     assert result.status is DataStatus.FAILED
     assert result.error.code == "DATA_CONTRACT_MISMATCH"

@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import replace
+from dataclasses import fields, is_dataclass, replace
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
@@ -13,7 +13,7 @@ from typing import Any
 import pandas as pd
 import numpy as np
 
-from .cache import CacheError, LocalCacheConfig, fetch_cached
+from .asset_store import AssetStore, StoreError
 
 from .contract import (
     ETF_INTRADAY_OBSERVATION_RULE,
@@ -25,6 +25,9 @@ from .contract import (
     Dataset,
     DataStatus,
     RequestRangePolicy,
+    DataSpace, PreparePolicy, PrepareStatus, PreparedDataRef,
+    PrepareResult, ItemPrepareResult, ProviderConfig, ProviderBinding,
+    PcfParameters, MoneyflowParameters,
 )
 from .errors import (
     DataContractError,
@@ -324,7 +327,23 @@ def canonical_frame_sha256(dataframe: pd.DataFrame) -> str:
     """Hash dataframe content, column order, dtypes and index deterministically."""
 
     digest = hashlib.sha256()
-    schema = [(str(column), str(dtype)) for column, dtype in dataframe.dtypes.items()]
+    def dtype_schema(dtype):
+        if isinstance(dtype, pd.CategoricalDtype):
+            return {"dtype": "category", "ordered": dtype.ordered,
+                    "categories_dtype": str(dtype.categories.dtype),
+                    "categories_hash": hashlib.sha256(
+                        pd.util.hash_pandas_object(dtype.categories, index=True).values.tobytes()
+                    ).hexdigest()}
+        return {"dtype": str(dtype)}
+
+    schema = {
+        "version": 2,
+        "columns": [(str(column), dtype_schema(dtype)) for column, dtype in dataframe.dtypes.items()],
+        "index": {"type": type(dataframe.index).__name__, "names": repr(dataframe.index.names),
+                  "dtypes": [dtype_schema(level.dtype) for level in dataframe.index.levels]
+                  if isinstance(dataframe.index, pd.MultiIndex)
+                  else [dtype_schema(dataframe.index.dtype)]},
+    }
     digest.update(json.dumps(schema, separators=(",", ":")).encode("utf-8"))
     digest.update(pd.util.hash_pandas_object(dataframe, index=True).values.tobytes())
     return digest.hexdigest()
@@ -334,6 +353,7 @@ def _validate_provider_output(
     dataframe: pd.DataFrame,
     request: DataRequest,
     metadata: Mapping[str, Any],
+    *, complete_sessions: bool = True,
 ) -> None:
     """Apply the final DFLS-owned contract before READY can cross the facade."""
 
@@ -435,7 +455,7 @@ def _validate_provider_output(
         inspect_ohlcv_frame(
             dataframe,
             frequency,
-            require_complete_days=frequency in {"1m", "5m", "15m", "30m"},
+            require_complete_days=complete_sessions and frequency in {"1m", "5m", "15m", "30m"},
         ).require_pass()
         return
 
@@ -859,20 +879,88 @@ def _date_bounds(
     return actual_start.isoformat(), actual_end.isoformat()
 
 
+def _json_contract(value: Any) -> Any:
+    if is_dataclass(value):
+        return {item.name: _json_contract(getattr(value, item.name)) for item in fields(value)}
+    if isinstance(value, Mapping):
+        return {str(key): _json_contract(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_json_contract(item) for item in value]
+    if isinstance(value, Path):
+        return str(value.resolve())
+    return value
+
+
+def _request_record(request: DataRequest) -> dict[str, Any]:
+    return _json_contract(request)
+
+
+def _selection(record: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: record[key] for key in ("dataset", "symbol", "frequency", "parameters")}
+
+
+def _selection_contains(stored: Mapping[str, Any], requested: Mapping[str, Any]) -> bool:
+    left, right = _selection(stored), _selection(requested)
+    if left["dataset"] == Dataset.STOCK_MONEYFLOW and "trading_dates" in left["parameters"]:
+        if "trading_dates" not in right["parameters"]:
+            return False
+        if not set(right["parameters"]["trading_dates"]).issubset(left["parameters"]["trading_dates"]):
+            return False
+        left = {**left, "parameters": {}}
+        right = {**right, "parameters": {}}
+    return left == right
+
+
+def _end_timestamp(value: str) -> pd.Timestamp:
+    timestamp = pd.Timestamp(value)
+    return (timestamp + pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)
+            if " " not in value and "T" not in value else timestamp)
+
+
+def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
+    coverage = request.coverage
+    if coverage is None:
+        return
+    if len(frame) < coverage.minimum_observations:
+        raise IncompleteDataError(
+            "published dataframe has fewer observations than required",
+            minimum_observations=coverage.minimum_observations, actual_observations=len(frame),
+        )
+    sessions = pd.to_datetime(frame["Date"], errors="raise").dt.normalize().nunique()
+    if sessions < coverage.minimum_sessions:
+        raise IncompleteDataError(
+            "published dataframe has fewer sessions than required",
+            minimum_sessions=coverage.minimum_sessions, actual_sessions=int(sessions),
+        )
+
+
+def _implementation_revision() -> str:
+    """Invalidate REUSE when adapter, validation or repair implementation changes."""
+    digest = hashlib.sha256()
+    root = Path(__file__).parent
+    for path in sorted(root.rglob("*.py")):
+        digest.update(path.relative_to(root).as_posix().encode())
+        digest.update(path.read_bytes().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()
+
+
 class Dataflows:
-    """Dataset registry and explicit publication-result boundary for DFLS."""
+    """Prepare managed data assets, then read explicitly bound preparations."""
 
     def __init__(
-        self, providers: Mapping[str, Provider] | None = None, *,
-        env_file: Path | None = None, cache: LocalCacheConfig | None = None,
+        self, *, base_dir: Path, space: DataSpace, providers: ProviderConfig,
     ) -> None:
-        if cache is not None and not isinstance(cache, LocalCacheConfig):
-            raise TypeError("cache must be LocalCacheConfig or None")
-        if env_file is not None and not isinstance(env_file, Path):
-            raise TypeError("env_file must be Path or None")
-        self._env_file = env_file
-        self._cache = cache
-        self._providers = dict(providers) if providers is not None else _default_providers()
+        if not isinstance(providers, ProviderConfig):
+            raise TypeError("providers must be ProviderConfig")
+        self._store = AssetStore(base_dir, space)
+        self._revision = _implementation_revision()
+        if providers.bindings is None:
+            self._providers = {
+                str(dataset): ProviderBinding(str(dataset), self._revision, provider)
+                for dataset, provider in _default_providers(providers.env_file).items()
+            }
+        else:
+            self._providers = {str(dataset): binding for dataset, binding in providers.bindings.items()}
 
     @property
     def datasets(self) -> tuple[str, ...]:
@@ -880,31 +968,198 @@ class Dataflows:
 
         return tuple(sorted(self._providers))
 
-    def fetch(self, request: DataRequest) -> DataResult:
+    def prepare(
+        self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy,
+    ) -> PrepareResult:
+        if not isinstance(requests, tuple) or not requests or not all(
+            isinstance(request, DataRequest) for request in requests
+        ):
+            raise TypeError("requests must be a non-empty tuple of DataRequest")
+        if not isinstance(policy, PreparePolicy):
+            raise TypeError("policy must be PreparePolicy")
+        items = []
+        entries = []
+        reference = None
+        acquired: dict[str, tuple[str | None, DataResult]] = {}
+        planned = []
+        requirements: dict[str, list[DataRequest]] = {}
+        for request in requests:
+            binding = self._providers.get(str(request.dataset))
+            record = _request_record(request)
+            selector = {key: value for key, value in record.items()
+                        if key not in {"coverage", "required_cutoff"}}
+            key = hashlib.sha256(json.dumps({
+                "request": selector,
+                "provider": binding.name if binding else None,
+                "provider_revision": binding.revision if binding else None,
+                "dfls_revision": self._revision,
+            }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+            planned.append((request, binding, record, key))
+            requirements.setdefault(key, []).append(request)
+        try:
+            with self._store.transaction() as connection:
+                for request, binding, record, key in planned:
+                    asset_id = None
+                    if binding is None:
+                        result = self._failure(DataStatus.FAILED, "UNSUPPORTED_DATASET",
+                                               "no provider configured for dataset", request)
+                    else:
+                        if key in acquired:
+                            asset_id, previous = acquired[key]
+                            result = self._checked_result(previous, request) if previous.ready else previous
+                        elif policy is PreparePolicy.REUSE:
+                            asset_id = self._store.lookup_asset(connection, key)
+                        if key not in acquired and asset_id is None:
+                            # Fetch one asset independently of the consumer's acceptance thresholds.
+                            result = self._fetch_source(replace(request, required_cutoff=None, coverage=None))
+                            if result.ready and any(self._checked_result(result, requirement).ready
+                                                    for requirement in requirements[key]):
+                                asset_id = self._store.put_asset(
+                                    connection, key=key, dataframe=result.dataframe,
+                                    identity=result.identity, warnings=result.warnings,
+                                )
+                            acquired[key] = (asset_id, result)
+                            result = self._checked_result(result, request) if result.ready else result
+                        elif key not in acquired:
+                            stored_result = self._store.read_asset(connection, asset_id)
+                            result = self._checked_result(
+                                stored_result, request,
+                            )
+                            # A previously complete but now insufficient source may have advanced.
+                            if any(self._checked_result(stored_result, requirement).status
+                                   is DataStatus.INCOMPLETE for requirement in requirements[key]):
+                                stored_result = self._fetch_source(
+                                    replace(request, required_cutoff=None, coverage=None)
+                                )
+                                if stored_result.ready and any(
+                                    self._checked_result(stored_result, requirement).ready
+                                    for requirement in requirements[key]
+                                ):
+                                    asset_id = self._store.put_asset(
+                                        connection, key=key, dataframe=stored_result.dataframe,
+                                        identity=stored_result.identity, warnings=stored_result.warnings,
+                                    )
+                                result = (self._checked_result(stored_result, request)
+                                          if stored_result.ready else stored_result)
+                            acquired[key] = (asset_id, stored_result)
+                    items.append(ItemPrepareResult(
+                        request=request, status=result.status,
+                        identity=result.identity, error=result.error,
+                    ))
+                    if result.ready:
+                        entries.append({"request": record, "asset_id": asset_id})
+                if all(item.status is DataStatus.READY for item in items):
+                    self._assert_consistent(connection, entries)
+                    reference = self._store.publish(connection, entries)
+        except StoreError as exc:
+            items = [ItemPrepareResult(
+                request=request, status=DataStatus.FAILED, identity=None,
+                error=DataError(exc.code, str(exc)),
+            ) for request in requests]
+            reference = None
+        status = (PrepareStatus.READY if reference is not None else
+                  PrepareStatus.PARTIAL if any(item.status is DataStatus.READY for item in items)
+                  else PrepareStatus.FAILED)
+        return PrepareResult(status=status, items=tuple(items), reference=reference)
+
+    def _assert_consistent(self, connection, entries: list[dict]) -> None:
+        """A READY preparation must not contain conflicting views of the same series."""
+        seen: dict[str, list[DataResult]] = {}
+        visited = set()
+        for entry in entries:
+            if entry["asset_id"] in visited:
+                continue
+            visited.add(entry["asset_id"])
+            selection = _selection(entry["request"])
+            moneyflow = selection["dataset"] == Dataset.STOCK_MONEYFLOW
+            if moneyflow:
+                selection = {**selection, "parameters": {}}
+            key = json.dumps(selection, sort_keys=True)
+            current = self._store.read_asset(connection, entry["asset_id"])
+            for previous in seen.get(key, []):
+                if ((pd.Timestamp(previous.identity.data_start).tzinfo is None)
+                        != (pd.Timestamp(current.identity.data_start).tzinfo is None)):
+                    raise StoreError("INCONSISTENT_PREPARATION", "overlapping series use incompatible timezones")
+                start = max(pd.Timestamp(previous.identity.data_start), pd.Timestamp(current.identity.data_start))
+                end = min(pd.Timestamp(previous.identity.data_cutoff), pd.Timestamp(current.identity.data_cutoff))
+                if start > end:
+                    continue
+                hashes = []
+                common_dates = (set(pd.to_datetime(previous.dataframe["Date"]))
+                                & set(pd.to_datetime(current.dataframe["Date"])))
+                for result in (previous, current):
+                    dates = pd.to_datetime(result.dataframe["Date"])
+                    selected = dates.between(start, end)
+                    if moneyflow:
+                        selected &= dates.isin(common_dates)
+                    overlap = result.dataframe.loc[selected].reset_index(drop=True)
+                    hashes.append(canonical_frame_sha256(overlap))
+                if hashes[0] != hashes[1]:
+                    raise StoreError("INCONSISTENT_PREPARATION", "overlapping source data disagree")
+            seen.setdefault(key, []).append(current)
+
+    def fetch(self, request: DataRequest, *, prepared: PreparedDataRef) -> DataResult:
         if not isinstance(request, DataRequest):
             raise TypeError("request must be DataRequest")
-        if self._env_file is not None and "env_file" not in request.options:
-            request = replace(request, options={**request.options, "env_file": self._env_file})
-        if self._cache is None or request.dataset == Dataset.STRATEGY_FEATURE_EVIDENCE:
-            return self._fetch_source(request)
-
-        def validate(result: DataResult) -> None:
-            if result.identity.content_sha256 != canonical_frame_sha256(result.dataframe):
-                raise ValueError("cache content identity differs")
-            if result.identity.dataset != request.dataset or result.identity.symbol != request.symbol:
-                raise ValueError("cache request identity differs")
-            _validate_provider_output(result.dataframe, request, result.identity.metadata)
-            if _date_bounds(result.dataframe, request, result.identity.metadata) != (
-                result.identity.data_start, result.identity.data_cutoff,
-            ):
-                raise ValueError("cache publication bounds differ")
-            if request.coverage and len(result.dataframe) < request.coverage.minimum_rows:
-                raise ValueError("cache coverage differs")
-
+        if not isinstance(prepared, PreparedDataRef):
+            raise TypeError("prepared must be PreparedDataRef")
         try:
-            return fetch_cached(self._cache, request, lambda: self._fetch_source(request), validate)
-        except CacheError as exc:
+            entries = self._store.load_preparation(prepared)
+            record = _request_record(request)
+            matching = [entry for entry in entries
+                        if _selection_contains(entry["request"], record)
+                        and pd.Timestamp(entry["request"]["start"]) <= pd.Timestamp(request.start)
+                        and _end_timestamp(entry["request"]["end"]) >= _end_timestamp(request.end)]
+            if not matching:
+                return self._failure(DataStatus.FAILED, "REQUEST_NOT_PREPARED",
+                                     "request is outside this preparation", request)
+            results = []
+            for asset_id in sorted({entry["asset_id"] for entry in matching}):
+                stored = self._store.read(asset_id)
+                dates = pd.to_datetime(stored.dataframe["Date"], errors="raise")
+                selected = dates.between(pd.Timestamp(request.start), _end_timestamp(request.end))
+                if isinstance(request.parameters, MoneyflowParameters):
+                    selected &= dates.dt.strftime("%Y-%m-%d").isin(request.parameters.trading_dates)
+                frame = stored.dataframe.loc[selected].copy().reset_index(drop=True)
+                if frame.empty:
+                    return self._failure(DataStatus.EMPTY, "EMPTY_DATA",
+                                         "prepared asset has no observations in this range", request)
+                identity = replace(stored.identity, content_sha256=canonical_frame_sha256(frame))
+                result = self._checked_result(
+                    DataResult(DataStatus.READY, frame, identity, warnings=stored.warnings), request,
+                    complete_sessions=False,
+                )
+                if not result.ready:
+                    return result
+                results.append(result)
+            if len({result.identity.content_sha256 for result in results}) != 1:
+                return self._failure(DataStatus.FAILED, "AMBIGUOUS_PREPARED_DATA",
+                                     "overlapping prepared assets disagree", request)
+            result = results[0]
+            return replace(result, prepared=prepared)
+        except StoreError as exc:
             return self._failure(DataStatus.FAILED, exc.code, str(exc), request)
+        except (TypeError, ValueError, KeyError) as exc:
+            return self._failure(DataStatus.FAILED, "PREPARED_DATA_INVALID", str(exc), request)
+
+    def _checked_result(self, result: DataResult, request: DataRequest, *, complete_sessions: bool = True) -> DataResult:
+        try:
+            if result.identity.dataset != str(request.dataset) or result.identity.symbol != request.symbol:
+                raise DataContractError("prepared asset identity differs from request")
+            if canonical_frame_sha256(result.dataframe) != result.identity.content_sha256:
+                raise DataContractError("prepared asset content hash differs")
+            _validate_coverage(result.dataframe, request)
+            _validate_provider_output(result.dataframe, request, result.identity.metadata,
+                                      complete_sessions=complete_sessions)
+            start, end = _date_bounds(result.dataframe, request, result.identity.metadata)
+            return replace(result, identity=replace(result.identity, data_start=start, data_cutoff=end))
+        except IncompleteDataError as exc:
+            return self._expected_failure(DataStatus.INCOMPLETE, exc, request)
+        except DataflowError as exc:
+            return self._expected_failure(DataStatus.FAILED, exc, request)
+
+        except (TypeError, ValueError, KeyError) as exc:
+            return self._failure(DataStatus.FAILED, "DATA_CONTRACT_INVALID", str(exc), request)
 
     def _fetch_source(self, request: DataRequest) -> DataResult:
         provider = self._providers.get(str(request.dataset))
@@ -916,17 +1171,14 @@ class Dataflows:
                 request,
             )
         try:
-            dataframe, metadata = provider(request)
+            dataframe, metadata = provider.fetch(request)
             if dataframe is None or dataframe.empty:
                 raise EmptyDataError("provider returned no rows")
-            frame = dataframe.copy()
-            if request.coverage is not None and len(frame) < request.coverage.minimum_rows:
-                raise IncompleteDataError(
-                    "published dataframe has fewer rows than required",
-                    minimum_rows=request.coverage.minimum_rows,
-                    actual_rows=len(frame),
-                )
+            frame = dataframe.copy().reset_index(drop=True)
+            _validate_coverage(frame, request)
             metadata = _lineage_metadata(request, frame, metadata)
+            metadata.update(provider_binding=provider.name, provider_revision=provider.revision,
+                            dfls_revision=self._revision)
             _validate_provider_output(frame, request, metadata)
             data_start, data_cutoff = _date_bounds(frame, request, metadata)
             source = str(metadata.get("vendor", "unknown"))
@@ -993,7 +1245,7 @@ class Dataflows:
         )
 
 
-def _default_providers() -> dict[str, Provider]:
+def _default_providers(env_file: Path | None) -> dict[str, Provider]:
     from .chinaamc_pcf import verify_chinaamc_pcf_components
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
@@ -1038,7 +1290,7 @@ def _default_providers() -> dict[str, Provider]:
             request.start,
             request.end,
             request.frequency,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def etf_unadjusted(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1046,7 +1298,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def etf_unadjusted_intraday(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1054,22 +1306,21 @@ def _default_providers() -> dict[str, Provider]:
 
         return fetch_etf_unadjusted_intraday(
             _required_symbol(request), request.start, request.end,
-            request.frequency, env_file=_env_file(request),
+            request.frequency, env_file=env_file,
         )
 
     def etf_creation_redemption_basket(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         if request.frequency != "daily":
             raise DataContractError("ETF creation/redemption basket requires daily frequency")
-        if set(request.options) - {"env_file", "verify_official_pcf_components"}:
-            raise DataContractError("ETF creation/redemption basket received unsupported options")
-        verify = request.options.get("verify_official_pcf_components", False)
+        verify = (request.parameters.verify_official_pcf_components
+                  if isinstance(request.parameters, PcfParameters) else False)
         if type(verify) is not bool:
             raise DataContractError("verify_official_pcf_components must be a boolean")
         if verify and (request.symbol != "159326.SZ" or request.start != request.end):
             raise DataContractError("official PCF check requires one 159326.SZ trade date")
         frame, metadata = fetch_etf_creation_redemption_basket(
             _required_symbol(request), request.start, request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
         if verify:
             metadata.update(verify_chinaamc_pcf_components(
@@ -1083,7 +1334,7 @@ def _default_providers() -> dict[str, Provider]:
             request.start,
             request.end,
             request.frequency,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def stock_unadjusted(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1091,17 +1342,17 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def shibor(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_shibor_daily(request.start, request.end, env_file=_env_file(request))
+        return fetch_shibor_daily(request.start, request.end, env_file=env_file)
 
     def us_real_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_real_yield_daily(request.start, request.end, env_file=_env_file(request))
+        return fetch_us_real_yield_daily(request.start, request.end, env_file=env_file)
 
     def us_nominal_yield(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_nominal_yield_daily(request.start, request.end, env_file=_env_file(request))
+        return fetch_us_nominal_yield_daily(request.start, request.end, env_file=env_file)
 
     def us_policy_uncertainty(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         if request.symbol is not None:
@@ -1111,18 +1362,18 @@ def _default_providers() -> dict[str, Provider]:
         return fetch_us_policy_uncertainty_daily(
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def usdcnh(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_usdcnh_daily(request.start, request.end, env_file=_env_file(request))
+        return fetch_usdcnh_daily(request.start, request.end, env_file=env_file)
 
     def fxcm(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_fxcm_daily(
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def sge_gold(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1130,7 +1381,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def domestic_index(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1138,7 +1389,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def domestic_index_close(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1146,15 +1397,13 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def domestic_index_close_turnover(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        if request.frequency != "daily" or set(request.options) - {"env_file"}:
-            raise DataContractError("domestic index close-turnover requires daily frequency and env_file only")
         return fetch_domestic_index_close_turnover_daily(
             _required_symbol(request), request.start, request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def shfe_gold_daily(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1162,7 +1411,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def shfe_gold_mapping(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1170,7 +1419,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def shfe_gold_holding(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1178,35 +1427,35 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def cn_cpi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_cpi_monthly(request.start, request.end, env_file=_env_file(request))
+        return fetch_cn_cpi_monthly(request.start, request.end, env_file=env_file)
 
     def us_cpi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_cpi_release(request.start, request.end, env_file=_env_file(request))
+        return fetch_us_cpi_release(request.start, request.end, env_file=env_file)
 
     def us_ism_pmi_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_us_ism_pmi_release(request.start, request.end, env_file=_env_file(request))
+        return fetch_us_ism_pmi_release(request.start, request.end, env_file=env_file)
 
     def us_federal_budget_release(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_us_federal_budget_release(
-            request.start, request.end, env_file=_env_file(request)
+            request.start, request.end, env_file=env_file
         )
 
     def cn_ppi(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_ppi_monthly(request.start, request.end, env_file=_env_file(request))
+        return fetch_cn_ppi_monthly(request.start, request.end, env_file=env_file)
 
     def cn_money(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        return fetch_cn_money_monthly(request.start, request.end, env_file=_env_file(request))
+        return fetch_cn_money_monthly(request.start, request.end, env_file=env_file)
 
     def index_basic(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_index_daily_basic(
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def etf_shares(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1214,7 +1463,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def global_index(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1222,7 +1471,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def vix(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1230,7 +1479,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def index_weights(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1238,11 +1487,12 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def stock_moneyflow(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        trading_dates = request.options.get("trading_dates")
+        trading_dates = (request.parameters.trading_dates
+                         if isinstance(request.parameters, MoneyflowParameters) else None)
         if trading_dates is not None:
             if request.symbol is not None:
                 raise DataContractError(
@@ -1252,13 +1502,13 @@ def _default_providers() -> dict[str, Provider]:
                 raise DataContractError("trading_dates must be a list or tuple")
             return fetch_stock_moneyflow_sessions(
                 tuple(str(item) for item in trading_dates),
-                env_file=_env_file(request),
+                env_file=env_file,
             )
         return fetch_stock_moneyflow(
             request.start,
             request.end,
             symbol=request.symbol,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def sell_side_forecast(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1266,7 +1516,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     def trading_calendar(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
@@ -1274,7 +1524,7 @@ def _default_providers() -> dict[str, Provider]:
             _required_symbol(request),
             request.start,
             request.end,
-            env_file=_env_file(request),
+            env_file=env_file,
         )
 
     return {
@@ -1313,11 +1563,6 @@ def _default_providers() -> dict[str, Provider]:
         Dataset.TRADING_CALENDAR.value: trading_calendar,
         Dataset.STRATEGY_FEATURE_EVIDENCE.value: fetch_strategy_feature_evidence,
     }
-
-
-def _env_file(request: DataRequest) -> str | Path | None:
-    value = request.options.get("env_file")
-    return None if value is None else Path(value)
 
 
 def _required_symbol(request: DataRequest) -> str:

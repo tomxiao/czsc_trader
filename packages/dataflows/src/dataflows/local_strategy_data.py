@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 import pandas as pd
 
-from .contract import DataRequest
+from .contract import DataRequest, EvidenceParameters
 from .errors import DataContractError, EmptyDataError
 
 
@@ -17,15 +17,11 @@ def fetch_strategy_feature_evidence(
 ) -> tuple[pd.DataFrame, Mapping[str, Any]]:
     """Publish a bounded slice of a hash-pinned repository evidence file."""
 
-    root_value = request.options.get("repository_root")
-    source_value = request.options.get("source_path")
-    expected_sha256 = request.options.get("source_sha256")
-    if not all(isinstance(value, str) and value for value in (
-        root_value, source_value, expected_sha256
-    )):
-        raise DataContractError(
-            "strategy evidence requires repository_root, source_path and source_sha256"
-        )
+    if not isinstance(request.parameters, EvidenceParameters):
+        raise DataContractError("strategy evidence requires EvidenceParameters")
+    root_value = request.parameters.repository_root
+    source_value = request.parameters.source_path
+    expected_sha256 = request.parameters.source_sha256
     root = Path(str(root_value)).resolve()
     source = (root / str(source_value)).resolve()
     try:

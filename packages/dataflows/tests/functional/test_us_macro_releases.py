@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.tushare_strategy_data import (
     fetch_us_federal_budget_release,
     fetch_us_ism_pmi_release,
@@ -39,14 +39,14 @@ def _event(day: str, clock: str, name: str, value: str) -> dict[str, str]:
     return {"date": day, "time": clock, "event": name, "value": value}
 
 
-def test_nominal_yield_publication_uses_percent_and_identity() -> None:
+def test_nominal_yield_publication_uses_percent_and_identity(flow_factory, publish_data) -> None:
     pro = FakePro()
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_NOMINAL_YIELD_DAILY.value: lambda _: fetch_us_nominal_yield_daily(
             "2024-01-12", "2024-01-12", pro=pro
         )
     })
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_NOMINAL_YIELD_DAILY, None, "2024-01-12", "2024-01-12", None
     ))
     assert result.status is DataStatus.READY
@@ -86,26 +86,26 @@ def test_budget_conservatively_handles_unknown_clock_and_excludes_budget_bill() 
         ([_event("20240112", "23:00", "美国ISM制造业PMI", "47.2")], True, DataStatus.INCOMPLETE),
     ],
 )
-def test_pmi_fails_closed_on_invalid_source_or_calendar(rows, gap, expected) -> None:
+def test_pmi_fails_closed_on_invalid_source_or_calendar(flow_factory, publish_data, rows, gap, expected) -> None:
     pro = FakePro(rows, gap=gap)
-    flow = Dataflows({
+    flow = flow_factory({
         Dataset.US_ISM_PMI_RELEASE.value: lambda _: fetch_us_ism_pmi_release(
             "2024-01-12", "2024-01-12", pro=pro
         )
     })
-    result = flow.fetch(DataRequest(
+    result = publish_data(flow, DataRequest(
         Dataset.US_ISM_PMI_RELEASE, None, "2024-01-12", "2024-01-12", None
     ))
     assert result.status is expected
     assert result.identity is None
 
 
-def test_monthly_release_rejects_same_day_availability() -> None:
+def test_monthly_release_rejects_same_day_availability(flow_factory, publish_data) -> None:
     pro = FakePro([_event("20240112", "23:00", "美国ISM制造业PMI", "47.2")])
     frame, metadata = fetch_us_ism_pmi_release("2024-01-12", "2024-01-12", pro=pro)
     frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
-    flow = Dataflows({Dataset.US_ISM_PMI_RELEASE.value: lambda _: (frame, metadata)})
-    result = flow.fetch(DataRequest(
+    flow = flow_factory({Dataset.US_ISM_PMI_RELEASE.value: lambda _: (frame, metadata)})
+    result = publish_data(flow, DataRequest(
         Dataset.US_ISM_PMI_RELEASE, None, "2024-01-12", "2024-01-12", None
     ))
     assert result.status is DataStatus.FAILED

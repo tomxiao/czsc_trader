@@ -3,11 +3,12 @@ from __future__ import annotations
 from hashlib import sha256
 
 import pandas as pd
+import pytest
 
 from dataflows import (
     DataRequest,
+    EvidenceParameters,
     DataStatus,
-    Dataflows,
     Dataset,
     IncompleteDataError,
     SourceNotReadyError,
@@ -34,12 +35,12 @@ def _request(dataset: str | Dataset = Dataset.ETF_OHLCV) -> DataRequest:
     return DataRequest(dataset, "588080.SH", "2026-09-14", "2026-09-15", "2026-09-15")
 
 
-def test_ready_result_has_stable_identity_and_detached_data() -> None:
+def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publish_data) -> None:
     source = _frame()
-    dataflows = Dataflows({Dataset.ETF_OHLCV.value: lambda request: (source, {"vendor": "test"})})
+    dataflows = flow_factory({Dataset.ETF_OHLCV.value: lambda request: (source, {"vendor": "test"})})
 
-    first = dataflows.fetch(_request())
-    second = dataflows.fetch(_request())
+    first = publish_data(dataflows, _request())
+    second = publish_data(dataflows, _request())
 
     assert first.status is DataStatus.READY
     assert first.ready
@@ -56,8 +57,8 @@ def test_ready_result_has_stable_identity_and_detached_data() -> None:
     assert source.loc[0, "Close"] == 1.1
 
 
-def test_ready_result_validates_declared_source_time_metadata() -> None:
-    result = Dataflows(
+def test_ready_result_validates_declared_source_time_metadata(flow_factory, publish_data) -> None:
+    result = publish_data(flow_factory(
         {
             Dataset.FXCM_DAILY.value: lambda request: (
                 pd.DataFrame(
@@ -82,7 +83,7 @@ def test_ready_result_validates_declared_source_time_metadata() -> None:
                 },
             )
         }
-    ).fetch(
+    ),
         DataRequest(
             Dataset.FXCM_DAILY,
             "XAUUSD.FXCM",
@@ -118,24 +119,20 @@ def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:
     assert observed == {"token": "test-token"}
 
 
-def test_unknown_dataset_is_explicit_failure() -> None:
-    result = Dataflows({}).fetch(_request("unknown.dataset"))
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "UNSUPPORTED_DATASET"
-    assert not result.error.retryable
+def test_unknown_dataset_is_rejected_at_construction() -> None:
+    with pytest.raises(ValueError):
+        _request("unknown.dataset")
 
 
-def test_provider_states_are_not_reported_as_ready() -> None:
+def test_provider_states_are_not_reported_as_ready(flow_factory, publish_data) -> None:
     def waiting(request: DataRequest):
         raise SourceNotReadyError("daily source has not been published", available_at="20:30")
 
     def incomplete(request: DataRequest):
         raise IncompleteDataError("one dependency is missing", dependency="shibor")
 
-    waiting_result = Dataflows({Dataset.ETF_OHLCV.value: waiting}).fetch(_request())
-    incomplete_result = Dataflows({Dataset.ETF_OHLCV.value: incomplete}).fetch(_request())
+    waiting_result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: waiting}), _request())
+    incomplete_result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: incomplete}), _request())
 
     assert waiting_result.status is DataStatus.WAITING_SOURCE
     assert waiting_result.error is not None and waiting_result.error.retryable
@@ -145,31 +142,31 @@ def test_provider_states_are_not_reported_as_ready() -> None:
     assert incomplete_result.error.context["dependency"] == "shibor"
 
 
-def test_legacy_empty_error_remains_value_error_and_maps_to_empty() -> None:
+def test_legacy_empty_error_remains_value_error_and_maps_to_empty(flow_factory, publish_data) -> None:
     def empty(request: DataRequest):
         raise EmptyDataError("vendor returned no data")
 
     error = EmptyDataError("vendor returned no data")
-    result = Dataflows({Dataset.ETF_OHLCV.value: empty}).fetch(_request())
+    result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: empty}), _request())
 
     assert isinstance(error, ValueError)
     assert result.status is DataStatus.EMPTY
     assert result.error is not None and result.error.code == "EMPTY_DATA"
 
 
-def test_out_of_boundary_data_fails_contract() -> None:
+def test_out_of_boundary_data_fails_contract(flow_factory, publish_data) -> None:
     frame = _frame()
     frame.loc[1, "Date"] = "2026-09-16"
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.ETF_OHLCV.value: lambda request: (frame, {"vendor": "test"})}
-    ).fetch(_request())
+    ), _request())
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_date_only_end_includes_intraday_rows() -> None:
+def test_date_only_end_includes_intraday_rows(flow_factory, publish_data) -> None:
     frame = pd.concat([_frame().iloc[[0]].copy()] * 8, ignore_index=True)
     frame["Date"] = [
         f"2026-09-14 {value}:00"
@@ -193,27 +190,27 @@ def test_date_only_end_includes_intraday_rows() -> None:
         "30m",
     )
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(request)
+    ), request)
 
     assert result.status is DataStatus.READY
 
 
-def test_facade_blocks_semantically_invalid_ohlcv_before_ready() -> None:
+def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, publish_data) -> None:
     frame = _frame()
     frame.loc[1, "High"] = 0.5
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(_request())
+    ), _request())
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_facade_blocks_invalid_calendar_before_ready() -> None:
+def test_facade_blocks_invalid_calendar_before_ready(flow_factory, publish_data) -> None:
     calendar = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"], "IsOpen": [1, 2]})
     request = DataRequest(
         Dataset.TRADING_CALENDAR,
@@ -223,21 +220,21 @@ def test_facade_blocks_invalid_calendar_before_ready() -> None:
         "2026-09-15",
     )
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {
             Dataset.TRADING_CALENDAR.value: lambda ignored: (
                 calendar,
                 {"vendor": "test", "primary_key": ["Date"]},
             )
         }
-    ).fetch(request)
+    ), request)
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_multi_entity_dataset_uses_declared_primary_key() -> None:
+def test_multi_entity_dataset_uses_declared_primary_key(flow_factory, publish_data) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2026-09-15", "2026-09-15"],
@@ -245,14 +242,14 @@ def test_multi_entity_dataset_uses_declared_primary_key() -> None:
             "NetMoneyflowAmount": [1.0, -2.0],
         }
     )
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {
             Dataset.STOCK_MONEYFLOW.value: lambda ignored: (
                 frame,
                 {"vendor": "test", "primary_key": ["Date", "Symbol"]},
             )
         }
-    ).fetch(
+    ),
         DataRequest(
             Dataset.STOCK_MONEYFLOW,
             None,
@@ -266,7 +263,7 @@ def test_multi_entity_dataset_uses_declared_primary_key() -> None:
     assert len(result.dataframe) == 2
 
 
-def test_default_registry_covers_all_active_frozen_strategy_inputs() -> None:
+def test_default_registry_covers_all_active_frozen_strategy_inputs(flow_factory) -> None:
     expected = {
         Dataset.ETF_OHLCV.value,
         Dataset.ETF_UNADJUSTED_DAILY.value,
@@ -289,10 +286,10 @@ def test_default_registry_covers_all_active_frozen_strategy_inputs() -> None:
         Dataset.STRATEGY_FEATURE_EVIDENCE.value,
     }
 
-    assert expected.issubset(Dataflows().datasets)
+    assert expected.issubset(flow_factory().datasets)
 
 
-def test_strategy_feature_evidence_is_hash_pinned_and_bounded(tmp_path) -> None:
+def test_strategy_feature_evidence_is_hash_pinned_and_bounded(flow_factory, publish_data, tmp_path) -> None:
     source = tmp_path / "evidence.csv"
     source.write_text(
         "date,feature\n2026-09-01,1.0\n2026-09-02,2.0\n",
@@ -304,14 +301,14 @@ def test_strategy_feature_evidence_is_hash_pinned_and_bounded(tmp_path) -> None:
         "2026-09-02",
         "2026-09-03",
         None,
-        options={
-            "repository_root": str(tmp_path),
-            "source_path": source.name,
-            "source_sha256": sha256(source.read_bytes()).hexdigest(),
-        },
+        parameters=EvidenceParameters(
+            repository_root=tmp_path,
+            source_path=source.name,
+            source_sha256=sha256(source.read_bytes()).hexdigest(),
+        ),
     )
 
-    result = Dataflows().fetch(request)
+    result = publish_data(flow_factory(), request)
 
     assert result.status is DataStatus.READY
     assert result.dataframe["Date"].dt.strftime("%Y-%m-%d").tolist() == ["2026-09-02"]
@@ -319,7 +316,7 @@ def test_strategy_feature_evidence_is_hash_pinned_and_bounded(tmp_path) -> None:
     assert result.identity.source == "repository"
 
 
-def test_required_cutoff_prevents_stale_data_from_becoming_ready() -> None:
+def test_required_cutoff_prevents_stale_data_from_becoming_ready(flow_factory, publish_data) -> None:
     frame = _frame().iloc[[0]].copy()
     request = DataRequest(
         Dataset.ETF_OHLCV,
@@ -329,16 +326,16 @@ def test_required_cutoff_prevents_stale_data_from_becoming_ready() -> None:
         "2026-09-15",
     )
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(request)
+    ), request)
 
     assert result.status is DataStatus.INCOMPLETE
     assert result.error is not None
     assert result.error.code == "INCOMPLETE_DATA"
 
 
-def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready() -> None:
+def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready(flow_factory, publish_data) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2016-11-29", "2024-12-31"],
@@ -353,7 +350,7 @@ def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready(
         "2024-12-31",
     )
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {
             Dataset.SHIBOR_DAILY.value: lambda ignored: (
                 frame,
@@ -364,7 +361,7 @@ def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready(
                 },
             )
         }
-    ).fetch(request)
+    ), request)
 
     assert result.status is DataStatus.INCOMPLETE
     assert result.error is not None
@@ -372,7 +369,7 @@ def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready(
     assert result.error.context["actual_start"].startswith("2016-11-29")
 
 
-def test_vix_dataset_rejects_invalid_price_bars() -> None:
+def test_vix_dataset_rejects_invalid_price_bars(flow_factory, publish_data) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2026-09-15"],
@@ -383,9 +380,9 @@ def test_vix_dataset_rejects_invalid_price_bars() -> None:
             "PercentChange": [0.05],
         }
     )
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.VIX_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ).fetch(
+    ),
         DataRequest(
             Dataset.VIX_DAILY,
             "VIX",

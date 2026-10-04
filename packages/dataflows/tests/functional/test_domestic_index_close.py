@@ -5,7 +5,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.tushare_strategy_data import (
     fetch_domestic_index_close_daily,
     fetch_domestic_index_close_turnover_daily,
@@ -46,9 +46,9 @@ def _request(dataset: Dataset) -> DataRequest:
     return DataRequest(dataset, "931994.CSI", "2024-09-09", "2024-09-09", "2024-09-09")
 
 
-def test_close_only_index_publishes_verified_close_with_causal_identity() -> None:
+def test_close_only_index_publishes_verified_close_with_causal_identity(flow_factory, publish_data) -> None:
     pro = _IndexPro()
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: lambda request: fetch_domestic_index_close_daily(
             request.symbol, request.start, request.end, pro=pro
         ),
@@ -57,8 +57,8 @@ def test_close_only_index_publishes_verified_close_with_causal_identity() -> Non
         ),
     })
 
-    close = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
-    full = flows.fetch(_request(Dataset.DOMESTIC_INDEX_DAILY))
+    close = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
+    full = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_DAILY))
 
     assert close.status is DataStatus.READY
     assert list(close.dataframe.columns) == ["Date", "Close"]
@@ -71,37 +71,37 @@ def test_close_only_index_publishes_verified_close_with_causal_identity() -> Non
     assert "open" not in pro.fields[0]
 
 
-def test_close_only_index_rejects_inconsistent_vendor_change() -> None:
+def test_close_only_index_rejects_inconsistent_vendor_change(flow_factory, publish_data) -> None:
     pro = _IndexPro(bad_change=True)
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: lambda request: fetch_domestic_index_close_daily(
             request.symbol, request.start, request.end, pro=pro
         ),
     })
 
-    result = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
+    result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_close_only_index_rejects_missing_vendor_close() -> None:
+def test_close_only_index_rejects_missing_vendor_close(flow_factory, publish_data) -> None:
     pro = _IndexPro(bad_close=True)
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_DAILY.value: lambda request: fetch_domestic_index_close_daily(
             request.symbol, request.start, request.end, pro=pro
         ),
     })
 
-    result = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
+    result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contract() -> None:
+def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contract(flow_factory, publish_data) -> None:
     pro = _IndexPro()
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda request:
             fetch_domestic_index_close_turnover_daily(
                 request.symbol, request.start, request.end, pro=pro,
@@ -115,9 +115,9 @@ def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contr
         ),
     })
 
-    turnover = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
-    close = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
-    full = flows.fetch(_request(Dataset.DOMESTIC_INDEX_DAILY))
+    turnover = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
+    close = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
+    full = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_DAILY))
 
     assert turnover.status is DataStatus.READY
     assert list(turnover.dataframe.columns) == ["Date", "Close", "Volume", "Amount"]
@@ -138,31 +138,31 @@ def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contr
     {"close": None}, {"change": -9.0}, {"pct_chg": -0.3},
     {"vol": None}, {"vol": -1.0}, {"amount": None}, {"amount": -1.0},
 ])
-def test_close_turnover_rejects_invalid_vendor_fields(overrides: dict[str, object]) -> None:
+def test_close_turnover_rejects_invalid_vendor_fields(flow_factory, publish_data, overrides: dict[str, object]) -> None:
     pro = _IndexPro(overrides=overrides)
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda request:
             fetch_domestic_index_close_turnover_daily(
                 request.symbol, request.start, request.end, pro=pro,
             ),
     })
 
-    result = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
+    result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_close_turnover_rejects_duplicate_dates() -> None:
+def test_close_turnover_rejects_duplicate_dates(flow_factory, publish_data) -> None:
     pro = _IndexPro(duplicate=True)
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda request:
             fetch_domestic_index_close_turnover_daily(
                 request.symbol, request.start, request.end, pro=pro,
             ),
     })
 
-    result = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
+    result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
@@ -175,33 +175,29 @@ def test_close_turnover_rejects_duplicate_dates() -> None:
     {"source_publication_timestamp_verified": True},
     {"historical_revision_history_verified": True},
 ])
-def test_close_turnover_facade_rejects_false_metadata(metadata_change: dict[str, object]) -> None:
+def test_close_turnover_facade_rejects_false_metadata(flow_factory, publish_data, metadata_change: dict[str, object]) -> None:
     frame, metadata = fetch_domestic_index_close_turnover_daily(
         "931994.CSI", "2024-09-09", "2024-09-09", pro=_IndexPro(),
     )
     metadata.update(metadata_change)
-    flows = Dataflows(providers={
+    flows = flow_factory(providers={
         Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda _request: (frame, metadata),
     })
 
-    result = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
+    result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY))
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_close_turnover_rejects_wrong_frequency_and_options_before_vendor_call() -> None:
-    flows = Dataflows()
-    wrong_frequency = DataRequest(
-        Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
-        "2024-09-09", "2024-09-09", None, "30m",
-    )
-    wrong_options = DataRequest(
-        Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
-        "2024-09-09", "2024-09-09", None, "daily", {"fallback": True},
-    )
-
-    for request in (wrong_frequency, wrong_options):
-        result = flows.fetch(request)
-        assert result.status is DataStatus.FAILED
-        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+def test_close_turnover_rejects_wrong_frequency_and_parameters_at_construction() -> None:
+    with pytest.raises(ValueError):
+        DataRequest(
+            Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
+            "2024-09-09", "2024-09-09", None, "30m",
+        )
+    with pytest.raises(TypeError):
+        DataRequest(
+            Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
+            "2024-09-09", "2024-09-09", None, "daily", {"fallback": True},
+        )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.errors import DataContractError
 from dataflows.tushare_futures import (
     fetch_shfe_gold_daily,
@@ -125,7 +125,7 @@ def test_shfe_gold_datasets_reject_ambiguous_symbols(fetcher) -> None:
         fetcher("AU.SHF", "2024-06-03", "2024-06-04", pro=FakeFuturesPro())
 
 
-def test_facade_accepts_futures_frames_and_nullable_holding_rankings() -> None:
+def test_facade_accepts_futures_frames_and_nullable_holding_rankings(flow_factory, publish_data) -> None:
     pro = FakeFuturesPro()
     daily = fetch_shfe_gold_daily("AU.SHFE", "2024-06-03", "2024-06-04", pro=pro)
     mapping = fetch_shfe_gold_mapping("AU.SHFE", "2024-06-03", "2024-06-04", pro=pro)
@@ -141,7 +141,7 @@ def test_facade_accepts_futures_frames_and_nullable_holding_rankings() -> None:
         Dataset.FUTURES_SHFE_GOLD_MAPPING,
         Dataset.FUTURES_SHFE_GOLD_HOLDING,
     ):
-        result = Dataflows(providers).fetch(
+        result = publish_data(flow_factory(providers),
             DataRequest(
                 dataset,
                 "AU.SHFE",
@@ -155,7 +155,7 @@ def test_facade_accepts_futures_frames_and_nullable_holding_rankings() -> None:
         assert result.identity.metadata["available_at"].startswith("source trade date T")
 
 
-def test_facade_rejects_holding_row_without_any_ranking_value() -> None:
+def test_facade_rejects_holding_row_without_any_ranking_value(flow_factory, publish_data) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2024-06-04"],
@@ -169,7 +169,7 @@ def test_facade_rejects_holding_row_without_any_ranking_value() -> None:
             "ShortChange": [None],
         }
     )
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {
             Dataset.FUTURES_SHFE_GOLD_HOLDING.value: lambda ignored: (
                 frame,
@@ -180,7 +180,7 @@ def test_facade_rejects_holding_row_without_any_ranking_value() -> None:
                 },
             )
         }
-    ).fetch(
+    ),
         DataRequest(
             Dataset.FUTURES_SHFE_GOLD_HOLDING,
             "AU.SHFE",
@@ -195,9 +195,9 @@ def test_facade_rejects_holding_row_without_any_ranking_value() -> None:
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_default_registry_exposes_shfe_gold_research_datasets() -> None:
+def test_default_registry_exposes_shfe_gold_research_datasets(flow_factory) -> None:
     assert {
         Dataset.FUTURES_SHFE_GOLD_DAILY.value,
         Dataset.FUTURES_SHFE_GOLD_MAPPING.value,
         Dataset.FUTURES_SHFE_GOLD_HOLDING.value,
-    }.issubset(Dataflows().datasets)
+    }.issubset(flow_factory().datasets)

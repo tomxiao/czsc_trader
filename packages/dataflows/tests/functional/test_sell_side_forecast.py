@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.errors import DataContractError, IncompleteDataError
 from dataflows.tushare_sell_side import fetch_sell_side_forecast
 
@@ -144,15 +144,15 @@ def test_sell_side_forecast_retries_transient_vendor_failure() -> None:
     assert len(pro.report_calls) == 2
 
 
-def test_default_facade_publishes_sell_side_forecast_with_identity(monkeypatch) -> None:
+def test_default_facade_publishes_sell_side_forecast_with_identity(flow_factory, publish_data, monkeypatch) -> None:
     pro = FakePro([_row("20250103")])
     monkeypatch.setattr(
         "dataflows.tushare_sell_side.get_tushare_pro", lambda ignored=None: pro
     )
 
-    result = Dataflows().fetch(_request())
+    result = publish_data(flow_factory(), _request())
 
-    assert Dataset.SELL_SIDE_FORECAST.value in Dataflows().datasets
+    assert Dataset.SELL_SIDE_FORECAST.value in flow_factory().datasets
     assert result.status is DataStatus.READY
     assert result.identity is not None
     assert result.identity.dataset == Dataset.SELL_SIDE_FORECAST.value
@@ -181,7 +181,7 @@ def test_sell_side_forecast_fails_closed_on_identity_value_or_calendar(
         )
 
 
-def test_facade_rejects_same_day_sell_side_availability() -> None:
+def test_facade_rejects_same_day_sell_side_availability(flow_factory, publish_data) -> None:
     frame, metadata = fetch_sell_side_forecast(
         "600406.SH",
         "2025-01-03",
@@ -190,9 +190,9 @@ def test_facade_rejects_same_day_sell_side_availability() -> None:
     )
     frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
 
-    result = Dataflows(
+    result = publish_data(flow_factory(
         {Dataset.SELL_SIDE_FORECAST.value: lambda ignored: (frame, metadata)}
-    ).fetch(_request())
+    ), _request())
 
     assert result.status is DataStatus.FAILED
     assert result.error is not None
