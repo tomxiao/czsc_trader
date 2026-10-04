@@ -102,13 +102,15 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 输出`tdr_backtest_chart.v1`。调用方不传入图表描述或策略专属绘图代码。
 
 业务执行只使用`application.run_backtest`；底层回放函数不再公开，请求类型不保留带版本后缀的别名。
+研究评价使用`EvaluationRequest`和`research_tools.evaluate_strategy`，正式实验通过上表的受管评价端口调用。
+评价工作区、候选批量载荷回放及冠军审计构建属于内部实现；`candidate_evaluation`兼容门面已删除。
 
 `BacktestRequest.lot_size`是必填正整数，拒绝布尔值、浮点数及隐式默认值。平台在请求行情前
 核对它与策略执行合同的一致性：`FROZEN_RULE`读取`settings.instrument.lot_size`，
 `INTRADAY_OVERLAY`读取`settings.lot_size`；不一致时`run_backtest`抛出错误码为`backtest_failed`的`ExecutionError`。
 调用方应按已绑定的交易单位填写，不能用请求字段覆盖冻结规则。
 
-当前版本回测仍需要已有SRT部署凭据；缺少时明确失败，不自动部署。用户CLI仅支持已登记版本；
+回测按候选源码绑定或冻结发布身份加载SRT，缺失或身份不一致时明确失败。用户CLI仅支持已登记版本；
 候选通过`load_candidate(context, key)`读取后传入API，回测和评价均不自动登记候选。
 
 ```python
@@ -135,8 +137,8 @@ result = run_backtest(
 核对`audit_status`及审计文件，不能仅看命令PASS。评价／回测不替代正式REX实验回执，也不自动产生完整阶段报告。
 
 CLI的`--lot-size`必填且必须大于零。BuyHold、MA5/MA20与策略使用相同整手单位，基准通过TXE
-记录实际现金、持仓、费用及净值，SE独立复算审计。底层`replay_buyhold`和`replay_benchmarks`
-同样要求关键字参数`lot_size`。回测manifest使用`schema_version=4`并记录`request.lot_size`；
+记录实际现金、持仓、费用及净值，SE独立复算审计。研究评价的BuyHold交易单位由
+显式`EvaluationBenchmark`中的执行合同给出。回测manifest使用`schema_version=4`并记录`request.lot_size`；
 研究指标语义版本为`candidate-srt-txe-v4-explicit-benchmark`；结果比较要求双方均符合当前证据合同及计算口径。
 
 ### 回测数据空间
@@ -147,12 +149,23 @@ result = run_backtest(context, strategy, request)
 ```
 
 候选、冻结版本、研究内评价及文件化评价统一使用仓库根目录下的`data/backtest/`。
-TDR内部创建DFLS，调用方无需指定空间；`run_backtest`、`evaluate_strategy(request)`和
-`CandidateEvaluationContext`均不接收`dataflows`参数。
+TDR内部创建DFLS，调用方无需指定空间；`run_backtest`和`evaluate_strategy(request)`
+均不接收`dataflows`参数。
 
 `EvaluationRequest.execution_data`可省略，平台根据策略和评价窗口准备执行行情及策略输入，
 再以固定引用计算。已有执行数据和输入绑定须来自同一回测空间，引用无效、跨空间或内容变化
 时明确失败。研究评价返回的结果可直接与原请求一起传给`build_assessment_evidence`。
+
+执行数据准备遵循实际依赖：
+
+- 策略计算输入及其预热由SRT按输入契约规划。
+- TDR根据实际订单类型请求30分钟限价成交数据，日内执行检查时点需要时请求5分钟数据；
+  显式`LimitBuyHold`基准也要求30分钟数据。仅市价策略配合开盘买入持有基准无需分钟行情。
+- 分钟执行行情只覆盖评价区间，直接消费DFLS的不复权数据产品。TDR不通过日线比值逆算分钟价格。
+- 原始日线包含前一信号交易日；完整回测的MA5/MA20基准需要20个先前交易日的后复权日线。
+  账户评价通常只需一个先前交易日，策略自身预热仍由SRT独立准备；不再固定前取400个自然日行情。
+- 已准备数据必须覆盖请求和实际执行所需的日期、频率。日线预热长度可不同，但重叠交易日须一致；
+  缺少必需分钟数据时明确失败。内容与准备引用仍须一致。
 
 研究过程的独立取数仍使用任务指定的空间，例如`data/research/<策略ID>/`；
 上下文的数据端口与账户评价使用不同空间。配置和两阶段示例见[REX说明](../../packages/research_experiment/README.md#数据空间两阶段访问与第三方搜索)。
@@ -235,24 +248,30 @@ benchmark = EvaluationBenchmark(execution=NextOpenBuyHold(lot_size=100))
 记录已确认合同；阶段四通过`benchmark_mandate_item_id`绑定并校验实际基准。
 仅有相同的`BuyHold`名称不足以证明执行口径相同。
 
-### 标准与压力场景
+### 成本场景与自检协议
 
-`EvaluationRequest.costs`须包含唯一的`standard`场景，计量层级使用`FORMAL`或`SCREENING`。
-其他场景须显式使用`STRESS`，且单边费率严格高于标准场景；不满足时评价请求校验失败。
-`EvaluationCost.measurement_tier`默认值为`FORMAL`，构造压力场景时必须显式覆盖：
+`EvaluationRequest.costs`为非空`tuple[EvaluationCost, ...]`。研究员决定场景名称、费用和计量层级，
+可提交单个自定义场景、零成本归因、低成本对照或高成本压力实验。TDR逐场景准确执行，
+不从`fee_x2`等名称推算费用，也不要求名为`standard`的场景。
+
+场景ID须唯一且可安全用作路径组件；单边费率为有限数值并满足`0 <= one_way_cost < 1`。
+计量层级允许`FORMAL`、`SCREENING`、`STRESS`，默认`FORMAL`；TDR不限制这些层级与费率高低的组合。
 
 ```python
 from czsc_trader.research_tools import EvaluationCost
 
 # 传给 EvaluationRequest(costs=costs, ...)；费率仅为示例，按已确认协议填写。
 costs = (
-    EvaluationCost("standard", one_way_cost=0.001, measurement_tier="FORMAL"),
-    EvaluationCost("fee_x2", one_way_cost=0.002, measurement_tier="STRESS"),
+    EvaluationCost("zero_cost", one_way_cost=0.0),
+    EvaluationCost("baseline", one_way_cost=0.001),
+    EvaluationCost("higher_cost", one_way_cost=0.002, measurement_tier="STRESS"),
 )
 ```
 
-SE自检协议中的标准／压力场景ID须与评价请求一致；标准／压力配对允许上述费用与层级差异，
-基准定义、指标版本和公共上下文须一致。跨候选比较及参数邻域仍须保持对应场景口径一致。
+需要计算SE标准／压力配对诊断时，研究员在`SelfCheckProtocol`中指定对应场景ID。
+该项诊断要求标准层级为`FORMAL/SCREENING`，压力层级为`STRESS`且实际费用更高，
+基准定义、指标版本和公共上下文一致；这是诊断可比性要求，不是TDR运行其他成本实验的前提。
+跨候选比较及参数邻域须保持对应场景口径一致。完整口径见[SE说明](../../packages/strategy_evaluator/README.md)。
 计量层级与REX实验执行模式分别声明；`SCREENING`场景也须遵守正式研究的受管执行要求。
 
 ## 7. 五阶段交付

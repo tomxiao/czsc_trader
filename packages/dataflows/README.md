@@ -62,6 +62,7 @@ bars, identity = result.dataframe, result.identity
 - `DataSpace(path: Path)`：相对`base_dir`的非空路径，拒绝绝对路径、`..`及越界符号链接。
 - `DataRequest`：有限`Dataset`、标的、ISO起止日期/时间、截止要求、合法频率和数据集专用参数。
   日期形式的`end`包含当天；时间戳包含该精确时刻。日期形式的截止要求按日检查。
+  SHIBOR、美国国债收益率等固定宏观序列要求`symbol=None`；传入标的在构造时拒绝，不能用于改选序列。
 - `DataCoverageRequirement`：`minimum_observations`为记录数，`minimum_sessions`为不同来源日期数，
   `maximum_start_lag_days`为起点最大自然日偏移。交易日历、应有交易日及停牌判断仍由数据集校验负责。
 - `NoParameters`、`PcfParameters`、`MoneyflowParameters`、`EvidenceParameters`替代任意`options`字典。
@@ -76,6 +77,22 @@ bars, identity = result.dataframe, result.identity
 `DataIdentity`记录来源、内容哈希、实际覆盖及时间口径；`DataResult.prepared`记录读取绑定。
 返回切片的内容哈希对应实际返回的数据。同一准备引用支持已准备范围内的子集；多项区间不会自动
 拼接为更大的请求。资金流显式日期参数可读取已准备日期集合的子集。
+
+## 行情数据集与市场边界
+
+行情使用同一套`DataRequest → prepare → fetch`接口。以下为内置Tushare适配器的实现范围；
+账号权限、历史深度及指定区间的可用性须另行核验，注册数据集不代表真实取数已验收。
+
+| 数据集 | 市场与周期 | 价格用途与边界 |
+| --- | --- | --- |
+| `ETF_OHLCV` | A股ETF；日、周、1/5/15/30分钟 | 后复权研究行情 |
+| `STOCK_OHLCV` | A股股票；日、周、1/5/15/30分钟 | 后复权研究行情 |
+| `STOCK_OHLCV` | 港股，如`00700.HK`；日、周、30分钟 | 日线调用`hk_daily`，周线由日线聚合，30分钟调用`hk_mins`；没有接入港股1/5/15分钟或A股式复权因子处理 |
+| `ETF_UNADJUSTED_DAILY` / `STOCK_UNADJUSTED_DAILY` | 对应A股资产；日线 | 执行与估值使用的不复权价格 |
+| `ETF_UNADJUSTED_INTRADAY` / `STOCK_UNADJUSTED_INTRADAY` | 对应A股资产；1/5/15/30分钟 | 直接获取原始分钟行情，与原始日线校验；保留日线参考哈希及观察时间口径 |
+
+股票分钟数据按标的市场检查交易时段。港股目前采用常规完整交易时段，尚不能通过交易所日历
+自动识别半日市；专用不复权执行数据集仍限定A股。已有港股行情适配代码不代表港股回测链路就绪。
 
 ## 数据空间与资产管理
 
@@ -101,8 +118,9 @@ SQLite事务串行化同空间写入，锁等待上限60秒；首次创建使用
 
 ## 数据校验与研究证据边界
 
-多频行情通过`validate_a_share_intraday_bars`与`validate_intraday_against_daily`检查；
-分钟准备检查完整交易日，读取已准备资产允许显式盘中切片。已登记供应商异常按
+分钟`prepare`与`fetch`均按标的市场和请求起止时间检查应有柱；允许显式日内子区间，
+区间内缺柱仍拒绝。内置A股分钟适配器先取得边界日期的整日行情并完成分钟／日线校验，
+再裁剪为请求区间；这部分校验取数不扩大返回的数据范围。已登记供应商异常按
 “校验→匹配补丁→重新校验”处理，修复记录进入`DataIdentity.metadata.repair_records`。
 未知异常或修复后不合格时明确失败。
 
