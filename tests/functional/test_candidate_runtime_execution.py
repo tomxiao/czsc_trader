@@ -90,21 +90,31 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
     from czsc_trader.temp_workspace import create_temporary_directory
     root = base_dir if base_dir is not None else create_temporary_directory(Path.cwd(), "test-dataflows")
     flows = Dataflows(
-        base_dir=root, space=space if space is not None else DataSpace(Path("market")),
+        base_dir=root, space=space if space is not None else DataSpace(Path("data/backtest")),
         providers=ProviderConfig(bindings={dataset: ProviderBinding("synthetic", "v1", fetch)
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
                             Dataset.ETF_UNADJUSTED_DAILY, Dataset.TRADING_CALENDAR)}),
     )
-    monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
-    monkeypatch.setattr("czsc_trader.research_tools.evaluation.Dataflows", lambda **kwargs: flows)
+    def create_flows(repository_root, *, read_only=False):
+        if Path(repository_root).resolve() == Path(root).resolve() and not read_only:
+            return flows
+        return Dataflows(
+            base_dir=repository_root, space=DataSpace(Path("data/backtest")),
+            providers=ProviderConfig(bindings={} if read_only else {
+                dataset: ProviderBinding("synthetic", "v1", fetch)
+                for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
+                                Dataset.ETF_UNADJUSTED_DAILY, Dataset.TRADING_CALENDAR)
+            }),
+        )
+    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", create_flows)
     return flows
 
 
 
 def _execution_data(flows, root, sessions):
-    from czsc_trader.backtesting.execution_data import prepare_backtest_execution_data
-    return prepare_backtest_execution_data(
-        srt_data_root=root, symbol="588080.SH", asset_type="etf",
+    from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
+    return _prepare_backtest_execution_data(
+        repository_root=root, symbol="588080.SH", asset_type="etf",
         start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows,
     )
 
@@ -139,7 +149,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         }
     )
     daily["symbol"] = "588080.SH"
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path)
     execution_data = _execution_data(flows, tmp_path, sessions)
     (tmp_path / "pyproject.toml").write_text("[project]\nname='test-replay'\n", encoding="utf-8")
     (tmp_path / "src" / "czsc_trader").mkdir(parents=True)
@@ -191,7 +201,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         replay.orders.loc[replay.orders["side"].eq("BUY"), "quantity"].sum()
     )
     _, direct = _execute(candidate, tmp_path / "direct", monkeypatch)
-    monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path)
     assert_frame_equal(replay.account_daily, direct.account_daily, check_exact=True)
     assert len(replay.fills) == 3
     assert signals.support_data["runtime_sha256"] == definition.runtime_sha256
@@ -200,11 +210,9 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         request=BacktestRequest(
             "588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100
         ),
-        srt_data_root=tmp_path,
         outputs_root=tmp_path / "outputs",
         run_date=sessions[-1].date(),
         repository_root=tmp_path,
-        dataflows=flows,
         execution_data=execution_data,
     )
     assert summary.manifest["strategy"]["kind"] == "CANDIDATE"
@@ -220,7 +228,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     from czsc_trader.application import run_backtest
 
     monkeypatch.setattr(
-        "czsc_trader.backtesting.service.prepare_backtest_execution_data",
+        "czsc_trader.backtesting.service._prepare_backtest_execution_data",
         lambda **kwargs: execution_data,
     )
     api_result = run_backtest(
@@ -317,7 +325,7 @@ def test_candidate_runtime_keeps_reference_etfs_out_of_tradable_identity(
     sessions = pd.bdate_range("2026-09-14", periods=5)
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.2, 0.9, 0.0]})
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
-    flows = _install_candidate_dataflows(monkeypatch, flow, daily)
+    flows = _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=tmp_path)
 
     strategy = StrategyRuntime(dataflows=flows).create(
         StrategyInit(
@@ -480,7 +488,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     # First buy cannot fill; next day the unchanged target must retry and fill.
     daily.loc[2, "open"] = 1.1
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path)
     payloads = []
     for candidate_id, threshold in (("C0000", 1.0), ("C0001", 0.5)):
         parameters = deepcopy(payload)
@@ -496,7 +504,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
 
     execution_data = _execution_data(flows, tmp_path, sessions)
     monkeypatch.setattr(
-        "czsc_trader.research_tools.evaluation.prepare_backtest_execution_data",
+        "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data",
         lambda **kw: execution_data,
     )
 
@@ -520,7 +528,6 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         frequency_window_days=3,
         family_id="S900",
         candidate_runtime_roots={"C0000": package, "C0001": package},
-        dataflows=flows,
     )
     protocol = SimpleNamespace(
         development_cutoff="2026-09-21",
@@ -554,7 +561,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         frequency_window_days=3,
         benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
-    harness = evaluate_strategy(harness_request, dataflows=flows)
+    harness = evaluate_strategy(harness_request)
     assert harness.observations == (formal[0],)
     assert len(harness.runs) == 1
     assert harness.runs[0].signals.data_identity
@@ -571,7 +578,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     assert harness.strategy_identity == candidate.runtime_identity_sha256
     assert harness.data_identity == execution_data.fingerprint
     with pytest.raises(ValueError, match="only FULL execution"):
-        evaluate_strategy(replace(harness_request, execution_mode="ACCELERATED"), dataflows=flows)
+        evaluate_strategy(replace(harness_request, execution_mode="ACCELERATED"))
     with pytest.raises(ValueError, match="binding belongs to another"):
         evaluate_strategy(
             replace(
@@ -580,7 +587,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
                     **harness_request.runtime_binding,
                     "candidate_id": "S900-C0999",
                 },
-            ), dataflows=flows
+            )
         )
     assert tuple(replace(row, measurement_tier="FORMAL") for row in screening) == formal
     assert formal[0].closed_trades == 1
@@ -673,13 +680,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily)
-    execution_data = _execution_data(flows, minimal_repo / "data/backtest", sessions)
-    monkeypatch.setattr("czsc_trader.application.research_evaluation_service.Dataflows", lambda **kwargs: flows)
-    monkeypatch.setattr(
-        "czsc_trader.application.research_evaluation_service.prepare_backtest_execution_data",
-        lambda **kwargs: execution_data,
-    )
+    _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=minimal_repo)
 
     experiment = minimal_repo / "experiments" / "S900" / "EXPLICIT01"
     runtime_root = experiment / "runtime" / "strategy_runtime"
@@ -774,10 +775,10 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
     pool.mkdir(parents=True)
 
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0, 0]})
-    flows = _install_candidate_dataflows(monkeypatch, flow, daily)
-    execution_data = _execution_data(flows, pool, sessions)
+    flows = _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=tmp_path)
+    execution_data = _execution_data(flows, tmp_path, sessions)
     monkeypatch.setattr(
-        "czsc_trader.research_tools.evaluation.prepare_backtest_execution_data",
+        "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data",
         lambda **kw: execution_data,
     )
 
@@ -831,7 +832,6 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         protocol,
         directory,
         candidate_runtime_roots={"C0001": package},
-        dataflows=flows,
     )
     restored = load_review_dataset(directory, published["snapshot_hash"])
     stored_tables = tuple(directory.glob("*.csv.gz"))
@@ -852,7 +852,6 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         review_data_root=directory,
         review_data_hash=published["snapshot_hash"],
         candidate_runtime_roots={"C0001": package},
-        dataflows=flows,
     )
     rows = evaluate_candidate_payloads(
         run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
@@ -863,7 +862,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
     original = (pool / "flow.csv").read_bytes()
     (pool / "flow.csv").write_bytes(original + b"\n")
     monkeypatch.setattr(
-        "czsc_trader.research_tools.evaluation.prepare_backtest_execution_data", forbidden
+        "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data", forbidden
     )
     with pytest.raises(ValueError, match="unsealed review dataset already exists"):
         publish_review_dataset(
@@ -872,7 +871,6 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             protocol,
             directory,
             candidate_runtime_roots={"C0001": package},
-        dataflows=flows,
         )
     assert (
         evaluate_candidate_payloads(
@@ -891,12 +889,11 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             protocol,
             directory,
             candidate_runtime_roots={"C0001": package},
-        dataflows=flows,
         )
 
     # A new preparation fails atomically when SRT cannot prepare its own inputs.
     monkeypatch.setattr(
-        "czsc_trader.research_tools.evaluation.prepare_backtest_execution_data",
+        "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data",
         lambda **kw: execution_data,
     )
     failed_directory = directory.parent / ("b" * 64)
@@ -908,7 +905,6 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             protocol,
             failed_directory,
             candidate_runtime_roots={"C0001": package},
-        dataflows=flows,
         )
     assert not failed_directory.exists()
 

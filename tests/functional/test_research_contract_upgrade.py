@@ -1,7 +1,7 @@
 from copy import deepcopy
 from pathlib import Path
 from dataflows import DataSpace
-from czsc_trader.backtesting.execution_data import prepare_backtest_execution_data
+from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from dataclasses import replace
 from datetime import date, datetime
 from hashlib import sha256
@@ -59,11 +59,8 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path, space=DataSpace(Path("data/research")))
-    from czsc_trader.research_tools import evaluation
-
-    monkeypatch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
-    execution = prepare_backtest_execution_data(srt_data_root=tmp_path / "data/backtest", symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path, space=DataSpace(Path("data/backtest")))
+    execution = _prepare_backtest_execution_data(repository_root=tmp_path, symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows)
     candidate = StrategyCandidate("S900", "C0001", payload, package)
     definition = ExperimentDefinition(
         schema_version=2,
@@ -491,7 +488,7 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
 ):
     from strategy_evaluator import assess_candidates, compare_candidates, research_models as m
     from strategy_manager import CandidateDerivation, CandidateDerivationKind, canonical_sha256
-    from czsc_trader.research_tools import build_assessment_evidence, EvaluationLineage, evaluation
+    from czsc_trader.research_tools import build_assessment_evidence, EvaluationLineage
 
     old_context, request = managed_evaluation
     sessions = request.execution_data.adjusted_daily["dt"]
@@ -503,8 +500,15 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         }
     )
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    flows = _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=request.repository_root, space=DataSpace(Path("data/stress")))
-    monkeypatch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
+    request = replace(request, repository_root=request.repository_root / "stress-case")
+    request.repository_root.mkdir()
+    runtime_root = request.repository_root / "runtime/strategy_runtime"
+    shutil.copytree(request.strategy.source_root, runtime_root)
+    request = replace(request, strategy=StrategyCandidate(
+        request.strategy.strategy_family_id, request.strategy.candidate_id,
+        request.strategy.payload, runtime_root,
+    ))
+    flows = _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=request.repository_root)
     context = create_formal_experiment_context(
         old_context.definition,
         repository_root=request.repository_root,
@@ -518,8 +522,8 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         request,
         frequency_window_days=2,
         costs=(EvaluationCost("standard", 0.001, tier), EvaluationCost("fee_x2", 0.002, "STRESS")),
-        execution_data=prepare_backtest_execution_data(
-            srt_data_root=request.repository_root / "data/stress-backtest", symbol=request.symbol, asset_type=request.asset_type,
+        execution_data=_prepare_backtest_execution_data(
+            repository_root=request.repository_root, symbol=request.symbol, asset_type=request.asset_type,
             start=request.windows[0].start, end=request.data_cutoff, dataflows=flows),
     )
     parent = context.evaluation.evaluate(request)
@@ -612,3 +616,55 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         )
     )
     assert comparison.rows[0].status is m.ComparisonStatus.RANKED, comparison.rows[0].reasons
+
+
+def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(managed_evaluation):
+    from czsc_trader.research_tools import build_assessment_evidence
+    context, request = managed_evaluation
+    request = replace(request, execution_data=None)
+    result = context.evaluation.evaluate(request)
+    assert result.execution_data is not None
+    assert result.execution_data.prepared is not None
+    assert build_assessment_evidence(request, result)
+    assert any(item["operation"] == "prepare" for item in context.trace.data_requests)
+    assert any(item["operation"] == "fetch" for item in context.trace.data_requests)
+    assert context.data._dataflows is not context._backtest_data._dataflows
+    assert (request.repository_root / "data/backtest").is_dir()
+
+
+def test_unprepared_evaluation_rejects_cutoff_before_preparation(managed_evaluation, monkeypatch):
+    from czsc_trader.research_tools import evaluation
+    context, request = managed_evaluation
+    def forbidden(*args, **kwargs):
+        raise AssertionError("invalid request must fail before data preparation")
+    monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
+    request = replace(request, execution_data=None, windows=(
+        EvaluationWindow("full", request.windows[0].start, date(2026, 9, 30)),
+    ))
+    with pytest.raises(ValueError, match="cutoff"):
+        context.evaluation.evaluate(request)
+
+
+def test_evaluation_authorizes_execution_datasets_before_preparation(managed_evaluation, monkeypatch):
+    from dataflows import Dataset
+    from czsc_trader.research_tools import evaluation
+    context, request = managed_evaluation
+    context.evaluation._definition = replace(context.definition, allowed_datasets=tuple(
+        value for value in context.definition.allowed_datasets
+        if value != Dataset.ETF_UNADJUSTED_DAILY
+    ))
+    def forbidden(*args, **kwargs):
+        raise AssertionError("undeclared data must fail before data preparation")
+    monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
+    with pytest.raises(PermissionError, match="datasets"):
+        context.evaluation.evaluate(replace(request, execution_data=None))
+
+
+def test_evaluation_rejects_foreign_repository_before_preparation(managed_evaluation, monkeypatch):
+    from czsc_trader.research_tools import evaluation
+    context, request = managed_evaluation
+    def forbidden(*args, **kwargs):
+        raise AssertionError("foreign repository must fail before data preparation")
+    monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
+    with pytest.raises(ValueError, match="repository differs"):
+        context.evaluation.evaluate(replace(request, repository_root=request.repository_root / "other", execution_data=None))

@@ -7,8 +7,8 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
-from dataflows import (DataRequest, DataStatus, Dataflows, Dataset, DataSpace,
-                       ProviderConfig, PreparePolicy, PreparedDataRef, DataResult)
+from dataflows import (DataRequest, DataStatus, Dataflows, Dataset,
+                       PreparePolicy, PreparedDataRef, DataResult)
 from strategy_runtime import canonical_sha256, StrategyInputBinding
 
 
@@ -128,16 +128,15 @@ def _unadjust_intraday(
     return result
 
 
-def prepare_backtest_execution_data(
+def _prepare_backtest_execution_data(
     *,
-    srt_data_root: Path,
+    repository_root: Path,
     symbol: str,
     asset_type: str,
     start: date,
     end: date,
-    env_file: Path | None = None,
     include_five_minute: bool = False,
-    dataflows: Dataflows | None = None,
+    dataflows: Dataflows,
 ) -> BacktestExecutionData:
     """Prepare TDR/TXE data without inspecting any strategy input contract."""
 
@@ -147,12 +146,7 @@ def prepare_backtest_execution_data(
     if normalized_asset not in {"stock", "etf"}:
         raise ValueError("backtest asset type must be stock or etf")
     normalized_symbol = symbol.upper()
-    if dataflows is not None and env_file is not None:
-        raise ValueError("credentials belong to the supplied Dataflows instance")
-    flows = dataflows if dataflows is not None else Dataflows(
-        base_dir=Path(srt_data_root).resolve(), space=DataSpace(Path("market")),
-        providers=ProviderConfig(env_file=env_file),
-    )
+    flows = dataflows
     calendar_request = DataRequest(
             Dataset.TRADING_CALENDAR,
             "SSE",
@@ -272,7 +266,7 @@ def prepare_backtest_execution_data(
         }
     )
     return BacktestExecutionData(
-        root=Path(srt_data_root).resolve(),
+        root=Path(repository_root).resolve() / "data" / "backtest",
         symbol=normalized_symbol,
         asset_type=normalized_asset,
         adjusted_daily=adjusted_daily,

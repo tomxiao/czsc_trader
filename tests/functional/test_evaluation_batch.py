@@ -2,15 +2,13 @@
 
 from dataclasses import replace
 from datetime import date
-from functools import partial
 import json
 import os
 import time
-from pathlib import Path
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding
+from dataflows import Dataset
 from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, ExperimentResources
 from czsc_trader.research_tools import EvaluationExecutionError
 from czsc_trader.research_tools.evaluation import evaluate_strategy
@@ -44,10 +42,7 @@ def synthetic_evaluator(request):
     if request.initial_cash == 13:
         raise RuntimeError("synthetic computation failure")
     assert set(request.input_bindings) == {item.window_id for item in request.windows}
-    return evaluate_strategy(request, dataflows=Dataflows(
-        base_dir=request.repository_root, space=DataSpace(Path("data/research")),
-        providers=ProviderConfig(bindings={}),
-    ))
+    return evaluate_strategy(request)
 
 
 def terminated_worker(request):
@@ -136,17 +131,14 @@ def test_batch_context_owner_and_completed_guards(batch):
 def test_default_formal_evaluator_transport(batch):
     from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator, pack
     context, request = batch
-    assert pack((PlatformEvaluator(request.repository_root, DataSpace(Path("data/research"))), request, 1))
-    assert pack(partial(evaluate_strategy, dataflows=Dataflows(
-        base_dir=request.repository_root, space=DataSpace(Path("data/research")),
-        providers=ProviderConfig(bindings={Dataset.ETF_SHARE_SIZE: ProviderBinding("test", "v1", synthetic_provider)}),
-    )))
+    assert pack((PlatformEvaluator(request.repository_root), request, 1))
+    assert pack(evaluate_strategy)
 
 
 def test_platform_worker_rejects_missing_parent_preparation(batch):
     from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator
     _, request = batch
-    evaluator = PlatformEvaluator(request.repository_root, DataSpace(Path("data/research")))
+    evaluator = PlatformEvaluator(request.repository_root)
     with pytest.raises(ValueError, match="parent-prepared"):
         evaluator(request)
 

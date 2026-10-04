@@ -14,15 +14,16 @@ from dataclasses import replace
 from datetime import datetime, timezone
 from time import perf_counter
 from uuid import uuid4
-from functools import partial
 import json
 import math
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
+from ..backtesting import _dataflows
+
 from dataflows import (
-    DataRequest, DataResult, Dataflows, DataSpace, PreparePolicy, PrepareResult,
+    DataRequest, DataResult, Dataflows, DataSpace, Dataset, PreparePolicy, PrepareResult,
     PreparedDataRef, ProviderConfig,
 )
 import pandas as pd
@@ -62,7 +63,8 @@ from .evaluation import (
     EvaluationRequest,
     EvaluationResult,
     evaluate_strategy,
-    prepare_evaluation_inputs,
+    _prepare_evaluation_inputs,
+    _bind_evaluation_inputs,
     _request_contract,
     _evaluation_result_hash,
 )
@@ -146,7 +148,9 @@ class _ExperimentDataAccess:
         *,
         real_returns: bool,
         sealed_validation: bool,
+        calendar_requests: tuple[DataRequest, ...] = (),
     ) -> None:
+        self._calendar_requests = calendar_requests
         self._definition = definition
         self._dataflows = dataflows
         self._recorder = recorder
@@ -164,9 +168,13 @@ class _ExperimentDataAccess:
             else self._definition.development_cutoff
         )
         cutoff = governed_cutoff
-        if pd.Timestamp(request.end).date() > cutoff:
+        is_srt_calendar = (
+            request.dataset == Dataset.TRADING_CALENDAR
+            and request in self._calendar_requests
+        )
+        if not is_srt_calendar and pd.Timestamp(request.end).date() > cutoff:
             raise PermissionError("data request exceeds the development cutoff")
-        if request.required_cutoff is not None and (
+        if not is_srt_calendar and request.required_cutoff is not None and (
             pd.Timestamp(request.required_cutoff).date() > cutoff
         ):
             raise PermissionError("required cutoff exceeds the development cutoff")
@@ -313,12 +321,14 @@ class _ExperimentEvaluationAccess:
         resources,
         workspace,
         *,
+        repository_root,
         real_returns,
         sealed_validation,
         batch_evaluator=None,
         input_preparer=None,
     ):
         self._definition = definition
+        self._repository_root = Path(repository_root).resolve()
         self._evaluator = evaluator
         self._batch_evaluator = batch_evaluator if batch_evaluator is not None else evaluator
         self._input_preparer = input_preparer
@@ -417,6 +427,8 @@ class _ExperimentEvaluationAccess:
     def _prepare(self, request):
         if not isinstance(request, EvaluationRequest):
             raise TypeError("evaluation requires an EvaluationRequest")
+        if Path(request.repository_root).resolve() != self._repository_root:
+            raise ValueError("evaluation request repository differs from its context")
         if request.experiment_id != self._definition.experiment_id:
             raise ValueError("evaluation request belongs to another experiment")
         if request.strategy.strategy_family_id != self._definition.strategy_id:
@@ -449,11 +461,15 @@ class _ExperimentEvaluationAccess:
         ):
             raise ValueError("evaluation dependencies differ from experiment declaration")
         request = replace(request, dependencies=dependencies)
-        contract, binding_hash = _request_contract(request)
+        contract, binding_hash = _request_contract(request, require_execution=False)
         runtime_definition = StrategyRuntime().describe(request.strategy)
-        if not {item.dataset for item in runtime_definition.inputs.requirements}.issubset(
-            self._definition.allowed_datasets
-        ):
+        required_datasets = {item.dataset for item in runtime_definition.inputs.requirements}
+        required_datasets.update((
+            Dataset.TRADING_CALENDAR,
+            Dataset.ETF_OHLCV if request.asset_type == "etf" else Dataset.STOCK_OHLCV,
+            Dataset.ETF_UNADJUSTED_DAILY if request.asset_type == "etf" else Dataset.STOCK_UNADJUSTED_DAILY,
+        ))
+        if not required_datasets.issubset(self._definition.allowed_datasets):
             raise PermissionError("evaluation input datasets were not declared")
         key = request.strategy.reference_id
         content = contract["content_sha256"]
@@ -634,6 +650,8 @@ class _PlatformExperimentContext:
         recorder: _TraceRecorder,
         predecessors: Mapping[str, ExperimentInput],
         formal: bool,
+        backtest_data: _ExperimentDataAccess,
+        backtest_runtime: _ExperimentRuntimeAccess,
     ) -> None:
         if resources.random_seed != definition.random_seed:
             raise ValueError("resource random_seed must match the experiment definition")
@@ -647,6 +665,12 @@ class _PlatformExperimentContext:
         self._recorder = recorder
         self._formal = formal
         self._artifacts = []
+        self._backtest_data = backtest_data
+        self._backtest_runtime = backtest_runtime
+
+    def _prepare_evaluation(self, request: EvaluationRequest) -> EvaluationRequest:
+        with self.evaluation._call():
+            return self.evaluation._prepare(request)[0]
 
     @property
     def trace(self) -> ExperimentTrace:
@@ -692,17 +716,13 @@ def create_experiment_context(
         dataflows=dataflows,
         resources=resources,
         runtime=runtime or StrategyRuntime(dataflows=dataflows),
-        evaluator=(
-            partial(evaluate_strategy, dataflows=dataflows)
-            if evaluator is evaluate_strategy
-            else evaluator
-        ),
+        evaluator=evaluator,
         workspace=workspace,
         real_returns=real_returns,
         sealed_validation=sealed_validation,
         predecessors=predecessors,
         formal=False,
-        input_preparer=(partial(prepare_evaluation_inputs, dataflows=dataflows)
+        input_preparer=(_prepare_evaluation_inputs
                         if evaluator is evaluate_strategy else None),
     )
 
@@ -728,14 +748,14 @@ def create_formal_experiment_context(
         dataflows=flows,
         resources=resources,
         runtime=StrategyRuntime(dataflows=flows),
-        evaluator=partial(evaluate_strategy, dataflows=flows),
+        evaluator=evaluate_strategy,
         workspace=workspace,
         real_returns=True,
         sealed_validation=definition.data_scope is ExperimentDataScope.SEALED_VALIDATION,
         predecessors=predecessors,
         formal=True,
-        batch_evaluator=PlatformEvaluator(Path(repository_root), data_space),
-        input_preparer=partial(prepare_evaluation_inputs, dataflows=flows),
+        batch_evaluator=PlatformEvaluator(Path(repository_root)),
+        input_preparer=_prepare_evaluation_inputs,
     )
 
 
@@ -782,6 +802,24 @@ def _create_experiment_context(
             repository_root=repository_root,
         )
         workspace = ExperimentWorkspace(root, repository_root)
+    backtest_flows = _dataflows.create_backtest_dataflows(Path(repository_root), read_only=True)
+    if input_preparer is _prepare_evaluation_inputs:
+        def prepare_managed_inputs(request):
+            from strategy_runtime import StrategyInit, TradableWindow
+            flows = _dataflows.create_backtest_dataflows(Path(repository_root))
+            calendars = tuple(
+                StrategyRuntime(dataflows=flows).create(StrategyInit(
+                    request.strategy, TradableWindow(window.start, window.end),
+                    Path(repository_root) / "data/backtest/contexts/authorization",
+                )).calendar_request()
+                for window in request.windows
+            )
+            governed = _ExperimentDataAccess(
+                definition, flows, recorder, real_returns=real_returns,
+                sealed_validation=sealed_validation, calendar_requests=calendars,
+            )
+            return _bind_evaluation_inputs(request, dataflows=governed)
+        input_preparer = prepare_managed_inputs
     return _PlatformExperimentContext(
         definition,
         data=_ExperimentDataAccess(
@@ -798,6 +836,7 @@ def _create_experiment_context(
             recorder,
             resources,
             workspace,
+            repository_root=repository_root,
             real_returns=real_returns,
             sealed_validation=sealed_validation,
             batch_evaluator=batch_evaluator,
@@ -808,6 +847,13 @@ def _create_experiment_context(
         recorder=recorder,
         predecessors=by_id,
         formal=formal,
+        backtest_data=_ExperimentDataAccess(
+            definition, backtest_flows, recorder,
+            real_returns=real_returns, sealed_validation=sealed_validation,
+        ),
+        backtest_runtime=_ExperimentRuntimeAccess(
+            StrategyRuntime(dataflows=backtest_flows), recorder, definition,
+        ),
     )
 
 

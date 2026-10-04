@@ -6,7 +6,6 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, DataSpace, ProviderConfig
 
 from czsc_trader.research_tools import (
     CandidateEvaluationContext,
@@ -65,7 +64,7 @@ def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
         )
 
     monkeypatch.setattr(
-        "czsc_trader.research_tools.evaluation.prepare_backtest_execution_data",
+        "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data",
         load_stale,
     )
     context = CandidateEvaluationContext(
@@ -73,8 +72,6 @@ def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
         "588080.SH",
         "etf",
         (("full", (pd.Timestamp("2026-09-01"), pd.Timestamp("2026-09-02"))),),
-        dataflows=Dataflows(base_dir=minimal_repo, space=DataSpace(Path("data/research")),
-                           providers=ProviderConfig(bindings={})),
     )
 
     with pytest.raises(ValueError, match="does not reach development cutoff"):

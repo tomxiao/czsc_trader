@@ -11,9 +11,7 @@ from typing import Any, Mapping
 
 import pandas as pd
 from strategy_runtime import StrategyCandidate
-from dataflows import Dataflows, DataSpace, ProviderConfig
 
-from czsc_trader.backtesting.execution_data import prepare_backtest_execution_data
 from czsc_trader.research_tools import (
     EvaluationBenchmark,
     EvaluationCost,
@@ -73,7 +71,6 @@ def _evaluation_request(
     context: RepositoryContext,
     path: Path,
     experiment: Path,
-    *, dataflows: Dataflows,
 ) -> EvaluationRequest:
     raw = _read_object(path)
     _exact(
@@ -175,14 +172,6 @@ def _evaluation_request(
         "evaluation execution",
     )
 
-    prepared = prepare_backtest_execution_data(
-        srt_data_root=context.tdr_srt_root,
-        symbol=str(market["symbol"]),
-        asset_type=str(market["asset_type"]),
-        start=min(item.start for item in windows),
-        end=cutoff,
-        dataflows=dataflows,
-    )
     return EvaluationRequest(
         repository_root=context.root,
         experiment_id=experiment.name,
@@ -194,7 +183,6 @@ def _evaluation_request(
         data_cutoff=cutoff,
         initial_cash=float(capital["initial_cash"]),
         costs=tuple(costs),
-        execution_data=prepared,
         benchmark=benchmark,
         workers=int(execution["workers"]),
         frequency_window_days=int(execution["frequency_window_days"]),
@@ -352,10 +340,8 @@ def evaluate_research_request(
 
     try:
         path, experiment = _request_path(context, input_path)
-        flows = Dataflows(base_dir=context.root, space=DataSpace(Path("data/research")),
-                          providers=ProviderConfig(env_file=context.root / ".env"))
-        request = _evaluation_request(context, path, experiment, dataflows=flows)
-        result = evaluate_strategy(request, dataflows=flows)
+        request = _evaluation_request(context, path, experiment)
+        result = evaluate_strategy(request)
         output, document = _publish_result(context, experiment, result)
     except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError) as exc:
         raise ValidationError(

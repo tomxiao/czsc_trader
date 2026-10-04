@@ -398,8 +398,8 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     """Exercise from_release through the managed runtime port, without deployment."""
     window = TradableWindow(run.signals.evaluation_start.date(), run.signals.evaluation_end.date())
     root = create_temporary_directory(context.root, "inspection-runtime")
-    candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
-    frozen = execution.runtime.create(
+    candidate = execution._backtest_runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
+    frozen = execution._backtest_runtime.create(
         StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding)
     )
     candidate_binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
@@ -423,7 +423,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
             if name == bound.plan.calendar_name:
                 result[name] = bound.plan.calendar_sha256
                 continue
-            data = execution.data.fetch(request, prepared=bound.prepared)
+            data = execution._backtest_data.fetch(request, prepared=bound.prepared)
             if not data.ready:
                 raise ValueError("inspection input reference cannot be read")
             result[name] = data.identity.content_sha256
@@ -444,7 +444,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     else:
         settings["one_way_cost"] = fee
     policy = ExecutionPolicy(policy.policy_type, settings)
-    frozen = execution.runtime.create(
+    frozen = execution._backtest_runtime.create(
         StrategyInit(
             release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding
         )
@@ -655,6 +655,7 @@ def inspect_candidate(
         sources.append(ref)
         try:
             current_request = replace(new_request, strategy=candidate)
+            current_request = request.execution._prepare_evaluation(current_request)
             current = request.execution.evaluation.evaluate(current_request)
             _, current_ref = _authenticate(
                 context, current_request, current, request.execution.workspace.root, store

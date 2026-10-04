@@ -568,8 +568,12 @@ def test_inspection_in_fresh_process_uses_archived_reference(inspection):
         "reproduction": {
             x.name: getattr(replay.reproduction_request, x.name)
             for x in fields(replay.reproduction_request)
-            if x.name != "strategy"
+            if x.name not in {"strategy", "input_bindings"}
         },
+    }
+    payload["reproduction"]["input_bindings"] = {
+        name: binding.to_dict()
+        for name, binding in replay.reproduction_request.input_bindings.items()
     }
     path = context.root / ".tmp/fresh-inspection-input.pkl"
     path.write_bytes(pickle.dumps(payload))
@@ -591,18 +595,20 @@ def _cold_start_inspection(path):
     from czsc_trader.application import RepositoryContext, load_candidate
     from czsc_trader.research_tools import EvaluationRequest
     from test_candidate_runtime_execution import _install_candidate_dataflows
-    from czsc_trader.research_tools import evaluation
 
     payload = pickle.loads(Path(path).read_bytes())
     values = payload["reproduction"]
+    from strategy_runtime import StrategyInputBinding
+    values["input_bindings"] = {
+        name: StrategyInputBinding.from_mapping(binding)
+        for name, binding in values["input_bindings"].items()
+    }
     context = RepositoryContext.discover(values["repository_root"])
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     with pytest.MonkeyPatch.context() as patch:
-        _install_candidate_dataflows(patch, flow, daily, base_dir=context.root,
-                                    space=DataSpace(Path("data/research")))
-        patch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
+        _install_candidate_dataflows(patch, flow, daily, base_dir=context.root)
         definition = load_experiment(
             context.experiments_root / "S900" / values["experiment_id"]
         ).definition

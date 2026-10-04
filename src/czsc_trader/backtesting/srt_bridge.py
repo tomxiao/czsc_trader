@@ -215,6 +215,7 @@ def prepare_srt_input_binding(
     """Prepare one input list for strategy calculation and historical execution."""
     if not execution_data.requests or execution_data.prepared is None:
         raise RuntimeContractError("execution data requires an explicit DFLS input binding")
+    _validate_execution_binding(dataflows, execution_data, execution_data.prepared)
     source, _ = describe_snapshot_strategy(
         repository_root, snapshot, deployment_symbol=execution_data.symbol,
     )
@@ -240,11 +241,11 @@ def prepare_srt_input_binding(
     final_calendar = dataflows.fetch(plan.requests[plan.calendar_name], prepared=prepared.reference)
     if not final_calendar.ready or final_calendar.identity.content_sha256 != plan.calendar_sha256:
         raise RuntimeContractError("calendar changed while preparing the strategy input list")
-    _validate_execution_binding(dataflows, execution_data, binding)
+    _validate_execution_binding(dataflows, execution_data, binding.prepared)
     return binding
 
 
-def _validate_execution_binding(flows, execution_data, binding):
+def _validate_execution_binding(flows, execution_data, prepared):
     if not execution_data.requests or not execution_data.input_identities:
         raise RuntimeContractError("execution data has no authenticated input list")
     asset = execution_data.asset_type
@@ -266,7 +267,7 @@ def _validate_execution_binding(flows, execution_data, binding):
     for name, request in execution_data.requests.items():
         if (request.dataset, request.symbol, request.frequency) != expected[name]:
             raise RuntimeContractError(f"execution input selection differs from instrument: {name}")
-        result = flows.fetch(request, prepared=binding.prepared)
+        result = flows.fetch(request, prepared=prepared)
         if not result.ready or result.identity.content_sha256 != execution_data.input_identities.get(name):
             raise RuntimeContractError(f"execution input differs from bound preparation: {name}")
         results[name] = result
@@ -366,7 +367,8 @@ def build_srt_signal_replay(
             snapshot=snapshot, execution_data=execution_data, start=evaluation[0], end=evaluation[-1],
             repository_root=repository_root, dataflows=dataflows,
         )
-    _validate_execution_binding(dataflows, execution_data, input_binding)
+    _validate_execution_binding(dataflows, execution_data, execution_data.prepared)
+    _validate_execution_binding(dataflows, execution_data, input_binding.prepared)
     prepared = strategy.prepare_data(binding=input_binding)
     history = strategy.inspect_signals()
     _validate_historical_decisions(history, visible)

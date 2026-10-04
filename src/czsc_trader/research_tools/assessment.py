@@ -1,5 +1,7 @@
 """Convert authenticated evaluation facts into SE-owned research input contracts."""
 
+from dataclasses import replace
+
 import pandas as pd
 from strategy_evaluator import (
     AccountPoint,
@@ -36,6 +38,10 @@ def build_assessment_evidence(
         raise TypeError("assessment adaptation requires EvaluationRequest and EvaluationResult")
     if not result.runs or any(x.identity is None for x in result.runs) or result.attempt_id is None:
         raise ValueError("assessment requires identified, managed evaluation attempts")
+    if request.execution_data is None:
+        if result.execution_data is None or result.execution_data.fingerprint != result.data_identity:
+            raise ValueError("assessment requires the evaluated execution data")
+        request = replace(request, execution_data=result.execution_data)
     content = result.runs[0].identity.content_sha256
     binding = canonical_sha256(request.runtime_binding)
     expected = canonical_sha256(_request_identity_payload(request, content, binding))

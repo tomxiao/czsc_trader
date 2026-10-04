@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from dataflows import Dataflows
 
 from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_runtime import StrategyCandidate
@@ -28,7 +27,6 @@ def run_backtest(
     request: BacktestRequest,
     *,
     run_date: date | None = None,
-    dataflows: Dataflows | None = None,
 ) -> CommandResult:
     """Replay a candidate or an authenticated frozen version through one engine.
 
@@ -64,11 +62,9 @@ def run_backtest(
         summary = _run_backtest(
             snapshot=snapshot,
             request=request,
-            srt_data_root=context.tdr_srt_root,
             outputs_root=context.outputs_root,
             run_date=run_date or datetime.now().astimezone().date(),
             repository_root=context.root,
-            dataflows=dataflows,
         )
     except BacktestExecutionDataNotReadyError as exc:
         raise ExecutionError(

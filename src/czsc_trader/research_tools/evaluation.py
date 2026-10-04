@@ -29,8 +29,9 @@ from trading_execution_engine import ExecutionResult
 
 from ..backtesting.execution_data import (
     BacktestExecutionData,
-    prepare_backtest_execution_data,
+    _prepare_backtest_execution_data,
 )
+from ..backtesting import _dataflows
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
 from ..backtesting.benchmark_contracts import EvaluationBenchmark
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
@@ -57,7 +58,12 @@ class CandidateEvaluationContext:
     review_data_root: Path | None = None
     review_data_hash: str | None = None
     candidate_runtime_roots: dict[str, Path] | None = None
-    dataflows: Dataflows | None = None
+    _dataflows: Dataflows = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self):
+        object.__setattr__(self, "_dataflows", _dataflows.create_backtest_dataflows(
+            Path(self.repository.root), read_only=True,
+        ))
 
 
 @dataclass(frozen=True)
@@ -102,8 +108,8 @@ class EvaluationRequest:
     data_cutoff: date
     initial_cash: float
     costs: tuple[EvaluationCost, ...]
-    execution_data: BacktestExecutionData
-    benchmark: EvaluationBenchmark
+    execution_data: BacktestExecutionData | None = None
+    benchmark: EvaluationBenchmark = field(kw_only=True)
     workers: int = 1
     frequency_window_days: int = 60
     execution_mode: str = "FULL"
@@ -203,6 +209,7 @@ class EvaluationResult:
     execution_mode: str = "FULL"
     attempt_id: str | None = None
     record: ExperimentArtifact | None = None
+    execution_data: BacktestExecutionData | None = field(default=None, repr=False, compare=False)
 
     @property
     def observations(self) -> tuple[MetricObservation, ...]:
@@ -229,8 +236,6 @@ def prepare_evaluation_workspace(
     context: CandidateEvaluationContext, protocol: EvaluationProtocol, *,
     include_five_minute: bool = False,
 ) -> EvaluationWorkspace:
-    if context.dataflows is None:
-        raise ValueError("evaluation requires a host-configured Dataflows data space")
     options = {"include_five_minute": True} if include_five_minute else {}
     if context.review_data_root is not None:
         from ..application.review_data import load_review_dataset
@@ -253,18 +258,14 @@ def prepare_evaluation_workspace(
         if context.review_data_hash is not None:
             raise ValueError("review dataset hash requires a snapshot directory")
         first_start = min(start for _, (start, _) in context.periods)
-        execution_data = prepare_backtest_execution_data(
-            srt_data_root=getattr(
-                context.repository,
-                "tdr_srt_root",
-                Path(context.repository.root) / "data" / "backtest",
-            ),
+        execution_data = _prepare_backtest_execution_data(
+            repository_root=Path(context.repository.root),
             symbol=context.symbol,
             asset_type=context.asset_type,
             start=first_start.date(),
             end=pd.Timestamp(protocol.development_cutoff).date(),
             include_five_minute=bool(options),
-            dataflows=context.dataflows,
+            dataflows=_dataflows.create_backtest_dataflows(Path(context.repository.root)),
         )
     cutoff = pd.Timestamp(protocol.development_cutoff).normalize()
     dates = pd.DatetimeIndex(pd.to_datetime(execution_data.adjusted_daily["dt"])).normalize()
@@ -332,6 +333,7 @@ def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
         context, protocol,
         include_five_minute=any(execution_intraday_frequencies(strategy) for _, strategy in loaded.values()),
     )
+    flows = _dataflows.create_backtest_dataflows(Path(context.repository.root))
     replays = {}
     for key, (snapshot, _) in loaded.items():
         replays[key] = {
@@ -341,7 +343,7 @@ def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
                 start=start,
                 end=end,
                 repository_root=context.repository.root,
-                dataflows=context.dataflows,
+                dataflows=flows,
             )
             for name, (start, end) in workspace.periods.items()
         }
@@ -356,7 +358,7 @@ def execute_candidate_replay(context, workspace, prepared, fee_rate):
         signals=signals,
         execution_data=workspace.execution_data,
         initial_cash=context.init_cash, fee_rate_override=fee_rate,
-        dataflows=context.dataflows,
+        dataflows=context._dataflows,
     )
     support = dict(signals.support_data)
     policy = support["execution_policy"]
@@ -613,7 +615,7 @@ def _evaluate_runs(
     return EvaluationResult(runs)
 
 
-def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], str]:
+def _request_contract(request: EvaluationRequest, *, require_execution: bool = True) -> tuple[dict[str, object], str]:
     if not isinstance(request, EvaluationRequest):
         raise TypeError("research evaluation requires an EvaluationRequest")
     root = Path(request.repository_root).resolve()
@@ -663,38 +665,41 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
     if request.symbol != symbol or asset_type not in {"stock", "etf"}:
         raise ValueError("evaluation symbol or asset_type is not normalized")
     data = request.execution_data
-    if not isinstance(data, BacktestExecutionData):
+    if data is None and require_execution:
         raise ValueError("evaluation requires prepared BacktestExecutionData")
-    if (data.symbol, data.asset_type, data.cutoff) != (
-        symbol,
-        asset_type,
-        request.data_cutoff,
-    ):
-        raise ValueError("execution data identity differs from the evaluation contract")
-    if re.fullmatch(r"[0-9a-f]{64}", data.fingerprint) is None:
-        raise ValueError("execution data fingerprint must be lowercase SHA-256")
-    adjusted_sessions = pd.DatetimeIndex(
-        pd.to_datetime(data.adjusted_daily["dt"])
-    ).normalize()
-    execution_sessions = pd.DatetimeIndex(
-        pd.to_datetime(data.execution_daily["dt"])
-    ).normalize()
-    if (
-        adjusted_sessions.empty
-        or adjusted_sessions.has_duplicates
-        or not adjusted_sessions.is_monotonic_increasing
-        or not adjusted_sessions.equals(execution_sessions)
-    ):
-        raise ValueError("adjusted and execution market calendars differ")
-    requested_sessions = pd.DatetimeIndex(data.evaluation_sessions).normalize()
-    if (
-        requested_sessions.empty
-        or requested_sessions.has_duplicates
-        or not requested_sessions.is_monotonic_increasing
-        or requested_sessions[-1].date() != request.data_cutoff
-        or not requested_sessions.isin(execution_sessions).all()
-    ):
-        raise ValueError("execution evaluation sessions are incomplete")
+    if data is not None:
+        if not isinstance(data, BacktestExecutionData):
+            raise ValueError("evaluation requires prepared BacktestExecutionData")
+        if (data.symbol, data.asset_type, data.cutoff) != (
+            symbol,
+            asset_type,
+            request.data_cutoff,
+        ):
+            raise ValueError("execution data identity differs from the evaluation contract")
+        if re.fullmatch(r"[0-9a-f]{64}", data.fingerprint) is None:
+            raise ValueError("execution data fingerprint must be lowercase SHA-256")
+        adjusted_sessions = pd.DatetimeIndex(
+            pd.to_datetime(data.adjusted_daily["dt"])
+        ).normalize()
+        execution_sessions = pd.DatetimeIndex(
+            pd.to_datetime(data.execution_daily["dt"])
+        ).normalize()
+        if (
+            adjusted_sessions.empty
+            or adjusted_sessions.has_duplicates
+            or not adjusted_sessions.is_monotonic_increasing
+            or not adjusted_sessions.equals(execution_sessions)
+        ):
+            raise ValueError("adjusted and execution market calendars differ")
+        requested_sessions = pd.DatetimeIndex(data.evaluation_sessions).normalize()
+        if (
+            requested_sessions.empty
+            or requested_sessions.has_duplicates
+            or not requested_sessions.is_monotonic_increasing
+            or requested_sessions[-1].date() != request.data_cutoff
+            or not requested_sessions.isin(execution_sessions).all()
+        ):
+            raise ValueError("execution evaluation sessions are incomplete")
     if not np.isfinite(float(request.initial_cash)) or request.initial_cash <= 0:
         raise ValueError("evaluation initial_cash must be positive and finite")
     if request.execution_mode != "FULL":
@@ -714,13 +719,16 @@ def _request_contract(request: EvaluationRequest) -> tuple[dict[str, object], st
         or len(window_ids) != len(set(window_ids))
     ):
         raise ValueError("evaluation window identities must be nonblank and unique")
-    sessions = pd.DatetimeIndex(pd.to_datetime(data.execution_daily["dt"])).normalize()
-    for item in request.windows:
-        start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
-        if start > end or start not in sessions or end not in sessions:
-            raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
-        if end.date() > request.data_cutoff or not (sessions < start).any():
-            raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
+    if any(item.end > request.data_cutoff for item in request.windows):
+        raise ValueError("evaluation window violates cutoff")
+    if data is not None:
+        sessions = pd.DatetimeIndex(pd.to_datetime(data.execution_daily["dt"])).normalize()
+        for item in request.windows:
+            start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
+            if start > end or start not in sessions or end not in sessions:
+                raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
+            if end.date() > request.data_cutoff or not (sessions < start).any():
+                raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
 
     if not request.costs:
         raise ValueError("evaluation costs must not be empty")
@@ -777,7 +785,7 @@ def _request_identity_payload(
              "measurement_tier": x.measurement_tier}
             for x in request.costs
         ],
-        "data_identity": request.execution_data.fingerprint,
+        "data_identity": None if request.execution_data is None else request.execution_data.fingerprint,
         "benchmark": request.benchmark.to_dict(),
         "frequency_window_days": request.frequency_window_days,
         "execution_mode": request.execution_mode,
@@ -827,11 +835,28 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
 
 
-def prepare_evaluation_inputs(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationRequest:
+def _prepare_evaluation_inputs(request: EvaluationRequest) -> EvaluationRequest:
     """Resolve all window inputs in the owning process before worker dispatch."""
-    _request_contract(request)
+    return _bind_evaluation_inputs(request, dataflows=None)
+
+
+def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> EvaluationRequest:
+    _request_contract(request, require_execution=False)
     if request.input_bindings:
+        if request.execution_data is None:
+            raise ValueError("bound evaluation requires its original execution data")
         return request
+    if dataflows is None:
+        dataflows = _dataflows.create_backtest_dataflows(Path(request.repository_root))
+    if request.execution_data is None:
+        definition = StrategyRuntime().describe(request.strategy)
+        request = replace(request, execution_data=_prepare_backtest_execution_data(
+            repository_root=Path(request.repository_root), symbol=request.symbol,
+            asset_type=request.asset_type, start=min(item.start for item in request.windows),
+            end=request.data_cutoff, include_five_minute=bool(execution_intraday_frequencies(definition)),
+            dataflows=dataflows,
+        ))
+    _request_contract(request)
     snapshot = StrategySnapshot(
         StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
         request.strategy.runtime_identity_sha256,
@@ -849,10 +874,10 @@ def prepare_evaluation_inputs(request: EvaluationRequest, *, dataflows: Dataflow
     return replace(request, input_bindings=bindings)
 
 
-def evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationResult:
+def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
-    request = prepare_evaluation_inputs(request, dataflows=dataflows)
+    request = _prepare_evaluation_inputs(request)
     contract, binding_hash = _request_contract(request)
     request_hash = canonical_sha256(contract)
     periods = tuple(
@@ -878,7 +903,6 @@ def evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> Ev
         workers=request.workers,
         frequency_window_days=request.frequency_window_days,
         family_id=request.strategy.strategy_family_id,
-        dataflows=dataflows,
     )
     snapshot = StrategySnapshot(
         StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
@@ -896,7 +920,7 @@ def evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> Ev
                 start=start,
                 end=end,
                 repository_root=Path(request.repository_root).resolve(),
-                dataflows=context.dataflows,
+                dataflows=context._dataflows,
                 input_binding=request.input_bindings[name],
             )
             for name, (start, end) in periods
@@ -969,6 +993,7 @@ def evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> Ev
         data_identity=request.execution_data.fingerprint,
         result_hash=result_hash,
         execution_mode=request.execution_mode,
+        execution_data=request.execution_data,
     )
 
 

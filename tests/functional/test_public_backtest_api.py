@@ -1,4 +1,3 @@
-from pathlib import Path
 from dataclasses import replace
 from datetime import date
 from types import SimpleNamespace
@@ -51,12 +50,12 @@ def test_lot_size_conflict_fails_before_data_access(tmp_path, monkeypatch, polic
     )
     def forbidden(**kwargs):
         pytest.fail("conflicting lot_size must fail before fetching data")
-    monkeypatch.setattr("czsc_trader.backtesting.service.prepare_backtest_execution_data", forbidden)
+    monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", forbidden)
     with pytest.raises(ValueError, match="lot_size differs"):
         _run_backtest(
             snapshot=None,
             request=BacktestRequest("588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 1),
-            srt_data_root=tmp_path, outputs_root=tmp_path, run_date=date(2026, 9, 22),
+            outputs_root=tmp_path, run_date=date(2026, 9, 22),
             repository_root=tmp_path,
         )
 
@@ -81,13 +80,12 @@ def test_candidate_and_version_use_one_backtest_dispatch(
         )
 
     monkeypatch.setattr("czsc_trader.application.backtest_service._run_backtest", replay)
-    from dataflows import Dataflows, DataSpace, ProviderConfig
-    flows = Dataflows(base_dir=context.root, space=DataSpace(Path("data/test")), providers=ProviderConfig(bindings={}))
     for strategy in (candidate, version):
-        assert run_backtest(context, strategy, request, dataflows=flows).status == "PASS"
+        assert run_backtest(context, strategy, request).status == "PASS"
     assert [item["snapshot"].identity.kind for item in observed] == ["CANDIDATE", "REGISTERED"]
     assert all(item["request"] is request for item in observed)
-    assert all(item["dataflows"] is flows for item in observed)
+    assert all(item["repository_root"] == context.root for item in observed)
+    assert all("dataflows" not in item and "srt_data_root" not in item for item in observed)
     assert observed[0]["snapshot"].runtime_root == source
     assert observed[0]["snapshot"].identity.reference == candidate.reference_id
     assert observed[1]["snapshot"].identity.reference == version.release_id
@@ -95,6 +93,8 @@ def test_candidate_and_version_use_one_backtest_dispatch(
 
     with pytest.raises(ExecutionError, match="differs from the frozen registry"):
         run_backtest(context, replace(version, change_summary="changed"), request)
+    with pytest.raises(TypeError, match="dataflows"):
+        run_backtest(context, version, request, dataflows=object())
     with pytest.raises(TypeError, match="chart_descriptor"):
         run_backtest(context, version, request, chart_descriptor={})
     with pytest.raises(TypeError, match="strategy"):

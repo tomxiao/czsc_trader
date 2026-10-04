@@ -7,14 +7,14 @@ from pathlib import Path
 import shutil
 
 import pandas as pd
-from dataflows import Dataflows, DataSpace, ProviderConfig
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from czsc_trader.reporting.publication import publish_run_directory
 from czsc_trader.temp_workspace import create_temporary_directory
 
 from .benchmarks import replay_benchmarks
-from .execution_data import BacktestExecutionData, prepare_backtest_execution_data
+from .execution_data import BacktestExecutionData, _prepare_backtest_execution_data
+from . import _dataflows
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
 from .chart import render_backtest_chart_html
 from .chart_context import BacktestChartMetrics, build_backtest_chart_context, build_ma_chart_context
@@ -90,12 +90,10 @@ def _run_backtest(
     *,
     snapshot: StrategySnapshot,
     request: BacktestRequest,
-    srt_data_root: Path,
     outputs_root: Path,
     run_date: date,
     repository_root: Path | None = None,
     execution_data: BacktestExecutionData | None = None,
-    dataflows: Dataflows | None = None,
 ) -> BacktestRunSummary:
     """Run, validate, and atomically publish one immutable replay."""
     request = replace(request, symbol=request.symbol.upper())
@@ -116,13 +114,10 @@ def _run_backtest(
         raise ValueError(f"unsupported execution policy: {policy_type}")
     if type(policy_lot_size) is not int or request.lot_size != policy_lot_size:
         raise ValueError("request lot_size differs from strategy execution contract")
-    flows = dataflows if dataflows is not None else Dataflows(
-        base_dir=Path(srt_data_root).resolve(), space=DataSpace(Path("market")),
-        providers=ProviderConfig(env_file=Path(repository_root) / ".env"),
-    )
+    flows = _dataflows.create_backtest_dataflows(repository_root)
     if execution_data is None:
-        execution_data = prepare_backtest_execution_data(
-            srt_data_root=srt_data_root,
+        execution_data = _prepare_backtest_execution_data(
+            repository_root=repository_root,
             symbol=request.symbol,
             asset_type=request.asset_type,
             start=request.start,

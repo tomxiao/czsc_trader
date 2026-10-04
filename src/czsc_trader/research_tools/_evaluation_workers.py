@@ -9,21 +9,19 @@ import shutil
 from types import MappingProxyType
 
 from threadpoolctl import threadpool_limits
-from dataflows import Dataflows, DataSpace, ProviderConfig
 
 
 @dataclass(frozen=True)
 class PlatformEvaluator:
     base_dir: Path
-    space: DataSpace
 
     def __call__(self, request):
         from .evaluation import evaluate_strategy
         if set(request.input_bindings) != {item.window_id for item in request.windows}:
             raise ValueError("evaluation worker requires parent-prepared input bindings")
-        return evaluate_strategy(request, dataflows=Dataflows(
-            base_dir=self.base_dir, space=self.space, providers=ProviderConfig(bindings={}),
-        ))
+        if Path(request.repository_root).resolve() != self.base_dir.resolve():
+            raise ValueError("evaluation worker repository differs from request")
+        return evaluate_strategy(request)
 
 
 def _mapping(value):
