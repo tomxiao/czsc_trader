@@ -1,0 +1,358 @@
+{
+  "type": "DEV_DIAGNOSTIC_SUMMARY",
+  "formal_research_evidence": false,
+  "source_files": {
+    "tushare_518880": {
+      "path": ".tmp/tushare_518880_audit/20261004_131754/verification_result.json",
+      "sha256": "ca7dde53a584bfbf62144c1dcc09ea78e25ddb372174378817b7dda6f3e1124a"
+    },
+    "tushare_518880_diagnostics": {
+      "path": ".tmp/tushare_518880_audit/20261004_131754/supplement.json",
+      "sha256": "3f4d412b052605af02f63a19fa60db1fca5a675d442d890d19881d59094ebe36"
+    },
+    "tdx_518880": {
+      "path": ".tmp/tdx_518880_review/comparison_summary.json",
+      "sha256": "2cfb431fb368a4bdfc07941b9a2680bad6723d54fc4bdf817162e3fceb9855dd"
+    }
+  },
+  "tushare_518880": {
+    "scope": "Tushare 518880.SH 2020-01-01 to 2026-09-30; data verification only; target unchanged",
+    "coverage_days": 1636,
+    "fresh_dfls_5m_matches_diagnostic_snapshot": {
+      "Date": true,
+      "Open": true,
+      "High": true,
+      "Low": true,
+      "Close": true,
+      "Volume": true,
+      "Amount": true
+    },
+    "existing_gate_price_tolerance": 0.005,
+    "daily_patch_dates": [
+      "2020-03-09",
+      "2020-08-07",
+      "2021-03-03"
+    ],
+    "unresolved_5m_vwap_dates": [
+      "2021-03-04",
+      "2025-10-30",
+      "2026-04-21"
+    ],
+    "decision": "Coverage and existing repaired 5m gate pass. Additional price-volume consistency issues remain, so replacement readiness is not unconditionally established. No new repairs applied.",
+    "evidence": [
+      "summary.json",
+      "supplement.json",
+      "publication_probe.json",
+      "requests.json"
+    ]
+  },
+  "additional_checks": {
+    "1m": {
+      "unexplained_after_1yuan_or_1e7_relative_amount_rounding_and_0001_price_allowance": 56,
+      "days": 56,
+      "clock_counts": {
+        "13:01": 39,
+        "13:45": 2,
+        "14:58": 2,
+        "13:06": 2,
+        "14:57": 1,
+        "11:07": 1,
+        "13:38": 1,
+        "11:22": 1,
+        "10:31": 1,
+        "13:28": 1,
+        "14:51": 1,
+        "14:33": 1,
+        "11:09": 1,
+        "14:52": 1,
+        "11:02": 1
+      },
+      "largest_examples": [
+        {
+          "Date": "2025-10-30 13:01:00",
+          "Open": 8.666,
+          "High": 8.68,
+          "Low": 8.66,
+          "Close": 8.664,
+          "Volume": 35853400.0,
+          "Amount": 309951420.0,
+          "VWAP": 8.644965888869676,
+          "Amount_gap_to_price_range": 539024.0
+        },
+        {
+          "Date": "2026-01-21 13:01:00",
+          "Open": 10.467,
+          "High": 10.501,
+          "Low": 10.425,
+          "Close": 10.43,
+          "Volume": 20312520.0,
+          "Amount": 211612450.0,
+          "VWAP": 10.417833434748617,
+          "Amount_gap_to_price_range": 145571.0
+        },
+        {
+          "Date": "2025-05-23 13:01:00",
+          "Open": 7.409,
+          "High": 7.413,
+          "Low": 7.409,
+          "Close": 7.41,
+          "Volume": 20459800.0,
+          "Amount": 151498580.0,
+          "VWAP": 7.404695060557777,
+          "Amount_gap_to_price_range": 88078.19999998808
+        },
+        {
+          "Date": "2025-05-13 13:01:00",
+          "Open": 7.3,
+          "High": 7.305,
+          "Low": 7.295,
+          "Close": 7.297,
+          "Volume": 26979948.0,
+          "Amount": 196768000.0,
+          "VWAP": 7.293120060868909,
+          "Amount_gap_to_price_range": 50720.659999996424
+        },
+        {
+          "Date": "2025-05-27 13:01:00",
+          "Open": 7.431,
+          "High": 7.432,
+          "Low": 7.428,
+          "Close": 7.431,
+          "Volume": 13260300.0,
+          "Amount": 98594056.0,
+          "VWAP": 7.435280951411356,
+          "Amount_gap_to_price_range": 43506.39999999106
+        }
+      ]
+    },
+    "5m": {
+      "unexplained_after_1yuan_or_1e7_relative_amount_rounding_and_0001_price_allowance": 3,
+      "days": 3,
+      "clock_counts": {
+        "13:05": 2,
+        "11:10": 1
+      },
+      "largest_examples": [
+        {
+          "Date": "2025-10-30 13:05:00",
+          "Open": 8.666,
+          "High": 8.68,
+          "Low": 8.66,
+          "Close": 8.666,
+          "Volume": 83630700.0,
+          "Amount": 724114940.0,
+          "VWAP": 8.658482351576634,
+          "Amount_gap_to_price_range": 126922.0
+        },
+        {
+          "Date": "2026-04-21 11:10:00",
+          "Open": 10.052,
+          "High": 10.052,
+          "Low": 10.048,
+          "Close": 10.049,
+          "Volume": 13256500.0,
+          "Amount": 133288160.0,
+          "VWAP": 10.054551352166861,
+          "Amount_gap_to_price_range": 33822.0
+        },
+        {
+          "Date": "2021-03-04 13:05:00",
+          "Open": 3.512,
+          "High": 3.514,
+          "Low": 3.511,
+          "Close": 3.511,
+          "Volume": 7737800.0,
+          "Amount": 27158312.0,
+          "VWAP": 3.5098234640337047,
+          "Amount_gap_to_price_range": 9103.800000000745
+        }
+      ]
+    },
+    "30m": {
+      "unexplained_after_1yuan_or_1e7_relative_amount_rounding_and_0001_price_allowance": 0,
+      "days": 0,
+      "clock_counts": {},
+      "largest_examples": []
+    },
+    "small_daily_price_differences": {
+      "count": 91,
+      "year_counts": {
+        "2020": 74,
+        "2021": 17
+      },
+      "max": {
+        "Open": 0.0,
+        "High": 0.004999999999999893,
+        "Low": 0.0040000000000000036,
+        "Close": 0.0
+      }
+    }
+  },
+  "tdx_518880": {
+    "files": [
+      {
+        "file": "518880_2020-01-01_2026-09-30_日线_不复权.csv",
+        "rows": 1636,
+        "bytes": 575228,
+        "sha256": "208ef85ead7e71b04a6f70f290dd3d15f42511f96e5bbccfcc221947f4ac7c99"
+      },
+      {
+        "file": "518880_2020-03-02_1分钟_不复权.csv",
+        "rows": 0,
+        "bytes": 291,
+        "sha256": "d4f315e902ec90362417711f17ec8c2ccb8c4ad0adeac85fc3139933d842c8c7"
+      },
+      {
+        "file": "518880_2020-03-09_1分钟_不复权.csv",
+        "rows": 0,
+        "bytes": 291,
+        "sha256": "d4f315e902ec90362417711f17ec8c2ccb8c4ad0adeac85fc3139933d842c8c7"
+      },
+      {
+        "file": "518880_2021-03-04_1分钟_不复权.csv",
+        "rows": 0,
+        "bytes": 291,
+        "sha256": "d4f315e902ec90362417711f17ec8c2ccb8c4ad0adeac85fc3139933d842c8c7"
+      },
+      {
+        "file": "518880_2025-10-30_1分钟_不复权.csv",
+        "rows": 0,
+        "bytes": 291,
+        "sha256": "d4f315e902ec90362417711f17ec8c2ccb8c4ad0adeac85fc3139933d842c8c7"
+      },
+      {
+        "file": "518880_2026-04-21_1分钟_不复权.csv",
+        "rows": 0,
+        "bytes": 291,
+        "sha256": "d4f315e902ec90362417711f17ec8c2ccb8c4ad0adeac85fc3139933d842c8c7"
+      }
+    ],
+    "checks": {
+      "rows": 1636,
+      "duplicate_dates": 0,
+      "first": "2020-01-02",
+      "last": "2026-09-30",
+      "unit": "Volume normalized using RawVolume (shares); Amount is yuan",
+      "raw_response_csv_consistent": true
+    },
+    "daily_raw_normalized": {
+      "matched_days": 1636,
+      "missing_tdx_days": [],
+      "extra_tdx_days": [],
+      "price_difference_days": 0,
+      "field_differences": {
+        "Open": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "High": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "Low": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "Close": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "Volume": {
+          "days": 1431,
+          "max_abs_difference": "79.0"
+        },
+        "Amount": {
+          "days": 1623,
+          "max_abs_difference": "996.0"
+        }
+      },
+      "price_differences": []
+    },
+    "daily_existing_patch": {
+      "matched_days": 1636,
+      "missing_tdx_days": [],
+      "extra_tdx_days": [],
+      "price_difference_days": 3,
+      "field_differences": {
+        "Open": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "High": {
+          "days": 1,
+          "max_abs_difference": "0.016000"
+        },
+        "Low": {
+          "days": 2,
+          "max_abs_difference": "0.231000"
+        },
+        "Close": {
+          "days": 0,
+          "max_abs_difference": "0"
+        },
+        "Volume": {
+          "days": 1431,
+          "max_abs_difference": "79.0"
+        },
+        "Amount": {
+          "days": 1623,
+          "max_abs_difference": "996.0"
+        }
+      },
+      "price_differences": [
+        {
+          "Date": "2020-03-09",
+          "field": "Low",
+          "tdx": "3.317000",
+          "tushare": 3.548,
+          "delta": "-0.231000"
+        },
+        {
+          "Date": "2020-08-07",
+          "field": "Low",
+          "tdx": "4.315000",
+          "tushare": 4.339,
+          "delta": "-0.024000"
+        },
+        {
+          "Date": "2021-03-03",
+          "field": "High",
+          "tdx": "3.572000",
+          "tushare": 3.556,
+          "delta": "0.016000"
+        }
+      ]
+    },
+    "minute_boundary_evidence": [
+      {
+        "file": "0032_tdx_kline_p7_off21839_n1.json",
+        "offset": "21839",
+        "row_count": 1,
+        "timestamps": [
+          {
+            "date": "20260525",
+            "second": "34260"
+          }
+        ]
+      },
+      {
+        "file": "0034_tdx_kline_p7_off21840_n1.json",
+        "offset": "21840",
+        "row_count": 0,
+        "timestamps": []
+      },
+      {
+        "file": "0035_tdx_kline_p7_off21839_n1.json",
+        "offset": "21839",
+        "row_count": 1,
+        "timestamps": [
+          {
+            "date": "20260525",
+            "second": "34260"
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": "本轮仅做DEV数据诊断；原始响应和大数据制品保留在本机临时目录，未登记为新正式实验。恢复时需复核，不能凭摘要直接修复或研究收益。"
+}

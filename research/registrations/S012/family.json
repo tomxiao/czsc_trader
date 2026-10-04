@@ -11,7 +11,8 @@
       "research/S012/materials/opportunity_authorization_20261004.json",
       "research/S012/materials/intraday_authorization_20261004.json",
       "research/S012/materials/intraday_scope_confirmation_20261004.json",
-      "research/S012/materials/independent_data_authorization_20261004.json"
+      "research/S012/materials/independent_data_authorization_20261004.json",
+      "research/S012/materials/pause_authorization_20261004.json"
     ],
     "confirmed_capital_and_benchmark": {
       "benchmark": {
@@ -58,16 +59,18 @@
       "EX011_20261004",
       "EX012_20261004"
     ],
-    "next_stage": "用户将联系Tushare；取得修订快照后继续阶段二完整历史数据门。",
+    "next_stage": "等待用户明确恢复；先复核数据问题，再决定继续阶段二。",
     "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
     "observed_daily_coverage": {
       "end": "2026-09-30",
       "sessions": 1535,
       "start": "2020-06-05"
     },
+    "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
     "pending": [
-      "518850仍有52日分钟价格冲突；先由用户联系Tushare核验/修订源数据。",
-      "独立来源已获准，付费另确认；可用分钟/逐笔来源暂缺，未检验收益。"
+      "用户明确恢复授权。",
+      "518850分钟数据修订或可追溯统计口径说明；恢复后重验全历史。",
+      "518880仅为替代候选，日线补丁及分钟量价差异尚需核验，未获批切换。"
     ],
     "prior_component_delivery": {
       "content_sha256": "fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532",
@@ -80,16 +83,16 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "research_summary": "全历史分钟数据门未通过：7日成交量已修复，518850仍有52日价格冲突。518880全期1535日通过；收益检验0。保留EX010原组件结论。",
+    "research_summary": "用户于2026-10-04暂停S012。518850全历史数据门仍阻塞；518880通过现有修复校验但补充量价诊断仍有未解差异，未替换研究标的。保留EX010机会面板和EX012数据门原结论。",
     "stage": "COMPONENTS",
-    "status": "BLOCKED",
+    "status": "PAUSED",
     "symbol": "518850.SH"
   },
-  "research_state": "RESEARCHING",
+  "research_state": "PAUSED",
   "schema_version": 2,
   "scope": [
     "518850.SH"
   ],
   "strategy_id": "S012",
-  "updated_at": "2026-10-04T10:15:36+08:00"
+  "updated_at": "2026-10-04T15:18:28+08:00"
 }
