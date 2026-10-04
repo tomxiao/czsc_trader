@@ -1,9 +1,0 @@
-# S005 EX59 执行
-
-状态：`COMPLETE`。项目级协同需求机制完成无收益密度校准。
-
-|机制|事件|60日中位/P10|最小/最大|密度门|
-|---|---:|---:|---:|---|
-|COORDINATED_DEMAND_Q50|224|12/10|9/15|PASS|
-|COORDINATED_DEMAND_Q60|201|11/9|7/15|PASS|
-|COORDINATED_DEMAND_Q70|168|9/6|4/14|PASS|

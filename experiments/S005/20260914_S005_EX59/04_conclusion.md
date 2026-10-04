@@ -1,9 +1,0 @@
-# S005 EX59 结论
-
-|机制|事件|60日中位/P10|最小/最大|密度门|
-|---|---:|---:|---:|---|
-|COORDINATED_DEMAND_Q50|224|12/10|9/15|PASS|
-|COORDINATED_DEMAND_Q60|201|11/9|7/15|PASS|
-|COORDINATED_DEMAND_Q70|168|9/6|4/14|PASS|
-
-裁决：`PROCEED_TO_FIXED_COORDINATED_DEMAND_RETURN_TEST`。按事前规则获得唯一收益检验资格的路径：COORDINATED_DEMAND_Q70。本轮只确认事件供给，不代表存在Alpha；没有读取事件后收益，也没有生成候选或修改SM/PTE。

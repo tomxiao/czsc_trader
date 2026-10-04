@@ -1,3 +1,0 @@
-# S005 EX30 结论
-
-裁决：`PROCEED_TO_FIXED_RETURN_TEST`。按预注册优先级获得唯一收益检验资格的路径：`SEMI_SPECIFIC_RISK_ON_Q70`。本轮未读取588080事件后收益。

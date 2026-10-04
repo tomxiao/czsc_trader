@@ -1,9 +1,0 @@
-# S005 EX62 执行
-
-状态：`COMPLETE`。卖压吸收机制完成无收益密度筛选。
-
-|机制|事件|60日中位/P10|最小/最大|密度门|
-|---|---:|---:|---:|---|
-|SUPPLY_ABSORPTION_Q50|257|13/11|9/15|PASS|
-|SUPPLY_ABSORPTION_Q60|238|12/10|8/15|PASS|
-|SUPPLY_ABSORPTION_Q70|208|10/8|6/15|PASS|

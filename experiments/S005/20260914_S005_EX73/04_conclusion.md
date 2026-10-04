@@ -1,5 +1,0 @@
-# S005 EX73 结论
-
-裁决：`PROCEED_TO_FOUR_PATH_COMPLETE_STRATEGY_PREREGISTRATION`。机会核心覆盖：MARKET_STRUCTURE:zdy_zs_space_V230421、TREND_MOMENTUM:zdy_macd_V230519、VOLUME_LIQUIDITY:obvm_line_V230610、POSITION_VALUATION:bar_window_ps_V230801。日线波动环境为`bar_window_std_V230731`，外部调节固定为行业资金流。所选技术组件两两最大绝对相关0.409，与行业资金流最大绝对相关0.244。
-
-该架构用四个机会信息族、一个波动环境和一个外部资金流来源覆盖结构、趋势、位置、量价、风险与行业需求，复杂度适合OPC维护。下一轮必须先统一冻结完整交易规则，再运行四条消融路径；任何一条通过频率和风险收益门后，才有候选资格。

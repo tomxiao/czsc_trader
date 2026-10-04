@@ -1,3 +1,0 @@
-# S005 EX23 结论
-
-裁决：`PROCEED_TO_MARGIN_MECHANISM_PREREGISTRATION`。纠偏只限定可用字段，不构成收益证据。

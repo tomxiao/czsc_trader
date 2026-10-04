@@ -1,9 +1,0 @@
-# S005 EX61 结论
-
-|机制|事件|60日中位/P10|最小/最大|密度门|
-|---|---:|---:|---:|---|
-|DEMAND_CONVERSION_Q50|101|5/4|2/11|FAIL|
-|DEMAND_CONVERSION_Q60|101|5/4|2/11|FAIL|
-|DEMAND_CONVERSION_Q70|100|5/3|2/11|FAIL|
-
-裁决：`STOP_DEMAND_CONVERSION_ON_DENSITY`。唯一收益检验资格：NONE。本轮只确认事件供给，没有读取收益、生成候选或修改SM/PTE。

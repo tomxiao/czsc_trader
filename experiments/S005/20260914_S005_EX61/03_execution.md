@@ -1,9 +1,0 @@
-# S005 EX61 执行
-
-状态：`COMPLETE`。需求转化机制完成无收益密度筛选。
-
-|机制|事件|60日中位/P10|最小/最大|密度门|
-|---|---:|---:|---:|---|
-|DEMAND_CONVERSION_Q50|101|5/4|2/11|FAIL|
-|DEMAND_CONVERSION_Q60|101|5/4|2/11|FAIL|
-|DEMAND_CONVERSION_Q70|100|5/3|2/11|FAIL|
