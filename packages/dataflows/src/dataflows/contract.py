@@ -9,6 +9,11 @@ from typing import Any, Mapping
 
 import pandas as pd
 
+FXCM_AVAILABILITY_RULE = (
+    "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; "
+    "vendor publication timestamp unverified"
+)
+
 
 class DataStatus(StrEnum):
     """Outcome of one data publication request."""

@@ -1,42 +1,48 @@
 # S012｜518850.SH 阶段二交接
 
-## 当前状态
+## 当前判断
 
-阶段二（COMPONENTS）已完成，当前交付为EX005修订1，完整度`COMPLETE`、`FULL`技术核验`PASS`。
-交付三个核心风险/状态组件和两项弱入场候选，完整保留无效、冗余、互补性反证及技术失败。
-阶段一修订3继续约束全部研究。已有5个实验档案，无策略候选或冻结版本；阶段三待用户批准。
+本轮机会优先迭代已完成。当前交付为EX010的COMPONENTS修订1，完整度COMPLETE、FULL技术核验PASS。
+找到一个有条件的低频机会候选：人民币贬值较强时，ETF三日回调后的约3—5日修复。
+保守时间口径下5日净事件均值0.779%、匹配毛增量0.722%；q=0.280。前收盘限价去重容量约1.10次/60日。
+原波动、趋势后回撤、冲击集中度仍为风险/状态辅助。当前机会覆盖不足，不建议直接进入阶段三。
+阶段一修订3继续有效，三个账户经济目标均未在完整策略中验证；无候选或冻结版本，阶段三尚未授权。
 
 ## 权威入口
 
 | 事项 | 入口 |
 | --- | --- |
-| 当前人工研究报告 | [阶段二结论](../../experiments/S012/EX005_20261004/04_conclusion.md) |
-| 当前正式组件报告 | [COMPONENTS修订1](../../experiments/S012/EX005_20261004/deliveries/COMPONENTS/1/report.md) |
-| 当前机器合同与回执 | [delivery.json](../../experiments/S012/EX005_20261004/deliveries/COMPONENTS/1/delivery.json)、[receipt.json](../../experiments/S012/EX005_20261004/deliveries/COMPONENTS/1/receipt.json) |
+| 当前人工研究报告 | [机会研究结论](../../experiments/S012/EX010_20261004/04_conclusion.md) |
+| 当前正式组件报告 | [COMPONENTS修订1](../../experiments/S012/EX010_20261004/deliveries/COMPONENTS/1/report.md) |
+| 当前合同与回执 | [delivery.json](../../experiments/S012/EX010_20261004/deliveries/COMPONENTS/1/delivery.json)、[receipt.json](../../experiments/S012/EX010_20261004/deliveries/COMPONENTS/1/receipt.json) |
 | 已批准阶段一合同 | [修订3](mandates/3/report.md) |
 | 当前注册意图 | [family.json](../registrations/S012/family.json) |
-| 立项凭据 | [SGC-S012-001](../registrations/S012/credentials/SGC-S012-001.jsonl) |
-| 原始注册材料 | [批次文档](batches/SGC-S012-001.md)、[注册请求](materials/registration_request.json) |
-| 目标及交易口径确认 | [用户回复01](materials/user_confirmation_20261004_01.json) |
-| 评价日期及预热原则确认 | [用户回复02](materials/user_confirmation_20261004_02.json) |
-| 资金、执行研究权限及资源确认 | [用户回复03](materials/user_confirmation_20261004_03.json) |
-| 阶段二授权及推进决定 | [用户指令](materials/stage2_authorization_20261004.json)、[已登记决定](decisions/S012-STAGE2-20261004.json) |
-| 数据覆盖与复算入口 | [覆盖证据](materials/data_coverage_v1.json)、[核验代码](deliverables/check_data_coverage.py) |
-| 当前交付实现及验证 | [delivery.py](../../experiments/S012/EX005_20261004/delivery.py)、[验证结果](materials/components_v1_validation.json) |
-| 完整组件普查台账 | [504条检验](../../experiments/S012/EX004_20261004/artifacts/rex/component_metrics.json)、[年度分组](../../experiments/S012/EX004_20261004/artifacts/rex/fold_metrics.json) |
-| 后继复核及互补性 | [96条复核](../../experiments/S012/EX005_20261004/artifacts/rex/robustness.json)、[条件分组](../../experiments/S012/EX005_20261004/artifacts/rex/interactions.json) |
+| 阶段二初始授权 | [用户指令](materials/stage2_authorization_20261004.json)、[阶段推进决定](decisions/S012-STAGE2-20261004.json) |
+| 本轮继续授权 | [机会优先用户指令](materials/opportunity_authorization_20261004.json) |
+| 当前交付验证 | [FULL验证](materials/components_opportunities_v2_validation.json)、[10档案验证](materials/opportunity_archives_validation.json) |
+| 当前实现与协议 | [delivery.py](../../experiments/S012/EX010_20261004/delivery.py)、[固定协议](../../experiments/S012/EX010_20261004/02_design.md) |
+| 当前机会台账 | [汇率168路径](../../experiments/S012/EX010_20261004/artifacts/rex/fx/opportunities.json)、[境外黄金96路径](../../experiments/S012/EX010_20261004/artifacts/rex/gold/opportunities.json) |
+| 反证与容量 | [年度](../../experiments/S012/EX010_20261004/artifacts/rex/fx/annual.json)、[252项敏感性](../../experiments/S012/EX010_20261004/artifacts/rex/fx/sensitivity.json)、[36项限价诊断](../../experiments/S012/EX010_20261004/artifacts/rex/fx/limit_events.json) |
+| 旧风险/状态面板 | [EX005结论](../../experiments/S012/EX005_20261004/04_conclusion.md) |
 
-精确交付引用：`owner=ExperimentOwner(S012, EX005_20261004)`，`stage=COMPONENTS`，`revision=1`，
-`content_sha256=e23f28dde9be22f04bc3331c0cc47a99c136084ba0de0ffc0d71762a39a6b258`。
-前驱合同及全部已封存实验保持原样；EX002为权限技术失败，EX003为零有效检验技术失败，均不作为研究有效性证据。
+精确引用：owner=ExperimentOwner(S012, EX010_20261004)，stage=COMPONENTS，revision=1，
+content_sha256=fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532。
 
-研究分支为`codex/s012-stage2`，起点`2bdd46a2`。本轮现有DFLS足够，未修改平台模块。
-各实验`artifacts/`及交付中的实验副本按规则仅保存在本机；Git不包含完整数据制品。
-跨机器恢复需同步完整S012实验制品和前驱链，并核验manifest及交付。尚未配置外部备份目的地。
+## 时间与证据边界
+
+FXCM源日期可能标记跨日K线起点。EX008的境外黄金强信号被隔离；EX006/007涉汇率结论须以EX010重算为准。
+DFLS已增加AvailableDate=源日后2自然日08:00中国时间，明确为保守研究政策，历史逐日发布时间未核实。
+旧缓存和旧发布不自动兼容新时间契约；本轮用s012-fx-availability-v2缓存命名空间。
+EX009因报价计数快照修订停止，无收益结果；EX010证实全部OHLC与日期不变，计数修订单独保存。
+所有已封存实验保持原样；平台PASS不代表时间语义、机会充分性或账户目标达成。
+
+研究分支codex/s012-stage2；本轮按既有DEV授权修改DFLS时间契约，22项聚焦测试通过。
+全部历史为开发池。2020-2021用于年度阈值训练，具体有效日期与标签尾部损失见当前报告。
+各实验artifacts及交付实验副本仅在本机，Git不包含完整数据制品；跨机器恢复需同步完整S012前驱链并核验哈希。
+未推送、未合并、未部署。没有配置外部备份目的地。
 
 ## 下一步
 
-请用户审阅阶段二报告，决定是否进入阶段三；获批后通过公共API记录绑定该精确交付的推进决定。
-建议检验短期反转入场与各风险/状态组件的完整策略假设，逐一比较移除组件后的账户变化。
-必须实际核验限价可成交性、成本和交易频率，当前组件证据尚未证明三项用户经济目标能同时实现。
-全部结果来自开发池，后继选择与技术失败记录已披露；阶段三不得将年度切片包装为封存验证。
+优先补充可核验时点的黄金/ETF日内独立机会，先确认历史覆盖与可得时间，避免靠放宽弱条件凑交易频率。
+若考虑进入阶段三，必须取得用户批准并绑定当前精确交付；须验证限价成交、费用、资金、交易单位及三个账户目标。
+新增外部供应商或依赖仍须另获授权。

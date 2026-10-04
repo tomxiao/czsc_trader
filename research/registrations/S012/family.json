@@ -7,7 +7,8 @@
       "research/S012/materials/user_confirmation_20261004_01.json",
       "research/S012/materials/user_confirmation_20261004_02.json",
       "research/S012/materials/user_confirmation_20261004_03.json",
-      "research/S012/materials/stage2_authorization_20261004.json"
+      "research/S012/materials/stage2_authorization_20261004.json",
+      "research/S012/materials/opportunity_authorization_20261004.json"
     ],
     "confirmed_capital_and_benchmark": {
       "benchmark": {
@@ -30,9 +31,9 @@
       "net_annual_return": ">= BuyHold * 1.5"
     },
     "delivery": {
-      "content_sha256": "e23f28dde9be22f04bc3331c0cc47a99c136084ba0de0ffc0d71762a39a6b258",
+      "content_sha256": "fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532",
       "owner": {
-        "experiment_id": "EX005_20261004",
+        "experiment_id": "EX010_20261004",
         "strategy_id": "S012",
         "type": "ExperimentOwner"
       },
@@ -45,17 +46,25 @@
       "EX002_20261004",
       "EX003_20261004",
       "EX004_20261004",
-      "EX005_20261004"
+      "EX005_20261004",
+      "EX006_20261004",
+      "EX007_20261004",
+      "EX008_20261004",
+      "EX009_20261004",
+      "EX010_20261004"
     ],
-    "next_stage": "等待用户批准阶段二交付进入阶段三，构建完整可证伪策略。",
+    "next_stage": "建议继续阶段二补充有可核验时点的日内独立机会；阶段三尚未授权。",
     "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
     "observed_daily_coverage": {
       "end": "2026-09-30",
       "sessions": 1535,
       "start": "2020-06-05"
     },
-    "pending": [],
-    "research_summary": "3个核心风险/状态组件、2个弱入场候选；完整保留无效、冗余及技术失败。用户三项经济目标尚未在完整账户验证。",
+    "pending": [
+      "缺少足够覆盖和密度的独立收益机会；尚未证明三个完整账户目标。",
+      "FXCM可用时间为保守政策，历史逐日发布时间未核实。"
+    ],
+    "research_summary": "本轮机会研究交付完整：汇率支持下回调为有条件低频机会候选；限价容量约1.10/60日，多重q=0.280，仍缺足够高频独立机会。原风险/状态组件为辅助。境外强信号因时间语义隔离并重算。",
     "stage": "COMPONENTS",
     "status": "COMPLETE",
     "symbol": "518850.SH"
@@ -66,5 +75,5 @@
     "518850.SH"
   ],
   "strategy_id": "S012",
-  "updated_at": "2026-10-04T04:22:28+08:00"
+  "updated_at": "2026-10-04T09:44:35+08:00"
 }

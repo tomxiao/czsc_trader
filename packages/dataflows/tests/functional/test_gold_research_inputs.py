@@ -142,9 +142,32 @@ def test_generic_fxcm_daily_preserves_symbol_and_strict_causality() -> None:
     assert frame.loc[0, "BidClose"] == pytest.approx(7.11)
     assert metadata["vendor_symbol"] == "XAUUSD.FXCM"
     assert metadata["maximum_start_lag_days"] == 10
-    assert metadata["availability_rule"] == (
-        "GMT source date must be strictly earlier than China decision session"
-    )
+    assert frame.loc[0, "AvailableDate"] == pd.Timestamp("2026-09-17 08:00")
+    assert metadata["availability_time_field"] == "AvailableDate"
+    assert metadata["availability_timezone"] == "Asia/Shanghai"
+    assert "publication timestamp unverified" in metadata["availability_rule"]
+
+
+def test_fxcm_available_timestamp_blocks_next_morning_and_allows_declared_boundary() -> None:
+    from dataflows import DataTemporalContract, DataTemporalRequirement, TemporalAlignment, align_temporal_frame
+    frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
+    contract = DataTemporalContract("Date", "AvailableDate", "FXCM_24X5", metadata["available_at"], "EXACT")
+    aligned = align_temporal_frame(frame, ["2026-09-16 08:45", "2026-09-17 07:59", "2026-09-17 08:00"],
+        contract=contract, requirement=DataTemporalRequirement(TemporalAlignment.LATEST_AVAILABLE, "08:45", warmup_sessions=2))
+    assert aligned.unmatched_prefix_rows == 2
+    assert aligned.dataframe.BidClose.iloc[:2].isna().all()
+    assert aligned.dataframe.BidClose.iloc[2] == pytest.approx(7.11)
+
+
+@pytest.mark.parametrize("dataset,symbol", [(Dataset.FXCM_DAILY,"XAUUSD.FXCM"),(Dataset.USDCNH_DAILY,None)])
+def test_fxcm_facade_rejects_missing_or_early_availability(dataset, symbol) -> None:
+    frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
+    request = DataRequest(dataset, symbol, "2026-09-15", "2026-09-15", None)
+    def publish(f): return Dataflows({dataset.value: lambda _: (f, metadata)}).fetch(request)
+    assert publish(frame).status is DataStatus.READY
+    assert publish(frame.drop(columns="AvailableDate")).status is DataStatus.FAILED
+    early = frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
+    assert publish(early).status is DataStatus.FAILED
 
 
 def test_monthly_inputs_use_reference_month_end_and_conservative_availability() -> None:
@@ -176,6 +199,7 @@ def test_long_vendor_histories_are_split_by_calendar_year() -> None:
 
 
 def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
+    from dataflows.contract import FXCM_AVAILABILITY_RULE
     frame = pd.DataFrame(
         {
             "Date": ["2026-09-15"],
@@ -190,8 +214,11 @@ def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
             "TickQuantity": [1],
         }
     )
+    frame["AvailableDate"] = pd.Timestamp("2026-09-17 08:00")
+    metadata = {"vendor": "test", "availability_time_field": "AvailableDate",
+                "availability_timezone": "Asia/Shanghai", "available_at": FXCM_AVAILABILITY_RULE}
     result = Dataflows(
-        {Dataset.USDCNH_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
+        {Dataset.USDCNH_DAILY.value: lambda ignored: (frame, metadata)}
     ).fetch(
         DataRequest(
             Dataset.USDCNH_DAILY,
@@ -205,6 +232,7 @@ def test_facade_rejects_crossed_usdcnh_close_quotes() -> None:
     assert result.status is DataStatus.FAILED
     assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    assert "invalid FXCM quotes" in result.error.message
 
 
 @pytest.mark.parametrize(

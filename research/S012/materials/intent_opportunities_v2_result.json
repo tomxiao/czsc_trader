@@ -1,0 +1,87 @@
+{
+  "status": "PASS",
+  "command": "research.intent.update",
+  "result": {
+    "family": {
+      "schema_version": 2,
+      "strategy_id": "S012",
+      "name": "华夏黄金ETF研究",
+      "scope": [
+        "518850.SH"
+      ],
+      "research_intent": {
+        "stage": "COMPONENTS",
+        "status": "COMPLETE",
+        "symbol": "518850.SH",
+        "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+        "confirmed_targets": {
+          "net_annual_return": ">= BuyHold * 1.5",
+          "drawdown_magnitude": "< BuyHold",
+          "full_sample_frequency": ">= 5 closed cycles per 60 trading days"
+        },
+        "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+        "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+        "observed_daily_coverage": {
+          "start": "2020-06-05",
+          "end": "2026-09-30",
+          "sessions": 1535
+        },
+        "confirmation_sources": [
+          "research/S012/materials/user_confirmation_20261004_01.json",
+          "research/S012/materials/user_confirmation_20261004_02.json",
+          "research/S012/materials/user_confirmation_20261004_03.json",
+          "research/S012/materials/stage2_authorization_20261004.json",
+          "research/S012/materials/opportunity_authorization_20261004.json"
+        ],
+        "delivery": {
+          "type": "DeliveryReference",
+          "owner": {
+            "type": "ExperimentOwner",
+            "strategy_id": "S012",
+            "experiment_id": "EX010_20261004"
+          },
+          "stage": "COMPONENTS",
+          "revision": 1,
+          "content_sha256": "fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532"
+        },
+        "pending": [
+          "缺少足够覆盖和密度的独立收益机会；尚未证明三个完整账户目标。",
+          "FXCM可用时间为保守政策，历史逐日发布时间未核实。"
+        ],
+        "next_stage": "建议继续阶段二补充有可核验时点的日内独立机会；阶段三尚未授权。",
+        "confirmed_capital_and_benchmark": {
+          "initial_capital_cny": 100000,
+          "strategy_lot_size": 100,
+          "benchmark": {
+            "type": "NextOpenBuyHold",
+            "lot_size": 100
+          },
+          "buy_fee_rate": 0.001,
+          "cash_remainder": "保留",
+          "terminal_valuation": "持仓按市值评价"
+        },
+        "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+        "confirmed_data_and_resources": "既有获授权DFLS/Tushare数据、公开文献及现有研究依赖；已查看历史属于开发池；本机半核并发预算；新增外部数据源或依赖另行申请。",
+        "research_summary": "本轮机会研究交付完整：汇率支持下回调为有条件低频机会候选；限价容量约1.10/60日，多重q=0.280，仍缺足够高频独立机会。原风险/状态组件为辅助。境外强信号因时间语义隔离并重算。",
+        "experiments": [
+          "EX001_20261004",
+          "EX002_20261004",
+          "EX003_20261004",
+          "EX004_20261004",
+          "EX005_20261004",
+          "EX006_20261004",
+          "EX007_20261004",
+          "EX008_20261004",
+          "EX009_20261004",
+          "EX010_20261004"
+        ]
+      },
+      "research_state": "RESEARCHING",
+      "created_at": "2026-10-04T03:56:59+08:00",
+      "created_by": "RSCH",
+      "updated_at": "2026-10-04T09:44:35+08:00"
+    }
+  },
+  "artifacts": {},
+  "warnings": []
+}

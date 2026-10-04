@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from .errors import DataContractError, EmptyDataError, IncompleteDataError
+from .contract import FXCM_AVAILABILITY_RULE
 from .tushare_common import get_tushare_pro
 
 
@@ -253,13 +254,21 @@ def fetch_fxcm_daily(
             "TickQuantity",
         ),
     )
+    # FXCM source dates can label the start of a session crossing midnight GMT.
+    # A prior-date close is therefore not necessarily known in China's next session.
+    dataframe["AvailableDate"] = (
+        pd.to_datetime(dataframe["Date"]).dt.normalize() + pd.Timedelta(days=2, hours=8)
+    )
     return dataframe, {
         "vendor": "tushare",
         "vendor_symbol": symbol,
         "frequency": "daily",
         "primary_key": ["Date"],
         "vendor_timezone": "GMT",
-        "availability_rule": "GMT source date must be strictly earlier than China decision session",
+        "availability_timezone": "Asia/Shanghai",
+        "availability_time_field": "AvailableDate",
+        "availability_rule": FXCM_AVAILABILITY_RULE,
+        "available_at": FXCM_AVAILABILITY_RULE,
         "maximum_start_lag_days": 10,
     }
 

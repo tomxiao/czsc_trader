@@ -16,6 +16,7 @@ import numpy as np
 from .cache import CacheError, LocalCacheConfig, fetch_cached
 
 from .contract import (
+    FXCM_AVAILABILITY_RULE,
     DataError,
     DataIdentity,
     DataRequest,
@@ -717,6 +718,17 @@ def _validate_provider_output(
                 invalid_rows=int(invalid.sum()),
             )
     if dataset in {Dataset.USDCNH_DAILY.value, Dataset.FXCM_DAILY.value}:
+        if (
+            "AvailableDate" not in dataframe.columns
+            or metadata.get("availability_time_field") != "AvailableDate"
+            or metadata.get("availability_timezone") != "Asia/Shanghai"
+            or metadata.get("available_at") != FXCM_AVAILABILITY_RULE
+        ):
+            raise DataContractError("FXCM daily publication requires conservative availability timestamps")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        expected = pd.to_datetime(dataframe["Date"]).dt.normalize() + pd.Timedelta(days=2, hours=8)
+        if not available.equals(expected):
+            raise DataContractError("FXCM daily availability differs from the conservative session policy")
         bid_close = pd.to_numeric(dataframe["BidClose"])
         ask_close = pd.to_numeric(dataframe["AskClose"])
         if (bid_close <= 0).any() or (ask_close <= 0).any() or (bid_close > ask_close).any():
