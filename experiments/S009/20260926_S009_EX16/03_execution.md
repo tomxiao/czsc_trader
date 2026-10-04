@@ -1,3 +1,0 @@
-# S009 EX16 执行
-
-REX receipt=`4809e0fae5957d0e3e9dc3cba1d3dbfdd475b6a59f250798762cb9d26289c8ac`。EX14与EX15前序receipt均已核验。按预注册设计完成P01单维29点、P02单维25点、P04联合64次建议；每个原型得分前5个不同点完成30bp压力回放。完整trial和账户证据见artifacts。2025年及以后封存数据未读取。

@@ -1,3 +1,0 @@
-# S006 EX07 结论
-
-裁决：`PROCEED_TO_CROSS_TYPE_COMPLEMENTARITY_REVIEW`。新闻事件确认期只有13个观察，统一按`UNIDENTIFIABLE`处理；它当前不能支持或反对S006。后续实验只读取修订总账。

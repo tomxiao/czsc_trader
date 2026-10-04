@@ -1,3 +1,0 @@
-# S006 EX10 结论
-
-裁决：`PROCEED_TO_LIMITED_STRUCTURE_REPLICATION`。最佳路径`STABLE:H5:POSITIVE_RIDGE_A10:S1:Q70`，完整开发池年化29.30%、最大回撤-18.14%、滚动60日闭合交易中位数7.0、P10为3.0。本轮只评估架构，不形成候选。

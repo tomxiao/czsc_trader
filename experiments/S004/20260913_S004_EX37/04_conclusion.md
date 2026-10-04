@@ -1,3 +1,0 @@
-# S004 EX37 结论
-
-结论：`PROCEED_TO_FIXED_MARGIN_BEHAVIOR_EVALUATION`。固定路径为ACCUM=ACCUM_Q60。下一轮才允许按统一执行口径检验竞争解释。

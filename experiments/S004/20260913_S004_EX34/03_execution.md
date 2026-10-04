@@ -1,5 +1,0 @@
-# S004 EX34 执行
-
-状态：`COMPLETE`。共普查6条预注册密度路径，2条满足密度门；冻结路径：NEGATIVE_OVERREACTION=NEG_Q70、POSITIVE_UNDERREACTION=POS_Q70。
-
-本轮没有读取588080价格或后续收益，NVDA没有参与路径选择。

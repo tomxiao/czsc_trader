@@ -8,7 +8,7 @@ experiments/
 ├── S001/
 ├── S002/
 ├── S003/
-└── S004/
+└── S007/
 ```
 
 新实验路径统一为`experiments/<策略ID>/EXxxx_YYYYMMDD/`。`xxx`在同一策略研究内从001跨日期
