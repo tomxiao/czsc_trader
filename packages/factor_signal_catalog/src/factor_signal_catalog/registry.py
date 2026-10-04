@@ -81,9 +81,11 @@ class CatalogRegistry:
         for item in self.factors:
             if item.version < 1 or not all((item.name, item.description, item.implementation)):
                 raise CatalogValidationError(f"incomplete factor definition: {item.factor_id}")
+            _validate_implementation_owner(item.implementation)
         for item in self.signals:
             if item.version < 1 or not all((item.name, item.description, item.implementation)):
                 raise CatalogValidationError(f"incomplete signal definition: {item.signal_id}")
+            _validate_implementation_owner(item.implementation)
             if item.status is CatalogStatus.READY and not item.factor_ids and not item.embedded_factor:
                 raise CatalogValidationError(
                     f"READY signal requires factor references or embedded factor: {item.signal_id}"
@@ -149,3 +151,12 @@ class CatalogRegistry:
                 if item_id == definition_id:
                     return {"kind": kind, **item.to_dict()}
         raise CatalogValidationError(f"catalog definition not found: {definition_id}")
+
+
+def _validate_implementation_owner(implementation: str) -> None:
+    parts = re.split(r"[\\/.]", implementation.casefold())
+    if {"research", "experiments"}.intersection(parts):
+        raise CatalogValidationError(
+            "catalog implementation must not depend on research or experiments: "
+            f"{implementation}"
+        )
