@@ -23,9 +23,9 @@ from strategy_evaluator import (
     hash_return_matrix,
 )
 from .evaluation import (
-    CandidateEvaluationContext,
-    execute_candidate_replay,
-    prepare_candidate_replays,
+    _CandidateEvaluationContext,
+    _execute_candidate_replay,
+    _prepare_candidate_replays,
 )
 from czsc_trader.backtesting.audit_adapter import build_replay_evidence
 from czsc_trader.backtesting.metrics import calculate_metrics
@@ -157,9 +157,9 @@ def _parameter_points(
     return tuple(points)
 
 
-def build_champion_audit_request(
+def _build_champion_audit_request(
     *,
-    run_context: CandidateEvaluationContext,
+    run_context: _CandidateEvaluationContext,
     protocol,
     manifest: dict[str, Any],
     payloads: tuple[dict[str, object], ...],
@@ -183,11 +183,11 @@ def build_champion_audit_request(
     all_required = tuple(dict.fromkeys((protocol.incumbent_id, *search_candidate_ids)))
     comparison_ids = tuple(dict.fromkeys((champion_id, protocol.incumbent_id, *peers)))
     all_required = tuple(dict.fromkeys((*all_required, *comparison_ids)))
-    workspace, prepared = prepare_candidate_replays(run_context, protocol, payloads, all_required)
+    workspace, prepared = _prepare_candidate_replays(run_context, protocol, payloads, all_required)
     if "full" not in workspace.periods:
         raise ValueError("OPC-v3 audit requires a full period")
     results = {
-        key: execute_candidate_replay(
+        key: _execute_candidate_replay(
             run_context, workspace, prepared[key]["full"], run_context.fee_rate
         )
         for key in all_required

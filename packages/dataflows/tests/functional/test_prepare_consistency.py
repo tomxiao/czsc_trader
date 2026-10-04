@@ -136,6 +136,63 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
     assert result.dataframe.Date.tolist() == times[1:4].tolist()
 
 
+@pytest.mark.parametrize("missing_bar", [False, True])
+def test_partial_intraday_prepare_checks_only_requested_session_bars(flow_factory, missing_bar):
+    times = pd.to_datetime(["2026-09-14 10:30", "2026-09-14 11:00", "2026-09-14 11:30"])
+    if missing_bar:
+        times = times.delete(1)
+    frame = pd.DataFrame({
+        "Date": times, "Open": 1.0, "High": 1.0, "Low": 1.0,
+        "Close": 1.0, "Volume": 100.0, "Amount": 100.0,
+    })
+    flows = flow_factory({Dataset.ETF_OHLCV: lambda request: (frame, {"vendor": "fixture"})})
+    request = DataRequest(
+        Dataset.ETF_OHLCV, "518850.SH", "2026-09-14 10:30", "2026-09-14 11:30", None, "30m",
+    )
+    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    assert prepared.ready is not missing_bar
+    if missing_bar:
+        assert "INCOMPLETE_TRADING_SESSION" in prepared.items[0].error.message
+    else:
+        result = flows.fetch(request, prepared=prepared.reference)
+        assert result.ready and result.dataframe.Date.tolist() == times.tolist()
+
+
+@pytest.mark.parametrize("invalid", [None, "gap", "market", "time"])
+def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
+    times = pd.to_datetime([
+        f"2026-09-14 {clock}" for clock in
+        ("10:00", "10:30", "11:00", "11:30", "12:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00")
+    ])
+    if invalid == "gap":
+        times = times.delete(4)
+    elif invalid == "time":
+        times = times.append(pd.DatetimeIndex(["2026-09-14 16:30"]))
+    frame = pd.DataFrame({
+        "Date": times, "Open": 1.0, "High": 1.0, "Low": 1.0,
+        "Close": 1.0, "Volume": 100.0, "Amount": 100.0,
+    })
+    metadata = {"vendor": "fixture", "market": "a_share" if invalid == "market" else "hk"}
+    flows = flow_factory({Dataset.STOCK_OHLCV: lambda request: (frame, metadata)})
+    request = DataRequest(Dataset.STOCK_OHLCV, "00700.HK", "2026-09-14", "2026-09-14", None, "30m")
+    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    assert prepared.ready is (invalid is None)
+    if prepared.ready:
+        result = flows.fetch(request, prepared=prepared.reference)
+        assert result.ready and len(result.dataframe) == 11
+
+
+@pytest.mark.parametrize("dataset", [
+    Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY, Dataset.US_NOMINAL_YIELD_DAILY,
+    Dataset.US_POLICY_UNCERTAINTY_DAILY, Dataset.USDCNH_DAILY, Dataset.CN_CPI_MONTHLY,
+    Dataset.CN_PPI_MONTHLY, Dataset.CN_MONEY_MONTHLY, Dataset.US_CPI_RELEASE,
+    Dataset.US_ISM_PMI_RELEASE, Dataset.US_FEDERAL_BUDGET_RELEASE,
+])
+def test_fixed_series_rejects_symbol_before_provider_selection(dataset):
+    with pytest.raises(ValueError, match="fixed series and accepts no symbol"):
+        DataRequest(dataset, "EURUSD", "2026-09-14", "2026-09-14", None)
+
+
 @pytest.mark.parametrize("strict_first", [False, True])
 def test_reuse_refreshes_once_for_all_requirements_independent_of_order(flow_factory, strict_first):
     calls = []

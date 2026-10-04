@@ -60,7 +60,7 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path, space=DataSpace(Path("data/backtest")))
-    execution = _prepare_backtest_execution_data(repository_root=tmp_path, symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows)
+    execution = _prepare_backtest_execution_data(repository_root=tmp_path, symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), intraday_frequencies=("30m",), dataflows=flows)
     candidate = StrategyCandidate("S900", "C0001", payload, package)
     definition = ExperimentDefinition(
         schema_version=2,
@@ -522,6 +522,7 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         frequency_window_days=2,
         costs=(EvaluationCost("standard", 0.001, tier), EvaluationCost("fee_x2", 0.002, "STRESS")),
         execution_data=_prepare_backtest_execution_data(
+            intraday_frequencies=("30m",),
             repository_root=request.repository_root, symbol=request.symbol, asset_type=request.asset_type,
             start=request.windows[0].start, end=request.data_cutoff, dataflows=flows),
     )

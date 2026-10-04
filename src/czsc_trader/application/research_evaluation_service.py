@@ -155,8 +155,6 @@ def _evaluation_request(
                 str(item["measurement_tier"]),
             )
         )
-    if len(costs) < 2 or not any(item.scenario_id != "standard" for item in costs):
-        raise ValueError("formal research evaluation requires standard and pressure costs")
 
     benchmark_raw = raw["benchmark"]
     if not isinstance(benchmark_raw, dict):

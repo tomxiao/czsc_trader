@@ -7,7 +7,7 @@ from dataclasses import dataclass, field, replace
 from datetime import date
 from hashlib import sha256
 from math import isfinite
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import platform
 from importlib import metadata
 import re
@@ -30,10 +30,11 @@ from trading_execution_engine import ExecutionResult
 from ..backtesting.execution_data import (
     BacktestExecutionData,
     _prepare_backtest_execution_data,
+    _require_execution_frequencies,
 )
 from ..backtesting import _dataflows
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
-from ..backtesting.benchmark_contracts import EvaluationBenchmark
+from ..backtesting.benchmark_contracts import EvaluationBenchmark, LimitBuyHold
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
 from ..backtesting.srt_bridge import (
@@ -45,7 +46,7 @@ METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v4-explicit-benchmark"
 
 
 @dataclass(frozen=True)
-class CandidateEvaluationContext:
+class _CandidateEvaluationContext:
     repository: Any
     symbol: str
     asset_type: str
@@ -67,7 +68,7 @@ class CandidateEvaluationContext:
 
 
 @dataclass(frozen=True)
-class EvaluationWorkspace:
+class _EvaluationWorkspace:
     execution_data: BacktestExecutionData
     periods: dict[str, tuple[pd.Timestamp, pd.Timestamp]]
 
@@ -90,8 +91,17 @@ class EvaluationCost:
     measurement_tier: str = "FORMAL"
 
     def __post_init__(self):
+        if (not isinstance(self.scenario_id, str) or not self.scenario_id.strip()
+                or self.scenario_id in {".", ".."}
+                or any(char in self.scenario_id for char in '/\\:<>"|?*')
+                or any(ord(char) < 32 for char in self.scenario_id)
+                or self.scenario_id.endswith((".", " "))
+                or PureWindowsPath(self.scenario_id).is_reserved()):
+            raise ValueError("evaluation scenario_id must be a nonblank safe path component")
         if isinstance(self.one_way_cost, bool) or not isfinite(self.one_way_cost) or not 0 <= self.one_way_cost < 1:
             raise ValueError("evaluation cost must be finite and in [0, 1)")
+        if self.measurement_tier not in {"SCREENING", "FORMAL", "STRESS"}:
+            raise ValueError("invalid evaluation measurement tier")
 
 
 @dataclass(frozen=True)
@@ -144,6 +154,7 @@ class EvaluationRequest:
         if self.input_bindings and set(self.input_bindings) != {item.window_id for item in self.windows}:
             raise ValueError("input_bindings must cover every evaluation window")
         object.__setattr__(self, "input_bindings", MappingProxyType(dict(self.input_bindings)))
+        _validate_costs(self.costs)
 
 
 @dataclass(frozen=True, slots=True)
@@ -216,27 +227,10 @@ class EvaluationResult:
         return tuple(item.observation for item in self.runs)
 
 
-def _scenario_settings(scenario: str, base_fee_rate: float) -> tuple[float, int]:
-    if scenario == "standard":
-        fee, slippage = base_fee_rate, 0
-    elif scenario.startswith("fee_x"):
-        fee, slippage = base_fee_rate * float(scenario.removeprefix("fee_x")), 0
-    elif scenario.startswith("total_cost_") and scenario.endswith("bp"):
-        fee, slippage = float(scenario.removeprefix("total_cost_").removesuffix("bp")) / 10_000, 0
-    elif scenario.startswith("slippage_") and scenario.endswith("bp"):
-        fee, slippage = base_fee_rate, int(scenario.removeprefix("slippage_").removesuffix("bp"))
-    else:
-        raise ValueError(f"unsupported stress scenario: {scenario}")
-    if not isfinite(fee) or not 0 <= fee < 1 or slippage < 0:
-        raise ValueError(f"invalid cost scenario: {scenario}")
-    return fee, slippage
-
-
-def prepare_evaluation_workspace(
-    context: CandidateEvaluationContext, protocol: EvaluationProtocol, *,
-    include_five_minute: bool = False,
-) -> EvaluationWorkspace:
-    options = {"include_five_minute": True} if include_five_minute else {}
+def _prepare_evaluation_workspace(
+    context: _CandidateEvaluationContext, protocol: EvaluationProtocol, *,
+    intraday_frequencies: tuple[str, ...] = (),
+) -> _EvaluationWorkspace:
     if context.review_data_root is not None:
         from ..application.review_data import load_review_dataset
         if context.review_data_hash is None:
@@ -252,8 +246,10 @@ def prepare_evaluation_workspace(
             context.symbol, context.asset_type, pd.Timestamp(protocol.development_cutoff).date(),
         ):
             raise ValueError("review dataset identity differs from evaluation request")
-        if include_five_minute and execution_data.execution_five_minute is None:
+        if "5m" in intraday_frequencies and execution_data.execution_five_minute is None:
             raise ValueError("review dataset has no required five-minute execution prices")
+        if "30m" in intraday_frequencies and execution_data.execution_intraday.empty:
+            raise ValueError("review dataset has no required thirty-minute execution prices")
     else:
         if context.review_data_hash is not None:
             raise ValueError("review dataset hash requires a snapshot directory")
@@ -264,7 +260,7 @@ def prepare_evaluation_workspace(
             asset_type=context.asset_type,
             start=first_start.date(),
             end=pd.Timestamp(protocol.development_cutoff).date(),
-            include_five_minute=bool(options),
+            intraday_frequencies=intraday_frequencies,
             dataflows=_dataflows.create_backtest_dataflows(Path(context.repository.root)),
         )
     cutoff = pd.Timestamp(protocol.development_cutoff).normalize()
@@ -278,7 +274,8 @@ def prepare_evaluation_workspace(
             raise ValueError(f"{label} data does not reach development cutoff: requested={cutoff.date()}, actual={actual}")
         if index.has_duplicates or not index.is_monotonic_increasing:
             raise ValueError(f"{label} sessions must be unique and increasing")
-    if not dates.equals(execution_dates):
+    common_start = max(dates[0], execution_dates[0])
+    if not dates[dates >= common_start].equals(execution_dates[execution_dates >= common_start]):
         raise ValueError("research and execution session calendars differ")
     periods = dict(context.periods)
     if not periods or len(periods) != len(context.periods):
@@ -286,16 +283,16 @@ def prepare_evaluation_workspace(
     for name, (start, end) in periods.items():
         if start != start.normalize() or end != end.normalize() or start > end:
             raise ValueError(f"invalid evaluation window: {name}")
-        if start not in dates or end not in dates:
+        if start not in dates or end not in dates or start not in execution_dates or end not in execution_dates:
             raise ValueError(f"evaluation window {name} is not bounded by trading sessions")
         if end > cutoff:
             raise ValueError(f"evaluation window {name} exceeds development cutoff")
-        if not (dates < start).any():
+        if not (dates < start).any() or not (execution_dates < start).any():
             raise ValueError(f"evaluation window {name} has no prior signal session")
-    return EvaluationWorkspace(execution_data, periods)
+    return _EvaluationWorkspace(execution_data, periods)
 
 
-def _snapshot(context: CandidateEvaluationContext, item: dict[str, object]):
+def _snapshot(context: _CandidateEvaluationContext, item: dict[str, object]):
     payload = item.get("strategy_payload")
     if not isinstance(payload, dict):
         raise ValueError(f"candidate {item['candidate_id']} has no complete strategy_payload")
@@ -321,7 +318,7 @@ def _snapshot(context: CandidateEvaluationContext, item: dict[str, object]):
     ), strategy
 
 
-def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
+def _prepare_candidate_replays(context, protocol, payloads, candidate_ids):
     """Load complete SRT identities, publications and window decisions once per call."""
     by_id = {str(item["candidate_id"]): item for item in payloads}
     if len(by_id) != len(payloads) or len(set(candidate_ids)) != len(candidate_ids):
@@ -329,9 +326,10 @@ def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
     if missing := set(candidate_ids) - set(by_id):
         raise ValueError(f"candidate payloads missing: {sorted(missing)}")
     loaded = {key: _snapshot(context, by_id[key]) for key in candidate_ids}
-    workspace = prepare_evaluation_workspace(
+    workspace = _prepare_evaluation_workspace(
         context, protocol,
-        include_five_minute=any(execution_intraday_frequencies(strategy) for _, strategy in loaded.values()),
+        intraday_frequencies=tuple(sorted({frequency for _, strategy in loaded.values()
+                                          for frequency in execution_intraday_frequencies(strategy)})),
     )
     flows = _dataflows.create_backtest_dataflows(Path(context.repository.root))
     replays = {}
@@ -350,7 +348,7 @@ def prepare_candidate_replays(context, protocol, payloads, candidate_ids):
     return workspace, replays
 
 
-def execute_candidate_replay(context, workspace, prepared, fee_rate):
+def _execute_candidate_replay(context, workspace, prepared, fee_rate):
     """Return the ledger and its effective-cost evidence without editing SRT."""
     strategy, signals = prepared
     result = replay_srt_account(
@@ -538,7 +536,7 @@ def _evaluate_prepared(
 
     def compute(task):
         key, window, scenario, prepared, fee, measurement_tier = task
-        signals, execution = execute_candidate_replay(context, workspace, prepared, fee)
+        signals, execution = _execute_candidate_replay(context, workspace, prepared, fee)
         _validate_execution_result(
             execution,
             workspace.execution_data,
@@ -579,40 +577,26 @@ def _evaluate_prepared(
         return tuple(executor.map(compute, tasks))
 
 
-def _evaluate_runs(
-    context,
-    protocol,
-    candidates,
-    candidate_ids,
-    tier,
-    scenarios,
-    *,
-    include_buyhold=False,
-):
+def _evaluate_runs(context, protocol, candidates, candidate_ids, costs):
     if type(context.workers) is not int or context.workers < 1:
         raise ValueError("evaluation workers must be a positive integer")
-    if tier not in {"SCREENING", "FORMAL", "STRESS"}:
-        raise ValueError(f"unsupported evaluation tier: {tier}")
-    if not scenarios or len(set(scenarios)) != len(scenarios):
-        raise ValueError("cost scenarios must be non-empty and unique")
-    costs = {}
-    for scenario in scenarios:
-        if scenario != "standard" and tier != "STRESS":
-            raise ValueError("non-standard scenarios require STRESS tier")
-        fee, slippage = _scenario_settings(scenario, context.fee_rate)
-        if slippage or scenario.startswith("slippage_"):
-            raise ValueError("TXE evaluation does not support price-slippage scenarios; declare an explicit total-cost scenario")
-        costs[scenario] = (fee, tier)
-    workspace, replays = prepare_candidate_replays(context, protocol, candidates, candidate_ids)
+    _validate_costs(costs)
+    workspace, replays = _prepare_candidate_replays(context, protocol, candidates, candidate_ids)
     runs = _evaluate_prepared(
-        context,
-        workspace,
-        replays,
-        candidate_ids,
-        costs,
-        include_buyhold=include_buyhold,
+        context, workspace, replays, candidate_ids,
+        {item.scenario_id: (item.one_way_cost, item.measurement_tier) for item in costs},
+        include_buyhold=False,
     )
     return EvaluationResult(runs)
+
+
+def _validate_costs(costs: tuple[EvaluationCost, ...]) -> None:
+    if not isinstance(costs, tuple) or not costs or any(
+        not isinstance(item, EvaluationCost) for item in costs
+    ):
+        raise TypeError("evaluation costs require a non-empty tuple of EvaluationCost")
+    if len({item.scenario_id for item in costs}) != len(costs):
+        raise ValueError("evaluation cost scenario identities must be unique")
 
 
 def _request_contract(request: EvaluationRequest, *, require_execution: bool = True) -> tuple[dict[str, object], str]:
@@ -670,6 +654,10 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
     if data is not None:
         if not isinstance(data, BacktestExecutionData):
             raise ValueError("evaluation requires prepared BacktestExecutionData")
+        required_frequencies = set(execution_intraday_frequencies(StrategyRuntime().describe(candidate)))
+        if isinstance(request.benchmark.execution, LimitBuyHold):
+            required_frequencies.add("30m")
+        _require_execution_frequencies(data, tuple(sorted(required_frequencies)))
         if (data.symbol, data.asset_type, data.cutoff) != (
             symbol,
             asset_type,
@@ -688,7 +676,14 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
             adjusted_sessions.empty
             or adjusted_sessions.has_duplicates
             or not adjusted_sessions.is_monotonic_increasing
-            or not adjusted_sessions.equals(execution_sessions)
+            or execution_sessions.empty
+            or execution_sessions.has_duplicates
+            or not execution_sessions.is_monotonic_increasing
+        ):
+            raise ValueError("adjusted and execution market calendars differ")
+        common_start = max(adjusted_sessions[0], execution_sessions[0])
+        if not adjusted_sessions[adjusted_sessions >= common_start].equals(
+            execution_sessions[execution_sessions >= common_start]
         ):
             raise ValueError("adjusted and execution market calendars differ")
         requested_sessions = pd.DatetimeIndex(data.evaluation_sessions).normalize()
@@ -698,6 +693,7 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
             or not requested_sessions.is_monotonic_increasing
             or requested_sessions[-1].date() != request.data_cutoff
             or not requested_sessions.isin(execution_sessions).all()
+            or not requested_sessions.isin(adjusted_sessions).all()
         ):
             raise ValueError("execution evaluation sessions are incomplete")
     if not np.isfinite(float(request.initial_cash)) or request.initial_cash <= 0:
@@ -730,32 +726,7 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
             if end.date() > request.data_cutoff or not (sessions < start).any():
                 raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
 
-    if not request.costs:
-        raise ValueError("evaluation costs must not be empty")
-    scenario_ids = [item.scenario_id for item in request.costs]
-    if (
-        "standard" not in scenario_ids
-        or any(
-            not name or Path(name).name != name or "/" in name or "\\" in name
-            for name in scenario_ids
-        )
-        or len(scenario_ids) != len(set(scenario_ids))
-    ):
-        raise ValueError("evaluation costs require one unique standard scenario")
-    standard_cost = next(
-        item.one_way_cost for item in request.costs if item.scenario_id == "standard"
-    )
-    for item in request.costs:
-        if not item.scenario_id or not isfinite(item.one_way_cost) or not 0 <= item.one_way_cost < 1:
-            raise ValueError(f"invalid evaluation cost: {item.scenario_id}")
-        if item.measurement_tier not in {"SCREENING", "FORMAL", "STRESS"}:
-            raise ValueError(f"invalid measurement tier: {item.scenario_id}")
-        if item.scenario_id == "standard" and item.measurement_tier == "STRESS":
-            raise ValueError("standard cost cannot use the STRESS measurement tier")
-        if item.scenario_id != "standard" and (
-            item.measurement_tier != "STRESS" or item.one_way_cost <= standard_cost
-        ):
-            raise ValueError("pressure costs must exceed standard cost and use STRESS tier")
+    _validate_costs(request.costs)
 
     return _request_identity_payload(request, identity.content_sha256, binding_hash), binding_hash
 
@@ -850,10 +821,13 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
         dataflows = _dataflows.create_backtest_dataflows(Path(request.repository_root))
     if request.execution_data is None:
         definition = StrategyRuntime().describe(request.strategy)
+        frequencies = set(execution_intraday_frequencies(definition))
+        if isinstance(request.benchmark.execution, LimitBuyHold):
+            frequencies.add("30m")
         request = replace(request, execution_data=_prepare_backtest_execution_data(
             repository_root=Path(request.repository_root), symbol=request.symbol,
             asset_type=request.asset_type, start=min(item.start for item in request.windows),
-            end=request.data_cutoff, include_five_minute=bool(execution_intraday_frequencies(definition)),
+            end=request.data_cutoff, intraday_frequencies=tuple(sorted(frequencies)),
             dataflows=dataflows,
         ))
     _request_contract(request)
@@ -887,7 +861,7 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
         )
         for item in request.windows
     )
-    context = CandidateEvaluationContext(
+    context = _CandidateEvaluationContext(
         repository=type(
             "EvaluationRepository",
             (),
@@ -896,9 +870,7 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
         symbol=request.symbol,
         asset_type=request.asset_type,
         periods=periods,
-        fee_rate=next(
-            item.one_way_cost for item in request.costs if item.scenario_id == "standard"
-        ),
+        fee_rate=request.costs[0].one_way_cost,
         init_cash=request.initial_cash,
         workers=request.workers,
         frequency_window_days=request.frequency_window_days,
@@ -911,7 +883,7 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
         dict(request.strategy.payload),
         runtime_root=request.strategy.source_root,
     )
-    workspace = EvaluationWorkspace(request.execution_data, dict(periods))
+    workspace = _EvaluationWorkspace(request.execution_data, dict(periods))
     replays = {
         request.strategy.candidate_id: {
             name: build_srt_signal_replay(
@@ -997,11 +969,6 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
     )
 
 
-def evaluate_candidate_payloads(
-    context, protocol, candidates, candidate_ids, tier, scenarios=("standard",)
-):
-    """Compatibility batch adapter used by TDR candidate evaluation."""
-
-    return _evaluate_runs(
-        context, protocol, candidates, candidate_ids, tier, scenarios
-    ).observations
+def _evaluate_candidate_payloads(context, protocol, candidates, candidate_ids, costs):
+    """Produce candidate observations for internal review and audit workflows."""
+    return _evaluate_runs(context, protocol, candidates, candidate_ids, costs).observations

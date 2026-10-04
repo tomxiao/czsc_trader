@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
+import pytest
 import requests
 
 from dataflows import DataRequest, DataStatus, Dataset
@@ -108,16 +109,14 @@ def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, p
 
 def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
-    symbol_result = publish_data(flow_factory(), DataRequest(
-        Dataset.US_POLICY_UNCERTAINTY_DAILY,
-        "OTHER",
-        "2024-01-01",
-        "2024-01-03",
-        None,
-    ))
-    assert symbol_result.status is DataStatus.FAILED
-    assert symbol_result.error is not None
-    assert symbol_result.error.code == "DATA_CONTRACT_MISMATCH"
+    with pytest.raises(ValueError, match="fixed series and accepts no symbol"):
+        DataRequest(
+            Dataset.US_POLICY_UNCERTAINTY_DAILY,
+            "OTHER",
+            "2024-01-01",
+            "2024-01-03",
+            None,
+        )
 
     frame = pd.DataFrame({
         "Date": [pd.Timestamp("2024-01-01")],

@@ -12,6 +12,7 @@ import pandas as pd
 
 from .bar_utils import INTRADAY_PERIOD_MINUTES, a_share_intraday_close_times
 from .errors import DataContractError
+from .market_resolver import MARKET_A_SHARE, MARKET_HK
 
 
 OHLCV_COLUMNS = ("Date", "Open", "High", "Low", "Close", "Volume", "Amount")
@@ -95,6 +96,9 @@ def inspect_ohlcv_frame(
     frequency: str,
     *,
     require_complete_days: bool = False,
+    market: str = MARKET_A_SHARE,
+    request_start: str | None = None,
+    request_end: str | None = None,
 ) -> ValidationReport:
     """Inspect one normalized OHLCV series without repairing it."""
 
@@ -153,29 +157,53 @@ def inspect_ohlcv_frame(
 
     metrics: dict[str, Any] = {"row_count": int(len(frame))}
     if frequency in INTRADAY_PERIOD_MINUTES and not timestamps.isna().any():
-        expected_times = set(a_share_intraday_close_times(frequency))
+        if market == MARKET_A_SHARE:
+            expected_times = set(a_share_intraday_close_times(frequency))
+        elif market == MARKET_HK:
+            minutes = INTRADAY_PERIOD_MINUTES[frequency]
+            expected_times = {
+                timestamp.strftime("%H:%M:%S")
+                for start, end in (("09:30", "12:00"), ("13:00", "16:00"))
+                for timestamp in pd.date_range(
+                    pd.Timestamp(f"2000-01-01 {start}") + pd.Timedelta(minutes=minutes),
+                    pd.Timestamp(f"2000-01-01 {end}"), freq=f"{minutes}min",
+                )
+            }
+        else:
+            return ValidationReport(tuple(findings) + (_finding(
+                "UNSUPPORTED_INTRADAY_MARKET", "intraday session calendar is not supported",
+                market=market,
+            ),), metrics)
         observed_times = set(timestamps.dt.strftime("%H:%M:%S"))
         unexpected = sorted(observed_times.difference(expected_times))
         if unexpected:
             findings.append(
                 _finding(
                     "UNEXPECTED_SESSION_TIME",
-                    f"{frequency}: unexpected A-share close times",
+                    f"{frequency}: unexpected {market} close times",
                     times=unexpected,
                 )
             )
         counts = timestamps.groupby(timestamps.dt.normalize()).size()
         expected_count = len(expected_times)
-        incomplete = {
-            day.date().isoformat(): int(count)
-            for day, count in counts.items()
-            if count != expected_count
-        }
+        start_bound = pd.Timestamp(request_start) if request_start is not None else None
+        end_bound = pd.Timestamp(request_end) if request_end is not None else None
+        if request_end is not None and len(request_end) == 10:
+            end_bound += pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)
+        incomplete = {}
+        for day, group in timestamps.groupby(timestamps.dt.normalize()):
+            expected = {day + pd.Timedelta(clock) for clock in expected_times}
+            expected = {stamp for stamp in expected
+                        if (start_bound is None or stamp >= start_bound)
+                        and (end_bound is None or stamp <= end_bound)}
+            missing = sorted(expected.difference(group))
+            if missing:
+                incomplete[day.date().isoformat()] = [str(stamp) for stamp in missing]
         if require_complete_days and incomplete:
             findings.append(
                 _finding(
                     "INCOMPLETE_TRADING_SESSION",
-                    f"{frequency}: incomplete A-share sessions",
+                    f"{frequency}: incomplete {market} sessions within the requested range",
                     sessions=incomplete,
                     expected_bars=expected_count,
                 )

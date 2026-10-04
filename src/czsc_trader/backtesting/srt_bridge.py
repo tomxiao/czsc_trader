@@ -26,7 +26,7 @@ from strategy_runtime import (
 )
 
 from trading_execution_engine import HistoricalExecutor
-from .execution_data import BacktestExecutionData, _prices, _unadjust_intraday
+from .execution_data import BacktestExecutionData, _prices, _empty_prices, _require_execution_frequencies
 from .models import StrategySnapshot
 from .result import BacktestResult
 from .signal_replay import SignalReplay
@@ -185,7 +185,13 @@ def execution_intraday_frequencies(strategy) -> tuple[str, ...]:
     unsupported = checkpoints - {"OPEN", "11:30_CLOSE"}
     if unsupported:
         raise ValueError(f"unsupported SRT execution checkpoints: {sorted(unsupported)}")
-    return ("5m",) if "11:30_CLOSE" in checkpoints else ()
+    frequencies = []
+    if definition.execution.policy_type == "FROZEN_RULE":
+        if any(definition.execution.order_type_for(side) == "LIMIT" for side in ("BUY", "SELL")):
+            frequencies.append("30m")
+    if "11:30_CLOSE" in checkpoints:
+        frequencies.append("5m")
+    return tuple(frequencies)
 
 
 def srt_data_directory(
@@ -256,11 +262,13 @@ def _validate_execution_binding(flows, execution_data, prepared):
     expected = {
         "adjusted_daily": (adjusted_dataset, execution_data.symbol, "daily"),
         "execution_daily": (daily_dataset, execution_data.symbol, "daily"),
-        "adjusted_30m": (adjusted_dataset, execution_data.symbol, "30m"),
         "trading_calendar": (Dataset.TRADING_CALENDAR, "SSE", "daily"),
     }
+    intraday_dataset = Dataset.ETF_UNADJUSTED_INTRADAY if asset == "etf" else Dataset.STOCK_UNADJUSTED_INTRADAY
+    if "execution_30m" in execution_data.requests:
+        expected["execution_30m"] = (intraday_dataset, execution_data.symbol, "30m")
     if execution_data.execution_five_minute is not None:
-        expected["adjusted_5m"] = (adjusted_dataset, execution_data.symbol, "5m")
+        expected["execution_5m"] = (intraday_dataset, execution_data.symbol, "5m")
     if set(execution_data.requests) != set(expected) or set(execution_data.input_identities) != set(expected):
         raise RuntimeContractError("execution input list differs from its declared tables")
     results = {}
@@ -293,12 +301,10 @@ def _validate_execution_binding(flows, execution_data, prepared):
     frames = {
         "adjusted_daily": adjusted,
         "execution_daily": daily,
-        "execution_intraday": _unadjust_intraday(_prices(results["adjusted_30m"].dataframe), adjusted, daily),
+        "execution_intraday": _prices(results["execution_30m"].dataframe) if "execution_30m" in results else _empty_prices(),
     }
-    if "adjusted_5m" in results:
-        frames["execution_five_minute"] = _unadjust_intraday(
-            _prices(results["adjusted_5m"].dataframe), adjusted, daily,
-        )
+    if "execution_5m" in results:
+        frames["execution_five_minute"] = _prices(results["execution_5m"].dataframe)
     for name, frame in frames.items():
         actual = getattr(execution_data, name)
         if not isinstance(actual, pd.DataFrame) or canonical_frame_sha256(actual) != canonical_frame_sha256(frame):
@@ -325,6 +331,7 @@ def build_srt_signal_replay(
         snapshot,
         deployment_symbol=execution_data.symbol,
     )
+    _require_execution_frequencies(execution_data, execution_intraday_frequencies(definition))
     runtime = StrategyRuntime(Path(repository_root) / "strategies", dataflows=dataflows)
     if end.normalize() > pd.Timestamp(execution_data.cutoff):
         raise RuntimeContractError("backtest window exceeds the published cutoff")

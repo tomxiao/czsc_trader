@@ -16,12 +16,15 @@ from .bar_utils import (
     infer_asset_type,
     normalize_adjustment_factors,
     normalize_period,
+    slice_intraday_request,
     standardize_vendor_ohlcv,
     with_scheduled_hfq_availability,
     validate_a_share_intraday_bars,
 )
 from .formatting import format_dataframe_report
-from .errors import EmptyDataError
+from .contract import ETF_INTRADAY_OBSERVATION_RULE
+from .errors import DataContractError, EmptyDataError
+from .history_repair import frame_content_sha256
 from .indicator_utils import compute_indicator_report
 from .history_validation import (
     inspect_daily_against_weekly,
@@ -223,6 +226,8 @@ def fetch_stock_ohlcv(
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Return normalized Tushare stock bars and machine-readable metadata."""
     normalized_period = normalize_period(period)
+    source_start = pd.Timestamp(start_date).date().isoformat()
+    source_end = pd.Timestamp(end_date).date().isoformat()
     fetch_period = (
         "daily"
         if normalized_period == "weekly" and detect_market(symbol) == MARKET_A_SHARE
@@ -230,8 +235,8 @@ def fetch_stock_ohlcv(
     )
     dataframe, market, ts_code = _fetch_tushare_ohlcv(
         symbol,
-        start_date,
-        end_date,
+        source_start,
+        source_end,
         period=fetch_period,
         asset_type="stock",
         env_file=env_file,
@@ -246,7 +251,7 @@ def fetch_stock_ohlcv(
         "asset_type": "stock",
     }
     if market == MARKET_A_SHARE:
-        factors = _fetch_hfq_factors(ts_code, start_date, end_date, env_file=env_file)
+        factors = _fetch_hfq_factors(ts_code, source_start, source_end, env_file=env_file)
         dataframe = apply_hfq_adjustment(dataframe, factors)
         if normalized_period == "weekly":
             daily = dataframe
@@ -255,8 +260,8 @@ def fetch_stock_ohlcv(
         elif normalized_period in INTRADAY_PERIOD_MINUTES:
             daily, _daily_market, _daily_symbol = _fetch_tushare_ohlcv(
                 symbol,
-                start_date,
-                end_date,
+                source_start,
+                source_end,
                 period="daily",
                 asset_type="stock",
                 env_file=env_file,
@@ -284,6 +289,7 @@ def fetch_stock_ohlcv(
         dataframe,
         normalized_period,
         require_complete_days=normalized_period in INTRADAY_PERIOD_MINUTES,
+        market=market,
     )
     validation.require_pass()
     if market == MARKET_A_SHARE:
@@ -291,7 +297,54 @@ def fetch_stock_ohlcv(
             dataframe, factor_source="adj_factor", period=normalized_period
         )
     metadata["validation"] = validation.to_dict()
+    if normalized_period in INTRADAY_PERIOD_MINUTES:
+        dataframe = slice_intraday_request(dataframe, start_date, end_date)
     return dataframe.copy(), metadata
+
+
+def fetch_stock_unadjusted_intraday(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    period: str,
+    *,
+    env_file: str | Path | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Publish raw A-share execution bars reconciled against raw daily prices."""
+    if period not in INTRADAY_PERIOD_MINUTES:
+        raise DataContractError("unadjusted stock intraday requires 1m/5m/15m/30m")
+    if detect_market(symbol) != MARKET_A_SHARE:
+        raise DataContractError("unadjusted stock intraday requires an A-share symbol")
+    source_start = pd.Timestamp(start_date).date().isoformat()
+    source_end = pd.Timestamp(end_date).date().isoformat()
+    dataframe, market, ts_code = _fetch_tushare_ohlcv(
+        symbol, source_start, source_end, period=period, asset_type="stock",
+        env_file=env_file,
+    )
+    if dataframe.empty:
+        raise EmptyDataError(f"Tushare returned no data for {symbol} {period}")
+    daily, _daily_market, _daily_symbol = _fetch_tushare_ohlcv(
+        symbol, source_start, source_end, period="daily", asset_type="stock",
+        env_file=env_file,
+    )
+    validation = inspect_intraday_against_daily(dataframe, daily, period)
+    validation.require_pass()
+    metadata: dict[str, Any] = {
+        "vendor": "tushare", "market": market, "vendor_symbol": ts_code,
+        "period": period, "asset_type": "stock", "adjustment": "none",
+        "source_calendar": "SSE" if ts_code.endswith(".SH") else "SZSE",
+        "source_time_field": "Date", "availability_time_field": "AvailableDate",
+        "available_at": ETF_INTRADAY_OBSERVATION_RULE,
+        "availability_basis": "MARKET_BAR_CLOSE_ASSUMPTION",
+        "source_publication_timestamp_verified": False,
+        "historical_revision_history_verified": False,
+        "live_feed_latency_verified": False,
+        "reference_daily_sha256": frame_content_sha256(daily),
+        "validation": validation.to_dict(),
+    }
+    dataframe = dataframe.copy()
+    dataframe["AvailableDate"] = pd.to_datetime(dataframe["Date"])
+    return slice_intraday_request(dataframe, start_date, end_date), metadata
 
 
 def fetch_stock_unadjusted_daily(

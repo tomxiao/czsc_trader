@@ -51,6 +51,18 @@ def test_raw_intraday_routes_validates_and_preserves_market_timing(flow_factory,
     assert len(meta["reference_daily_sha256"]) == 64
 
 
+def test_raw_intraday_subday_window_reconciles_whole_day_before_slicing(flow_factory, publish_data, monkeypatch):
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
+    result = publish_data(flow_factory(), DataRequest(
+        Dataset.ETF_UNADJUSTED_INTRADAY, "518850.SH",
+        "2026-09-29 10:00:00", "2026-09-29 10:15:00", None, frequency="5m",
+    ))
+    assert result.status is DataStatus.READY, result.error
+    assert result.dataframe.Date.tolist() == [
+        f"2026-09-29 10:{minute:02d}:00" for minute in (0, 5, 10, 15)
+    ]
+
+
 def test_raw_intraday_preserves_cross_frequency_failure(flow_factory, publish_data, monkeypatch):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro(mismatch=True))
     result = publish_data(flow_factory(), request())

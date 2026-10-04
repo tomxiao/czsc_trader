@@ -11,7 +11,7 @@ from typing import Any
 
 from strategy_evaluator import MetricObservation
 
-from .candidate_evaluation import METRIC_SEMANTICS_VERSION
+from .research_tools.evaluation import METRIC_SEMANTICS_VERSION
 from .experiment_archive import resolve_experiment_dir, validate_experiment_archive
 from .identity import canonical_json_sha256
 

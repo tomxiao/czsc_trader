@@ -37,7 +37,7 @@ from .errors import (
     SourceNotReadyError,
 )
 from .history_validation import inspect_ohlcv_frame
-from .market_resolver import MARKET_A_SHARE
+from .market_resolver import MARKET_A_SHARE, detect_market
 
 Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
 
@@ -134,6 +134,7 @@ _OHLCV_DATASETS = {
     Dataset.ETF_UNADJUSTED_DAILY.value,
     Dataset.STOCK_OHLCV.value,
     Dataset.STOCK_UNADJUSTED_DAILY.value,
+    Dataset.STOCK_UNADJUSTED_INTRADAY.value,
 }
 
 _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
@@ -394,6 +395,7 @@ def _validate_provider_output(
                 Dataset.ETF_UNADJUSTED_DAILY.value,
                 Dataset.ETF_UNADJUSTED_INTRADAY.value,
                 Dataset.STOCK_UNADJUSTED_DAILY.value,
+                Dataset.STOCK_UNADJUSTED_INTRADAY.value,
             }
             and metadata.get("adjustment") != "none"
         ):
@@ -401,7 +403,7 @@ def _validate_provider_output(
                 "unadjusted dataset provider did not declare adjustment=none",
                 dataset=dataset,
             )
-        if dataset == Dataset.ETF_UNADJUSTED_INTRADAY.value:
+        if dataset in {Dataset.ETF_UNADJUSTED_INTRADAY.value, Dataset.STOCK_UNADJUSTED_INTRADAY.value}:
             available = pd.to_datetime(dataframe.get("AvailableDate"), errors="coerce")
             source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
             if (
@@ -415,7 +417,7 @@ def _validate_provider_output(
                 or not isinstance(available, pd.Series)
                 or not available.equals(source_dates)
             ):
-                raise DataContractError("unadjusted ETF intraday observation contract differs")
+                raise DataContractError("unadjusted intraday observation contract differs")
         if metadata.get("vendor") == "tushare" and dataset in {
             Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value,
         } and (dataset == Dataset.ETF_OHLCV.value or metadata.get("market") == MARKET_A_SHARE):
@@ -452,10 +454,16 @@ def _validate_provider_output(
                 expected_available = source_dates
             if not available.equals(expected_available):
                 raise DataContractError("HFQ scheduled availability differs from bar and factor timing")
+        market = detect_market(_required_symbol(request))
+        if metadata.get("market") is not None and metadata["market"] != market:
+            raise DataContractError("provider market differs from requested symbol")
         inspect_ohlcv_frame(
             dataframe,
             frequency,
             require_complete_days=complete_sessions and frequency in {"1m", "5m", "15m", "30m"},
+            market=market,
+            request_start=request.start,
+            request_end=request.end,
         ).require_pass()
         return
 
@@ -1127,7 +1135,6 @@ class Dataflows:
                 identity = replace(stored.identity, content_sha256=canonical_frame_sha256(frame))
                 result = self._checked_result(
                     DataResult(DataStatus.READY, frame, identity, warnings=stored.warnings), request,
-                    complete_sessions=False,
                 )
                 if not result.ready:
                     return result
@@ -1345,6 +1352,14 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
             env_file=env_file,
         )
 
+    def stock_unadjusted_intraday(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        from .tushare_stock import fetch_stock_unadjusted_intraday
+
+        return fetch_stock_unadjusted_intraday(
+            _required_symbol(request), request.start, request.end,
+            request.frequency, env_file=env_file,
+        )
+
     def shibor(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_shibor_daily(request.start, request.end, env_file=env_file)
 
@@ -1355,10 +1370,6 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         return fetch_us_nominal_yield_daily(request.start, request.end, env_file=env_file)
 
     def us_policy_uncertainty(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
-        if request.symbol is not None:
-            raise DataContractError(
-                "U.S. policy uncertainty uses the fixed USEPUINDXD series and accepts no symbol"
-            )
         return fetch_us_policy_uncertainty_daily(
             request.start,
             request.end,
@@ -1531,6 +1542,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.ETF_OHLCV.value: etf_ohlcv,
         Dataset.ETF_UNADJUSTED_DAILY.value: etf_unadjusted,
         Dataset.ETF_UNADJUSTED_INTRADAY.value: etf_unadjusted_intraday,
+        Dataset.STOCK_UNADJUSTED_INTRADAY.value: stock_unadjusted_intraday,
         Dataset.ETF_CREATION_REDEMPTION_BASKET.value: etf_creation_redemption_basket,
         Dataset.STOCK_OHLCV.value: stock_ohlcv,
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,

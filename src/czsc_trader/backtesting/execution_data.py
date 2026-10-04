@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -108,24 +108,23 @@ def _prices(frame: pd.DataFrame) -> pd.DataFrame:
     return value[["dt", "open", "high", "low", "close", "vol", "amount"]]
 
 
-def _unadjust_intraday(
-    adjusted_intraday: pd.DataFrame,
-    adjusted_daily: pd.DataFrame,
-    execution_daily: pd.DataFrame,
-) -> pd.DataFrame:
-    adjusted = adjusted_daily.set_index(adjusted_daily["dt"].dt.normalize())
-    execution = execution_daily.set_index(execution_daily["dt"].dt.normalize())
-    common = adjusted.index.intersection(execution.index)
-    factors = adjusted.loc[common, "close"].astype(float).div(
-        execution.loc[common, "close"].astype(float)
-    )
-    result = adjusted_intraday.copy()
-    row_factors = result["dt"].dt.normalize().map(factors)
-    if row_factors.isna().any() or row_factors.le(0).any():
-        raise ValueError("TDR intraday prices have no complete positive adjustment factors")
-    for column in ("open", "high", "low", "close"):
-        result[column] = result[column].astype(float).div(row_factors.to_numpy(dtype=float))
-    return result
+def _empty_prices() -> pd.DataFrame:
+    return pd.DataFrame({
+        "dt": pd.Series(dtype="datetime64[ns]"),
+        **{name: pd.Series(dtype=float) for name in ("open", "high", "low", "close", "vol", "amount")},
+    })
+
+
+def _require_execution_frequencies(
+    data: BacktestExecutionData, frequencies: tuple[str, ...],
+) -> None:
+    for frequency in frequencies:
+        frame = data.execution_intraday if frequency == "30m" else data.execution_five_minute
+        if frame is None or frame.empty:
+            raise ValueError(f"execution data has no required {frequency} prices")
+        observed = pd.DatetimeIndex(pd.to_datetime(frame["dt"])).normalize()
+        if not data.evaluation_sessions.isin(observed).all():
+            raise ValueError(f"execution {frequency} prices do not cover evaluation sessions")
 
 
 def _prepare_backtest_execution_data(
@@ -135,10 +134,21 @@ def _prepare_backtest_execution_data(
     asset_type: str,
     start: date,
     end: date,
-    include_five_minute: bool = False,
+    intraday_frequencies: tuple[str, ...] = (),
+    prior_sessions: int = 1,
     dataflows: Dataflows,
 ) -> BacktestExecutionData:
-    """Prepare TDR/TXE data without inspecting any strategy input contract."""
+    """Bind execution prices for declared frequencies and daily benchmark history.
+
+    Strategy calculation history is independently planned by SRT. Minute prices
+    cover only the execution interval; daily prices include prior signal sessions.
+    """
+    if type(prior_sessions) is not int or prior_sessions < 1:
+        raise ValueError("prior_sessions must be a positive integer")
+    if (not isinstance(intraday_frequencies, tuple)
+            or len(set(intraday_frequencies)) != len(intraday_frequencies)
+            or any(value not in {"30m", "5m"} for value in intraday_frequencies)):
+        raise ValueError("execution frequencies must be a unique tuple of 30m/5m")
 
     if start > end:
         raise ValueError("backtest start must not follow end")
@@ -155,17 +165,24 @@ def _prepare_backtest_execution_data(
             end.isoformat(),
             "daily",
     )
-    calendar_prepared = flows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+    history_calendar_request = replace(
+        calendar_request, start=(start - timedelta(days=max(31, prior_sessions * 2))).isoformat(),
+    )
+    calendar_prepared = flows.prepare((history_calendar_request,), policy=PreparePolicy.REUSE)
     if not calendar_prepared.ready:
         item = calendar_prepared.items[0]
         _require_ready(DataResult(item.status, error=item.error), "trading_calendar")
     calendar = _ready(flows, calendar_request, "trading_calendar", prepared=calendar_prepared.reference)
-    calendar_frame = calendar.dataframe.copy()
+    history_calendar = _ready(
+        flows, history_calendar_request, "history_calendar", prepared=calendar_prepared.reference,
+    )
+    calendar_frame = history_calendar.dataframe.copy()
     calendar_dates = pd.to_datetime(calendar_frame["Date"], errors="raise").dt.normalize()
-    sessions = pd.DatetimeIndex(
+    calendar_sessions = pd.DatetimeIndex(
         calendar_dates.loc[pd.to_numeric(calendar_frame["IsOpen"], errors="raise").eq(1)],
         name="dt",
     )
+    sessions = calendar_sessions[(calendar_sessions >= pd.Timestamp(start)) & (calendar_sessions <= pd.Timestamp(end))]
     if sessions.empty:
         raise ValueError("backtest interval contains no trading sessions")
     if sessions.has_duplicates or not sessions.is_monotonic_increasing:
@@ -173,7 +190,11 @@ def _prepare_backtest_execution_data(
 
     actual_start = sessions[0].date()
     actual_end = sessions[-1].date()
-    history_start = actual_start - timedelta(days=400)
+    prior = calendar_sessions[calendar_sessions < sessions[0]]
+    if len(prior) < prior_sessions:
+        raise ValueError(f"trading calendar cannot satisfy {prior_sessions} prior sessions")
+    history_start = prior[-prior_sessions].date()
+    signal_start = prior[-1].date()
     adjusted_dataset = Dataset.ETF_OHLCV if normalized_asset == "etf" else Dataset.STOCK_OHLCV
     execution_dataset = (
         Dataset.ETF_UNADJUSTED_DAILY
@@ -190,31 +211,23 @@ def _prepare_backtest_execution_data(
             actual_end.isoformat(),
             "daily",
         ),
-        "adjusted_30m": DataRequest(
-            adjusted_dataset,
-            normalized_symbol,
-            history_start.isoformat(),
-            actual_end.isoformat(),
-            actual_end.isoformat(),
-            "30m",
-        ),
         "execution_daily": DataRequest(
             execution_dataset,
             normalized_symbol,
-            history_start.isoformat(),
+            signal_start.isoformat(),
             actual_end.isoformat(),
             actual_end.isoformat(),
             "daily",
         ),
     }
-    if include_five_minute:
-        requests["adjusted_5m"] = DataRequest(
-            adjusted_dataset,
-            normalized_symbol,
-            history_start.isoformat(),
-            actual_end.isoformat(),
-            actual_end.isoformat(),
-            "5m",
+    intraday_dataset = (
+        Dataset.ETF_UNADJUSTED_INTRADAY if normalized_asset == "etf"
+        else Dataset.STOCK_UNADJUSTED_INTRADAY
+    )
+    for frequency in intraday_frequencies:
+        requests[f"execution_{frequency}"] = DataRequest(
+            intraday_dataset, normalized_symbol, actual_start.isoformat(),
+            actual_end.isoformat(), actual_end.isoformat(), frequency,
         )
     requests["trading_calendar"] = calendar_request
     prepared = flows.prepare(tuple(requests.values()), policy=PreparePolicy.REUSE)
@@ -231,20 +244,19 @@ def _prepare_backtest_execution_data(
     adjusted_daily = _prices(results["adjusted_daily"].dataframe)
     adjusted_daily.insert(1, "symbol", normalized_symbol)
     execution_daily = _prices(results["execution_daily"].dataframe)
-    adjusted_intraday = _prices(results["adjusted_30m"].dataframe)
-    execution_intraday = _unadjust_intraday(
-        adjusted_intraday, adjusted_daily, execution_daily
+    execution_intraday = (
+        _prices(results["execution_30m"].dataframe) if "execution_30m" in results else _empty_prices()
     )
-    execution_five_minute = None
-    if include_five_minute:
-        execution_five_minute = _unadjust_intraday(
-            _prices(results["adjusted_5m"].dataframe),
-            adjusted_daily,
-            execution_daily,
-        )
+    execution_five_minute = (
+        _prices(results["execution_5m"].dataframe) if "execution_5m" in results else None
+    )
+    adjusted_sessions = pd.DatetimeIndex(adjusted_daily["dt"].dt.normalize())
+    if not prior[-prior_sessions:].isin(adjusted_sessions).all():
+        raise ValueError("adjusted daily prices do not cover declared prior sessions")
     execution_sessions = pd.DatetimeIndex(execution_daily["dt"].dt.normalize())
-    if not sessions.isin(execution_sessions).all():
-        missing = sessions[~sessions.isin(execution_sessions)]
+    if not prior[-1:].append(sessions).isin(execution_sessions).all():
+        required = prior[-1:].append(sessions)
+        missing = required[~required.isin(execution_sessions)]
         raise ValueError(
             "TDR execution prices do not cover evaluation sessions: "
             f"{[item.date().isoformat() for item in missing]}"

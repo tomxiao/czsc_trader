@@ -83,8 +83,18 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
         metadata = {"vendor": "test"}
         if dataset == Dataset.ETF_SHARE_SIZE.value:
             metadata["vendor_symbol"] = request.symbol
-        if dataset == Dataset.ETF_UNADJUSTED_DAILY.value:
+        if dataset in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.ETF_UNADJUSTED_INTRADAY.value}:
             metadata["adjustment"] = "none"
+        if dataset == Dataset.ETF_UNADJUSTED_INTRADAY.value:
+            from dataflows.contract import ETF_INTRADAY_OBSERVATION_RULE
+
+            frame["AvailableDate"] = frame["Date"]
+            metadata.update(
+                availability_time_field="AvailableDate", available_at=ETF_INTRADAY_OBSERVATION_RULE,
+                availability_basis="MARKET_BAR_CLOSE_ASSUMPTION",
+                source_publication_timestamp_verified=False,
+                historical_revision_history_verified=False, live_feed_latency_verified=False,
+            )
         return frame, metadata
 
     from czsc_trader.temp_workspace import create_temporary_directory
@@ -93,7 +103,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
         base_dir=root, space=space if space is not None else DataSpace(Path("data/backtest")),
         providers=ProviderConfig(bindings={dataset: ProviderBinding("synthetic", "v1", fetch)
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
-                            Dataset.ETF_UNADJUSTED_DAILY, Dataset.TRADING_CALENDAR)}),
+                            Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
+                            Dataset.TRADING_CALENDAR)}),
     )
     def create_flows(repository_root, *, read_only=False):
         if Path(repository_root).resolve() == Path(root).resolve() and not read_only:
@@ -103,7 +114,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             providers=ProviderConfig(bindings={} if read_only else {
                 dataset: ProviderBinding("synthetic", "v1", fetch)
                 for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
-                                Dataset.ETF_UNADJUSTED_DAILY, Dataset.TRADING_CALENDAR)
+                                Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
+                                Dataset.TRADING_CALENDAR)
             }),
         )
     monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", create_flows)
@@ -116,6 +128,7 @@ def _execution_data(flows, root, sessions):
     return _prepare_backtest_execution_data(
         repository_root=root, symbol="588080.SH", asset_type="etf",
         start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows,
+        intraday_frequencies=("30m",),
     )
 
 
@@ -473,14 +486,13 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         hash_audit_data,
     )
     from czsc_trader.research_tools import (
-        CandidateEvaluationContext,
         EvaluationCost,
         EvaluationRequest,
         EvaluationWindow,
         evaluate_strategy,
     )
-    from czsc_trader.candidate_evaluation import evaluate_candidate_payloads
-    from czsc_trader.research_tools import build_champion_audit_request
+    from czsc_trader.research_tools.evaluation import _CandidateEvaluationContext, _evaluate_candidate_payloads
+    from czsc_trader.research_tools.audit_evidence import _build_champion_audit_request
 
     payload, package = candidate_payload
     sessions = pd.bdate_range("2026-09-14", periods=6)
@@ -518,7 +530,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         sys.modules, "czsc_trader.research_backtest",
         SimpleNamespace(run_period_backtests=forbidden),
     )
-    context = CandidateEvaluationContext(
+    context = _CandidateEvaluationContext(
         SimpleNamespace(root=tmp_path),
         "588080.SH",
         "etf",
@@ -537,10 +549,10 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         standard_version="opc-v3",
     )
     payloads = tuple(payloads)
-    screening = evaluate_candidate_payloads(
-        context, protocol, payloads, ("C0001", "C0000"), "SCREENING"
+    screening = _evaluate_candidate_payloads(
+        context, protocol, payloads, ("C0001", "C0000"), (EvaluationCost("standard", 0.001, "SCREENING"),)
     )
-    formal = evaluate_candidate_payloads(context, protocol, payloads, ("C0001", "C0000"), "FORMAL")
+    formal = _evaluate_candidate_payloads(context, protocol, payloads, ("C0001", "C0000"), (EvaluationCost("standard", 0.001),))
     candidate = StrategyCandidate("S900", "C0001", payloads[1]["strategy_payload"], package)
     harness_request = EvaluationRequest(
         repository_root=tmp_path,
@@ -592,17 +604,17 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
     assert tuple(replace(row, measurement_tier="FORMAL") for row in screening) == formal
     assert formal[0].closed_trades == 1
     assert (
-        evaluate_candidate_payloads(
-            replace(context, workers=2), protocol, payloads, ("C0001", "C0000"), "FORMAL"
+        _evaluate_candidate_payloads(
+            replace(context, workers=2), protocol, payloads, ("C0001", "C0000"), (EvaluationCost("standard", 0.001),)
         )
         == formal
     )
-    stressed = evaluate_candidate_payloads(
-        context, protocol, payloads, ("C0001",), "STRESS", ("total_cost_20bp",)
+    stressed = _evaluate_candidate_payloads(
+        context, protocol, payloads, ("C0001",), (EvaluationCost("total_cost_20bp", 0.002, "STRESS"),)
     )
     assert stressed[0].total_return < formal[0].total_return
     assert stressed[0].cost_drag > formal[0].cost_drag
-    audit_request = build_champion_audit_request(
+    audit_request = _build_champion_audit_request(
         run_context=context,
         protocol=protocol,
         manifest={},
@@ -659,12 +671,33 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(
         next(item for item in failed.findings if item.audit_id == "execution").status
         is AuditStatus.FAIL
     )
-    with pytest.raises(ValueError, match="price-slippage"):
-        evaluate_candidate_payloads(
-            context, protocol, payloads, ("C0001",), "STRESS", ("slippage_15bp",)
-        )
-    with pytest.raises(ValueError, match="invalid cost"):
-        evaluate_candidate_payloads(context, protocol, payloads, ("C0001",), "STRESS", ("fee_xnan",))
+    # Names and tiers are metadata; explicit costs alone determine replay fees.
+    flexible = evaluate_strategy(replace(harness_request, costs=(
+        EvaluationCost("custom_high", 0.002, "FORMAL"),
+        EvaluationCost("custom_low", 0.0005, "SCREENING"),
+        EvaluationCost("standard", 0.001, "STRESS"),
+    )))
+    assert [(item.scenario_id, item.observation.measurement_tier) for item in flexible.runs] == [
+        ("custom_high", "FORMAL"), ("custom_low", "SCREENING"), ("standard", "STRESS"),
+    ]
+    assert flexible.runs[0].observation.cost_drag > flexible.runs[1].observation.cost_drag
+    single = evaluate_strategy(replace(harness_request, costs=(EvaluationCost("custom_only", 0.001),)))
+    assert single.runs[0].scenario_id == "custom_only"
+    assert single.runs[0].observation.total_return == pytest.approx(formal[0].total_return)
+    with pytest.raises(ValueError, match="scenario identities must be unique"):
+        evaluate_strategy(replace(harness_request, costs=(EvaluationCost("same", 0.001), EvaluationCost("same", 0.002))))
+    with pytest.raises(ValueError, match="finite"):
+        EvaluationCost("fee_xnan", float("nan"))
+    for name in ("", "../escape", "NUL", "trailing.", "bad\nname"):
+        with pytest.raises(ValueError, match="scenario_id"):
+            EvaluationCost(name, 0.001)
+    for fee in (-0.001, 1.0, True):
+        with pytest.raises(ValueError, match="cost"):
+            EvaluationCost("valid", fee)
+    with pytest.raises(ValueError, match="tier"):
+        EvaluationCost("valid", 0.001, "UNKNOWN")
+    with pytest.raises(TypeError, match="non-empty tuple"):
+        replace(harness_request, costs=())
 
 
 def test_research_evaluate_api_publishes_complete_hashed_evidence(
@@ -718,14 +751,9 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
         "capital": {"initial_cash": 100_000},
         "costs": [
             {
-                "scenario_id": "standard",
+                "scenario_id": "research_case",
                 "one_way_cost": 0.001,
                 "measurement_tier": "FORMAL",
-            },
-            {
-                "scenario_id": "pressure_20bp",
-                "one_way_cost": 0.002,
-                "measurement_tier": "STRESS",
             },
         ],
         "benchmark": EvaluationBenchmark(NextOpenBuyHold(100)).to_dict(),
@@ -741,7 +769,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
     first = asdict(evaluate_research_request(context, request_path))
     assert first["status"] == "PASS"
     assert first["command"] == "research.evaluate"
-    assert first["result"]["run_count"] == 2
+    assert first["result"]["run_count"] == 1
     assert first["result"]["execution_mode"] == "FULL"
     second = asdict(evaluate_research_request(context, request_path))
     assert second["result"] == first["result"]
@@ -750,9 +778,9 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(
     document = json.loads((output / "evaluation_result.json").read_text(encoding="utf-8"))
     assert document["request_hash"] == first["result"]["request_hash"]
     assert document["result_hash"] == first["result"]["result_hash"]
-    assert len(document["files"]) == 20
-    assert (output / "full" / "standard" / "account_daily.csv").is_file()
-    assert (output / "full" / "pressure_20bp" / "buyhold_metrics.json").is_file()
+    assert len(document["files"]) == 10
+    assert (output / "full" / "research_case" / "account_daily.csv").is_file()
+    assert (output / "full" / "research_case" / "buyhold_metrics.json").is_file()
 
 
 def test_review_data_republication_is_offline_isolated_and_fails_closed(
@@ -764,8 +792,8 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         load_review_dataset,
         verify_review_dataset,
     )
-    from czsc_trader.research_tools import CandidateEvaluationContext
-    from czsc_trader.candidate_evaluation import evaluate_candidate_payloads
+    from czsc_trader.research_tools import EvaluationCost
+    from czsc_trader.research_tools.evaluation import _CandidateEvaluationContext, _evaluate_candidate_payloads
 
     payload, package = candidate_payload
     payload["parameters"]["with_calendar"] = True
@@ -841,7 +869,7 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
     assert_frame_equal(restored.execution_daily, execution_data.execution_daily)
     assert_frame_equal(restored.adjusted_daily, execution_data.adjusted_daily)
     assert restored.root != pool
-    run = CandidateEvaluationContext(
+    run = _CandidateEvaluationContext(
         context,
         "588080.SH",
         "etf",
@@ -853,8 +881,8 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
         review_data_hash=published["snapshot_hash"],
         candidate_runtime_roots={"C0001": package},
     )
-    rows = evaluate_candidate_payloads(
-        run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
+    rows = _evaluate_candidate_payloads(
+        run, protocol, tuple(manifest["candidates"]), ("C0001",), (EvaluationCost("standard", 0.001),)
     )
     assert rows[0].closed_trades == 1
 
@@ -873,8 +901,8 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
             candidate_runtime_roots={"C0001": package},
         )
     assert (
-        evaluate_candidate_payloads(
-            run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
+        _evaluate_candidate_payloads(
+            run, protocol, tuple(manifest["candidates"]), ("C0001",), (EvaluationCost("standard", 0.001),)
         )
         == rows
     )
@@ -913,8 +941,8 @@ def test_review_data_republication_is_offline_isolated_and_fails_closed(
     with pytest.raises(ValueError, match="file hash mismatch"):
         verify_review_dataset(directory, published["snapshot_hash"])
     with pytest.raises(ValueError, match="file hash mismatch"):
-        evaluate_candidate_payloads(
-            run, protocol, tuple(manifest["candidates"]), ("C0001",), "FORMAL"
+        _evaluate_candidate_payloads(
+            run, protocol, tuple(manifest["candidates"]), ("C0001",), (EvaluationCost("standard", 0.001),)
         )
 
 

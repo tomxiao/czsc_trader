@@ -63,7 +63,6 @@ from .delivery import (
 from .evaluation import (
     METRIC_SEMANTICS_VERSION,
     BuyHoldReplay,
-    CandidateEvaluationContext,
     EvaluationBenchmark,
     EvaluationCost,
     EvaluationRequest,
@@ -81,7 +80,6 @@ from .experiment import (
     execute_experiment,
     preflight_experiment,
 )
-from .audit_evidence import build_champion_audit_request
 from .assessment import build_assessment_evidence
 
 __all__ = [
@@ -89,10 +87,8 @@ __all__ = [
     "CandidateAssessmentDelivery",
     "TargetMandateBinding",
     "build_assessment_evidence",
-    "build_champion_audit_request",
     "METRIC_SEMANTICS_VERSION",
     "BuyHoldReplay",
-    "CandidateEvaluationContext",
     "EvaluationBenchmark",
     "EvaluationCost",
     "EvaluationRequest",

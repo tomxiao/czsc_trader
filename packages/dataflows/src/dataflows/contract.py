@@ -43,6 +43,7 @@ class Dataset(StrEnum):
     ETF_CREATION_REDEMPTION_BASKET = "etf.creation_redemption_basket"
     STOCK_OHLCV = "stock.ohlcv"
     STOCK_UNADJUSTED_DAILY = "stock.unadjusted_daily"
+    STOCK_UNADJUSTED_INTRADAY = "stock.unadjusted_intraday"
     SHIBOR_DAILY = "macro.shibor_daily"
     US_REAL_YIELD_DAILY = "macro.us_real_yield_daily"
     US_NOMINAL_YIELD_DAILY = "macro.us_nominal_yield_daily"
@@ -253,6 +254,14 @@ class DataRequest:
         symbol = None if self.symbol is None else self.symbol.strip()
         if self.symbol is not None and not symbol:
             raise ValueError("symbol must be None or a non-empty string")
+        if dataset in {
+            Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY,
+            Dataset.US_NOMINAL_YIELD_DAILY, Dataset.US_POLICY_UNCERTAINTY_DAILY,
+            Dataset.USDCNH_DAILY, Dataset.CN_CPI_MONTHLY, Dataset.CN_PPI_MONTHLY,
+            Dataset.CN_MONEY_MONTHLY, Dataset.US_CPI_RELEASE,
+            Dataset.US_ISM_PMI_RELEASE, Dataset.US_FEDERAL_BUDGET_RELEASE,
+        } and symbol is not None:
+            raise ValueError(f"{dataset} is a fixed series and accepts no symbol")
         start = _timestamp(self.start, "start")
         end = _timestamp(self.end, "end")
         if len(self.end) == 10:
@@ -273,7 +282,7 @@ class DataRequest:
         frequencies = {"daily"}
         if dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:
             frequencies = {"daily", "weekly", *intraday}
-        elif dataset is Dataset.ETF_UNADJUSTED_INTRADAY:
+        elif dataset in {Dataset.ETF_UNADJUSTED_INTRADAY, Dataset.STOCK_UNADJUSTED_INTRADAY}:
             frequencies = intraday
         if not isinstance(self.frequency, str) or self.frequency not in frequencies:
             raise ValueError(f"{dataset} frequency must be one of {sorted(frequencies)}")

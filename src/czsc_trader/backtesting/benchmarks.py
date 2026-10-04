@@ -13,6 +13,8 @@ from .benchmark_contracts import EvaluationBenchmark, LimitBuyHold, NextOpenBuyH
 from .execution_data import BacktestExecutionData
 from .signal_replay import SignalReplay
 
+MA_BENCHMARK_SLOW_SESSIONS = 20
+
 
 @dataclass(frozen=True)
 class BenchmarkReplay:
@@ -184,7 +186,9 @@ def replay_benchmarks(
     if evaluation.empty:
         raise ValueError("benchmark interval contains no execution sessions")
 
-    adjusted_signals = moving_average_signals(execution_data.adjusted_daily)
+    adjusted_signals = moving_average_signals(
+        execution_data.adjusted_daily, slow=MA_BENCHMARK_SLOW_SESSIONS,
+    )
     prior_dates = adjusted_signals.index[adjusted_signals.index < signals.evaluation_start]
     if prior_dates.empty:
         raise ValueError("benchmark interval has no prior signal session")
@@ -223,7 +227,7 @@ def replay_benchmarks(
     visible_signals = adjusted_signals.loc[prior_date : signals.evaluation_end].reset_index()
     visible_signals = visible_signals.rename(columns={"dt": "date"})
     evaluation_start_location = int(adjusted_signals.index.get_loc(evaluation_index[0]))
-    audit_start_location = max(0, evaluation_start_location - 20)
+    audit_start_location = max(0, evaluation_start_location - MA_BENCHMARK_SLOW_SESSIONS)
     ma_audit_signals = adjusted_signals.iloc[
         audit_start_location : int(adjusted_signals.index.get_loc(evaluation_index[-1])) + 1
     ].reset_index().rename(columns={"dt": "date"})

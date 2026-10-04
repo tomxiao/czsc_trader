@@ -545,7 +545,7 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             reasons.append("FILL_ORDER_MISMATCH")
         price = float(fill["price"])
         trigger = str(fill["trigger"])
-        if order["side"] == "SELL" and expected_order_type == "MARKET":
+        if expected_order_type == "MARKET":
             eligible = (
                 trigger == "OPEN_MARKET"
                 and abs(price - float(execution["open"])) <= tolerance

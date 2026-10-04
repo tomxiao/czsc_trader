@@ -7,10 +7,7 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from czsc_trader.research_tools import (
-    CandidateEvaluationContext,
-)
-from czsc_trader.research_tools.evaluation import prepare_evaluation_workspace
+from czsc_trader.research_tools.evaluation import _CandidateEvaluationContext, _prepare_evaluation_workspace
 from czsc_trader.application.context import RepositoryContext
 from strategy_evaluator import EvaluationProtocol
 
@@ -67,7 +64,7 @@ def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
         "czsc_trader.research_tools.evaluation._prepare_backtest_execution_data",
         load_stale,
     )
-    context = CandidateEvaluationContext(
+    context = _CandidateEvaluationContext(
         RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo),
         "588080.SH",
         "etf",
@@ -75,7 +72,7 @@ def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
     )
 
     with pytest.raises(ValueError, match="does not reach development cutoff"):
-        prepare_evaluation_workspace(context, protocol)
+        _prepare_evaluation_workspace(context, protocol)
 
 
 def test_research_evaluate_is_a_non_governance_facade(minimal_repo: Path, monkeypatch) -> None:

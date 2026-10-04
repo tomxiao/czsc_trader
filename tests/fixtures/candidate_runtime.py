@@ -90,7 +90,7 @@ class CandidateFixture(StrategyImplementation):
                     },
                     "entry": {
                         "limit_parameter": parameters.values.get("entry_premium", 0.0),
-                        "order_type": "LIMIT",
+                        "order_type": parameters.values.get("entry_order_type", "LIMIT"),
                     },
                     "exit": {"limit_ratio": 0.1, "order_type": "MARKET"},
                     "instrument": {

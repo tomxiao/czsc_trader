@@ -121,8 +121,8 @@ def publish_review_dataset(
     candidate_runtime_roots: dict[str, Path] | None = None,
 ) -> dict:
     """Publish once; incomplete staging never becomes a usable review dataset."""
-    from czsc_trader.candidate_evaluation import (
-        CandidateEvaluationContext, _snapshot, prepare_evaluation_workspace,
+    from czsc_trader.research_tools.evaluation import (
+        _CandidateEvaluationContext, _snapshot, _prepare_evaluation_workspace,
     )
     dataflows = _dataflows.create_backtest_dataflows(context.root)
 
@@ -133,7 +133,7 @@ def publish_review_dataset(
         )
     periods = tuple((name, (pd.Timestamp(window["start"]), pd.Timestamp(window["end"])))
                     for name, window in manifest["windows"].items())
-    run = CandidateEvaluationContext(
+    run = _CandidateEvaluationContext(
         context, manifest["symbol"], manifest.get("asset_type", "etf"), periods,
         family_id=manifest["strategy_id"],
         candidate_runtime_roots=candidate_runtime_roots,
@@ -142,8 +142,9 @@ def publish_review_dataset(
     strategies = [item[1] for item in snapshots]
     if not strategies or len({s.release_id for s in strategies}) != len(strategies):
         raise ValueError("review requires non-empty, unique runtime identities")
-    execution_data = prepare_evaluation_workspace(
-        run, protocol, include_five_minute=any(execution_intraday_frequencies(s) for s in strategies),
+    execution_data = _prepare_evaluation_workspace(
+        run, protocol, intraday_frequencies=tuple(sorted({frequency for s in strategies
+            for frequency in execution_intraday_frequencies(s)})),
     ).execution_data
     directory.parent.mkdir(parents=True, exist_ok=True)
     # Retain failed staging for diagnosis; only the final atomic rename publishes READY.

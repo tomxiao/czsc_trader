@@ -12,7 +12,7 @@ from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 from czsc_trader.reporting.publication import publish_run_directory
 from czsc_trader.temp_workspace import create_temporary_directory
 
-from .benchmarks import replay_benchmarks
+from .benchmarks import MA_BENCHMARK_SLOW_SESSIONS, replay_benchmarks
 from .execution_data import BacktestExecutionData, _prepare_backtest_execution_data
 from . import _dataflows
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
@@ -122,7 +122,8 @@ def _run_backtest(
             asset_type=request.asset_type,
             start=request.start,
             end=request.end,
-            include_five_minute="5m" in execution_intraday_frequencies(definition),
+            intraday_frequencies=execution_intraday_frequencies(definition),
+            prior_sessions=MA_BENCHMARK_SLOW_SESSIONS,
             dataflows=flows,
         )
     if execution_data.symbol != request.symbol:

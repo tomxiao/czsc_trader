@@ -11,6 +11,18 @@ import pandas as pd
 INTRADAY_PERIOD_MINUTES = {"1m": 1, "5m": 5, "15m": 15, "30m": 30}
 SUPPORTED_PERIODS = {"daily", "weekly", *INTRADAY_PERIOD_MINUTES}
 
+
+def slice_intraday_request(
+    dataframe: pd.DataFrame, start_date: str, end_date: str
+) -> pd.DataFrame:
+    """Return requested bar-close timestamps after full-session reconciliation."""
+    timestamps = pd.to_datetime(dataframe["Date"])
+    start = pd.Timestamp(start_date)
+    end = pd.Timestamp(end_date)
+    if len(end_date) == 10:
+        end += pd.Timedelta(days=1) - pd.Timedelta(nanoseconds=1)
+    return dataframe.loc[timestamps.between(start, end)].reset_index(drop=True).copy()
+
 _COLUMN_ALIASES = {
     "日期": "Date",
     "时间": "Date",

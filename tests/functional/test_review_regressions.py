@@ -14,7 +14,7 @@ import pytest
 
 from czsc_trader.backtesting.metrics import calculate_metrics
 from czsc_trader.strategy_metrics import strategy_comparison_metrics
-from czsc_trader.candidate_evaluation import _observation
+from czsc_trader.research_tools.evaluation import _observation
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.web import create_server
 from strategy_evaluator.benchmark_audit import _metrics

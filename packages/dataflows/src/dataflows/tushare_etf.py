@@ -15,6 +15,7 @@ from .bar_utils import (
     infer_asset_type,
     normalize_adjustment_factors,
     normalize_period,
+    slice_intraday_request,
     standardize_vendor_ohlcv,
     with_scheduled_hfq_availability,
 )
@@ -229,6 +230,9 @@ def _fetch_tushare_etf_ohlcv(
     env_file: str | Path | None = None,
 ) -> tuple[pd.DataFrame, str, str]:
     period = normalize_period(period)
+    if period in INTRADAY_PERIOD_MINUTES:
+        start_date = pd.Timestamp(start_date).date().isoformat()
+        end_date = pd.Timestamp(end_date).date().isoformat()
     market = detect_market(symbol)
     if market != MARKET_A_SHARE:
         raise ValueError("tushare_etf only supports A-share ETFs")
@@ -368,7 +372,10 @@ def fetch_etf_ohlcv(
         raise EmptyDataError(f"Tushare returned no data for {symbol} {normalized_period}")
     repair_records = dataframe.attrs.get("repair_records", [])
     reference_daily_sha256 = dataframe.attrs.get("reference_daily_sha256")
-    factors = _fetch_hfq_factors(ts_code, start_date, end_date, env_file=env_file)
+    factors = _fetch_hfq_factors(
+        ts_code, pd.Timestamp(start_date).date().isoformat(),
+        pd.Timestamp(end_date).date().isoformat(), env_file=env_file,
+    )
     dataframe = apply_hfq_adjustment(dataframe, factors)
     if normalized_period == "weekly":
         dataframe = _resample_weekly(dataframe)
@@ -401,6 +408,8 @@ def fetch_etf_ohlcv(
         metadata["reference_daily_sha256"] = str(reference_daily_sha256)
     if repair_records:
         metadata["repair_records"] = repair_records
+    if normalized_period in INTRADAY_PERIOD_MINUTES:
+        dataframe = slice_intraday_request(dataframe, start_date, end_date)
     return dataframe.copy(), metadata
 
 
@@ -445,7 +454,7 @@ def fetch_etf_unadjusted_intraday(
             metadata[name] = dataframe.attrs[name]
     dataframe = dataframe.copy()
     dataframe["AvailableDate"] = pd.to_datetime(dataframe["Date"])
-    return dataframe, metadata
+    return slice_intraday_request(dataframe, start_date, end_date), metadata
 
 
 def fetch_etf_unadjusted_daily(
