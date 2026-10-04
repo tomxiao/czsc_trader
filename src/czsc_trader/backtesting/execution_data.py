@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
-from strategy_runtime import canonical_sha256
+from dataflows import (DataRequest, DataStatus, Dataflows, Dataset, DataSpace,
+                       ProviderConfig, PreparePolicy, PreparedDataRef, DataResult)
+from strategy_runtime import canonical_sha256, StrategyInputBinding
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,10 @@ class BacktestExecutionData:
     cutoff: date
     evaluation_sessions: pd.DatetimeIndex
     execution_five_minute: pd.DataFrame | None = None
+    requests: dict[str, DataRequest] = field(default_factory=dict)
+    prepared: PreparedDataRef | None = None
+    input_identities: dict[str, str] = field(default_factory=dict)
+    strategy_bindings: dict[str, StrategyInputBinding] = field(default_factory=dict)
 
     @property
     def evaluation_start(self) -> pd.Timestamp:
@@ -60,8 +65,14 @@ def _ready(
     name: str,
     evaluation_sessions: pd.DatetimeIndex | None = None,
     requested_cutoff: date | None = None,
+    *,
+    prepared: PreparedDataRef,
 ):
-    result = flows.fetch(request)
+    result = flows.fetch(request, prepared=prepared)
+    return _require_ready(result, name, evaluation_sessions, requested_cutoff)
+
+
+def _require_ready(result, name, evaluation_sessions=None, requested_cutoff=None):
     if result.status is DataStatus.READY and result.identity is not None:
         return result
     if (
@@ -136,21 +147,25 @@ def prepare_backtest_execution_data(
     if normalized_asset not in {"stock", "etf"}:
         raise ValueError("backtest asset type must be stock or etf")
     normalized_symbol = symbol.upper()
-    flows = dataflows or Dataflows()
-    options = {} if env_file is None else {"env_file": str(Path(env_file).resolve())}
-    calendar = _ready(
-        flows,
-        DataRequest(
+    if dataflows is not None and env_file is not None:
+        raise ValueError("credentials belong to the supplied Dataflows instance")
+    flows = dataflows if dataflows is not None else Dataflows(
+        base_dir=Path(srt_data_root).resolve(), space=DataSpace(Path("market")),
+        providers=ProviderConfig(env_file=env_file),
+    )
+    calendar_request = DataRequest(
             Dataset.TRADING_CALENDAR,
             "SSE",
             start.isoformat(),
             end.isoformat(),
             end.isoformat(),
             "daily",
-            options,
-        ),
-        "trading_calendar",
     )
+    calendar_prepared = flows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+    if not calendar_prepared.ready:
+        item = calendar_prepared.items[0]
+        _require_ready(DataResult(item.status, error=item.error), "trading_calendar")
+    calendar = _ready(flows, calendar_request, "trading_calendar", prepared=calendar_prepared.reference)
     calendar_frame = calendar.dataframe.copy()
     calendar_dates = pd.to_datetime(calendar_frame["Date"], errors="raise").dt.normalize()
     sessions = pd.DatetimeIndex(
@@ -180,7 +195,6 @@ def prepare_backtest_execution_data(
             actual_end.isoformat(),
             actual_end.isoformat(),
             "daily",
-            options,
         ),
         "adjusted_30m": DataRequest(
             adjusted_dataset,
@@ -189,7 +203,6 @@ def prepare_backtest_execution_data(
             actual_end.isoformat(),
             actual_end.isoformat(),
             "30m",
-            options,
         ),
         "execution_daily": DataRequest(
             execution_dataset,
@@ -198,7 +211,6 @@ def prepare_backtest_execution_data(
             actual_end.isoformat(),
             actual_end.isoformat(),
             "daily",
-            options,
         ),
     }
     if include_five_minute:
@@ -209,12 +221,19 @@ def prepare_backtest_execution_data(
             actual_end.isoformat(),
             actual_end.isoformat(),
             "5m",
-            options,
         )
+    requests["trading_calendar"] = calendar_request
+    prepared = flows.prepare(tuple(requests.values()), policy=PreparePolicy.REUSE)
+    if not prepared.ready:
+        for name, item in zip(requests, prepared.items):
+            if not item.ready:
+                _require_ready(DataResult(item.status, error=item.error), name, sessions, end)
     results = {
-        name: _ready(flows, request, name, sessions, end)
+        name: _ready(flows, request, name, sessions, end, prepared=prepared.reference)
         for name, request in requests.items()
     }
+    if results["trading_calendar"].identity.content_sha256 != calendar.identity.content_sha256:
+        raise ValueError("calendar changed while preparing execution inputs")
     adjusted_daily = _prices(results["adjusted_daily"].dataframe)
     adjusted_daily.insert(1, "symbol", normalized_symbol)
     execution_daily = _prices(results["execution_daily"].dataframe)
@@ -263,4 +282,7 @@ def prepare_backtest_execution_data(
         fingerprint=fingerprint,
         cutoff=actual_end,
         evaluation_sessions=sessions,
+        requests=requests,
+        prepared=prepared.reference,
+        input_identities=identities,
     )

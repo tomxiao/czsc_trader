@@ -183,10 +183,11 @@ def main(
             return 5
         parser = argparse.ArgumentParser(prog="pte-watchdog install-config")
         parser.add_argument("--runtime-root", required=True, type=Path)
+        parser.add_argument("--data-space", type=Path, default=Path("market"))
         options = parser.parse_args(arguments[1:])
         runtime_root = options.runtime_root.resolve()
         _validate_service_host(runtime_root)
-        config = ServiceConfig(runtime_root=runtime_root)
+        config = ServiceConfig(runtime_root=runtime_root, data_space=options.data_space)
         config.active_release()
         prepare_service_host(Path(servicemanager.__file__), Path(sys.exec_prefix))
         prepare_service_host(Path(servicemanager.__file__), Path(sys.base_prefix))

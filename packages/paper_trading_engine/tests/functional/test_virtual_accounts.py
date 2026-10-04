@@ -13,6 +13,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
+from dataflows import DataSpace
 
 from paper_trading_engine import AccountStrategyBinding
 from strategy_manager import Qualification
@@ -51,7 +52,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(tmp_path
 
     monkeypatch.setattr(pte_cli, "_strategy_deployments", validate)
     args = Namespace(action="once", database=tmp_path / "runtime.db", repo_root=tmp_path,
-                     data_dir=tmp_path / "data", asset="ETF", symbol="588080.SH",
+                     data_dir=tmp_path / "data", data_space=DataSpace(Path("market")), config_root=tmp_path, asset="ETF", symbol="588080.SH",
                      opend_host="127.0.0.1", opend_port=11111)
     with pytest.raises(ReachedDeploymentValidation):
         pte_cli.build_engine(args)
@@ -808,6 +809,8 @@ def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
         account_action="create",
         database=tmp_path / "runtime.db",
         data_dir=data_dir,
+        data_space=DataSpace(Path("market")),
+        config_root=tmp_path,
         repo_root=tmp_path,
         account_id="s007-v1",
         name="S007-v1模拟账户",

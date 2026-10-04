@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import date
 from hashlib import sha256
 from math import isfinite
@@ -12,12 +12,16 @@ import platform
 from importlib import metadata
 import re
 from typing import Any, Mapping
+from types import MappingProxyType
 
 import numpy as np
 import pandas as pd
 from dataflows import Dataflows
 from strategy_evaluator import EvaluationProtocol, MetricObservation, MetricStatus
-from strategy_runtime import StrategyCandidate, StrategyRuntime, canonical_sha256, ImplementationDependency
+from strategy_runtime import (
+    StrategyCandidate, StrategyRuntime, StrategyInputBinding,
+    canonical_sha256, ImplementationDependency,
+)
 from strategy_manager import CandidateKey, CandidateDerivation
 from research_experiment import ExperimentArtifact
 from strategy_runtime.implementation_identity import implementation_sha256
@@ -33,7 +37,7 @@ from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
 from ..backtesting.srt_bridge import (
     build_srt_signal_replay, execution_intraday_frequencies, load_srt_strategy,
-    replay_srt_account,
+    replay_srt_account, prepare_srt_input_binding,
 )
 
 METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v4-explicit-benchmark"
@@ -105,6 +109,7 @@ class EvaluationRequest:
     execution_mode: str = "FULL"
     lineage: EvaluationLineage | None = None
     dependencies: tuple[ImplementationDependency, ...] = ()
+    input_bindings: Mapping[str, StrategyInputBinding] = field(default_factory=dict)
 
     def __post_init__(self):
         if type(self.data_cutoff) is not date:
@@ -125,6 +130,14 @@ class EvaluationRequest:
             raise TypeError("dependencies must contain ImplementationDependency")
         if self.lineage is not None and not isinstance(self.lineage, EvaluationLineage):
             raise TypeError("lineage must be EvaluationLineage")
+        if not isinstance(self.input_bindings, Mapping) or any(
+            not isinstance(name, str) or not isinstance(binding, StrategyInputBinding)
+            for name, binding in self.input_bindings.items()
+        ):
+            raise TypeError("input_bindings must map window IDs to StrategyInputBinding")
+        if self.input_bindings and set(self.input_bindings) != {item.window_id for item in self.windows}:
+            raise ValueError("input_bindings must cover every evaluation window")
+        object.__setattr__(self, "input_bindings", MappingProxyType(dict(self.input_bindings)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -216,6 +229,8 @@ def prepare_evaluation_workspace(
     context: CandidateEvaluationContext, protocol: EvaluationProtocol, *,
     include_five_minute: bool = False,
 ) -> EvaluationWorkspace:
+    if context.dataflows is None:
+        raise ValueError("evaluation requires a host-configured Dataflows data space")
     options = {"include_five_minute": True} if include_five_minute else {}
     if context.review_data_root is not None:
         from ..application.review_data import load_review_dataset
@@ -248,7 +263,6 @@ def prepare_evaluation_workspace(
             asset_type=context.asset_type,
             start=first_start.date(),
             end=pd.Timestamp(protocol.development_cutoff).date(),
-            env_file=context.repository.root / ".env" if context.dataflows is None else None,
             include_five_minute=bool(options),
             dataflows=context.dataflows,
         )
@@ -782,7 +796,8 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
                 "scenario_id": run.scenario_id,
                 "identity": None if run.identity is None else run.identity.to_dict(),
                 "signal_data_identity": run.signals.data_identity,
-                "signal_support": run.signals.support_data,
+                "signal_support": {name: value for name, value in run.signals.support_data.items()
+                                   if name != "input_binding"},
                 "signal_window": {
                     "calculation_start": run.signals.calculation_start.isoformat(),
                     "evaluation_start": run.signals.evaluation_start.isoformat(),
@@ -812,11 +827,32 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
 
 
-def evaluate_strategy(
-    request: EvaluationRequest, *, dataflows: Dataflows | None = None,
-) -> EvaluationResult:
+def prepare_evaluation_inputs(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationRequest:
+    """Resolve all window inputs in the owning process before worker dispatch."""
+    _request_contract(request)
+    if request.input_bindings:
+        return request
+    snapshot = StrategySnapshot(
+        StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
+        request.strategy.runtime_identity_sha256,
+        canonical_sha256(request.strategy.payload), dict(request.strategy.payload),
+        runtime_root=request.strategy.source_root,
+    )
+    bindings = {
+        window.window_id: prepare_srt_input_binding(
+            snapshot=snapshot, execution_data=request.execution_data,
+            start=pd.Timestamp(window.start), end=pd.Timestamp(window.end),
+            repository_root=Path(request.repository_root).resolve(), dataflows=dataflows,
+        )
+        for window in request.windows
+    }
+    return replace(request, input_bindings=bindings)
+
+
+def evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
+    request = prepare_evaluation_inputs(request, dataflows=dataflows)
     contract, binding_hash = _request_contract(request)
     request_hash = canonical_sha256(contract)
     periods = tuple(
@@ -842,9 +878,7 @@ def evaluate_strategy(
         workers=request.workers,
         frequency_window_days=request.frequency_window_days,
         family_id=request.strategy.strategy_family_id,
-        dataflows=dataflows if dataflows is not None else Dataflows(
-            env_file=Path(request.repository_root) / ".env",
-        ),
+        dataflows=dataflows,
     )
     snapshot = StrategySnapshot(
         StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
@@ -863,6 +897,7 @@ def evaluate_strategy(
                 end=end,
                 repository_root=Path(request.repository_root).resolve(),
                 dataflows=context.dataflows,
+                input_binding=request.input_bindings[name],
             )
             for name, (start, end) in periods
         }

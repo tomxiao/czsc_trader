@@ -6,7 +6,8 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, Dataset
+from pathlib import Path
+from dataflows import Dataflows, Dataset, DataSpace, ProviderBinding, ProviderConfig
 from strategy_runtime import canonical_sha256
 
 from paper_trading_engine.account_data_preparer import AccountDataPreparer
@@ -18,7 +19,7 @@ from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
 
-def _flows() -> Dataflows:
+def _flows(tmp_path) -> Dataflows:
     dates = pd.bdate_range(end="2026-09-04", periods=700)
     bars = pd.DataFrame(
         {
@@ -48,15 +49,19 @@ def _flows() -> Dataflows:
         ), {"vendor": "test"}
 
     def flow(request):
-        return pd.DataFrame({"Date": pd.bdate_range(request.start, request.end), "Flow": 0.8}), {"vendor": "test"}
+        return pd.DataFrame({"Date": pd.bdate_range(request.start, request.end), "Flow": 0.8, "TotalShare": 0.8}), {"vendor": "test"}
 
     return Dataflows(
-        {
-            "etf.share": flow,
-            Dataset.ETF_OHLCV.value: market,
-            Dataset.ETF_UNADJUSTED_DAILY.value: market,
-            Dataset.TRADING_CALENDAR.value: calendar,
-        }
+        base_dir=tmp_path, space=DataSpace(Path("market")),
+        providers=ProviderConfig(bindings={
+            dataset: ProviderBinding("synthetic", "v1", provider)
+            for dataset, provider in {
+                Dataset.ETF_SHARE_SIZE: flow,
+                Dataset.ETF_OHLCV: market,
+                Dataset.ETF_UNADJUSTED_DAILY: market,
+                Dataset.TRADING_CALENDAR: calendar,
+            }.items()
+        }),
     )
 
 
@@ -64,13 +69,13 @@ def _client(repo_root, tmp_path, account_sessions):
     return SrtAdviceClient(
         repo_root=repo_root,
         data_dir=tmp_path,
+        dataflows=_flows(tmp_path),
         now=lambda: datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
         session_resolver=lambda signal_date: account_sessions.get(signal_date),
     )
 
 
 def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_path, monkeypatch):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
     prepared = client.prepare_account_data(
         account_id="s900-v1",
@@ -82,10 +87,9 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     )
     assert prepared is not None
 
-    monkeypatch.setattr(
-        "strategy_runtime.preparation.Dataflows",
-        lambda: (_ for _ in ()).throw(AssertionError("decision must use prepared data")),
-    )
+    monkeypatch.setattr(client.dataflows, "prepare", lambda *_a, **_k: pytest.fail(
+        "decision must not prepare new inputs"))
+
     monkeypatch.setattr(
         client,
         "_instance",
@@ -118,7 +122,6 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
 
 
 def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path, monkeypatch):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
     for account_id, strategy_id, symbol in (
         ("s900-v1", "S900", "588080.SH"),
@@ -143,12 +146,15 @@ def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path, monkeypatch)
     ] == ["s900-v1-alt_20260902T220000000000"]
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 3)
     assert client.tradable_date("s900-v1-alt", "S900", "v1") == date(2026, 9, 3)
+    first = json.loads((tmp_path / "accounts/s900-v1/current.json").read_text(encoding="utf-8"))
+    second = json.loads((tmp_path / "accounts/s900-v1-alt/current.json").read_text(encoding="utf-8"))
+    assert (first["releases"]["S900-v1"]["input_binding"]["prepared"]
+            == second["releases"]["S900-v1"]["input_binding"]["prepared"])
 
 
 def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen,
     tmp_path, monkeypatch,
 ):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     client = _client(pte_frozen[0].root,
         tmp_path,
         {
@@ -178,10 +184,12 @@ def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen,
     assert second is not None
     spaces = tuple((tmp_path / "accounts/s900-v1/spaces").iterdir())
     assert [path.name for path in spaces] == ["s900-v1_20260902T220000000000"]
-    assert sorted(path.name for path in (spaces[0] / "preparations").iterdir()) == [
-        "20260903_20260903",
-        "20260904_20260904",
+    bindings = [json.loads(path.read_text(encoding="utf-8"))
+                for path in (spaces[0] / "input-bindings").glob("*.json")]
+    assert sorted(value["binding"]["plan"]["tradable_window"]["start"] for value in bindings) == [
+        "2026-09-03", "2026-09-04",
     ]
+    assert not list(spaces[0].rglob("*.csv"))
     assert client.prepared_through("s900-v1", "S900", "v1") == date(2026, 9, 3)
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 4)
 
@@ -193,7 +201,6 @@ def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen,
 def test_account_replaces_incompatible_space_without_mutating_old_data(pte_frozen,
     tmp_path, monkeypatch, change,
 ):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     moments = iter(
         (
             datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
@@ -203,6 +210,7 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
     client = SrtAdviceClient(
         repo_root=pte_frozen[0].root,
         data_dir=tmp_path,
+        dataflows=_flows(tmp_path),
         now=lambda: next(moments),
         session_resolver=lambda signal_date: signal_date.replace(day=signal_date.day + 1),
     )
@@ -217,7 +225,7 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
     assert first is not None
     account_root = tmp_path / "accounts/s900-v1"
     old_space = next((account_root / "spaces").iterdir())
-    old_manifest = next(old_space.glob("preparations/*/prepared-data.json"))
+    old_manifest = next(old_space.glob("input-bindings/*.json"))
     old_manifest_bytes = old_manifest.read_bytes()
     current = account_root / "current.json"
     index = json.loads(current.read_text(encoding="utf-8"))
@@ -254,7 +262,7 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
     ]
     assert old_manifest.read_bytes() == old_manifest_bytes
     published = json.loads(current.read_text(encoding="utf-8"))
-    assert published["prepared_storage_revision"] == 2
+    assert published["prepared_storage_revision"] == 3
     assert published["symbol"] == second.strategy.symbol == symbol
     assert published["releases"]["S900-v1"]["release_hash"] == first.strategy.release_hash
     assert published["releases"]["S900-v1"]["runtime_sha256"] == (
@@ -264,7 +272,6 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
 
 
 def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_path, monkeypatch):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     client = _client(pte_frozen[0].root,
         tmp_path,
         {
@@ -282,10 +289,8 @@ def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_pa
     ) is not None
     current = tmp_path / "accounts/s900-v1/current.json"
     published = current.read_bytes()
-    monkeypatch.setattr(
-        "strategy_runtime.preparation.Dataflows",
-        lambda: (_ for _ in ()).throw(AssertionError("preparation failed")),
-    )
+    monkeypatch.setattr(client, "_prepare_strategy", lambda _: (_ for _ in ()).throw(
+        AssertionError("preparation failed")))
 
     with pytest.raises(AssertionError, match="preparation failed"):
         client.prepare_account_data(
@@ -304,11 +309,7 @@ def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_pa
 def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
     tmp_path, monkeypatch,
 ):
-    monkeypatch.setattr(
-        "paper_trading_engine.srt_advice_client.Dataflows", lambda: _flows()
-    )
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
-    client = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path)
+    client = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=_flows(tmp_path))
     prepared = client.prepare_account_data(
         account_id="s900-v1",
         strategy_id="S900",
@@ -340,10 +341,6 @@ def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
 def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, pte_frozen,
     tmp_path, monkeypatch,
 ):
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
-    monkeypatch.setattr(
-        "paper_trading_engine.srt_advice_client.Dataflows", lambda: _flows()
-    )
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     store = new_store(tmp_path / "runtime.db")
@@ -365,6 +362,7 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
     client = SrtAdviceClient(
         repo_root=pte_frozen[0].root,
         data_dir=data_dir,
+        dataflows=_flows(data_dir),
         now=lambda: datetime(2026, 9, 2, 20, 30, tzinfo=ZoneInfo("Asia/Shanghai")),
     )
     accounts = AccountEngine(store, client)
@@ -393,7 +391,24 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
     assert len(decisions) == 1
     assert decisions[0]["signal_date"] == "2026-09-02"
     assert decisions[0]["valid_session"] == "2026-09-03"
+    reference = json.loads((data_dir / "accounts/s900-v1/current.json").read_text(
+        encoding="utf-8"))["releases"]["S900-v1"]["input_binding"]["prepared"]
+    assert decisions[0]["payload"]["prepared_data_reference"] == reference
     store.close()
+
+
+def test_restart_restores_exact_input_binding_without_prepare(pte_frozen, tmp_path, monkeypatch):
+    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
+    kwargs = dict(account_id="s900-v1", strategy_id="S900", strategy_version="v1",
+                  symbol="588080.SH", asset="etf", signal_date=date(2026, 9, 2))
+    original = client.prepare_account_data(**kwargs)
+    flows = _flows(tmp_path)
+    monkeypatch.setattr(flows, "prepare", lambda *_a, **_k: pytest.fail("restart must read pinned data"))
+    reopened = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=flows)
+    restored = reopened.prepare_account_data(**kwargs)
+    assert restored.data_identity == original.data_identity
+    assert restored.data_reference == original.data_reference
+    assert len(list((tmp_path / "accounts/s900-v1/preparation-records").glob("*.json"))) == 1
 
 
 def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen,tmp_path,monkeypatch):
@@ -401,7 +416,6 @@ def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_f
     from strategy_runtime import StrategyObservation
     from paper_trading_engine.srt_advice_client import _decision_from_plan
     from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
     client = _client(pte_frozen[0].root,tmp_path,{date(2026,9,2):date(2026,9,3)})
     prepared = client.prepare_account_data(account_id='s900-v1',strategy_id='S900',strategy_version='v1',symbol='588080.SH',asset='etf',signal_date=date(2026,9,2))
     captured = []

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import gzip
 import json
-import os
 from datetime import date, datetime
 from dataclasses import replace
 from decimal import Decimal
@@ -11,12 +9,13 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, Dataset
+from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy
 from strategy_runtime import (
     ExecutionState,
     PortfolioSnapshot,
     RuntimeContractError,
     StrategyInit,
+    StrategyInputBinding,
     StrategyRuntime,
     SignalHistoryMode,
     TradableWindow,
@@ -29,57 +28,31 @@ ROOT = Path(__file__).resolve().parents[4]
 ZONE = ZoneInfo("Asia/Shanghai")
 
 
-def _prepared_manifest(root: Path, window: TradableWindow) -> Path:
-    return (
-        root
-        / "preparations"
-        / f"{window.start:%Y%m%d}_{window.end:%Y%m%d}"
-        / "prepared-data.json"
-    )
-
-
-def test_prepare_cli_loads_repository_dotenv_without_overriding_process_environment(
-    tmp_path, monkeypatch, capsys,
-) -> None:
-    (tmp_path / ".env").write_text(
-        "TUSHARE_TOKEN=repository-token\nSRT_TEST_SETTING=repository-value\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setenv("TUSHARE_TOKEN", "process-token")
-    monkeypatch.delenv("SRT_TEST_SETTING", raising=False)
-    observed: dict[str, str] = {}
-
+def test_prepare_cli_passes_explicit_space_and_credentials(tmp_path, monkeypatch, capsys) -> None:
+    observed = {}
     def prepare(**kwargs):
-        observed["repo_root"] = str(kwargs["repo_root"])
-        observed["token"] = os.environ["TUSHARE_TOKEN"]
-        observed["setting"] = os.environ["SRT_TEST_SETTING"]
+        observed.update(kwargs)
         return {"prepared": True}
-
     monkeypatch.setattr("strategy_runtime.prepare_cli.prepare_runtime_data", prepare)
-
     exit_code = prepare_main([
-        "--repo-root", str(tmp_path),
-        "--data-dir", str(tmp_path / "data"),
-        "--symbol", "588080.SH",
-        "--release", "S900-v1",
-        "--trading-date", "2026-01-05",
+        "--repo-root", str(tmp_path), "--data-dir", str(tmp_path / "context"),
+        "--data-space", "data/market", "--symbol", "588080.SH",
+        "--release", "S900-v1", "--trading-date", "2026-01-05",
     ])
-
     assert exit_code == 0
     assert json.loads(capsys.readouterr().out)["status"] == "PASS"
-    assert observed == {
-        "repo_root": str(tmp_path),
-        "token": "process-token",
-        "setting": "repository-value",
-    }
+    assert isinstance(observed["dataflows"], Dataflows)
+    assert observed["policy"] is PreparePolicy.REUSE
+    assert (tmp_path / "data/market/assets.sqlite3").is_file()
 
 
-def _flows() -> Dataflows:
+def _flows(tmp_path, *, flow_value=0.8) -> Dataflows:
     dates = pd.bdate_range(end="2026-09-02", periods=700)
     bars = pd.DataFrame(
         {
             "Date": dates,
-            "Flow": 0.8,
+            "Flow": flow_value,
+            "TotalShare": 100000.0,
             "Open": pd.array([9.4] * len(dates), dtype="Float64"),
             "High": pd.array([9.5] * len(dates), dtype="Float64"),
             "Low": pd.array([9.3] * len(dates), dtype="Float64"),
@@ -106,25 +79,20 @@ def _flows() -> Dataflows:
             "primary_key": ["Date"],
         }
 
-    return Dataflows(
-        {
-            "etf.share": market,
-            Dataset.ETF_OHLCV.value: market,
-            Dataset.ETF_UNADJUSTED_DAILY.value: market,
-            Dataset.TRADING_CALENDAR.value: calendar,
-        }
-    )
+    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({
+        dataset: ProviderBinding("test", "1", provider) for dataset, provider in {
+            Dataset.ETF_SHARE_SIZE: market, Dataset.ETF_OHLCV: market,
+            Dataset.ETF_UNADJUSTED_DAILY: market, Dataset.TRADING_CALENDAR: calendar,
+        }.items()
+    }))
 
 
 def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     tmp_path, monkeypatch, runtime_candidate
 ) -> None:
-    def unconfigured():
-        pytest.fail("runtime must use the host-supplied Dataflows")
-
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", unconfigured)
+    flows = _flows(tmp_path)
     trading_date = date(2026, 9, 3)
-    strategy = StrategyRuntime(ROOT / "strategies", dataflows=_flows()).create(
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(
         StrategyInit(
             runtime_candidate,
             TradableWindow(trading_date, trading_date),
@@ -147,7 +115,7 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
             state=ExecutionState(3, calculated_at, 5900),
         )
 
-    prepared = strategy.prepare_data()
+    prepared = strategy.prepare_data(policy=PreparePolicy.REUSE)
     plan = strategy.plan_at(
         point=TradingPoint(trading_date, calculated_at),
         portfolio=PortfolioSnapshot(
@@ -179,19 +147,12 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         strategy.inspect_signals(history_mode="WINDOW")
     assert prepared.available_through == date(2026, 9, 2)
     window = TradableWindow(trading_date, trading_date)
-    manifest_path = _prepared_manifest(tmp_path, window)
-    assert (tmp_path / "strategy-space.json").is_file()
+    manifest_path = tmp_path / "input-bindings" / f"{strategy.input_binding.identity}.json"
     assert manifest_path.is_file()
     assert b"\r" not in manifest_path.read_bytes()
-    stored_tables = tuple(manifest_path.parent.glob("*.csv.gz"))
-    assert stored_tables
-    for path in stored_tables:
-        assert b"\r" not in gzip.decompress(path.read_bytes())
+    assert not tuple(tmp_path.rglob("*.csv.gz"))
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert all(
-        value["identity"]["content_sha256"] == value["content_sha256"]
-        for value in manifest["inputs"].values()
-    )
+    assert StrategyInputBinding.from_mapping(manifest["binding"]) == strategy.input_binding
     assert plan.strategy.reference_id == "S900-C0001"
     assert plan.expected_portfolio_revision == 7
     assert plan.expected_state_revision == 3
@@ -217,61 +178,79 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
             state=ExecutionState(3, before_close, 5900),
         )
 
-    monkeypatch.setattr(
-        "strategy_runtime.preparation.Dataflows",
-        lambda: (_ for _ in ()).throw(AssertionError("cache must be self-contained")),
-    )
-    cached = (
-        StrategyRuntime(ROOT / "strategies")
-        .create(
-            StrategyInit(
-                runtime_candidate,
-                TradableWindow(trading_date, trading_date),
-                tmp_path,
-            )
-        )
-        .prepare_data()
-    )
+    # Replay is bound explicitly and cannot contact a supplier.
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
+    cached_instance = StrategyRuntime(ROOT / "strategies", dataflows=offline).create(
+        StrategyInit(runtime_candidate, window, tmp_path / "replay"))
+    cached = cached_instance.prepare_data(binding=strategy.input_binding)
     assert cached == prepared
-
-    second_window = TradableWindow(date(2026, 9, 2), date(2026, 9, 2))
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: _flows())
-    StrategyRuntime(ROOT / "strategies").create(
-        StrategyInit(runtime_candidate, second_window, tmp_path)
-    ).prepare_data()
-    assert _prepared_manifest(tmp_path, second_window).is_file()
-
+    assert cached_instance.inspect_signals().equals(strategy.inspect_signals())
+    assert cached_instance.prepare_data(binding=strategy.input_binding) == cached
+    with pytest.raises(RuntimeContractError, match="already prepared"):
+        cached_instance.prepare_data(policy=PreparePolicy.REFRESH)
     with pytest.raises(RuntimeContractError, match="another strategy"):
-        StrategyRuntime(ROOT / "strategies").create(
-            StrategyInit(replace(runtime_candidate, candidate_id="C0002"), second_window, tmp_path)
-        ).prepare_data()
-
-    input_file = manifest_path.parent / next(iter(manifest["inputs"].values()))["file"]
-    input_file.write_bytes(input_file.read_bytes() + b"changed")
-    with pytest.raises(RuntimeContractError, match="file was modified"):
-        StrategyRuntime(ROOT / "strategies").create(
-            StrategyInit(
-                runtime_candidate,
-                TradableWindow(trading_date, trading_date),
-                tmp_path,
-            )
-        ).prepare_data()
+        StrategyRuntime(ROOT / "strategies", dataflows=offline).create(
+            StrategyInit(replace(runtime_candidate, candidate_id="C0002"), window, tmp_path / "other")
+        ).prepare_data(binding=strategy.input_binding)
 
 
-def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, monkeypatch, runtime_candidate) -> None:
-    monkeypatch.setattr(
-        "strategy_runtime.preparation.Dataflows",
-        lambda: (_ for _ in ()).throw(RuntimeError("DFLS unavailable")),
-    )
-    strategy = StrategyRuntime(ROOT / "strategies").create(
-        StrategyInit(
-            runtime_candidate,
-            TradableWindow(date(2026, 9, 3), date(2026, 9, 3)),
-            tmp_path,
-        )
-    )
-    with pytest.raises(RuntimeError, match="DFLS unavailable"):
-        strategy.prepare_data()
-    assert not (tmp_path / "preparations").exists()
+def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, runtime_candidate) -> None:
+    strategy = StrategyRuntime(ROOT / "strategies").create(StrategyInit(
+        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path))
+    with pytest.raises(RuntimeContractError, match="host-supplied Dataflows"):
+        strategy.prepare_data(policy=PreparePolicy.REUSE)
+    assert not (tmp_path / "input-bindings").exists()
     with pytest.raises(RuntimeContractError, match="call prepare_data"):
         strategy.inspect_signals()
+
+
+def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(tmp_path, runtime_candidate) -> None:
+    flows = _flows(tmp_path)
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
+        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path))
+    request = strategy.calendar_request()
+    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    plan = strategy.plan_inputs(flows.fetch(request, prepared=prepared.reference))
+    batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
+    assert batch.ready
+    binding = StrategyInputBinding(plan, batch.reference)
+    corrupted = StrategyInputBinding(replace(plan, calendar_sha256="0" * 64), batch.reference)
+    with pytest.raises(RuntimeContractError, match="bound calendar"):
+        strategy.prepare_data(binding=corrupted)
+    assert not (tmp_path / "input-bindings").exists()
+    strategy.prepare_data(binding=binding)
+    assert strategy.input_binding == binding
+
+
+def test_session_depth_counts_days_before_first_signal() -> None:
+    from strategy_runtime.validation import validate_history_depth
+    frame = pd.DataFrame({"Date": pd.date_range("2026-01-01 09:31", periods=60, freq="min")})
+    with pytest.raises(RuntimeContractError, match="insufficient history"):
+        validate_history_depth("minute", 60, frame)
+
+
+def test_refresh_keeps_old_binding_replayable_and_preserves_historical_files(tmp_path, runtime_candidate) -> None:
+    from strategy_runtime import RuntimeExecutionError
+    window = TradableWindow(date(2026, 9, 3), date(2026, 9, 3))
+    context = tmp_path / "context"
+    context.mkdir()
+    historical = context / "prepared-data.json"
+    historical.write_bytes(b"historical CSV manifest remains immutable")
+    first = StrategyRuntime(dataflows=_flows(tmp_path)).create(StrategyInit(runtime_candidate, window, context))
+    first_result = first.prepare_data(policy=PreparePolicy.REUSE)
+    old_binding = StrategyInputBinding.from_mapping(first.input_binding.to_dict())
+    newer = StrategyRuntime(dataflows=_flows(tmp_path, flow_value=0.1)).create(
+        StrategyInit(runtime_candidate, window, context))
+    newer_result = newer.prepare_data(policy=PreparePolicy.REFRESH)
+    assert newer_result.data_identity != first_result.data_identity
+    assert historical.read_bytes() == b"historical CSV manifest remains immutable"
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
+    restored = StrategyRuntime(dataflows=offline).create(StrategyInit(runtime_candidate, window, context))
+    assert restored.prepare_data(binding=old_binding) == first_result
+    pd.testing.assert_frame_equal(restored.inspect_signals(), first.inspect_signals())
+    wrong_space = _flows(tmp_path / "other")
+    mismatched = StrategyRuntime(dataflows=wrong_space).create(
+        StrategyInit(runtime_candidate, window, tmp_path / "bad-context"))
+    with pytest.raises(RuntimeExecutionError, match="another data space"):
+        mismatched.prepare_data(binding=old_binding)
+    assert not (tmp_path / "bad-context").exists()

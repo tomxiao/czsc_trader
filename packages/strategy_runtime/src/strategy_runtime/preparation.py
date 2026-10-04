@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from importlib.resources import files
 from pathlib import Path
@@ -12,6 +12,7 @@ import sys
 import pandas as pd
 from dataflows import (
     DataRequest,
+    EvidenceParameters, MoneyflowParameters, NoParameters, PreparePolicy,
     DataResult,
     DataStatus,
     Dataflows,
@@ -24,6 +25,7 @@ from .contracts import StrategyIdentity, TradableWindow
 from .errors import RuntimeContractError, RuntimeExecutionError
 from .models import CutoffRule, RuntimeDefinition, canonical_sha256
 from .validation import validate_history_depth
+from .input_binding import StrategyInputPlan, StrategyInputBinding
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,14 +49,12 @@ class PreparedInputs:
         }
 
 
-def _request_options(
+def _request_parameters(
     definition: RuntimeDefinition,
     requirement,
-    base: Mapping[str, object],
-) -> dict[str, object]:
-    options = dict(base)
+):
     if requirement.dataset != Dataset.STRATEGY_FEATURE_EVIDENCE.value:
-        return options
+        return NoParameters()
     rule = definition.parameters.values.get("rule")
     data_source = rule.get("data_source") if isinstance(rule, Mapping) else None
     if (
@@ -76,14 +76,8 @@ def _request_options(
         root = Path(str(files(package))).resolve()
     else:
         raise RuntimeContractError("strategy evidence package is invalid")
-    options.update(
-        {
-            "repository_root": str(root),
-            "source_path": str(data_source["path"]),
-            "source_sha256": str(data_source["sha256"]),
-        }
-    )
-    return options
+    return EvidenceParameters(root, str(data_source["path"]), str(data_source["sha256"]))
+
 
 
 def _open_dates(frame: pd.DataFrame) -> tuple[date, ...]:
@@ -142,115 +136,121 @@ def prepared_inputs_identity(
     )
 
 
-def prepare_inputs(
-    *,
-    strategy: StrategyIdentity,
-    algorithm: StrategyImplementation,
-    tradable_window: TradableWindow,
-    data_dir: Path,
-    dataflows: Dataflows | None = None,
-) -> PreparedInputs:
-    """Derive, fetch and validate every dataset required by one instance."""
-
-    definition = algorithm.definition
-    root = Path(data_dir).resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    symbol = definition.tradable_symbol
-    if symbol != strategy.symbol:
-        raise RuntimeContractError("prepared-data symbol differs from strategy")
-    requirements = {item.name: item for item in definition.inputs.requirements}
-    calendars = [
-        item
-        for item in definition.inputs.requirements
-        if item.dataset == Dataset.TRADING_CALENDAR.value
-    ]
+def calendar_request(*, algorithm: StrategyImplementation, tradable_window: TradableWindow) -> DataRequest:
+    calendars = [item for item in algorithm.definition.inputs.requirements
+                 if item.dataset == Dataset.TRADING_CALENDAR.value]
     if len(calendars) != 1:
         raise RuntimeContractError("strategy requires exactly one trading calendar")
-    calendar_requirement = calendars[0]
-    flows = dataflows or Dataflows()
-    calendar_window = algorithm.calendar_window(tradable_window)
-    base_options = _request_options(
-        definition, calendar_requirement, {}
-    )
-    calendar_request = DataRequest(
-        calendar_requirement.dataset,
-        calendar_requirement.subject,
-        calendar_window.start.isoformat(),
-        calendar_window.end.isoformat(),
-        calendar_window.end.isoformat(),
-        calendar_requirement.frequency,
-        base_options,
-    )
-    calendar_result = _ready(
-        flows.fetch(calendar_request), calendar_requirement.name
-    )
-    calendar_dates = _open_dates(calendar_result.dataframe)
-    scope = algorithm.derive_calculation_scope(tradable_window, calendar_dates)
+    requirement = calendars[0]
+    window = algorithm.calendar_window(tradable_window)
+    return DataRequest(requirement.dataset, requirement.subject, window.start.isoformat(),
+                       window.end.isoformat(), window.end.isoformat(), requirement.frequency)
+
+
+def plan_inputs(*, strategy: StrategyIdentity, algorithm: StrategyImplementation,
+                tradable_window: TradableWindow, calendar: DataResult) -> StrategyInputPlan:
+    definition = algorithm.definition
+    if definition.tradable_symbol != strategy.symbol:
+        raise RuntimeContractError("prepared-data symbol differs from strategy")
+    request = calendar_request(algorithm=algorithm, tradable_window=tradable_window)
+    requirements = {item.name: item for item in definition.inputs.requirements}
+    calendar_name = next(name for name, item in requirements.items()
+                         if item.dataset == Dataset.TRADING_CALENDAR.value)
+    result = _ready(calendar, calendar_name)
+    if result.prepared is None or result.identity.dataset != request.dataset or result.identity.symbol != request.symbol:
+        raise RuntimeContractError("calendar must be fetched from an explicit DFLS preparation")
+    actual_dates = pd.DatetimeIndex(pd.to_datetime(result.dataframe["Date"]))
+    expected_dates = pd.date_range(request.start, request.end)
+    if not actual_dates.equals(expected_dates):
+        raise RuntimeContractError("calendar result differs from strategy calendar request")
+    dates = _open_dates(result.dataframe)
+    scope = algorithm.derive_calculation_scope(tradable_window, dates)
     if set(scope.inputs) != set(requirements):
         raise RuntimeContractError("strategy calculation scope differs from input contract")
-    requests: dict[str, DataRequest] = {
-        calendar_requirement.name: calendar_request
-    }
-    results: dict[str, DataResult] = {
-        calendar_requirement.name: calendar_result
-    }
+    requests = {calendar_name: request}
     for name, requirement in requirements.items():
-        if name == calendar_requirement.name:
+        if name == calendar_name or scope.inputs[name] is None:
             continue
         input_range = scope.inputs[name]
-        if input_range is None:
-            continue
-        options = _request_options(definition, requirement, {})
-        if (
-            requirement.dataset == Dataset.STOCK_MONEYFLOW.value
-            and requirement.subject is None
-        ):
-            options["trading_dates"] = [
-                item.isoformat()
-                for item in calendar_dates
-                if input_range.start <= item <= input_range.end
-            ]
-        request = DataRequest(
-            requirement.dataset,
-            requirement.subject,
-            input_range.start.isoformat(),
+        parameters = _request_parameters(definition, requirement)
+        if requirement.dataset == Dataset.STOCK_MONEYFLOW.value and requirement.subject is None:
+            parameters = MoneyflowParameters(tuple(item.isoformat() for item in dates
+                                                   if input_range.start <= item <= input_range.end))
+        requests[name] = DataRequest(
+            requirement.dataset, requirement.subject, input_range.start.isoformat(),
             input_range.end.isoformat(),
-            None
-            if input_range.required_cutoff is None
-            else input_range.required_cutoff.isoformat(),
-            requirement.frequency,
-            options,
+            None if input_range.required_cutoff is None else input_range.required_cutoff.isoformat(),
+            requirement.frequency, parameters,
         )
-        result = _ready(flows.fetch(request), name)
-        validate_history_depth(name, requirement.lookback_sessions, result.dataframe)
-        if (
-            requirement.cutoff_rule is CutoffRule.LATEST_AVAILABLE
-            and requirement.maximum_staleness_days
-            and pd.Timestamp(result.identity.data_cutoff)
-            < pd.Timestamp(scope.available_through)
-            - pd.Timedelta(days=requirement.maximum_staleness_days)
-        ):
-            raise RuntimeContractError(
-                f"prepared input exceeds maximum staleness: {name}"
-            )
-        requests[name] = request
-        results[name] = result
+    return StrategyInputPlan(strategy, tradable_window, calendar_name,
+                             result.identity.content_sha256, requests, dates,
+                             scope.signal_dates, scope.calculation_dates)
 
-    data_identity = prepared_inputs_identity(
-        strategy=strategy,
-        tradable_window=tradable_window,
-        available_through=scope.available_through,
-        signal_dates=scope.signal_dates,
-        results=results,
-    )
-    return PreparedInputs(
-        strategy,
-        tradable_window,
-        scope.available_through,
-        data_identity,
-        requests,
-        results,
-        calendar_dates,
-        scope.signal_dates,
-        scope.calculation_dates,
-    )
+
+def acquire_binding(*, strategy: StrategyIdentity, algorithm: StrategyImplementation,
+                    tradable_window: TradableWindow, dataflows: Dataflows,
+                    policy: PreparePolicy) -> StrategyInputBinding:
+    request = calendar_request(algorithm=algorithm, tradable_window=tradable_window)
+    prepared = dataflows.prepare((request,), policy=policy)
+    if not prepared.ready:
+        raise RuntimeExecutionError("calendar preparation failed: " + "; ".join(
+            item.error.message for item in prepared.items if item.error is not None))
+    calendar = _ready(dataflows.fetch(request, prepared=prepared.reference), "calendar")
+    plan = plan_inputs(strategy=strategy, algorithm=algorithm, tradable_window=tradable_window,
+                       calendar=calendar)
+    prepared = dataflows.prepare(tuple(plan.requests.values()), policy=policy)
+    if not prepared.ready:
+        raise RuntimeExecutionError("input preparation failed: " + "; ".join(
+            item.error.message for item in prepared.items if item.error is not None))
+    return StrategyInputBinding(plan, prepared.reference)
+
+
+def prepare_inputs(*, strategy: StrategyIdentity, algorithm: StrategyImplementation,
+                   tradable_window: TradableWindow, dataflows: Dataflows,
+                   binding: StrategyInputBinding) -> PreparedInputs:
+    """Read only the explicitly bound assets; authenticate the calculation plan."""
+    if binding.plan.strategy != strategy or binding.plan.tradable_window != tradable_window:
+        raise RuntimeContractError("input binding belongs to another strategy or window")
+    plan = binding.plan
+    calendar = _ready(dataflows.fetch(plan.requests[plan.calendar_name], prepared=binding.prepared),
+                      plan.calendar_name)
+    actual_plan = plan_inputs(strategy=strategy, algorithm=algorithm,
+                              tradable_window=tradable_window, calendar=calendar)
+    comparable_requests = dict(actual_plan.requests)
+    for name, derived in actual_plan.requests.items():
+        bound = plan.requests.get(name)
+        if (derived.dataset is Dataset.STRATEGY_FEATURE_EVIDENCE and bound is not None
+                and isinstance(derived.parameters, EvidenceParameters)
+                and isinstance(bound.parameters, EvidenceParameters)):
+            # Materializing the same hash-pinned evidence inside a release changes
+            # only its physical repository root. Read the already authenticated
+            # bound asset; all logical selection fields and source hashes must
+            # still match. Never reopen or fetch the relocated source here.
+            comparable_requests[name] = replace(
+                derived,
+                parameters=replace(derived.parameters, repository_root=bound.parameters.repository_root),
+            )
+    if replace(actual_plan, requests=comparable_requests) != plan:
+        raise RuntimeContractError("bound calendar or calculation plan differs from its derived inputs")
+    results = {plan.calendar_name: calendar}
+    first_signal = min(plan.signal_dates.values())
+    requirements = {item.name: item for item in algorithm.definition.inputs.requirements}
+    for name, request in plan.requests.items():
+        if name == plan.calendar_name:
+            continue
+        result = _ready(dataflows.fetch(request, prepared=binding.prepared), name)
+        requirement = requirements[name]
+        history = result.dataframe.loc[pd.to_datetime(result.dataframe["Date"]).dt.date <= first_signal]
+        validate_history_depth(name, requirement.lookback_sessions, history)
+        if (requirement.cutoff_rule is CutoffRule.LATEST_AVAILABLE
+                and requirement.maximum_staleness_days
+                and pd.Timestamp(result.identity.data_cutoff) < pd.Timestamp(plan.available_through)
+                    - pd.Timedelta(days=requirement.maximum_staleness_days)):
+            raise RuntimeContractError(f"prepared input exceeds maximum staleness: {name}")
+        results[name] = result
+    identity = prepared_inputs_identity(strategy=strategy, tradable_window=tradable_window,
+                                        available_through=plan.available_through,
+                                        signal_dates=plan.signal_dates, results=results)
+    return PreparedInputs(strategy, tradable_window, plan.available_through, identity,
+                          plan.requests, results, plan.calendar_dates, plan.signal_dates,
+                          plan.calculation_dates)

@@ -4,7 +4,7 @@
 [DEV Agent](../../docs/DEV_AGENT.md)。
 
 SRT 是研究、回测、模拟交易及未来实盘共用的策略计算锚点。它把一个候选或冻结策略转换为
-`StrategyInstance`，由实例自主准备计算数据、执行策略计算，并输出与渠道无关的执行计划。
+`StrategyInstance`。实例推导数据需求、认证主调方绑定的数据并执行策略计算，输出与渠道无关的执行计划。
 
 SRT 不管理策略生命周期，不评价策略优劣，也不记录成交和账户账本。SM 管理策略身份与治理，
 SE 负责数值评估，TXE 和 PTE 分别负责历史执行与模拟交易执行。
@@ -22,16 +22,19 @@ TDR/REX受管入口；候选登记、检验和获批冻结见[TDR说明](../../s
 - `StrategyRuntime.identify(candidate, *, dependencies)`：校验候选源码和运行定义，返回
   `CandidateContentIdentity`，依赖显式使用`tuple[ImplementationDependency, ...]`；
 - `StrategyRuntime.create(StrategyInit(...))`：创建一个不可变的 `StrategyInstance`；
-- `StrategyInstance.prepare_data()`：显式准备并认证该实例所需的全部数据；
+- `StrategyInstance.calendar_request()`：返回推导计算范围所需的日历请求；
+- `StrategyInstance.plan_inputs(calendar)`：基于已准备日历返回强类型`StrategyInputPlan`；
+- `StrategyInstance.prepare_data(binding=...)`：只读并认证`StrategyInputBinding`指定的输入；
+- `StrategyInstance.prepare_data(policy=...)`：按显式`PreparePolicy`完成日历和输入准备；
 - `StrategyInstance.plan_at(...)`：结合调用方提供的资金、持仓和执行状态，生成单个交易日的
   `ExecutionPlan`；
 - `StrategyInstance.run_window(executor=...)`：在交易窗口内连续计算，并把计划回调给调用方提供的
   `WindowExecutor`；
 - `inspect_signals()`、`inspect_price_history()`：测试和诊断使用的只读接口。
 
-`StrategyRuntime`是实例工厂，不持有运行中的策略状态；可通过关键字参数`dataflows`
-接收宿主配置的DFLS。策略状态、准备结果及信号缓存归属于`StrategyInstance`，
-原始请求的本地缓存由DFLS管理。
+`StrategyRuntime`是实例工厂，不持有运行中的策略状态。准备数据时必须通过关键字参数`dataflows`
+注入宿主配置的DFLS；纯`describe`和`identify`不需要数据入口。策略状态、计算上下文及信号缓存
+归属于`StrategyInstance`，原始数据资产由DFLS的数据空间统一管理。
 
 ## 实例初始化
 
@@ -39,32 +42,39 @@ TDR/REX受管入口；候选登记、检验和获批冻结见[TDR说明](../../s
 from datetime import date
 from pathlib import Path
 
+from dataflows import Dataflows, DataSpace, ProviderConfig, PreparePolicy
 from strategy_runtime import StrategyInit, StrategyRuntime, TradableWindow
 
-# 以下为宿主或合成验证示例；正式研究通过TDR/REX运行端口执行。
-# source 是已校验的 StrategyCandidate 或 StrategyRelease。
-instance = StrategyRuntime().create(
-    StrategyInit(
-        source=source,
-        tradable_window=TradableWindow(date(2026, 9, 21), date(2026, 9, 21)),
-        data_dir=Path(".tmp/srt/S007-v1/2026-09-21"),
-    )
+# repository_root由宿主显式提供；source是已校验的候选或冻结策略。
+# 正式研究通过TDR/REX受管入口执行。
+flows = Dataflows(
+    base_dir=repository_root,
+    space=DataSpace(Path("data/research/S900")),
+    providers=ProviderConfig(env_file=repository_root / ".env"),
 )
-prepared = instance.prepare_data()
+runtime = StrategyRuntime(dataflows=flows)
+init = StrategyInit(
+    source=source,
+    tradable_window=TradableWindow(date(2026, 9, 21), date(2026, 9, 21)),
+    data_dir=repository_root / ".tmp/srt/S900/2026-09-21",
+)
+instance = runtime.create(init)
+prepared = instance.prepare_data(policy=PreparePolicy.REUSE)
+binding = instance.input_binding
 ```
 
 初始化参数的业务语义：
 
 - `source`：带实现身份和参数的候选，或 SM 发布的冻结版本；
 - `tradable_window`：需要生成执行计划的闭区间，端点必须是`date`类型的可交易日，拒绝字符串和`datetime`；
-- `data_dir`：由主调方分配、可写且与其他实例隔离的数据空间；
+- `data_dir`：由主调方分配的可写计算工作目录，保存输入绑定与计算上下文；原始数据存放在DFLS数据空间；
 - `symbol`：仅用于冻结版本的显式标的绑定；不支持候选策略静默换标的；
 - `execution_policy`：只允许在保持原策略执行策略类型不变时覆盖，用于受控复算；
 - `source_root/runtime_binding`：用于平台在隔离空间加载拟冻结发布，分别使用源码根目录和
   强类型`RuntimeBinding`；候选拒绝这两项覆盖，普通部署按已认证的发布包加载。
 
-调用方不需要理解策略依赖哪些数据集，也不传入“初始信号日”或“回看窗口”。这些范围由策略实现
-根据交易窗口和交易日历自行推导。
+输入范围由策略实现根据交易窗口和交易日历推导。主调方可取得具名请求，与成交回放等业务请求
+合并准备；初始信号日和回看窗口仍由SRT负责计算。
 
 ## 策略实现契约
 
@@ -111,20 +121,45 @@ SRT加载器将业务定义与候选或发布身份组装为`RuntimeDefinition`�
 
 ## 数据准备
 
-`prepare_data()` 是显式阶段。调用方可以在进入决策或执行前处理数据准备异常。实例内部会：
+主调方负责数据空间、取数策略及业务输入清单。SRT公开需求计划，DFLS通过`prepare`将数据写入空间，
+通过`fetch(request, prepared=reference)`只读指定准备版本。三个调用场景使用相同接口。
 
-1. 根据 `tradable_window` 请求交易日历；
-2. 调用策略实现推导计算日期、信号日期和每项输入范围；
-3. 通过 DFLS 获取并验证所有声明输入；
-4. 生成覆盖策略身份、运行身份、窗口和全部输入身份的 `data_identity`；
-5. 保存可验证的实例准备结果。
+需要把策略输入和成交输入统一准备时，对新建实例执行：
 
-再次使用同一目录时，SRT校验身份与内容后才加载。实例目录属于SRT私有格式，调用方不得
-解析其内部文件。`prepare_data()`成功证明已声明输入完整可用，仍不代表策略有效或订单已成交。
+```python
+from strategy_runtime import StrategyInputBinding
 
-需要跨实例复用DFLS请求时，使用`StrategyRuntime(dataflows=flows)`；`flows`由宿主构造，
-配置示例见[DFLS本地缓存](../dataflows/README.md#dev配置本地缓存)。已有实例准备结果仍按原身份加载，
-DFLS的`REFRESH`策略不会重写它。需要重新准备时，为新实例分配独立目录。
+instance = runtime.create(init)
+calendar_request = instance.calendar_request()
+calendar_batch = flows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+if not calendar_batch.ready:
+    raise RuntimeError(calendar_batch.items)
+calendar = flows.fetch(calendar_request, prepared=calendar_batch.reference)
+plan = instance.plan_inputs(calendar)
+
+# 主调方可在此合并本次运行的其他数据请求。
+batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
+if not batch.ready:
+    raise RuntimeError(batch.items)
+binding = StrategyInputBinding(plan, batch.reference)
+prepared = instance.prepare_data(binding=binding)
+```
+
+`StrategyInputPlan`包含具名请求、日历内容身份和计算日期。SRT消费绑定时重新读取其日历，
+独立推导并核对整个计划；日历内容、策略身份、窗口或输入需求不同立即失败。固定哈希的本地证据
+随发布包改变物理根目录时，仍读取原绑定资产；相对来源路径、来源哈希及其他请求字段必须保持一致，
+绑定消费不重新打开物化后的文件。历史深度按首个信号日之前及当日的独立交易日计数，分钟条数不能
+替代交易日数。
+
+`prepare_data`必须且只能指定`binding`或`policy`之一。`policy`入口完成上述编排；`binding`入口
+不访问供应商。准备成功后，实例固定使用该绑定；同一实例可以再次传入相同绑定，刷新数据则创建新实例。
+`data_identity`覆盖策略身份、运行身份、窗口和输入内容。成功只表示声明输入完整可用。
+
+`StrategyInputBinding.to_dict()`和`from_mapping()`供业务清单持久化及跨进程传递。重放时宿主打开
+原数据空间、注入DFLS，再显式传入已保存绑定；资产缺失即失败。业务方负责保留被引用的资产。
+
+SRT工作目录只追加可校验的绑定及计算上下文，不另存原始行情CSV，也不按目录或日期自动选择旧版本。
+历史文件保留原样，新接口不读取旧准备格式。数据空间及资产管理见[DFLS说明](../dataflows/README.md)。
 
 ## 信号历史语义
 

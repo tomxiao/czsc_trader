@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 import json
 
-from dataflows import DataRequest
+from dataflows import DataRequest, PreparePolicy
 
 from research_experiment import (
     ExperimentCapabilities,
@@ -64,15 +64,17 @@ class Experiment(ResearchExperiment):
 
     def execute(self, context) -> ExperimentResult:
         context.require_capability(ExperimentCapability.SEARCH_PARAMETERS)
-        publication = context.data.fetch(
-            DataRequest(
+        request = DataRequest(
                 dataset="etf.ohlcv",
                 symbol="518880.SH",
                 start="2026-09-01",
                 end="2026-09-02",
                 required_cutoff="2026-09-02",
             )
-        )
+        prepared = context.data.prepare((request,), policy=PreparePolicy.REUSE)
+        if not prepared.ready:
+            raise RuntimeError("sample preparation failed")
+        publication = context.data.fetch(request, prepared=prepared.reference)
         summary = {
             "rows": int(len(publication.dataframe)),
             "mean_close": float(publication.dataframe["Close"].mean()),

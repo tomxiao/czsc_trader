@@ -15,7 +15,7 @@ import re
 from types import MappingProxyType
 from typing import Any, Generic, Protocol, TypeVar
 
-from dataflows import DataRequest, DataResult
+from dataflows import DataRequest, DataResult, PreparePolicy, PrepareResult, PreparedDataRef
 from strategy_runtime import (
     StrategyCandidate,
     StrategyInit,
@@ -910,9 +910,11 @@ class ExperimentWorkspace:
 
 
 class ExperimentDataPort(Protocol):
-    """Platform data-publication port available to research code."""
+    """Research-authorized preparation and explicitly bound local reads."""
 
-    def fetch(self, request: DataRequest) -> DataResult: ...
+    def prepare(self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy) -> PrepareResult: ...
+
+    def fetch(self, request: DataRequest, *, prepared: PreparedDataRef) -> DataResult: ...
 
 
 class ExperimentRuntimePort(Protocol):

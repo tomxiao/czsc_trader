@@ -9,16 +9,16 @@ from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
 from czsc_trader.backtesting import resolve_registered_strategy
 from czsc_trader.backtesting.srt_bridge import srt_data_directory
-from strategy_runtime import RuntimeContractError
 from strategy_evaluator import AuditStatus, audit_replay
-from dataflows import Dataflows
+from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset
+from pathlib import Path
 from test_current_contracts import (
     current_frozen as current_frozen, inspection as inspection,
     completed as completed, managed_evaluation as managed_evaluation,
 )
 
 
-def execution_flows():
+def execution_flows(root):
     def fetch(request):
         if str(request.dataset) == "calendar.trading_sessions":
             dates = pd.date_range(request.start, request.end)
@@ -28,20 +28,22 @@ def execution_flows():
         if request.frequency == "30m":
             dates = pd.DatetimeIndex([day + pd.Timedelta(hours=h, minutes=m) for day in dates for h, m in ((10, 0), (10, 30), (11, 0), (11, 30), (13, 30), (14, 0), (14, 30), (15, 0))])
             volume = 1000
-        frame = pd.DataFrame({"Date": dates, "Open": 1., "Close": 1., "High": 1., "Low": 1., "Volume": volume, "Amount": volume, "Flow": 0.8})
+        frame = pd.DataFrame({"Date": dates, "Open": 1., "Close": 1., "High": 1., "Low": 1., "Volume": volume, "Amount": volume, "Flow": 0.8, "TotalShare": 1.0})
         return frame, {"vendor": "test", "adjustment": "none" if "unadjusted" in str(request.dataset) else "hfq"}
-    return Dataflows({name: fetch for name in ("calendar.trading_sessions", "etf.ohlcv", "etf.unadjusted_daily", "etf.share")})
+    return Dataflows(base_dir=root, space=DataSpace(Path("test-market")),
+                    providers=ProviderConfig(bindings={name: ProviderBinding("synthetic", "v1", fetch)
+                        for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
+                                     Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_SHARE_SIZE)}))
 
 
 def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):
     context, version = current_frozen
     snapshot = resolve_registered_strategy(context, version.strategy_id, version.version)
     created = srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH", created_on=date(2026, 9, 22))
-    assert created == context.tdr_srt_root / "S900v1_588080_260922"
+    assert created == context.tdr_srt_root / "contexts" / "S900v1_588080"
     assert srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH", created_on=date(2026, 9, 23)) == created
     (context.tdr_srt_root / "S900v1_588080_260921").mkdir()
-    with pytest.raises(RuntimeContractError, match="multiple reusable"):
-        srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH")
+    assert srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH") == created
 
 
 def test_current_frozen_backtest_publishes_account_and_evidence(freshly_frozen, monkeypatch):
@@ -65,7 +67,7 @@ def test_current_frozen_backtest_publishes_account_and_evidence(freshly_frozen, 
     monkeypatch.setattr('czsc_trader.backtesting.service.audit_replay', check_win_rate_audit)
     result = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
-    ), dataflows=execution_flows())
+    ), dataflows=execution_flows(context.root))
     assert result.status == "PASS"
     outputs = list(context.outputs_root.glob("*/manifest.json"))
     assert len(outputs) == 1
@@ -111,7 +113,7 @@ def test_chart_failure_prevents_backtest_publication(current_frozen, monkeypatch
     with pytest.raises(ExecutionError, match="chart facts are inconsistent"):
         run_backtest(context, version, BacktestRequest(
             "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
-        ), dataflows=execution_flows())
+        ), dataflows=execution_flows(context.root))
     assert not list(context.outputs_root.glob("*/manifest.json"))
 
 
@@ -120,5 +122,5 @@ def test_backtest_rejects_unpublished_session_without_outputs(current_frozen):
     with pytest.raises(ExecutionError):
         run_backtest(context, version, BacktestRequest(
             "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 30), 100000, 100,
-        ), dataflows=execution_flows())
+        ), dataflows=execution_flows(context.root))
     assert not list(context.outputs_root.glob("*/manifest.json"))

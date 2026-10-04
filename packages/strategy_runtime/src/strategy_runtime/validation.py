@@ -8,10 +8,10 @@ from .errors import RuntimeContractError
 
 def validate_history_depth(
     input_name: str,
-    required_observations: int,
+    required_sessions: int,
     dataframe: pd.DataFrame,
 ) -> None:
-    if required_observations <= 0:
+    if required_sessions <= 0:
         return
     date_column = next(
         (
@@ -30,11 +30,11 @@ def validate_history_depth(
     )
     if date_column is None:
         raise RuntimeContractError(
-            f"prepared input {input_name} has no observation timestamp"
+            f"prepared input {input_name} has no session timestamp"
         )
-    observed = pd.to_datetime(dataframe[date_column], errors="coerce").dropna().nunique()
-    if observed < required_observations:
+    observed = pd.to_datetime(dataframe[date_column], errors="coerce").dropna().dt.normalize().nunique()
+    if observed < required_sessions:
         raise RuntimeContractError(
             f"prepared input {input_name} has insufficient history: "
-            f"required={required_observations}, observed={observed}"
+            f"required={required_sessions}, observed={observed}"
         )

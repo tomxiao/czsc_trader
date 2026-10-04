@@ -9,7 +9,7 @@ from types import MappingProxyType
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-from dataflows import Dataflows, Dataset
+from dataflows import Dataflows, Dataset, DataRequest, DataResult, PreparePolicy
 
 from .contracts import (
     DataPreparationResult,
@@ -35,8 +35,9 @@ from .data import PreparedStrategyData
 from .errors import RuntimeCompatibilityError, RuntimeContractError, RuntimeExecutionError
 from .execution_planner import build_execution_plan
 from .models import ExecutionPolicy, ExecutionPricingData
-from .preparation import PreparedInputs, prepare_inputs
-from .prepared_store import load_prepared_inputs, save_prepared_inputs
+from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calendar_request, plan_inputs
+from .input_binding import StrategyInputPlan, StrategyInputBinding
+from .prepared_store import save_prepared_inputs
 from .signals import StrategySignal
 
 
@@ -106,6 +107,7 @@ class StrategyInstance:
         self._execution_policy = execution_policy
         self._dataflows = dataflows
         self._prepared_data: PreparedStrategyData | None = None
+        self._input_binding: StrategyInputBinding | None = None
         self._history_cache: dict[
             tuple[str, SignalHistoryMode], tuple[pd.DataFrame, pd.DatetimeIndex]
         ] = {}
@@ -159,29 +161,48 @@ class StrategyInstance:
             data.dataset_identity,
         )
 
-    def prepare_data(self) -> DataPreparationResult:
-        """Prepare and persist all calculation dependencies inside this instance."""
+    def calendar_request(self) -> DataRequest:
+        """Describe the prerequisite calendar without accessing a supplier."""
+        return calendar_request(algorithm=self._algorithm, tradable_window=self._tradable_window)
 
+    def plan_inputs(self, calendar: DataResult) -> StrategyInputPlan:
+        """Derive named input requirements from a caller-prepared calendar."""
+        return plan_inputs(strategy=self._identity, algorithm=self._algorithm,
+                           tradable_window=self._tradable_window, calendar=calendar)
+
+    @property
+    def input_binding(self) -> StrategyInputBinding:
+        if self._input_binding is None:
+            raise RuntimeContractError("strategy data is not prepared; call prepare_data() first")
+        return self._input_binding
+
+    def prepare_data(self, *, binding: StrategyInputBinding | None = None,
+                     policy: PreparePolicy | None = None) -> DataPreparationResult:
+        """Prepare explicitly selected inputs, or read an existing binding offline."""
+        if (binding is None) == (policy is None):
+            raise RuntimeContractError("provide exactly one input binding or preparation policy")
+        if self._dataflows is None:
+            raise RuntimeContractError("data preparation requires host-supplied Dataflows")
+        if binding is not None and not isinstance(binding, StrategyInputBinding):
+            raise RuntimeContractError("binding must be StrategyInputBinding")
+        if policy is not None and not isinstance(policy, PreparePolicy):
+            raise RuntimeContractError("policy must be PreparePolicy")
+        if self._prepared_data is not None and policy is not None:
+            raise RuntimeContractError("strategy instance is already prepared; reuse its explicit binding")
+        if binding is None:
+            binding = acquire_binding(strategy=self._identity, algorithm=self._algorithm,
+                                      tradable_window=self._tradable_window,
+                                      dataflows=self._dataflows, policy=policy)
         if self._prepared_data is not None:
+            if binding != self._input_binding:
+                raise RuntimeContractError("strategy instance is already bound to different inputs")
             return self._summary(self._prepared_data)
-        inputs = load_prepared_inputs(
-            self._data_dir,
-            strategy=self._identity,
-            tradable_window=self._tradable_window,
-        )
-        if inputs is None:
-            inputs = prepare_inputs(
-                strategy=self._identity,
-                algorithm=self._algorithm,
-                tradable_window=self._tradable_window,
-                data_dir=self._data_dir,
-                dataflows=self._dataflows,
-            )
-            inputs = save_prepared_inputs(inputs, self._data_dir)
-        prepared = PreparedStrategyData.from_inputs(
-            inputs=inputs,
-            pricing=self._pricing(inputs),
-        )
+        inputs = prepare_inputs(strategy=self._identity, algorithm=self._algorithm,
+                                tradable_window=self._tradable_window,
+                                dataflows=self._dataflows, binding=binding)
+        prepared = PreparedStrategyData.from_inputs(inputs=inputs, pricing=self._pricing(inputs))
+        save_prepared_inputs(inputs, self._data_dir, binding=binding)
+        self._input_binding = binding
         self._prepared_data = prepared
         return self._summary(prepared)
 

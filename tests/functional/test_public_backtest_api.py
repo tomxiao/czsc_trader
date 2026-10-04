@@ -1,3 +1,4 @@
+from pathlib import Path
 from dataclasses import replace
 from datetime import date
 from types import SimpleNamespace
@@ -80,8 +81,8 @@ def test_candidate_and_version_use_one_backtest_dispatch(
         )
 
     monkeypatch.setattr("czsc_trader.application.backtest_service._run_backtest", replay)
-    from dataflows import Dataflows
-    flows = Dataflows({})
+    from dataflows import Dataflows, DataSpace, ProviderConfig
+    flows = Dataflows(base_dir=context.root, space=DataSpace(Path("data/test")), providers=ProviderConfig(bindings={}))
     for strategy in (candidate, version):
         assert run_backtest(context, strategy, request, dataflows=flows).status == "PASS"
     assert [item["snapshot"].identity.kind for item in observed] == ["CANDIDATE", "REGISTERED"]

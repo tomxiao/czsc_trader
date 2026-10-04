@@ -100,11 +100,47 @@ dataflows=flows, data_requests=requests)`。`requests`必须是`DataRequest`元�
 源码扫描是启发式`WARNING`，不能证明已发生故障或风险已全部覆盖。
 预检通过仍须阅读警告，不能推定数据探测、序列化和全部运行路径均已验证。
 
-## 数据缓存与第三方搜索
+## 数据空间、两阶段访问与第三方搜索
 
 探索上下文的必填`dataflows`参数同时用于默认SRT和默认评价器；显式提供自定义运行时或评价器时，
-调用方负责它们的数据配置。正式上下文只接受`cache: LocalCacheConfig | None`，由平台创建DFLS
-并共享给SRT和评价器，默认不启用缓存。配置见[DFLS说明](../dataflows/README.md#dev配置本地缓存)。
+调用方负责它们的数据配置。正式上下文必须指定`data_space: DataSpace`，由平台创建DFLS并共享给
+SRT和评价器。路径相对显式传入的仓库根目录，研究任务默认使用`data/research/<策略ID>/`：
+
+```python
+from pathlib import Path
+from dataflows import DataSpace
+from research_experiment import ExperimentResources
+from czsc_trader.research_tools import create_formal_experiment_context
+
+context = create_formal_experiment_context(
+    definition,
+    repository_root=repository_root,
+    data_space=DataSpace(Path("data/research") / definition.strategy_id),
+    resources=ExperimentResources(max_workers=2, random_seed=definition.random_seed),
+)
+```
+
+探索宿主通过`Dataflows(base_dir=repository_root, space=data_space, providers=provider_config)`
+显式初始化，随后将实例注入`create_experiment_context`。供应商与凭据属于宿主配置；数据选择
+与覆盖要求属于`DataRequest`。完整强类型契约见[DFLS说明](../dataflows/README.md)。
+
+实验的数据端口保留两阶段调用。下例中的`request`为实验已声明且在授权截止范围内的`DataRequest`：
+
+```python
+from dataflows import PreparePolicy
+
+prepared = context.data.prepare((request,), policy=PreparePolicy.REUSE)
+if not prepared.ready:
+    raise RuntimeError(f"data preparation failed: {prepared.items}")
+publication = context.data.fetch(request, prepared=prepared.reference)
+if not publication.ready:
+    raise RuntimeError(f"prepared data read failed: {publication.error}")
+```
+
+`prepare`在访问供应商前核验全部请求的研究权限；`fetch`只读指定引用，不隐式取数。
+两阶段的请求、状态、实际数据身份和准备引用进入trace。`REFRESH`重新访问供应商，
+旧引用仍定位原数据版本。DFLS统一管理数据资产，不承担研究封存；研究业务负责保存输入清单，
+保留其引用的数据空间。当前review快照也依赖原DFLS空间，归档中的引用不是数据资产副本。
 
 Optuna继续作为独立第三方库使用，研究员组织study、sampler、trial、预算、剪枝、重试和停止条件。
 `ExperimentResources(max_workers, random_seed, native_threads_per_worker=1)`配置单次执行资源，
@@ -123,8 +159,10 @@ Optuna继续作为独立第三方库使用，研究员组织study、sampler、tr
 
 主进程持有唯一上下文与回执，子进程只计算；不得将上下文传入研究员自己的进程池。批量请求
 各自`workers=1`，进程数由`ExperimentResources.max_workers`限定，本地数值库线程数由
-`native_threads_per_worker`限定。每次评价的SRT临时数据目录隔离。正式入口在子进程重建
-平台DFLS配置；探索入口的自定义evaluator及provider须可序列化（模块级函数或可序列化对象），
+`native_threads_per_worker`限定。父进程统一准备各窗口的`StrategyInputBinding`，子进程在同一
+数据空间中只读已绑定输入，正式worker不配置供应商。每次评价的SRT计算临时目录隔离；
+成功返回结果后回收，失败目录保留供诊断。探索入口的自定义evaluator及provider须可序列化
+（模块级函数或可序列化对象），
 不支持的传输在执行前报错。Windows脚本入口使用`if __name__ == "__main__":`保护。
 新实验目录为`EXxxx_YYYYMMDD`，完整定位需策略ID；已封存目录保持原位。
 平台为真实调用保留开始及终态记录，成功、失败、取消分别表达；窗口／场景结果绑定候选内容、

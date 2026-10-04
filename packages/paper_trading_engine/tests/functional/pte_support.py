@@ -27,6 +27,9 @@ def preparation(value: AdviceDecision, identity: str = "c" * 64):
         ),
         available_through=value.signal_date,
         data_identity=identity,
+        data_reference={"space_id": "11111111-1111-1111-1111-111111111111",
+                        "preparation_id": "22222222-2222-2222-2222-222222222222",
+                        "manifest_sha256": "a" * 64},
     )
 
 

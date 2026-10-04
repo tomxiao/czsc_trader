@@ -21,7 +21,10 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from dataflows import DataRequest, DataResult, Dataflows, LocalCacheConfig
+from dataflows import (
+    DataRequest, DataResult, Dataflows, DataSpace, PreparePolicy, PrepareResult,
+    PreparedDataRef, ProviderConfig,
+)
 import pandas as pd
 from research_experiment import (
     ExperimentCapability,
@@ -59,6 +62,7 @@ from .evaluation import (
     EvaluationRequest,
     EvaluationResult,
     evaluate_strategy,
+    prepare_evaluation_inputs,
     _request_contract,
     _evaluation_result_hash,
 )
@@ -149,7 +153,7 @@ class _ExperimentDataAccess:
         self._real_returns = real_returns
         self._sealed_validation = sealed_validation
 
-    def fetch(self, request: DataRequest) -> DataResult:
+    def _authorize(self, request: DataRequest) -> None:
         if not isinstance(request, DataRequest):
             raise TypeError("data fetch requires a DataRequest")
         if request.dataset not in self._definition.allowed_datasets:
@@ -159,11 +163,11 @@ class _ExperimentDataAccess:
             if self._sealed_validation
             else self._definition.development_cutoff
         )
-        cutoff = pd.Timestamp(governed_cutoff)
-        if pd.Timestamp(request.end).normalize() > cutoff:
+        cutoff = governed_cutoff
+        if pd.Timestamp(request.end).date() > cutoff:
             raise PermissionError("data request exceeds the development cutoff")
         if request.required_cutoff is not None and (
-            pd.Timestamp(request.required_cutoff).normalize() > cutoff
+            pd.Timestamp(request.required_cutoff).date() > cutoff
         ):
             raise PermissionError("required cutoff exceeds the development cutoff")
         if self._real_returns:
@@ -176,7 +180,26 @@ class _ExperimentDataAccess:
                 self._recorder,
                 ExperimentCapability.READ_SEALED_VALIDATION,
             )
-        result = self._dataflows.fetch(request)
+
+    def prepare(self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy) -> PrepareResult:
+        if not isinstance(requests, tuple) or not requests:
+            raise TypeError("data prepare requires a non-empty tuple of DataRequest")
+        for request in requests:
+            self._authorize(request)
+        result = self._dataflows.prepare(requests, policy=policy)
+        self._recorder.record_operation("data.prepare")
+        for item in result.items:
+            self._record(item.request, item, result.reference, "prepare")
+        return result
+
+    def fetch(self, request: DataRequest, *, prepared: PreparedDataRef) -> DataResult:
+        self._authorize(request)
+        result = self._dataflows.fetch(request, prepared=prepared)
+        self._recorder.record_operation("data.fetch")
+        self._record(request, result, prepared, "fetch")
+        return result
+
+    def _record(self, request, result, prepared, operation):
         identity = None
         if result.identity is not None:
             temporal = result.identity.temporal_contract
@@ -195,9 +218,9 @@ class _ExperimentDataAccess:
                     "request_range_policy": temporal.request_range_policy.value,
                 },
             }
-        self._recorder.record_operation("data.fetch")
         self._recorder.record_data_request(
             {
+                "operation": operation,
                 "dataset": request.dataset,
                 "symbol": request.symbol,
                 "start": request.start,
@@ -208,13 +231,18 @@ class _ExperimentDataAccess:
                 if request.coverage is None
                 else {
                     "maximum_start_lag_days": request.coverage.maximum_start_lag_days,
-                    "minimum_rows": request.coverage.minimum_rows,
+                    "minimum_observations": request.coverage.minimum_observations,
+                    "minimum_sessions": request.coverage.minimum_sessions,
+                },
+                "prepared": None if prepared is None else {
+                    "space_id": str(prepared.space_id),
+                    "preparation_id": str(prepared.preparation_id),
+                    "manifest_sha256": prepared.manifest_sha256,
                 },
                 "status": result.status.value,
                 "identity": identity,
             }
         )
-        return result
 
 
 class _ExperimentRuntimeAccess:
@@ -288,10 +316,12 @@ class _ExperimentEvaluationAccess:
         real_returns,
         sealed_validation,
         batch_evaluator=None,
+        input_preparer=None,
     ):
         self._definition = definition
         self._evaluator = evaluator
         self._batch_evaluator = batch_evaluator if batch_evaluator is not None else evaluator
+        self._input_preparer = input_preparer
         self._recorder = recorder
         self._resources = resources
         self._workspace = workspace
@@ -450,6 +480,9 @@ class _ExperimentEvaluationAccess:
                 or parent.content_sha256 != relation.parent_content_sha256
             ):
                 raise ValueError("lineage evidence does not identify the successful parent")
+        if self._input_preparer is not None:
+            request = self._input_preparer(request)
+            contract, binding_hash = _request_contract(request)
         return request, contract, binding_hash
 
     def _start(self, prepared):
@@ -669,6 +702,8 @@ def create_experiment_context(
         sealed_validation=sealed_validation,
         predecessors=predecessors,
         formal=False,
+        input_preparer=(partial(prepare_evaluation_inputs, dataflows=dataflows)
+                        if evaluator is evaluate_strategy else None),
     )
 
 
@@ -679,13 +714,14 @@ def create_formal_experiment_context(
     resources: ExperimentResources,
     workspace: ExperimentWorkspace | None = None,
     predecessors: tuple[ExperimentInput, ...] = (),
-    cache: LocalCacheConfig | None = None,
+    data_space: DataSpace,
 ) -> ExperimentContext[EvaluationRequest, EvaluationResult]:
     """Create a formal context using only platform-owned production adapters."""
 
     if definition.mode is not ExperimentMode.FORMAL:
         raise ValueError("formal context requires a FORMAL experiment definition")
-    flows = Dataflows(env_file=Path(repository_root) / ".env", cache=cache)
+    flows = Dataflows(base_dir=Path(repository_root), space=data_space,
+                      providers=ProviderConfig(env_file=Path(repository_root) / ".env"))
     return _create_experiment_context(
         definition,
         repository_root=repository_root,
@@ -698,7 +734,8 @@ def create_formal_experiment_context(
         sealed_validation=definition.data_scope is ExperimentDataScope.SEALED_VALIDATION,
         predecessors=predecessors,
         formal=True,
-        batch_evaluator=PlatformEvaluator(Path(repository_root) / ".env", cache),
+        batch_evaluator=PlatformEvaluator(Path(repository_root), data_space),
+        input_preparer=partial(prepare_evaluation_inputs, dataflows=flows),
     )
 
 
@@ -716,6 +753,7 @@ def _create_experiment_context(
     predecessors: tuple[ExperimentInput, ...],
     formal: bool,
     batch_evaluator=None,
+    input_preparer=None,
 ) -> ExperimentContext[EvaluationRequest, EvaluationResult]:
     if not isinstance(definition, ExperimentDefinition):
         raise TypeError("experiment definition must be ExperimentDefinition")
@@ -763,6 +801,7 @@ def _create_experiment_context(
             real_returns=real_returns,
             sealed_validation=sealed_validation,
             batch_evaluator=batch_evaluator,
+            input_preparer=input_preparer,
         ),
         workspace=workspace,
         resources=resources,

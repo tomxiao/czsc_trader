@@ -158,12 +158,13 @@ def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_froze
         "serve", "--repo-root", str(release),
         "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
         "--data-dir", str(runtime_root / "shared" / "data"),
+        "--data-space", "market",
         "--config-root", str(runtime_root / "shared" / "config"),
         "--release-manifest", str(release / "release-manifest.json"),
         "--host", "127.0.0.1", "--port", "8080",
     ]
     assert set(json.loads(path.read_text()).keys()) == {
-        "schema_version", "runtime_root", "host", "port",
+        "schema_version", "runtime_root", "host", "port", "data_space",
     }
     assert config.health_url == "http://127.0.0.1:8080/api/health"
     with pytest.raises(ValueError, match="localhost"):
@@ -299,6 +300,7 @@ def test_pte_release_activation_rollback_and_dynamic_watchdog(pte_frozen, tmp_pa
         "--repo-root", str(first),
         "--database", str(runtime_root / "shared" / "state" / "runtime.db"),
         "--data-dir", str(runtime_root / "shared" / "data"),
+        "--data-space", "market",
         "--config-root", str(runtime_root / "shared" / "config"),
         "--release-manifest", str(first / "release-manifest.json"),
         "--host", "127.0.0.1", "--port", "8080",

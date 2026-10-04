@@ -19,9 +19,11 @@ from urllib.request import Request, urlopen
 from uuid import uuid4
 
 from dotenv import load_dotenv
+from dataflows import DataSpace
 
 from .audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
+from .data_space import create_dataflows
 from .account_binding import AccountStrategyBinding
 from .account_retirement import AccountRetirementRequest
 from .account_data_preparer import AccountDataPreparer
@@ -76,6 +78,7 @@ class PteParser(argparse.ArgumentParser):
             result.database = result.repo_root / "state" / "paper_trading" / "runtime.db"
         if result.data_dir is None:
             result.data_dir = result.repo_root / "state" / "paper_trading" / "data"
+        result.data_space = DataSpace(result.data_space)
         return result
 
 
@@ -85,6 +88,7 @@ def _common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--asset", choices=("etf", "stock"), default="etf")
     parser.add_argument("--database", type=Path)
     parser.add_argument("--data-dir", type=Path)
+    parser.add_argument("--data-space", type=Path, default=Path("market"))
     parser.add_argument("--config-root", type=Path)
     parser.add_argument("--release-manifest", type=Path)
     parser.add_argument("--opend-host", default="127.0.0.1")
@@ -171,11 +175,15 @@ def build_engine(args: argparse.Namespace):
     stage_started = time.perf_counter()
     store = PaperStore(args.database)
     audit = AuditRecorder(store)
+    dataflows = create_dataflows(
+        data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
+    )
     advice = SrtAdviceClient(
         repo_root=args.repo_root,
         data_dir=args.data_dir,
         asset=args.asset,
         audit=audit,
+        dataflows=dataflows,
     )
     startup_timings["store_and_advice_ms"] = round(
         (time.perf_counter() - stage_started) * 1000, 1,
@@ -226,7 +234,7 @@ def build_engine(args: argparse.Namespace):
     stage_started = time.perf_counter()
     account_chart = AccountChartService(
         store,
-        market_data=AccountChartMarketData(),
+        market_data=AccountChartMarketData(dataflows=dataflows),
         cache_dir=args.database.parent / "charts",
         audit=audit,
     )
@@ -295,6 +303,9 @@ def _preflight_strategy_account(
         client = SrtAdviceClient(
             repo_root=args.repo_root,
             data_dir=args.data_dir,
+            dataflows=create_dataflows(
+                data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
+            ),
         )
         prepared = client.prepare_account_data(
             account_id=args.account_id,

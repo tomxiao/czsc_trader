@@ -35,6 +35,7 @@ from strategy_runtime import (
     StrategyRuntime,
     StrategyRelease,
     RuntimeBindingSpec, RuntimeBinding,
+    StrategyInputBinding,
 )
 from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
 from strategy_runtime.errors import StrategyRuntimeError
@@ -401,8 +402,13 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     frozen = execution.runtime.create(
         StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding)
     )
-    candidate_prepared = candidate.prepare_data()
-    prepared = frozen.prepare_data()
+    candidate_binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
+    candidate_prepared = candidate.prepare_data(binding=candidate_binding)
+    # The prospective release must reproduce the same admitted inputs. SRT
+    # independently re-derives and authenticates this plan for the release.
+    frozen_plan = replace(candidate_binding.plan, strategy=frozen.identity)
+    frozen_binding = StrategyInputBinding(frozen_plan, candidate_binding.prepared)
+    prepared = frozen.prepare_data(binding=frozen_binding)
     left_signals, right_signals = candidate.inspect_signals(), frozen.inspect_signals()
     signal_equal = True
     try:
@@ -411,19 +417,22 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
         )
     except AssertionError:
         signal_equal = False
-    from strategy_runtime.prepared_store import load_prepared_inputs
-
-    left_inputs = load_prepared_inputs(
-        root / "candidate", strategy=candidate_prepared.strategy, tradable_window=window
-    )
-    right_inputs = load_prepared_inputs(
-        root / "release", strategy=prepared.strategy, tradable_window=window
-    )
+    def identities(bound):
+        result = {}
+        for name, request in bound.plan.requests.items():
+            if name == bound.plan.calendar_name:
+                result[name] = bound.plan.calendar_sha256
+                continue
+            data = execution.data.fetch(request, prepared=bound.prepared)
+            if not data.ready:
+                raise ValueError("inspection input reference cannot be read")
+            result[name] = data.identity.content_sha256
+        return result
     if (
         candidate_prepared.data_identity != run.signals.data_identity
-        or left_inputs.input_identities != right_inputs.input_identities
-        or left_inputs.signal_dates != right_inputs.signal_dates
-        or left_inputs.calculation_dates != right_inputs.calculation_dates
+        or identities(candidate_binding) != identities(frozen_binding)
+        or candidate_binding.plan.signal_dates != frozen_plan.signal_dates
+        or candidate_binding.plan.calculation_dates != frozen_plan.calculation_dates
         or candidate_prepared.available_through != prepared.available_through
     ):
         raise ValueError("prospective release prepared input content/coverage differs")
@@ -440,7 +449,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
             release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding
         )
     )
-    frozen.prepare_data()
+    frozen.prepare_data(binding=frozen_binding)
     channel = HistoricalExecutor(
         strategy_reference=release.release_id,
         symbol=request.symbol,
@@ -471,6 +480,8 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     support.update(
         release_id=release.release_id,
         runtime_sha256=frozen.definition.runtime_sha256,
+        input_binding=frozen_binding.to_dict(),
+        prepared_data_identity=prepared.data_identity,
         execution_policy={"policy_type": policy.policy_type, "settings": settings},
     )
     replay = SignalReplay(
@@ -510,7 +521,9 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
         "release_hash": release.release_hash,
         "candidate_prepared_identity": candidate_prepared.data_identity,
         "release_prepared_identity": prepared.data_identity,
-        "input_identities": left_inputs.input_identities,
+        "input_identities": identities(candidate_binding),
+        "candidate_input_binding": candidate_binding.to_dict(),
+        "release_input_binding": frozen_binding.to_dict(),
         "evidence": evidence.to_dict(),
         "audit": audit.to_dict(),
         "comparison": comparison.to_dict(),

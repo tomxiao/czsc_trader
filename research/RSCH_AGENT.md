@@ -337,11 +337,23 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 - FSC提供信息族、因子与信号定义；STC提供结构模板。两者提供研究起点，不限定新机制或自定义策略表达。
 - 历史研究按授权范围读取，记录已见信息与复用身份；其他批次结论不自动移植为本研究证据。
 
+研究任务开始时明确DFLS数据空间，使用相对仓库根目录的`DataSpace`，默认按任务设为
+`data/research/<策略ID>/`；需要隔离试验数据或权限范围时由宿主明确选择其他任务子目录。
+同一授权任务的实验可复用该空间，空间共享不扩大研究数据授权。正式上下文通过
+`create_formal_experiment_context(..., data_space=...)`指定；探索上下文注入已经绑定空间的DFLS。
+
+实验先调用`context.data.prepare(requests, policy=...)`，全部准备成功后保存返回的
+`PreparedDataRef`，再通过`context.data.fetch(request, prepared=ref)`读取指定版本。
+`REUSE`复用符合请求的数据资产，`REFRESH`重新核验供应商数据并生成新准备记录；已有引用保持稳定。
+DFLS管理空间内的数据资产及复用，研究输入清单、证据归档和封存由业务流程负责。
+正式复算依赖的空间及其资产必须保留；输入引用与review目录都不包含完整数据资产副本，
+仅复制实验或review目录不能替代原数据空间。初始化和接口示例见[REX说明](../packages/research_experiment/README.md)。
+
 ### 4.2 当前平台职责与代码入口
 
 | 模块 | 当前职责 | 入口 |
 | --- | --- | --- |
-| DFLS | 数据请求、质量校验、来源身份和宿主配置的本地缓存 | [公共导出](../packages/dataflows/src/dataflows/__init__.py)、[使用说明](../packages/dataflows/README.md) |
+| DFLS | 宿主指定数据空间，统一数据资产管理及两阶段准备、读取接口 | [公共导出](../packages/dataflows/src/dataflows/__init__.py)、[使用说明](../packages/dataflows/README.md) |
 | FSC / STC | 信息定义与策略结构参考 | [FSC公共导出](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)、[STC公共导出](../packages/strategy_template_catalog/src/strategy_template_catalog/__init__.py)；[FSC说明](../packages/factor_signal_catalog/README.md)、[STC说明](../packages/strategy_template_catalog/README.md) |
 | REX | 实验定义、数据范围、强类型受管端口、预检及实际执行回执 | [公共导出](../packages/research_experiment/src/research_experiment/__init__.py)、[使用说明](../packages/research_experiment/README.md)、[档案契约](../experiments/README.md) |
 | SRT / TXE | 策略输入、决策与计划；成交及完整账户 | [SRT公共导出](../packages/strategy_runtime/src/strategy_runtime/__init__.py)、[TXE公共导出](../packages/trading_execution_engine/src/trading_execution_engine/__init__.py)；[SRT说明](../packages/strategy_runtime/README.md)、[TXE说明](../packages/trading_execution_engine/README.md) |
@@ -384,8 +396,8 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 
 需求包含金融或执行问题、当前限制的证据、预计收益、最小输入输出、兼容及权限影响。RSCH可提出
 平台需求，不因需求记录取得实施权限。能力未实现时使用已存在且获准的入口；无法满足合同则
-明确受阻，不设计静默降级或私有缓存拼接。数据复用使用DFLS本地缓存，按宿主配置共享给正式
-执行链；缓存不替代不可变证据，刷新不会改写SRT已认证的实例准备结果。
+明确受阻，不设计静默降级或私有缓存拼接。数据复用通过指定空间中的DFLS数据资产完成，
+正式执行绑定明确的准备引用；取数刷新与资产删除分别处理，不覆盖既有研究输入。
 
 ## 5. 接手、执行与交付规则
 
@@ -402,6 +414,7 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 | `outputs/` | 可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
 | `.tmp/` | 一次性脚本、临时数据及工具缓存；交付不得隐含依赖未声明临时内容 |
 | `data/raw/`、`data/backtest/` | 通过已获授权的正式数据入口更新 |
+| `data/research/<策略ID>/` | 当前授权研究任务的DFLS数据空间；通过公共API准备和读取，不直接修改内部资产、索引或准备记录；保留复算引用所需资产 |
 | `research/<策略ID>/decisions/`及其`objects/` | 在获准阶段内，通过TDR `record_research_decision`留存真实用户决定和确认材料；不得人工编辑 |
 | 当前正式实验的`objects/inspection/` | 在获准阶段内，通过TDR `inspect_candidate`保存检验、计划及证据；可在冻结批准前写入，不生成冻结版本；实验封存后只读 |
 | `research/<策略ID>/freeze_requests/`、`strategies/<策略ID>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`保存研究侧事务日志及运行发布；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |

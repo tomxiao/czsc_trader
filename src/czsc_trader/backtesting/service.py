@@ -7,7 +7,7 @@ from pathlib import Path
 import shutil
 
 import pandas as pd
-from dataflows import Dataflows
+from dataflows import Dataflows, DataSpace, ProviderConfig
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from czsc_trader.reporting.publication import publish_run_directory
@@ -117,7 +117,8 @@ def _run_backtest(
     if type(policy_lot_size) is not int or request.lot_size != policy_lot_size:
         raise ValueError("request lot_size differs from strategy execution contract")
     flows = dataflows if dataflows is not None else Dataflows(
-        env_file=Path(repository_root) / ".env",
+        base_dir=Path(srt_data_root).resolve(), space=DataSpace(Path("market")),
+        providers=ProviderConfig(env_file=Path(repository_root) / ".env"),
     )
     if execution_data is None:
         execution_data = prepare_backtest_execution_data(

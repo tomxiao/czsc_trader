@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
-from dataflows import DataRequest, DataStatus, Dataflows, Dataset
+from dataflows import DataRequest, Dataset
 from strategy_runtime import (
     CalculationScope,
     CalendarWindow,
@@ -68,21 +68,11 @@ def test_strategy_authoring_contracts_are_public() -> None:
 
 def test_c01_unknown_dataset_fixture_preserves_the_supported_contract() -> None:
     case = CASES["c01_unknown_dataset"]
-    request = DataRequest(
-        dataset=case["invalid_dataset"],
-        symbol="SSE",
-        start="2026-09-01",
-        end="2026-09-02",
-        required_cutoff=None,
-    )
-
-    result = Dataflows({}).fetch(request)
-
+    with pytest.raises(ValueError):
+        DataRequest(dataset=case["invalid_dataset"], symbol="SSE", start="2026-09-01",
+                    end="2026-09-02", required_cutoff=None)
     assert case["valid_dataset"] == Dataset.TRADING_CALENDAR.value
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == case["expected_error_code"]
-    assert result.error.context["dataset"] == case["invalid_dataset"]
+
 
 
 def test_c02_preparation_result_fixture_pins_the_public_field_name() -> None:

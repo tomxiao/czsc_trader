@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 import shutil
 
-from dataflows import DataRequest, Dataflows
+from dataflows import (DataRequest, Dataflows, DataSpace, Dataset, ProviderConfig, ProviderBinding, PreparePolicy, PreparedDataRef)
+from uuid import uuid4
 import pandas as pd
 import pytest
 
@@ -149,7 +150,7 @@ def test_v3_preflight_requires_and_runs_explicit_synthetic_check(
     failing_context = create_experiment_context(
         failing_loaded.definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "v3-preflight-blocked"),
         resources=resources,
     )
@@ -228,7 +229,7 @@ def test_preflight_blocks_changed_source_before_synthetic_or_data_access(tmp_pat
     monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: pytest.fail("must not execute"))
     path = loaded.root / "experiment.py"
     path.write_text(path.read_text(encoding="utf-8") + "\n# changed\n", encoding="utf-8")
-    flows = Dataflows({"etf.ohlcv": lambda request: pytest.fail("must not fetch")})
+    flows = _configured_flows(tmp_path, lambda request: pytest.fail("must not fetch"))
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
         data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
     assert not report.passed
@@ -261,7 +262,7 @@ def test_preflight_successful_explicit_data_probe(tmp_path):
     frame = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"],
         "Open": [1., 1.], "High": [1., 1.], "Low": [1., 1.], "Close": [1., 1.],
         "Volume": [1., 1.], "Amount": [1., 1.]})
-    flows = Dataflows({"etf.ohlcv": lambda request: (frame, {"vendor": "synthetic"})})
+    flows = _configured_flows(tmp_path, lambda request: (frame, {"vendor": "synthetic"}))
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
         data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
     assert report.passed
@@ -277,7 +278,7 @@ def test_preflight_data_readiness_is_explicit_and_governed(tmp_path, real_data, 
         return pd.DataFrame(), {}
     request = DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", end, end)
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99),
-        dataflows=Dataflows({"etf.ohlcv": empty}), data_requests=(request,))
+        dataflows=_configured_flows(tmp_path, empty), data_requests=(request,))
     assert not report.passed
     assert len(calls) == expected_calls
     check = next(item for item in report.checks if item.code == "DATA_REQUEST_001")
@@ -335,7 +336,12 @@ def _frame() -> pd.DataFrame:
     )
 
 
-def _flows(calls: list[DataRequest] | None = None) -> Dataflows:
+def _configured_flows(tmp_path, provider):
+    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("data") / uuid4().hex),
+        providers=ProviderConfig(bindings={Dataset.ETF_OHLCV: ProviderBinding("fixture", "v1", provider)}))
+
+
+def _flows(tmp_path: Path, calls: list[DataRequest] | None = None) -> Dataflows:
     def provider(request: DataRequest):
         if calls is not None:
             calls.append(request)
@@ -347,11 +353,41 @@ def _flows(calls: list[DataRequest] | None = None) -> Dataflows:
             "adjustment": "hfq",
         }
 
-    return Dataflows({"etf.ohlcv": provider})
+    return _configured_flows(tmp_path, provider)
 
 
 def _workspace(tmp_path: Path, name: str) -> ExperimentWorkspace:
     return ExperimentWorkspace(tmp_path / ".tmp" / name, tmp_path)
+
+
+def test_data_prepare_checks_whole_batch_before_any_source_access(tmp_path):
+    calls = []
+    context = create_experiment_context(
+        _definition(), repository_root=tmp_path, dataflows=_flows(tmp_path, calls),
+        workspace=_workspace(tmp_path, "prepare-authorization"),
+        resources=ExperimentResources(1, 98),
+    )
+    valid = DataRequest("etf.ohlcv", "518880.SH", "2026-09-01", "2026-09-02", "2026-09-02")
+    future = replace(valid, end="2026-09-03", required_cutoff="2026-09-03")
+    with pytest.raises(PermissionError, match="development cutoff"):
+        context.data.prepare((valid, future), policy=PreparePolicy.REUSE)
+    assert calls == [] and context.trace.data_requests == ()
+
+
+def test_context_records_preparation_reference_and_fetch_remains_local(tmp_path):
+    calls = []
+    context = create_experiment_context(
+        _definition(), repository_root=tmp_path, dataflows=_flows(tmp_path, calls),
+        workspace=_workspace(tmp_path, "bound-read"), resources=ExperimentResources(1, 98),
+    )
+    request = DataRequest("etf.ohlcv", "518880.SH", "2026-09-01", "2026-09-02", "2026-09-02")
+    prepared = context.data.prepare((request,), policy=PreparePolicy.REFRESH)
+    assert prepared.ready
+    assert context.data.fetch(request, prepared=prepared.reference).ready
+    assert context.data.fetch(request, prepared=prepared.reference).ready
+    assert len(calls) == 1
+    assert all(item["prepared"]["manifest_sha256"] == prepared.reference.manifest_sha256
+               for item in context.trace.data_requests)
 
 
 def _candidate() -> StrategyCandidate:
@@ -367,7 +403,7 @@ def _execute_fixture(tmp_path: Path, workspace_name: str):
     context = create_experiment_context(
         experiment.definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, workspace_name),
         resources=ExperimentResources(
             max_workers=4,
@@ -392,7 +428,7 @@ def test_s008_fixture_loads_and_executes_through_public_context(
         "rows": 2,
     }
     assert context.trace.capabilities == (ExperimentCapability.SEARCH_PARAMETERS,)
-    assert context.trace.operations == ("data.fetch",)
+    assert context.trace.operations == ("data.prepare", "data.fetch")
     assert context.trace.data_requests[0]["identity"]["dataset"] == "etf.ohlcv"
     assert context.trace.data_requests[0]["identity"]["temporal_contract"] == {
         "source_time_field": "Date",
@@ -479,7 +515,7 @@ def test_executor_rechecks_source_after_loading(tmp_path: Path) -> None:
     context = create_experiment_context(
         experiment.definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "post-load-tampered"),
         resources=ExperimentResources(
             max_workers=1,
@@ -516,7 +552,7 @@ def test_formal_mode_requires_platform_owned_context(tmp_path: Path) -> None:
         create_experiment_context(
             definition,
             repository_root=tmp_path,
-            dataflows=_flows(),
+            dataflows=_flows(tmp_path),
             workspace=_workspace(tmp_path, "fake-formal"),
             resources=resources,
             evaluator=lambda request: EvaluationResult(runs=()),
@@ -524,6 +560,7 @@ def test_formal_mode_requires_platform_owned_context(tmp_path: Path) -> None:
 
     context = create_formal_experiment_context(
         definition,
+        data_space=DataSpace(Path("data/research")),
         repository_root=tmp_path,
         workspace=_workspace(tmp_path, "formal"),
         resources=resources,
@@ -549,7 +586,7 @@ def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
     predecessor_context = create_experiment_context(
         predecessor.definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "predecessor"),
         resources=ExperimentResources(
             max_workers=1,
@@ -574,7 +611,7 @@ def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
         create_experiment_context(
             successor,
             repository_root=tmp_path,
-            dataflows=_flows(),
+            dataflows=_flows(tmp_path),
             workspace=_workspace(tmp_path, "missing-predecessor"),
             resources=ExperimentResources(max_workers=1, random_seed=98),
         )
@@ -582,7 +619,7 @@ def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
     context = create_experiment_context(
         successor,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "with-predecessor"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         predecessors=(predecessor_input,),
@@ -602,14 +639,15 @@ def test_data_adapter_blocks_undeclared_dataset_before_provider(
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(calls),
+        dataflows=_flows(tmp_path, calls),
         workspace=_workspace(tmp_path, "undeclared-dataset"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
     with pytest.raises(PermissionError, match="dataset was not declared"):
         context.data.fetch(
-            DataRequest(
+            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
+            request=            DataRequest(
                 dataset="fx.fxcm_daily",
                 symbol="XAU/USD",
                 start="2026-09-01",
@@ -627,14 +665,15 @@ def test_data_adapter_blocks_future_data_before_provider(tmp_path: Path) -> None
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(calls),
+        dataflows=_flows(tmp_path, calls),
         workspace=_workspace(tmp_path, "future-data"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
 
     with pytest.raises(PermissionError, match="development cutoff"):
         context.data.fetch(
-            DataRequest(
+            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
+            request=            DataRequest(
                 dataset="etf.ohlcv",
                 symbol="518880.SH",
                 start="2026-09-01",
@@ -663,7 +702,7 @@ def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(calls),
+        dataflows=_flows(tmp_path, calls),
         workspace=_workspace(tmp_path, f"missing-{missing}"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         real_returns=real_returns,
@@ -672,7 +711,8 @@ def test_data_adapter_blocks_undeclared_sensitive_access_before_provider(
 
     with pytest.raises(PermissionError, match=missing):
         context.data.fetch(
-            DataRequest(
+            prepared=PreparedDataRef(uuid4(), uuid4(), "0" * 64),
+            request=            DataRequest(
                 dataset="etf.ohlcv",
                 symbol="518880.SH",
                 start="2026-09-01",
@@ -705,7 +745,7 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "platform-adapters"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
         runtime=FakeRuntime(),
@@ -749,7 +789,7 @@ def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "resource-budget"),
         resources=ExperimentResources(
             max_workers=1,
@@ -803,7 +843,7 @@ def test_execute_rejects_unbound_experiment(tmp_path: Path) -> None:
     context = create_experiment_context(
         definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "unbound-experiment"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )
@@ -886,7 +926,7 @@ class Experiment(ResearchExperiment):
     context = create_experiment_context(
         experiment.definition,
         repository_root=tmp_path,
-        dataflows=_flows(),
+        dataflows=_flows(tmp_path),
         workspace=_workspace(tmp_path, "candidate-capability"),
         resources=ExperimentResources(max_workers=1, random_seed=98),
     )

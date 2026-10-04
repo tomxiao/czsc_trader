@@ -23,6 +23,7 @@ from strategy_runtime import (
     StrategyInstance,
     StrategyRelease,
     StrategyRuntime,
+    StrategyInputBinding,
     TradableWindow,
     TradingPoint,
     canonical_sha256,
@@ -31,7 +32,7 @@ from strategy_runtime import (
     unavailable_observation,
     RuntimeDefinition, RuntimeContractError,
 )
-from dataflows import Dataflows, DataRequest, Dataset
+from dataflows import Dataflows, DataRequest, Dataset, PreparePolicy
 from strategy_manager import Qualification, StrategyRegistry
 
 from .audit import AuditRecorder
@@ -42,7 +43,7 @@ from .account_binding import AccountStrategyBinding
 
 _BEIJING = timezone(timedelta(hours=8), "Asia/Shanghai")
 _ACCOUNT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
-_PREPARED_STORAGE_REVISION = 2
+_PREPARED_STORAGE_REVISION = 3
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,6 +68,14 @@ class PreparedAccountStrategy:
     @property
     def data_identity(self):
         return self.result.data_identity
+
+    @property
+    def input_binding(self) -> StrategyInputBinding:
+        return self.instance.input_binding
+
+    @property
+    def data_reference(self) -> dict[str, str]:
+        return self.input_binding.to_dict()["prepared"]
 
 
 def _load_manifest(path: Path) -> dict[str, object]:
@@ -186,6 +195,7 @@ class SrtAdviceClient:
         *,
         repo_root: Path,
         data_dir: Path,
+        dataflows: Dataflows | None = None,
         symbol: str | None = None,
         asset: str = "etf",
         audit: AuditRecorder | None = None,
@@ -194,6 +204,7 @@ class SrtAdviceClient:
     ) -> None:
         self.repo_root = Path(repo_root).resolve()
         self.data_dir = Path(data_dir).resolve()
+        self.dataflows = dataflows
         self.symbol = symbol.upper() if symbol else None
         self.asset = asset
         self.audit = audit
@@ -201,6 +212,53 @@ class SrtAdviceClient:
         self.session_resolver = session_resolver or self._next_tradable_session
         self._session_cache: dict[date, date | None] = {}
         self._session_cache_lock = Lock()
+        self._binding_lock = Lock()
+
+    def _flows(self) -> Dataflows:
+        if self.dataflows is None:
+            raise AdviceClientError("data preparation requires a host-configured DFLS data space")
+        return self.dataflows
+
+    def _prepare_strategy(self, strategy: StrategyInstance) -> DataPreparationResult:
+        """Bind a trading window once; restart and account retries reuse that binding."""
+        flows = self._flows()
+        calendar_request = strategy.calendar_request()
+        calendar_prepared = flows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+        if not calendar_prepared.ready:
+            raise AdviceClientError(f"strategy calendar preparation failed: {calendar_prepared.items}")
+        calendar = flows.fetch(calendar_request, prepared=calendar_prepared.reference)
+        plan = strategy.plan_inputs(calendar)
+        key = canonical_sha256(plan.to_dict())
+        path = self.data_dir / "input-bindings" / f"{key}.json"
+        with self._binding_lock:
+            if path.is_file():
+                saved = _load_manifest(path)
+                binding = StrategyInputBinding.from_mapping(saved["binding"])
+                if saved.get("binding_sha256") != binding.identity or binding.plan != plan:
+                    raise AdviceClientError("persisted input binding was modified")
+            else:
+                prepared = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
+                if not prepared.ready:
+                    raise AdviceClientError(f"strategy inputs preparation failed: {prepared.items}")
+                binding = StrategyInputBinding(plan, prepared.reference)
+                # Verify and calculate before making the business binding reusable.
+                result = strategy.prepare_data(binding=binding)
+                self._write_json(path, {"binding": binding.to_dict(), "binding_sha256": binding.identity})
+                return result
+        return strategy.prepare_data(binding=binding)
+
+    @staticmethod
+    def _write_json(path: Path, value: dict) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_root = path.parent / ".tmp"
+        temporary_root.mkdir(exist_ok=True)
+        temporary = temporary_root / f"{uuid4().hex}.json"
+        try:
+            temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                                 encoding="utf-8", newline="\n")
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     def _load_release(self, strategy_id: str, strategy_version: str) -> StrategyRelease:
         path = self.repo_root / "strategies" / strategy_id / "versions" / f"{strategy_version}.json"
@@ -235,7 +293,7 @@ class SrtAdviceClient:
         index_hash = index.pop("index_sha256", None)
         if index_hash != canonical_sha256(index):
             raise AdviceClientError("prepared-data index was modified")
-        if index.get("schema_version") != 2:
+        if index.get("schema_version") != 3:
             raise AdviceClientError("prepared-data index version is unsupported")
         if index.get("account_id") != account_id:
             raise AdviceClientError("prepared data belongs to another account")
@@ -284,7 +342,7 @@ class SrtAdviceClient:
         directory = (account_root / relative).resolve()
         if relative.is_absolute() or not directory.is_relative_to(account_root):
             raise AdviceClientError("prepared-data directory is unsafe")
-        strategy = StrategyRuntime(self.repo_root / "strategies").create(
+        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows()).create(
             StrategyInit(
                 release,
                 TradableWindow(trading_date, trading_date),
@@ -292,19 +350,25 @@ class SrtAdviceClient:
                 symbol=str(entry["symbol"]).upper(),
             )
         )
-        prepared = strategy.prepare_data()
+        binding = StrategyInputBinding.from_mapping(entry["input_binding"])
+        prepared = strategy.prepare_data(binding=binding)
+        if prepared.data_identity != entry.get("data_identity"):
+            raise AdviceClientError("restored strategy input identity differs from its account record")
         return PreparedAccountStrategy(strategy, prepared)
 
     def _trading_calendar(self, start: date, end: date) -> dict[date, int]:
-        result = Dataflows().fetch(
-            DataRequest(
-                Dataset.TRADING_CALENDAR,
-                "SSE",
-                start.isoformat(),
-                end.isoformat(),
-                end.isoformat(),
-            )
+        request = DataRequest(
+            Dataset.TRADING_CALENDAR,
+            "SSE",
+            start.isoformat(),
+            end.isoformat(),
+            end.isoformat(),
         )
+        flows = self._flows()
+        prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
+        if not prepared.ready:
+            raise AdviceClientError(f"SSE trading calendar preparation failed: {prepared.items}")
+        result = flows.fetch(request, prepared=prepared.reference)
         if not result.ready:
             message = result.error.message if result.error is not None else result.status
             raise AdviceClientError(f"SSE trading calendar is unavailable: {message}")
@@ -405,6 +469,9 @@ class SrtAdviceClient:
     @staticmethod
     def _write_index(root: Path, index: dict[str, object]) -> None:
         index["index_sha256"] = canonical_sha256(index)
+        history = root / "preparation-records" / f"{index['index_sha256']}.json"
+        if not history.exists():
+            SrtAdviceClient._write_json(history, index)
         temporary_root = root / ".tmp"
         temporary_root.mkdir(parents=True, exist_ok=True)
         temporary = temporary_root / f"current-{uuid4().hex}.json"
@@ -434,6 +501,12 @@ class SrtAdviceClient:
         if asset != "etf":
             raise AdviceClientError("PTE currently requires one ETF strategy")
         release = self._load_release(strategy_id, strategy_version)
+        root = self._account_root(account_id)
+        if (root / "current.json").is_file():
+            index = self._account_index(account_id)
+            if (index.get("signal_date") == signal_date.isoformat()
+                    and self._active_space(root, account_id=account_id, release=release, symbol=symbol)):
+                return self._instance(account_id, release, date.fromisoformat(str(index["trading_date"])))
         with self._session_cache_lock:
             cached = self._session_cache.get(signal_date, ...)
         if cached is ...:
@@ -444,7 +517,6 @@ class SrtAdviceClient:
             trading_date = cached
         if trading_date is None:
             return None
-        root = self._account_root(account_id)
         root.mkdir(parents=True, exist_ok=True)
         directory = self._active_space(
             root,
@@ -452,7 +524,7 @@ class SrtAdviceClient:
             release=release,
             symbol=symbol,
         ) or self._new_space(root, account_id)
-        strategy = StrategyRuntime(self.repo_root / "strategies").create(
+        strategy = StrategyRuntime(self.repo_root / "strategies", dataflows=self._flows()).create(
             StrategyInit(
                 release,
                 TradableWindow(trading_date, trading_date),
@@ -460,7 +532,7 @@ class SrtAdviceClient:
                 symbol=symbol.upper(),
             )
         )
-        prepared = strategy.prepare_data()
+        prepared = self._prepare_strategy(strategy)
         if prepared.available_through != signal_date:
             raise AdviceClientError(
                 f"SRT prepared through {prepared.available_through}, expected {signal_date}"
@@ -470,7 +542,7 @@ class SrtAdviceClient:
         self._write_index(
             root,
             {
-                "schema_version": 2,
+                "schema_version": 3,
                 "prepared_storage_revision": _PREPARED_STORAGE_REVISION,
                 "account_id": account_id,
                 "symbol": symbol.upper(),
@@ -482,6 +554,7 @@ class SrtAdviceClient:
                         "runtime_sha256": strategy.identity.runtime_sha256,
                         "data_dir": directory.relative_to(root).as_posix(),
                         "data_identity": prepared.data_identity,
+                        "input_binding": strategy.input_binding.to_dict(),
                     }
                 },
             },

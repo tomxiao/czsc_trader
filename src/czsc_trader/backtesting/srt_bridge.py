@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataflows import Dataflows
+from dataflows import Dataflows, PreparePolicy, Dataset, canonical_frame_sha256
 
 from hashlib import sha256
 from pathlib import Path
 from collections.abc import Mapping
+from dataclasses import fields, is_dataclass
 from datetime import date
 import re
 
@@ -19,12 +20,13 @@ from strategy_runtime import (
     StrategyRelease,
     StrategyRuntime,
     StrategyCandidate,
+    StrategyInputBinding,
     RuntimeContractError,
     canonical_sha256,
 )
 
 from trading_execution_engine import HistoricalExecutor
-from .execution_data import BacktestExecutionData
+from .execution_data import BacktestExecutionData, _prices, _unadjust_intraday
 from .models import StrategySnapshot
 from .result import BacktestResult
 from .signal_replay import SignalReplay
@@ -60,6 +62,10 @@ def _validate_historical_decisions(
 
 
 def _plain_json(value):
+    if is_dataclass(value):
+        return {item.name: _plain_json(getattr(value, item.name)) for item in fields(value)}
+    if isinstance(value, Path):
+        return str(value)
     if isinstance(value, Mapping):
         return {str(key): _plain_json(item) for key, item in value.items()}
     if isinstance(value, tuple):
@@ -189,28 +195,113 @@ def srt_data_directory(
     *,
     created_on: date | None = None,
 ) -> Path:
-    """Find or create the reusable SRT space for one strategy and symbol."""
+    """Locate computation context; input versions are selected only by bindings."""
 
-    parent = Path(root).resolve()
+    parent = Path(root).resolve() / "contexts"
     parent.mkdir(parents=True, exist_ok=True)
     reference = re.sub(r"[^A-Za-z0-9]+", "", snapshot.identity.reference)
     instrument = re.sub(r"[^A-Za-z0-9]+", "", symbol.split(".", 1)[0].upper())
     if not reference or not instrument:
         raise RuntimeContractError("SRT data-space identity is not path-safe")
-    prefix = f"{reference}_{instrument}_"
-    pattern = re.compile(rf"^{re.escape(prefix)}\d{{6}}$")
-    existing = sorted(
-        item for item in parent.iterdir() if item.is_dir() and pattern.fullmatch(item.name)
-    )
-    if len(existing) > 1:
-        raise RuntimeContractError(
-            f"multiple reusable SRT data spaces exist for {snapshot.identity.reference} {symbol}"
-        )
-    if existing:
-        return existing[0]
-    target = parent / f"{prefix}{(created_on or date.today()):%y%m%d}"
-    target.mkdir(exist_ok=False)
+    target = parent / f"{reference}_{instrument}"
+    target.mkdir(exist_ok=True)
     return target
+
+
+def prepare_srt_input_binding(
+    *, snapshot: StrategySnapshot, execution_data: BacktestExecutionData,
+    start: pd.Timestamp, end: pd.Timestamp, repository_root: Path, dataflows: Dataflows,
+) -> StrategyInputBinding:
+    """Prepare one input list for strategy calculation and historical execution."""
+    if not execution_data.requests or execution_data.prepared is None:
+        raise RuntimeContractError("execution data requires an explicit DFLS input binding")
+    source, _ = describe_snapshot_strategy(
+        repository_root, snapshot, deployment_symbol=execution_data.symbol,
+    )
+    instance = StrategyRuntime(Path(repository_root) / "strategies", dataflows=dataflows).create(
+        StrategyInit(source, TradableWindow(pd.Timestamp(start).date(), pd.Timestamp(end).date()),
+                     srt_data_directory(execution_data.root, snapshot, execution_data.symbol),
+                     symbol=execution_data.symbol if snapshot.identity.kind == "REGISTERED" else None)
+    )
+    calendar_request = instance.calendar_request()
+    calendar_prepared = dataflows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+    if not calendar_prepared.ready:
+        raise RuntimeContractError(f"strategy calendar preparation failed: {calendar_prepared.items}")
+    calendar = dataflows.fetch(calendar_request, prepared=calendar_prepared.reference)
+    if not calendar.ready:
+        raise RuntimeContractError(f"strategy calendar read failed: {calendar.error}")
+    plan = instance.plan_inputs(calendar)
+    prepared = dataflows.prepare(
+        (*plan.requests.values(), *execution_data.requests.values()), policy=PreparePolicy.REUSE,
+    )
+    if not prepared.ready:
+        raise RuntimeContractError(f"backtest input preparation failed: {prepared.items}")
+    binding = StrategyInputBinding(plan, prepared.reference)
+    final_calendar = dataflows.fetch(plan.requests[plan.calendar_name], prepared=prepared.reference)
+    if not final_calendar.ready or final_calendar.identity.content_sha256 != plan.calendar_sha256:
+        raise RuntimeContractError("calendar changed while preparing the strategy input list")
+    _validate_execution_binding(dataflows, execution_data, binding)
+    return binding
+
+
+def _validate_execution_binding(flows, execution_data, binding):
+    if not execution_data.requests or not execution_data.input_identities:
+        raise RuntimeContractError("execution data has no authenticated input list")
+    asset = execution_data.asset_type
+    if asset not in {"etf", "stock"} or execution_data.symbol != execution_data.symbol.upper():
+        raise RuntimeContractError("execution instrument identity is invalid")
+    adjusted_dataset = Dataset.ETF_OHLCV if asset == "etf" else Dataset.STOCK_OHLCV
+    daily_dataset = Dataset.ETF_UNADJUSTED_DAILY if asset == "etf" else Dataset.STOCK_UNADJUSTED_DAILY
+    expected = {
+        "adjusted_daily": (adjusted_dataset, execution_data.symbol, "daily"),
+        "execution_daily": (daily_dataset, execution_data.symbol, "daily"),
+        "adjusted_30m": (adjusted_dataset, execution_data.symbol, "30m"),
+        "trading_calendar": (Dataset.TRADING_CALENDAR, "SSE", "daily"),
+    }
+    if execution_data.execution_five_minute is not None:
+        expected["adjusted_5m"] = (adjusted_dataset, execution_data.symbol, "5m")
+    if set(execution_data.requests) != set(expected) or set(execution_data.input_identities) != set(expected):
+        raise RuntimeContractError("execution input list differs from its declared tables")
+    results = {}
+    for name, request in execution_data.requests.items():
+        if (request.dataset, request.symbol, request.frequency) != expected[name]:
+            raise RuntimeContractError(f"execution input selection differs from instrument: {name}")
+        result = flows.fetch(request, prepared=binding.prepared)
+        if not result.ready or result.identity.content_sha256 != execution_data.input_identities.get(name):
+            raise RuntimeContractError(f"execution input differs from bound preparation: {name}")
+        results[name] = result
+    calendar = results["trading_calendar"].dataframe
+    sessions = pd.DatetimeIndex(
+        pd.to_datetime(calendar.loc[pd.to_numeric(calendar["IsOpen"]).eq(1), "Date"]).dt.normalize(),
+        name="dt",
+    )
+    if (sessions.empty or not sessions.equals(execution_data.evaluation_sessions)
+            or execution_data.cutoff != sessions[-1].date()):
+        raise RuntimeContractError("execution evaluation window differs from bound calendar")
+    fingerprint = canonical_sha256({
+        "symbol": execution_data.symbol, "asset_type": asset,
+        "evaluation_start": sessions[0].date().isoformat(),
+        "evaluation_end": sessions[-1].date().isoformat(),
+        "inputs": {name: result.identity.content_sha256 for name, result in results.items()},
+    })
+    if execution_data.fingerprint != fingerprint:
+        raise RuntimeContractError("execution data fingerprint differs from bound inputs")
+    adjusted = _prices(results["adjusted_daily"].dataframe)
+    adjusted.insert(1, "symbol", execution_data.symbol)
+    daily = _prices(results["execution_daily"].dataframe)
+    frames = {
+        "adjusted_daily": adjusted,
+        "execution_daily": daily,
+        "execution_intraday": _unadjust_intraday(_prices(results["adjusted_30m"].dataframe), adjusted, daily),
+    }
+    if "adjusted_5m" in results:
+        frames["execution_five_minute"] = _unadjust_intraday(
+            _prices(results["adjusted_5m"].dataframe), adjusted, daily,
+        )
+    for name, frame in frames.items():
+        actual = getattr(execution_data, name)
+        if not isinstance(actual, pd.DataFrame) or canonical_frame_sha256(actual) != canonical_frame_sha256(frame):
+            raise RuntimeContractError(f"execution dataframe differs from bound inputs: {name}")
 
 
 def build_srt_signal_replay(
@@ -222,9 +313,12 @@ def build_srt_signal_replay(
     repository_root: Path,
     space_created_on: date | None = None,
     dataflows: Dataflows | None = None,
+    input_binding: StrategyInputBinding | None = None,
 ) -> tuple[object, SignalReplay]:
     """Create one SRT instance and calculate its complete historical window."""
 
+    if dataflows is None:
+        raise RuntimeContractError("backtest requires host-supplied Dataflows")
     source, definition = describe_snapshot_strategy(
         repository_root,
         snapshot,
@@ -262,7 +356,18 @@ def build_srt_signal_replay(
             ),
         )
     )
-    prepared = strategy.prepare_data()
+    if input_binding is None and execution_data.strategy_bindings:
+        key = f"{snapshot.identity.reference}|{evaluation[0].date()}|{evaluation[-1].date()}"
+        if key not in execution_data.strategy_bindings:
+            raise RuntimeContractError("review data does not bind the requested strategy/window")
+        input_binding = execution_data.strategy_bindings[key]
+    if input_binding is None:
+        input_binding = prepare_srt_input_binding(
+            snapshot=snapshot, execution_data=execution_data, start=evaluation[0], end=evaluation[-1],
+            repository_root=repository_root, dataflows=dataflows,
+        )
+    _validate_execution_binding(dataflows, execution_data, input_binding)
+    prepared = strategy.prepare_data(binding=input_binding)
     history = strategy.inspect_signals()
     _validate_historical_decisions(history, visible)
     rows: list[dict[str, object]] = []
@@ -340,6 +445,10 @@ def build_srt_signal_replay(
             **target_order_types,
             "available_through": prepared.available_through.isoformat(),
             "prepared_data_identity": prepared.data_identity,
+            "input_binding": input_binding.to_dict(),
+            "execution_input_identities": dict(execution_data.input_identities),
+            "execution_requests": {name: _plain_json(request)
+                                   for name, request in execution_data.requests.items()},
         },
     )
     return strategy, replay
@@ -371,6 +480,7 @@ def replay_srt_account(
             settings["one_way_cost"] = float(fee_rate_override)
         effective_policy = ExecutionPolicy(effective_policy.policy_type, settings)
     strategy_root = Path(signals.snapshot.identity.source)
+    input_binding = strategy.input_binding
     strategy = StrategyRuntime(strategy_root, dataflows=dataflows).create(
         StrategyInit(
             signals.strategy_source,
@@ -384,7 +494,7 @@ def replay_srt_account(
             execution_policy=effective_policy,
         )
     )
-    strategy.prepare_data()
+    strategy.prepare_data(binding=input_binding)
     channel = HistoricalExecutor(
         strategy_reference=signals.snapshot.identity.reference,
         symbol=execution_data.symbol,

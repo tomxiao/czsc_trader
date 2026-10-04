@@ -342,6 +342,7 @@ class AccountEngine:
         if bool(execution_account["paused"]):
             payload["execution_disposition"] = "SKIPPED_PAUSED"
         payload["prepared_data_identity"] = prepared.data_identity
+        payload["prepared_data_reference"] = dict(prepared.data_reference)
         previous = json.loads(previous_payload) if previous_payload else None
         if (
             previous is not None

@@ -5,20 +5,25 @@ from dataclasses import dataclass, replace
 from io import BytesIO
 from pathlib import Path
 import pickle
+import shutil
 from types import MappingProxyType
 
 from threadpoolctl import threadpool_limits
-from dataflows import Dataflows, LocalCacheConfig
+from dataflows import Dataflows, DataSpace, ProviderConfig
 
 
 @dataclass(frozen=True)
 class PlatformEvaluator:
-    env_file: Path
-    cache: LocalCacheConfig | None
+    base_dir: Path
+    space: DataSpace
 
     def __call__(self, request):
         from .evaluation import evaluate_strategy
-        return evaluate_strategy(request, dataflows=Dataflows(env_file=self.env_file, cache=self.cache))
+        if set(request.input_bindings) != {item.window_id for item in request.windows}:
+            raise ValueError("evaluation worker requires parent-prepared input bindings")
+        return evaluate_strategy(request, dataflows=Dataflows(
+            base_dir=self.base_dir, space=self.space, providers=ProviderConfig(bindings={}),
+        ))
 
 
 def _mapping(value):
@@ -42,10 +47,16 @@ def compute(payload):
     # Bytes originate exclusively from the parent process, never external artifacts.
     evaluator, request, native_threads = pickle.loads(payload)
     from ..temp_workspace import create_temporary_directory
-    # SRT prepared spaces are mutable. Parallel attempts must never replace the
-    # same directory, even when they evaluate identical candidates and windows.
-    root = create_temporary_directory(request.repository_root, "evaluation-workers")
+    # Only calculation context is per-worker; managed DFLS assets stay in the
+    # host-selected shared data space and are read by their parent-bound refs.
+    root = create_temporary_directory(request.repository_root, "evaluation-workers",
+                                      repository_root=request.repository_root)
     request = replace(request, execution_data=replace(request.execution_data, root=root))
     with threadpool_limits(limits=native_threads):
         result = evaluator(request)
-    return pack(result)
+    output = pack(result)
+    expected_parent = (request.repository_root / ".tmp" / "evaluation-workers").resolve()
+    if root.resolve().parent != expected_parent:
+        raise ValueError("evaluation workspace escaped its managed temporary root")
+    shutil.rmtree(root)
+    return output

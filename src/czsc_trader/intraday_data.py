@@ -12,7 +12,7 @@ from typing import Any
 
 import pandas as pd
 
-from dataflows import DataRequest, Dataflows, Dataset
+from dataflows import (DataRequest, Dataflows, Dataset, DataSpace, ProviderConfig, PreparePolicy)
 
 from .identity import raw_file_sha256
 from .temp_workspace import create_temporary_directory
@@ -65,23 +65,20 @@ def _fetch_result(
     start: date,
     end: date,
     period: str,
-    *,
-    env_file: str | Path | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    return _ready_result(
-        dataflows.fetch(
-            DataRequest(
-                Dataset.ETF_OHLCV,
-                symbol,
-                start.isoformat(),
-                end.isoformat(),
-                end.isoformat(),
-                period,
-                {"env_file": str(env_file)} if env_file is not None else {},
-            )
-        ),
-        f"{symbol} {period}",
-    )
+    request = DataRequest(Dataset.ETF_OHLCV, symbol, start.isoformat(), end.isoformat(), end.isoformat(), period)
+    preparation = dataflows.prepare((request,), policy=PreparePolicy.REUSE)
+    if not preparation.ready:
+        raise ValueError(f"DFLS preparation failed: {preparation.items}")
+    result = dataflows.fetch(request, prepared=preparation.reference)
+    frame, metadata = _ready_result(result, f"{symbol} {period}")
+    metadata["prepared"] = {
+        "space_id": str(preparation.reference.space_id),
+        "preparation_id": str(preparation.reference.preparation_id),
+        "manifest_sha256": preparation.reference.manifest_sha256,
+    }
+    return frame, metadata
+
 
 
 def _csv_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -116,16 +113,19 @@ def prepare_intraday_research_data(
     normalized_symbol, code = _symbol_parts(symbol)
     if start > end:
         raise ValueError("start must not be after end")
-    flows = dataflows or Dataflows()
+    flows = dataflows if dataflows is not None else Dataflows(
+        base_dir=Path(data_dir).resolve(), space=DataSpace(Path("assets")),
+        providers=ProviderConfig(env_file=Path(env_file) if env_file is not None else None),
+    )
     _daily_raw, daily_metadata = _fetch_result(
-        flows, normalized_symbol, start, end, "daily", env_file=env_file
+        flows, normalized_symbol, start, end, "daily"
     )
     frames: dict[str, pd.DataFrame] = {}
     metadata: dict[str, dict[str, object]] = {}
     factor_hashes = {str(daily_metadata.get("adjustment_factor_sha256", ""))}
     for period in INTRADAY_RESEARCH_FREQUENCIES:
         raw, item_metadata = _fetch_result(
-            flows, normalized_symbol, start, end, period, env_file=env_file
+            flows, normalized_symbol, start, end, period
         )
         frame = _normalize_frame(raw, period)
         frames[period] = frame

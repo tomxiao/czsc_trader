@@ -126,6 +126,7 @@ class _CallEvidence:
                     request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
                 ),
                 "request_hash": result.request_hash,
+                "input_bindings": {name: binding.to_dict() for name, binding in request.input_bindings.items()},
                 "result_hash": result.result_hash,
                 "runs": runs,
                 "assessment_evidence": [item.to_dict() for item in assessment],

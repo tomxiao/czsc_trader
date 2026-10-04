@@ -1,10 +1,12 @@
 from copy import deepcopy
+from pathlib import Path
+from dataflows import DataSpace
+from czsc_trader.backtesting.execution_data import prepare_backtest_execution_data
 from dataclasses import replace
 from datetime import date, datetime
 from hashlib import sha256
 import json
 import shutil
-from types import SimpleNamespace
 
 import pandas as pd
 import pytest
@@ -47,7 +49,6 @@ from czsc_trader.research_tools import (
     create_formal_experiment_context,
     preflight_experiment,
 )
-from functional_support import ReplayFixture, execution_data_from_replay
 from test_candidate_runtime_execution import _install_candidate_dataflows
 from test_research_experiment import _write_v3_experiment
 
@@ -58,19 +59,11 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    _install_candidate_dataflows(monkeypatch, inputs, daily)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path, space=DataSpace(Path("data/research")))
     from czsc_trader.research_tools import evaluation
 
     monkeypatch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
-    replay = ReplayFixture(
-        tmp_path,
-        SimpleNamespace(daily=daily, symbol="588080.SH", asset_type="etf"),
-        daily,
-        pd.DataFrame(columns=["dt", "high", "low"]),
-        "d" * 64,
-        sessions[-1].date(),
-    )
-    execution = execution_data_from_replay(replay, start=sessions[1], end=sessions[-1])
+    execution = prepare_backtest_execution_data(srt_data_root=tmp_path / "data/backtest", symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows)
     candidate = StrategyCandidate("S900", "C0001", payload, package)
     definition = ExperimentDefinition(
         schema_version=2,
@@ -101,6 +94,7 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
     context = create_formal_experiment_context(
         definition,
         repository_root=tmp_path,
+        data_space=DataSpace(Path("data/research")),
         resources=ExperimentResources(1, 1),
         workspace=workspace,
     )
@@ -231,6 +225,7 @@ def test_sealed_window_cannot_include_development_returns(managed_evaluation):
     sealed = create_formal_experiment_context(
         definition,
         repository_root=request.repository_root,
+        data_space=DataSpace(Path("data/research")),
         resources=ExperimentResources(1, 1),
         workspace=context.workspace,
     )
@@ -421,11 +416,11 @@ def test_content_identity_is_id_and_path_independent(candidate_payload, tmp_path
 
 
 def test_registration_is_explicit_immutable_and_uses_saved_sources(
-    candidate_payload, functional_repo
+    candidate_payload, minimal_repo
 ):
     payload, source = candidate_payload
-    context = RepositoryContext.discover(functional_repo)
-    candidate_root = functional_repo / "candidate" / "strategy_runtime"
+    context = RepositoryContext.discover(minimal_repo)
+    candidate_root = minimal_repo / "candidate" / "strategy_runtime"
     shutil.copytree(source, candidate_root)
     candidate = StrategyCandidate("S009", "C0001", payload, candidate_root)
     experiment_path = context.experiments_root / "S009" / "20260925_S009_EX99"
@@ -497,7 +492,6 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
     from strategy_evaluator import assess_candidates, compare_candidates, research_models as m
     from strategy_manager import CandidateDerivation, CandidateDerivationKind, canonical_sha256
     from czsc_trader.research_tools import build_assessment_evidence, EvaluationLineage, evaluation
-    from functional_support import replay_fingerprint
 
     old_context, request = managed_evaluation
     sessions = request.execution_data.adjusted_daily["dt"]
@@ -509,11 +503,12 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         }
     )
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    _install_candidate_dataflows(monkeypatch, flow, daily)
+    flows = _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=request.repository_root, space=DataSpace(Path("data/stress")))
     monkeypatch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
     context = create_formal_experiment_context(
         old_context.definition,
         repository_root=request.repository_root,
+        data_space=DataSpace(Path("data/stress")),
         resources=ExperimentResources(1, 1),
         workspace=ExperimentWorkspace(
             request.repository_root / ".tmp/stress-integration", request.repository_root
@@ -523,12 +518,9 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
         request,
         frequency_window_days=2,
         costs=(EvaluationCost("standard", 0.001, tier), EvaluationCost("fee_x2", 0.002, "STRESS")),
-        execution_data=replace(
-            request.execution_data,
-            adjusted_daily=daily,
-            execution_daily=daily,
-            fingerprint=replay_fingerprint(daily),
-        ),
+        execution_data=prepare_backtest_execution_data(
+            srt_data_root=request.repository_root / "data/stress-backtest", symbol=request.symbol, asset_type=request.asset_type,
+            start=request.windows[0].start, end=request.data_cutoff, dataflows=flows),
     )
     parent = context.evaluation.evaluate(request)
     base_evidence = build_assessment_evidence(request, parent)

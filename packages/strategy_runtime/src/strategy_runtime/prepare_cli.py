@@ -12,11 +12,12 @@ import re
 from typing import Sequence
 from uuid import uuid4
 
-from dotenv import load_dotenv
+from dataflows import Dataflows, DataSpace, ProviderConfig, PreparePolicy
 
 from .models import StrategyRelease, canonical_sha256
 from .runtime import StrategyInit, StrategyRuntime
 from .contracts import TradableWindow
+from .input_binding import StrategyInputBinding
 
 
 def _release(value: str) -> tuple[str, str]:
@@ -61,6 +62,8 @@ def prepare_runtime_data(
     symbol: str,
     releases: list[tuple[str, str]],
     trading_date: date,
+    dataflows: Dataflows,
+    policy: PreparePolicy,
 ) -> dict[str, object]:
     """Prepare all releases, then atomically expose one PTE business-window index."""
 
@@ -69,26 +72,32 @@ def prepare_runtime_data(
     selected = sorted(set(releases))
     if not selected:
         raise ValueError("at least one frozen strategy release is required")
-    runtime = StrategyRuntime(Path(repo_root).resolve() / "strategies")
+    runtime = StrategyRuntime(Path(repo_root).resolve() / "strategies", dataflows=dataflows)
     entries: dict[str, object] = {}
     prepared_dates: set[str] = set()
+    instances = []
     for strategy_id, version in selected:
         release = _load_release(Path(repo_root).resolve(), strategy_id, version)
         directory = _instance_directory(root, release, trading_date)
-        instance = runtime.create(
-            StrategyInit(
-                release,
-                TradableWindow(trading_date, trading_date),
-                directory,
-                symbol=symbol.upper(),
-            )
-        )
-        prepared = instance.prepare_data()
+        instance = runtime.create(StrategyInit(release, TradableWindow(trading_date, trading_date),
+                                               directory, symbol=symbol.upper()))
+        instances.append((release, directory, instance))
+    calendars = dataflows.prepare(tuple(instance.calendar_request() for _, _, instance in instances), policy=policy)
+    if not calendars.ready:
+        raise RuntimeError(f"calendar preparation failed: {calendars.items}")
+    plans = [instance.plan_inputs(dataflows.fetch(instance.calendar_request(), prepared=calendars.reference))
+             for _, _, instance in instances]
+    batch = dataflows.prepare(tuple(request for plan in plans for request in plan.requests.values()), policy=policy)
+    if not batch.ready:
+        raise RuntimeError(f"runtime input preparation failed: {batch.items}")
+    for (release, directory, instance), plan in zip(instances, plans):
+        prepared = instance.prepare_data(binding=StrategyInputBinding(plan, batch.reference))
         prepared_dates.add(prepared.available_through.isoformat())
         entries[release.release_id] = {
             "release_hash": release.release_hash,
             "data_dir": directory.relative_to(root).as_posix(),
             "data_identity": prepared.data_identity,
+            "input_binding": instance.input_binding.to_dict(),
         }
     if len(prepared_dates) != 1:
         raise RuntimeError("strategy instances produced different prepared-through dates")
@@ -122,6 +131,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="srt-prepare")
     parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--data-dir", type=Path, required=True)
+    parser.add_argument("--data-space", type=Path, required=True)
+    parser.add_argument("--prepare-policy", type=PreparePolicy, choices=list(PreparePolicy), default=PreparePolicy.REUSE)
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--release", action="append", type=_release, required=True)
     parser.add_argument("--trading-date", type=date.fromisoformat, required=True)
@@ -130,7 +141,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    load_dotenv(Path(args.repo_root).resolve() / ".env", override=False)
     try:
         result = prepare_runtime_data(
             repo_root=args.repo_root,
@@ -138,6 +148,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             symbol=args.symbol,
             releases=args.release,
             trading_date=args.trading_date,
+            dataflows=Dataflows(base_dir=Path(args.repo_root).resolve(),
+                                space=DataSpace(args.data_space),
+                                providers=ProviderConfig(env_file=Path(args.repo_root).resolve() / ".env")),
+            policy=args.prepare_policy,
         )
     except Exception as exc:
         print(json.dumps({

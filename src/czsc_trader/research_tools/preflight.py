@@ -7,7 +7,7 @@ import ast
 import json
 
 import pandas as pd
-from dataflows import Dataflows, DataRequest
+from dataflows import Dataflows, DataRequest, PreparePolicy
 
 from research_experiment import (
     ExperimentInput,
@@ -207,11 +207,15 @@ def preflight_experiment(
                 raise PermissionError("data readiness probe requires reads_real_returns capability")
             if pd.Timestamp(request.end).date() > definition.development_cutoff:
                 raise PermissionError("preflight request exceeds development cutoff")
-            result = dataflows.fetch(request)
-            if not result.ready:
+            prepared = dataflows.prepare((request,), policy=PreparePolicy.REUSE)
+            if not prepared.ready:
+                item = prepared.items[0]
                 raise ValueError(
-                    f"{request.dataset}: {result.status.value}/{result.error.code}: {result.error.message}"
+                    f"{request.dataset}: {item.status.value}/{item.error.code}: {item.error.message}"
                 )
+            result = dataflows.fetch(request, prepared=prepared.reference)
+            if not result.ready:
+                raise ValueError(f"{request.dataset}: {result.error.code}: {result.error.message}")
 
         checks.append(
             _check(

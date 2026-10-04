@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
+from dataflows import Dataflows, DataSpace, ProviderConfig
 
 from czsc_trader.research_tools import (
     CandidateEvaluationContext,
@@ -16,7 +17,7 @@ from strategy_evaluator import EvaluationProtocol
 
 
 def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
-    functional_repo: Path, monkeypatch
+    minimal_repo: Path, monkeypatch
 ) -> None:
     protocol = EvaluationProtocol.from_dict(
         {
@@ -68,23 +69,25 @@ def test_formal_evaluation_rejects_data_that_stops_before_development_cutoff(
         load_stale,
     )
     context = CandidateEvaluationContext(
-        RepositoryContext.discover(functional_repo, explicit_root=functional_repo),
+        RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo),
         "588080.SH",
         "etf",
         (("full", (pd.Timestamp("2026-09-01"), pd.Timestamp("2026-09-02"))),),
+        dataflows=Dataflows(base_dir=minimal_repo, space=DataSpace(Path("data/research")),
+                           providers=ProviderConfig(bindings={})),
     )
 
     with pytest.raises(ValueError, match="does not reach development cutoff"):
         prepare_evaluation_workspace(context, protocol)
 
 
-def test_research_evaluate_is_a_non_governance_facade(functional_repo: Path, monkeypatch) -> None:
+def test_research_evaluate_is_a_non_governance_facade(minimal_repo: Path, monkeypatch) -> None:
     from czsc_trader.application.research_evaluation_service import (
         evaluate_research_request,
     )
 
-    context = RepositoryContext.discover(functional_repo, explicit_root=functional_repo)
-    experiment = functional_repo / "experiments" / "S008" / "EX67"
+    context = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
+    experiment = minimal_repo / "experiments" / "S008" / "EX67"
     output = experiment / "artifacts" / "evaluation"
     request_path = experiment / "evaluation_request.json"
     expected_request = object()
@@ -100,11 +103,11 @@ def test_research_evaluate_is_a_non_governance_facade(functional_repo: Path, mon
     )
     monkeypatch.setattr(
         "czsc_trader.application.research_evaluation_service._evaluation_request",
-        lambda *args: expected_request,
+        lambda *args, **kwargs: expected_request,
     )
     monkeypatch.setattr(
         "czsc_trader.application.research_evaluation_service.evaluate_strategy",
-        lambda request: expected_result if request is expected_request else None,
+        lambda request, **kwargs: expected_result if request is expected_request else None,
     )
     monkeypatch.setattr(
         "czsc_trader.application.research_evaluation_service._publish_result",

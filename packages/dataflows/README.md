@@ -35,7 +35,8 @@ if not result.ready:
 bars, identity = result.dataframe, result.identity
 ```
 
-示例使用临时空间；正式空间由业务方配置。PTE、研究和候选/冻结回测的主调方接入尚待独立评审。
+示例使用临时空间；正式空间由业务方配置。PTE在环境配置声明空间，研究由上下文工厂接收空间，
+候选/冻结回测由TDR宿主初始化空间；三类主调方均通过以下准备与读取接口管理输入。
 本次接口替换不提供旧`Dataflows()`、隐式取数`fetch(request)`、`LocalCacheConfig`或`options`兼容层。
 
 | 接口 | 契约 |

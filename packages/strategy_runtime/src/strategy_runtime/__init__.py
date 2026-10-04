@@ -1,5 +1,6 @@
 """Strategy Runtime (SRT) public contracts."""
 
+from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .algorithm import StrategyImplementation
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .alignment import AlignmentRule, AlignedInput, InputAlignment, align_input_history
@@ -68,6 +69,7 @@ from .strategy import StrategyInstance
 __version__ = "0.1.0"
 
 __all__ = [
+    "StrategyInputPlan", "StrategyInputBinding",
     "RuntimeBinding", "RuntimeBindingSpec",
     "ObservationUnavailable", "ObservationDefinition", "ObservationSeries", "ObservationFact", "ConstantGuide", "EvidenceGuide",
     "ObservationValueType", "ObservationFormat", "StrategyObservation", "ObservedSeries", "ObservedFact",

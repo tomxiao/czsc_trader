@@ -5,7 +5,7 @@ import shutil
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows
+from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset
 from current_contract_support import candidate_payload as candidate_payload
 from test_current_contracts import freshly_frozen as freshly_frozen
 
@@ -94,12 +94,12 @@ def functional_repo(minimal_repo: Path, monkeypatch) -> Path:
             metadata["adjustment"] = "none"
         return frame, metadata
 
-    flows = Dataflows({key[0]: fetch for key in frames})
-    monkeypatch.setattr("strategy_runtime.preparation.Dataflows", lambda: flows)
+    flows = Dataflows(base_dir=root, space=DataSpace(Path("data/test-market")),
+                      providers=ProviderConfig(bindings={Dataset(key[0]): ProviderBinding("fixture", "v1", fetch) for key in frames}))
     monkeypatch.setattr("czsc_trader.backtesting.service.Dataflows", lambda **kwargs: flows)
     monkeypatch.setattr("czsc_trader.research_tools.evaluation.Dataflows", lambda **kwargs: flows)
     monkeypatch.setattr(
-        "czsc_trader.backtesting.execution_data.Dataflows", lambda: flows
+        "czsc_trader.backtesting.execution_data.Dataflows", lambda **kwargs: flows
     )
     for relative in (
         Path("S001/0824_EX04/artifacts/frozen_challenger.json"),

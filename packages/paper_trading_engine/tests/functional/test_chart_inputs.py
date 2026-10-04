@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, PreparePolicy
 
 from paper_trading_engine.chart_market_data import AccountChartMarketData
 
@@ -20,12 +20,20 @@ def test_chart_market_data_reads_adjusted_bars_without_strategy_instance() -> No
         }
     )
 
-    def fetch(request):
+    reference = object()
+
+    def prepare(values, *, policy):
+        assert policy is PreparePolicy.REUSE
+        assert len(values) == 1
+        return SimpleNamespace(ready=True, reference=reference)
+
+    def fetch(request, *, prepared):
+        assert prepared is reference
         requests.append(request)
         return SimpleNamespace(ready=True, dataframe=frame, error=None, status="READY")
 
     source = AccountChartMarketData(
-        dataflows=SimpleNamespace(fetch=fetch),
+        dataflows=SimpleNamespace(prepare=prepare, fetch=fetch),
         today=lambda: pd.Timestamp("2026-09-20").date(),
     )
 

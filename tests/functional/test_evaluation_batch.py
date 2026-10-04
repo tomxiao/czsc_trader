@@ -6,10 +6,11 @@ from functools import partial
 import json
 import os
 import time
+from pathlib import Path
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, Dataset
+from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding
 from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, ExperimentResources
 from czsc_trader.research_tools import EvaluationExecutionError
 from czsc_trader.research_tools.evaluation import evaluate_strategy
@@ -42,11 +43,11 @@ def synthetic_evaluator(request):
     time.sleep(.2)
     if request.initial_cash == 13:
         raise RuntimeError("synthetic computation failure")
-    providers = {name: synthetic_provider for name in (
-        "etf.share", Dataset.ETF_SHARE_SIZE.value, Dataset.ETF_OHLCV.value,
-        Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.TRADING_CALENDAR.value,
-    )}
-    return evaluate_strategy(request, dataflows=Dataflows(providers))
+    assert set(request.input_bindings) == {item.window_id for item in request.windows}
+    return evaluate_strategy(request, dataflows=Dataflows(
+        base_dir=request.repository_root, space=DataSpace(Path("data/research")),
+        providers=ProviderConfig(bindings={}),
+    ))
 
 
 def terminated_worker(request):
@@ -82,6 +83,9 @@ def test_batch_multicore_failure_retry_and_order(batch):
     assert again.record.attempt_id not in {x.record.attempt_id for x in outcomes}
     assert again.result.result_hash == outcomes[0].result.result_hash
     assert len(context.trace.evaluations) == 5
+    # Successful workers release calculation scratch; the failed attempt keeps
+    # one workspace for diagnosis, independently of the shared DFLS assets.
+    assert len(list((request.repository_root / ".tmp/evaluation-workers").iterdir())) == 1
     with pytest.raises(ValueError, match="successful outcome"):
         EvaluationOutcome(outcomes[0].record, None)
     with pytest.raises(ValueError, match="successful outcome"):
@@ -132,8 +136,19 @@ def test_batch_context_owner_and_completed_guards(batch):
 def test_default_formal_evaluator_transport(batch):
     from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator, pack
     context, request = batch
-    assert pack((PlatformEvaluator(request.repository_root / ".env", None), request, 1))
-    assert pack(partial(evaluate_strategy, dataflows=Dataflows({"etf.share": synthetic_provider})))
+    assert pack((PlatformEvaluator(request.repository_root, DataSpace(Path("data/research"))), request, 1))
+    assert pack(partial(evaluate_strategy, dataflows=Dataflows(
+        base_dir=request.repository_root, space=DataSpace(Path("data/research")),
+        providers=ProviderConfig(bindings={Dataset.ETF_SHARE_SIZE: ProviderBinding("test", "v1", synthetic_provider)}),
+    )))
+
+
+def test_platform_worker_rejects_missing_parent_preparation(batch):
+    from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator
+    _, request = batch
+    evaluator = PlatformEvaluator(request.repository_root, DataSpace(Path("data/research")))
+    with pytest.raises(ValueError, match="parent-prepared"):
+        evaluator(request)
 
 
 def test_dead_worker_is_unknown_and_never_success(batch):

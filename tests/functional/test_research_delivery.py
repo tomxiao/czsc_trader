@@ -186,7 +186,7 @@ def new_named_experiment(context, strategy_id="S900"):
     execution = create_experiment_context(
         loaded.definition,
         repository_root=context.root,
-        dataflows=_flows(),
+        dataflows=_flows(context.root),
         workspace=ExperimentWorkspace(context.root / ".tmp" / strategy_id / root.name, context.root),
         resources=ExperimentResources(1, loaded.definition.random_seed),
     )

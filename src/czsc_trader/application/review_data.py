@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import replace, asdict
+from uuid import UUID
+from dataflows import Dataflows, DataRequest, NoParameters, PreparedDataRef
 from datetime import date
 from hashlib import sha256
 import json
@@ -10,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 from strategy_runtime import (
-    canonical_sha256,
+    canonical_sha256, StrategyInputBinding,
 )
 
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
@@ -53,7 +55,7 @@ def _snapshot_file(root: Path, name: str) -> Path:
 def verify_review_dataset(directory: Path, expected_hash: str | None = None) -> dict:
     raw = json.loads((directory / MANIFEST).read_text(encoding="utf-8"))
     digest = raw.pop("snapshot_hash")
-    if raw.get("schema_version") != 2 or canonical_sha256(raw) != digest:
+    if raw.get("schema_version") != 3 or canonical_sha256(raw) != digest:
         raise ValueError("review dataset manifest hash mismatch")
     if expected_hash is not None and expected_hash != digest:
         raise ValueError("review dataset differs from the sealed snapshot")
@@ -98,6 +100,14 @@ def load_review_dataset(
         fingerprint=manifest["execution_data_identity"],
         cutoff=date.fromisoformat(manifest["cutoff"]),
         evaluation_sessions=sessions,
+        requests={name: DataRequest(**{**item, "parameters": NoParameters()})
+                  for name, item in manifest["execution_requests"].items()},
+        prepared=PreparedDataRef(UUID(manifest["prepared"]["space_id"]),
+                                 UUID(manifest["prepared"]["preparation_id"]),
+                                 manifest["prepared"]["manifest_sha256"]),
+        input_identities=manifest["input_identities"],
+        strategy_bindings={key: StrategyInputBinding.from_mapping(value)
+                           for key, value in manifest["strategy_bindings"].items()},
     )
 
 
@@ -108,6 +118,7 @@ def publish_review_dataset(
     directory: Path,
     *,
     candidate_runtime_roots: dict[str, Path] | None = None,
+    dataflows: Dataflows,
 ) -> dict:
     """Publish once; incomplete staging never becomes a usable review dataset."""
     from czsc_trader.candidate_evaluation import (
@@ -125,6 +136,7 @@ def publish_review_dataset(
         context, manifest["symbol"], manifest.get("asset_type", "etf"), periods,
         family_id=manifest["strategy_id"],
         candidate_runtime_roots=candidate_runtime_roots,
+        dataflows=dataflows,
     )
     snapshots = [_snapshot(run, item) for item in manifest["candidates"]]
     strategies = [item[1] for item in snapshots]
@@ -154,18 +166,27 @@ def publish_review_dataset(
                         "dates": [col for col in frame if pd.api.types.is_datetime64_any_dtype(frame[col])]}
     sealed_execution = replace(execution_data, root=staging)
     runtimes = {}
+    bindings = {}
     for snapshot, definition in snapshots:
         for _, (start, end) in periods:
-            build_srt_signal_replay(
+            strategy, _ = build_srt_signal_replay(
                 snapshot=snapshot,
                 execution_data=sealed_execution,
                 start=start,
                 end=end,
                 repository_root=context.root,
+                dataflows=dataflows,
             )
+            bindings[f"{snapshot.identity.reference}|{start.date()}|{end.date()}"] = strategy.input_binding.to_dict()
         runtimes[definition.release_id] = definition.runtime_sha256
     content = {
-        "schema_version": 2, "recipe_hash": recipe_hash,
+        "schema_version": 3, "recipe_hash": recipe_hash,
+        "execution_requests": {name: asdict(request) for name, request in execution_data.requests.items()},
+        "prepared": {"space_id": str(execution_data.prepared.space_id),
+                     "preparation_id": str(execution_data.prepared.preparation_id),
+                     "manifest_sha256": execution_data.prepared.manifest_sha256},
+        "input_identities": execution_data.input_identities,
+        "strategy_bindings": bindings,
         "symbol": run.symbol,
         "asset_type": run.asset_type,
         "cutoff": execution_data.cutoff.isoformat(),

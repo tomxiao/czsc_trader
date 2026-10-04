@@ -10,7 +10,7 @@ import shutil
 from typing import Any
 
 import pandas as pd
-from dataflows import DataRequest, Dataflows, Dataset
+from dataflows import (DataRequest, Dataflows, Dataset, DataSpace, ProviderConfig, PreparePolicy)
 
 from .identity import raw_file_sha256
 from .temp_workspace import create_temporary_directory
@@ -55,23 +55,21 @@ def _fetch_result(
     start: date,
     end: date,
     frequency: str,
-    env_file: str | Path | None,
     label: str,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    return _ready_result(
-        dataflows.fetch(
-            DataRequest(
-                dataset,
-                symbol,
-                start.isoformat(),
-                end.isoformat(),
-                end.isoformat(),
-                frequency,
-                {"env_file": str(env_file)} if env_file is not None else {},
-            )
-        ),
-        label,
-    )
+    request = DataRequest(dataset, symbol, start.isoformat(), end.isoformat(), end.isoformat(), frequency)
+    preparation = dataflows.prepare((request,), policy=PreparePolicy.REUSE)
+    if not preparation.ready:
+        raise ValueError(f"DFLS preparation failed: {preparation.items}")
+    result = dataflows.fetch(request, prepared=preparation.reference)
+    frame, metadata = _ready_result(result, label)
+    metadata["prepared"] = {
+        "space_id": str(preparation.reference.space_id),
+        "preparation_id": str(preparation.reference.preparation_id),
+        "manifest_sha256": preparation.reference.manifest_sha256,
+    }
+    return frame, metadata
+
 
 
 def _csv_frame(frame: pd.DataFrame, period: str) -> pd.DataFrame:
@@ -111,7 +109,10 @@ def prepare_market_data(
         raise ValueError("asset_type must be stock or etf")
     if start > end:
         raise ValueError("start must not be after end")
-    flows = dataflows or Dataflows()
+    flows = dataflows if dataflows is not None else Dataflows(
+        base_dir=Path(data_dir).resolve(), space=DataSpace(Path("assets")),
+        providers=ProviderConfig(env_file=Path(env_file) if env_file is not None else None),
+    )
     if instrument_name is None:
         from dataflows.tushare_common import fetch_instrument_name
 
@@ -136,7 +137,6 @@ def prepare_market_data(
             start=start,
             end=end,
             frequency=period,
-            env_file=env_file,
             label=f"{normalized_symbol} {period}",
         )
         frames[period] = frame
@@ -153,7 +153,6 @@ def prepare_market_data(
         start=start,
         end=end,
         frequency="daily",
-        env_file=env_file,
         label=f"{normalized_symbol} execution daily",
     )
     execution_frame = _normalize_frame(execution_frame, "execution daily")
@@ -166,7 +165,6 @@ def prepare_market_data(
         start=start,
         end=calendar_end,
         frequency="daily",
-        env_file=env_file,
         label="SSE trading calendar",
     )
     open_dates = pd.to_datetime(

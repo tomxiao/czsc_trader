@@ -100,6 +100,7 @@ class AccountStrategyCycle:
                 details={
                     "prepared_through": cutoff,
                     "data_identity": prepared.data_identity,
+                    "prepared_data_reference": dict(prepared.data_reference),
                 },
             )
         decision = (

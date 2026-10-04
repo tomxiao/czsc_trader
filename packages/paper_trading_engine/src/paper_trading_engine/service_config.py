@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from .runtime_release import RuntimeRelease, _resolve_active_release_for_host
 
@@ -14,12 +14,19 @@ class ServiceConfig:
     runtime_root: Path
     host: str = "127.0.0.1"
     port: int = 8080
+    data_space: Path = Path("market")
 
     def __post_init__(self) -> None:
         if not self.runtime_root.is_absolute():
             raise ValueError("service runtime root must be absolute")
         if self.host != "127.0.0.1":
             raise ValueError("service HTTP host must be localhost")
+        if not isinstance(self.data_space, Path):
+            raise TypeError("service data_space must be a relative Path")
+        windows = PureWindowsPath(str(self.data_space))
+        if (not self.data_space.parts or self.data_space.is_absolute() or windows.drive
+                or windows.root or ".." in self.data_space.parts or ".." in windows.parts):
+            raise ValueError("service data_space must stay within shared data")
 
     @property
     def shared_root(self) -> Path:
@@ -34,6 +41,7 @@ class ServiceConfig:
             "--repo-root", str(release.release_root),
             "--database", str(self.shared_root / "state" / "runtime.db"),
             "--data-dir", str(self.shared_root / "data"),
+            "--data-space", self.data_space.as_posix(),
             "--config-root", str(self.shared_root / "config"),
             "--release-manifest", str(release.manifest_path),
             "--host", self.host,
@@ -70,10 +78,11 @@ class ServiceConfig:
         destination = path or self.config_path
         destination.parent.mkdir(parents=True, exist_ok=True)
         payload = {
-            "schema_version": 2,
+            "schema_version": 3,
             "runtime_root": str(self.runtime_root),
             "host": self.host,
             "port": self.port,
+            "data_space": self.data_space.as_posix(),
         }
         destination.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
         return destination
@@ -87,10 +96,11 @@ class ServiceConfig:
                 "repository-backed service config is no longer supported; "
                 "reinstall WDG with pte-watchdog install-config --runtime-root"
             )
-        if schema_version != 2:
+        if schema_version != 3:
             raise ValueError(f"unsupported service config schema: {schema_version}")
-        allowed = {"runtime_root", "host", "port"}
+        allowed = {"runtime_root", "host", "port", "data_space"}
         if set(payload) - allowed:
             raise ValueError("service config contains unsupported fields")
         payload["runtime_root"] = Path(payload["runtime_root"])
+        payload["data_space"] = Path(payload["data_space"])
         return cls(**payload)

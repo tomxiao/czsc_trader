@@ -43,6 +43,9 @@ def _operator_coordinator(accounts, store):
             return SimpleNamespace(
                 available_through=signal_date,
                 data_identity="c" * 64,
+                data_reference={"space_id": "11111111-1111-1111-1111-111111111111",
+                                "preparation_id": "22222222-2222-2222-2222-222222222222",
+                                "manifest_sha256": "a" * 64},
                 tradable_window=SimpleNamespace(
                     start=date(2026, 9, 2), end=date(2026, 9, 2)
                 ),
@@ -70,6 +73,9 @@ def test_blocked_or_draining_account_cannot_complete_a_decision_generation(new_s
             return SimpleNamespace(
                 available_through=signal_date,
                 data_identity="c" * 64,
+                data_reference={"space_id": "11111111-1111-1111-1111-111111111111",
+                                "preparation_id": "22222222-2222-2222-2222-222222222222",
+                                "manifest_sha256": "a" * 64},
                 tradable_window=SimpleNamespace(
                     start=date(2026, 9, 2), end=date(2026, 9, 2)
                 ),
@@ -628,6 +634,8 @@ def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(new_
     )
     old_decision = decision()
     old_payload = asdict(old_decision)
+    old_payload["prepared_data_identity"] = preparation(old_decision).data_identity
+    old_payload["prepared_data_reference"] = preparation(old_decision).data_reference
     old_payload.pop("source_decision_id")
     old_payload.pop("plan_identity")
     store.save_account_decision("s001-v1", old_payload)

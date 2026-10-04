@@ -2,6 +2,8 @@ from dataclasses import replace
 from hashlib import sha256
 import json
 import shutil
+from pathlib import Path
+from dataflows import DataSpace
 
 import pytest
 from research_experiment import load_experiment, ExperimentResources, ExperimentWorkspace
@@ -64,6 +66,7 @@ def inspection(completed):
     )
     execution = create_formal_experiment_context(
         old_execution.definition,
+        data_space=DataSpace(Path("data/research")),
         repository_root=context.root,
         resources=ExperimentResources(1, 1),
         workspace=ExperimentWorkspace(context.root / ".tmp/inspection", context.root),
@@ -597,13 +600,15 @@ def _cold_start_inspection(path):
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     with pytest.MonkeyPatch.context() as patch:
-        _install_candidate_dataflows(patch, flow, daily)
+        _install_candidate_dataflows(patch, flow, daily, base_dir=context.root,
+                                    space=DataSpace(Path("data/research")))
         patch.setattr("czsc_trader.research_tools.experiment.Dataflows", evaluation.Dataflows)
         definition = load_experiment(
             context.experiments_root / "S900" / values["experiment_id"]
         ).definition
         execution = create_formal_experiment_context(
             definition,
+            data_space=DataSpace(Path("data/research")),
             repository_root=context.root,
             resources=ExperimentResources(1, 1),
             workspace=ExperimentWorkspace(context.root / ".tmp/fresh-inspection", context.root),

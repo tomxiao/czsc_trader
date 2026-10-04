@@ -33,7 +33,7 @@ class CandidateFixture(StrategyImplementation):
         requirements = [
             InputRequirement(
                 "flow",
-                "etf.share",
+                Dataset.ETF_SHARE_SIZE.value,
                 "588080.SH",
                 "daily",
                 1,
@@ -76,7 +76,7 @@ class CandidateFixture(StrategyImplementation):
             for index, symbol in enumerate(reference_symbols, start=1)
         )
         self._definition = StrategyDefinition(
-            observation=ObservationDefinition((ObservationSeries("fixture", "合成信号", "fixture_signal"),), ()),
+            observation=ObservationDefinition((ObservationSeries("fixture", "鍚堟垚淇″彿", "fixture_signal"),), ()),
             parameters=parameters,
             inputs=InputContract(tuple(requirements)),
             decision=DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION"),
@@ -104,7 +104,6 @@ class CandidateFixture(StrategyImplementation):
             monitoring=MonitoringPolicy("OBSERVE", {}),
             capabilities=RequiredCapabilities(
                 (
-                    "etf.share",
                     Dataset.ETF_SHARE_SIZE.value,
                     Dataset.ETF_OHLCV.value,
                     Dataset.ETF_UNADJUSTED_DAILY.value,
