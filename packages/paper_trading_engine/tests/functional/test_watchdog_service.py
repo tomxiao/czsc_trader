@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from paper_trading_engine.audit import AuditRecorder
-from paper_trading_engine.cli import PortUnavailableError, _record_service_lifecycle, probe_port
+from paper_trading_engine.cli import PortUnavailableError, probe_port
 from paper_trading_engine.service_config import ServiceConfig
 from paper_trading_engine.runtime_release import (
     activate_release,
@@ -28,7 +28,6 @@ from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeD
 from paper_trading_engine.release_cli import deploy_previous_release, deploy_release
 from paper_trading_engine.watchdog import Watchdog, health_payload_is_healthy, rotate_log
 from paper_trading_engine.windows_service import (
-    _validate_service_host,
     build_bootstrap_source,
     find_pythonservice_executable,
     service_failure_command,
@@ -56,24 +55,49 @@ class Process:
     ({"runtime": "RUNNING", "watchdog_healthy": "true"}, False),
     ([], False),
 ])
-def test_watchdog_and_deployment_require_explicit_healthy_scheduler(monkeypatch, payload, expected):
+def test_health_payload_requires_explicit_healthy_scheduler(payload, expected):
+    assert health_payload_is_healthy(payload) is expected
+
+
+@pytest.mark.parametrize("healthy", [False, True])
+def test_deployment_requires_healthy_scheduler_before_accepting_release(
+    pte_frozen, tmp_path, monkeypatch, healthy,
+):
     from contextlib import nullcontext
     from paper_trading_engine import release_cli
 
-    assert health_payload_is_healthy(payload) is expected
-    body = {**payload, "release": {"release_id": "v0.6.6"}} if isinstance(payload, dict) else payload
-    response = SimpleNamespace(status=200, read=lambda: json.dumps(body).encode())
-    monkeypatch.setattr(release_cli, "urlopen", lambda *_a, **_k: nullcontext(response))
-    if expected:
-        assert release_cli._running_release("127.0.0.1", 8080) == "v0.6.6"
+    body = {"runtime": "RUNNING", "watchdog_healthy": healthy,
+            "release": {"release_id": "v0.6.6"}}
+    bodies = deque([body, {"runtime": "RUNNING", "watchdog_healthy": True,
+                           "release": {"release_id": "v0.6.5"}}])
+    def response(*_args, **_kwargs):
+        return nullcontext(SimpleNamespace(status=200, read=lambda: json.dumps(bodies.popleft()).encode()))
+    monkeypatch.setattr(release_cli, "urlopen", response)
+    runtime = (tmp_path / "runtime").resolve()
+    (runtime / "shared/config").mkdir(parents=True)
+    (runtime / "shared/config/.env").write_text("TUSHARE_TOKEN=test", encoding="utf-8")
+    for version, marker in (("v0.6.5", "a"), ("v0.6.6", "b")):
+        create_release(pte_frozen[0].strategy_root, runtime, version, marker)
+    activate_release(runtime, "v0.6.5")
+    commands = []
+    def runner(command, **kwargs):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, stdout='{"accounts":0,"releases":[]}', stderr="")
+    if healthy:
+        assert deploy_release(runtime, "v0.6.6", runner=runner)["status"] == "READY"
+        assert resolve_active_release(runtime).release_id == "v0.6.6"
+        assert sum("restart" in command for command in commands) == 1
     else:
         with pytest.raises(RuntimeError, match="health check failed"):
-            release_cli._running_release("127.0.0.1", 8080)
+            deploy_release(runtime, "v0.6.6", runner=runner)
+        assert resolve_active_release(runtime).release_id == "v0.6.5"
+        assert sum("restart" in command for command in commands) == 2
 
 
 @pytest.mark.parametrize("becomes_healthy", [False, True])
-def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch, becomes_healthy):
+def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch, becomes_healthy, capsys):
     from paper_trading_engine import cli
+    from contextlib import nullcontext
 
     database = tmp_path / "restart.db"
     store = new_store(database)
@@ -82,6 +106,7 @@ def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch,
     responses = deque([
         (200, {"instance_id": "old"}),
         (202, {"instance_id": "old"}),
+        (200, {"instance_id": "old", "runtime": "RUNNING", "watchdog_healthy": True}),
         (200, {"instance_id": "new", "runtime": "RUNNING", "watchdog_healthy": False}),
     ])
     if becomes_healthy:
@@ -90,25 +115,34 @@ def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch,
         }))
     calls = []
 
-    def read(*args, **kwargs):
-        calls.append(args[0])
-        return responses.popleft() if responses else (200, {
+    def read(request, **kwargs):
+        calls.append(request)
+        if not isinstance(request, str):
+            assert request.get_method() == "POST"
+            assert request.get_header("X-pte-control-token") == "test-token"
+        status, payload = responses.popleft() if responses else (200, {
             "instance_id": "new", "runtime": "RUNNING", "watchdog_healthy": False,
         })
+        return nullcontext(SimpleNamespace(status=status, read=lambda: json.dumps(payload).encode()))
 
     clock = iter(range(100))
-    monkeypatch.setattr(cli, "_read_json", read)
+    monkeypatch.setattr(cli, "urlopen", read)
     monkeypatch.setattr(cli.time, "monotonic", lambda: next(clock))
     monkeypatch.setattr(cli.time, "sleep", lambda _: None)
-    args = SimpleNamespace(host="127.0.0.1", port=8080, database=database, wait=5)
+    argv = ["control", "restart", "--repo-root", str(tmp_path), "--database", str(database), "--wait", "5"]
     if becomes_healthy:
-        assert cli._restart_running_pte(args) == {
+        assert cli.main(argv) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["status"] == "PASS" and payload["command"] == "pte.control.restart"
+        assert payload["result"] == {
             "status": "READY", "old_instance_id": "old", "new_instance_id": "new",
         }
-        assert len(calls) == 4
+        assert len(calls) == 5
     else:
-        with pytest.raises(RuntimeError, match="did not become healthy"):
-            cli._restart_running_pte(args)
+        assert cli.main(argv) == 5
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["status"] == "FAIL" and payload["command"] == "pte.control"
+        assert "did not become healthy" in payload["error"]["message"]
 
 
 def create_release(strategy_root, runtime_root, release_id, marker):
@@ -167,17 +201,19 @@ def test_load_release_requires_declared_inventory_and_accepts_legacy_snapshot(pt
 def test_backup_runtime_database_retains_latest_by_default(new_store, tmp_path):
     source_path = tmp_path / "runtime.db"
     store = new_store(source_path)
-    _record_service_lifecycle(
-        AuditRecorder(store), "SERVICE_STARTED", "instance-1", port=8080,
-    )
+    audit = AuditRecorder(store)
+    audit.record("SERVICE_STARTED", source="cli", actor_type="ENGINE",
+                 actor_id="instance-1", details={"port": 8080})
+    lifecycle = store.recent_events(1)[0]
+    assert lifecycle["event_type"] == "SERVICE_STARTED"
+    assert lifecycle["actor_type"] == "ENGINE" and lifecycle["actor_id"] == "instance-1"
     first = backup_runtime_database(source_path, retention=2)
     second = backup_runtime_database(source_path, retention=2)
     assert first is not None and second is not None
     assert set((tmp_path / "backups").glob("*.db")) == {first, second}
 
-    _record_service_lifecycle(
-        AuditRecorder(store), "SERVICE_STARTED", "instance-2", port=8080,
-    )
+    audit.record("SERVICE_STARTED", source="cli", actor_type="ENGINE",
+                 actor_id="instance-2", details={"port": 8080})
     latest = backup_runtime_database(source_path)
     assert latest is not None
     assert list((tmp_path / "backups").glob("*.db")) == [latest]
@@ -191,21 +227,6 @@ def test_backup_runtime_database_retains_latest_by_default(new_store, tmp_path):
 
 
 def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_frozen, tmp_path, monkeypatch):
-    audit_store = new_store(tmp_path / "lifecycle.db")
-    _record_service_lifecycle(
-        AuditRecorder(audit_store), "SERVICE_STARTED", "instance-1", port=8080,
-    )
-    lifecycle = audit_store.recent_events(1)[0]
-    assert lifecycle["event_type"] == "SERVICE_STARTED"
-    assert lifecycle["actor_type"] == "ENGINE"
-    assert lifecycle["actor_id"] == "instance-1"
-    audit_store.close()
-    backup = backup_runtime_database(tmp_path / "lifecycle.db", retention=2)
-    assert backup is not None and backup.is_file()
-    reopened = PaperStore(backup)
-    assert reopened.recent_events(1)[0]["event_type"] == "SERVICE_STARTED"
-    reopened.close()
-
     child_log = tmp_path / "pte.log"
     child_log.write_bytes(b"x" * 32)
     rotate_log(child_log, max_bytes=16, backups=2)
@@ -331,14 +352,24 @@ def test_runtime_database_migrates_v1_decisions_to_supersession_schema(tmp_path)
 
 
 def test_watchdog_host_rejects_pte_and_rsch_runtime_dependencies(tmp_path, monkeypatch):
+    from paper_trading_engine import windows_service
     runtime_root = (tmp_path / "runtime").resolve()
     host = runtime_root / "host" / "releases" / "v0.4.1" / ".venv"
     site_packages = host / "Lib" / "site-packages"
     (site_packages / "vectorbt").mkdir(parents=True)
     monkeypatch.setattr("paper_trading_engine.windows_service.sys.prefix", str(host))
+    def forbidden(*_args, **_kwargs):
+        pytest.fail("invalid host must be rejected before operating system writes")
+    monkeypatch.setattr(windows_service, "prepare_service_host", forbidden)
+    monkeypatch.setattr(windows_service.win32serviceutil, "HandleCommandLine", forbidden)
+    monkeypatch.setattr(windows_service.winreg, "CreateKey", forbidden)
+    monkeypatch.setattr(windows_service.subprocess, "run", forbidden)
 
     with pytest.raises(RuntimeError, match="runtime dependencies.*vectorbt"):
-        _validate_service_host(runtime_root)
+        windows_service.main([
+            "install-config", "--runtime-root", str(runtime_root),
+        ], admin_check=lambda: True)
+    assert not (runtime_root / "shared").exists()
 
 
 def test_pythonservice_executable_uses_pywin32_venv_layout(tmp_path):

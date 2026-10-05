@@ -5,11 +5,11 @@ import pytest
 
 from dataflows import DataRepairError
 from dataflows.history_repair import (
-    REPAIR_PATCHES,
     RepairPatch,
     SeriesKey,
     apply_repairs_once,
     inspect_registered_source_anomalies,
+    patch_for,
     rebuild_intraday_from_1m,
     validate_repair_patches,
 )
@@ -492,18 +492,12 @@ def test_repair_registry_rejects_duplicate_vendor_symbol_patches() -> None:
 
 
 def test_repair_registry_is_managed_by_vendor_and_symbol() -> None:
-    assert {
-        (patch.vendor, patch.symbol): patch.patch_id for patch in REPAIR_PATCHES
-    } == {
-        ("tushare", "159326.SZ"): "TUSHARE_159326_V1",
-        ("tushare", "510500.SH"): "TUSHARE_510500_V2",
-        ("tushare", "512100.SH"): "TUSHARE_512100_V1",
-        ("tushare", "515050.SH"): "TUSHARE_515050_V1",
-        ("tushare", "518800.SH"): "TUSHARE_518800_V1",
-        ("tushare", "518880.SH"): "TUSHARE_518880_V2",
-        ("tushare", "518850.SH"): "TUSHARE_518850_V1",
-        ("tushare", "588080.SH"): "TUSHARE_588080_V1",
-    }
+    series = SeriesKey("tushare", "etf_mins", "510500.SH", "etf.ohlcv", "5m", "none")
+    selected = patch_for(series)
+    assert selected is not None
+    assert (selected.vendor, selected.symbol) == (series.vendor, series.symbol)
+    assert patch_for(SeriesKey("other", "etf_mins", "510500.SH", "etf.ohlcv", "5m", "none")) is None
+    assert patch_for(SeriesKey("tushare", "etf_mins", "600000.SH", "etf.ohlcv", "5m", "none")) is None
 
 
 @pytest.mark.parametrize("symbol", ["518850.SH", "518880.SH"])

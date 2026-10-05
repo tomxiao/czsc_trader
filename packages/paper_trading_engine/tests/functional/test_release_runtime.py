@@ -11,9 +11,6 @@ import pytest
 from paper_trading_engine.release_cli import (
     PTE_LOCAL_PROJECTS,
     PTE_SOURCE_DISTRIBUTIONS,
-    _replace_directory,
-    _run,
-    _verify_strategy_runtime_wheel_boundary,
     build_release,
     load_built_release,
     publish_release,
@@ -30,28 +27,35 @@ ROOT = Path(__file__).resolve().parents[4]
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows directory-lock regression")
-def test_release_directory_publish_retries_transient_windows_lock(tmp_path, monkeypatch):
-    staging = tmp_path / "staging"
-    destination = tmp_path / "release"
-    staging.mkdir()
-    (staging / "manifest.json").write_text("{}", encoding="utf-8")
+def test_release_directory_publish_retries_transient_windows_lock(
+    tmp_path, monkeypatch, built_release_copy,
+):
+    build_root, _ = built_release_copy
+    runtime = tmp_path / "runtime"
+    destination = runtime / "releases/v0.4.1"
     original = Path.replace
     attempts = 0
 
     def transient_lock(path, target):
         nonlocal attempts
-        attempts += 1
-        if attempts < 3:
-            raise PermissionError("transient Windows lock")
+        if target == destination:
+            attempts += 1
+            if attempts < 3:
+                raise PermissionError("transient Windows lock")
         return original(path, target)
 
     monkeypatch.setattr(Path, "replace", transient_lock)
     monkeypatch.setattr("paper_trading_engine.release_cli.time.sleep", lambda _delay: None)
 
-    _replace_directory(staging, destination)
-
-    assert attempts == 3
-    assert (destination / "manifest.json").is_file()
+    published = publish_release(
+        build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
+        uv_executable=Path("C:/uv/uv.exe"), runner=FakeReleaseRunner(),
+    )
+    release = load_release(runtime, "v0.4.1")
+    assert published["release"] == release.identity()
+    assert release.pte_executable.is_file()
+    assert published["active"] is False
+    assert list(destination.parent.iterdir()) == [destination]
 
 
 def _git(repo: Path, *arguments: str) -> None:
@@ -179,23 +183,64 @@ def _source_build_fakes(runner):
     return fetch_sdist, pinned_runner
 
 
-def test_release_command_preserves_status_with_non_utf8_windows_output(tmp_path):
-    completed = _run(
-        [sys.executable, "-c", "import sys; sys.stdout.buffer.write(b'\\xb5')"],
-        cwd=tmp_path,
-    )
+@pytest.mark.parametrize("returncode", [0, 7], ids=["success", "failure"])
+def test_release_command_preserves_status_with_non_utf8_windows_output(
+    tmp_path, built_release_copy, returncode,
+):
+    build_root, _ = built_release_copy
+    runtime = tmp_path / "runtime"
+    delegate = FakeReleaseRunner()
+    results = []
 
-    assert completed.returncode == 0
-    assert completed.stdout == "\ufffd"
+    def runner(command, **kwargs):
+        if command[1] == "venv":
+            completed = subprocess.run([
+                sys.executable, "-B", "-c",
+                f"import sys; sys.stdout.buffer.write(b'\\xb5'); sys.exit({returncode})",
+            ], **kwargs)
+            results.append(completed)
+            if not completed.returncode:
+                delegate(command, **kwargs)
+            return completed
+        return delegate(command, **kwargs)
+
+    kwargs = dict(build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
+                  uv_executable=Path("C:/uv/uv.exe"), runner=runner)
+    if returncode:
+        with pytest.raises(RuntimeError, match="command failed.*"):
+            publish_release(**kwargs)
+        assert not (runtime / "releases/v0.4.1").exists()
+    else:
+        result = publish_release(**kwargs)
+        assert result["release"] == load_release(runtime, "v0.4.1").identity()
+    assert len(results) == 1
+    assert results[0].returncode == returncode
 
 
-def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tmp_path):
-    wheel = tmp_path / "czsc_strategy_runtime-0.1.0-py3-none-any.whl"
-    with ZipFile(wheel, "w") as archive:
-        archive.writestr("strategy_runtime/strategies/s003_v1.py", b"strategy")
+def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tmp_path, pte_frozen):
+    repo = tmp_path / "repo"
+    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
 
+    class GovernedAssetRunner(FakeReleaseRunner):
+        def __call__(self, command, **kwargs):
+            completed = super().__call__(command, **kwargs)
+            if command[1] == "build" and str(command[-1]).endswith("strategy_runtime"):
+                artifacts = Path(command[command.index("--out-dir") + 1])
+                wheel = next(artifacts.glob("czsc_strategy_runtime-*.whl"))
+                with ZipFile(wheel, "a") as archive:
+                    archive.writestr("strategy_runtime/strategies/s003_v1.py", b"strategy")
+            return completed
+
+    fetch_sdist, runner = _source_build_fakes(GovernedAssetRunner())
+    build_root = repo / ".build/pte"
     with pytest.raises(RuntimeError, match="governed strategy assets"):
-        _verify_strategy_runtime_wheel_boundary(tmp_path)
+        build_release(
+            repo_root=repo, build_root=build_root, release_id="v0.4.1",
+            uv_executable=Path("C:/uv/uv.exe"),
+            source_distribution_fetcher=fetch_sdist, runner=runner,
+        )
+    assert not (build_root / "releases/v0.4.1").exists()
+    assert not list(build_root.rglob("build-manifest.json"))
 
 
 @pytest.fixture

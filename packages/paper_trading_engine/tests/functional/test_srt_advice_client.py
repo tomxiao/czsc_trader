@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from threading import Event
 import json
 from zoneinfo import ZoneInfo
 
@@ -40,7 +41,9 @@ def _flows(tmp_path, *, publication=None) -> Dataflows:
         if publication is not None and request.dataset is Dataset.ETF_UNADJUSTED_DAILY:
             publication["calls"] += 1
             if not publication["complete"]:
-                frame = frame.iloc[[0, -1]].copy()
+                frame = (frame.iloc[:0] if publication.get("empty")
+                         else frame.iloc[[0, -1]]).copy()
+            publication.setdefault("sessions", []).append(frame["Date"].nunique())
         return frame, {
             "vendor": "test",
             "adjustment": "none" if "unadjusted" in request.dataset else "hfq",
@@ -79,6 +82,32 @@ def _client(repo_root, tmp_path, account_sessions):
     )
 
 
+
+def _prepare(client, account_id, signal_date):
+    prepared = client.prepare_account_data(
+        account_id=account_id, strategy_id="S900", strategy_version="v1",
+        symbol="588080.SH", asset="etf", signal_date=signal_date,
+    )
+    assert prepared is not None
+    return prepared
+
+
+def _verify(client, account_id):
+    return client.verify_account_data(
+        account_id=account_id, strategy_id="S900", strategy_version="v1",
+        symbol="588080.SH", asset="etf",
+    )
+
+
+def _decision(client, prepared):
+    return client.get_decision(
+        0, 100_000, 100_000, trading_date=date(2026, 9, 3),
+        portfolio_revision=0, state_revision=0, strategy_id="S900",
+        strategy_version="v1", account_id="s900-v1", symbol="588080.SH",
+        asset="etf", prepared=prepared,
+    )
+
+
 def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_path, monkeypatch):
     client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
     prepared = client.prepare_account_data(
@@ -94,13 +123,6 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     monkeypatch.setattr(client.dataflows, "prepare", lambda *_a, **_k: pytest.fail(
         "decision must not prepare new inputs"))
 
-    monkeypatch.setattr(
-        client,
-        "_instance",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            AssertionError("decision must not reload the prepared strategy")
-        ),
-    )
     decision = client.get_decision(
         0,
         100_000,
@@ -119,81 +141,39 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 3)
     assert decision.signal_date == date(2026, 9, 2)
     assert decision.valid_session == date(2026, 9, 3)
+    assert decision.runtime_sha256 == prepared.strategy.runtime_sha256
     assert decision.strategy_output is not None
     assert decision.observation is not None
     assert decision.observation["status"] == "READY"
     assert decision.observation["series"][0]["key"] == "fixture"
 
 
-def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path, monkeypatch):
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
-    for account_id, strategy_id, symbol in (
-        ("s900-v1", "S900", "588080.SH"),
-        ("s900-v1-alt", "S900", "588080.SH"),
-    ):
-        prepared = client.prepare_account_data(
-            account_id=account_id,
-            strategy_id=strategy_id,
-            strategy_version="v1",
-            symbol=symbol,
-            asset="etf",
-            signal_date=date(2026, 9, 2),
-        )
-        assert prepared is not None
-    assert (tmp_path / "accounts/s900-v1/current.json").is_file()
-    assert (tmp_path / "accounts/s900-v1-alt/current.json").is_file()
-    assert [path.name for path in (tmp_path / "accounts/s900-v1/spaces").iterdir()] == [
-        "s900-v1_20260902T220000000000"
-    ]
-    assert [
-        path.name for path in (tmp_path / "accounts/s900-v1-alt/spaces").iterdir()
-    ] == ["s900-v1-alt_20260902T220000000000"]
-    assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 3)
+def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path):
+    client = _client(pte_frozen[0].root, tmp_path, {
+        date(2026, 9, 2): date(2026, 9, 3), date(2026, 9, 3): date(2026, 9, 4),
+    })
+    first = _prepare(client, "s900-v1", date(2026, 9, 2))
+    second = _prepare(client, "s900-v1-alt", date(2026, 9, 2))
+    assert first.data_reference == second.data_reference
+    advanced = _prepare(client, "s900-v1", date(2026, 9, 3))
+    assert advanced.available_through == date(2026, 9, 3)
+    assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 4)
+    assert client.prepared_through("s900-v1-alt", "S900", "v1") == date(2026, 9, 2)
     assert client.tradable_date("s900-v1-alt", "S900", "v1") == date(2026, 9, 3)
-    first = json.loads((tmp_path / "accounts/s900-v1/current.json").read_text(encoding="utf-8"))
-    second = json.loads((tmp_path / "accounts/s900-v1-alt/current.json").read_text(encoding="utf-8"))
-    assert (first["releases"]["S900-v1"]["input_binding"]["prepared"]
-            == second["releases"]["S900-v1"]["input_binding"]["prepared"])
+    assert _verify(client, "s900-v1-alt") == second.result
 
 
-def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen,
-    tmp_path, monkeypatch,
-):
-    client = _client(pte_frozen[0].root,
-        tmp_path,
-        {
-            date(2026, 9, 2): date(2026, 9, 3),
-            date(2026, 9, 3): date(2026, 9, 4),
-        },
-    )
-
-    first = client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 2),
-    )
-    second = client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 3),
-    )
-
-    assert first is not None
-    assert second is not None
-    spaces = tuple((tmp_path / "accounts/s900-v1/spaces").iterdir())
-    assert [path.name for path in spaces] == ["s900-v1_20260902T220000000000"]
-    bindings = [json.loads(path.read_text(encoding="utf-8"))
-                for path in (spaces[0] / "input-bindings").glob("*.json")]
-    assert sorted(value["binding"]["plan"]["tradable_window"]["start"] for value in bindings) == [
-        "2026-09-03", "2026-09-04",
-    ]
-    assert not list(spaces[0].rglob("*.csv"))
+def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen, tmp_path):
+    client = _client(pte_frozen[0].root, tmp_path, {
+        date(2026, 9, 2): date(2026, 9, 3), date(2026, 9, 3): date(2026, 9, 4),
+    })
+    first = _prepare(client, "s900-v1", date(2026, 9, 2))
+    second = _prepare(client, "s900-v1", date(2026, 9, 3))
+    assert first.strategy == second.strategy
+    assert first.data_identity != second.data_identity
+    assert first.input_binding != second.input_binding
+    assert first.instance.prepare_data(binding=first.input_binding) == first.result
+    assert _verify(client, "s900-v1") == second.result
     assert client.prepared_through("s900-v1", "S900", "v1") == date(2026, 9, 3)
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 4)
 
@@ -203,40 +183,27 @@ def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen,
     ["unversioned-storage", "missing-runtime", "changed-runtime", "changed-symbol"],
 )
 def test_account_replaces_incompatible_space_without_mutating_old_data(pte_frozen,
-    tmp_path, monkeypatch, change,
+    tmp_path, change,
 ):
-    moments = iter(
-        (
-            datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-            datetime(2026, 9, 3, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
-        )
-    )
+    moments = iter((
+        datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
+        datetime(2026, 9, 3, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
+    ))
     client = SrtAdviceClient(
-        repo_root=pte_frozen[0].root,
-        data_dir=tmp_path,
-        dataflows=_flows(tmp_path),
+        repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=_flows(tmp_path),
         now=lambda: next(moments),
         session_resolver=lambda signal_date: signal_date.replace(day=signal_date.day + 1),
     )
-    first = client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 2),
-    )
-    assert first is not None
+    first = _prepare(client, "s900-v1", date(2026, 9, 2))
     account_root = tmp_path / "accounts/s900-v1"
-    old_space = next((account_root / "spaces").iterdir())
-    old_manifest = next(old_space.glob("input-bindings/*.json"))
-    old_manifest_bytes = old_manifest.read_bytes()
     current = account_root / "current.json"
     index = json.loads(current.read_text(encoding="utf-8"))
     entry = index["releases"]["S900-v1"]
-    assert entry["runtime_sha256"] == first.strategy.runtime_sha256
+    old_space = account_root / entry["data_dir"]
+    old_files = {path.relative_to(old_space): path.read_bytes()
+                 for path in old_space.rglob("*") if path.is_file()}
+    # Explicit persisted-input faults, followed by real public preparation.
     index.pop("index_sha256")
-    symbol = "588080.SH"
     if change == "unversioned-storage":
         index.pop("prepared_storage_revision")
     elif change == "missing-runtime":
@@ -246,73 +213,37 @@ def test_account_replaces_incompatible_space_without_mutating_old_data(pte_froze
     elif change == "changed-symbol":
         index["symbol"] = "510500.SH"
     index["index_sha256"] = canonical_sha256(index)
-    current.write_text(
-        json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-    second = client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol=symbol,
-        asset="etf",
-        signal_date=date(2026, 9, 3),
-    )
-    assert second is not None
-    assert sorted(path.name for path in (account_root / "spaces").iterdir()) == [
-        "s900-v1_20260902T220000000000",
-        "s900-v1_20260903T220000000000",
-    ]
-    assert old_manifest.read_bytes() == old_manifest_bytes
-    published = json.loads(current.read_text(encoding="utf-8"))
-    assert published["prepared_storage_revision"] == 3
-    assert published["symbol"] == second.strategy.symbol == symbol
-    assert published["releases"]["S900-v1"]["release_hash"] == first.strategy.release_hash
-    assert published["releases"]["S900-v1"]["runtime_sha256"] == (
-        second.strategy.runtime_sha256
-    )
-    assert published["trading_date"] == "2026-09-04"
+    current.write_text(json.dumps(index), encoding="utf-8")
+    second = _prepare(client, "s900-v1", date(2026, 9, 3))
+    assert {path.relative_to(old_space): path.read_bytes()
+            for path in old_space.rglob("*") if path.is_file()} == old_files
+    assert first.instance.prepare_data(binding=first.input_binding) == first.result
+    assert second.strategy == first.strategy
+    assert second.strategy.symbol == "588080.SH"
+    assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 4)
+    assert _verify(client, "s900-v1") == second.result
 
 
-def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_path, monkeypatch):
-    client = _client(pte_frozen[0].root,
-        tmp_path,
-        {
-            date(2026, 9, 2): date(2026, 9, 3),
-            date(2026, 9, 3): date(2026, 9, 4),
-        },
-    )
-    assert client.prepare_account_data(
-        account_id="s900-v1",
-        strategy_id="S900",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        signal_date=date(2026, 9, 2),
-    ) is not None
+def test_failed_preparation_does_not_switch_the_account_space(pte_frozen, tmp_path):
+    from paper_trading_engine.srt_advice_client import AdviceClientError
+
+    client = _client(pte_frozen[0].root, tmp_path, {
+        date(2026, 9, 2): date(2026, 9, 3), date(2026, 9, 3): date(2026, 9, 4),
+    })
+    publication = {"complete": True, "calls": 0, "empty": True}
+    client.dataflows = _flows(tmp_path, publication=publication)
+    original = _prepare(client, "s900-v1", date(2026, 9, 2))
     current = tmp_path / "accounts/s900-v1/current.json"
     published = current.read_bytes()
-    monkeypatch.setattr(client, "_prepare_strategy", lambda _: (_ for _ in ()).throw(
-        AssertionError("preparation failed")))
-
-    with pytest.raises(AssertionError, match="preparation failed"):
-        client.prepare_account_data(
-            account_id="s900-v1",
-            strategy_id="S900",
-            strategy_version="v1",
-            symbol="588080.SH",
-            asset="etf",
-            signal_date=date(2026, 9, 3),
-        )
-
+    publication["complete"] = False
+    with pytest.raises(AdviceClientError, match="preparation failed"):
+        _prepare(client, "s900-v1", date(2026, 9, 3))
     assert current.read_bytes() == published
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 3)
+    assert _verify(client, "s900-v1") == original.result
 
 
-def test_default_session_resolver_drives_public_preparation_contract(pte_frozen,
-    tmp_path, monkeypatch,
-):
+def test_default_session_resolver_drives_public_preparation_contract(pte_frozen, tmp_path):
     client = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=_flows(tmp_path))
     prepared = client.prepare_account_data(
         account_id="s900-v1",
@@ -359,7 +290,7 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
         strategy_version="v1",
         release_hash=pte_frozen[1].release_hash,
         qualification_snapshot="PAPER_READY",
-        selection_data_cutoff="2026-09-08",
+        selection_data_cutoff=pte_frozen[1].selection_data_cutoff,
         symbol="588080.SH",
         asset_type="etf",
     )
@@ -384,20 +315,28 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
         preparation_time="20:30",
     )
 
-    scheduler.tick_daily(datetime(2026, 9, 2, 20, 30))
-    for worker in tuple(scheduler._account_workers.values()):
-        worker.join(5)
+    finished = Event()
+    original_setting = store.set_setting
 
-    assert (data_dir / "accounts/s900-v1/current.json").is_file()
+    def record_setting(key, value):
+        original_setting(key, value)
+        if key == "last_account_strategy_cycle:s900-v1_success_at":
+            finished.set()
+
+    monkeypatch.setattr(store, "set_setting", record_setting)
+    scheduler.tick_daily(datetime(2026, 9, 2, 20, 30))
+    assert finished.wait(5), store.operation_failures()
     assert store.get_setting("last_data_prepare_date:s900-v1") == "2026-09-02"
     assert store.operation_failures() == []
     decisions = store.account_decisions("s900-v1")
     assert len(decisions) == 1
     assert decisions[0]["signal_date"] == "2026-09-02"
     assert decisions[0]["valid_session"] == "2026-09-03"
-    reference = json.loads((data_dir / "accounts/s900-v1/current.json").read_text(
-        encoding="utf-8"))["releases"]["S900-v1"]["input_binding"]["prepared"]
-    assert decisions[0]["payload"]["prepared_data_reference"] == reference
+    restored = client.prepare_account_data(
+        account_id="s900-v1", strategy_id="S900", strategy_version="v1",
+        symbol="588080.SH", asset="etf", signal_date=date(2026, 9, 2),
+    )
+    assert decisions[0]["payload"]["prepared_data_reference"] == restored.data_reference
     store.close()
 
 
@@ -412,16 +351,22 @@ def test_restart_restores_exact_input_binding_without_prepare(pte_frozen, tmp_pa
     restored = reopened.prepare_account_data(**kwargs)
     assert restored.data_identity == original.data_identity
     assert restored.data_reference == original.data_reference
-    assert len(list((tmp_path / "accounts/s900-v1/preparation-records").glob("*.json"))) == 1
+    assert reopened.verify_account_data(
+        account_id="s900-v1", strategy_id="S900", strategy_version="v1",
+        symbol="588080.SH", asset="etf",
+    ) == original.result
 
 
-def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
-    candidate_payload, tmp_path,
-):
-    from strategy_runtime import (
-        StrategyCandidate, StrategyInit, StrategyRuntime, TradableWindow, implementation_sha256,
-    )
-    from paper_trading_engine.srt_advice_client import AdviceClientError
+@pytest.fixture
+def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
+    """Author and actually inspect/freeze/deploy one independent depth-three seed."""
+    from czsc_trader.application import inspect_candidate, freeze_candidate, deploy_strategy
+    from strategy_manager import PaperTradingApproval, StrategyRegistry
+    from strategy_runtime import implementation_sha256
+    import test_candidate_runtime_execution as data_support
+    from test_research_contract_upgrade import managed_evaluation
+    from test_assessment_delivery import completed
+    from test_candidate_freeze import _build_inspection, approve
 
     payload, source_root = candidate_payload
     source = source_root / payload["runtime"]["source_files"][0]
@@ -432,60 +377,112 @@ def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
     payload["runtime"]["source_sha256"] = implementation_sha256(
         tuple(payload["runtime"]["source_files"]), source_root=source_root,
     )
-    candidate = StrategyCandidate("S900", "C0001", payload, source_root)
+    install = data_support._install_candidate_dataflows
+
+    def with_warmup(patches, flow, daily, **kwargs):
+        # Valid evidence contains enough authentic synthetic sessions before the
+        # evaluation starts; the later PTE supplier deliberately omits one.
+        days = pd.bdate_range(end=pd.Timestamp(daily["dt"].min()) - pd.offsets.BDay(), periods=2)
+        prefix = pd.concat([daily.iloc[[0]]] * 2, ignore_index=True)
+        prefix["dt"] = days
+        flow_prefix = pd.concat([flow.iloc[[0]]] * 2, ignore_index=True)
+        flow_prefix["Date"] = days
+        return install(patches, pd.concat([flow_prefix, flow], ignore_index=True),
+                       pd.concat([prefix, daily], ignore_index=True), **kwargs)
+
+    monkeypatch.setattr(data_support, "_install_candidate_dataflows", with_warmup)
+    monkeypatch.setattr("test_research_contract_upgrade._install_candidate_dataflows", with_warmup)
+    evaluation = managed_evaluation.__wrapped__(candidate_payload, tmp_path, monkeypatch)
+    context, inspection, source = _build_inspection(completed.__wrapped__(evaluation))
+    report = inspect_candidate(context, inspection)
+    assert report.status.value == "PASS", report
+    receipt = freeze_candidate(context, approve(context, report, source))
+    assert receipt.status.value == "COMMITTED", receipt
+    deploy_strategy(context, "S900-v1")
+    registry = StrategyRegistry(context.strategy_root)
+    version = registry.get_version("S900", "v1")
+    registry.approve_paper_trading(PaperTradingApproval(
+        "S900", "v1", version.release_hash, "test", "synthetic depth-three approval",
+    ))
+    return context, version
+
+
+def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
+    minimum_depth_frozen, tmp_path,
+):
+    from paper_trading_engine.srt_advice_client import AdviceClientError
+
     publication = {"complete": False, "calls": 0}
     flows = _flows(tmp_path, publication=publication)
-    context = tmp_path / "context"
-    init = StrategyInit(candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), context)
-    client = SrtAdviceClient(repo_root=tmp_path, data_dir=tmp_path / "pte", dataflows=flows)
-
-    with pytest.raises(AdviceClientError, match="preparation failed"):
-        client._prepare_strategy(StrategyRuntime(dataflows=flows).create(init))
+    moments = iter((
+        datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
+        datetime(2026, 9, 2, 22, 1, tzinfo=ZoneInfo("Asia/Shanghai")),
+    ))
+    client = SrtAdviceClient(
+        repo_root=minimum_depth_frozen[0].root, data_dir=tmp_path / "pte", dataflows=flows,
+        now=lambda: next(moments),
+        session_resolver=lambda _: date(2026, 9, 3),
+    )
+    with pytest.raises(AdviceClientError, match="fewer observations than required"):
+        _prepare(client, "s900-v1", date(2026, 9, 2))
     assert publication["calls"] == 1
+    assert publication["sessions"] == [2]
+    with pytest.raises(AdviceClientError, match="cannot read prepared-data index"):
+        client.prepared_through("s900-v1", "S900", "v1")
     publication["complete"] = True
-    strategy = StrategyRuntime(dataflows=flows).create(init)
-    prepared = client._prepare_strategy(strategy)
+    prepared = _prepare(client, "s900-v1", date(2026, 9, 2))
     assert publication["calls"] == 2
-    requirement = strategy.input_binding.plan.requests["execution"].coverage
+    assert publication["sessions"] == [2, 3]
+    requirement = prepared.input_binding.plan.requests["execution"].coverage
     assert requirement.minimum_sessions == 3
     assert requirement.observations_through == "2026-09-02"
-
-    # Reopen the provider-free space: successful pinned inputs remain usable offline.
+    # The real authenticated frozen release and its successful binding reopen offline.
     offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
-    restored = StrategyRuntime(dataflows=offline).create(init)
-    assert restored.prepare_data(binding=strategy.input_binding) == prepared
+    reopened = SrtAdviceClient(
+        repo_root=minimum_depth_frozen[0].root, data_dir=tmp_path / "pte", dataflows=offline,
+    )
+    restored = _prepare(reopened, "s900-v1", date(2026, 9, 2))
+    assert restored.result == prepared.result
+    assert restored.input_binding == prepared.input_binding
+    decision = _decision(reopened, restored)
+    assert decision.runtime_sha256 == prepared.strategy.runtime_sha256
+    assert decision.strategy["release_hash"] == minimum_depth_frozen[1].release_hash
     assert publication["calls"] == 2
 
 
-def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen,tmp_path,monkeypatch):
+def test_pte_observation_failure_is_explicit_and_does_not_change_execution(pte_frozen, tmp_path, monkeypatch):
     from dataclasses import replace
     from strategy_runtime import StrategyObservation
-    from paper_trading_engine.srt_advice_client import _decision_from_plan
     from paper_trading_engine.contracts import AdviceContractError, AdviceDecision
-    client = _client(pte_frozen[0].root,tmp_path,{date(2026,9,2):date(2026,9,3)})
-    prepared = client.prepare_account_data(account_id='s900-v1',strategy_id='S900',strategy_version='v1',symbol='588080.SH',asset='etf',signal_date=date(2026,9,2))
-    captured = []
-    original = __import__('paper_trading_engine.srt_advice_client',fromlist=['_decision_from_plan'])._decision_from_plan
-    def capture(plan,identity,definition):
-        captured.append((plan,identity,definition))
-        return original(plan,identity,definition)
-    monkeypatch.setattr('paper_trading_engine.srt_advice_client._decision_from_plan',capture)
-    result = client.get_decision(0,100000,100000,trading_date=date(2026,9,3),portfolio_revision=0,state_revision=0,strategy_id='S900',strategy_version='v1',account_id='s900-v1',symbol='588080.SH',asset='etf',prepared=prepared)
-    plan,identity,definition = captured[0]
-    unavailable = _decision_from_plan(replace(plan,evidence={}),identity,definition)
-    assert unavailable.observation['status'] == 'UNAVAILABLE'
+
+    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
+    prepared = _prepare(client, "s900-v1", date(2026, 9, 2))
+    result = _decision(client, prepared)
+    assert result.observation["status"] == "READY"
+    assert StrategyObservation.from_dict(result.observation).plan_identity == result.plan_identity
+    original_plan = prepared.instance.plan_at
+
+    def missing_observation_evidence(**kwargs):
+        return replace(original_plan(**kwargs), evidence={})
+
+    # Only the observation evidence is removed after actual SRT planning.
+    with monkeypatch.context() as faults:
+        faults.setattr(prepared.instance, "plan_at", missing_observation_evidence)
+        unavailable = _decision(client, prepared)
+    assert unavailable.observation["status"] == "UNAVAILABLE"
     assert unavailable.plan_identity == result.plan_identity
-    assert unavailable.orders == result.orders and unavailable.target_quantity == result.target_quantity
-    observed = StrategyObservation.from_dict(result.observation)
-    assert observed.plan_identity == result.plan_identity
-    # Reuse the actual transport payload and reject facts from another decision.
+    assert unavailable.signal_identity == result.signal_identity
+    assert unavailable.orders == result.orders
+    assert unavailable.target_quantity == result.target_quantity
     transport = []
     original_parse = AdviceDecision.from_cli_payload
-    def parse(value):
+
+    def capture_payload(value):
         transport.append(value)
         return original_parse(value)
-    monkeypatch.setattr(AdviceDecision,'from_cli_payload',parse)
-    _decision_from_plan(plan,identity,definition)
-    transport[0]['result']['observation']['plan_identity'] = '0'*64
-    with pytest.raises(AdviceContractError, match='another decision'):
+
+    monkeypatch.setattr(AdviceDecision, "from_cli_payload", capture_payload)
+    assert _decision(client, prepared).plan_identity == result.plan_identity
+    transport[0]["result"]["observation"]["plan_identity"] = "0" * 64
+    with pytest.raises(AdviceContractError, match="another decision"):
         original_parse(transport[0])

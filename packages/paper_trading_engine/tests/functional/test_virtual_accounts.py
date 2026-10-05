@@ -1,4 +1,3 @@
-from argparse import Namespace
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import replace
 from datetime import date, timedelta
@@ -6,23 +5,22 @@ import json
 import os
 from pathlib import Path
 import sqlite3
-import subprocess
 from threading import Barrier, Event, get_ident
 import time
 from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-from dataflows import DataSpace
 
-from paper_trading_engine import AccountStrategyBinding
-from strategy_manager import Qualification
+from paper_trading_engine import AccountRetirementRequest
+from paper_trading_engine.futu_execution import FutuExecution
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
 from paper_trading_engine.web_api import PteWebApi
-from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
-from pte_support import decision
+from paper_trading_engine.runtime_lock import RuntimeDatabaseLock
+from pte_support import FakeBroker, decision
+from pte_control_support import create_bound_account, engine_arguments, installed_binding
 
 
 def create_account(store, account_id, version, marker):
@@ -35,34 +33,46 @@ def create_account(store, account_id, version, marker):
 
 
 @pytest.mark.parametrize("action", ["create", "pause", "resume", "create-reconciliation"])
-def test_account_cli_writes_require_runtime_ownership(tmp_path, action):
+def test_account_cli_writes_require_runtime_ownership(tmp_path, action, capsys):
     database = tmp_path / "owned.db"
+    argv = ["account", action, "--repo-root", str(tmp_path), "--database", str(database)]
+    if action in {"create", "pause", "resume"}:
+        argv += ["--account-id", "one"]
+    if action == "create":
+        argv += ["--name", "One", "--strategy", "S900", "--strategy-version", "v1"]
     with RuntimeDatabaseLock(database):
-        with pytest.raises(RuntimeAlreadyOwnedError):
-            pte_cli._run_account_command(Namespace(database=database, account_action=action))
+        assert pte_cli.main(argv) == 5
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["status"] == "FAIL" and failure["command"] == "pte.account"
+    assert "already owned" in failure["error"]["message"]
     assert not database.exists()
 
 
-def test_offline_account_pause_and_resume_are_atomic_and_audited(new_store, tmp_path, monkeypatch):
+def test_offline_account_pause_and_resume_are_atomic_and_audited(new_store, tmp_path, monkeypatch, capsys):
     database = tmp_path / "pause.db"
     store = new_store(database)
     create_account(store, "one", "v1", "a")
     for action, paused, event_type in (
         ("pause", True, "ACCOUNT_PAUSED"), ("resume", False, "ACCOUNT_RESUMED"),
     ):
-        result = pte_cli._run_account_command(Namespace(
-            database=database, account_action=action, account_id="one",
-        ))
+        assert pte_cli.main([
+            "account", action, "--repo-root", str(tmp_path), "--database", str(database),
+            "--account-id", "one",
+        ]) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["status"] == "PASS" and payload["command"] == f"pte.account.{action}"
+        result = payload["result"]
         assert bool(result["paused"]) is paused
         assert len(store.query_audit_events(event_type=event_type, account_id="one")) == 1
     def reject(*args, **kwargs):
         raise RuntimeError("audit unavailable")
 
     monkeypatch.setattr(pte_cli.AuditRecorder, "record", reject)
-    with pytest.raises(RuntimeError, match="audit unavailable"):
-        pte_cli._run_account_command(Namespace(
-            database=database, account_action="pause", account_id="one",
-        ))
+    assert pte_cli.main([
+        "account", "pause", "--repo-root", str(tmp_path), "--database", str(database),
+        "--account-id", "one",
+    ]) == 5
+    assert "audit unavailable" in json.loads(capsys.readouterr().out)["error"]["message"]
     assert store.virtual_account("one")["paused"] == 0
     store.close()
 
@@ -104,18 +114,20 @@ def test_account_capital_allocation_is_atomic_across_connections(new_store, tmp_
             store.close()
 
 
-def test_readonly_account_list_never_creates_or_migrates_database(new_store, tmp_path):
+def test_readonly_account_list_never_creates_or_migrates_database(new_store, tmp_path, capsys):
     database = tmp_path / "missing" / "runtime.db"
-    with pytest.raises(sqlite3.OperationalError):
-        pte_cli._run_account_command(Namespace(database=database, account_action="list"))
+    argv = ["account", "list", "--repo-root", str(tmp_path), "--database", str(database)]
+    assert pte_cli.main(argv) == 5
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["status"] == "FAIL" and failure["command"] == "pte.account"
     assert not database.parent.exists()
 
     store = new_store(database)
     store.set_setting("runtime_database_schema_version", "2")
     store.close()
     before = database.read_bytes()
-    with pytest.raises(RuntimeError, match="current PTE database schema"):
-        pte_cli._run_account_command(Namespace(database=database, account_action="list"))
+    assert pte_cli.main(argv) == 5
+    assert "current PTE database schema" in json.loads(capsys.readouterr().out)["error"]["message"]
     assert database.read_bytes() == before
     with sqlite3.connect(database) as connection:
         assert connection.execute(
@@ -159,62 +171,110 @@ def test_performance_cli_uses_readonly_store(new_store, tmp_path, monkeypatch):
     assert called == [True]
 
 
-@pytest.mark.parametrize("operation", [
-    pte_cli._restart_running_pte, pte_cli._repair_running_ledger,
-    pte_cli._create_running_reconciliation_account,
-])
-def test_control_token_lookup_does_not_migrate_database(new_store, tmp_path, monkeypatch, operation):
+@pytest.mark.parametrize("action", ["restart", "repair-ledger", "create-reconciliation"])
+def test_control_token_lookup_does_not_migrate_database(new_store, tmp_path, monkeypatch, action, capsys):
     database = tmp_path / "control-schema.db"
     store = new_store(database)
     store.set_setting("runtime_database_schema_version", "2")
     store.close()
     before = database.read_bytes()
-    monkeypatch.setattr(pte_cli, "_read_json", lambda *_a, **_k: pytest.fail("no HTTP call expected"))
-    with pytest.raises(RuntimeError, match="current PTE database schema"):
-        operation(Namespace(database=database, host="127.0.0.1"))
+    monkeypatch.setattr(pte_cli, "urlopen", lambda *_a, **_k: pytest.fail("no HTTP call expected"))
+    argv = ["control", action, "--repo-root", str(tmp_path), "--database", str(database)]
+    if action == "repair-ledger":
+        argv += ["--account-id", "one", "--intent-id", "PTE-one"]
+    assert pte_cli.main(argv) == 5
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["status"] == "FAIL" and failure["command"] == "pte.control"
+    assert "current PTE database schema" in failure["error"]["message"]
     assert database.read_bytes() == before
 
 
-@pytest.mark.parametrize("accounts", [[], [{"strategy_id": "S001", "strategy_version": "v1", "release_hash": "e" * 64}]])
-def test_startup_reads_existing_bindings_without_default_account_writes(tmp_path, monkeypatch, accounts):
-    class ReachedDeploymentValidation(RuntimeError):
-        pass
-
-    # A read-only surface deliberately offers no account creation/rename/migration methods.
+@pytest.mark.parametrize("state", ["empty", "invalid_binding"])
+def test_startup_reads_existing_bindings_without_default_account_writes(
+    new_store, pte_frozen, tmp_path, monkeypatch, state,
+):
+    context, _ = pte_frozen
+    store = new_store(tmp_path / "runtime.db")
+    if state == "invalid_binding":
+        binding = installed_binding(context)
+        create_bound_account(store, "one", replace(binding, release_hash="e" * 64))
+    before = store.virtual_accounts()
+    broker = FakeBroker()
+    connections = []
     closed = []
-    store = SimpleNamespace(strategy_virtual_accounts=lambda: accounts, close=lambda: closed.append(True))
-    monkeypatch.setattr(pte_cli, "PaperStore", lambda _: store)
-    for name in ("AuditRecorder", "SrtAdviceClient", "FutuGateway", "FutuExecution", "ReconnectableExecution"):
-        monkeypatch.setattr(pte_cli, name, lambda *args, **kwargs: SimpleNamespace())
-    monkeypatch.setattr(pte_cli, "FutuGateway", lambda **_: pytest.fail("invalid bindings must block connection"))
+    close_store = PaperStore.close
 
-    def validate(client, references):
-        assert references == accounts
-        raise ReachedDeploymentValidation()
+    def close(current):
+        close_store(current)
+        closed.append(current.path)
 
-    monkeypatch.setattr(pte_cli, "_strategy_deployments", validate)
-    args = Namespace(action="once", database=tmp_path / "runtime.db", repo_root=tmp_path,
-                     data_dir=tmp_path / "data", data_space=DataSpace(Path("market")), config_root=tmp_path, asset="ETF", symbol="588080.SH",
-                     opend_host="127.0.0.1", opend_port=11111)
-    with pytest.raises(ReachedDeploymentValidation):
-        pte_cli.build_engine(args)
-    assert closed == [True]
+    monkeypatch.setattr(PaperStore, "close", close)
+
+    def gateway(**kwargs):
+        connections.append(kwargs)
+        return broker
+
+    monkeypatch.setattr(pte_cli, "FutuGateway", gateway)
+    args = engine_arguments(context.strategy_root.parent, store.path)
+    try:
+        if state == "invalid_binding":
+            with pytest.raises(RuntimeError, match="account release hash differs"):
+                pte_cli.build_engine(args)
+            assert connections == []
+            assert store.path in closed
+        else:
+            engine = pte_cli.build_engine(args)
+            try:
+                assert engine.store.virtual_accounts() == []
+            finally:
+                engine.close()
+            # Retired accounts must not require their obsolete strategy to load.
+            create_account(store, "retired", "v1", "a")
+            store.set_virtual_paused("retired", True)
+            FutuExecution(store, broker).retire_account(
+                AccountRetirementRequest("retired", "a" * 64, "test", "obsolete binding"),
+            )
+            before = store.virtual_accounts()
+            engine = pte_cli.build_engine(args)
+            try:
+                assert engine.store.virtual_account("retired")["status"] == "RETIRED"
+            finally:
+                engine.close()
+        assert store.virtual_accounts() == before
+        assert broker.placed == broker.cancelled == []
+    finally:
+        store.close()
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows extended-path regression")
-def test_account_chart_accepts_equivalent_windows_extended_path(tmp_path, monkeypatch):
+def test_account_chart_accepts_equivalent_windows_extended_path(new_store, tmp_path, monkeypatch):
     from paper_trading_engine.account_chart import AccountChartService
 
     cache = tmp_path / "charts"
     cache.mkdir()
     root = cache.resolve()
     extended = Path("\\\\?\\" + str(root / "s001-v2"))
-    resolutions = iter((root, extended))
-    monkeypatch.setattr(Path, "resolve", lambda self: next(resolutions))
-    service = AccountChartService.__new__(AccountChartService)
-    service.cache_dir = cache
+    original_resolve = Path.resolve
 
-    assert service._account_dir("s001-v2") == root / "s001-v2"
+    def resolve(path, *args, **kwargs):
+        if path == root / "s001-v2":
+            return extended
+        return original_resolve(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", resolve)
+    store = new_store(tmp_path / "chart.db")
+    service = AccountChartService(store, market_data=None, cache_dir=cache)
+    try:
+        chart = service.chart_path("s001-v2", "a" * 64)
+        chart.parent.mkdir()
+        chart.write_text("synthetic chart", encoding="utf-8")
+        assert chart == root / "s001-v2" / ("a" * 64 + ".html")
+        assert chart.read_text(encoding="utf-8") == "synthetic chart"
+        with pytest.raises(ValueError, match="invalid account id"):
+            service.chart_path("../outside", "a" * 64)
+    finally:
+        service.close()
+        store.close()
 
 
 def test_pte_cli_rejects_retired_account_and_scheduler_aliases(tmp_path):
@@ -251,29 +311,67 @@ def test_pte_cli_rejects_retired_account_and_scheduler_aliases(tmp_path):
         ])
 
 
-def test_strategy_bindings_reuse_same_coordinate_and_validate_each_account(monkeypatch):
+def test_startup_validates_each_account_binding_before_broker_connection(
+    new_store, pte_frozen, tmp_path, monkeypatch,
+):
+    from strategy_runtime import RuntimeCompatibilityError
+
+    context, _ = pte_frozen
+    store = new_store(tmp_path / "bindings.db")
+    binding = installed_binding(context)
+    for name in ("one", "two"):
+        create_bound_account(store, name, binding)
     calls = []
-    def validate(**kwargs):
+    validate_binding = pte_cli.SrtAdviceClient.validate_account_binding
+
+    def validate(client, **kwargs):
         calls.append(kwargs)
-        return AccountStrategyBinding("S001", "v1", "a" * 64, "Test", Qualification.PAPER_READY,
-                                      date(2026, 9, 2), kwargs["symbol"], .001)
-    client = SimpleNamespace(validate_account_binding=validate)
-    accounts = [dict(account_id=name, strategy_id="S001", strategy_version="v1", release_hash="a" * 64,
-                     symbol=symbol, asset_type="etf", selection_data_cutoff="2026-09-02")
-                for name, symbol in (("one", "588080.SH"), ("two", "588080.SH"), ("three", "510500.SH"))]
-    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: pytest.fail("binding must not spawn a process"))
-    bindings = pte_cli._strategy_deployments(client, accounts)
-    assert set(bindings) == {"one", "two", "three"}
-    assert bindings["one"] is bindings["two"]
-    assert bindings["three"].symbol == "510500.SH"
-    assert len(calls) == 2
-    accounts[1]["release_hash"] = "b" * 64
-    with pytest.raises(RuntimeError, match="account release hash differs"):
-        pte_cli._strategy_deployments(client, accounts)
-    accounts[1]["release_hash"] = "a" * 64
-    accounts[1]["selection_data_cutoff"] = "2026-09-03"
-    with pytest.raises(RuntimeError, match="selection cutoff differs"):
-        pte_cli._strategy_deployments(client, accounts)
+        return validate_binding(client, **kwargs)
+
+    monkeypatch.setattr(pte_cli.SrtAdviceClient, "validate_account_binding", validate)
+    monkeypatch.setattr(pte_cli.SrtAdviceClient, "prepare_account_data",
+                        lambda *_a, **_k: pytest.fail("startup must not prepare market data"))
+    brokers = []
+
+    def gateway(**kwargs):
+        broker = FakeBroker()
+        brokers.append(broker)
+        return broker
+
+    monkeypatch.setattr(pte_cli, "FutuGateway", gateway)
+    args = engine_arguments(context.strategy_root.parent, store.path)
+    before = store.virtual_accounts()
+    try:
+        engine = pte_cli.build_engine(args)
+        engine.close()
+        assert calls and all(call["symbol"] == "588080.SH" for call in calls)
+        assert store.virtual_accounts() == before
+        assert len(brokers) == 1 and brokers[0].placed == []
+        for field, changed, message in (
+            ("release_hash", "b" * 64, "account release hash differs"),
+            ("selection_data_cutoff", "2099-01-01", "selection cutoff differs"),
+        ):
+            original = store.virtual_account("two")[field]
+            with store._connection:
+                store._connection.execute(f"UPDATE virtual_accounts SET {field}=? WHERE account_id='two'", (changed,))
+            corrupted = store.virtual_accounts()
+            with pytest.raises(RuntimeError, match=message):
+                pte_cli.build_engine(args)
+            assert store.virtual_accounts() == corrupted
+            assert len(brokers) == 1, "invalid binding must block broker connection"
+            with store._connection:
+                store._connection.execute(f"UPDATE virtual_accounts SET {field}=? WHERE account_id='two'", (original,))
+        # A different coordinate must be validated independently. This installed
+        # synthetic author has not opted into symbol rebinding.
+        create_bound_account(store, "three", replace(binding, symbol="510500.SH"))
+        calls.clear()
+        before = store.virtual_accounts()
+        with pytest.raises(RuntimeCompatibilityError, match="symbol rebinding"):
+            pte_cli.build_engine(args)
+        assert {call["symbol"] for call in calls} == {"588080.SH", "510500.SH"}
+        assert len(brokers) == 1 and store.virtual_accounts() == before
+    finally:
+        store.close()
 
 
 def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path):
@@ -1016,35 +1114,32 @@ def test_ft_pte02_selection_cutoff_is_required_immutable_and_safely_backfilled(n
 
 
 def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
-    tmp_path, monkeypatch,
+    pte_frozen, tmp_path, monkeypatch, capsys,
 ):
+    context, _ = pte_frozen
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    release_hash = "7" * 64
-    identity = AccountStrategyBinding(
-        "S007", "v1", release_hash, "多源机会风险门控", Qualification.PAPER_READY,
-        date(2026, 9, 2), "588080.SH", .001,
-    )
-    args = Namespace(
-        account_action="create",
-        database=tmp_path / "runtime.db",
-        data_dir=data_dir,
-        data_space=DataSpace(Path("market")),
-        config_root=tmp_path,
-        repo_root=tmp_path,
-        account_id="s007-v1",
-        name="S007-v1模拟账户",
-        strategy="S007",
-        strategy_version="v1",
-        symbol="588080.SH",
-        asset="etf",
-        initial_cash="100000",
-    )
-    monkeypatch.setattr(pte_cli, "_validate_strategy", lambda _args: identity)
-    with pytest.raises(RuntimeError, match="valid prepared SRT data is required"):
-        pte_cli._run_account_command(args)
-    empty = PaperStore(args.database)
+    identity = installed_binding(context)
+    release_hash = identity.release_hash
+    database = tmp_path / "runtime.db"
+    argv = [
+        "account", "create", "--repo-root", str(context.strategy_root.parent),
+        "--database", str(database), "--data-dir", str(data_dir), "--config-root", str(tmp_path),
+        "--account-id", "s900-v1", "--name", "S900-v1模拟账户", "--strategy", "S900",
+        "--strategy-version", "v1", "--initial-cash", "100000",
+    ]
+    monkeypatch.setattr(pte_cli.SrtAdviceClient, "latest_completed_signal_date",
+                        lambda *_a, **_k: date(2026, 9, 15))
+    def unavailable(*_args, **_kwargs):
+        raise RuntimeError("synthetic market data unavailable")
+    monkeypatch.setattr(pte_cli.SrtAdviceClient, "prepare_account_data", unavailable)
+    assert pte_cli.main(argv) == 5
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["status"] == "FAIL" and failure["command"] == "pte.account"
+    assert "valid prepared SRT data is required" in failure["error"]["message"]
+    empty = PaperStore(database)
     assert empty.virtual_accounts() == []
+    assert empty.capital_pool_balance().unallocated_cash == 1_000_000
     empty.close()
 
     accepted = replace(
@@ -1053,14 +1148,14 @@ def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
         valid_session=date(2026, 9, 16),
         data_cutoff=date(2026, 9, 15),
         strategy={
-            "strategy_id": "S007",
-            "name": "多源机会风险门控",
+            "strategy_id": "S900",
+            "name": identity.name,
             "version": "v1",
-            "release_id": "S007-v1",
+            "release_id": "S900-v1",
             "release_hash": release_hash,
             "qualification": "PAPER_READY",
         },
-        fee_rate=0.001,
+        fee_rate=identity.fee_rate,
     )
     monkeypatch.setattr(
         pte_cli.SrtAdviceClient,
@@ -1078,15 +1173,18 @@ def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
         ),
     )
     def preflight_decision(_self, *_args, **kwargs):
-        assert kwargs["account_id"] == args.account_id
+        assert kwargs["account_id"] == "s900-v1"
         assert kwargs["prepared"].available_through == date(2026, 9, 15)
         return accepted
 
     monkeypatch.setattr(
         pte_cli.SrtAdviceClient, "get_decision", preflight_decision,
     )
-    created = pte_cli._run_account_command(args)
-    assert created["account_id"] == "s007-v1"
-    assert created["strategy_id"] == "S007"
+    assert pte_cli.main(argv) == 0
+    success = json.loads(capsys.readouterr().out)
+    assert success["status"] == "PASS" and success["command"] == "pte.account.create"
+    created = success["result"]
+    assert created["account_id"] == "s900-v1"
+    assert created["strategy_id"] == "S900"
     assert created["release_hash"] == release_hash
     assert created["initial_cash"] == "100000.0000"

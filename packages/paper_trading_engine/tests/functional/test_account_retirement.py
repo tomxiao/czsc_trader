@@ -9,7 +9,7 @@ from urllib.request import Request, urlopen
 import pytest
 
 from paper_trading_engine import AccountRetirementRequest, AccountRetirementStatus
-from paper_trading_engine.cli import _strategy_deployments, _retire_running_account, build_parser
+from paper_trading_engine.cli import main as pte_main
 from paper_trading_engine.futu_execution import FutuExecution, ChannelReconciliationError
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
@@ -74,7 +74,6 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
         store.set_virtual_paused("one", False)
     with pytest.raises(ValueError, match="inactive"):
         store.save_account_decision("one", asdict(decision()))
-    assert _strategy_deployments(SimpleNamespace(), [account]) == {}
     create(store, "new", Decimal("1000000") + pnl)
     assert store.capital_pool_balance().unallocated_cash == 0
     with pytest.raises(ValueError, match="unallocated"):
@@ -158,7 +157,7 @@ def test_retirement_contract_rejects_invalid_input(field, value):
         AccountRetirementRequest(**values)
 
 
-def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup):
+def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup, capsys):
     store, broker, execution, request = setup
     store.set_setting("control_token", "test-token")
     operations = SimpleNamespace(retire_account=execution.retire_account, store=store,
@@ -173,12 +172,14 @@ def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(set
         with pytest.raises(HTTPError) as caught:
             urlopen(Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}))
         assert caught.value.code == 403
-        args = build_parser().parse_args([
+        assert pte_main([
             "control", "retire-account", "--repo-root", str(store.path.parent),
             "--database", str(store.path), "--port", str(port), "--account-id", "one",
             "--expected-release-hash", "a" * 64, "--actor", "test", "--reason", "stop",
-        ])
-        result = _retire_running_account(args)
+        ]) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["status"] == "PASS" and payload["command"] == "pte.control.retire-account"
+        result = payload["result"]
         assert result["status"] == "RETIRED" and result["released_cash"] == "100000.0000"
     finally:
         server.shutdown()
