@@ -1,10 +1,10 @@
 from dataclasses import replace
-from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
-from czsc_trader.backtesting.benchmarks import replay_buyhold
+from public_backtest_support import request_for_prices
+from czsc_trader.research_tools import evaluate_strategy
 from czsc_trader.research_tools import EvaluationBenchmark, LimitBuyHold, NextOpenBuyHold
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_assessment_delivery import completed as completed, prepare, Deliverable
@@ -12,39 +12,24 @@ from czsc_trader.application import assemble_delivery
 from czsc_trader.research_tools import delivery as d
 
 
-def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence():
-    sessions = pd.date_range("2025-02-05", periods=3)
+def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence(candidate_payload, tmp_path, monkeypatch):
+    sessions = pd.bdate_range("2025-02-05", periods=3)
     daily = pd.DataFrame({"dt": sessions, "open": [1.062] * 3, "close": [1.062, 1.062, 1.555]})
-    data = SimpleNamespace(
-        symbol="159326.SZ",
-        fingerprint="a" * 64,
-        execution_daily=daily,
-        adjusted_daily=daily,
-        execution_intraday=pd.DataFrame(columns=["dt", "high", "low"]),
+    _, request, _ = request_for_prices(
+        candidate_payload, tmp_path, monkeypatch, daily, initial_cash=1e6,
+        benchmark=EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 1000000)),
     )
-    signals = SimpleNamespace(
-        evaluation_start=sessions[1],
-        evaluation_end=sessions[-1],
-        support_data={
-            "mode": "srt_input_contract",
-            "execution_policy": {
-                "policy_type": "FROZEN_RULE",
-                "settings": {"capital": {"fee_rate": 0.001}},
-            },
-        },
-    )
-    benchmark = EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 1000000))
-    result = replay_buyhold(signals, data, 1e6, benchmark=benchmark)
+    result = evaluate_strategy(request).runs[0].buyhold
     assert result.execution.fills.iloc[0].quantity == 938000
     assert result.execution.orders.iloc[0].limit_price == 1.065
     assert result.account_daily.iloc[-1].cash == pytest.approx(2847.844)
     assert result.account_daily.iloc[-1].equity == pytest.approx(1461437.844)
-    assert len(result.execution.fills) == 1  # residual cash is not reinvested
+    assert len(result.execution.fills) == 1
     assert result.execution.decisions.action.tolist() == ["BUY", "HOLD"]
     assert (result.execution.decisions.reason == "BUY_AND_HOLD").all()
-    next_open = replay_buyhold(
-        signals, data, 1e6, benchmark=EvaluationBenchmark(NextOpenBuyHold(100))
-    )
+    next_open = evaluate_strategy(replace(
+        request, benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
+    )).runs[0].buyhold
     assert next_open.account_daily.iloc[-1].quantity == 940600
 
 
@@ -98,29 +83,14 @@ def test_contract_fingerprints_roundtrip_and_reject_implicit_defaults():
 
 
 @pytest.mark.parametrize("open_price, expected_fills", [(2.0, 0), (1.0, 2)])
-def test_limit_orders_can_remain_unfilled_and_are_split_by_policy(open_price, expected_fills):
-    sessions = pd.date_range("2026-01-01", periods=2)
+def test_limit_orders_can_remain_unfilled_and_are_split_by_policy(candidate_payload, tmp_path, monkeypatch, open_price, expected_fills):
+    sessions = pd.bdate_range("2026-01-05", periods=2)
     daily = pd.DataFrame({"dt": sessions, "open": [1.0, open_price], "close": [1.0, open_price]})
-    data = SimpleNamespace(
-        symbol="159326.SZ",
-        fingerprint="a" * 64,
-        execution_daily=daily,
-        adjusted_daily=daily,
-        execution_intraday=pd.DataFrame(columns=["dt", "high", "low"]),
+    _, request, _ = request_for_prices(
+        candidate_payload, tmp_path, monkeypatch, daily, initial_cash=250,
+        benchmark=EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 100)),
     )
-    signals = SimpleNamespace(
-        evaluation_start=sessions[-1],
-        evaluation_end=sessions[-1],
-        support_data={
-            "mode": "srt_input_contract",
-            "execution_policy": {
-                "policy_type": "FROZEN_RULE",
-                "settings": {"capital": {"fee_rate": 0.001}},
-            },
-        },
-    )
-    benchmark = EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 100))
-    result = replay_buyhold(signals, data, 250.0, benchmark=benchmark)
+    result = evaluate_strategy(request).runs[0].buyhold
     assert len(result.execution.orders) == 2
     assert len(result.execution.fills) == expected_fills
     assert (result.execution.orders.quantity == 100).all()

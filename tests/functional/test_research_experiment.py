@@ -21,7 +21,6 @@ from research_experiment import (
     ExperimentCapabilities,
     ExperimentCapability,
     ExperimentDefinition, ExperimentDataScope,
-    ExperimentDependency,
     ExperimentInput,
     ExperimentMode,
     ExperimentOutcome,
@@ -280,18 +279,9 @@ def test_executor_preserves_partial_publication_and_records_failure(tmp_path, mo
     with pytest.raises(FileExistsError, match="evidence already exists"):
         execute_experiment(loaded, context)
     assert envelope_path.read_bytes() == envelope
+    assert list(context.workspace.path(".tmp/execution").glob("*.json")) == []
 
 
-def test_execution_document_publication_never_replaces_existing_evidence(tmp_path):
-    from czsc_trader.research_tools.experiment import _atomic_execution_document
-
-    workspace = _workspace(tmp_path, "terminal-publication")
-    _atomic_execution_document(workspace, "execution_failure.json", {"error": "first"})
-    original = workspace.path("execution_failure.json").read_bytes()
-    with pytest.raises(FileExistsError):
-        _atomic_execution_document(workspace, "execution_failure.json", {"error": "second"})
-    assert workspace.path("execution_failure.json").read_bytes() == original
-    assert list(workspace.path(".tmp/execution").glob("*.json")) == []
 
 
 @pytest.mark.parametrize("status", [ExperimentPreflightStatus.PASS, ExperimentPreflightStatus.FAIL])
@@ -310,19 +300,31 @@ def test_preflight_named_checks_and_nested_result_serialization(tmp_path, monkey
         json.dumps(report.to_dict(), allow_nan=False)
 
 
-def test_preflight_rejects_false_success_and_bad_output_serialization(tmp_path, monkeypatch):
+def test_preflight_rejects_false_synthetic_success(tmp_path, monkeypatch):
     loaded = _preflight_fixture(tmp_path)
     monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: False)
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
     assert not report.passed
-    assert next(item for item in report.checks if item.code == "SYNTHETIC_PRECHECK").status is ExperimentPreflightStatus.FAIL
-    result = ExperimentPrecheckResult((ExperimentPreflightCheck("OUTPUT", ExperimentPreflightStatus.PASS, "synthetic"),),
-        ExperimentResult(ExperimentOutcome.PASS, {}, {}))
+    assert (
+        next(item for item in report.checks if item.code == "SYNTHETIC_PRECHECK").status
+        is ExperimentPreflightStatus.FAIL
+    )
+
+
+def test_preflight_rejects_unserializable_synthetic_output(tmp_path, monkeypatch):
+    loaded = _preflight_fixture(tmp_path)
+    result = ExperimentPrecheckResult(
+        (ExperimentPreflightCheck("OUTPUT", ExperimentPreflightStatus.PASS, "synthetic"),),
+        ExperimentResult(ExperimentOutcome.PASS, {}, {}),
+    )
     monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: result)
     monkeypatch.setattr(ExperimentResult, "to_dict", lambda self: {"bad": object()})
-    failed = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
-    assert not failed.passed
-    assert next(item for item in failed.checks if item.code == "RESULT_SERIALIZATION").status is ExperimentPreflightStatus.FAIL
+    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
+    assert not report.passed
+    assert (
+        next(item for item in report.checks if item.code == "RESULT_SERIALIZATION").status
+        is ExperimentPreflightStatus.FAIL
+    )
 
 
 def test_preflight_detects_known_source_risks_without_executing_them(tmp_path):
@@ -347,13 +349,27 @@ def risky(frame, result, study):
 
 def test_preflight_blocks_changed_source_before_synthetic_or_data_access(tmp_path, monkeypatch):
     loaded = _preflight_fixture(tmp_path, real_data=True)
-    monkeypatch.setattr(type(loaded.implementation), "synthetic_precheck", lambda self: pytest.fail("must not execute"))
+    monkeypatch.setattr(
+        type(loaded.implementation),
+        "synthetic_precheck",
+        lambda self: pytest.fail("must not execute"),
+    )
     path = loaded.root / "experiment.py"
     path.write_text(path.read_text(encoding="utf-8") + "\n# changed\n", encoding="utf-8")
     flows = _configured_flows(tmp_path, lambda request: pytest.fail("must not fetch"))
-    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
-        data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
+    report = preflight_experiment(
+        loaded,
+        resources=ExperimentResources(1, 99),
+        dataflows=flows,
+        data_requests=(
+            DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),
+        ),
+    )
     assert not report.passed
+    assert (
+        next(item for item in report.checks if item.code == "SOURCE_BOUND").status
+        is ExperimentPreflightStatus.FAIL
+    )
 
 
 def test_preflight_detects_source_mutation_during_synthetic_check(tmp_path, monkeypatch):
@@ -378,28 +394,54 @@ def test_preflight_bare_assertion_becomes_structured_failure(tmp_path, monkeypat
     assert check.message == "AssertionError"
 
 
-def test_preflight_successful_explicit_data_probe(tmp_path):
-    loaded = _preflight_fixture(tmp_path, real_data=True)
-    frame = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"],
-        "Open": [1., 1.], "High": [1., 1.], "Low": [1., 1.], "Close": [1., 1.],
-        "Volume": [1., 1.], "Amount": [1., 1.]})
+@pytest.mark.parametrize(
+    "real_data,end",
+    [(False, "2026-09-15"), (True, "2026-09-25")],
+    ids=["undeclared-real-data", "after-declared-cutoff"],
+)
+def test_preflight_successful_explicit_data_probe(tmp_path, real_data, end):
+    loaded = _preflight_fixture(tmp_path, real_data=real_data)
+    frame = pd.DataFrame(
+        {
+            "Date": pd.bdate_range("2026-09-14", end),
+            "Open": 1.0,
+            "High": 1.0,
+            "Low": 1.0,
+            "Close": 1.0,
+            "Volume": 1.0,
+            "Amount": 1.0,
+        }
+    )
     flows = _configured_flows(tmp_path, lambda request: (frame, {"vendor": "synthetic"}))
-    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99), dataflows=flows,
-        data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", "2026-09-15", "2026-09-15"),))
+    report = preflight_experiment(
+        loaded,
+        resources=ExperimentResources(1, 99),
+        dataflows=flows,
+        data_requests=(DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", end, end),),
+    )
     assert report.passed
-    assert next(item for item in report.checks if item.code == "DATA_REQUEST_001").status is ExperimentPreflightStatus.PASS
+    assert (
+        next(item for item in report.checks if item.code == "DATA_REQUEST_001").status
+        is ExperimentPreflightStatus.PASS
+    )
 
 
-@pytest.mark.parametrize("real_data,end", [(False, "2026-09-15"), (True, "2026-09-25"), (True, "2026-09-15")])
-def test_preflight_data_readiness_reports_dfls_result_without_authorization(tmp_path, real_data, end):
+def test_preflight_empty_data_is_failure_without_false_readiness(tmp_path):
+    real_data, end = True, "2026-09-15"
     loaded = _preflight_fixture(tmp_path, real_data=real_data)
     calls = []
+
     def empty(request):
         calls.append(request)
         return pd.DataFrame(), {}
+
     request = DataRequest("etf.ohlcv", "518880.SH", "2026-09-14", end, end)
-    report = preflight_experiment(loaded, resources=ExperimentResources(1, 99),
-        dataflows=_configured_flows(tmp_path, empty), data_requests=(request,))
+    report = preflight_experiment(
+        loaded,
+        resources=ExperimentResources(1, 99),
+        dataflows=_configured_flows(tmp_path, empty),
+        data_requests=(request,),
+    )
     assert not report.passed
     assert len(calls) == 1
     check = next(item for item in report.checks if item.code == "DATA_REQUEST_001")
@@ -581,42 +623,8 @@ def test_s008_fixture_loads_and_executes_through_public_context(
         load_experiment_input(context.workspace.root, expected_receipt_sha256=result.receipt.sha256)
 
 
-def test_execution_envelope_rejects_result_and_artifact_tampering(
-    tmp_path: Path,
-) -> None:
-    _, context, result = _execute_fixture(tmp_path, "tampered-envelope")
-    envelope_path = context.workspace.path("execution_envelope.json")
-    original = envelope_path.read_text(encoding="utf-8")
-    envelope = json.loads(original)
-    envelope["result"]["facts"]["rows"] = 99
-    envelope_path.write_text(json.dumps(envelope), encoding="utf-8")
-
-    with pytest.raises(ValueError, match="result hash differs"):
-        load_experiment_input(
-            context.workspace.root,
-            expected_receipt_sha256=result.receipt.sha256,
-        )
-
-    envelope_path.write_text(original, encoding="utf-8")
-    context.workspace.path(result.artifacts[0].path).write_text(
-        '{"tampered":true}', encoding="utf-8"
-    )
-    with pytest.raises(ValueError, match="artifact hash differs"):
-        load_experiment_input(
-            context.workspace.root,
-            expected_receipt_sha256=result.receipt.sha256,
-        )
 
 
-def test_loader_rejects_source_tampering(tmp_path: Path) -> None:
-    target = tmp_path / ".tmp" / "tampered" / FIXTURE_ROOT.name
-    target.parent.mkdir(parents=True)
-    shutil.copytree(FIXTURE_ROOT, target)
-    source = target / "experiment.py"
-    source.write_text(source.read_text(encoding="utf-8") + "\n# tampered\n", encoding="utf-8")
-
-    with pytest.raises(ValueError, match="source SHA-256 differs"):
-        load_experiment(target)
 
 
 def test_executor_rechecks_source_after_loading(tmp_path: Path) -> None:
@@ -680,14 +688,6 @@ def test_formal_mode_requires_platform_owned_context(tmp_path: Path) -> None:
     assert context.definition.mode is ExperimentMode.FORMAL
 
 
-def test_formal_definition_records_parameter_search_declaration() -> None:
-    definition = _definition(
-        mode=ExperimentMode.FORMAL,
-        validation_cutoff=date(2026, 9, 18),
-        capabilities=ExperimentCapabilities(searches_parameters=True),
-    )
-    assert definition.capabilities.searches_parameters
-    assert definition.data_scope is ExperimentDataScope.SEALED_VALIDATION
 
 
 def test_context_requires_exact_receipted_predecessors(tmp_path: Path) -> None:
@@ -787,7 +787,7 @@ def test_data_access_records_operations_without_interpreting_research_declaratio
         context.record_capability("not-a-capability")
 
 
-def test_context_tracks_runtime_and_evaluation_public_adapters(
+def test_context_tracks_runtime_public_adapters(
     tmp_path: Path,
 ) -> None:
     candidate = _candidate()
@@ -819,38 +819,23 @@ def test_context_tracks_runtime_and_evaluation_public_adapters(
         evaluator=evaluator,
         real_returns=True,
     )
-    request = EvaluationRequest(
-        repository_root=tmp_path,
-        experiment_id=definition.experiment_id,
-        strategy=candidate,
-        runtime_binding={},
-        symbol="518880.SH",
-        asset_type="etf",
-        windows=(EvaluationWindow("full", date(2026, 9, 1), date(2026, 9, 2)),),
-        data_cutoff=definition.development_cutoff,
-        initial_cash=1_000_000.0,
-        costs=(EvaluationCost("main", 0.001),),
-        execution_data=object(),
-        benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
-    )
-
     assert context.runtime.describe(candidate) == "runtime-definition"
     runtime_request = StrategyInit(
-        candidate, TradableWindow(date(2026, 9, 1), date(2026, 9, 3)),
+        candidate,
+        TradableWindow(date(2026, 9, 1), date(2026, 9, 3)),
         tmp_path / "runtime",
     )
     assert context.runtime.create(runtime_request) is runtime_request
     with pytest.raises(TypeError, match="StrategyInit"):
         context.runtime.create(object())
-    with pytest.raises(ValueError, match="sourced StrategyCandidate"):
-        context.evaluation.evaluate(request)
     assert runtime_calls == ["describe", "create"]
     assert evaluation_calls == []
-    assert context.trace.capabilities == (ExperimentCapability.READ_REAL_RETURNS,)
+    assert context.trace.capabilities == ()
     assert context.trace.operations == ("runtime.describe", "runtime.create")
 
 
-def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
+@pytest.fixture
+def rejected_evaluation_input(
     tmp_path: Path,
 ) -> None:
     calls: list[str] = []
@@ -867,7 +852,6 @@ def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
         workspace=_workspace(tmp_path, "resource-budget"),
         resources=ExperimentResources(
             max_workers=1,
-
             random_seed=98,
         ),
         evaluator=evaluator,
@@ -887,11 +871,21 @@ def test_evaluation_adapter_rejects_invalid_workers_and_unsourced_candidate(
         benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
 
+    return context, request, calls
+
+
+def test_evaluation_rejects_workers_above_public_context_limit(rejected_evaluation_input):
+    context, request, calls = rejected_evaluation_input
     with pytest.raises(PermissionError, match="workers exceed"):
         context.evaluation.evaluate(replace(request, workers=2))
+    assert calls == [] and context.trace.evaluations == ()
+
+
+def test_evaluation_rejects_unsourced_candidate(rejected_evaluation_input):
+    context, request, calls = rejected_evaluation_input
     with pytest.raises(ValueError, match="sourced StrategyCandidate"):
         context.evaluation.evaluate(request)
-    assert calls == []
+    assert calls == [] and context.trace.evaluations == ()
 
 
 class _CandidateExperiment(ResearchExperiment):
@@ -1009,40 +1003,3 @@ class Experiment(ResearchExperiment):
     assert result.candidate is not None
     assert context.trace.capabilities == (ExperimentCapability.CREATE_CANDIDATE,)
     assert result.receipt.trace == context.trace
-
-
-def test_workspace_rejects_escape_and_detects_artifact_change(
-    tmp_path: Path,
-) -> None:
-    workspace = _workspace(tmp_path, "workspace-boundary")
-    with pytest.raises(ValueError, match="experiment workspace"):
-        workspace.path("../outside.json")
-    target = workspace.path("facts/result.json")
-    target.write_text("{}", encoding="utf-8")
-    artifact = workspace.register_artifact("facts/result.json", "facts")
-    target.write_text('{"changed":true}', encoding="utf-8")
-
-    with pytest.raises(ValueError, match="artifact hash differs"):
-        workspace.validate_artifact(artifact)
-
-
-def test_definition_and_result_freeze_json_payloads() -> None:
-    definition = _definition()
-    result = ExperimentResult(
-        outcome=ExperimentOutcome.INCONCLUSIVE,
-        facts={"nested": {"values": [1, 2]}},
-        diagnostics={},
-    )
-
-    assert len(definition.sha256) == 64
-    assert result.facts["nested"]["values"] == (1, 2)
-    with pytest.raises(TypeError):
-        result.facts["new"] = True
-    with pytest.raises(ValueError, match="finite JSON"):
-        ExperimentResult(
-            outcome=ExperimentOutcome.FAIL,
-            facts={"bad": float("nan")},
-            diagnostics={},
-        )
-    with pytest.raises(ValueError, match="must be exact"):
-        ExperimentDependency("optuna", ">=4.0")

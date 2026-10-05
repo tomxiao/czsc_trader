@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from czsc_trader.factor_features import (
+from factor_signal_catalog.calculations import (
     SellSideRevisionParameters,
     calculate_chinext_turnover_z20,
     calculate_daily_close_vwap_deviation,

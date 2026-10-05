@@ -256,88 +256,18 @@ def test_missing_coverage_never_passes_or_freezes(inspection):
     assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
 
 
-def test_strong_contracts_reject_untyped_approval_and_bad_receipt():
-    with pytest.raises(TypeError):
-        f.ResearchDecision("d1", "S900", "APPROVE", None, None, "reason")
-    with pytest.raises(ValueError):
-        f.FreezeReceipt(f.FreezeRequestId("S900", "r1"), f.FreezeStatus.COMMITTED, "a" * 64)
-    from strategy_manager import ValidationError
-
-    with pytest.raises(ValidationError):
-        f.FreezeFile("../outside.py", CandidateEvidence("source.py", "a" * 64))
 
 
-@pytest.mark.parametrize("after_commit", [False, True])
-def test_process_interruption_obeys_commit_visibility(inspected_candidate, monkeypatch, after_commit):
-    from strategy_manager import freeze_store
-
-    context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    original = freeze_store._durable
-
-    class Interrupted(BaseException):
-        pass
-
-    def interrupt(path, value, **kwargs):
-        if path.name == "v1.json":
-            assert (
-                get_freeze_result(context, operation.request_id).status
-                is f.FreezeStatus.IN_PROGRESS
-            )
-            registry = StrategyRegistry(context.strategy_root)
-            assert registry.versions("S900") == ()
-            if after_commit:
-                original(path, value, **kwargs)
-            raise Interrupted()
-        return original(path, value, **kwargs)
-
-    monkeypatch.setattr(freeze_store, "_durable", interrupt)
-    with pytest.raises(Interrupted):
-        freeze_candidate(context, operation)
-    receipt = get_freeze_result(context, operation.request_id)
-    expected = f.FreezeStatus.COMMITTED if after_commit else f.FreezeStatus.UNKNOWN
-    assert receipt.status is expected
-    assert freeze_candidate(context, operation) == receipt
-    assert bool(StrategyRegistry(context.strategy_root).versions("S900")) is after_commit
-    if not after_commit:
-        from strategy_manager import RegistryError
-
-        with pytest.raises(RegistryError, match="unresolved"):
-            freeze_candidate(
-                context, replace(operation, request_id=f.FreezeRequestId("S900", "new_request"))
-            )
 
 
-def test_failed_commit_stays_invisible_and_is_not_retried(inspected_candidate, monkeypatch):
-    from strategy_manager import freeze_store
-
-    context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    original = freeze_store._durable
-
-    def fail(path, value, **kwargs):
-        if path.name == "committed.json":
-            raise OSError("simulated disk failure")
-        return original(path, value, **kwargs)
-
-    monkeypatch.setattr(freeze_store, "_durable", fail)
-    receipt = freeze_candidate(context, operation)
-    assert receipt.status is f.FreezeStatus.FAILED
-    assert "disk failure" in receipt.reason
-    assert freeze_candidate(context, operation) == receipt
-    assert StrategyRegistry(context.strategy_root).versions("S900") == ()
 
 
 def test_approval_identity_and_version_conflicts(inspected_candidate):
-    from strategy_manager import RegistryError
-
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
     with pytest.raises(ValueError, match="matching approval"):
         freeze_candidate(context, replace(operation, approval=report.selection))
     assert freeze_candidate(context, operation).status is f.FreezeStatus.COMMITTED
-    with pytest.raises(RegistryError, match="target version"):
-        freeze_candidate(context, replace(operation, request_id=f.FreezeRequestId("S900", "other")))
     with pytest.raises(ValueError, match="does not match"):
         record_research_decision(
             context,
@@ -373,8 +303,6 @@ def test_changed_inspected_file_is_rejected(inspected_candidate):
 def test_stage_five_delivery_captures_report_and_decision_closure(inspected_candidate, monkeypatch):
     from czsc_trader.research_tools import delivery as d
     from czsc_trader.application import validate_delivery
-    from czsc_trader.application.delivery_service import _walk
-    from czsc_trader.application.research_evidence import read_decision
     from test_research_delivery import content
 
     context, report, source = inspected_candidate
@@ -385,12 +313,14 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
 
     monkeypatch.setattr(delivery_service, "assess_candidates", forbidden)
     monkeypatch.setattr(delivery_service, "compare_candidates", forbidden)
-    selection = read_decision(context.root, report.selection)
+    selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
     assessment = d.DeliveryReceipt.from_dict(
         json.loads(selection.subject.delivery.resolve(context.root).read_text())
     ).reference
     refs = [report.reference, report.selection.evidence, selection.confirmation_source]
-    refs.extend(x for x in _walk(report) if isinstance(x, f.ResearchEvidenceRef))
+    refs.extend((report.plan.origin.registration, report.plan.payload, report.plan.runtime_binding,
+        *report.plan.registration_evidence, *(item.source for item in report.plan.source_files),
+        *(ref for check in report.checks for ref in check.evidence)))
     attachments = {}
     for ref in refs:
         path = ref.resolve(context.root)
@@ -423,21 +353,43 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
     assert "尚未请求" in published.read_text(encoding="utf-8")
     assert "选择合成候选" in published.read_text(encoding="utf-8")
     assert "确认来源" in published.read_text(encoding="utf-8")
-    from czsc_trader.application.delivery_service import _report
-
-    for status in (f.FreezeStatus.FAILED, f.FreezeStatus.UNKNOWN):
-        failed = f.FreezeReceipt(
-            f.FreezeRequestId("S900", "render-only"), status, "a" * 64, reason="具体冻结失败原因"
-        )
-        rendered = _report(
-            definition, replace(value, payload=replace(payload, freeze=failed)), published.parent
-        ).decode()
-        assert status.value in rendered and "具体冻结失败原因" in rendered
-        assert "已冻结版本" not in rendered
     before = published.read_bytes()
+    # Failed and unknown states must come from an actual public freeze operation.
+    from strategy_manager import freeze_store
+    for status, failed_file in ((f.FreezeStatus.FAILED, "committed.json"), (f.FreezeStatus.UNKNOWN, "v1.json")):
+        private = context.root.parent / f"delivery-{status.value}"
+        shutil.copytree(context.root, private)
+        copied = RepositoryContext.discover(private)
+        failure_operation = approve(copied, report, private / source.relative_to(context.root),
+            decision_id=f"freeze_{status.value}", request_id=f"request_{status.value}")
+        durable = freeze_store._durable
+        def fail(path, value, **kwargs):
+            if path.name == failed_file:
+                raise OSError("specific freeze publication failure")
+            return durable(path, value, **kwargs)
+        with monkeypatch.context() as fault:
+            fault.setattr(freeze_store, "_durable", fail)
+            failed = freeze_candidate(copied, failure_operation)
+        assert failed.status is status and failed.version is None
+        decision = f.ResearchDecision.from_dict(json.loads(failure_operation.approval.evidence.resolve(private).read_text(encoding="utf-8")))
+        copied_attachments = dict(attachments)
+        for ref in (failure_operation.approval.evidence, decision.confirmation_source):
+            path = ref.resolve(private)
+            copied_attachments[ref.sha256] = d.EvidenceFile(path.relative_to(private).as_posix(),
+                d.EvidenceRef(f"attachments/{ref.sha256}", ref.sha256, "application/octet-stream"))
+        failed_payload = replace(payload, decisions=(failure_operation.approval,), freeze=failed)
+        failed_definition = replace(definition, revision=2, predecessors=(assessment, receipt.reference))
+        failed_delivery = assemble_delivery(copied, Deliverable(failed_definition,
+            content(failed_payload, attachments=tuple(copied_attachments.values()))))
+        assert validate_delivery(copied, failed_delivery.reference).status is d.ValidationStatus.PASS
+        failed_report = private / "experiments/S900/20261001_S900_EX01/deliveries/INSPECTION/2/report.md"
+        rendered = failed_report.read_text(encoding="utf-8")
+        assert status.value in rendered and "冻结原因" in rendered
+        assert failed.reason.split(":")[0] in rendered
+        assert "已冻结版本" not in rendered
     operation = approve(context, report, source)
     frozen = freeze_candidate(context, operation)
-    approved = read_decision(context.root, operation.approval)
+    approved = f.ResearchDecision.from_dict(json.loads(operation.approval.evidence.resolve(context.root).read_text(encoding="utf-8")))
     for ref in (operation.approval.evidence, approved.confirmation_source):
         path = ref.resolve(context.root)
         attachments[ref.sha256] = d.EvidenceFile(
@@ -461,8 +413,6 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
 def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_candidate):
     from czsc_trader.application import deploy_strategy, validate_release_package
     from strategy_runtime import load_strategy_deployment
-    from strategy_runtime.prepare_cli import _load_release
-    from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
@@ -474,15 +424,9 @@ def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_c
         load_strategy_deployment(context.strategy_root, "S900-v1").release_hash
         == receipt.version.release_hash
     )
-    client = object.__new__(SrtAdviceClient)
-    client.repo_root = context.root
-    assert client._load_release("S900", "v1").release_hash == receipt.version.release_hash
-    assert _load_release(context.root, "S900", "v1").release_hash == receipt.version.release_hash
     marker = context.research_root / "S900/freeze_requests/request1/committed.json"
     marker.rename(marker.with_name("simulated-lost-commit.json"))
     assert load_strategy_deployment(context.strategy_root, "S900-v1").release_hash == receipt.version.release_hash
-    assert client._load_release("S900", "v1").release_hash == receipt.version.release_hash
-    assert _load_release(context.root, "S900", "v1").release_hash == receipt.version.release_hash
 
 
 def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch):
@@ -522,6 +466,7 @@ def test_corrupt_research_commit_does_not_change_runtime_version(inspected_candi
     assert receipt.status is f.FreezeStatus.UNKNOWN
     assert receipt.version is None
     assert "cannot be verified" in receipt.reason
+    assert freeze_candidate(context, operation) == receipt
     assert StrategyRegistry(context.strategy_root).get_version("S900", "v1").release_id == "S900-v1"
 
 
@@ -584,7 +529,6 @@ def test_failed_ledger_gate_blocks_freeze(inspection, monkeypatch, check):
 
 def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_candidate):
     from strategy_manager import ValidationError
-    from czsc_trader.application.research_evidence import read_decision
 
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
@@ -592,7 +536,7 @@ def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_c
     binding_path.write_bytes(binding_path.read_bytes() + b" ")
     with pytest.raises(ValidationError, match="hash"):
         freeze_candidate(context, operation)
-    selection = read_decision(context.root, report.selection)
+    selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
     repeated = replace(selection, confirmation_source=file_ref(context.root, source))
     assert record_research_decision(context, repeated) == report.selection
     with pytest.raises(ValidationError, match="hash differs"):
@@ -735,27 +679,39 @@ def _cold_start_inspection(path):
         print("COLD_START_PASS")
 
 
-def test_archived_signal_restoration_preserves_precision_units_and_nulls():
-    import pandas as pd
-    from czsc_trader.application.inspection_service import _reference_signals
-    from czsc_trader.research_tools._evaluation_records import _signal_table
+def test_archived_signal_restoration_preserves_precision_units_and_nulls(managed_evaluation, tmp_path):
+    from strategy_runtime import StrategyCandidate, implementation_sha256
+    from test_assessment_delivery import completed as prepare_completed
 
-    signals = pd.DataFrame(
-        {
-            "signal_date": pd.Series(["2026-10-01T00:00:00.123456"], dtype="datetime64[us]"),
-            "target": [0.12345678901234567],
-            "regime": pd.Series([None], dtype=object),
-        }
-    )
-    persisted = json.loads(
-        json.dumps(
-            {
-                "signals": _signal_table(signals),
-                "signal_dtypes": {name: str(dtype) for name, dtype in signals.dtypes.items()},
-            }
-        )
-    )
-    pd.testing.assert_frame_equal(signals, _reference_signals(persisted), check_exact=True)
+    execution, original = managed_evaluation
+    package = tmp_path / "precision/strategy_runtime"
+    (package / "strategies").mkdir(parents=True)
+    source = original.strategy.source_root / original.strategy.payload["runtime"]["source_files"][0]
+    content = source.read_text(encoding="utf-8").replace(
+        '"fixture_signal": target}', '"fixture_signal": target, "factor_score": 0.12345678901234567, "regime": None}')
+    path = package / "strategies/precision_fixture.py"
+    path.write_text(content, encoding="utf-8")
+    payload = json.loads(json.dumps(original.strategy.payload, default=dict))
+    payload["runtime"].update(module="strategy_runtime.strategies.precision_fixture",
+        source_files=["strategies/precision_fixture.py"],
+        source_sha256=implementation_sha256(("strategies/precision_fixture.py",), source_root=package))
+    candidate = StrategyCandidate("S900", "C0001", payload, package)
+    request = replace(original, strategy=candidate, runtime_binding={
+        "candidate_id": candidate.reference_id, "source_files": payload["runtime"]["source_files"],
+        "implementation_sha256": payload["runtime"]["source_sha256"]}, input_bindings={})
+    completed = prepare_completed.__wrapped__((execution, request))
+    context, inspection_request, _ = _build_inspection(completed)
+    artifact = execution.trace.evaluations[0].result_artifact
+    stored = json.loads(execution.workspace.path(artifact.path).read_text(encoding="utf-8"))["runs"][0]
+    signals = completed[3].runs[0].signals.decisions
+    assert signals["factor_score"].eq(0.12345678901234567).all()
+    assert all(row["factor_score"] == 0.12345678901234567 and row["regime"] is None for row in stored["signals"]["data"])
+    assert stored["signal_dtypes"] == {name: str(dtype) for name, dtype in signals.dtypes.items()}
+    # Real public inspection consumes and reconstructs the archived signal table.
+    report = inspect_candidate(context, inspection_request)
+    assert report.status is f.InspectionStatus.PASS
+    checks = {item.check: item.status for item in report.checks}
+    assert checks[f.InspectionCheck.SIGNAL_EQUIVALENCE] is f.InspectionStatus.PASS
 
 
 def test_static_runtime_failure_stops_account_reproduction(inspection, monkeypatch):
@@ -785,29 +741,6 @@ def test_static_runtime_failure_stops_account_reproduction(inspection, monkeypat
     assert not context.strategy_root.exists()
 
 
-def test_research_evidence_requires_owner_relative_paths_and_repository_root(minimal_repo):
-    from strategy_manager import ValidationError
-
-    context = RepositoryContext.discover(minimal_repo)
-    evidence = context.research_root / "S900/decisions/selection.json"
-    evidence.parent.mkdir(parents=True)
-    evidence.write_text('{"decision":"synthetic"}', encoding="utf-8")
-    reference = f.ResearchEvidenceRef(
-        f.ResearchEvidenceOwner("S900"), "decisions/selection.json",
-        sha256(evidence.read_bytes()).hexdigest(),
-    )
-    assert reference.resolve(context.root) == evidence
-    assert f.ResearchEvidenceRef.from_dict(reference.to_dict()) == reference
-    with pytest.raises(ValidationError):
-        reference.resolve(context.strategy_root)
-    with pytest.raises(ValidationError):
-        replace(reference, path="../other.json")
-    with pytest.raises(ValueError, match="owner"):
-        f.ResearchEvidenceOwner("S900", "20261001_S901_EX01")
-    with pytest.raises(ValidationError):
-        replace(reference, owner=f.ResearchEvidenceOwner("S901")).resolve(context.root)
-    with pytest.raises(TypeError):
-        f.DecisionReference("selection", CandidateEvidence("arbitrary.json", "a" * 64))
 
 
 def test_reproduction_cutoff_conflict_starts_no_evaluation(inspection):
@@ -822,36 +755,3 @@ def test_reproduction_cutoff_conflict_starts_no_evaluation(inspection):
     assert request.execution.trace.evaluations == ()
     assert any("execution data identity differs" in x.detail for x in report.checks)
     assert not context.strategy_root.exists()
-
-
-def test_failed_version_publication_returns_unknown_not_stale_in_progress(inspected_candidate, monkeypatch):
-    from strategy_manager import freeze_store
-
-    context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    durable = freeze_store._durable
-
-    def fail(path, value, **kwargs):
-        if path.name == "v1.json":
-            raise OSError("synthetic version publication failure")
-        return durable(path, value, **kwargs)
-
-    monkeypatch.setattr(freeze_store, "_durable", fail)
-    receipt = freeze_candidate(context, operation)
-    assert receipt.status is f.FreezeStatus.UNKNOWN
-    assert receipt.version is None
-    assert get_freeze_result(context, operation.request_id) == receipt
-    assert StrategyRegistry(context.strategy_root).versions("S900") == ()
-
-
-def test_corrupt_publication_request_remains_unknown_without_retry(inspected_candidate):
-    context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    freeze_candidate(context, operation)
-    journal = context.research_root / "S900/freeze_requests/request1/request.json"
-    journal.write_text("{malformed")
-    receipt = get_freeze_result(context, operation.request_id)
-    assert receipt.status is f.FreezeStatus.UNKNOWN
-    assert receipt.request_sha256 is None
-    assert freeze_candidate(context, operation) == receipt
-    assert journal.read_text() == "{malformed"

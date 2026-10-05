@@ -6,42 +6,42 @@
       "information_family": "TREND_REGIME", "tags": ["daily", "ohlcv", "regime"], "inputs": ["daily.close"],
       "provider": "project", "implementation": "czsc_trader.regime_weight.lagged_efficiency_ratio",
       "formula": "abs(close_t-1-close_t-61)/sum(abs(diff(close)),t-60..t-1)", "availability": "前一交易日收盘后，当前交易日开盘前可用",
-      "causality": "标记在交易日T的数值只使用T-1及更早的已完成日线", "parameters": {"lookback": 60}, "status": "READY", "version": 1
+      "causality": "标记在交易日T的数值只使用T-1及更早的已完成日线", "parameters": {"lookback": 60}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-FIRST-HOUR-RETURN", "name": "首小时收益", "description": "首小时收盘相对当日开盘的收益",
       "information_family": "TREND_MOMENTUM", "tags": ["intraday", "ohlcv", "opening"], "inputs": ["intraday.open", "intraday.close"],
       "provider": "project", "implementation": "czsc_trader.intraday_medium_frequency.census_medium_frequency_mechanisms",
       "formula": "first_hour_close/day_open-1", "availability": "首小时结束后", "causality": "仅使用当日已完成分钟线",
-      "parameters": {"window": "first_hour"}, "status": "READY", "version": 1
+      "parameters": {"window": "first_hour"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-FIRST-HOUR-VWAP-DEVIATION", "name": "首小时VWAP偏离", "description": "首小时收盘价相对首小时成交量加权价的偏离",
       "information_family": "POSITION_VALUATION", "tags": ["intraday", "ohlcv", "vwap"], "inputs": ["intraday.ohlcv"],
       "provider": "project", "implementation": "czsc_trader.intraday_medium_frequency.census_medium_frequency_mechanisms",
       "formula": "first_hour_close/first_hour_vwap-1", "availability": "首小时结束后", "causality": "仅使用当日已完成分钟线",
-      "parameters": {"window": "first_hour"}, "status": "READY", "version": 1
+      "parameters": {"window": "first_hour"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-FIRST-HOUR-PATH-EFFICIENCY", "name": "首小时路径效率", "description": "首小时净涨跌相对分钟路径总波动的比例",
       "information_family": "MARKET_MICROSTRUCTURE", "tags": ["intraday", "ohlcv", "path"], "inputs": ["intraday.ohlcv"],
       "provider": "project", "implementation": "czsc_trader.intraday_medium_frequency.census_medium_frequency_mechanisms",
       "formula": "abs(first_hour_return)/sum(abs(bar_return))", "availability": "首小时结束后", "causality": "仅使用当日已完成分钟线",
-      "parameters": {"window": "first_hour"}, "status": "READY", "version": 1
+      "parameters": {"window": "first_hour"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-FIRST-HOUR-ACTIVITY", "name": "首小时异常活跃度", "description": "首小时成交活动相对历史同期基准的比例",
       "information_family": "VOLUME_LIQUIDITY", "tags": ["intraday", "ohlcv", "activity"], "inputs": ["intraday.volume"],
       "provider": "project", "implementation": "czsc_trader.intraday_medium_frequency.census_medium_frequency_mechanisms",
       "formula": "first_hour_activity/prior_rolling_baseline", "availability": "首小时结束后", "causality": "基准仅由更早交易日拟合",
-      "parameters": {}, "status": "READY", "version": 1
+      "parameters": {}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-SIGNED-VOLUME-IMBALANCE", "name": "首小时有向成交量失衡", "description": "按分钟价格方向签名后的首小时成交量净额",
       "information_family": "MARKET_MICROSTRUCTURE", "tags": ["intraday", "ohlcv", "order-flow-proxy"], "inputs": ["intraday.close", "intraday.volume"],
       "provider": "project", "implementation": "czsc_trader.intraday_volume_imbalance.census_first_hour_volume_imbalance",
       "formula": "sum(sign(bar_return)*volume)/sum(volume)", "availability": "首小时结束后", "causality": "仅使用当日已完成分钟线",
-      "parameters": {"window": "first_hour"}, "status": "READY", "version": 1
+      "parameters": {"window": "first_hour"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-BREADTH-BALANCE", "name": "成分涨跌宽度", "description": "可观察成分中上涨权重与下跌权重的差",
@@ -49,7 +49,7 @@
       "provider": "tushare+project", "implementation": "czsc_trader.market_breadth_events.build_weighted_market_breadth_features",
       "formula": "(advance_weight-decline_weight)/observed_weight", "availability": "成分日线发布后，下一交易日开盘前使用",
       "causality": "使用当日有效历史成分及已发布日线，按历史指数权重聚合",
-      "parameters": {}, "status": "READY", "version": 1
+      "parameters": {}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-BREADTH-THRUST-5", "name": "五日宽度推动", "description": "成分涨跌宽度的五日滚动均值",
@@ -57,71 +57,71 @@
       "provider": "project", "implementation": "czsc_trader.market_breadth_events.build_weighted_market_breadth_features",
       "formula": "mean(weighted_breadth_balance,5)", "availability": "成分日线发布后，下一交易日开盘前使用",
       "causality": "仅使用当前及之前已发布的历史权重宽度",
-      "parameters": {"lookback": 5}, "status": "READY", "version": 1
+      "parameters": {"lookback": 5}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-MONEYFLOW-BREADTH", "name": "成分资金流宽度", "description": "净资金流为正的历史成分权重占可观察权重比例",
       "information_family": "FUND_FLOW", "tags": ["daily", "tushare", "constituents", "moneyflow"], "inputs": ["index_weight", "moneyflow.net_mf_amount"],
       "provider": "tushare+project", "implementation": "czsc_trader.constituent_moneyflow_runtime.latest_breadth_signal",
       "formula": "positive_flow_weight/observed_weight", "availability": "T+1日数据源发布后", "causality": "决策只使用已发布的前一交易日数据",
-      "parameters": {}, "status": "READY", "version": 1
+      "parameters": {}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-ETF-SHARE-CHANGE", "name": "ETF份额变化", "description": "ETF总份额相对前一交易日的变化率",
       "information_family": "FUND_FLOW", "tags": ["daily", "tushare", "etf", "share"], "inputs": ["etf_share_size.ts_code", "etf_share_size.trade_date", "etf_share_size.total_share", "calendar.trading_sessions"],
-      "provider": "project", "implementation": "czsc_trader.factor_features.calculate_etf_share_change",
+      "provider": "project", "implementation": "factor_signal_catalog.calculations.calculate_etf_share_change",
       "formula": "total_share_t/total_share_t-1-1", "availability": "T+1约09:00后（待持续到达监测）", "causality": "同日交易只能使用前一交易日已发布份额",
-      "parameters": {}, "status": "DISCOVERED", "version": 2
+      "parameters": {}, "status": "DISCOVERED", "version": 3
     },
     {
       "factor_id": "F-PROJECT-ETF-NAV-PREMIUM", "name": "ETF净值折溢价", "description": "ETF价格相对已发布基金净值的折溢价",
       "information_family": "POSITION_VALUATION", "tags": ["daily", "tushare", "etf", "nav"], "inputs": ["etf_share_size.nav", "etf_share_size.close"],
-      "provider": "project", "implementation": "czsc_trader.factor_features.calculate_etf_nav_premium",
+      "provider": "project", "implementation": "factor_signal_catalog.calculations.calculate_etf_nav_premium",
       "formula": "etf_share_size.close/etf_share_size.nav-1", "availability": "T+1约09:00后（待持续到达监测）",
       "causality": "T日折溢价只允许在T+1数据发布后使用",
-      "parameters": {}, "status": "DISCOVERED", "version": 2
+      "parameters": {}, "status": "DISCOVERED", "version": 3
     },
     {
       "factor_id": "F-PROJECT-EARNINGS-ACCELERATION-BREADTH", "name": "重要成分盈利加速度宽度", "description": "重要成分盈利同比改善在披露日形成的横截面宽度",
       "information_family": "FUNDAMENTAL_EXPECTATION", "tags": ["event", "tushare", "fundamental", "constituents"], "inputs": ["disclosures.ts_code", "disclosures.ann_date", "disclosures.end_date", "disclosures.source", "disclosures.profit_growth_yoy", "index_weight", "calendar.trading_sessions"],
-      "provider": "project", "implementation": "czsc_trader.factor_features.calculate_earnings_acceleration_breadth",
+      "provider": "project", "implementation": "factor_signal_catalog.calculations.calculate_earnings_acceleration_breadth",
       "formula": "weighted breadth of disclosed yoy acceleration", "availability": "公告披露后", "causality": "按披露时间映射到下一可交易时点",
-      "parameters": {"source_priority": ["forecast", "express", "fina_indicator"]}, "status": "DISCOVERED", "version": 2
+      "parameters": {"source_priority": ["forecast", "express", "fina_indicator"]}, "status": "DISCOVERED", "version": 3
     },
     {
       "factor_id": "F-PROJECT-STRUCTURED-NEWS-EVENT", "name": "结构化新闻事件", "description": "经范围、事实和证据校验后的新闻事件记录",
       "information_family": "EVENT_CATALYST", "tags": ["event", "news", "maas", "unstructured"], "inputs": ["tushare.news.body"],
       "provider": "tushare+maas+project", "implementation": "czsc_trader.news_events.run_news_extraction",
       "formula": "audited extraction, not a directional score", "availability": "原文发布时间及抽取完成后", "causality": "保留原文身份、发布时间和证据片段",
-      "parameters": {"prompt_version": "news-event-extractor-v8"}, "status": "READY", "version": 1
+      "parameters": {"prompt_version": "news-event-extractor-v8"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-PROJECT-EXTERNAL-INDUSTRY-MONEYFLOW", "name": "指数外半导体行业资金流", "description": "历史申万半导体成员中不属于历史科创50成员的资金流宽度与净流强度",
       "information_family": "FUND_FLOW", "tags": ["daily", "tushare", "industry", "moneyflow", "point-in-time"], "inputs": ["index_member_all", "index_weight", "moneyflow.net_mf_amount", "moneyflow.buy_sell_amounts"],
-      "provider": "project", "implementation": "czsc_trader.factor_features.calculate_external_industry_moneyflow",
+      "provider": "project", "implementation": "factor_signal_catalog.calculations.calculate_external_industry_moneyflow",
       "formula": "positive_member_ratio and sum(net_mf_amount)/sum(gross_order_amount)", "availability": "T+1数据源发布后", "causality": "按历史行业成员重建，决策只使用已发布的前一交易日数据",
-      "parameters": {"industry_code": "801081.SI"}, "status": "DISCOVERED", "version": 2
+      "parameters": {"industry_code": "801081.SI"}, "status": "DISCOVERED", "version": 3
     },
     {
       "factor_id": "F-PROJECT-SELL-SIDE-REVISION-BREADTH", "name": "成分卖方盈利预期修订宽度", "description": "历史科创50成分中同机构同预测期盈利预测上修减下修的滚动权重占比",
       "information_family": "FUNDAMENTAL_EXPECTATION", "tags": ["daily", "tushare", "analyst", "forecast", "point-in-time"], "inputs": ["report_rc.ts_code", "report_rc.report_date", "report_rc.available_session", "report_rc.org_name", "report_rc.quarter", "report_rc.np", "report_rc.eps", "index_weight", "calendar.trading_sessions"],
-      "provider": "project", "implementation": "czsc_trader.factor_features.calculate_sell_side_revision_breadth",
+      "provider": "project", "implementation": "factor_signal_catalog.calculations.calculate_sell_side_revision_breadth",
       "formula": "rolling20(sum(revision_sign*index_weight))/rolling20(sum(index_weight))", "availability": "研报日期后的下一交易日", "causality": "同公司同机构同预测期比较，按下一交易日历史成分及权重聚合",
-      "parameters": {"rolling_sessions": 20, "minimum_relative_revision": 0.01, "maximum_previous_age_days": 365}, "status": "DISCOVERED", "version": 2
+      "parameters": {"rolling_sessions": 20, "minimum_relative_revision": 0.01, "maximum_previous_age_days": 365}, "status": "DISCOVERED", "version": 3
     },
     {
       "factor_id": "F-TSFRESH-VOLUME-CONTRACTION-FLOOR-20", "name": "20日成交量收缩下界", "description": "最近20个交易日单日对数成交量变化的最小值，表示窗口内最强成交量收缩",
       "information_family": "VOLUME_LIQUIDITY", "tags": ["daily", "ohlcv", "tsfresh", "liquidity", "rolling"], "inputs": ["daily.volume"],
       "provider": "tsfresh+project", "implementation": "czsc_trader.feature_mining.extract_causal_rolling_features",
       "formula": "min(log(volume_t/volume_t-1), trailing 20 sessions)", "availability": "当日收盘及成交量完整后",
-      "causality": "标记在交易日T的数值只使用T及此前20个交易日内的已完成日线", "parameters": {"lookback": 20, "calculator": "minimum"}, "status": "DISCOVERED", "version": 1
+      "causality": "标记在交易日T的数值只使用T及此前20个交易日内的已完成日线", "parameters": {"lookback": 20, "calculator": "minimum"}, "status": "DEPRECATED", "version": 2
     },
     {
       "factor_id": "F-TSFRESH-ABS-RETURN-MAX-60", "name": "60日最大单日绝对收益", "description": "最近60个交易日单日收益绝对值的最大值，表示窗口内最强价格冲击",
       "information_family": "VOLATILITY_RISK", "tags": ["daily", "ohlcv", "tsfresh", "volatility", "shock", "rolling"], "inputs": ["daily.close"],
       "provider": "tsfresh+project", "implementation": "czsc_trader.feature_mining.extract_causal_rolling_features",
       "formula": "max(abs(close_t/close_t-1-1), trailing 60 sessions)", "availability": "当日收盘后",
-      "causality": "标记在交易日T的数值只使用T及此前60个交易日内的已完成日线", "parameters": {"lookback": 60, "calculator": "absolute_maximum"}, "status": "DISCOVERED", "version": 1
+      "causality": "标记在交易日T的数值只使用T及此前60个交易日内的已完成日线", "parameters": {"lookback": 60, "calculator": "absolute_maximum"}, "status": "DEPRECATED", "version": 2
     }
   ]
 }

@@ -1,6 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
-from dataflows import DataSpace
+from dataflows import DataSpace, Dataflows, ProviderConfig
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from dataclasses import replace
 from datetime import date, datetime
@@ -25,7 +25,7 @@ from research_experiment import (
     EvaluationRecord,
     load_experiment,
 )
-from strategy_runtime import StrategyCandidate, StrategyRuntime, ImplementationDependency
+from strategy_runtime import StrategyCandidate, StrategyRuntime
 from strategy_manager import (
     CandidateKey,
     CandidateEvidence,
@@ -47,6 +47,8 @@ from czsc_trader.research_tools import (
     EvaluationCost,
     EvaluationExecutionError,
     create_formal_experiment_context,
+    create_experiment_context,
+    evaluate_strategy,
     preflight_experiment,
 )
 from test_candidate_runtime_execution import _install_candidate_dataflows
@@ -134,28 +136,32 @@ def test_formal_development_evaluates_without_registration_or_search_budget(mana
         json.loads(context.workspace.path(first.record.path).read_text())
     )
     assert saved.attempt_id == first.attempt_id
-    with pytest.raises(TypeError, match="max_evaluations"):
-        ExperimentResources(1, 1, max_evaluations=1)
-    with pytest.raises(ValueError, match="different content"):
-        changed = {
-            "runtime": dict(request.strategy.payload["runtime"]),
-            "parameters": dict(request.strategy.payload["parameters"]),
-        }
-        changed["parameters"]["threshold"] = 0.9
-        context.evaluation.evaluate(
-            replace(request, strategy=replace(request.strategy, payload=changed))
-        )
 
 
 @pytest.mark.parametrize("failure", [RuntimeError("provider unavailable"), KeyboardInterrupt()])
 def test_failed_and_cancelled_evaluations_retain_records(managed_evaluation, failure):
-    context, request = managed_evaluation
-    original = context.evaluation._evaluator
+    formal, request = managed_evaluation
+    attempts = []
 
-    def fail(request):
-        raise failure
+    def evaluator(item):
+        attempts.append(item)
+        if len(attempts) == 1:
+            raise failure
+        return evaluate_strategy(item)
 
-    context.evaluation._evaluator = fail
+    definition = replace(formal.definition, mode=ExperimentMode.DISCOVERY)
+    context = create_experiment_context(
+        definition,
+        repository_root=request.repository_root,
+        dataflows=Dataflows(
+            base_dir=request.repository_root,
+            space=DataSpace(Path("data/backtest")),
+            providers=ProviderConfig(),
+        ),
+        resources=ExperimentResources(1, 1),
+        workspace=formal.workspace,
+        evaluator=evaluator,
+    )
     expected = (
         KeyboardInterrupt if isinstance(failure, KeyboardInterrupt) else EvaluationExecutionError
     )
@@ -170,8 +176,9 @@ def test_failed_and_cancelled_evaluations_retain_records(managed_evaluation, fai
     assert record.result_hash is None and record.completed_count is None
     stored = context.workspace.path(f"evaluations/{record.attempt_id}/record.json")
     assert EvaluationRecord.from_dict(json.loads(stored.read_text())) == record
-    context.evaluation._evaluator = original
     assert context.evaluation.evaluate(request).runs
+    assert len(context.trace.evaluations) == 2
+    assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.SUCCEEDED
 
 
 def test_failed_record_publication_cannot_return_success(managed_evaluation, monkeypatch):
@@ -186,26 +193,26 @@ def test_failed_record_publication_cannot_return_success(managed_evaluation, mon
         return original(self, record)
 
     monkeypatch.setattr(_CallEvidence, "record", fail)
-    with pytest.raises(EvaluationExecutionError):
+    with pytest.raises(EvaluationExecutionError) as error:
         context.evaluation.evaluate(request)
-    assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.FAILED
+    assert error.value.error_code == "EVIDENCE_WRITE_FAILED"
+    record = context.trace.evaluations[-1]
+    assert record.status is EvaluationAttemptStatus.FAILED
+    stored = context.workspace.path(f"evaluations/{record.attempt_id}/record.json")
+    assert EvaluationRecord.from_dict(json.loads(stored.read_text())) == record
 
 
-def test_research_declarations_do_not_replace_request_date_validation(managed_evaluation):
+def test_evaluation_rejects_cutoff_inconsistent_with_prepared_execution(managed_evaluation):
     context, request = managed_evaluation
-    declaration = replace(
-        context.definition,
-        data_scope=ExperimentDataScope.SEALED_VALIDATION,
-        validation_cutoff=date(2026, 10, 1),
-        capabilities=ExperimentCapabilities(searches_parameters=True),
-    )
-    assert declaration.capabilities.searches_parameters
     with pytest.raises(ValueError, match="execution data identity"):
         context.evaluation.evaluate(replace(request, data_cutoff=date(2026, 10, 1)))
+    assert context.trace.evaluations == ()
+
+
+def test_evaluation_request_requires_exact_date(managed_evaluation):
+    _, request = managed_evaluation
     with pytest.raises(TypeError, match="date"):
         replace(request, data_cutoff=datetime(2026, 9, 21))
-    with pytest.raises(ValueError, match="ExperimentDataScope"):
-        replace(context.definition, data_scope="DEVELOPMENT")
 
 
 def test_researcher_owns_window_selection_and_platform_records_execution(managed_evaluation):
@@ -230,7 +237,8 @@ def test_researcher_owns_window_selection_and_platform_records_execution(managed
     assert sealed.trace.evaluations[-1].status is EvaluationAttemptStatus.SUCCEEDED
 
 
-def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation):
+@pytest.fixture
+def derived_evaluation_request(managed_evaluation):
     from strategy_manager import CandidateDerivation, CandidateDerivationKind
     from czsc_trader.research_tools import EvaluationLineage
 
@@ -259,6 +267,13 @@ def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation
         runtime_binding={**request.runtime_binding, "candidate_id": child.reference_id},
         lineage=EvaluationLineage(relation),
     )
+    return context, request, child_request, relation, parent
+
+
+def test_derivation_checks_actual_child_and_successful_parent(derived_evaluation_request):
+    from czsc_trader.research_tools import EvaluationLineage
+
+    context, request, child_request, relation, parent = derived_evaluation_request
     result = context.evaluation.evaluate(child_request)
     assert result.runs[0].identity.candidate == relation.child
     with pytest.raises(ValueError, match="lineage child"):
@@ -270,38 +285,50 @@ def test_derivation_checks_actual_child_and_successful_parent(managed_evaluation
         )
 
 
-def test_historical_receipt_is_rejected_without_modifying_original(tmp_path):
-    from strategy_runtime import canonical_sha256
-    from research_experiment import load_experiment_input
+@pytest.mark.parametrize("mutation", ["failed", "identity", "content"])
+def test_derivation_rejects_unauthenticated_parent_before_attempt(
+    derived_evaluation_request, mutation
+):
+    from strategy_manager import CandidateEvidence, CandidateKey
+    from czsc_trader.research_tools import EvaluationLineage
 
-    result = {"outcome": "PASS", "facts": {}, "diagnostics": {}, "artifacts": [], "candidate": None}
-    receipt = {
-        "schema_version": 1,
-        "experiment_id": "20260901_S900_EX01",
-        "definition_sha256": "a" * 64,
-        "source_sha256": "b" * 64,
-        "resources_sha256": "c" * 64,
-        "predecessor_receipts": {},
-        "result_sha256": canonical_sha256(result),
-        "artifact_sha256": {},
-        "trace": {
-            "capabilities": [],
-            "operations": [],
-            "data_requests": [],
-            "evaluations": [{"request_hash": "d" * 64}],
-        },
-    }
-    digest = canonical_sha256(receipt)
-    envelope = {"schema_version": 1, "receipt": receipt, "receipt_sha256": digest, "result": result}
-    (tmp_path / "execution_envelope.json").write_text(json.dumps(envelope))
-    original = (tmp_path / "execution_envelope.json").read_bytes()
-    with pytest.raises(ValueError, match="schema_version must be 2"):
-        load_experiment_input(tmp_path, expected_receipt_sha256=digest)
-    assert (tmp_path / "execution_envelope.json").read_bytes() == original
+    context, request, child_request, relation, parent = derived_evaluation_request
+    if mutation == "failed":
+        record = context.trace.evaluations[-1]
+        failed = replace(
+            record,
+            status=EvaluationAttemptStatus.FAILED,
+            completed_count=None,
+            evaluation_ids=(),
+            result_hash=None,
+            result_artifact=None,
+            error_code="SYNTHETIC_FAILURE",
+            error_message="calculation failed",
+        )
+        path = context.workspace.path("lineage/failed-parent.json")
+        path.write_text(json.dumps(failed.to_dict()), encoding="utf-8")
+        evidence = CandidateEvidence(
+            path.relative_to(request.repository_root).as_posix(),
+            sha256(path.read_bytes()).hexdigest(),
+        )
+        relation = replace(relation, evidence=evidence)
+    elif mutation == "identity":
+        relation = replace(relation, parent=CandidateKey("S900", "C0003"))
+    else:
+        relation = replace(relation, parent_content_sha256="0" * 64)
+    before = context.trace.evaluations
+    with pytest.raises(ValueError, match="successful parent"):
+        context.evaluation.evaluate(replace(child_request, lineage=EvaluationLineage(relation)))
+    assert context.trace.evaluations == before
+    assert len(list(context.workspace.path("evaluations").glob("*/record.json"))) == len(before)
+
+
 
 
 @pytest.mark.parametrize("batch_mode", [False, True])
-def test_executor_archives_typed_evaluation_and_rejects_partial_receipt(managed_evaluation, batch_mode):
+def test_executor_archives_typed_evaluation_and_rejects_partial_receipt(
+    managed_evaluation, batch_mode
+):
     from research_experiment import experiment_source_sha256, load_experiment_input
     from czsc_trader.research_tools import execute_experiment
 
@@ -334,9 +361,13 @@ class Experiment(ResearchExperiment):
         return ExperimentResult(ExperimentOutcome.PASS, {"result_hash": result.result_hash}, {})
 """.replace("DATASETS", repr(context.definition.allowed_datasets))
     if batch_mode:
-        from test_evaluation_batch import synthetic_evaluator
-        context.evaluation._batch_evaluator = synthetic_evaluator
-        context.resources = context.evaluation._resources = ExperimentResources(2, 1)
+        context = create_formal_experiment_context(
+            context.definition,
+            repository_root=request.repository_root,
+            data_space=DataSpace(Path("data/research")),
+            resources=ExperimentResources(2, 1),
+            workspace=context.workspace,
+        )
         source = source.replace(
             "result = context.evaluation.evaluate(self.request)",
             "outcomes = context.evaluation.evaluate_many((self.request, self.request))\n"
@@ -368,59 +399,49 @@ class Experiment(ResearchExperiment):
 
 
 def test_evaluator_cannot_report_success_with_wrong_identity(managed_evaluation):
-    context, request = managed_evaluation
-    original = context.evaluation._evaluator
-    context.evaluation._evaluator = lambda item: replace(original(item), request_hash="0" * 64)
+    formal, request = managed_evaluation
+    context = create_experiment_context(
+        replace(formal.definition, mode=ExperimentMode.DISCOVERY),
+        repository_root=request.repository_root,
+        dataflows=Dataflows(
+            base_dir=request.repository_root,
+            space=DataSpace(Path("data/backtest")),
+            providers=ProviderConfig(),
+        ),
+        resources=ExperimentResources(1, 1),
+        workspace=formal.workspace,
+        evaluator=lambda item: replace(evaluate_strategy(item), request_hash="0" * 64),
+    )
     with pytest.raises(EvaluationExecutionError, match="identity differs"):
         context.evaluation.evaluate(request)
-    assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.FAILED
+    record = context.trace.evaluations[-1]
+    assert record.status is EvaluationAttemptStatus.FAILED
+    assert record.result_hash is None
+    stored = context.workspace.path(f"evaluations/{record.attempt_id}/record.json")
+    assert EvaluationRecord.from_dict(json.loads(stored.read_text())) == record
 
 
-def test_content_identity_is_id_and_path_independent(candidate_payload, tmp_path):
-    payload, root = candidate_payload
-    candidate = StrategyCandidate("S900", "C0001", payload, root)
-    runtime = StrategyRuntime()
-    identity = runtime.identify(candidate, dependencies=())
-    moved = tmp_path / "copy" / "strategy_runtime"
-    shutil.copytree(root, moved)
-    assert (
-        runtime.identify(
-            replace(candidate, candidate_id="C0002", source_root=moved), dependencies=()
-        )
-        == identity
-    )
-    changed = deepcopy(payload)
-    changed["parameters"]["threshold"] = 0.8
-    assert (
-        runtime.identify(replace(candidate, payload=changed), dependencies=()).content_sha256
-        != identity.content_sha256
-    )
-    assert (
-        runtime.identify(
-            candidate, dependencies=(ImplementationDependency("some_pkg", "1.0"),)
-        ).content_sha256
-        != identity.content_sha256
-    )
-    with pytest.raises(ValueError):
-        runtime.identify(
-            candidate,
-            dependencies=(
-                ImplementationDependency("some_pkg", "1.0"),
-                ImplementationDependency("some-pkg", "1.1"),
-            ),
-        )
 
 
-def test_registration_is_explicit_immutable_and_uses_saved_sources(
-    candidate_payload, minimal_repo
-):
+def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_payload, minimal_repo):
     payload, source = candidate_payload
     context = RepositoryContext.discover(minimal_repo)
     candidate_root = minimal_repo / "candidate" / "strategy_runtime"
     shutil.copytree(source, candidate_root)
     candidate = StrategyCandidate("S009", "C0001", payload, candidate_root)
-    experiment_path = context.experiments_root / "S009" / "20260925_S009_EX99"
+    experiment_path = context.experiments_root / "S009" / "EX001_20261003"
     _write_v3_experiment(experiment_path)
+    implementation = experiment_path / "experiment.py"
+    implementation.write_text(
+        implementation.read_text().replace("20260925_S009_EX99", experiment_path.name),
+        encoding="utf-8",
+    )
+    binding_path = experiment_path / "experiment_binding.json"
+    binding = json.loads(binding_path.read_text())
+    from research_experiment import experiment_source_sha256
+
+    binding["source_sha256"] = experiment_source_sha256(experiment_path, ("experiment.py",))
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
     loaded = load_experiment(experiment_path)
     report = preflight_experiment(loaded, resources=ExperimentResources(1, 99))
     report.require_pass()
@@ -455,6 +476,42 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(
         load_candidate(context, record.key).runtime_identity_sha256
         == candidate.runtime_identity_sha256
     )
+    # New archive names contain no family: authenticate the original definition
+    # rather than trusting the destination directory or the candidate key.
+    foreign_root = context.root / ".tmp/foreign-definition/S010/EX002_20261003"
+    _write_v3_experiment(foreign_root)
+    foreign_source = foreign_root / "experiment.py"
+    foreign_source.write_text(
+        foreign_source.read_text()
+        .replace("20260925_S009_EX99", foreign_root.name)
+        .replace("S009", "S010"),
+        encoding="utf-8",
+    )
+    foreign_binding_path = foreign_root / "experiment_binding.json"
+    foreign_binding = json.loads(foreign_binding_path.read_text())
+    foreign_binding["source_sha256"] = experiment_source_sha256(foreign_root, ("experiment.py",))
+    foreign_binding_path.write_text(json.dumps(foreign_binding), encoding="utf-8")
+    foreign_loaded = load_experiment(foreign_root)
+    foreign_report = preflight_experiment(foreign_loaded, resources=ExperimentResources(1, 99))
+    foreign_report.require_pass()
+    (foreign_root / "preflight.json").write_text(
+        json.dumps(foreign_report.to_dict()), encoding="utf-8"
+    )
+    claimed_root = context.experiments_root / "S009" / foreign_root.name
+    shutil.copytree(foreign_root, claimed_root)
+    claimed_preflight = claimed_root / "preflight.json"
+    foreign_origin = CandidateRegistrationOrigin(
+        foreign_root.name,
+        foreign_loaded.definition.sha256,
+        sha256((claimed_root / "experiment_binding.json").read_bytes()).hexdigest(),
+        CandidateEvidence(
+            claimed_preflight.relative_to(context.root).as_posix(),
+            sha256(claimed_preflight.read_bytes()).hexdigest(),
+        ),
+    )
+    with pytest.raises(ValueError, match="strategy differs from its directory"):
+        register_candidate(context, replace(request, origin=foreign_origin))
+    assert not (claimed_root / "objects").exists()
     changed = deepcopy(payload)
     changed["parameters"]["threshold"] = 0.8
     with pytest.raises(CandidateIdentityConflict):
@@ -620,6 +677,7 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
 
 def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(managed_evaluation):
     from czsc_trader.research_tools import build_assessment_evidence
+
     context, request = managed_evaluation
     request = replace(request, execution_data=None)
     result = context.evaluation.evaluate(request)
@@ -628,7 +686,15 @@ def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(managed_
     assert build_assessment_evidence(request, result)
     assert any(item["operation"] == "prepare" for item in context.trace.data_requests)
     assert any(item["operation"] == "fetch" for item in context.trace.data_requests)
-    assert context.data._dataflows is not context._backtest_data._dataflows
+    references = [item.get("prepared") for item in context.trace.data_requests]
+    assert any(
+        ref and ref["space_id"] == str(result.execution_data.prepared.space_id)
+        for ref in references
+    )
+    assert result.execution_data.root == request.repository_root / "data/backtest"
+    execution_request = next(iter(result.execution_data.requests.values()))
+    foreign = context.data.fetch(execution_request, prepared=result.execution_data.prepared)
+    assert not foreign.ready and foreign.error.code == "SPACE_MISMATCH"
     assert (request.repository_root / "data/backtest").is_dir()
 
 
@@ -672,3 +738,19 @@ def test_evaluation_rejects_foreign_repository_before_preparation(managed_evalua
     monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
     with pytest.raises(ValueError, match="repository differs"):
         context.evaluation.evaluate(replace(request, repository_root=request.repository_root / "other", execution_data=None))
+
+
+def test_evaluation_rejects_rebinding_candidate_content(managed_evaluation):
+    context, request = managed_evaluation
+    # Public evaluation records the initial key before calculation. Keep the first
+    # result small and real so the later refusal cannot depend on private state.
+    context.evaluation.evaluate(request)
+    with pytest.raises(ValueError, match="different content"):
+        changed = {
+            "runtime": dict(request.strategy.payload["runtime"]),
+            "parameters": dict(request.strategy.payload["parameters"]),
+        }
+        changed["parameters"]["threshold"] = 0.9
+        context.evaluation.evaluate(
+            replace(request, strategy=replace(request.strategy, payload=changed))
+        )

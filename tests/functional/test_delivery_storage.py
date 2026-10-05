@@ -79,12 +79,19 @@ def test_owner_stage_contract(stage):
         d.DeliveryReference(owner, stage, 1, "a" * 64)
 
 
-def test_owner_must_be_bound_and_match_strategy(context):
+def test_experiment_owner_rejects_different_family_in_identity():
     with pytest.raises(ValueError, match="owner differs"):
         d.ExperimentOwner("S900", "20261001_S901_EX01")
+
+
+def test_delivery_refuses_missing_source_bound_owner(context):
     missing = replace(definition(), owner=d.ExperimentOwner("S900", "20261001_S900_EX99"))
     with pytest.raises(d.DeliveryValidationError):
         assemble_delivery(context, Deliverable(missing, content()))
+    assert not (context.experiments_root / "S900/20261001_S900_EX99/deliveries").exists()
+
+
+def test_delivery_refuses_changed_owner_source(context):
     root = context.experiments_root / "S900/20261001_S900_EX01"
     (root / "experiment.py").write_text("tampered")
     with pytest.raises(d.DeliveryValidationError, match="binding"):
@@ -119,8 +126,8 @@ def test_seal_includes_deliveries_and_blocks_append_and_overwrite(context):
 
 
 
-def test_candidate_entities_owned_by_experiment_and_old_record_rejected(completed):
-    context = completed[0]
+def test_candidate_objects_are_owned_and_sealed_with_experiment(candidate_archive):
+    context = candidate_archive
     registry = StrategyRegistry(context.research_registry_root)
     key = CandidateKey("S900", "C0001")
     record = registry.get_candidate(key, experiments_root=context.experiments_root)
@@ -132,12 +139,13 @@ def test_candidate_entities_owned_by_experiment_and_old_record_rejected(complete
     seal(root)
     assert registry.register_candidate(record, experiments_root=context.experiments_root) == record
     validate_experiment_archive(root)
-    from strategy_manager import CandidateRegistration
-    for field in ("schema_version", "identity_schema_version"):
-        incomplete = record.to_dict()
-        del incomplete[field]
-        with pytest.raises(ValidationError, match="unsupported candidate"):
-            CandidateRegistration.from_dict(incomplete)
+
+
+def test_loading_retired_registration_keeps_archive_read_only(candidate_archive):
+    context = candidate_archive
+    registry = StrategyRegistry(context.research_registry_root)
+    key = CandidateKey("S900", "C0001")
+    record = registry.get_candidate(key, experiments_root=context.experiments_root)
     raw = record.to_dict()
     raw["schema_version"] = 1
     registration_path = context.research_registry_root / "S900/candidates/C0001.json"
@@ -148,15 +156,14 @@ def test_candidate_entities_owned_by_experiment_and_old_record_rejected(complete
     assert tree(context.research_registry_root) == before
 
 
-def test_sealed_candidate_objects_cannot_be_extended_and_can_be_relocated(completed):
+def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive):
     from czsc_trader.application import (
-        RepositoryContext,
         CandidateRegistrationRequest,
         register_candidate,
     )
     from strategy_manager import CandidateEvidence
 
-    context = completed[0]
+    context = candidate_archive
     key = CandidateKey("S900", "C0001")
     record = StrategyRegistry(context.research_registry_root).get_candidate(
         key, experiments_root=context.experiments_root
@@ -181,8 +188,33 @@ def test_sealed_candidate_objects_cannot_be_extended_and_can_be_relocated(comple
     with pytest.raises(ValueError, match="sealed"):
         register_candidate(context, request)
     assert tree(root) == before
+
+
+def test_registered_candidate_can_be_loaded_after_repository_relocation(candidate_archive):
+    from czsc_trader.application import RepositoryContext
+
+    context = candidate_archive
+    key = CandidateKey("S900", "C0001")
+    original = load_candidate(context, key)
+    record = StrategyRegistry(context.research_registry_root).get_candidate(
+        key, experiments_root=context.experiments_root
+    )
+    seal(context.experiments_root / "S900" / record.origin.experiment_id)
     destination = context.root.parent / (context.root.name + "-relocated")
     shutil.copytree(context.root, destination)
     restored = load_candidate(RepositoryContext.discover(destination), key)
     assert restored.runtime_identity_sha256 == original.runtime_identity_sha256
     assert restored.source_root.is_relative_to(destination)
+
+
+@pytest.fixture
+def candidate_archive(request, tmp_path, frozen_seed_root):
+    from czsc_trader.application import RepositoryContext
+
+    seed = frozen_seed_root / "research-registration-seed"
+    if not seed.exists():
+        context = request.getfixturevalue("completed")[0]
+        shutil.copytree(context.root, seed)
+    repository = tmp_path / "candidate-archive"
+    shutil.copytree(seed, repository)
+    return RepositoryContext.discover(repository)

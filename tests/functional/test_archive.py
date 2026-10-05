@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+import shutil
 
 from czsc_trader.experiment_archive import (
     build_experiment_manifest,
     create_experiment_dir,
-    resolve_experiment_dir,
 )
 
 import pytest
 from dataclasses import asdict
 from czsc_trader.application import RepositoryContext, validate_archives, ValidationError
+from czsc_trader.application.errors import UsageError
 
 
 def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
@@ -47,30 +48,18 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
     )
     assert validate_archives(context, archive).status == "PASS"
 
+    relocated = minimal_repo.parent / "relocated-archive-repository"
+    shutil.copytree(minimal_repo, relocated)
+    relocated_result = validate_archives(
+        RepositoryContext.discover(relocated),
+        relocated / "experiments" / archive.name,
+    )
+    assert relocated_result.status == "PASS" and relocated_result.result == first["result"]
+
     (archive / "04_conclusion.md").write_text("tampered\n", encoding="utf-8")
     with pytest.raises(ValidationError, match="04_conclusion.md") as failure:
         validate_archives(context, archive)
     assert failure.value.code == "experiment_archive_invalid"
-
-    experiment_root = minimal_repo / "new-experiments"
-    first = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
-    second = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
-    assert first.parent == experiment_root / "S002"
-    assert first.name == "EX001_20260909"
-    assert second.name == "EX002_20260909"
-    for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
-        (first / name).write_text("document\n", encoding="utf-8")
-    build_experiment_manifest(
-        first,
-        {
-            "experiment_id": first.name,
-            "status": "COMPLETE",
-            "strategy_id": "S002",
-            "symbol": "510500.SH",
-            "development_cutoff": "2026-09-08",
-        },
-    )
-    assert resolve_experiment_dir(experiment_root, first.name) == first.resolve()
 
 
 def test_ft_t07_archive_all_discovers_strategy_owned_directories(
@@ -112,3 +101,26 @@ def test_archive_rejects_unsupported_schema_without_writing(tmp_path, schema):
         build_experiment_manifest(archive, {"schema_version": schema})
     assert not (archive / "experiment_manifest.json").exists()
     assert (archive / "evidence.txt").read_bytes() == b"original"
+
+
+@pytest.mark.parametrize("explicit,all_archives", [(False, False), (True, True)])
+def test_archive_selector_requires_exactly_one_selection(minimal_repo, explicit, all_archives):
+    context = RepositoryContext.discover(minimal_repo)
+    before = set(minimal_repo.rglob("*"))
+    with pytest.raises(UsageError) as error:
+        validate_archives(
+            context,
+            context.experiments_root / "missing" if explicit else None,
+            all_archives=all_archives,
+        )
+    assert error.value.code == "archive_selection_invalid"
+    assert set(minimal_repo.rglob("*")) == before
+
+
+def test_all_archives_reports_empty_repository_without_writing(minimal_repo):
+    context = RepositoryContext.discover(minimal_repo)
+    before = set(minimal_repo.rglob("*"))
+    result = validate_archives(context, all_archives=True)
+    assert result.status == "PASS"
+    assert result.result == {"validated_count": 0, "experiments": []}
+    assert set(minimal_repo.rglob("*")) == before

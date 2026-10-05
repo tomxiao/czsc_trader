@@ -113,6 +113,10 @@ def instantiate_template(context: RepositoryContext, spec_path: Path) -> Command
         slot_roles = {item.name: item.role for item in template.input_slots}
         for binding in instance.bindings:
             definition = source_catalog.show(binding.source_id)
+            if definition["status"] == "DEPRECATED":
+                raise TemplateValidationError(
+                    f"deprecated FSC source cannot be bound: {binding.source_id}"
+                )
             actual_kind = str(definition["kind"]).upper()
             if actual_kind != binding.source_kind.value:
                 raise TemplateValidationError(

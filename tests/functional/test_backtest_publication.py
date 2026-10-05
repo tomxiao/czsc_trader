@@ -1,80 +1,81 @@
+"""Publication numbering, competition and failure via public run_backtest."""
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
-
+from pathlib import Path
+import json
+import shutil
 import pytest
+from strategy_runtime import StrategyCandidate
+from czsc_trader.application import BacktestRequest, run_backtest
+from czsc_trader.application.errors import ExecutionError
+from test_backtest import execution_flows
+from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
-from czsc_trader.reporting import publication
+
+@pytest.fixture
+def publication_inputs(current_frozen, monkeypatch):
+    context, version = current_frozen
+    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows",
+                        lambda repository_root, **kwargs: execution_flows(repository_root))
+    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
+    return context, version, request
 
 
-def _stage(root, number):
-    path = root / ".tmp" / f"staging-{number}"
-    path.mkdir(parents=True)
-    (path / "report.md").write_text(str(number), encoding="utf-8")
+def _public_output(inputs, day, strategy=None):
+    context, version, request = inputs
+    result = run_backtest(context, strategy or version, request, run_date=day)
+    assert result.status == "PASS"
+    path = Path(result.artifacts["output_dir"])
+    manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["strategy"]["reference"] == result.result["strategy"]
+    assert manifest["run_date"] == day.isoformat()
+    assert (path / "chart.html").is_file() and (path / "report.md").is_file()
     return path
 
 
-def test_daily_sequence_is_shared_by_candidates_and_releases(tmp_path):
-    root = tmp_path / "outputs"
-    names = []
-    for number, (reference, day) in enumerate([
-        ("S011-C0621", date(2026, 10, 2)),
-        ("S007-v1", date(2026, 10, 2)),
-        ("S011-C0621", date(2026, 10, 2)),
-        ("S007-v1", date(2026, 10, 3)),
-    ]):
-        result = publication.publish_run_directory(_stage(tmp_path, number), root, reference, day)
-        names.append(result.name)
-        assert (result / "report.md").read_text(encoding="utf-8") == str(number)
-    assert names == [
-        "1002_01_S011-C0621", "1002_02_S007-v1", "1002_03_S011-C0621", "1003_01_S007-v1",
+def test_daily_sequence_is_shared_by_candidates_and_releases(publication_inputs, candidate_payload):
+    payload, source = candidate_payload
+    candidate = StrategyCandidate("S900", "C0001", payload, source)
+    first = _public_output(publication_inputs, date(2026, 10, 2), candidate)
+    second = _public_output(publication_inputs, date(2026, 10, 2))
+    third = _public_output(publication_inputs, date(2026, 10, 3))
+    assert [path.name for path in (first, second, third)] == [
+        "1002_01_S900-C0001", "1002_02_S900-v1", "1003_01_S900-v1",
     ]
 
 
-def test_sequence_uses_maximum_and_grows_beyond_two_digits(tmp_path):
-    root = tmp_path / "outputs"
-    root.mkdir()
-    for name in ("1002_01_S011-C0621", "1002_99_S007-v1", "S011C0621_159326_1002_BT01"):
-        (root / name).mkdir()
-    result = publication.publish_run_directory(
-        _stage(tmp_path, 0), root, "S011-C0621", date(2026, 10, 2),
-    )
-    assert result.name == "1002_100_S011-C0621"
-    assert (root / "1002_99_S007-v1").is_dir()
+def test_sequence_uses_maximum_and_grows_beyond_two_digits(publication_inputs):
+    context, version, _ = publication_inputs
+    first = _public_output(publication_inputs, date(2026, 10, 2))
+    high = context.outputs_root / "1002_99_S900-v1"
+    shutil.copytree(first, high)
+    (context.outputs_root / "unrelated-directory").mkdir()
+    result = _public_output(publication_inputs, date(2026, 10, 2))
+    assert result.name == "1002_100_S900-v1"
+    assert (high / "manifest.json").read_bytes() == (first / "manifest.json").read_bytes()
 
 
-def test_concurrent_publishers_reserve_unique_daily_numbers(tmp_path):
-    root = tmp_path / "outputs"
-    stages = [_stage(tmp_path, i) for i in range(12)]
-    def publish(i):
-        return publication.publish_run_directory(
-            stages[i], root, f"S011-C{i:04d}", date(2026, 10, 2),
-        )
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        results = list(pool.map(publish, range(12)))
-    assert sorted(int(path.name.split("_")[1]) for path in results) == list(range(1, 13))
-    for i, path in enumerate(results):
-        assert (path / "report.md").read_text(encoding="utf-8") == str(i)
+def test_concurrent_publishers_reserve_unique_daily_numbers(publication_inputs):
+    # Prepare immutable inputs once; all contested computation and publication execute normally.
+    warmup = _public_output(publication_inputs, date(2026, 10, 1))
+    original = (warmup / "manifest.json").read_bytes()
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        results = list(pool.map(lambda _: _public_output(publication_inputs, date(2026, 10, 2)), range(3)))
+    assert sorted(int(path.name.split("_")[1]) for path in results) == [1, 2, 3]
+    assert len(set(results)) == 3
+    assert (warmup / "manifest.json").read_bytes() == original
 
 
-def test_failed_publication_keeps_staging_and_releases_reservation(tmp_path, monkeypatch):
-    stage = _stage(tmp_path, 0)
-    root = tmp_path / "outputs"
+def test_failed_publication_has_no_final_output_and_releases_reservation(publication_inputs, monkeypatch):
+    from czsc_trader.reporting import publication
     original = publication.replace_directory
     def fail(*args):
         raise PermissionError("publication denied")
     monkeypatch.setattr(publication, "replace_directory", fail)
-    with pytest.raises(PermissionError, match="publication denied"):
-        publication.publish_run_directory(stage, root, "S011-C0621", date(2026, 10, 2))
-    assert stage.is_dir()
-    assert not list(root.glob("1002_*"))
+    context, version, request = publication_inputs
+    with pytest.raises(ExecutionError, match="publication denied"):
+        run_backtest(context, version, request, run_date=date(2026, 10, 2))
+    assert not list(context.outputs_root.glob("1002_*"))
+    assert not list(context.root.glob(".tmp/backtest/run-*"))
     monkeypatch.setattr(publication, "replace_directory", original)
-    result = publication.publish_run_directory(stage, root, "S011-C0621", date(2026, 10, 2))
-    assert result.name == "1002_01_S011-C0621"
-
-
-@pytest.mark.parametrize("reference", ["../escape", "C0621", "S011-CFG000621R2", "S011-v01"])
-def test_invalid_strategy_reference_is_rejected_before_publication(tmp_path, reference):
-    stage = _stage(tmp_path, 0)
-    with pytest.raises(ValueError, match="strategy reference"):
-        publication.publish_run_directory(stage, tmp_path / "outputs", reference, date(2026, 10, 2))
-    assert stage.is_dir()
+    assert _public_output(publication_inputs, date(2026, 10, 2)).name == "1002_01_S900-v1"

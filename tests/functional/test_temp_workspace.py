@@ -97,5 +97,5 @@ def test_pytest_temporary_path_stays_inside_repository(tmp_path: Path) -> None:
     marker.write_text("ok", encoding="utf-8")
 
     assert marker.read_text(encoding="utf-8") == "ok"
-    assert tmp_path.parent.parent.name == "pytest"
-    assert tmp_path.parent.parent.parent.name == ".tmp"
+    governed_root = Path(__file__).resolve().parents[2] / ".tmp" / "pytest"
+    assert tmp_path.resolve().is_relative_to(governed_root.resolve())

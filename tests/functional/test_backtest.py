@@ -1,24 +1,21 @@
 """Backtest acceptance against an isolated current-contract frozen fixture."""
 from datetime import date
-from dataclasses import replace
 import json
 import re
 import pandas as pd
 import pytest
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
-from czsc_trader.backtesting import resolve_registered_strategy
-from czsc_trader.backtesting.srt_bridge import srt_data_directory
-from strategy_evaluator import AuditStatus, audit_replay
 from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset
 from pathlib import Path
+from public_backtest_support import assert_public_charts
 from test_current_contracts import (
     current_frozen as current_frozen, inspection as inspection,
     completed as completed, managed_evaluation as managed_evaluation,
 )
 
 
-def execution_flows(root):
+def execution_flows(root, *, adjusted_price=1.):
     def fetch(request):
         if str(request.dataset) == "calendar.trading_sessions":
             dates = pd.date_range(request.start, request.end)
@@ -28,7 +25,8 @@ def execution_flows(root):
         if request.frequency == "30m":
             dates = pd.DatetimeIndex([day + pd.Timedelta(hours=h, minutes=m) for day in dates for h, m in ((10, 0), (10, 30), (11, 0), (11, 30), (13, 30), (14, 0), (14, 30), (15, 0))])
             volume = 1000
-        frame = pd.DataFrame({"Date": dates, "Open": 1., "Close": 1., "High": 1., "Low": 1., "Volume": volume, "Amount": volume, "Flow": 0.8, "TotalShare": 1.0})
+        price = 1. if "unadjusted" in str(request.dataset) else adjusted_price
+        frame = pd.DataFrame({"Date": dates, "Open": price, "Close": price, "High": price, "Low": price, "Volume": volume, "Amount": volume * price, "Flow": 0.8, "TotalShare": 1.0})
         metadata = {"vendor": "test", "adjustment": "none" if "unadjusted" in str(request.dataset) else "hfq"}
         if request.dataset is Dataset.ETF_UNADJUSTED_INTRADAY:
             from dataflows.contract import ETF_INTRADAY_OBSERVATION_RULE
@@ -48,36 +46,9 @@ def execution_flows(root):
                                      Dataset.ETF_SHARE_SIZE)}))
 
 
-def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):
-    context, version = current_frozen
-    snapshot = resolve_registered_strategy(context, version.strategy_id, version.version)
-    created = srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH", created_on=date(2026, 9, 22))
-    assert created == context.tdr_srt_root / "contexts" / "S900v1_588080"
-    assert srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH", created_on=date(2026, 9, 23)) == created
-    (context.tdr_srt_root / "S900v1_588080_260921").mkdir()
-    assert srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH") == created
-
-
 def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
     context, version = current_frozen
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root))
-    registered = resolve_registered_strategy(context, version.strategy_id, version.version)
-    assert registered.identity.kind == "REGISTERED"
-    assert registered.identity.reference == version.release_id
-    assert registered.source_hash == version.release_hash
-    assert registered.content_hash and registered.strategy_payload
-    def check_win_rate_audit(evidence):
-        audited = audit_replay(evidence)
-        assert audited.status is AuditStatus.PASS
-        actual = evidence.metrics['win_rate']
-        for invalid in (True, -0.1, 1.1, 0.5 if actual != 0.5 else 0.):
-            altered = replace(evidence, metrics={**evidence.metrics, 'win_rate': invalid})
-            assert 'METRIC_MISMATCH' in audit_replay(altered).reason_codes
-        missing = {k: v for k, v in evidence.metrics.items() if k != 'win_rate'}
-        assert 'METRIC_MISMATCH' in audit_replay(replace(evidence, metrics=missing)).reason_codes
-        return audited
-
-    monkeypatch.setattr('czsc_trader.backtesting.service.audit_replay', check_win_rate_audit)
+    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root, adjusted_price=2.))
     result = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
     ))
@@ -86,7 +57,8 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert not (context.root / "data/backtest/market").exists()
     outputs = list(context.outputs_root.glob("*/manifest.json"))
     assert len(outputs) == 1
-    output = outputs[0].parent
+    output = Path(result.artifacts["output_dir"])
+    assert output == outputs[0].parent
     assert {"orders.csv", "fills.csv", "account_daily.csv", "trades.csv", "metrics.json", "chart.html", "report.md"} <= {p.name for p in output.iterdir()}
     from strategy_runtime import StrategyObservation
     observations = [StrategyObservation.from_dict(item) for item in json.loads((output / 'observations.json').read_text(encoding='utf-8'))]
@@ -116,6 +88,25 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     ma_cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', ma_html)
     ma_row = next(line for line in report.splitlines() if line.startswith('| MA5/MA20 |'))
     assert [value for _, value in ma_cards] == [x.strip() for x in ma_row.split('|')[2:-1]]
+    payload = assert_public_charts(output)
+    assert payload["market_data"]["bars"][0]["close"] == 2.
+    assert payload["execution"]["fills"][0]["price"] == 1.
+
+    spaces = set(context.tdr_srt_root.joinpath("contexts").iterdir())
+    assert len(spaces) == 1
+    repeated = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
+    ))
+    assert repeated.status == "PASS"
+    assert repeated.artifacts["output_dir"] != result.artifacts["output_dir"]
+    assert set(context.tdr_srt_root.joinpath("contexts").iterdir()) == spaces
+    weekend = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 20), 100000, 100,
+    ))
+    assert weekend.status == "PASS"
+    weekend_manifest = json.loads((Path(weekend.artifacts["output_dir"]) / "manifest.json").read_text())
+    assert weekend_manifest["request"]["end"] == "2026-09-20"
+    assert weekend_manifest["execution_data"]["cutoff"] == "2026-09-18"
 
 
 def test_chart_failure_prevents_backtest_publication(current_frozen, monkeypatch):

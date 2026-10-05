@@ -10,6 +10,7 @@ import pandas as pd
 
 from .audit_models import AuditStatus
 from .models import Record
+from ._metric_validation import metric_matches
 
 
 def _jsonable(value: Any) -> Any:
@@ -302,13 +303,7 @@ def audit_benchmark_replay(
         ):
             reasons.append("BENCHMARK_METRIC_MISMATCH")
             continue
-        if isinstance(expected_value, (str, int)):
-            if actual != expected_value:
-                reasons.append("BENCHMARK_METRIC_MISMATCH")
-        elif expected_value is None:
-            if actual is not None:
-                reasons.append("BENCHMARK_METRIC_MISMATCH")
-        elif actual is None or abs(float(actual) - float(expected_value)) > tolerance:
+        if name not in evidence.metrics or not metric_matches(actual, expected_value, tolerance):
             reasons.append("BENCHMARK_METRIC_MISMATCH")
     checks.append("BENCHMARK_METRICS")
     unique = tuple(dict.fromkeys(reasons))

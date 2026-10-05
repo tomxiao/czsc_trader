@@ -2,17 +2,20 @@
 
 from dataclasses import replace
 from datetime import date
+from pathlib import Path
 import json
 import os
 import time
 
 import pandas as pd
 import pytest
-from dataflows import Dataset
+from dataflows import Dataset, DataSpace
 from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, EvaluationRecord, ExperimentResources
 from czsc_trader.research_tools import EvaluationExecutionError
 from czsc_trader.research_tools.evaluation import evaluate_strategy
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from test_assessment_delivery import completed as completed
+from czsc_trader.research_tools import create_formal_experiment_context
 
 
 def synthetic_provider(request):
@@ -51,8 +54,10 @@ def terminated_worker(request):
 
 @pytest.fixture
 def batch(managed_evaluation):
-    context, request = managed_evaluation
-    context.resources = context.evaluation._resources = ExperimentResources(2, 1)
+    previous, request = managed_evaluation
+    context = create_formal_experiment_context(previous.definition, repository_root=request.repository_root,
+        resources=ExperimentResources(2, 1), workspace=previous.workspace, data_space=DataSpace(Path("data/research")))
+    # Fault injection wraps the real evaluator; default production wiring is checked separately.
     context.evaluation._batch_evaluator = synthetic_evaluator
     return context, request
 
@@ -122,24 +127,23 @@ def test_batch_evidence_write_failure_raises(batch, monkeypatch):
         assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == record
 
 
-def test_batch_context_owner_and_completed_guards(batch):
+def test_batch_context_owner_and_completed_guards(batch, completed, monkeypatch):
     context, request = batch
-    context.evaluation._owner_pid = -1
-    with pytest.raises(RuntimeError, match="another process"):
-        context.evaluation.evaluate_many((request,))
-    context.evaluation._owner_pid = os.getpid()
-    context.workspace.path("execution_receipt.json").write_text("{}")
+    with monkeypatch.context() as process_fault:
+        # Simulate the process boundary without changing the stored owner field.
+        process_fault.setattr(os, "getpid", lambda: -1)
+        with pytest.raises(RuntimeError, match="another process"):
+            context.evaluation.evaluate_many((request,))
+    assert not context.trace.evaluations
+    _, sealed, sealed_request, _, _ = completed
     with pytest.raises(RuntimeError, match="complete"):
-        context.evaluation.evaluate_many((request,))
+        sealed.evaluation.evaluate_many((sealed_request,))
 
 
 def test_default_formal_evaluator_transport_and_execution(managed_evaluation):
-    from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator, pack
-    context, request = managed_evaluation
-    context.resources = context.evaluation._resources = ExperimentResources(2, 1)
-    assert isinstance(context.evaluation._batch_evaluator, PlatformEvaluator)
-    assert pack((PlatformEvaluator(request.repository_root), request, 1))
-    assert pack(evaluate_strategy)
+    previous, request = managed_evaluation
+    context = create_formal_experiment_context(previous.definition, repository_root=request.repository_root,
+        resources=ExperimentResources(2, 1), workspace=previous.workspace, data_space=DataSpace(Path("data/research")))
     requests = (request, replace(request, initial_cash=200_000))
     outcomes = context.evaluation.evaluate_many(requests)
     assert len(outcomes) == len(requests) == 2
@@ -155,12 +159,6 @@ def test_default_formal_evaluator_transport_and_execution(managed_evaluation):
         context.workspace.validate_artifact(item.record.result_artifact)
 
 
-def test_platform_worker_rejects_missing_parent_preparation(batch):
-    from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator
-    _, request = batch
-    evaluator = PlatformEvaluator(request.repository_root)
-    with pytest.raises(ValueError, match="parent-prepared"):
-        evaluator(request)
 
 
 def test_dead_worker_is_unknown_and_never_success(batch):

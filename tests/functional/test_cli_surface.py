@@ -1,175 +1,207 @@
+"""Public CLI, API exports and catalog-template collaboration contracts."""
+
 from __future__ import annotations
 
-import argparse
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
-from czsc_trader.cli.main import _context, build_parser, main
+import pytest
+from czsc_trader.cli.main import main
+from czsc_trader.application import (
+    RepositoryContext, ValidationError, evaluate_research_request, preflight_experiment_archive,
+    validate_catalog, list_catalog, show_catalog, validate_templates, list_templates,
+    show_template, instantiate_template,
+)
 
 
-EXPECTED_ACTIONS = {"backtest": {"run"}}
+ROOT = Path(__file__).resolve().parents[2]
+PUBLIC_API = {
+    "CandidateInspectionRequest", "InspectionReplay", "EvaluationEvidenceReference",
+    "inspect_candidate", "record_research_decision", "freeze_candidate", "get_freeze_result",
+    "assemble_delivery", "validate_delivery", "CandidateRegistrationRequest", "register_candidate",
+    "load_candidate", "RepositoryContext", "CommandResult", "CommandError", "ValidationError",
+    "create_research_batch", "update_research_intent", "evaluate_research_request", "PredecessorEvidence",
+    "preflight_experiment_archive", "validate_archives", "validate_catalog", "list_catalog",
+    "show_catalog", "validate_templates", "list_templates", "show_template", "instantiate_template",
+    "BacktestRequest", "run_backtest", "list_installed_strategies", "strategy_info", "deploy_strategy",
+    "validate_release_package",
+}
 
 
-def test_repository_context_loads_dotenv_without_overriding_process_environment(
-    minimal_repo: Path,
-    monkeypatch,
-) -> None:
+def test_cli_loads_dotenv_without_overriding_process_environment(minimal_repo, monkeypatch, capsys):
     (minimal_repo / ".env").write_text(
-        "TUSHARE_TOKEN=repository-token\nSRT_TEST_SETTING=repository-value\n",
-        encoding="utf-8",
+        "TUSHARE_TOKEN=repository-token\nSRT_TEST_SETTING=repository-value\n", encoding="utf-8",
     )
     monkeypatch.setenv("TUSHARE_TOKEN", "process-token")
     monkeypatch.delenv("SRT_TEST_SETTING", raising=False)
-
     monkeypatch.chdir(minimal_repo)
-    context = _context(argparse.Namespace())
-
-    assert context.root == minimal_repo.resolve()
+    assert main(["backtest", "run", "--strategy", "S900", "--strategy-version", "v1",
+                 "--symbol", "588080.SH", "--asset", "etf", "--start", "2026-01-01",
+                 "--end", "2026-01-02", "--init-cash", "100000", "--lot-size", "100"]) != 0
+    error = json.loads(capsys.readouterr().out)
+    assert error["error"]["code"] == "backtest_strategy_invalid"
     assert os.environ["TUSHARE_TOKEN"] == "process-token"
     assert os.environ["SRT_TEST_SETTING"] == "repository-value"
 
 
-def _subparsers(parser: argparse.ArgumentParser) -> argparse._SubParsersAction:
-    actions = [
-        action for action in parser._actions if isinstance(action, argparse._SubParsersAction)
-    ]
-    assert len(actions) == 1
-    return actions[0]
+def test_installed_cli_exposes_supported_command_surface():
+    executable = Path(sys.executable).with_name("czsc-trader.exe" if sys.platform == "win32" else "czsc-trader")
+    for arguments, expected in [(('--help',), '{backtest}'),
+                                (('backtest', '--help'), '{run}'),
+                                (('backtest', 'run', '--help'), '--strategy-version')]:
+        result = subprocess.run([str(executable), *arguments], check=False, capture_output=True,
+                                text=True, encoding="utf-8")
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert result.stderr == ""
+        assert expected in result.stdout
+        assert "--outputs-root" not in result.stdout
+        assert "--repo-root" not in result.stdout
 
 
-def _command_surface(parser: argparse.ArgumentParser) -> dict[str, set[str]]:
-    resources = _subparsers(parser)
-    return {
-        resource: set(_subparsers(resource_parser).choices)
-        for resource, resource_parser in resources.choices.items()
-    }
-
-
-def test_ft_t08_installed_cli_exposes_supported_command_surface() -> None:
-    executable = Path(sys.executable).with_name(
-        "czsc-trader.exe" if sys.platform == "win32" else "czsc-trader"
-    )
-    completed = subprocess.run(
-        [str(executable), "--help"],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-
-    assert completed.returncode == 0, completed.stdout + completed.stderr
-    assert completed.stderr == ""
-    assert all(resource in completed.stdout for resource in EXPECTED_ACTIONS)
-    parser = build_parser()
-    assert _command_surface(parser) == EXPECTED_ACTIONS
-    resources = _subparsers(parser)
-    backtest_actions = _subparsers(resources.choices["backtest"])
-    run_options = {
-        option
-        for action in backtest_actions.choices["run"]._actions
-        for option in action.option_strings
-    }
-    assert "--outputs-root" not in run_options
-    assert "--repo-root" not in run_options
-
-
-def test_removed_cli_commands_fail_without_running_handlers(capsys) -> None:
-    for command in (
-        "data",
-        "research",
-        "candidate",
-        "strategy",
-        "experiment",
-        "archive",
-        "news",
-        "catalog",
-        "template",
-    ):
+def test_removed_cli_commands_return_invalid_arguments(capsys):
+    for command in ("data", "research", "candidate", "strategy", "experiment", "archive",
+                    "news", "catalog", "template"):
         assert main([command, "--format", "json"]) != 0
         result = json.loads(capsys.readouterr().out)
         assert result["status"] == "FAIL"
         assert result["error"]["code"] == "invalid_arguments"
 
 
-def test_public_business_exports_resolve_existing_implementations() -> None:
-    from importlib import import_module
+def test_public_business_api_is_explicit_and_importable():
     import czsc_trader.application as api
-
-    for name, module in api._EXPORTS.items():
-        assert getattr(api, name) is getattr(
-            import_module("czsc_trader.application." + module), name
-        )
-    assert {
-        "inspect_candidate",
-        "record_research_decision",
-        "freeze_candidate",
-        "get_freeze_result",
-    } <= set(api.__all__)
-    assert "extract_news" not in api.__all__
+    assert set(api.__all__) == PUBLIC_API
+    for name in PUBLIC_API:
+        assert callable(getattr(api, name)), name
+    with pytest.raises(AttributeError):
+        getattr(api, "extract_news")
 
 
-def test_public_research_apis_preserve_validation(minimal_repo, tmp_path) -> None:
-    import pytest
-    from czsc_trader.application import (
-        RepositoryContext,
-        ValidationError,
-        evaluate_research_request,
-        preflight_experiment_archive,
-        validate_catalog,
-        list_catalog,
-        show_catalog,
-        validate_templates,
-        list_templates,
-        show_template,
-        instantiate_template,
-    )
+@pytest.fixture
+def catalog_context(minimal_repo):
+    # Two real canonical definitions suffice for FSC-STC collaboration; no research input.
+    family_document = json.loads((ROOT / "catalog/information_families.json").read_text(encoding="utf-8"))
+    family_document["items"] = [x for x in family_document["items"]
+                                if x["family_id"] in {"POSITION_VALUATION", "MARKET_STRUCTURE"}]
+    for relative, document in [("information_families.json", family_document)]:
+        path = minimal_repo / "catalog" / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    for kind, identity in [("factors", "F-PROJECT-ETF-NAV-PREMIUM"),
+                           ("signals", "SIG-CZSC-cxt_bi_base_V230228")]:
+        document = json.loads((ROOT / f"catalog/{kind}/definitions.json").read_text(encoding="utf-8"))
+        key = "factor_id" if kind == "factors" else "signal_id"
+        item = next(x for x in document["items"] if x[key] == identity)
+        if kind == "signals":
+            item["states"] = ["满足", "不满足"]
+        path = minimal_repo / f"catalog/{kind}/definitions.json"
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({"schema_version": 1, "items": [item]}, ensure_ascii=False), encoding="utf-8")
+    templates = minimal_repo / "strategy_templates"
+    templates.mkdir()
+    shutil.copyfile(ROOT / "strategy_templates/templates.json", templates / "templates.json")
+    return RepositoryContext.discover(minimal_repo)
 
-    repo = Path(__file__).resolve().parents[2]
-    context = RepositoryContext.discover(repo)
-    report = preflight_experiment_archive(
-        context,
-        repo / "tests/fixtures/s008_research_cases/20260924_S008_EX99",
-    )
+
+def test_catalog_public_results_preserve_filter_and_snapshot_identity(catalog_context):
+    validated = validate_catalog(catalog_context)
+    selected = list_catalog(catalog_context, kind="factor", family="POSITION_VALUATION", status="DISCOVERED", query="nav-premium")
+    shown = show_catalog(catalog_context, "F-PROJECT-ETF-NAV-PREMIUM")
+    assert (validated.status, validated.command) == ("PASS", "catalog.validate")
+    assert (validated.result["families"], validated.result["factors"], validated.result["signals"]) == (2, 1, 1)
+    assert selected.command == "catalog.list" and selected.result["count"] == 1
+    assert [x["id"] for x in selected.result["definitions"]] == ["F-PROJECT-ETF-NAV-PREMIUM"]
+    assert shown.command == "catalog.show" and shown.result["definition"]["factor_id"] == "F-PROJECT-ETF-NAV-PREMIUM"
+    assert selected.result["digest"] == shown.result["digest"] == validated.result["digest"]
+    assert len(validated.result["digest"]) == 64
+    empty = list_catalog(catalog_context, kind="factor", family=None, status=None, query="missing")
+    assert empty.status == "PASS" and empty.result["count"] == 0 and empty.result["definitions"] == ()
+
+
+@pytest.mark.parametrize("operation,code", [("query", "factor_signal_catalog_query_invalid"),
+                                            ("missing", "factor_signal_catalog_not_found")])
+def test_catalog_public_errors_have_domain_semantics(catalog_context, operation, code):
+    with pytest.raises(ValidationError) as error:
+        if operation == "query":
+            list_catalog(catalog_context, kind="factor", family="MISSING", status=None, query=None)
+        else:
+            show_catalog(catalog_context, "F-NOT-FOUND")
+    assert error.value.code == code
+
+
+def _prototype(context, **changes):
+    binding = {"slot": "entry_events", "source_id": "SIG-CZSC-cxt_bi_base_V230228",
+               "source_kind": "SIGNAL", "state": "满足", "weight": None, **changes}
+    path = context.root / "prototype.json"
+    path.write_text(json.dumps({"schema_version": 1, "template_id": "STC-T04-EVENT-HOLD",
+                               "bindings": [binding], "parameters": {"holding_sessions": 5}},
+                              ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def test_template_public_results_bind_real_catalog_sources(catalog_context):
+    validated = validate_templates(catalog_context)
+    selected = list_templates(catalog_context, operator="EVENT_HOLD", status="READY", query=None)
+    shown = show_template(catalog_context, "STC-T04-EVENT-HOLD")
+    assert validated.status == "PASS" and validated.result["templates"] == 5
+    assert selected.command == "template.list" and selected.result["count"] == 1
+    assert selected.result["templates"][0]["template_id"] == "STC-T04-EVENT-HOLD"
+    assert shown.result["template"]["operator"] == "EVENT_HOLD"
+    assert selected.result["digest"] == shown.result["digest"] == validated.result["digest"]
+    spec = _prototype(catalog_context)
+    result = instantiate_template(catalog_context, spec)
+    assert result.status == "PASS" and result.command == "template.instantiate"
+    assert result.result["catalog_digest"] == validated.result["digest"]
+    instance = result.result["instance"]
+    assert instance["instance_id"].startswith("STI-")
+    assert instance["bindings"][0]["source_id"] == "SIG-CZSC-cxt_bi_base_V230228"
+    assert instantiate_template(catalog_context, spec).result == result.result
+
+
+@pytest.mark.parametrize("operation,code", [("query", "strategy_template_catalog_query_invalid"),
+                                            ("missing", "strategy_template_not_found")])
+def test_template_public_errors_have_domain_semantics(catalog_context, operation, code):
+    with pytest.raises(ValidationError) as error:
+        if operation == "query":
+            list_templates(catalog_context, operator="MISSING", status=None, query=None)
+        else:
+            show_template(catalog_context, "STC-NOT-FOUND")
+    assert error.value.code == code
+
+
+@pytest.mark.parametrize("changes", [{"source_id": "SIG-NOT-IN-FSC"},
+                                      {"source_id": "F-PROJECT-ETF-NAV-PREMIUM"},
+                                      {"state": None}, {"state": "未声明状态"}])
+def test_template_instantiation_rejects_invalid_catalog_binding(catalog_context, changes):
+    spec = _prototype(catalog_context, **changes)
+    before = {p: p.read_bytes() for p in catalog_context.root.rglob("*.json")}
+    with pytest.raises(ValidationError) as error:
+        instantiate_template(catalog_context, spec)
+    assert error.value.code == "strategy_template_binding_invalid"
+    assert {p: p.read_bytes() for p in catalog_context.root.rglob("*.json")} == before
+
+
+def test_template_instantiation_rejects_deprecated_source(catalog_context):
+    path = catalog_context.root / "catalog/signals/definitions.json"
+    document = json.loads(path.read_text(encoding="utf-8"))
+    document["items"][0]["status"] = "DEPRECATED"
+    path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    assert show_catalog(catalog_context, "SIG-CZSC-cxt_bi_base_V230228").status == "PASS"
+    with pytest.raises(ValidationError, match="deprecated FSC source") as error:
+        instantiate_template(catalog_context, _prototype(catalog_context))
+    assert error.value.code == "strategy_template_binding_invalid"
+
+
+def test_public_preflight_reports_archive_warnings():
+    context = RepositoryContext.discover(ROOT)
+    report = preflight_experiment_archive(context, ROOT / "tests/fixtures/s008_research_cases/20260924_S008_EX99")
     assert report.status == "PASS" and report.warnings
+
+
+def test_public_evaluation_rejects_missing_request(minimal_repo):
     with pytest.raises(ValidationError) as error:
         evaluate_research_request(RepositoryContext.discover(minimal_repo), Path("missing.json"))
     assert error.value.code == "research_evaluation_failed"
-    assert validate_catalog(context).status == "PASS"
-    assert (
-        list_catalog(context, kind="factor", family=None, status="READY", query=None).status
-        == "PASS"
-    )
-    assert (
-        show_catalog(context, "F-PROJECT-ER60").result["definition"]["factor_id"]
-        == "F-PROJECT-ER60"
-    )
-    assert validate_templates(context).status == "PASS"
-    assert list_templates(context, operator=None, status="READY", query=None).status == "PASS"
-    assert (
-        show_template(context, "STC-T04-EVENT-HOLD").result["template"]["operator"] == "EVENT_HOLD"
-    )
-    spec = tmp_path / "prototype.json"
-    payload = {
-        "schema_version": 1,
-        "template_id": "STC-T04-EVENT-HOLD",
-        "bindings": [
-            {
-                "slot": "entry_events",
-                "source_id": "SIG-CZSC-cxt_bi_base_V230228",
-                "source_kind": "SIGNAL",
-                "state": "满足",
-                "weight": None,
-            }
-        ],
-        "parameters": {"holding_sessions": 5},
-    }
-    spec.write_text(json.dumps(payload), encoding="utf-8")
-    assert instantiate_template(context, spec).result["instance"]["instance_id"].startswith("STI-")
-    payload["bindings"][0]["source_id"] = "SIG-NOT-IN-FSC"
-    spec.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(ValidationError) as error:
-        instantiate_template(context, spec)
-    assert error.value.code == "strategy_template_binding_invalid"

@@ -187,7 +187,10 @@ class CandidateRegistration(_Record):
             or not isinstance(self.payload, CandidateEvidence)
         ):
             raise TypeError("registration key, origin and payload must be typed")
-        if f"_{self.key.strategy_id}_" not in self.origin.experiment_id:
+        origin_family = re.fullmatch(
+            r"[0-9]{8}_(S[0-9]{3})_EX[0-9]{2,}", self.origin.experiment_id
+        )
+        if origin_family is not None and origin_family[1] != self.key.strategy_id:
             raise ValidationError("candidate and origin belong to different families")
         for value in (self.content_sha256, self.source_sha256, self.dependency_sha256):
             _hash(value)

@@ -6,7 +6,7 @@ from pathlib import Path
 import shutil
 
 import pytest
-from factor_signal_catalog import FactorDefinition, SignalDefinition, CatalogValidationError
+from factor_signal_catalog import FactorDefinition, SignalDefinition
 from research_experiment import (
     EvaluationAttemptStatus,
     EvaluationRecord,
@@ -157,12 +157,6 @@ def failed_record(number=1, digest="d" * 64):
     )
 
 
-def test_public_exports():
-    from czsc_trader.research_tools import ResearchDeliverable, DeliveryDefinition, DeliveryContent
-
-    assert ResearchDeliverable is d.ResearchDeliverable
-    assert DeliveryDefinition is d.DeliveryDefinition
-    assert DeliveryContent is d.DeliveryContent
 
 
 def new_named_experiment(context, strategy_id="S900"):
@@ -198,18 +192,26 @@ def new_named_experiment(context, strategy_id="S900"):
     )
 
 
-def test_new_experiment_name_publishes_and_rejects_other_family_receipt(context):
+def test_new_experiment_name_publishes_real_executor_receipt(context):
     root, ref = new_named_experiment(context)
     defined = d.DeliveryDefinition(
         d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1, experiments=(ref,)
     )
     receipt = assemble_delivery(context, Deliverable(defined, content()))
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+
+
+def test_delivery_rejects_foreign_family_executor_receipt(context):
+    root, ref = new_named_experiment(context)
+    defined = d.DeliveryDefinition(
+        d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1, experiments=(ref,)
+    )
     _, foreign = new_named_experiment(context, "S901")
     with pytest.raises(d.DeliveryValidationError, match="bound experiment"):
         assemble_delivery(
             context, Deliverable(replace(defined, revision=2, experiments=(foreign,)), content())
         )
+    assert not (root / "deliveries").exists()
 
 
 def test_new_experiment_owner_rejects_definition_from_other_family(context):
@@ -230,6 +232,11 @@ def test_experiment_evidence_rejects_invalid_sequence(name):
 
 
 def test_negative_delivery_is_complete_idempotent_and_immutable(context):
+    from czsc_trader.research_tools import ResearchDeliverable, DeliveryDefinition, DeliveryContent
+
+    assert ResearchDeliverable is d.ResearchDeliverable
+    assert DeliveryDefinition is d.DeliveryDefinition
+    assert DeliveryContent is d.DeliveryContent
     deliverable = Deliverable(definition(), content())
     first = assemble_delivery(context, deliverable)
     assert validate_delivery(context, first.reference).status is d.ValidationStatus.PASS
@@ -375,18 +382,22 @@ def test_candidate_and_trial_states_remain_independent(context):
         )
 
 
-def test_cross_experiment_candidate_conflict_and_missing_predecessor(context):
+def test_delivery_rejects_cross_experiment_candidate_content_conflict(context):
     first, _ = experiment(context, records=(failed_record(),))
     second, _ = experiment(context, number=2, records=(failed_record(2, "f" * 64),))
     with pytest.raises(d.DeliveryValidationError, match="conflicting"):
         assemble_delivery(context, Deliverable(definition(experiments=(first, second)), content()))
-    third, _ = experiment(
+
+
+def test_delivery_requires_complete_predecessor_receipt_closure(context):
+    first, _ = experiment(context, records=(failed_record(),))
+    successor, _ = experiment(
         context, number=3, predecessors={first.experiment_id: first.receipt_sha256}
     )
     with pytest.raises(d.DeliveryValidationError, match="predecessor"):
-        assemble_delivery(context, Deliverable(definition(experiments=(third,)), content()))
+        assemble_delivery(context, Deliverable(definition(experiments=(successor,)), content()))
     receipt = assemble_delivery(
-        context, Deliverable(definition(experiments=(first, third)), content())
+        context, Deliverable(definition(experiments=(first, successor)), content())
     )
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
@@ -494,61 +505,109 @@ def test_revision_strict_types(revision):
         d.DeliveryDefinition(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, revision)
 
 
-def test_contract_rejects_missing_values_strings_and_unknown_fields():
-    with pytest.raises(TypeError):
-        d.DeliveryDefinition(d.ExperimentOwner("S900", "20261001_S900_EX01"), "MANDATE", 1)
-    with pytest.raises(ValueError, match="confirmation"):
-        d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED)
-    with pytest.raises(ValueError, match="null"):
-        d.FactValue(
-            "x",
-            0.0,
-            "ratio",
-            d.FactStatus.FAILED,
-            (d.EvidenceRef("attachments/x", "a" * 64, "text/plain"),),
-            "failed",
-        )
-    with pytest.raises(ValueError, match="incomplete"):
-        replace(content(), status=d.DeliveryStatus.PARTIAL)
-    with pytest.raises(ValueError, match="unknown fact"):
-        replace(
-            content(), explanations=(d.Explanation(d.ExplanationKind.FACT, "引用", ("absent",)),)
-        )
+@pytest.mark.parametrize(
+    "invalid,error_type",
+    [
+        pytest.param(
+            lambda: d.DeliveryDefinition(
+                d.ExperimentOwner("S900", "20261001_S900_EX01"), "MANDATE", 1
+            ),
+            TypeError,
+            id="stage-enum",
+        ),
+        pytest.param(
+            lambda: d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED),
+            ValueError,
+            id="confirmation-evidence",
+        ),
+        pytest.param(
+            lambda: d.FactValue(
+                "x",
+                0.0,
+                "ratio",
+                d.FactStatus.FAILED,
+                (d.EvidenceRef("attachments/x", "a" * 64, "text/plain"),),
+                "failed",
+            ),
+            ValueError,
+            id="unavailable-fact-value",
+        ),
+        pytest.param(
+            lambda: replace(content(), status=d.DeliveryStatus.PARTIAL),
+            ValueError,
+            id="partial-without-incomplete-items",
+        ),
+        pytest.param(
+            lambda: replace(
+                content(),
+                explanations=(d.Explanation(d.ExplanationKind.FACT, "引用", ("absent",)),),
+            ),
+            ValueError,
+            id="unknown-explained-fact",
+        ),
+        pytest.param(
+            lambda: d.NumericRequirement("return", "ratio", lower=float("nan")),
+            TypeError,
+            id="nonfinite-requirement",
+        ),
+    ],
+)
+def test_delivery_typed_values_reject_inconsistent_business_input(invalid, error_type):
+    with pytest.raises(error_type):
+        invalid()
+
+
+def test_delivery_content_rejects_unknown_serialized_fields():
     payload = content().to_dict()
     payload["extra"] = True
     with pytest.raises(ValueError, match="fields"):
         d.DeliveryContent.from_dict(payload)
-    with pytest.raises(TypeError):
-        d.NumericRequirement("return", "ratio", lower=float("nan"))
 
 
-def test_stage_mismatch_and_source_tamper_never_publish(context):
+def test_delivery_rejects_stage_content_mismatch_without_publication(context):
     with pytest.raises(d.DeliveryValidationError, match="stage"):
         assemble_delivery(context, Deliverable(definition(d.DeliveryStage.MANDATE), content()))
+    assert not (context.research_root / "S900/mandates").exists()
+
+
+def test_delivery_rejects_changed_attachment_without_publication(context):
     source = attachment(context)
     (context.root / source.source_path).write_text("changed")
     with pytest.raises(d.DeliveryValidationError, match="hash"):
         assemble_delivery(context, Deliverable(definition(), content(attachments=(source,))))
-    assert not (context.root / "research").exists()
+    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
 
 
-def test_publish_interruption_and_existing_revision_validation(context, monkeypatch):
-    original = Path.rename
-
+def test_delivery_publication_interruption_leaves_no_visible_revision(context, monkeypatch):
     def interrupt(path, target):
         raise OSError("simulated publication interruption")
 
     monkeypatch.setattr(Path, "rename", interrupt)
     with pytest.raises(d.DeliveryValidationError, match="interruption"):
         assemble_delivery(context, Deliverable(definition(), content()))
-    destination = context.root / "experiments/S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
-    assert not destination.exists()
-    monkeypatch.setattr(Path, "rename", original)
+    assert not (
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
+    ).exists()
+
+
+def test_delivery_refuses_reuse_of_incompletely_published_revision(context):
     receipt = assemble_delivery(context, Deliverable(definition(), content()))
+    destination = published(context, receipt)
     (destination / "receipt.json").unlink()
+    before = {
+        p.relative_to(destination).as_posix(): p.read_bytes()
+        for p in destination.rglob("*")
+        if p.is_file()
+    }
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.FAIL
     with pytest.raises(d.DeliveryValidationError):
         assemble_delivery(context, Deliverable(definition(), content()))
+    after = {
+        p.relative_to(destination).as_posix(): p.read_bytes()
+        for p in destination.rglob("*")
+        if p.is_file()
+    }
+    assert after == before
 
 
 def test_delivery_predecessor_is_verified_without_advancing_stage(context):
@@ -584,24 +643,56 @@ def test_actual_rex_executor_receipt_can_be_published(context):
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
 
-def test_linked_evidence_is_rejected(context, monkeypatch):
+def test_real_filesystem_link_cannot_supply_delivery_evidence(context):
+    import os
+    import subprocess
+
     source = attachment(context)
-    target = context.root / source.source_path
-    original = Path.is_symlink
-    monkeypatch.setattr(Path, "is_symlink", lambda self: self == target or original(self))
-    with pytest.raises(d.DeliveryValidationError, match="link"):
-        assemble_delivery(context, Deliverable(definition(), content(attachments=(source,))))
+    target = (context.root / source.source_path).parent
+    linked = context.root / "linked-evidence"
+    assert target.resolve().is_relative_to(context.root.resolve())
+    assert linked.parent == context.root
+    if os.name == "nt":
+        # A directory junction is a real Windows link and needs no symlink privilege.
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(linked), str(target)], capture_output=True, text=True
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert linked.is_junction()
+    else:
+        linked.symlink_to(target, target_is_directory=True)
+        assert linked.is_symlink()
+    try:
+        linked_source = replace(
+            source, source_path=f"linked-evidence/{Path(source.source_path).name}"
+        )
+        with pytest.raises(d.DeliveryValidationError, match="link"):
+            assemble_delivery(
+                context, Deliverable(definition(), content(attachments=(linked_source,)))
+            )
+        assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
+    finally:
+        if os.name == "nt":
+            linked.rmdir()
+        else:
+            linked.unlink()
 
 
-def test_search_domain_and_candidate_reference_boundaries():
+def test_search_trial_must_obey_declared_numeric_step():
     domain = d.NumericParameterDomain("period", 1.0, 5.0, step=2.0, integer=True)
     trial = d.SearchTrial(
         "1", (d.ParameterValue("period", 2),), d.SearchTrialStatus.FAILED, "未评价"
     )
     with pytest.raises(ValueError, match="step"):
         d.SearchRecord("s", (domain,), "manual", "1", None, "serial", None, (trial,), "stop")
+
+
+def test_categorical_search_distinguishes_bool_numeric_and_string_choices():
     categorical = d.CategoricalParameterDomain("choice", (True, 1, "1"))
     assert len(categorical.choices) == 3
+
+
+def test_candidate_handoff_requires_membership_in_candidate_set():
     with pytest.raises(ValueError, match="handoff"):
         d.CandidateSet((), (CandidateKey("S900", "C0001"),), (), "无可交接候选")
 
@@ -685,26 +776,6 @@ def test_new_catalog_reference_requires_real_fsc_membership(context, kind, mutat
     assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
 
 
-@pytest.mark.parametrize(
-    "cls,filename", [(FactorDefinition, "factors"), (SignalDefinition, "signals")]
-)
-def test_catalog_fingerprints_are_canonical_and_finite(cls, filename):
-    payload = json.loads(
-        (Path(__file__).parents[2] / f"catalog/{filename}/definitions.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    # Catalog files are arrays of the existing public definition schema.
-    if isinstance(payload, dict):
-        payload = payload["items"]
-    value = cls.from_dict(payload[0])
-    assert (
-        cls.from_dict(dict(reversed(list(value.to_dict().items())))).definition_sha256
-        == value.definition_sha256
-    )
-    assert replace(value, version=value.version + 1).definition_sha256 != value.definition_sha256
-    with pytest.raises(CatalogValidationError):
-        replace(value, parameters={"invalid": float("inf")}).definition_sha256
 
 
 def owner_experiment(context, number=1):

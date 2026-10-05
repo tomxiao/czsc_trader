@@ -6,21 +6,21 @@
       "information_family": "TREND_REGIME", "tags": ["daily", "regime", "S001"], "factor_ids": ["F-PROJECT-ER60"], "embedded_factor": false,
       "provider": "project", "implementation": "czsc_trader.regime_weight.classify_regimes", "rule": "ER60高于冻结阈值为trend，否则range；未就绪为warmup",
       "states": ["trend", "range", "warmup"], "parameters": {"lookback": 60, "threshold": "strategy_frozen"}, "availability": "交易日收盘后",
-      "causality": "阈值由开发期冻结，运行时不读取未来", "status": "READY", "version": 1
+      "causality": "阈值由开发期冻结，运行时不读取未来", "status": "DEPRECATED", "version": 2
     },
     {
       "signal_id": "SIG-PROJECT-BREADTH-THRUST", "name": "成分宽度推动", "description": "历史指数权重口径的成分共同上涨达到事前阈值时触发",
       "information_family": "MARKET_BREADTH", "tags": ["daily", "constituents"], "factor_ids": ["F-PROJECT-BREADTH-THRUST-5"], "embedded_factor": false,
       "provider": "project", "implementation": "czsc_trader.market_breadth_events.generate_breadth_thrust_events", "rule": "breadth_thrust_5达到冻结阈值",
       "states": ["active", "inactive"], "parameters": {"threshold": "research_frozen"}, "availability": "成分日线发布后",
-      "causality": "阈值只由更早样本拟合", "status": "READY", "version": 1
+      "causality": "阈值只由更早样本拟合", "status": "DEPRECATED", "version": 2
     },
     {
       "signal_id": "SIG-PROJECT-MONEYFLOW-BREADTH", "name": "成分资金流宽度事件", "description": "正资金流成分权重宽度达到历史阈值时触发",
       "information_family": "FUND_FLOW", "tags": ["daily", "constituents", "S003"], "factor_ids": ["F-PROJECT-MONEYFLOW-BREADTH"], "embedded_factor": false,
       "provider": "project", "implementation": "czsc_trader.constituent_moneyflow_runtime.latest_breadth_signal", "rule": "moneyflow_breadth达到仅由历史拟合的分位阈值",
       "states": ["active", "inactive"], "parameters": {"threshold": "strategy_frozen"}, "availability": "T+1日数据源发布后",
-      "causality": "信号日只使用已经发布的前一交易日资金流", "status": "READY", "version": 1
+      "causality": "信号日只使用已经发布的前一交易日资金流", "status": "DEPRECATED", "version": 2
     }
   ]
 }

@@ -1,6 +1,5 @@
 from dataclasses import replace
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
 from strategy_runtime import StrategyCandidate
@@ -35,62 +34,43 @@ def test_backtest_requires_explicit_lot_size():
             build_parser().parse_args([*args, "--lot-size", invalid])
 
 
-@pytest.mark.parametrize("policy_type,settings", [
-    ("FROZEN_RULE", {"instrument": {"lot_size": 100}}),
-    ("INTRADAY_OVERLAY", {"lot_size": 100}),
-])
-def test_lot_size_conflict_fails_before_data_access(tmp_path, monkeypatch, policy_type, settings):
-    from czsc_trader.backtesting.service import _run_backtest
-
-    monkeypatch.setattr(
-        "czsc_trader.backtesting.service.describe_snapshot_strategy",
-        lambda *args, **kwargs: (None, SimpleNamespace(
-            execution=SimpleNamespace(policy_type=policy_type, settings=settings),
-        )),
-    )
+def test_lot_size_conflict_fails_before_data_access(candidate_payload, minimal_repo, monkeypatch):
+    from czsc_trader.application import RepositoryContext
+    payload, source = candidate_payload
+    candidate = StrategyCandidate("S900", "C0001", payload, source)
+    context = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
     def forbidden(**kwargs):
         pytest.fail("conflicting lot_size must fail before fetching data")
     monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", forbidden)
-    with pytest.raises(ValueError, match="lot_size differs"):
-        _run_backtest(
-            snapshot=None,
-            request=BacktestRequest("588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 1),
-            outputs_root=tmp_path, run_date=date(2026, 9, 22),
-            repository_root=tmp_path,
-        )
+    with pytest.raises(ExecutionError, match="lot_size differs"):
+        run_backtest(context, candidate, BacktestRequest(
+            "588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 1,
+        ))
+    assert not list(context.outputs_root.glob("*/manifest.json"))
 
 
-def test_candidate_and_version_use_one_backtest_dispatch(
-    current_frozen,
-    candidate_payload,
-    monkeypatch,
-):
+def test_candidate_and_version_publish_authenticated_backtests(current_frozen, candidate_payload, monkeypatch):
+    import json
+    from pathlib import Path
+    from test_backtest import execution_flows
     context, version = current_frozen
     payload, source = candidate_payload
     candidate = StrategyCandidate("S900", "C0001", payload, source)
-    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 14), date(2026, 9, 21), 100000, 100)
-    observed = []
-
-    def replay(**kwargs):
-        observed.append(kwargs)
-        return SimpleNamespace(
-            metrics={},
-            output_dir=context.outputs_root / "test",
-            manifest={"audit": {"status": "PASS"}, "application": {"runtime_engine": "srt"}},
-        )
-
-    monkeypatch.setattr("czsc_trader.application.backtest_service._run_backtest", replay)
-    for strategy in (candidate, version):
-        assert run_backtest(context, strategy, request).status == "PASS"
-    assert [item["snapshot"].identity.kind for item in observed] == ["CANDIDATE", "REGISTERED"]
-    assert all(item["request"] is request for item in observed)
-    assert all(item["repository_root"] == context.root for item in observed)
-    assert all("dataflows" not in item and "srt_data_root" not in item for item in observed)
-    assert observed[0]["snapshot"].runtime_root == source
-    assert observed[0]["snapshot"].identity.reference == candidate.reference_id
-    assert observed[1]["snapshot"].identity.reference == version.release_id
+    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
+    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows",
+                        lambda repository_root, **kwargs: execution_flows(repository_root))
+    results = [run_backtest(context, strategy, request) for strategy in (candidate, version)]
+    assert all(result.status == "PASS" for result in results)
+    outputs = [Path(result.artifacts["output_dir"]) for result in results]
+    assert outputs[0] != outputs[1]
+    manifests = [json.loads((output / "manifest.json").read_text(encoding="utf-8")) for output in outputs]
+    assert [item["strategy"]["kind"] for item in manifests] == ["CANDIDATE", "REGISTERED"]
+    assert [item["strategy"]["reference"] for item in manifests] == [candidate.reference_id, version.release_id]
+    assert [item.result["strategy"] for item in results] == [candidate.reference_id, version.release_id]
+    assert all(item.result["runtime_engine"] == "srt" and item.result["audit_status"] == "PASS" for item in results)
+    assert manifests[0]["strategy"]["source_hash"] == candidate.runtime_identity_sha256
+    assert manifests[1]["strategy"]["source_hash"] == version.release_hash
     assert not (context.strategy_root / "S900/versions/v2.json").exists()
-
     with pytest.raises(ExecutionError, match="differs from the frozen registry"):
         run_backtest(context, replace(version, change_summary="changed"), request)
     with pytest.raises(TypeError, match="dataflows"):
@@ -101,7 +81,7 @@ def test_candidate_and_version_use_one_backtest_dispatch(
         run_backtest(context, "S001-v1", request)
     with pytest.raises(TypeError, match="request"):
         run_backtest(context, version, {})
-    assert len(observed) == 2
+    assert len(list(context.outputs_root.glob("*/manifest.json"))) == 2
 
 
 def test_unknown_cli_version_is_a_validation_failure(minimal_repo, monkeypatch, capsys):

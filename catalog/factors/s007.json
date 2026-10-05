@@ -9,13 +9,13 @@
       "tags": ["daily", "tushare", "etf", "share", "causal"],
       "inputs": ["etf_share_size.ts_code", "etf_share_size.trade_date", "etf_share_size.total_share", "calendar.trading_sessions"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_etf_share_change_5d_lag1",
+      "implementation": "factor_signal_catalog.calculations.calculate_etf_share_change_5d_lag1",
       "formula": "lag1(total_share_t/total_share_t-5-1)",
       "availability": "T日20:30决策使用T-1及以前已发布份额",
       "causality": "份额序列整体滞后一个交易日后再计算",
       "parameters": {"lookback": 5, "lag_sessions": 1},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     },
     {
       "factor_id": "F-TSFRESH-MEAN-LOG-VOLUME-CHANGE-20",
@@ -28,10 +28,10 @@
       "implementation": "czsc_trader.feature_mining.extract_causal_rolling_features",
       "formula": "mean(log(volume_t/volume_t-1), trailing 20 sessions)",
       "availability": "T日收盘及成交量完整后",
-      "causality": "标记在T日的数值只使用T及此前已完成日线",
+      "causality": "标记在T日的数值只使用T日及此前已完成日线",
       "parameters": {"lookback": 20, "calculator": "mean"},
-      "status": "DISCOVERED",
-      "version": 1
+      "status": "DEPRECATED",
+      "version": 2
     },
     {
       "factor_id": "F-PROJECT-DAILY-CLOSE-VWAP-DEVIATION",
@@ -41,13 +41,13 @@
       "tags": ["daily", "ohlcv", "vwap", "valuation"],
       "inputs": ["daily.close", "daily.volume", "daily.amount"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_daily_close_vwap_deviation",
+      "implementation": "factor_signal_catalog.calculations.calculate_daily_close_vwap_deviation",
       "formula": "close/(amount/volume)-1",
       "availability": "T日收盘后",
       "causality": "只使用T日及此前已完成日线",
       "parameters": {},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     },
     {
       "factor_id": "F-PROJECT-PRIOR-US-SPX-RETURN",
@@ -57,13 +57,13 @@
       "tags": ["daily", "tushare", "global", "risk-appetite"],
       "inputs": ["spx.available_at", "spx.pct_chg", "calendar.session_opens"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_prior_us_spx_return",
+      "implementation": "factor_signal_catalog.calculations.calculate_prior_us_spx_return",
       "formula": "latest_completed_spx_pct_change_before_a_share_open/100",
       "availability": "T日A股开盘前",
       "causality": "只映射A股开盘前已完成的美股交易日",
       "parameters": {"source_code": "SPX"},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     },
     {
       "factor_id": "F-PROJECT-CHINEXT-TURNOVER-Z20",
@@ -73,13 +73,13 @@
       "tags": ["daily", "tushare", "turnover", "risk-appetite"],
       "inputs": ["index_dailybasic.399006.SZ.turnover_rate_f"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_chinext_turnover_z20",
+      "implementation": "factor_signal_catalog.calculations.calculate_chinext_turnover_z20",
       "formula": "(turnover_rate_f-mean20)/std20",
       "availability": "T日指数基础指标发布后",
       "causality": "滚动窗口只包含T日及此前已发布数据",
       "parameters": {"lookback": 20, "ts_code": "399006.SZ", "ddof": 0},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     },
     {
       "factor_id": "F-PROJECT-SHIBOR-ON-CHANGE-5D",
@@ -89,13 +89,13 @@
       "tags": ["daily", "tushare", "interest-rate", "liquidity"],
       "inputs": ["shibor.on"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_shibor_on_change_5d",
+      "implementation": "factor_signal_catalog.calculations.calculate_shibor_on_change_5d",
       "formula": "shibor_on_t-shibor_on_t-5",
       "availability": "T日12:00后",
       "causality": "只使用T日12:00前后已发布的当前及历史SHIBOR",
       "parameters": {"lookback": 5},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     },
     {
       "factor_id": "F-PROJECT-DAILY-INTRADAY-RANGE",
@@ -105,13 +105,13 @@
       "tags": ["daily", "ohlcv", "volatility", "range"],
       "inputs": ["daily.high", "daily.low", "daily.close"],
       "provider": "project",
-      "implementation": "czsc_trader.factor_features.calculate_daily_intraday_range",
+      "implementation": "factor_signal_catalog.calculations.calculate_daily_intraday_range",
       "formula": "(high-low)/close",
       "availability": "T日收盘后",
       "causality": "只使用T日已完成日线",
       "parameters": {},
       "status": "DISCOVERED",
-      "version": 2
+      "version": 3
     }
   ]
 }

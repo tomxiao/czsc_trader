@@ -68,6 +68,11 @@ def _validate_execution_window(
 ) -> None:
     if request.start > request.end:
         raise ValueError("backtest start must not follow end")
+    calendar = execution_data.requests["trading_calendar"]
+    if request.end > date.fromisoformat(calendar.end):
+        raise ValueError("backtest request exceeds the published cutoff")
+    if request.start < date.fromisoformat(calendar.start):
+        raise ValueError("backtest request precedes the prepared calendar window")
     sessions = pd.DatetimeIndex(
         pd.to_datetime(execution_data.evaluation_sessions, errors="raise"),
         name="dt",

@@ -11,6 +11,7 @@ import pandas as pd
 
 from .audit_models import AuditStatus
 from .models import Record, _exact
+from ._metric_validation import metric_matches
 
 
 def _jsonable(value: Any) -> Any:
@@ -418,13 +419,7 @@ def _audit_intraday_overlay(
             ):
                 reasons.append("METRIC_MISMATCH")
                 continue
-            if isinstance(expected, str) or isinstance(expected, int):
-                if actual != expected:
-                    reasons.append("METRIC_MISMATCH")
-            elif expected is None:
-                if actual is not None:
-                    reasons.append("METRIC_MISMATCH")
-            elif actual is None or abs(float(actual) - expected) > tolerance:
+            if name not in evidence.metrics or not metric_matches(actual, expected, tolerance):
                 reasons.append("METRIC_MISMATCH")
     checks.append("INTRADAY_METRICS")
     unique_reasons = tuple(dict.fromkeys(reasons))
@@ -709,13 +704,7 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         ):
             reasons.append("METRIC_MISMATCH")
             continue
-        if isinstance(expected, (str, int)):
-            if actual != expected:
-                reasons.append("METRIC_MISMATCH")
-        elif expected is None:
-            if actual is not None:
-                reasons.append("METRIC_MISMATCH")
-        elif actual is None or abs(float(actual) - float(expected)) > tolerance:
+        if name not in evidence.metrics or not metric_matches(actual, expected, tolerance):
             reasons.append("METRIC_MISMATCH")
     checks.append("METRICS")
     unique_reasons = tuple(dict.fromkeys(reasons))

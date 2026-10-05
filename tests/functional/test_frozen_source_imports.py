@@ -16,7 +16,12 @@ pytestmark = pytest.mark.release_acceptance
 
 
 def test_frozen_relative_imports_resolve_inside_the_package():
-    for path in (ROOT / "strategies").rglob("*.py"):
+    sources = [
+        load_strategy_deployment(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
+        for path in sorted((ROOT / "strategies").glob("S*/versions/v*.json"))
+    ]
+    assert sources, "registered frozen packages must be present for release acceptance"
+    for path in (path for source in sources for path in source.rglob("*.py")):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if not isinstance(node, ast.ImportFrom) or not node.level:
                 continue

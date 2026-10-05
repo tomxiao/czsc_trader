@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "czsc-factor-signal-catalog"
 version = "0.1.0"
-description = "Lightweight project-level factor and signal definition catalog"
+description = "Project-level factor and signal definitions and deterministic factor calculations"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["numpy>=2.4.6", "pandas>=3.0.3,<4"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0", "ruff>=0.12"]

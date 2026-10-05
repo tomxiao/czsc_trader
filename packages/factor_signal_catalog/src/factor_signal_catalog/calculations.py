@@ -1,4 +1,4 @@
-"""Deterministic factor calculations on caller-supplied, point-in-time data.
+"""Public FSC factor calculations on caller-supplied, point-in-time data.
 
 These functions neither acquire data nor read research artifacts. Date columns
 must contain timezone-naive midnight timestamps; availability is not inferred.
@@ -10,6 +10,22 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+
+
+__all__ = [
+    "SellSideRevisionParameters",
+    "calculate_chinext_turnover_z20",
+    "calculate_daily_close_vwap_deviation",
+    "calculate_daily_intraday_range",
+    "calculate_earnings_acceleration_breadth",
+    "calculate_etf_nav_premium",
+    "calculate_etf_share_change",
+    "calculate_etf_share_change_5d_lag1",
+    "calculate_external_industry_moneyflow",
+    "calculate_prior_us_spx_return",
+    "calculate_sell_side_revision_breadth",
+    "calculate_shibor_on_change_5d",
+]
 
 
 @dataclass(frozen=True)

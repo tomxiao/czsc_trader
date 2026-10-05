@@ -14,7 +14,6 @@ from strategy_manager import (
     StrategyFamily,
     StrategyRegistry,
 )
-from strategy_runtime import StrategyRuntime
 from strategy_evaluator import assess_candidates, compare_candidates
 from strategy_evaluator import research_models as m
 
@@ -290,13 +289,10 @@ def prepare(completed):
     return definition, value
 
 
-def test_adapter_authenticates_requests_and_does_not_reload_source(completed, monkeypatch):
+def test_adapter_authenticates_requests_and_does_not_reload_source(completed):
     _, execution, request, result, _ = completed
 
-    def unexpected(*args, **kwargs):
-        raise AssertionError("adapter must not load mutable candidate source")
-
-    monkeypatch.setattr(StrategyRuntime, "identify", unexpected)
+    shutil.rmtree(request.strategy.source_root)
     evidence = build_assessment_evidence(request, result)
     assert evidence[0].evaluation_id == result.runs[0].identity.evaluation_id
     assert evidence[0].candidate.candidate_id == "S900-C0001"
@@ -320,6 +316,9 @@ def test_adapter_authenticates_requests_and_does_not_reload_source(completed, mo
 def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
+    comparison = value.payload.comparison_request
+    comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))
+    value = replace(value, payload=replace(value.payload, comparison_request=comparison, comparison=compare_candidates(comparison)))
     receipt = assemble_delivery(context, Deliverable(definition, value))
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     report = (published(context, receipt) / "report.md").read_text(encoding="utf-8")
@@ -330,6 +329,7 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     )
     assert "逐项目标检查" in report and "观测值" in report
     assert "排序敏感性" in report and "行为分组" in report
+    assert "coarse-bins" in report and "S900-C0001" in report
     document = json.loads(
         (published(context, receipt) / "delivery.json").read_text(encoding="utf-8")
     )
@@ -341,67 +341,70 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     assert assemble_delivery(context, Deliverable(definition, value)) == receipt
 
 
-def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(completed, monkeypatch):
+@pytest.mark.parametrize("case, saved_value, changed_value, passes", [
+    ("effective", 0., 0., True), ("effective", 1e-250, math.nextafter(1e-250, 0.), True),
+    ("effective", .6396147383007816, math.nextafter(.6396147383007816, 0.), True),
+    ("effective", 1., math.nextafter(1., 0.), True),
+    ("effective", .6396147383007816, .639614738300782, True),
+    ("effective", .5, .5 * (1 + .5e-12), True),
+    ("effective", .5, .5 * (1 + 2e-12), False), ("effective", .5, .500001, False),
+    ("effective", 0., math.nextafter(0., 1.), False), ("effective", 1e-250, 2e-250, False),
+    ("effective", 1., math.nextafter(1., math.inf), False),
+    ("PBO", .5, math.nextafter(.5, 1.), False), ("DSR_RAW", .25, math.nextafter(.25, 1.), False),
+    ("identity", .5, .5, False), ("row", .5, .5, False),
+])
+def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(prepared_delivery, monkeypatch, case, saved_value, changed_value, passes):
     from czsc_trader.application import delivery_service
 
-    context, _, _, _, _ = completed
-    definition, value = prepare(completed)
-    probability = 0.6396147383007816
-    saved = replace(
-        value.payload.assessment,
-        family_diagnostics=tuple(
-            replace(x, status=m.DiagnosticStatus.AVAILABLE, value=probability, reason=None)
-            if x.name == "DSR_EFFECTIVE" else x
-            for x in value.payload.assessment.family_diagnostics
-        ),
-    )
+    context, definition, value = prepared_delivery
+    original = value.payload.assessment
+    effective = saved_value if case == "effective" else .6396147383007816
+    saved = replace(original, family_diagnostics=tuple(
+        m.FamilyDiagnostic(name, m.DiagnosticStatus.AVAILABLE, number, None)
+        for name, number in (("PBO", .5), ("DSR_RAW", .25), ("DSR_EFFECTIVE", effective))))
     comparison = replace(value.payload.comparison_request, panel=saved)
-    payload = replace(
-        value.payload, assessment=saved, comparison_request=comparison,
-        comparison=compare_candidates(comparison),
-    )
-
-    def rounded_panel(probability):
-        return replace(
-            saved,
-            family_diagnostics=tuple(
-                replace(x, value=probability) if x.name == "DSR_EFFECTIVE" else x
-                for x in saved.family_diagnostics
-            ),
-        )
-
-    # A controlled numerical oracle makes the publication/read checks independent
-    # of which BLAS kernel happens to be installed on the test host.
-    rounded = rounded_panel(0.639614738300782)
-    monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: rounded)
+    payload = replace(value.payload, assessment=saved, comparison_request=comparison, comparison=compare_candidates(comparison))
+    # Explicit numerical-oracle injection isolates the public tolerance contract;
+    # actual assembly, persistence, authentication and validation still execute.
+    monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: saved)
     receipt = assemble_delivery(context, Deliverable(definition, replace(value, payload=payload)))
-    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
-
-    first = saved.rows[0]
-    changed_row = replace(
-        first,
-        diagnostics=tuple(
-            replace(x, value=math.nextafter(x.value, math.inf))
-            if x.metric is m.ResearchMetric.NET_ANNUAL_RETURN else x
-            for x in first.diagnostics
-        ),
-    )
-    for changed in (
-        rounded_panel(probability + 1e-6),
-        replace(saved, rows=(changed_row, *saved.rows[1:])),
-        replace(saved, request_sha256="f" * 64),
-    ):
-        monkeypatch.setattr(delivery_service, "assess_candidates", lambda _, result=changed: result)
+    changed = saved
+    if case in {"effective", "PBO", "DSR_RAW"}:
+        name = "DSR_EFFECTIVE" if case == "effective" else case
+        changed = replace(saved, family_diagnostics=tuple(
+            replace(item, value=changed_value) if item.name == name else item for item in saved.family_diagnostics))
+    elif case == "row":
+        first = saved.rows[0]
+        changed_row = replace(first, diagnostics=tuple(
+            replace(item, value=math.nextafter(item.value, math.inf)) if item.metric is m.ResearchMetric.NET_ANNUAL_RETURN else item
+            for item in first.diagnostics))
+        changed = replace(saved, rows=(changed_row, *saved.rows[1:]))
+    if case != "identity":
+        monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: changed)
         checked = validate_delivery(context, receipt.reference)
-        assert checked.status is d.ValidationStatus.FAIL
-        assert checked.issues[0].code == "ASSESSMENT_RESULT"
-
-    monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: rounded)
-    artifact = published(context, receipt) / "delivery.json"
-    artifact.write_bytes(artifact.read_bytes() + b" ")
-    checked = validate_delivery(context, receipt.reference)
-    assert checked.status is d.ValidationStatus.FAIL
-    assert checked.issues[0].code == "DELIVERY_FILES"
+        assert checked.status is (d.ValidationStatus.PASS if passes else d.ValidationStatus.FAIL)
+        if not passes:
+            assert checked.issues[0].code == "ASSESSMENT_RESULT"
+        if case == "effective" and passes:
+            # Reverse numerical rounding is permitted by the same public contract.
+            reversed_payload = replace(payload, assessment=changed,
+                comparison_request=replace(comparison, panel=changed),
+                comparison=compare_candidates(replace(comparison, panel=changed)))
+            monkeypatch.setattr(delivery_service, "assess_candidates", lambda _: saved)
+            second = assemble_delivery(context, Deliverable(replace(definition, revision=2, predecessors=(*definition.predecessors, receipt.reference)), replace(value, payload=reversed_payload)))
+            assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
+    else:
+        first, second, effective = saved.family_diagnostics
+        for changed in (
+            replace(saved, request_sha256="3" * 64), replace(saved, protocol_sha256="3" * 64),
+            replace(saved, family_limitations=("changed",)), replace(saved, family_diagnostics=(first, second)),
+            replace(saved, family_diagnostics=(effective, second, first)),
+            replace(saved, family_diagnostics=(first, second, replace(effective, name="renamed"))),
+            replace(saved, family_diagnostics=(first, second, m.FamilyDiagnostic("DSR_EFFECTIVE", m.DiagnosticStatus.INSUFFICIENT_DATA, None, "missing"))),
+        ):
+            monkeypatch.setattr(delivery_service, "assess_candidates", lambda _, result=changed: result)
+            checked = validate_delivery(context, receipt.reference)
+            assert checked.status is d.ValidationStatus.FAIL and checked.issues[0].code == "ASSESSMENT_RESULT"
 
 
 def test_stage_four_rejects_changed_targets_and_forged_panel(completed):
@@ -635,76 +638,46 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
 
-def test_report_renders_sensitivity_rows_and_behavior_members(tmp_path):
-    from czsc_trader.application.delivery_service import _report
-
-    candidate = m.AssessmentCandidate("S900-C0001", "a" * 64)
-    evidence = m.AssessmentEvidence(
-        candidate, "20261001_S900_EX01", "1" * 32, "2" * 64,
-        "3" * 64, "4" * 64, "5" * 64, "full", "standard", "test-v1",
-        m.EvaluationScenarioContext(0.001, "FORMAL", "BuyHold", "BUYHOLD", "6" * 64),
-        1000.0, 1000.0, 0, 60,
-        (m.AccountPoint("2026-01-05", 1000.0, 0, 1.0, 1000.0),
-         m.AccountPoint("2026-01-06", 1000.0, 0, 1.0, 1000.0)),
-        (), (), (1000.0, 1000.0), None, None, "7" * 64, None,
-    )
-    assessment = assessment_request((evidence,))
-    panel = assess_candidates(assessment)
-    comparison = comparison_request(panel)
-    owner = d.ExperimentOwner("S900", "20261001_S900_EX01")
-    definition = d.DeliveryDefinition(owner, d.DeliveryStage.ASSESSMENT, 1)
-    value = content(d.CandidateAssessmentDelivery(
-        d.DeliveryReference(owner, d.DeliveryStage.CANDIDATES, 1, "a" * 64),
-        d.DeliveryReference(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, 1, "b" * 64),
-        assessment, panel, comparison, compare_candidates(comparison),
-        (d.TargetMandateBinding("net_annual_return", "return"),),
-        None, "benchmark", "展示合成自检结果", (), ("待用户决定",),
-    ))
-    result = value.payload.comparison
-    result = replace(
-        result,
-        sensitivities=(m.SensitivityRanking("coarse-bins", result.rows, result.pairs),),
-        behavior_groups=(m.BehaviorGroup("f" * 64, (result.rows[0].candidate,)),),
-    )
-    rendered = _report(
-        definition, replace(value, payload=replace(value.payload, comparison=result)), tmp_path
-    ).decode()
-    assert "coarse-bins" in rendered and "f" * 64 in rendered
-    assert "S900-C0001" in rendered and "逐项目标检查" in rendered
 
 
-def test_validation_scope_controls_recomputation_and_always_checks_hashes(completed, monkeypatch):
+def test_validation_scope_controls_recomputation_and_always_checks_hashes(prepared_delivery, monkeypatch):
     from czsc_trader.application import delivery_service
-
-    context = completed[0]
-    definition, value = prepare(completed)
+    context, definition, value = prepared_delivery
     receipt = assemble_delivery(context, Deliverable(definition, value))
-    calls = []
-    assess, compare = delivery_service.assess_candidates, delivery_service.compare_candidates
-
-    def counted_assess(request):
-        calls.append("assessment")
-        return assess(request)
-
-    def counted_compare(request):
-        calls.append("comparison")
-        return compare(request)
-
-    monkeypatch.setattr(delivery_service, "assess_candidates", counted_assess)
-    monkeypatch.setattr(delivery_service, "compare_candidates", counted_compare)
-    integrity = validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY)
-    assert integrity.status is d.ValidationStatus.PASS
-    assert integrity.scope is d.DeliveryValidationScope.INTEGRITY
-    assert calls == []
+    def unavailable(_):
+        raise OSError("numerical computation is unavailable")
+    with monkeypatch.context() as fault:
+        fault.setattr(delivery_service, "assess_candidates", unavailable)
+        integrity = validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY)
+        assert integrity.status is d.ValidationStatus.PASS and integrity.scope is d.DeliveryValidationScope.INTEGRITY
+        full = validate_delivery(context, receipt.reference)
+        assert full.status is d.ValidationStatus.FAIL and full.scope is d.DeliveryValidationScope.FULL
+        assert full.issues[0].code == "INVALID_DELIVERY" and "numerical computation" in full.issues[0].message
     full = validate_delivery(context, receipt.reference)
     assert full.status is d.ValidationStatus.PASS
-    assert full.scope is d.DeliveryValidationScope.FULL
-    assert calls == ["assessment", "comparison"]
     assert d.DeliveryValidation.from_dict(full.to_dict()) == full
     with pytest.raises(TypeError, match="scope"):
         validate_delivery(context, receipt.reference, scope="INTEGRITY")
-    path = delivery_service._delivery_path(context, receipt.reference) / "report.md"
+    path = published(context, receipt) / "report.md"
     path.write_bytes(path.read_bytes() + b"altered")
-    calls.clear()
-    assert validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY).status is d.ValidationStatus.FAIL
-    assert calls == []
+    for scope in (d.DeliveryValidationScope.INTEGRITY, d.DeliveryValidationScope.FULL):
+        checked = validate_delivery(context, receipt.reference, scope=scope)
+        assert checked.status is d.ValidationStatus.FAIL and checked.issues[0].code == "DELIVERY_FILES"
+
+
+@pytest.fixture
+def prepared_delivery(request, tmp_path, frozen_seed_root):
+    """Copy real stage-three preparation without repeating it for numeric faults."""
+    import pickle
+    from czsc_trader.research_tools._evaluation_workers import pack
+    seed = frozen_seed_root / "tdr-assessment-delivery-input"
+    data = frozen_seed_root / "tdr-assessment-delivery-input.pkl"
+    if not seed.exists():
+        completed = request.getfixturevalue("completed")
+        definition, value = prepare(completed)
+        shutil.copytree(completed[0].root, seed)
+        data.write_bytes(pack((definition, value)))
+    root = tmp_path / "assessment-repo"
+    shutil.copytree(seed, root)
+    definition, value = pickle.loads(data.read_bytes())
+    return RepositoryContext.discover(root), definition, value

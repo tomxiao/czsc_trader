@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from factor_signal_catalog import CatalogRegistry, CatalogValidationError, FactorDefinition
+from factor_signal_catalog import CatalogRegistry, CatalogStatus, CatalogValidationError, FactorDefinition
 
 
 REPO = Path(__file__).resolve().parents[4]
@@ -23,7 +23,7 @@ def test_fsc01_repository_catalog_is_complete_queryable_and_strict() -> None:
     assert catalog.show("F-PROJECT-BREADTH-BALANCE")["implementation"].endswith(
         "build_weighted_market_breadth_features"
     )
-    assert catalog.show("F-TSFRESH-VOLUME-CONTRACTION-FLOOR-20")["status"] == "DISCOVERED"
+    assert catalog.show("F-TSFRESH-VOLUME-CONTRACTION-FLOOR-20")["status"] == "DEPRECATED"
     assert catalog.show("F-TSFRESH-ABS-RETURN-MAX-60")["information_family"] == "VOLATILITY_RISK"
     assert catalog.show("F-PROJECT-ETF-NAV-PREMIUM")["inputs"] == [
         "etf_share_size.nav",
@@ -52,7 +52,7 @@ def test_fsc02_repository_catalog_loads_only_canonical_definition_documents() ->
 def test_project_factors_resolve_to_platform_functions() -> None:
     catalog = CatalogRegistry(REPO / "catalog")
     migrated = [item for item in catalog.factors
-                if item.implementation.startswith("czsc_trader.factor_features.")]
+                if item.implementation.startswith("factor_signal_catalog.calculations.")]
     assert len(migrated) == 11
     project_by_id = {}
     for name in ("project.json", "s007.json"):
@@ -61,9 +61,27 @@ def test_project_factors_resolve_to_platform_functions() -> None:
     for item in migrated:
         module, function = item.implementation.rsplit(".", 1)
         assert callable(getattr(import_module(module), function))
-        assert item.version == 2
+        assert item.version == 3
         assert item.provider == "project"
         assert item.to_dict() == project_by_id[item.factor_id]
+
+
+def test_project_ready_definitions_have_available_implementations_and_matching_mirrors():
+    catalog = CatalogRegistry(REPO / "catalog")
+    for kind, definitions in (("factors", catalog.factors), ("signals", catalog.signals)):
+        mirrors = {}
+        for path in (REPO / "catalog" / kind).glob("*.json"):
+            if path.name != "definitions.json":
+                mirrors.update({item[kind[:-1] + "_id"]: item
+                                for item in json.loads(path.read_text(encoding="utf-8"))["items"]})
+        for item in definitions:
+            if "project" not in item.provider.split("+"):
+                continue
+            payload = item.to_dict()
+            assert payload == mirrors[payload[kind[:-1] + "_id"]]
+            if item.status is CatalogStatus.READY:
+                module, function = item.implementation.rsplit(".", 1)
+                assert callable(getattr(import_module(module), function))
 
 
 @pytest.mark.parametrize("kind", ["factor", "signal"])
