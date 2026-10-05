@@ -1,0 +1,181 @@
+{
+  "status": "PASS",
+  "experiment": "EX015_20261005",
+  "receipt_sha256": "17d9453c45bb67b9a517546c644d8071688b636aea2774b114739b8a7600071b",
+  "rows_checked": 1152,
+  "numeric_fields_checked": 10368,
+  "maximum_abs_difference": 0.0,
+  "source_hashes_verified": [
+    "data/daily.parquet",
+    "features.parquet",
+    "signals.parquet",
+    "valids.parquet",
+    "coverage.json",
+    "opportunities.json"
+  ],
+  "calendar_recomputed": [
+    {
+      "signal": "pre_long_closure",
+      "horizon": 1,
+      "delay": 0,
+      "fee": 0.001,
+      "events": 29,
+      "eligible": 1148,
+      "net_mean": -0.0006788103324463989,
+      "increment": -0.0021425480196863326,
+      "nonoverlap_events": 29,
+      "nonoverlap_net": -0.0006788103324463989,
+      "limit_fills": 18,
+      "limit_per60": 0.7035830618892508,
+      "limit_net": -0.001440328187455184
+    },
+    {
+      "signal": "pre_long_closure",
+      "horizon": 1,
+      "delay": 2,
+      "fee": 0.001,
+      "events": 29,
+      "eligible": 1146,
+      "net_mean": -0.0033384938374268615,
+      "increment": -0.0034323199197780134,
+      "nonoverlap_events": 29,
+      "nonoverlap_net": -0.0033384938374268615,
+      "limit_fills": 14,
+      "limit_per60": 0.5472312703583062,
+      "limit_net": -0.0049939016809405256
+    },
+    {
+      "signal": "pre_long_closure",
+      "horizon": 3,
+      "delay": 0,
+      "fee": 0.001,
+      "events": 29,
+      "eligible": 1146,
+      "net_mean": -0.000292844257584805,
+      "increment": -0.0023325623590354006,
+      "nonoverlap_events": 29,
+      "nonoverlap_net": -0.000292844257584805,
+      "limit_fills": 18,
+      "limit_per60": 0.7035830618892508,
+      "limit_net": -0.00220283317766277
+    },
+    {
+      "signal": "pre_long_closure",
+      "horizon": 3,
+      "delay": 2,
+      "fee": 0.001,
+      "events": 28,
+      "eligible": 1144,
+      "net_mean": 0.0037442169294092864,
+      "increment": 0.0022227436475441855,
+      "nonoverlap_events": 28,
+      "nonoverlap_net": 0.0037442169294092864,
+      "limit_fills": 13,
+      "limit_per60": 0.50814332247557,
+      "limit_net": 0.0033411071719603447
+    },
+    {
+      "signal": "pre_long_closure",
+      "horizon": 5,
+      "delay": 0,
+      "fee": 0.001,
+      "events": 28,
+      "eligible": 1144,
+      "net_mean": 0.008363695071539442,
+      "increment": 0.004276033019122461,
+      "nonoverlap_events": 28,
+      "nonoverlap_net": 0.008363695071539442,
+      "limit_fills": 17,
+      "limit_per60": 0.6644951140065146,
+      "limit_net": 0.0029547063421283743
+    },
+    {
+      "signal": "pre_long_closure",
+      "horizon": 5,
+      "delay": 2,
+      "fee": 0.001,
+      "events": 28,
+      "eligible": 1142,
+      "net_mean": 0.006265033993682377,
+      "increment": 0.002881869844140937,
+      "nonoverlap_events": 28,
+      "nonoverlap_net": 0.006265033993682377,
+      "limit_fills": 13,
+      "limit_per60": 0.50814332247557,
+      "limit_net": 0.005134764011321496
+    }
+  ],
+  "bad_dates_count": 52,
+  "quality_window_exclusions": {
+    "h1_delay0": 95,
+    "h1_delay2": 150,
+    "h3_delay0": 150,
+    "h3_delay2": 200,
+    "h5_delay0": 200,
+    "h5_delay2": 237
+  },
+  "errors": [],
+  "calendar_date_examples": [
+    {
+      "decision": "2022-01-27",
+      "entry_T1": "2022-01-28",
+      "exit_h1_T2": "2022-02-07",
+      "exit_h5_T6": "2022-02-11",
+      "calendar_gap_days": 10
+    },
+    {
+      "decision": "2022-03-31",
+      "entry_T1": "2022-04-01",
+      "exit_h1_T2": "2022-04-06",
+      "exit_h5_T6": "2022-04-12",
+      "calendar_gap_days": 5
+    },
+    {
+      "decision": "2022-04-28",
+      "entry_T1": "2022-04-29",
+      "exit_h1_T2": "2022-05-05",
+      "exit_h5_T6": "2022-05-11",
+      "calendar_gap_days": 6
+    }
+  ],
+  "calendar_timing": "T+1 Open is the final trading day before the long closure; h1 exit is first post-closure Open.",
+  "successor_walkforward": {
+    "status": "PASS",
+    "receipt_sha256": "c57c2bbba0dff33facf4ea2ecaa78b7b143ad127c76ed79dada446aa50526b00",
+    "years": [
+      {
+        "year": 2023,
+        "selected": "dry_pullback",
+        "latest_training_exit": "2022-12-30",
+        "events": 10,
+        "net_mean": 0.0011840105093247177,
+        "unconditional_increment": 5.6594764319565626e-05
+      },
+      {
+        "year": 2024,
+        "selected": "vwap_low_late_thin",
+        "latest_training_exit": "2023-12-29",
+        "events": 6,
+        "net_mean": -0.008224189353080114,
+        "unconditional_increment": -0.011718599865664845
+      },
+      {
+        "year": 2025,
+        "selected": "thin_impact_low",
+        "latest_training_exit": "2024-12-31",
+        "events": 0,
+        "net_mean": null,
+        "unconditional_increment": null
+      },
+      {
+        "year": 2026,
+        "selected": "thin_impact_low",
+        "latest_training_exit": "2025-12-31",
+        "events": 0,
+        "net_mean": null,
+        "unconditional_increment": null
+      }
+    ],
+    "candidate_selection_bias_disclosed": true
+  }
+}
