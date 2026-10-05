@@ -9,6 +9,7 @@ from strategy_runtime import StrategyCandidate
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
 from test_backtest import execution_flows
+from public_backtest_support import assert_public_charts
 from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
 
@@ -23,11 +24,21 @@ def publication_inputs(current_frozen, monkeypatch):
 
 def _public_output(inputs, day, strategy=None):
     context, version, request = inputs
-    result = run_backtest(context, strategy or version, request, run_date=day)
+    selected = strategy or version
+    result = run_backtest(context, selected, request, run_date=day)
     assert result.status == "PASS"
     path = Path(result.artifacts["output_dir"])
     manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["strategy"]["reference"] == result.result["strategy"]
+    assert result.result["strategy"] == (
+        selected.reference_id if isinstance(selected, StrategyCandidate) else selected.release_id
+    )
+    assert manifest["strategy"]["kind"] == ("CANDIDATE" if isinstance(selected, StrategyCandidate) else "REGISTERED")
+    assert manifest["strategy"]["source_hash"] == (
+        selected.runtime_identity_sha256 if isinstance(selected, StrategyCandidate) else selected.release_hash
+    )
+    assert result.result["runtime_engine"] == manifest["application"]["runtime_engine"] == "srt"
+    assert result.result["audit_status"] == manifest["audit"]["status"] == "PASS"
     assert manifest["run_date"] == day.isoformat()
     assert (path / "chart.html").is_file() and (path / "report.md").is_file()
     return path
@@ -42,6 +53,10 @@ def test_daily_sequence_is_shared_by_candidates_and_releases(publication_inputs,
     assert [path.name for path in (first, second, third)] == [
         "1002_01_S900-C0001", "1002_02_S900-v1", "1003_01_S900-v1",
     ]
+    assert_public_charts(first)
+    assert_public_charts(second)
+    context, _, _ = publication_inputs
+    assert not (context.strategy_root / "S900/versions/v2.json").exists()
 
 
 def test_sequence_uses_maximum_and_grows_beyond_two_digits(publication_inputs):

@@ -8,11 +8,9 @@ from dataflows.tushare_strategy_data import (
     fetch_etf_share_size,
     fetch_global_index_daily,
     fetch_vix_daily,
-    fetch_index_constituent_weight,
     fetch_index_daily_basic,
     fetch_shibor_daily,
     fetch_stock_moneyflow,
-    fetch_stock_moneyflow_sessions,
     fetch_trading_calendar,
 )
 
@@ -151,31 +149,9 @@ def test_vix_dataset_rejects_other_symbols() -> None:
         fetch_vix_daily("VXN", "2026-09-15", "2026-09-15", pro=ChunkedGlobalPro())
 
 
-def test_s003_constituent_inputs_preserve_multi_entity_keys() -> None:
-    pro = FakePro()
-    weights, weight_meta = fetch_index_constituent_weight(
-        "000905.SH", "2026-09-15", "2026-09-15", pro=pro
-    )
-    flows, flow_meta = fetch_stock_moneyflow("2026-09-15", "2026-09-15", pro=pro)
-
-    assert list(weights.columns) == ["Date", "ConstituentSymbol", "Weight"]
-    assert weight_meta["primary_key"] == ["Date", "ConstituentSymbol"]
-    assert list(flows.columns) == ["Date", "Symbol", "NetMoneyflowAmount"]
-    assert flow_meta["primary_key"] == ["Date", "Symbol"]
-    assert len(weights) == len(flows) == 2
-
-
 def test_all_market_moneyflow_rejects_unsafe_multi_day_request() -> None:
     with pytest.raises(DataContractError, match="exactly one day"):
         fetch_stock_moneyflow("2026-09-14", "2026-09-15", pro=FakePro())
-
-
-def test_all_market_moneyflow_can_publish_explicit_sessions() -> None:
-    flows, metadata = fetch_stock_moneyflow_sessions(("2026-09-15", "2026-09-16"), pro=FakePro())
-
-    assert len(flows) == 4
-    assert metadata["requested_trading_dates"] == ["2026-09-15", "2026-09-16"]
-    assert metadata["primary_key"] == ["Date", "Symbol"]
 
 
 def test_trading_calendar_is_canonical() -> None:

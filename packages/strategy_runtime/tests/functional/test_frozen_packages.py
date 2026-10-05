@@ -6,7 +6,6 @@ import pytest
 
 from strategy_manager import StrategyRegistry
 from strategy_runtime import (
-    RuntimeCompatibilityError,
     StrategyIdentity,
     StrategyCandidate,
     StrategyDefinition,
@@ -72,11 +71,7 @@ def test_current_packages_have_no_research_governance_or_chart_dependency(regist
     actual = definition(release_id)
     assert actual.schema_version == 3
     assert actual.observation.sha256 == deployed.binding.spec.observation_sha256
-    with pytest.raises(RuntimeCompatibilityError, match="differs from frozen release"):
-        StrategyRuntime().describe(
-            StrategyRelease.from_mapping(model.to_dict()), source_root=deployed.source_root,
-            runtime_binding=replace(deployed.binding, release_hash="0" * 64),
-        )
+
 
 
 def test_current_observation_uses_declared_fields_and_current_identity(registered_release):

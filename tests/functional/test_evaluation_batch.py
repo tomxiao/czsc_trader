@@ -14,6 +14,7 @@ from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, Eval
 from czsc_trader.research_tools import EvaluationExecutionError
 from czsc_trader.research_tools.evaluation import evaluate_strategy
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from test_research_contract_upgrade import unprepared_evaluation as unprepared_evaluation
 from test_assessment_delivery import completed as completed
 from czsc_trader.research_tools import create_formal_experiment_context
 
@@ -54,12 +55,21 @@ def terminated_worker(request):
 
 @pytest.fixture
 def batch(managed_evaluation):
-    previous, request = managed_evaluation
+    return _batch_context(managed_evaluation)
+
+
+def _batch_context(evaluation):
+    previous, request = evaluation
     context = create_formal_experiment_context(previous.definition, repository_root=request.repository_root,
         resources=ExperimentResources(2, 1), workspace=previous.workspace, data_space=DataSpace(Path("data/research")))
     # Fault injection wraps the real evaluator; default production wiring is checked separately.
     context.evaluation._batch_evaluator = synthetic_evaluator
     return context, request
+
+
+@pytest.fixture
+def batch_input(request):
+    return _batch_context(request.getfixturevalue(request.param))
 
 
 def test_batch_multicore_failure_retry_and_order(batch):
@@ -92,13 +102,31 @@ def test_batch_multicore_failure_retry_and_order(batch):
         EvaluationOutcome(outcomes[1].record, outcomes[0].result)
 
 
-@pytest.mark.parametrize("change", [{"workers": 2}, {"data_cutoff": date(2026, 9, 1)}])
-def test_batch_prevalidates_all_before_execution(batch, change):
-    context, request = batch
-    with pytest.raises(ValueError):
+@pytest.mark.parametrize("change,batch_input,message", [
+    pytest.param({"workers": 2}, "unprepared_evaluation", "workers=1", id="workers"),
+    pytest.param({"data_cutoff": date(2026, 9, 1)}, "managed_evaluation",
+                 "execution data identity", id="prepared-cutoff"),
+], indirect=["batch_input"])
+def test_batch_prevalidates_all_before_execution(batch_input, change, message, monkeypatch):
+    from multiprocessing.process import BaseProcess
+    from dataflows import Dataflows
+    from test_research_contract_upgrade import _data_files
+
+    context, request = batch_input
+    before = _data_files(request)
+    def forbidden(*_args, **_kwargs):
+        pytest.fail("invalid batch must not start a worker")
+    monkeypatch.setattr(BaseProcess, "start", forbidden)
+    if request.execution_data is None:
+        monkeypatch.setattr(Dataflows, "prepare", lambda *_a, **_k: pytest.fail(
+            "invalid worker count must fail before any procurement"))
+    with pytest.raises(ValueError, match=message):
         context.evaluation.evaluate_many((request, replace(request, **change)))
     assert not context.trace.evaluations
     assert not list((request.repository_root / ".tmp").glob("worker-*"))
+    assert not (request.repository_root / ".tmp/evaluation-workers").exists()
+    if request.execution_data is None:
+        assert _data_files(request) == before
 
 
 def test_batch_transport_is_preflighted(batch):

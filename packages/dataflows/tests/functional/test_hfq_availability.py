@@ -26,7 +26,7 @@ def test_stock_intraday_uses_completed_bar_time_after_premarket_factor() -> None
     assert result["AvailableDate"].tolist() == pd.to_datetime(raw["Date"]).tolist()
 
 
-@pytest.mark.parametrize("mutation", [None, "schedule", "hash"], ids=["valid", "schedule", "hash"])
+@pytest.mark.parametrize("mutation", ["schedule", "hash"])
 def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, publish_data, mutation) -> None:
     frame = with_scheduled_hfq_availability(
         _bars(["2026-09-08"]), factor_source="adj_factor", period="daily"
@@ -55,8 +55,6 @@ def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, pu
         request.dataset: lambda _: (frame, supplied_metadata),
     }, request)
     assert ready.status is DataStatus.READY
-    if mutation is None:
-        return
     if mutation == "schedule":
         supplied_metadata["adjustment_factor_publication_schedule"] = "unknown"
     else:
@@ -64,3 +62,6 @@ def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, pu
     failed = publish_data(flows, request)
     assert failed.status is DataStatus.FAILED
     assert failed.error.code == "DATA_CONTRACT_MISMATCH"
+    old = flows.fetch(request, prepared=ready.prepared)
+    assert old.ready and old.identity == ready.identity
+    pd.testing.assert_frame_equal(old.dataframe, ready.dataframe)

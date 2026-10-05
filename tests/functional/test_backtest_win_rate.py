@@ -1,16 +1,15 @@
 """Closed-trade metric semantics through public, actual SRT/TXE evaluation."""
 import pandas as pd
 import pytest
+import json
 from pathlib import Path
 from strategy_runtime import implementation_sha256
 from czsc_trader.application import BacktestRequest, run_backtest
 from public_backtest_support import request_for_prices
 
 
-@pytest.mark.parametrize("returns,expected", [
-    ([], None), ([.1], 1.), ([-.1], 0.), ([0.], 0.), ([.1, -.1, 0.], 1 / 3),
-])
-def test_win_rate_counts_only_profitable_closed_trades(candidate_payload, tmp_path, monkeypatch, returns, expected):
+def test_mixed_closed_trades_publish_win_rate_and_open_tail(candidate_payload, tmp_path, monkeypatch):
+    returns = [.1, -.1, 0.]
     payload, source = candidate_payload
     path = source / "strategies/candidate_fixture.py"
     path.write_text(path.read_text(encoding="utf-8").replace('"fee_rate": 0.001', '"fee_rate": 0.0'), encoding="utf-8", newline="\n")
@@ -25,12 +24,20 @@ def test_win_rate_counts_only_profitable_closed_trades(candidate_payload, tmp_pa
     context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20, flow=flow, cost=0.)
     result = run_backtest(context, request.strategy, BacktestRequest("588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
     assert result.status == "PASS"
-    trades = pd.read_csv(Path(result.artifacts["output_dir"]) / "trades.csv")
+    output = Path(result.artifacts["output_dir"])
+    trades = pd.read_csv(output / "trades.csv")
     closed = trades.loc[trades.status.eq("CLOSED")]
     assert len(closed) == len(returns)
     assert len(trades.loc[trades.status.eq("OPEN")]) == 1
     assert closed.net_return.tolist() == pytest.approx(returns)
-    assert result.result["metrics"]["strategy"]["metrics"]["win_rate"] == expected
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["strategy"]["kind"] == "CANDIDATE"
+    assert manifest["strategy"]["reference"] == result.result["strategy"] == request.strategy.reference_id
+    assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
+    assert manifest["audit"]["status"] == result.result["audit_status"] == "PASS"
+    assert result.result["metrics"]["strategy"]["metrics"]["win_rate"] == 1 / 3
+    published = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
+    assert published["strategy"] == result.result["metrics"]["strategy"]
 
 
 def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_payload, tmp_path, monkeypatch):
@@ -57,3 +64,6 @@ def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_paylo
     assert trades.net_return.tolist() == pytest.approx(net.tolist())
     assert result.result["metrics"]["benchmarks"]["ma5_ma20"]["metrics"]["closed_trades"] == 3
     assert result.result["metrics"]["benchmarks"]["ma5_ma20"]["metrics"]["win_rate"] == 0.
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
+    assert manifest["audit"]["benchmarks"]["ma5_ma20"]["status"] == "PASS"

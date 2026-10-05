@@ -57,12 +57,26 @@ from test_research_experiment import _write_v3_experiment
 
 @pytest.fixture
 def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
+    return _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, prepared=True)
+
+
+@pytest.fixture
+def unprepared_evaluation(candidate_payload, tmp_path, monkeypatch):
+    """Build a lawful request without procuring data that its target does not use."""
+    return _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, prepared=False)
+
+
+def _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, *, prepared):
     payload, package = candidate_payload
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path, space=DataSpace(Path("data/backtest")))
-    execution = _prepare_backtest_execution_data(repository_root=tmp_path, symbol="588080.SH", asset_type="etf", start=sessions[1].date(), end=sessions[-1].date(), intraday_frequencies=("30m",), dataflows=flows)
+    execution = (_prepare_backtest_execution_data(
+        repository_root=tmp_path, symbol="588080.SH", asset_type="etf",
+        start=sessions[1].date(), end=sessions[-1].date(),
+        intraday_frequencies=("30m",), dataflows=flows,
+    ) if prepared else None)
     candidate = StrategyCandidate("S900", "C0001", payload, package)
     definition = ExperimentDefinition(
         schema_version=2,
@@ -116,6 +130,12 @@ def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
         benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )
     return context, request
+
+
+def _data_files(request):
+    root = request.repository_root / "data/backtest"
+    return {path.relative_to(root): path.read_bytes()
+            for path in root.rglob("*") if path.is_file()}
 
 
 def test_formal_development_evaluates_without_registration_or_search_budget(managed_evaluation):
@@ -209,10 +229,14 @@ def test_evaluation_rejects_cutoff_inconsistent_with_prepared_execution(managed_
     assert context.trace.evaluations == ()
 
 
-def test_evaluation_request_requires_exact_date(managed_evaluation):
-    _, request = managed_evaluation
+def test_evaluation_request_requires_exact_date(unprepared_evaluation):
+    context, request = unprepared_evaluation
+    before = _data_files(request)
     with pytest.raises(TypeError, match="date"):
         replace(request, data_cutoff=datetime(2026, 9, 21))
+    assert context.trace.evaluations == ()
+    assert context.trace.data_requests == ()
+    assert _data_files(request) == before
 
 
 def test_researcher_owns_window_selection_and_platform_records_execution(managed_evaluation):
@@ -675,11 +699,12 @@ def test_managed_standard_and_stress_evaluations_reach_se_ranking(
     assert comparison.rows[0].status is m.ComparisonStatus.RANKED, comparison.rows[0].reasons
 
 
-def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(managed_evaluation):
+def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(unprepared_evaluation):
     from czsc_trader.research_tools import build_assessment_evidence
 
-    context, request = managed_evaluation
-    request = replace(request, execution_data=None)
+    context, request = unprepared_evaluation
+    assert request.execution_data is None
+    assert context.trace.data_requests == ()
     result = context.evaluation.evaluate(request)
     assert result.execution_data is not None
     assert result.execution_data.prepared is not None
@@ -698,22 +723,26 @@ def test_unprepared_evaluation_uses_fixed_space_and_supports_assessment(managed_
     assert (request.repository_root / "data/backtest").is_dir()
 
 
-def test_unprepared_evaluation_rejects_cutoff_before_preparation(managed_evaluation, monkeypatch):
+def test_unprepared_evaluation_rejects_cutoff_before_preparation(unprepared_evaluation, monkeypatch):
     from czsc_trader.research_tools import evaluation
-    context, request = managed_evaluation
+    context, request = unprepared_evaluation
+    before = _data_files(request)
     def forbidden(*args, **kwargs):
         raise AssertionError("invalid request must fail before data preparation")
     monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
-    request = replace(request, execution_data=None, windows=(
+    request = replace(request, windows=(
         EvaluationWindow("full", request.windows[0].start, date(2026, 9, 30)),
     ))
     with pytest.raises(ValueError, match="cutoff"):
         context.evaluation.evaluate(request)
+    assert context.trace.evaluations == ()
+    assert context.trace.data_requests == ()
+    assert _data_files(request) == before
 
 
-def test_evaluation_records_inputs_without_deciding_research_authorization(managed_evaluation):
+def test_evaluation_records_inputs_without_deciding_research_authorization(unprepared_evaluation):
     from dataflows import Dataset
-    context, request = managed_evaluation
+    context, request = unprepared_evaluation
     definition = replace(
         context.definition, allowed_datasets=(Dataset.ETF_OHLCV,),
         capabilities=ExperimentCapabilities(), development_cutoff=date(2026, 9, 1),
@@ -723,21 +752,25 @@ def test_evaluation_records_inputs_without_deciding_research_authorization(manag
         data_space=DataSpace(Path("data/research")), resources=context.resources,
         workspace=context.workspace,
     )
-    result = context.evaluation.evaluate(replace(request, execution_data=None))
+    result = context.evaluation.evaluate(request)
     assert result.runs
     assert any(item["dataset"] == Dataset.ETF_UNADJUSTED_DAILY
                for item in context.trace.data_requests)
     assert context.trace.evaluations[-1].status is EvaluationAttemptStatus.SUCCEEDED
 
 
-def test_evaluation_rejects_foreign_repository_before_preparation(managed_evaluation, monkeypatch):
+def test_evaluation_rejects_foreign_repository_before_preparation(unprepared_evaluation, monkeypatch):
     from czsc_trader.research_tools import evaluation
-    context, request = managed_evaluation
+    context, request = unprepared_evaluation
+    before = _data_files(request)
     def forbidden(*args, **kwargs):
         raise AssertionError("foreign repository must fail before data preparation")
     monkeypatch.setattr(evaluation._dataflows, "create_backtest_dataflows", forbidden)
     with pytest.raises(ValueError, match="repository differs"):
-        context.evaluation.evaluate(replace(request, repository_root=request.repository_root / "other", execution_data=None))
+        context.evaluation.evaluate(replace(request, repository_root=request.repository_root / "other"))
+    assert context.trace.evaluations == ()
+    assert context.trace.data_requests == ()
+    assert _data_files(request) == before
 
 
 def test_evaluation_rejects_rebinding_candidate_content(managed_evaluation):

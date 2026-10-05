@@ -42,10 +42,26 @@ def release_binding(tmp_path):
     return release, binding, package, raw
 
 
+@pytest.fixture
+def release_record():
+    # Metadata admission authenticates JSON; source loading belongs to describe tests.
+    raw = {
+        "schema_version": 5, "strategy_id": "S900", "version": "v1",
+        "release_id": "S900-v1", "parent_version": None,
+        "change_summary": "SRT public binding input", "source_experiment": "20261001_S900_EX01",
+        "source_candidate": "C0001", "selection_data_cutoff": "2026-09-21",
+        "forward_start": "2026-09-22", "strategy_payload": {"parameters": {"threshold": 0.5}},
+    }
+    release = StrategyRelease.from_mapping({**raw, "release_hash": canonical_sha256(raw)})
+    assert release.release_id == "S900-v1"
+    assert release.payload == raw["strategy_payload"]
+    return release, raw
+
+
 @pytest.mark.parametrize("field,value", [("change_summary", "changed"),
                                          ("strategy_payload", {"changed": True})])
-def test_release_authenticates_complete_record(release_binding, field, value):
-    release, _, _, raw = release_binding
+def test_release_authenticates_complete_record(release_record, field, value):
+    release, raw = release_record
     with pytest.raises(RuntimeContractError, match="complete frozen record"):
         StrategyRelease.from_mapping({**raw, "release_hash": release.release_hash, field: value})
 

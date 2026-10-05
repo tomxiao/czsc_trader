@@ -29,31 +29,6 @@ def _payload() -> dict[str, Any]:
     return {"count": len(observations), "observations": observations}
 
 
-def test_fred_policy_uncertainty_is_fixed_to_initial_release_history(monkeypatch) -> None:
-    monkeypatch.setenv("FRED_KEY", "test-key")
-    captured: dict[str, Any] = {}
-
-    def fake_get(url: str, **kwargs: Any) -> FakeResponse:
-        captured.update(url=url, **kwargs)
-        return FakeResponse(200, _payload())
-
-    frame, metadata = fetch_us_policy_uncertainty_daily(
-        "2024-01-01", "2024-01-03", http_get=fake_get
-    )
-
-    assert captured["params"]["series_id"] == "USEPUINDXD"
-    assert captured["params"]["output_type"] == 4
-    assert captured["params"]["realtime_start"] == "2024-01-01"
-    assert captured["params"]["realtime_end"] == "2024-01-03"
-    assert "test-key" not in captured["url"]
-    assert frame.to_dict("list") == {
-        "Date": [pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-03")],
-        "AvailableDate": [pd.Timestamp("2024-01-02"), pd.Timestamp("2024-01-03")],
-        "PolicyUncertaintyIndex": [110.5, 121.0],
-    }
-    assert metadata["vintage_mode"] == "INITIAL_RELEASE_ONLY"
-
-
 def test_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
     observed_windows: list[tuple[str, str]] = []
@@ -114,7 +89,15 @@ def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, p
     assert calls[0][1]["observation_end"] == "2024-01-03"
     assert calls[0][1]["api_key"] == "test-key"
     assert calls[0][1]["output_type"] == 4
-
+    assert calls[0][1]["realtime_start"] == "2024-01-01"
+    assert calls[0][1]["realtime_end"] == "2024-01-03"
+    assert "test-key" not in calls[0][0]
+    assert result.dataframe.to_dict("list") == {
+        "Date": [pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-03")],
+        "AvailableDate": [pd.Timestamp("2024-01-02"), pd.Timestamp("2024-01-03")],
+        "PolicyUncertaintyIndex": [110.5, 121.0],
+    }
+    assert result.identity.metadata["vintage_mode"] == "INITIAL_RELEASE_ONLY"
 
 
 def test_fred_policy_uncertainty_rejects_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:

@@ -138,31 +138,43 @@ def test_conflicting_overlap_prevents_batch_publication(flow_factory, tmp_path):
         assert flows.fetch(request, prepared=retried.reference).dataframe.OvernightRate.max() == 1.2
 
 
-
-def test_moneyflow_fetch_filters_explicit_date_subset_without_supplier_call(flow_factory):
+def test_moneyflow_fetch_filters_explicit_date_subset_without_supplier_call(flow_factory, monkeypatch):
     calls = []
     dates = ("2026-09-14", "2026-09-15", "2026-09-16")
 
-    def provider(request):
-        calls.append(request)
-        return pd.DataFrame({
-            "Date": pd.to_datetime(dates),
-            "Symbol": ["600000.SH"] * 3,
-            "NetMoneyflowAmount": [1.0, 2.0, 3.0],
-        }), {"vendor": "fixture", "primary_key": ["Date", "Symbol"]}
+    from dataflows import tushare_strategy_data
 
-    flows = flow_factory({Dataset.STOCK_MONEYFLOW: provider})
+    class MoneyflowPro:
+        def moneyflow(self, **kwargs):
+            calls.append(kwargs)
+            assert kwargs["fields"] == "ts_code,trade_date,net_mf_amount"
+            return pd.DataFrame({
+                "trade_date": [kwargs["trade_date"]] * 2,
+                "ts_code": ["000001.SZ", "600000.SH"],
+                "net_mf_amount": [10., -5.],
+            })
+
+    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: MoneyflowPro())
+    flows = flow_factory()
     request = DataRequest(
         Dataset.STOCK_MONEYFLOW, None, dates[0], dates[-1], None,
         parameters=MoneyflowParameters(dates),
     )
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready
+    assert [call["trade_date"] for call in calls] == [day.replace("-", "") for day in dates]
+    full = flows.fetch(request, prepared=prepared.reference)
+    assert full.ready and len(full.dataframe) == 6
+    assert list(full.dataframe.columns) == ["Date", "Symbol", "NetMoneyflowAmount"]
+    assert full.identity.metadata["primary_key"] == ["Date", "Symbol"]
+    assert full.identity.metadata["requested_trading_dates"] == list(dates)
+    assert full.dataframe.Symbol.tolist() == ["000001.SZ", "600000.SH"] * 3
+    assert full.dataframe.NetMoneyflowAmount.tolist() == [10., -5.] * 3
     subset = replace(request, parameters=MoneyflowParameters((dates[0], dates[2])))
     result = flows.fetch(subset, prepared=prepared.reference)
-    assert result.ready and len(calls) == 1
-    assert result.dataframe.Date.dt.strftime("%Y-%m-%d").tolist() == [dates[0], dates[2]]
-    assert result.dataframe.NetMoneyflowAmount.tolist() == [1.0, 3.0]
+    assert result.ready and len(calls) == 3
+    assert result.dataframe.Date.dt.strftime("%Y-%m-%d").tolist() == [dates[0], dates[0], dates[2], dates[2]]
+    assert result.dataframe.NetMoneyflowAmount.tolist() == [10., -5., 10., -5.]
 
 
 @pytest.mark.parametrize("categories, ordered", [
@@ -195,11 +207,15 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
 
     flows = flow_factory({Dataset.ETF_OHLCV: provider})
     request = DataRequest(
-        Dataset.ETF_OHLCV, "518850.SH", "2026-09-14", "2026-09-14", None, "30m",
+        Dataset.ETF_OHLCV, "518850.SH", "2026-09-14", "2026-09-14", "2026-09-14T15:00:00", "30m",
     )
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready
-    subset = replace(request, start="2026-09-14 10:30", end="2026-09-14 11:30")
+    assert request.required_cutoff == "2026-09-14T15:00:00"
+    complete = flows.fetch(request, prepared=prepared.reference)
+    assert complete.ready and complete.dataframe.Date.tolist() == times.tolist()
+    assert complete.dataframe.Date.iloc[-1] == pd.Timestamp("2026-09-14 15:00")
+    subset = replace(request, start="2026-09-14 10:30", end="2026-09-14 11:30", required_cutoff=None)
     result = flows.fetch(subset, prepared=prepared.reference)
     assert result.ready and len(calls) == 1
     assert result.dataframe.Date.tolist() == times[1:4].tolist()
@@ -358,11 +374,3 @@ def test_refresh_failing_all_acceptance_preserves_previous_reusable_data(flow_fa
     assert reused.ready and len(calls) == 2
     current = flows.fetch(_request(), prepared=reused.reference)
     assert current.ready and current.dataframe.OvernightRate.tolist() == [1.0, 1.1, 1.2]
-
-
-def test_date_only_end_accepts_cutoff_later_on_same_day():
-    request = DataRequest(
-        Dataset.ETF_OHLCV, "518850.SH", "2026-09-14", "2026-09-14",
-        "2026-09-14T15:00:00", "30m",
-    )
-    assert request.required_cutoff == "2026-09-14T15:00:00"

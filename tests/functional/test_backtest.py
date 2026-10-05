@@ -15,8 +15,12 @@ from test_current_contracts import (
 )
 
 
-def execution_flows(root, *, adjusted_price=1.):
+def execution_flows(root, *, adjusted_price=1., procurement=None):
     def fetch(request):
+        if procurement is not None:
+            if not procurement["allowed"]:
+                pytest.fail("warm backtest must reuse its pinned inputs without supplier access")
+            procurement["requests"].append(request)
         if str(request.dataset) == "calendar.trading_sessions":
             dates = pd.date_range(request.start, request.end)
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {"vendor": "test"}
@@ -48,7 +52,8 @@ def execution_flows(root, *, adjusted_price=1.):
 
 def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
     context, version = current_frozen
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root, adjusted_price=2.))
+    procurement = {"allowed": True, "requests": []}
+    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root, adjusted_price=2., procurement=procurement))
     result = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
     ))
@@ -92,14 +97,21 @@ def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, 
     assert payload["market_data"]["bars"][0]["close"] == 2.
     assert payload["execution"]["fills"][0]["price"] == 1.
 
-    spaces = set(context.tdr_srt_root.joinpath("contexts").iterdir())
-    assert len(spaces) == 1
+    original_inputs = manifest["execution_data"]
+    original_requests = tuple(procurement["requests"])
+    assert original_requests
+    procurement["allowed"] = False
     repeated = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
     ))
     assert repeated.status == "PASS"
     assert repeated.artifacts["output_dir"] != result.artifacts["output_dir"]
-    assert set(context.tdr_srt_root.joinpath("contexts").iterdir()) == spaces
+    repeated_manifest = json.loads((Path(repeated.artifacts["output_dir"]) / "manifest.json").read_text())
+    assert repeated_manifest["execution_data"] == original_inputs
+    assert repeated_manifest["strategy"] == manifest["strategy"]
+    assert repeated.result["metrics"] == result.result["metrics"]
+    assert tuple(procurement["requests"]) == original_requests
+    procurement["allowed"] = True
     weekend = run_backtest(context, version, BacktestRequest(
         "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 20), 100000, 100,
     ))

@@ -49,39 +49,43 @@ def test_lot_size_conflict_fails_before_data_access(candidate_payload, minimal_r
     assert not list(context.outputs_root.glob("*/manifest.json"))
 
 
-def test_candidate_and_version_publish_authenticated_backtests(current_frozen, candidate_payload, monkeypatch):
-    import json
-    from pathlib import Path
-    from test_backtest import execution_flows
+def test_backtest_rejects_tampered_version_before_data_access(current_frozen, monkeypatch):
+    from dataflows import Dataflows
+
     context, version = current_frozen
-    payload, source = candidate_payload
-    candidate = StrategyCandidate("S900", "C0001", payload, source)
     request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows",
-                        lambda repository_root, **kwargs: execution_flows(repository_root))
-    results = [run_backtest(context, strategy, request) for strategy in (candidate, version)]
-    assert all(result.status == "PASS" for result in results)
-    outputs = [Path(result.artifacts["output_dir"]) for result in results]
-    assert outputs[0] != outputs[1]
-    manifests = [json.loads((output / "manifest.json").read_text(encoding="utf-8")) for output in outputs]
-    assert [item["strategy"]["kind"] for item in manifests] == ["CANDIDATE", "REGISTERED"]
-    assert [item["strategy"]["reference"] for item in manifests] == [candidate.reference_id, version.release_id]
-    assert [item.result["strategy"] for item in results] == [candidate.reference_id, version.release_id]
-    assert all(item.result["runtime_engine"] == "srt" and item.result["audit_status"] == "PASS" for item in results)
-    assert manifests[0]["strategy"]["source_hash"] == candidate.runtime_identity_sha256
-    assert manifests[1]["strategy"]["source_hash"] == version.release_hash
-    assert not (context.strategy_root / "S900/versions/v2.json").exists()
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("tampered version must fail before preparing any data")
+
+    monkeypatch.setattr(Dataflows, "prepare", forbidden)
     with pytest.raises(ExecutionError, match="differs from the frozen registry"):
         run_backtest(context, replace(version, change_summary="changed"), request)
+    assert not list(context.outputs_root.glob("*/manifest.json"))
+
+
+def test_backtest_public_api_rejects_unsupported_arguments(candidate_payload, minimal_repo, monkeypatch):
+    from dataflows import Dataflows
+    from czsc_trader.application import RepositoryContext
+
+    payload, source = candidate_payload
+    candidate = StrategyCandidate("S900", "C0001", payload, source)
+    context = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
+    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("invalid API arguments must fail before preparing data")
+
+    monkeypatch.setattr(Dataflows, "prepare", forbidden)
     with pytest.raises(TypeError, match="dataflows"):
-        run_backtest(context, version, request, dataflows=object())
+        run_backtest(context, candidate, request, dataflows=object())
     with pytest.raises(TypeError, match="chart_descriptor"):
-        run_backtest(context, version, request, chart_descriptor={})
+        run_backtest(context, candidate, request, chart_descriptor={})
     with pytest.raises(TypeError, match="strategy"):
         run_backtest(context, "S001-v1", request)
     with pytest.raises(TypeError, match="request"):
-        run_backtest(context, version, {})
-    assert len(list(context.outputs_root.glob("*/manifest.json"))) == 2
+        run_backtest(context, candidate, {})
+    assert not list(context.outputs_root.glob("*/manifest.json"))
 
 
 def test_unknown_cli_version_is_a_validation_failure(minimal_repo, monkeypatch, capsys):

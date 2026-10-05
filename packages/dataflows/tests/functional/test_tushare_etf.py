@@ -3,12 +3,12 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataset
+from dataflows import DataRequest, DataStatus, Dataset, canonical_frame_sha256
 from dataflows import tushare_etf
 
 
 @pytest.fixture(scope="module")
-def etf_adjusted_source():
+def etf_adjusted_source(publication_seeds):
     class FakePro:
         def __init__(self) -> None:
             self.factor_requests: list[tuple[str, str]] = []
@@ -42,30 +42,21 @@ def etf_adjusted_source():
     pro = FakePro()
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(tushare_etf, "get_tushare_pro", lambda _env=None: pro)
-        bars, metadata = tushare_etf.fetch_etf_ohlcv(
-            "510500.SH", "2013-03-15", "2026-09-08", "daily")
-    return pro, bars, metadata
+        request = DataRequest(Dataset.ETF_OHLCV, "510500.SH", "2013-03-15", "2026-09-08", "2026-09-08")
+        path, reference = publication_seeds("etf-adjusted", None, request)
+    from dataflows import Dataflows, DataSpace, ProviderConfig
+    flow = Dataflows(base_dir=path.parent, space=DataSpace(path=path.relative_to(path.parent)),
+                     providers=ProviderConfig({}))
+    ready = flow.fetch(request, prepared=reference)
+    assert ready.ready, ready.error
+    return pro, ready.dataframe, dict(ready.identity.metadata), ready.identity
 
 
-@pytest.mark.parametrize("mutation", [None, "adjustment", "publication", "early"],
-                         ids=["valid", "adjustment", "publication", "early"])
+@pytest.mark.parametrize("mutation", ["adjustment", "publication", "early"])
 def test_etf_long_history_fetch_segments_adjustment_factors(
     clone_published_flow, publish_data, etf_adjusted_source, mutation,
 ):
-    pro, bars, metadata = etf_adjusted_source
-    assert pro.factor_requests == [
-        ("20130315", "20171231"),
-        ("20180101", "20221231"),
-        ("20230101", "20260908"),
-    ]
-    assert bars["Close"].tolist() == [1.0, 4.0]
-    assert metadata["adjustment_factor_source"] == "fund_adj"
-    assert bars["AvailableDate"].dt.strftime("%Y-%m-%d %H:%M:%S").tolist() == [
-        "2013-03-15 17:00:00", "2026-09-08 17:00:00",
-    ]
-    assert metadata["adjustment_factor_publication_timestamp_verified"] is False
-    assert metadata["adjustment_factor_revision_history_verified"] is False
-
+    _, bars, metadata, _ = etf_adjusted_source
     request = DataRequest(
         Dataset.ETF_OHLCV, "510500.SH", "2013-03-15", "2026-09-08", "2026-09-08"
     )
@@ -75,8 +66,6 @@ def test_etf_long_history_fetch_segments_adjustment_factors(
     }, request)
     assert ready.status is DataStatus.READY
     assert ready.identity.temporal_contract.availability_time_field == "AvailableDate"
-    if mutation is None:
-        return
     if mutation == "early":
         supplied_frame.AvailableDate -= pd.Timedelta(hours=7)
     elif mutation == "adjustment":
@@ -87,7 +76,8 @@ def test_etf_long_history_fetch_segments_adjustment_factors(
     assert failed.status is DataStatus.FAILED
     assert failed.error.code == "DATA_CONTRACT_MISMATCH"
     old = flows.fetch(request, prepared=ready.prepared)
-    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
+    assert old.ready and old.identity == ready.identity
+    pd.testing.assert_frame_equal(old.dataframe, ready.dataframe)
 
 
 @pytest.mark.parametrize("dataset,frequency,symbol,exchange,defect", [
@@ -162,3 +152,21 @@ def test_etf_publication_requires_verified_daily_session_coverage(
     assert ready.identity.metadata["daily_session_coverage"]["verified_sessions"] == 3
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
+
+
+def test_etf_default_long_history_publishes_segmented_hfq_identity(etf_adjusted_source):
+    pro, bars, metadata, identity = etf_adjusted_source
+    assert pro.factor_requests == [
+        ("20130315", "20171231"), ("20180101", "20221231"), ("20230101", "20260908"),
+    ]
+    assert bars.Close.tolist() == [1., 4.]
+    assert bars.AvailableDate.dt.strftime("%Y-%m-%d %H:%M:%S").tolist() == [
+        "2013-03-15 17:00:00", "2026-09-08 17:00:00",
+    ]
+    assert metadata["adjustment_factor_source"] == "fund_adj"
+    assert metadata["adjustment_factor_publication_timestamp_verified"] is False
+    assert metadata["adjustment_factor_revision_history_verified"] is False
+    assert metadata["availability_time_field"] == "AvailableDate"
+    assert identity.source == "tushare"
+    assert identity.temporal_contract.availability_time_field == "AvailableDate"
+    assert identity.content_sha256 == canonical_frame_sha256(bars)

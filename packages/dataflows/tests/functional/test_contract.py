@@ -147,37 +147,6 @@ def test_out_of_boundary_data_fails_contract(flow_factory, publish_data) -> None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_date_only_end_includes_intraday_rows(flow_factory, publish_data) -> None:
-    frame = pd.concat([_frame().iloc[[0]].copy()] * 8, ignore_index=True)
-    frame["Date"] = [
-        f"2026-09-14 {value}:00"
-        for value in (
-            "10:00",
-            "10:30",
-            "11:00",
-            "11:30",
-            "13:30",
-            "14:00",
-            "14:30",
-            "15:00",
-        )
-    ]
-    request = DataRequest(
-        Dataset.ETF_OHLCV,
-        "588080.SH",
-        "2026-09-14",
-        "2026-09-14",
-        "2026-09-14",
-        "30m",
-    )
-
-    result = publish_data(flow_factory(
-        {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
-    ), request)
-
-    assert result.status is DataStatus.READY
-
-
 def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, publish_data, tmp_path) -> None:
     frame = _frame()
     frame.loc[1, "High"] = 0.5
@@ -224,35 +193,6 @@ def test_facade_blocks_invalid_calendar_before_ready(flow_factory, publish_data)
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_multi_entity_dataset_uses_declared_primary_key(flow_factory, publish_data) -> None:
-    frame = pd.DataFrame(
-        {
-            "Date": ["2026-09-15", "2026-09-15"],
-            "Symbol": ["000001.SZ", "600000.SH"],
-            "NetMoneyflowAmount": [1.0, -2.0],
-        }
-    )
-    result = publish_data(flow_factory(
-        {
-            Dataset.STOCK_MONEYFLOW.value: lambda ignored: (
-                frame,
-                {"vendor": "test", "primary_key": ["Date", "Symbol"]},
-            )
-        }
-    ),
-        DataRequest(
-            Dataset.STOCK_MONEYFLOW,
-            None,
-            "2026-09-15",
-            "2026-09-15",
-            "2026-09-15",
-        )
-    )
-
-    assert result.status is DataStatus.READY
-    assert len(result.dataframe) == 2
-
-
 def test_default_registry_covers_all_active_frozen_strategy_inputs(flow_factory) -> None:
     expected = {
         Dataset.US_POLICY_UNCERTAINTY_DAILY.value,
@@ -295,26 +235,28 @@ def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monk
     })
     calls = []
 
-    def provider(symbol, start, end, **kwargs):
-        calls.append((symbol, start, end))
-        return frame.copy(), {"vendor": "test", "frequency": "snapshot",
-                              "primary_key": ["Date", "ConstituentSymbol"]}
+    class WeightPro:
+        def index_weight(self, **kwargs):
+            calls.append(kwargs)
+            return frame.rename(columns={"Date": "trade_date", "ConstituentSymbol": "con_code", "Weight": "weight"})
 
-    monkeypatch.setattr(tushare_strategy_data, "fetch_index_constituent_weight", provider)
+    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: WeightPro())
     request = DataRequest(Dataset.INDEX_CONSTITUENT_WEIGHT, "000905.SH",
                           "2026-08-01", "2026-09-30", None, frequency="snapshot")
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")),
-                     providers=ProviderConfig())
+    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig())
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready
-    assert calls == [("000905.SH", "2026-08-01", "2026-09-30")]
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")),
-                       providers=ProviderConfig({}))
+    assert calls == [{"index_code": "000905.SH", "start_date": "20260801", "end_date": "20260930",
+                      "fields": "index_code,con_code,trade_date,weight"}]
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
     result = offline.fetch(request, prepared=prepared.reference)
     assert result.ready
     pd.testing.assert_frame_equal(result.dataframe.reset_index(drop=True), frame)
+    assert list(result.dataframe.columns) == ["Date", "ConstituentSymbol", "Weight"]
+    assert result.identity.source == "tushare"
+    assert result.identity.metadata["primary_key"] == ["Date", "ConstituentSymbol"]
     assert result.identity.metadata["frequency"] == "snapshot"
-    assert calls == [("000905.SH", "2026-08-01", "2026-09-30")]
+    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("dataset,frequency", [

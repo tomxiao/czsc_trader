@@ -6,7 +6,9 @@ from pathlib import Path
 import shutil
 
 import pytest
-from factor_signal_catalog import FactorDefinition, SignalDefinition
+from factor_signal_catalog import (
+    CatalogRegistry, CatalogStatus, FactorDefinition, InformationFamily, SignalDefinition,
+)
 from research_experiment import (
     EvaluationAttemptStatus,
     EvaluationRecord,
@@ -697,11 +699,39 @@ def test_candidate_handoff_requires_membership_in_candidate_set():
         d.CandidateSet((), (CandidateKey("S900", "C0001"),), (), "无可交接候选")
 
 
-def test_catalog_component_binds_snapshot_identity(context):
-    shutil.copytree(Path(__file__).parents[2] / "catalog", context.root / "catalog")
-    source = json.loads(
-        (Path(__file__).parents[2] / "catalog/factors/definitions.json").read_text(encoding="utf-8")
-    )["items"][0]
+@pytest.fixture
+def delivery_catalog(context):
+    family = InformationFamily("PRICE", "Price", "Completed prices", CatalogStatus.READY)
+    factor = FactorDefinition(
+        factor_id="F-PRICE", name="Daily range", description="Completed daily range",
+        information_family="PRICE", tags=("daily",), inputs=("daily.high", "daily.low"),
+        provider="project", implementation="factor_signal_catalog.calculations.calculate_daily_intraday_range",
+        formula="high/low-1", availability="After close", causality="Completed bars only",
+        parameters={}, status=CatalogStatus.DISCOVERED, version=1,
+    )
+    signal = SignalDefinition(
+        signal_id="SIG-PRICE", name="Range signal", description="Daily range threshold",
+        information_family="PRICE", tags=("range",), factor_ids=(factor.factor_id,),
+        embedded_factor=False, provider="synthetic", implementation="fixture.signal",
+        rule="range > threshold", states=("active", "inactive"), parameters={"threshold": 0.1},
+        availability="After close", causality="Completed bars only", status=CatalogStatus.READY,
+        version=1,
+    )
+    for name, items in (("information_families.json", [family]),
+                        ("factors/definitions.json", [factor]),
+                        ("signals/definitions.json", [signal])):
+        path = context.root / "catalog" / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"schema_version": 1, "items": [item.to_dict() for item in items]}),
+                        encoding="utf-8")
+    catalog = CatalogRegistry(context.root / "catalog")
+    assert {row["id"] for row in catalog.list_definitions()} == {factor.factor_id, signal.signal_id}
+    return {d.CatalogDefinitionKind.FACTOR: factor.to_dict(),
+            d.CatalogDefinitionKind.SIGNAL: signal.to_dict()}
+
+
+def test_catalog_component_binds_snapshot_identity(context, delivery_catalog):
+    source = delivery_catalog[d.CatalogDefinitionKind.FACTOR]
     catalog = FactorDefinition.from_dict(source)
     evidence = attachment(context, "factor.json", source)
     ref = d.CatalogDefinitionRef(
@@ -741,14 +771,11 @@ def test_catalog_component_binds_snapshot_identity(context):
 
 @pytest.mark.parametrize("kind", [d.CatalogDefinitionKind.FACTOR, d.CatalogDefinitionKind.SIGNAL])
 @pytest.mark.parametrize("mutation", ["valid", "unknown_id", "wrong_version", "experiment_implementation"])
-def test_new_catalog_reference_requires_real_fsc_membership(context, kind, mutation):
-    shutil.copytree(Path(__file__).parents[2] / "catalog", context.root / "catalog")
+def test_new_catalog_reference_requires_real_fsc_membership(context, delivery_catalog, kind, mutation):
     group = "factors" if kind is d.CatalogDefinitionKind.FACTOR else "signals"
     cls = FactorDefinition if kind is d.CatalogDefinitionKind.FACTOR else SignalDefinition
     identity_key = "factor_id" if group == "factors" else "signal_id"
-    source = json.loads((context.root / "catalog" / group / "definitions.json").read_text(
-        encoding="utf-8",
-    ))["items"][0]
+    source = dict(delivery_catalog[kind])
     if mutation == "unknown_id":
         source[identity_key] = "UNREGISTERED-COMPONENT"
     elif mutation == "wrong_version":

@@ -9,10 +9,20 @@ from dataflows import DataRequest, DataStatus, Dataset
 from dataflows import tushare_stock
 
 
-def test_stock_daily_pro_bar_receives_explicit_api(monkeypatch) -> None:
-    client = object()
-    calls: list[dict] = []
-    monkeypatch.setattr(tushare_stock, "get_tushare_pro", lambda _env: client)
+@pytest.mark.parametrize("dataset", [Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_OHLCV],
+                         ids=["raw-execution", "hfq-research"])
+def test_stock_daily_pro_bar_receives_explicit_api(
+    flow_factory, publish_data, monkeypatch, dataset,
+) -> None:
+    calls, factor_calls = [], []
+
+    class StockPro:
+        def adj_factor(self, **kwargs):
+            factor_calls.append(kwargs)
+            return pd.DataFrame({"trade_date": ["20260928"], "adj_factor": [2.]})
+
+    client = StockPro()
+    monkeypatch.setattr(tushare_stock, "get_tushare_pro", lambda _: client)
 
     def fake_pro_bar(**kwargs):
         calls.append(kwargs)
@@ -23,32 +33,38 @@ def test_stock_daily_pro_bar_receives_explicit_api(monkeypatch) -> None:
         }])
 
     monkeypatch.setattr(tushare_stock.ts, "pro_bar", fake_pro_bar)
-
-    bars, market, symbol = tushare_stock._fetch_tushare_ohlcv(
-        "600406.SH", "2026-09-28", "2026-09-28", env_file=".env"
-    )
-
+    request = DataRequest(dataset, "600406.SH", "2026-09-28", "2026-09-28", "2026-09-28")
+    flows = flow_factory()
+    result = publish_data(flows, request)
+    assert result.ready, result.error
     assert len(calls) == 1
-    assert calls[0]["api"] is client
-    assert calls[0]["ts_code"] == "600406.SH"
-    assert calls[0]["freq"] == "D"
-    assert calls[0]["asset"] == "E"
-    assert (market, symbol) == (tushare_stock.MARKET_A_SHARE, "600406.SH")
-    assert bars.loc[0, "Close"] == 24.2
-
-
-def test_stock_minute_prefers_trade_time_over_pro_bar_derived_trade_date() -> None:
-    raw = pd.DataFrame([{
-        "ts_code": "600089.SH", "trade_time": "2025-03-03 09:35:00",
-        "trade_date": "20250303", "open": 10.0, "high": 10.2,
-        "low": 9.9, "close": 10.1, "vol": 100.0, "amount": 1000.0,
-    }])
-
-    bars = tushare_stock._standardize_a_share_tushare_ohlcv(raw, intraday=True)
-
-    assert bars["Date"].tolist() == ["2025-03-03 09:35:00"]
-    assert bars.loc[0, "Close"] == 10.1
-    assert "trade_date" in raw.columns
+    assert calls[0] == {
+        "api": client, "ts_code": "600406.SH", "start_date": "20260928",
+        "end_date": "20260928", "freq": "D", "asset": "E", "adj": None,
+    }
+    assert result.dataframe.Amount.tolist() == [240000.]
+    assert result.identity.source == "tushare"
+    assert result.identity.metadata["market"] == "a_share"
+    assert result.identity.metadata["vendor_symbol"] == "600406.SH"
+    if dataset is Dataset.STOCK_UNADJUSTED_DAILY:
+        assert result.dataframe.Volume.tolist() == [10000.]
+        assert result.dataframe.Close.tolist() == [24.2]
+        assert result.identity.metadata["adjustment"] == "none"
+        assert not factor_calls
+    else:
+        assert result.dataframe.Volume.tolist() == [5000.]
+        assert result.dataframe.Close.tolist() == [48.4]
+        assert factor_calls == [{"ts_code": "600406.SH", "start_date": "20260928", "end_date": "20260928"}]
+        assert result.dataframe.AvailableDate.tolist() == [pd.Timestamp("2026-09-28 17:00")]
+        metadata = result.identity.metadata
+        assert metadata["adjustment"] == "hfq"
+        assert metadata["adjustment_factor_source"] == "adj_factor"
+        assert len(metadata["adjustment_factor_sha256"]) == 64
+        assert metadata["adjustment_factor_publication_schedule"] == "trade day 09:15-09:20 Asia/Shanghai"
+        assert metadata["adjustment_factor_publication_timestamp_verified"] is False
+        assert metadata["adjustment_factor_revision_history_verified"] is False
+    offline = flows.fetch(request, prepared=result.prepared)
+    assert offline.ready and offline.identity == result.identity and len(calls) == 1
 
 
 @pytest.mark.parametrize("mismatch", [False, True])
@@ -75,7 +91,7 @@ def test_raw_stock_intraday_publishes_requested_window_with_daily_reconciliation
             pd.date_range("2026-09-29 13:05", "2026-09-29 15:00", freq="5min")
         )
         return pd.DataFrame({
-            "trade_time": times, "open": 4., "high": 4., "low": 4.,
+            "trade_time": times, "trade_date": "20260929", "open": 4., "high": 4., "low": 4.,
             "close": 4., "vol": 100., "amount": 400.,
         })
 
@@ -93,6 +109,9 @@ def test_raw_stock_intraday_publishes_requested_window_with_daily_reconciliation
     assert result.status is DataStatus.READY, result.error
     assert len(result.dataframe) == 4
     assert result.dataframe.Close.eq(4.).all()
+    assert pd.to_datetime(result.dataframe.Date).tolist() == pd.date_range("2026-09-29 10:00", periods=4, freq="5min").tolist()
+    assert result.dataframe.Volume.tolist() == [100.] * 4
+    assert result.dataframe.Amount.tolist() == [400.] * 4
     assert result.identity.metadata["adjustment"] == "none"
     assert result.identity.metadata["source_publication_timestamp_verified"] is False
     assert len(result.identity.metadata["reference_daily_sha256"]) == 64
