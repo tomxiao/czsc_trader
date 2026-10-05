@@ -29,6 +29,7 @@ from .context import RepositoryContext
 from .delivery_service import _resolve
 from .errors import ValidationError
 from .research_paths import repository_path
+from .research_storage import require_research_write
 from .results import CommandResult
 
 
@@ -336,6 +337,7 @@ def _publish_result(
                 raise ValueError(f"evaluation artifact hash differs: {name}")
         return destination, existing
 
+    require_research_write(context, destination)
     staging = create_temporary_directory(
         destination,
         "research-evaluation",
@@ -358,6 +360,7 @@ def _publish_result(
             "files": dict(sorted(files.items())),
         }
         _write_json(staging / "evaluation_result.json", document)
+        require_research_write(context, destination)
         destination.parent.mkdir(parents=True, exist_ok=True)
         replace_directory(staging, destination)
     except Exception:
@@ -380,6 +383,8 @@ def evaluate_research_request(
         path = repository_path(context, input_path)
         input_root = _resolve(context.root, files.input_root)
         destination = _resolve(context.root, files.output_path)
+        if not destination.exists():
+            require_research_write(context, destination)
         if not path.is_file() or not input_root.is_dir():
             raise ValueError("evaluation request or input root is unavailable")
         request, binding = _evaluation_request(context, path, input_root)

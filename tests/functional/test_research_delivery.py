@@ -94,7 +94,14 @@ def published(context, receipt):
 
 def experiment(context, *, records=(), number=1, predecessors=None):
     """Construct deterministic executor-format evidence, verified by the real REX reader."""
+    from research_experiment import load_experiment
+    from czsc_trader.application.delivery_service import _experiment_path
+
     experiment_id = f"20261001_S900_EX{number:02}"
+    source = _experiment_path(context, d.ExperimentOwner("S900", experiment_id))
+    if not source.exists():
+        owner_experiment(context, number)
+    loaded = load_experiment(source)
     root = context.root / ".tmp" / experiment_id
     root.mkdir(parents=True)
     (root / "result.json").write_text('{"measurement":0.25}')
@@ -112,8 +119,8 @@ def experiment(context, *, records=(), number=1, predecessors=None):
     receipt = ExperimentReceipt._from_execution(
         schema_version=2,
         experiment_id=experiment_id,
-        definition_sha256="a" * 64,
-        source_sha256="b" * 64,
+        definition_sha256=loaded.definition.sha256,
+        source_sha256=loaded.binding.source_sha256,
         resources_sha256="c" * 64,
         predecessor_receipts=predecessors or {},
         result_sha256=canonical_sha256(result.to_dict()),
@@ -215,6 +222,31 @@ def test_delivery_rejects_foreign_family_executor_receipt(context):
             context, Deliverable(replace(defined, revision=2, experiments=(foreign,)), content())
         )
     assert not (root / "deliveries").exists()
+
+
+@pytest.mark.parametrize("naming", ["dated", "sequence"])
+@pytest.mark.parametrize("field", ["definition_sha256", "source_sha256"])
+def test_delivery_checks_bound_receipt_identity_for_all_experiment_names(context, naming, field):
+    if naming == "sequence":
+        source, ref = new_named_experiment(context)
+        owner = d.ExperimentOwner("S900", source.name)
+    else:
+        ref, _ = experiment(context)
+        owner = definition().owner
+    root = context.root / ref.workspace_path
+    envelope = json.loads((root / "execution_envelope.json").read_text())
+    envelope["receipt"][field] = "f" * 64
+    digest = canonical_sha256(envelope["receipt"])
+    envelope["receipt_sha256"] = digest
+    (root / "execution_envelope.json").write_text(json.dumps(envelope))
+    (root / "execution_receipt.json").write_text(json.dumps({**envelope["receipt"], "receipt_sha256": digest}))
+    changed = replace(ref, receipt_sha256=digest)
+    defined = d.DeliveryDefinition(owner, d.DeliveryStage.COMPONENTS, 1, experiments=(changed,))
+    with pytest.raises(d.DeliveryValidationError, match="receipt differs from bound experiment") as error:
+        assemble_delivery(context, Deliverable(defined, content()))
+    assert error.value.issues[0].code == "EXPERIMENT_IDENTITY"
+    from czsc_trader.application.delivery_service import _delivery_path
+    assert not _delivery_path(context, defined).exists()
 
 
 def test_new_experiment_owner_rejects_definition_from_other_family(context):
@@ -407,6 +439,7 @@ def test_delivery_requires_complete_predecessor_receipt_closure(context):
 
 def test_custom_component_and_bound_test_evidence(context):
     exp, artifact = experiment(context)
+    receipt = json.loads((context.root / exp.workspace_path / "execution_envelope.json").read_text())["receipt"]
     protocol = attachment(context, "protocol.json", {"control": "constant"})
     ref = d.EvidenceRef(
         f"experiments/{exp.experiment_id}/{artifact.path}", artifact.sha256, "application/json"
@@ -421,7 +454,8 @@ def test_custom_component_and_bound_test_evidence(context):
     )
     component = d.ComponentEntry(
         "component",
-        d.ExperimentDefinitionRef(exp.experiment_id, "a" * 64, "b" * 64, "experiment.Component"),
+        d.ExperimentDefinitionRef(exp.experiment_id, receipt["definition_sha256"],
+                                  receipt["source_sha256"], "experiment.Component"),
         "环境识别",
         "未来收益",
         "5日",

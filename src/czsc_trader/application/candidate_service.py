@@ -23,6 +23,7 @@ from strategy_manager import (
 
 from .context import RepositoryContext
 from .research_paths import candidate_root, registry_root
+from .research_storage import require_research_write
 from .delivery_service import _resolve
 from ..temp_workspace import create_temporary_directory
 
@@ -47,7 +48,7 @@ class CandidateRegistrationRequest:
             raise TypeError("derivation must be CandidateDerivation")
 
 
-def _publish(root: Path, relative: str, data: bytes, temporary: Path) -> CandidateEvidence:
+def _publish(context, root: Path, relative: str, data: bytes, temporary: Path) -> CandidateEvidence:
     ref = CandidateEvidence(relative, sha256(data).hexdigest())
     target = _resolve(root, relative)
     if not target.resolve().is_relative_to(root.resolve()):
@@ -55,11 +56,11 @@ def _publish(root: Path, relative: str, data: bytes, temporary: Path) -> Candida
     if target.exists():
         ref.resolve(root)
         return ref
-    if (root / "experiment_manifest.json").exists():
-        raise ValueError("cannot add candidate objects to a sealed experiment")
+    require_research_write(context, target)
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = temporary / ref.sha256
     stage.write_bytes(data)
+    require_research_write(context, target)
     # Exclusive creation prevents replacing an already published content address.
     try:
         with target.open("xb") as output:
@@ -131,14 +132,16 @@ def register_candidate(
         raise ValueError("preflight does not bind the candidate origin")
     runtime = StrategyRuntime()
     identity = runtime.identify(candidate, dependencies=request.dependencies)
-    registry = StrategyRegistry(registry_root(context))
+    registry_path = registry_root(context)
+    require_research_write(context, registry_path)
+    registry = StrategyRegistry(registry_path)
     registry.get_family(candidate.strategy_family_id)
     temporary = create_temporary_directory(context.root, "candidate-registration")
     root = loaded.root
 
     def copy_evidence(ref):
         data = ref.resolve(context.root).read_bytes()
-        return _publish(root, f"objects/evidence/{ref.sha256}.json", data, temporary)
+        return _publish(context, root, f"objects/evidence/{ref.sha256}.json", data, temporary)
 
     payload_data = json.dumps(
         dict(candidate.payload),
@@ -149,7 +152,7 @@ def register_candidate(
         allow_nan=False,
     ).encode("utf-8")
     payload = _publish(
-        root, f"objects/payload/{sha256(payload_data).hexdigest()}.json", payload_data, temporary
+        context, root, f"objects/payload/{sha256(payload_data).hexdigest()}.json", payload_data, temporary
     )
     source_files = []
     prefix = f"objects/source/{identity.source_sha256}/strategy_runtime"
@@ -157,7 +160,7 @@ def register_candidate(
         source = (candidate.source_root / name).resolve()
         if not source.is_relative_to(candidate.source_root):
             raise ValueError("candidate source escapes source_root")
-        source_files.append(_publish(root, f"{prefix}/{name}", source.read_bytes(), temporary))
+        source_files.append(_publish(context, root, f"{prefix}/{name}", source.read_bytes(), temporary))
     saved_candidate = StrategyCandidate(
         candidate.strategy_family_id, candidate.candidate_id, candidate.payload, root / prefix
     )
@@ -192,6 +195,7 @@ def register_candidate(
         replace(origin, preflight=copy_evidence(origin.preflight)),
         derivation,
     )
+    require_research_write(context, registry_path)
     return registry.register_candidate(record, evidence_root=loaded.root)
 
 

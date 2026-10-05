@@ -521,7 +521,7 @@ def test_file_evaluation_uses_caller_locations_after_relocation(published_evalua
     assert not (owner / "experiments/S900/EXPLICIT01").exists()
 
 
-@pytest.mark.parametrize("fault", ["untyped", "missing_root", "overlap", "source_overlap", "outside", "linked"])
+@pytest.mark.parametrize("fault", ["untyped", "missing_root", "overlap", "source_overlap", "outside", "linked", "sealed", "runtime", "runtime_parent"])
 def test_file_evaluation_rejects_invalid_space_before_execution(evaluation_json, monkeypatch, fault):
     import os
     import subprocess
@@ -541,6 +541,15 @@ def test_file_evaluation_rejects_invalid_space_before_execution(evaluation_json,
         files = EvaluationFiles(input_root, input_root + "/runtime/strategy_runtime/outputs")
     elif fault == "outside":
         path = context.root.parent / "outside.json"
+    elif fault == "sealed":
+        from test_delivery_storage import seal
+        seal(path.parent)
+        files = EvaluationFiles(input_root, input_root + "/nested/new-evaluation")
+    elif fault == "runtime":
+        files = EvaluationFiles(input_root, context.strategy_root.relative_to(context.root).as_posix() + "/new-evaluation")
+    elif fault == "runtime_parent":
+        from dataclasses import replace
+        context = replace(context, strategy_root=context.root / "chosen-result/runtime-registry")
     else:
         link = context.root / "linked-input"
         if os.name == "nt":
@@ -558,3 +567,37 @@ def test_file_evaluation_rejects_invalid_space_before_execution(evaluation_json,
         evaluate_research_request(context, path, files=files)
     assert failure.value.code == "research_evaluation_failed"
     assert set(context.root.rglob("*")) == before
+
+
+@pytest.mark.parametrize("sealed_at", ["after_publication", "during_execution"])
+def test_evaluation_respects_sealing_and_preserves_readonly_repeat(published_evaluation, tmp_path, monkeypatch, sealed_at):
+    import shutil
+    from test_delivery_storage import seal, tree
+    from czsc_trader.application import RepositoryContext, ValidationError, evaluate_research_request
+    from czsc_trader.research_tools import EvaluationFiles
+
+    context, path, command, result, _ = published_evaluation
+    root = tmp_path / "publication"
+    shutil.copytree(context.root, root)
+    path = root / path.relative_to(context.root)
+    context = RepositoryContext.discover(root)
+    observed = []
+    def evaluate(request):
+        if sealed_at == "during_execution":
+            seal(path.parent)
+        observed.append(tree(context.root))
+        return result
+    monkeypatch.setattr("czsc_trader.application.research_evaluation_service.evaluate_strategy", evaluate)
+    if sealed_at == "after_publication":
+        seal(path.parent)
+        repeated = evaluate_research_request(context, path, files=_evaluation_files(context, path))
+        assert repeated == command
+    else:
+        files = EvaluationFiles(path.parent.relative_to(context.root).as_posix(),
+                                (path.parent / "artifacts/new-result").relative_to(context.root).as_posix())
+        with pytest.raises(ValidationError, match="sealed") as error:
+            evaluate_research_request(context, path, files=files)
+        assert error.value.code == "research_evaluation_failed"
+        assert not (context.root / files.output_path).exists()
+    assert len(observed) == 1
+    assert tree(context.root) == observed[0]

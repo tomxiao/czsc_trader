@@ -203,6 +203,16 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
     files = manifest.get("files")
     if not isinstance(files, dict):
         raise ValueError("experiment manifest files must be an object")
+    for name, record in files.items():
+        if (
+            not isinstance(record, dict)
+            or set(record) != {"bytes", "sha256"}
+            or type(record["bytes"]) is not int
+            or record["bytes"] < 0
+            or not isinstance(record["sha256"], str)
+            or re.fullmatch(r"[0-9a-f]{64}", record["sha256"]) is None
+        ):
+            raise ValueError(f"invalid manifest file descriptor: {name}")
     actual_names = {
         path.relative_to(experiment_dir).as_posix()
         for path in experiment_dir.rglob("*")
@@ -228,8 +238,8 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
         if not path.is_file():
             raise ValueError(f"missing declared experiment file: {relative_name}")
         actual = _file_record(path)
-        if actual["bytes"] != expected.get("bytes"):
+        if actual["bytes"] != expected["bytes"]:
             raise ValueError(f"file size differs from manifest: {relative_name}")
-        if actual["sha256"] != expected.get("sha256"):
+        if actual["sha256"] != expected["sha256"]:
             raise ValueError(f"SHA-256 differs from manifest: {relative_name}")
     return manifest

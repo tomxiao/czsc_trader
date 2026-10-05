@@ -20,6 +20,7 @@ from strategy_evaluator import (
 )
 
 from .context import RepositoryContext
+from .research_storage import require_research_write
 from ..research_tools import delivery as d
 from ..temp_workspace import create_temporary_directory
 
@@ -80,8 +81,7 @@ def _validate_owner(context, definition, *, publishing=False):
         _resolve(root, name)
     if experiment_source_sha256(root, binding.source_files) != binding.source_sha256:
         _fail("OWNER_BINDING", "owner", "experiment source differs from binding")
-    if owner.experiment_id.startswith("EX"):
-        _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
+    _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
     if (root / "experiment_manifest.json").exists():
         if publishing:
             _fail("EXPERIMENT_SEALED", "owner", "cannot publish into a sealed experiment")
@@ -145,12 +145,11 @@ def _load_experiments(definition, root: Path, *, published: bool, context):
         if result.experiment_id != ref.experiment_id:
             _fail("EXPERIMENT_IDENTITY", relative, "experiment ID differs from reference")
         receipt = envelope["receipt"]
-        if ref.experiment_id.startswith("EX"):
-            loaded = _load_scoped_experiment(context, definition.strategy_id, ref.experiment_id)
-            if (receipt["definition_sha256"], receipt["source_sha256"]) != (
-                loaded.definition.sha256, loaded.binding.source_sha256
-            ):
-                _fail("EXPERIMENT_IDENTITY", relative, "receipt differs from bound experiment")
+        loaded = _load_scoped_experiment(context, definition.strategy_id, ref.experiment_id)
+        if (receipt["definition_sha256"], receipt["source_sha256"]) != (
+            loaded.definition.sha256, loaded.binding.source_sha256
+        ):
+            _fail("EXPERIMENT_IDENTITY", relative, "receipt differs from bound experiment")
         if ref.use is d.ExperimentEvidenceUse.CURRENT_EVALUATION and receipt["schema_version"] != 2:
             _fail(
                 "EXPERIMENT_SCHEMA",
@@ -1092,6 +1091,7 @@ def assemble_delivery(
                 )
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
             return _read_delivery(context, receipt.reference, destination, set())
+        require_research_write(context, destination)
         _validate_new_catalog_references(content, context)
         owner_root = _validate_owner(context, definition, publishing=True)
         if owner_root is not None:
@@ -1167,6 +1167,7 @@ def assemble_delivery(
         _validate_owner(context, definition, publishing=True)
         if destination.exists():
             return _existing(context, reference, destination)
+        require_research_write(context, destination)
         destination.parent.mkdir(parents=True, exist_ok=True)
         try:
             staging.rename(destination)

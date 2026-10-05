@@ -16,6 +16,7 @@ from strategy_manager.validation import require_string
 from .context import RepositoryContext
 from .errors import ValidationError
 from .research_paths import registry_root, repository_path, resolve_evidence
+from .research_storage import require_research_write
 from .results import CommandResult
 
 
@@ -54,6 +55,7 @@ def create_research_batch(
     """Register an approved batch; read its supplied material without organizing it."""
     try:
         root = registry_root(context)
+        require_research_write(context, root)
         raw = _read_object(context, input_path)
         family = _family_from_request(raw, actor=actor)
         credential_id = require_string(raw["credential_id"], "credential_id")
@@ -77,6 +79,7 @@ def create_research_batch(
         }
         hashes = {"research_batch": material.sha256}
         if current is None:
+            require_research_write(context, root)
             family = registry.create_family(
                 family, actor=actor, reason=reason, credential_id=credential_id,
                 credential_content=content, credential_artifact_hashes=hashes,
@@ -85,6 +88,7 @@ def create_research_batch(
         else:
             if current.name != family.name or current.scope != family.scope:
                 raise ValueError("existing strategy family name or scope differs from request")
+            require_research_write(context, root)
             family, credential = registry.start_research_batch(
                 family.strategy_id, research_intent=family.research_intent,
                 research_state=family.research_state, actor=actor, reason=reason,
@@ -115,10 +119,12 @@ def update_research_intent(
     """Update family intent in the supplied registry without changing research materials."""
     try:
         root = registry_root(context)
+        require_research_write(context, root)
         raw = _read_object(context, input_path)
         unknown = sorted(set(raw) - {"research_intent", "research_state"})
         if unknown or not raw:
             raise ValueError(f"research intent update has invalid fields: {unknown or sorted(raw)}")
+        require_research_write(context, root)
         family = StrategyRegistry(root).update_family(
             strategy_id, research_intent=raw.get("research_intent"),
             research_state=raw.get("research_state"), actor=actor, reason=reason,

@@ -103,29 +103,63 @@ def test_selected_source_does_not_fall_back_to_valid_default_owner(context):
     assert not (context.root / location.path).exists()
 
 
-@pytest.mark.parametrize("foreign", [False, True])
-def test_bound_source_location_checks_identity_without_default_layout(context, foreign):
-    source, evidence = new_named_experiment(context, strategy_id="S901" if foreign else "S900")
+@pytest.mark.parametrize("naming", ["dated", "sequence"])
+@pytest.mark.parametrize("identity", ["matching", "family", "experiment"])
+def test_bound_source_location_checks_identity_without_default_layout(context, identity, naming):
+    from research_experiment import experiment_source_sha256
+
+    foreign = identity == "family"
+    if naming == "sequence":
+        source, _ = new_named_experiment(context, strategy_id="S901" if foreign else "S900")
+    else:
+        source = context.root / "experiments/S900/20261001_S900_EX01"
+        if foreign:
+            source_file = source / "experiment.py"
+            source_file.write_text(source_file.read_text(encoding="utf-8").replace("S900", "S901"), encoding="utf-8")
+            binding_file = source / "experiment_binding.json"
+            binding = json.loads(binding_file.read_text())
+            binding["source_sha256"] = experiment_source_sha256(source, ("experiment.py",))
+            binding_file.write_text(json.dumps(binding))
     target = context.root / "caller" / "bound-code" / source.name
     target.parent.mkdir(parents=True)
     assert target.resolve().is_relative_to(context.root.resolve())
     source.rename(target)
-    evidence = replace(evidence, workspace_path=f"{target.relative_to(context.root).as_posix()}/artifacts")
-    owner = d.ExperimentOwner("S900", source.name)
-    defined = d.DeliveryDefinition(owner, d.DeliveryStage.COMPONENTS, 1, experiments=(evidence,))
+    experiment_id = source.name if identity != "experiment" else (
+        "EX077_20261003" if naming == "sequence" else "20261001_S900_EX02"
+    )
+    owner = d.ExperimentOwner("S900", experiment_id)
+    defined = d.DeliveryDefinition(owner, d.DeliveryStage.COMPONENTS, 1)
     workspace = d.DeliveryWorkspace(
         (d.DeliveryLocation(owner, defined.stage, 1, "caller/results/component-panel"),),
         (d.ExperimentLocation(owner, target.relative_to(context.root).as_posix()),),
     )
     context = replace(context, delivery_workspace=workspace)
     item = Deliverable(defined, content())
-    if foreign:
+    if identity != "matching":
         with pytest.raises(d.DeliveryValidationError, match="family or ID differs"):
             assemble_delivery(context, item)
         assert not (context.root / workspace.deliveries[0].path).exists()
     else:
         receipt = assemble_delivery(context, item)
         assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+
+
+@pytest.mark.parametrize("space", ["sealed", "runtime"])
+def test_delivery_rejects_protected_actual_destination(context, space):
+    if space == "sealed":
+        parent = context.root / "caller/other-experiment"
+        parent.mkdir(parents=True)
+        seal(parent)
+    else:
+        parent = context.strategy_root
+    defined = definition()
+    location = d.DeliveryLocation(defined.owner, defined.stage, 1,
+                                  (parent / "nested/result").relative_to(context.root).as_posix())
+    context = replace(context, delivery_workspace=d.DeliveryWorkspace((location,), context.delivery_workspace.experiments))
+    before = tree(context.root)
+    with pytest.raises(d.DeliveryValidationError, match="sealed|runtime publication"):
+        assemble_delivery(context, Deliverable(defined, content()))
+    assert tree(context.root) == before
 
 
 @pytest.mark.parametrize("paths", [("same", "same"), ("Case", "case"), ("a", "a/b")])
@@ -160,6 +194,8 @@ def tree(root):
 
 
 def test_cross_experiment_revision_one_and_read_only_validation(context, monkeypatch):
+    from research_experiment import load_experiment
+
     first = assemble_delivery(context, Deliverable(definition(), content()))
     owner_experiment(context, 2)
     second_definition = replace(
@@ -173,9 +209,15 @@ def test_cross_experiment_revision_one_and_read_only_validation(context, monkeyp
     before = tree(context.root)
 
     def no_execution(*args, **kwargs):
-        raise AssertionError("validation must never import or execute experiment code")
+        raise AssertionError("validation must never run prechecks or execute experiments")
 
-    monkeypatch.setattr("research_experiment.load_experiment", no_execution)
+    def source_definition(root):
+        loaded = load_experiment(root)
+        monkeypatch.setattr(loaded.implementation, "execute", no_execution)
+        monkeypatch.setattr(loaded.implementation, "synthetic_precheck", no_execution)
+        return loaded
+
+    monkeypatch.setattr("research_experiment.load_experiment", source_definition)
     assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
     assert tree(context.root) == before
     assert not ((context.root / "research") / "S900/deliveries").exists()
@@ -271,7 +313,8 @@ def test_loading_retired_registration_keeps_archive_read_only(candidate_archive)
     assert tree((context.root / "research/registrations")) == before
 
 
-def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive):
+@pytest.mark.parametrize("space", ["owner", "ancestor", "runtime", "registry"])
+def test_candidate_registration_refuses_new_content_in_protected_space(candidate_archive, space):
     from czsc_trader.application import (
         CandidateRegistrationRequest,
         register_candidate,
@@ -298,11 +341,25 @@ def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive
         ),
         (),
     )
-    seal(root)
-    before = tree(root)
-    with pytest.raises(ValueError, match="sealed"):
+    if space == "owner":
+        seal(root)
+    elif space == "registry":
+        context = replace(context, research_workspace=replace(context.research_workspace,
+                          registry_path=(context.strategy_root / "research-registry").relative_to(context.root).as_posix()))
+    else:
+        parent = context.strategy_root if space == "runtime" else context.root / "caller/sealed-parent"
+        source = parent / "nested/source"
+        shutil.copytree(root, source)
+        owner = d.ExperimentOwner("S900", record.origin.experiment_id)
+        context = replace(context, delivery_workspace=replace(context.delivery_workspace,
+            experiments=tuple(replace(x, path=source.relative_to(context.root).as_posix())
+                              if x.owner == owner else x for x in context.delivery_workspace.experiments)))
+        if space == "ancestor":
+            seal(parent)
+    before = tree(context.root)
+    with pytest.raises(ValueError, match="sealed|runtime publication"):
         register_candidate(context, request)
-    assert tree(root) == before
+    assert tree(context.root) == before
 
 
 def test_registered_candidate_can_be_loaded_after_repository_relocation(candidate_archive):

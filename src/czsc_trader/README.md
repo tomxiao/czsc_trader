@@ -364,7 +364,9 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 
 `DeliveryWorkspace`覆盖本次交付及其前驱链条所需的位置；所有路径相对仓库，拒绝越界路径、
 链接、重复身份及相互重叠的交付目录。迁移目录后重新提供位置即可复验原`DeliveryReference`，
-物理路径不改变内容身份。实验源码目录名称仍遵守REX加载契约。
+物理路径不改变内容身份。实验身份取自REX源码定义，保存目录及目录名由调用方指定；
+所有支持的实验编号都核对定义中的策略、实验身份及执行回执中的定义和源码哈希。
+复验会通过REX加载绑定源码的定义，不调用实验预检或正式执行。
 候选、决定、检验和冻结空间另由下述`ResearchWorkspace`显式声明。
 
 每份交付包含`delivery.json`、`report.md`、`receipt.json`及声明证据；`attachments/`保存附件，
@@ -377,6 +379,10 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 先完成受管执行并保存回执及制品，再保存需要交接的候选实体、发布阶段交付，最后生成
 `experiment_manifest.json`封存整个实验。封存后拒绝追加交付，后续修订由新实验承接；
 已有同内容交付可只读核验后返回。`build_experiment_manifest`也拒绝覆盖不同内容的已有清单。
+调用方指定的研究写入位置同样受此约束：检查目标及其祖先目录的封存清单，禁止向封存实验
+追加评价、交付、候选、研究登记、决定、检验证据或冻结事务日志；研究写入位置不得与平台运行发布空间
+重叠。新评价在执行前检查位置，发布前再次检查；已有同内容产物可只读复核。正式冻结发布
+仍通过专用冻结API写入运行发布空间。
 `COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
 
 交付读写只支持schema 4及带`owner`的`DeliveryReference`，旧回执不能由当前API恢复或复验。

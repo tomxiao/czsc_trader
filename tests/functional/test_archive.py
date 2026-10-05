@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 import shutil
+import json
 
 from czsc_trader.experiment_archive import (
     build_experiment_manifest,
@@ -150,3 +151,23 @@ def test_archive_identity_is_checked_independently_of_directory_name(tmp_path, m
     with pytest.raises(ValueError):
         build_experiment_manifest(archive, metadata)
     assert not (archive / "experiment_manifest.json").exists()
+
+
+@pytest.mark.parametrize("descriptor", [
+    [], None, 7, {"bytes": 1}, {"bytes": True, "sha256": "a" * 64},
+    {"bytes": -1, "sha256": "a" * 64}, {"bytes": 1, "sha256": "invalid"},
+    {"bytes": 1, "sha256": "a" * 64, "extra": 1},
+])
+def test_archive_malformed_descriptor_returns_validation_error_without_writes(minimal_repo, descriptor):
+    archive = minimal_repo / "chosen-archive"
+    archive.mkdir()
+    for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
+        (archive / name).write_text("document\n", encoding="utf-8")
+    manifest = build_experiment_manifest(archive, {"experiment_id": "EX001_20261005"})
+    manifest["files"]["01_goal.md"] = descriptor
+    (archive / "experiment_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    before = {p.relative_to(minimal_repo): p.read_bytes() for p in minimal_repo.rglob("*") if p.is_file()}
+    with pytest.raises(ValidationError, match="invalid manifest file descriptor") as error:
+        validate_archives(RepositoryContext.discover(minimal_repo), (archive,))
+    assert error.value.code == "experiment_archive_invalid"
+    assert {p.relative_to(minimal_repo): p.read_bytes() for p in minimal_repo.rglob("*") if p.is_file()} == before

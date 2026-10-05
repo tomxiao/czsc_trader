@@ -43,6 +43,7 @@ from strategy_runtime.errors import StrategyRuntimeError
 from .context import RepositoryContext
 from .candidate_service import load_candidate, _registered_root, _registration
 from .research_paths import registry_root, evidence_root, resolve_evidence, journal_root
+from .research_storage import require_research_write
 from .runtime_acceptance import runtime_readiness, require_same_runtime_content
 from .delivery_service import validate_delivery, _delivery_path, _resolve, _experiment_path
 from ..research_tools import delivery as d
@@ -78,25 +79,32 @@ class _EvidenceStore:
     context: RepositoryContext
     owner: f.ResearchEvidenceOwner
 
+    def _require_write(self, target):
+        require_research_write(self.context, target)
+        if self.owner.experiment_id and (
+            _experiment_path(self.context, d.ExperimentOwner(self.owner.strategy_id, self.owner.experiment_id)) / "experiment_manifest.json"
+        ).exists():
+            raise ValueError("inspection cannot write into a sealed experiment")
+
     def put(self, data):
         digest = sha256(data).hexdigest()
         prefix = "objects/inspection" if self.owner.experiment_id else "decisions/objects"
         ref = f.ResearchEvidenceRef(self.owner, f"{prefix}/{digest}", digest)
         target = _resolve(evidence_root(self.context, self.owner), ref.path)
+        if not target.exists():
+            self._require_write(target)
         lock = RegistryWriteLock(self.context.root / ".tmp/research-locks" / self.owner.strategy_id)
         with lock.hold():
-            if self.owner.experiment_id and (
-                _experiment_path(self.context, d.ExperimentOwner(self.owner.strategy_id, self.owner.experiment_id)) / "experiment_manifest.json"
-            ).exists():
-                raise ValueError("inspection cannot write into a sealed experiment")
             if target.exists():
                 resolve_evidence(self.context, ref)
             else:
+                self._require_write(target)
                 stage = create_temporary_directory(self.context.root, "inspection-object") / "object"
                 with stage.open("xb") as stream:
                     stream.write(data)
                     stream.flush()
                     os.fsync(stream.fileno())
+                self._require_write(target)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 stage.replace(target)
         return ref
@@ -822,6 +830,7 @@ def _archive_inspection(context, execution, report):
             if destination.read_bytes() != data:
                 raise ValueError("inspection archive conflict")
         else:
+            require_research_write(context, destination)
             destination.parent.mkdir(parents=True, exist_ok=True)
             with destination.open("xb") as stream:
                 stream.write(data)
@@ -841,6 +850,8 @@ def freeze_candidate(
         if existing.request_sha256 is not None and existing.request_sha256 != request.sha256:
             raise ValueError("freeze request ID already binds different content")
         return existing
+    journal_root = _journal_root(context, request.request_id)
+    require_research_write(context, journal_root)
     report = validate_approval(context, request)
     # Revalidate the selected delivery and registered candidate before materialization.
     selection = read_decision(context, report.selection)
@@ -893,10 +904,11 @@ def freeze_candidate(
     }
     manifest["package_hash"] = canonical_sha256(manifest)
     (stage / "release_manifest.json").write_bytes(_bytes(manifest))
-    journal_root = _journal_root(context, request.request_id)
+    require_research_write(context, journal_root)
     operation_path = journal_root / request.request_id.value / "research_request.json"
     lock = RegistryWriteLock(context.root / ".tmp/freeze-locks" / request.request_id.strategy_id)
     with lock.hold():
+        require_research_write(context, journal_root)
         if operation_path.exists():
             if f.FreezeCandidateRequest.from_dict(_read(operation_path)) != request:
                 raise ValueError("freeze request ID already binds different content")

@@ -9,6 +9,7 @@ from strategy_manager.models import StrategyVersion, canonical_sha256
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_manager.freeze_store import _bytes, _read, _durable
 from .research_paths import resolve_evidence, evidence_root
+from .research_storage import require_research_write
 from .delivery_service import _resolve
 
 
@@ -42,10 +43,13 @@ def record_decision(context, decision):
         ),
     )
     path = _resolve(evidence_root(context, owner), ref.evidence.path)
+    if not path.exists():
+        require_research_write(context, path)
     with RegistryWriteLock(context.root / ".tmp/research-locks" / decision.strategy_id).hold():
         if path.exists():
             resolve_evidence(context, ref.evidence)
         else:
+            require_research_write(context, path)
             _durable(path, decision.to_dict(), temporary_root=context.root / ".tmp/research")
     return ref
 

@@ -626,6 +626,55 @@ def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_c
         record_research_decision(context, replace(repeated, reason="changed decision content"))
 
 
+@pytest.mark.parametrize("space", ["sealed", "runtime"])
+@pytest.mark.parametrize("operation", ["decision", "inspection", "freeze"])
+def test_research_evidence_and_journal_reject_protected_locations(request, operation, space):
+    from test_delivery_storage import seal, tree
+
+    if operation == "inspection":
+        context, operation_request, _ = request.getfixturevalue("inspection")
+        owner = f.ResearchEvidenceOwner(operation_request.candidate.strategy_id, operation_request.execution.definition.experiment_id)
+    else:
+        context, report, source = request.getfixturevalue("inspected_candidate")
+        owner = f.ResearchEvidenceOwner("S900")
+        if operation == "freeze":
+            operation_request = approve(context, report, source)
+        else:
+            decision = f.ResearchDecision.from_dict(json.loads(resolve_evidence(context, report.selection.evidence).read_text(encoding="utf-8")))
+            operation_request = replace(decision, decision_id="new-selection", confirmation_source=file_ref(context.root, source))
+    if space == "sealed":
+        parent = context.root / "caller/other-sealed-experiment"
+        parent.mkdir(parents=True)
+    else:
+        parent = context.strategy_root
+    chosen = (parent / "nested/records").relative_to(context.root).as_posix()
+    workspace = context.research_workspace
+    if operation == "inspection":
+        old = next(x.path for x in workspace.evidence if x.owner == owner)
+        shutil.copytree(context.root / old, context.root / chosen)
+        context = replace(context, delivery_workspace=replace(context.delivery_workspace,
+            deliveries=tuple(replace(x, path=chosen + x.path[len(old):])
+                             if (x.owner.strategy_id, getattr(x.owner, "experiment_id", None))
+                             == (owner.strategy_id, owner.experiment_id) else x
+                             for x in context.delivery_workspace.deliveries)))
+    if space == "sealed":
+        seal(parent)
+    if operation == "freeze":
+        workspace = replace(workspace, freeze_journals=tuple(
+            replace(x, path=chosen) if x.strategy_id == "S900" else x for x in workspace.freeze_journals
+        ))
+    else:
+        workspace = replace(workspace, evidence=tuple(
+            replace(x, path=chosen) if x.owner == owner else x for x in workspace.evidence
+        ))
+    context = replace(context, research_workspace=workspace)
+    before = tree(context.root)
+    api = {"decision": record_research_decision, "inspection": inspect_candidate, "freeze": freeze_candidate}[operation]
+    with pytest.raises(ValueError, match="sealed|runtime publication|separate from runtime registry"):
+        api(context, operation_request)
+    assert tree(context.root) == before
+
+
 @pytest.mark.parametrize("field", ["attempt", "evaluation", "artifact"])
 def test_inspection_rejects_reference_identity_mismatch(inspection, field):
     context, request, _ = inspection

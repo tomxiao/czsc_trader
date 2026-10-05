@@ -15,7 +15,7 @@ def fixture_delivery_workspace():
                 mandate, d.DeliveryStage.MANDATE, revision,
                 f"research/{strategy}/mandates/{revision}",
             ))
-        ids = (f"20261001_{strategy}_EX01", f"20261001_{strategy}_EX02",
+        ids = (f"20261001_{strategy}_EX01", f"20261001_{strategy}_EX02", f"20261001_{strategy}_EX03",
                f"20261001_{strategy}_EX99", "EX078_20261003")
         for experiment_id in ids:
             owner = d.ExperimentOwner(strategy, experiment_id)

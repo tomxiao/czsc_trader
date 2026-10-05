@@ -191,3 +191,31 @@ def test_batch_material_and_registry_relocate_independently(governance):
     assert repeated.result == first.result
     assert (_tree(new_root), _tree(context.root / "research")) == before
     assert not (context.root / "storage/governance").exists()
+
+
+@pytest.mark.parametrize("operation", ["create", "update"])
+@pytest.mark.parametrize("space", ["sealed", "runtime"])
+def test_governance_write_rejects_protected_registry_space(governance, operation, space):
+    context, material = governance
+    if space == "sealed":
+        from czsc_trader.experiment_archive import build_experiment_manifest
+        parent = context.root / "caller/sealed-archive"
+        parent.mkdir(parents=True)
+        for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
+            (parent / name).write_text("synthetic", encoding="utf-8")
+        build_experiment_manifest(parent, {"experiment_id": "EX001_20261005"})
+    else:
+        parent = context.strategy_root
+    context = replace(context, research_workspace=replace(context.research_workspace,
+                      registry_path=(parent / "nested/registry").relative_to(context.root).as_posix()))
+    request = _write_json(context.root / "request.json", _batch() if operation == "create" else {
+        "research_intent": {"objective": "updated"},
+    })
+    before = _tree(context.root)
+    with pytest.raises(ValidationError, match="sealed|runtime publication") as error:
+        if operation == "create":
+            _create(context, material, request)
+        else:
+            update_research_intent(context, "S910", request, actor="tester", reason="update")
+    assert error.value.code == ("research_batch_creation_failed" if operation == "create" else "research_intent_update_failed")
+    assert _tree(context.root) == before
