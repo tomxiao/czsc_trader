@@ -69,6 +69,7 @@ def _verify_frame_values(evidence: Mapping[str, Any], frame: pd.DataFrame, *, co
     adjusted = evidence.get("publication_adjustment") == "hfq"
     frequency = evidence["frequency"]
     source = frame.copy()
+    source.attrs = {}
     source["_day"] = pd.to_datetime(source.Date).dt.strftime("%Y-%m-%d")
     if frequency == "weekly":
         values = evidence.get("published_daily_values")

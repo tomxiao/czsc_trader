@@ -114,6 +114,7 @@ def inspect_ohlcv_frame(
         )
 
     frame = dataframe.loc[:, OHLCV_COLUMNS].copy()
+    frame.attrs = {}
     timestamps = pd.to_datetime(frame["Date"], errors="coerce")
     if timestamps.isna().any():
         findings.append(_finding("INVALID_TIMESTAMP", f"{frequency}: invalid timestamps"))
