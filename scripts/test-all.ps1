@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [ValidateRange(1, 8)]
+    [int]$MaxParallel = 8
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -19,13 +22,22 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
 }
 New-Item -ItemType Directory -Path $RunRoot -Force | Out-Null
 
-$LaneNames = @('TDR_FREEZE', 'TDR', 'PTE', 'PACKAGES')
+$LaneNames = @(
+    'TDR_FREEZE', 'TDR_1', 'TDR_2', 'PTE_1', 'PTE_2',
+    'TDR_RUNTIME', 'DFLS', 'PACKAGES'
+)
 $Jobs = @()
 $Results = @()
 $Total = [System.Diagnostics.Stopwatch]::StartNew()
 
 try {
     foreach ($LaneName in $LaneNames) {
+        # Start longer groups first and bound the number of active lane jobs.
+        $Running = @($Jobs | Where-Object { $_.State -in @('Running', 'NotStarted') })
+        while ($Running.Count -ge $MaxParallel) {
+            $Running | Wait-Job -Any | Out-Null
+            $Running = @($Jobs | Where-Object { $_.State -in @('Running', 'NotStarted') })
+        }
         $LogPath = Join-Path $RunRoot "$($LaneName.ToLowerInvariant()).log"
         $Jobs += Start-Job -Name "czsc-test-$LaneName-$RunId" -ArgumentList @(
             $LaneName, $RepoRoot, $Python, $Node, $LogPath, $RunId
@@ -36,7 +48,7 @@ try {
             $ErrorActionPreference = 'Stop'
             Set-Location $RepoRoot
             # Prevent NumPy/BLAS inside each pytest process from multiplying the
-            # four repository-level workers into dozens of competing threads.
+            # repository-level workers into dozens of competing threads.
             $env:OMP_NUM_THREADS = '1'
             $env:OPENBLAS_NUM_THREADS = '1'
             $env:MKL_NUM_THREADS = '1'
@@ -47,28 +59,59 @@ try {
             $env:CZSC_PYTEST_RUN_ID = "$RunId-$LaneName"
 
             $Steps = [System.Collections.Generic.List[object]]::new()
-            # These independent runtime callers fill the package lane's spare
-            # capacity without splitting the shared freeze/delivery fixtures.
+            # Keep complete files and their process-local seeds together.
             $RuntimeTests = @(
                 'tests/functional/test_candidate_runtime_execution.py',
                 'tests/functional/test_srt_backtest_bridge.py',
                 'tests/functional/test_evaluation_batch.py',
                 'tests/functional/test_input_binding_integrity.py'
             )
-            if ($LaneName -in @('TDR_FREEZE', 'TDR')) {
-                # Keep the shared research fixtures together. The other lane
-                # discovers all remaining tests, including newly added files.
-                $FreezeTests = @(
-                    'tests/functional/test_candidate_freeze.py',
-                    'tests/functional/test_assessment_delivery.py'
-                )
-                $TestSelection = if ($LaneName -eq 'TDR_FREEZE') {
-                    $FreezeTests
-                }
-                else {
-                    @('tests') + @(
-                        ($FreezeTests + $RuntimeTests) | ForEach-Object { "--ignore=$_" }
-                    )
+            $FreezeTests = @(
+                'tests/functional/test_candidate_freeze.py',
+                'tests/functional/test_assessment_delivery.py'
+            )
+            # One explicit group balances the measured expensive files; the
+            # other discovers the remainder, including future test files.
+            $TdrGroupOne = @(
+                'tests/functional/test_research_contract_upgrade.py',
+                'tests/functional/test_benchmark_contract.py',
+                'tests/functional/test_benchmark_lot_size.py',
+                'tests/functional/test_delivery_v2.py',
+                'tests/functional/test_research_delivery.py',
+                'tests/functional/test_current_contracts.py',
+                'tests/functional/test_evaluation.py',
+                'tests/functional/test_archive.py',
+                'tests/functional/test_public_backtest_api.py',
+                'tests/functional/test_temp_workspace.py'
+            )
+            $PteGroupOne = @(
+                'packages/paper_trading_engine/tests/functional/test_srt_advice_client.py',
+                'packages/paper_trading_engine/tests/functional/test_release_runtime.py',
+                'packages/paper_trading_engine/tests/functional/test_account_binding.py',
+                'packages/paper_trading_engine/tests/functional/test_account_retirement.py',
+                'packages/paper_trading_engine/tests/functional/test_watchdog_service.py',
+                'packages/paper_trading_engine/tests/functional/test_web_console.py',
+                'packages/paper_trading_engine/tests/functional/test_scheduler.py',
+                'packages/paper_trading_engine/tests/functional/test_service_host_isolation.py'
+            )
+            if ($LaneName -in @('TDR_FREEZE', 'TDR_1', 'TDR_2', 'TDR_RUNTIME', 'DFLS', 'PTE_1', 'PTE_2')) {
+                $TestSelection = switch ($LaneName) {
+                    'TDR_FREEZE' { $FreezeTests }
+                    'TDR_1' { $TdrGroupOne }
+                    'TDR_2' {
+                        @('tests') + @(
+                            ($FreezeTests + $RuntimeTests + $TdrGroupOne) |
+                                ForEach-Object { "--ignore=$_" }
+                        )
+                    }
+                    'TDR_RUNTIME' { $RuntimeTests }
+                    'DFLS' { 'packages/dataflows/tests' }
+                    'PTE_1' { $PteGroupOne }
+                    'PTE_2' {
+                        @('packages/paper_trading_engine/tests') + @(
+                            $PteGroupOne | ForEach-Object { "--ignore=$_" }
+                        )
+                    }
                 }
                 $Steps.Add([pscustomobject]@{
                     Label = $LaneName
@@ -77,28 +120,19 @@ try {
                         '-m', 'pytest', '-c', 'pyproject.toml', '-q', '--durations=5', '--release-acceptance'
                     ) + $TestSelection
                 })
-            }
-            elseif ($LaneName -eq 'PTE') {
-                $Steps.Add([pscustomobject]@{
-                    Label = 'PTE'
-                    Executable = $Python
-                    Arguments = @(
-                        '-m', 'pytest', '-c', 'pyproject.toml',
-                        'packages\paper_trading_engine\tests', '-q', '--durations=5', '--release-acceptance'
-                    )
-                })
-                $Steps.Add([pscustomobject]@{
-                    Label = 'PTE_CONSOLE'
-                    Executable = $Node
-                    Arguments = @(
-                        '--test-isolation=none', '--test', '--test-reporter=tap',
-                        'packages\paper_trading_engine\tests\functional\console_state.test.mjs'
-                    )
-                })
+                if ($LaneName -eq 'PTE_2') {
+                    $Steps.Add([pscustomobject]@{
+                        Label = 'PTE_CONSOLE'
+                        Executable = $Node
+                        Arguments = @(
+                            '--test-isolation=none', '--test', '--test-reporter=tap',
+                            'packages\paper_trading_engine\tests\functional\console_state.test.mjs'
+                        )
+                    })
+                }
             }
             elseif ($LaneName -eq 'PACKAGES') {
                 foreach ($Suite in @(
-                    [pscustomobject]@{Label = 'DFLS'; Path = 'packages\dataflows\tests'},
                     [pscustomobject]@{Label = 'FSC'; Path = 'packages\factor_signal_catalog\tests'},
                     [pscustomobject]@{Label = 'STC'; Path = 'packages\strategy_template_catalog\tests'},
                     [pscustomobject]@{Label = 'SM'; Path = 'packages\strategy_manager\tests'},
@@ -116,18 +150,14 @@ try {
                         )
                     })
                 }
-                $Steps.Add([pscustomobject]@{
-                    Label = 'TDR_RUNTIME'
-                    Executable = $Python
-                    Arguments = @(
-                        '-m', 'pytest', '-c', 'pyproject.toml', '-q',
-                        '--durations=5', '--release-acceptance'
-                    ) + $RuntimeTests
-                })
             }
             else {
                 throw "Unknown test lane: $LaneName"
             }
+
+            $Steps | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 -LiteralPath (
+                Join-Path (Split-Path -Parent $LogPath) "$($LaneName.ToLowerInvariant())-selection.json"
+            )
 
             $Failures = [System.Collections.Generic.List[string]]::new()
             $LaneTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -250,6 +280,7 @@ Write-Host (
 $Total.Stop()
 $FailedLanes = @($Results | Where-Object { $_.ExitCode -ne 0 })
 Write-Host "TEST_LOG_ROOT=$RunRoot"
+Write-Host "MAX_PARALLEL=$MaxParallel"
 Write-Host ("TOTAL_SECONDS={0:N2}" -f $Total.Elapsed.TotalSeconds)
 if ($FailedLanes.Count -gt 0 -or $RuffExit -ne 0) {
     exit 1
