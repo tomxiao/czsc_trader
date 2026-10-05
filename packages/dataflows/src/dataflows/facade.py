@@ -18,6 +18,7 @@ from .asset_store import AssetStore, StoreError
 from .contract import (
     ETF_INTRADAY_OBSERVATION_RULE,
     FXCM_AVAILABILITY_RULE,
+    FRED_GVZ_AVAILABILITY_RULE,
     DataError,
     DataIdentity,
     DataRequest,
@@ -52,6 +53,7 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.US_POLICY_UNCERTAINTY_DAILY.value: "FRED_CALENDAR_DAY",
     Dataset.GLOBAL_INDEX_DAILY.value: "US_MARKET",
     Dataset.VIX_DAILY.value: "US_MARKET",
+    Dataset.GOLD_VOLATILITY_DAILY.value: "US_MARKET",
     Dataset.CN_CPI_MONTHLY.value: "CHINA_CALENDAR_MONTH",
     Dataset.US_CPI_RELEASE.value: "US_BLS_EASTERN",
     Dataset.US_ISM_PMI_RELEASE.value: "TUSHARE_ECO_CAL_DATE",
@@ -164,6 +166,10 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
     Dataset.US_POLICY_UNCERTAINTY_DAILY.value: (
         {"Date", "AvailableDate", "PolicyUncertaintyIndex"},
         {"PolicyUncertaintyIndex"},
+    ),
+    Dataset.GOLD_VOLATILITY_DAILY.value: (
+        {"Date", "InitialReleaseDate", "AvailableDate", "Close"},
+        {"Close"},
     ),
     Dataset.USDCNH_DAILY.value: (
         {
@@ -616,6 +622,37 @@ def _validate_provider_output(
             raise DataContractError(
                 "FRED policy-uncertainty observations are causally invalid",
                 invalid_rows=int(invalid.sum()),
+            )
+    if dataset == Dataset.GOLD_VOLATILITY_DAILY.value:
+        required = {
+            "vendor": "FRED",
+            "original_source": "CBOE",
+            "series_id": "GVZCLS",
+            "vintage_mode": "INITIAL_RELEASE_ONLY",
+            "fred_output_type": 4,
+            "source_time_field": "Date",
+            "availability_time_field": "AvailableDate",
+            "source_calendar": "US_MARKET",
+            "availability_timezone": "Asia/Shanghai",
+            "available_at": FRED_GVZ_AVAILABILITY_RULE,
+            "historical_intraday_publication_verified": False,
+        }
+        if any(metadata.get(key) != value for key, value in required.items()):
+            raise DataContractError("FRED GVZCLS lineage contract is incomplete")
+        dates = pd.to_datetime(dataframe["Date"], errors="coerce")
+        released = pd.to_datetime(dataframe["InitialReleaseDate"], errors="coerce")
+        available = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
+        close = pd.to_numeric(dataframe["Close"], errors="coerce")
+        expected = pd.concat([dates, released], axis=1).max(axis=1) + pd.Timedelta(
+            days=1, hours=16
+        )
+        invalid = (
+            dates.isna() | released.isna() | available.ne(expected)
+            | ~np.isfinite(close) | close.le(0)
+        )
+        if invalid.any():
+            raise DataContractError(
+                "FRED GVZCLS values or availability are invalid", invalid_rows=int(invalid.sum())
             )
     if dataset == Dataset.SELL_SIDE_FORECAST.value:
         if (
@@ -1271,6 +1308,7 @@ class Dataflows:
 def _default_providers(env_file: Path | None) -> dict[str, Provider]:
     from .chinaamc_pcf import verify_chinaamc_pcf_components
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
+    from .fred_gold_volatility import fetch_gold_volatility_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
     from .tushare_pcf import fetch_etf_creation_redemption_basket
@@ -1554,6 +1592,9 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
             env_file=env_file,
         )
 
+    def gold_volatility(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_gold_volatility_daily(request.start, request.end, env_file=env_file)
+
     return {
         Dataset.ETF_OHLCV.value: etf_ohlcv,
         Dataset.ETF_UNADJUSTED_DAILY.value: etf_unadjusted,
@@ -1585,6 +1626,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.ETF_SHARE_SIZE.value: etf_shares,
         Dataset.GLOBAL_INDEX_DAILY.value: global_index,
         Dataset.VIX_DAILY.value: vix,
+        Dataset.GOLD_VOLATILITY_DAILY.value: gold_volatility,
         Dataset.INDEX_CONSTITUENT_WEIGHT.value: index_weights,
         Dataset.SELL_SIDE_FORECAST.value: sell_side_forecast,
         Dataset.STOCK_MONEYFLOW.value: stock_moneyflow,

@@ -18,6 +18,11 @@ FXCM_AVAILABILITY_RULE = (
     "vendor publication timestamp unverified"
 )
 
+FRED_GVZ_AVAILABILITY_RULE = (
+    "day after max(observation date, ALFRED initial release date) at 16:00 Asia/Shanghai; "
+    "conservative publication-day policy, intraday vendor timestamp unverified"
+)
+
 ETF_INTRADAY_OBSERVATION_RULE = (
     "unadjusted bar close Asia/Shanghai market-observation assumption; "
     "historical vendor publication and live-feed latency unverified"
@@ -67,6 +72,7 @@ class Dataset(StrEnum):
     ETF_SHARE_SIZE = "etf.share_size"
     GLOBAL_INDEX_DAILY = "index.global_daily"
     VIX_DAILY = "index.vix_daily"
+    GOLD_VOLATILITY_DAILY = "index.gold_volatility_daily"
     INDEX_CONSTITUENT_WEIGHT = "index.constituent_weight"
     SELL_SIDE_FORECAST = "stock.sell_side_forecast"
     STOCK_MONEYFLOW = "stock.moneyflow"
@@ -267,6 +273,7 @@ class DataRequest:
         if dataset in {
             Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY,
             Dataset.US_NOMINAL_YIELD_DAILY, Dataset.US_POLICY_UNCERTAINTY_DAILY,
+            Dataset.GOLD_VOLATILITY_DAILY,
             Dataset.USDCNH_DAILY, Dataset.CN_CPI_MONTHLY, Dataset.CN_PPI_MONTHLY,
             Dataset.CN_MONEY_MONTHLY, Dataset.US_CPI_RELEASE,
             Dataset.US_ISM_PMI_RELEASE, Dataset.US_FEDERAL_BUDGET_RELEASE,

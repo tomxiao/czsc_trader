@@ -332,6 +332,7 @@ def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
 @pytest.mark.parametrize("dataset", [
     Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY, Dataset.US_NOMINAL_YIELD_DAILY,
     Dataset.US_POLICY_UNCERTAINTY_DAILY, Dataset.USDCNH_DAILY, Dataset.CN_CPI_MONTHLY,
+    Dataset.GOLD_VOLATILITY_DAILY,
     Dataset.CN_PPI_MONTHLY, Dataset.CN_MONEY_MONTHLY, Dataset.US_CPI_RELEASE,
     Dataset.US_ISM_PMI_RELEASE, Dataset.US_FEDERAL_BUDGET_RELEASE,
 ])
