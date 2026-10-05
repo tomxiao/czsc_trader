@@ -1,0 +1,116 @@
+{
+  "status": "PASS",
+  "command": "research.intent.update",
+  "result": {
+    "family": {
+      "schema_version": 2,
+      "strategy_id": "S012",
+      "name": "华夏黄金ETF研究",
+      "scope": [
+        "518850.SH"
+      ],
+      "research_intent": {
+        "confirmation_sources": [
+          "research/S012/materials/user_confirmation_20261004_01.json",
+          "research/S012/materials/user_confirmation_20261004_02.json",
+          "research/S012/materials/user_confirmation_20261004_03.json",
+          "research/S012/materials/stage2_authorization_20261004.json",
+          "research/S012/materials/opportunity_authorization_20261004.json",
+          "research/S012/materials/intraday_authorization_20261004.json",
+          "research/S012/materials/intraday_scope_confirmation_20261004.json",
+          "research/S012/materials/independent_data_authorization_20261004.json",
+          "research/S012/materials/pause_authorization_20261004.json",
+          "research/S012/materials/resume_authorization_20261005.json",
+          "research/S012/materials/dev_performance_authorization_20261005.json",
+          "research/S012/materials/autonomous_stage2_authorization_20261005.json",
+          "research/S012/materials/confirmation_stage2_authorization_20261005.json"
+        ],
+        "confirmed_capital_and_benchmark": {
+          "benchmark": {
+            "lot_size": 100,
+            "type": "NextOpenBuyHold"
+          },
+          "buy_fee_rate": 0.001,
+          "cash_remainder": "保留",
+          "initial_capital_cny": 100000,
+          "strategy_lot_size": 100,
+          "terminal_valuation": "持仓按市值评价"
+        },
+        "confirmed_data_and_resources": "既有Tushare与依赖；用户新增授权独立分钟/逐笔来源，付费另确认。本轮免费源无可用历史分钟、富途缺ETF行情权限；暂未切换正式数据源。",
+        "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+        "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+        "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+        "confirmed_targets": {
+          "drawdown_magnitude": "< BuyHold",
+          "full_sample_frequency": ">= 5 closed cycles per 60 trading days",
+          "net_annual_return": ">= BuyHold * 1.5"
+        },
+        "delivery": {
+          "content_sha256": "76073767078a8ff1a935322cd796ae39f8e83a53996432dcbd0bb2f39ef22632",
+          "owner": {
+            "experiment_id": "EX017_20261005",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "COMPONENTS",
+          "type": "DeliveryReference"
+        },
+        "experiments": [
+          "EX001_20261004",
+          "EX002_20261004",
+          "EX003_20261004",
+          "EX004_20261004",
+          "EX005_20261004",
+          "EX006_20261004",
+          "EX007_20261004",
+          "EX008_20261004",
+          "EX009_20261004",
+          "EX010_20261004",
+          "EX011_20261004",
+          "EX012_20261004",
+          "EX013_20261005",
+          "EX014_20261005",
+          "EX015_20261005",
+          "EX016_20261005",
+          "EX017_20261005"
+        ],
+        "next_stage": "继续阶段二确认与风险职责条件研究；形成后继面板，阶段三等待批准。",
+        "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+        "observed_daily_coverage": {
+          "end": "2026-09-30",
+          "sessions": 1535,
+          "start": "2020-06-05"
+        },
+        "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
+        "pending": [
+          "用户审阅汇总组件并决定是否批准阶段三。",
+          "完整账户三个经济目标尚未验证；限价触价不能视为实际闭合交易。",
+          "全部研究是已见开发池，新增数据源和平台修改另行授权。"
+        ],
+        "prior_component_delivery": {
+          "content_sha256": "fdf27e7c93e9f73b0ed6ae9b3b6d77f6e42451b1d0d0bdc18b6140c6bcdff532",
+          "owner": {
+            "experiment_id": "EX010_20261004",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "COMPONENTS",
+          "type": "DeliveryReference"
+        },
+        "research_summary": "EX015—EX017完成1752次路径比较（含重复与敏感性）、64信号定义含对照，完整汇总32组件及全部台账。新增正常定价正动量候选298事件，5日净0.4956%、匹配0.1396%、限价2.658次/60日；O01并集3.088次/60日。费用/延迟反证明显，机会仍弱；三风险状态与O01历史证据延续。FULL及3档案PASS，阶段三未进入。",
+        "resume_authorization": "research/S012/materials/resume_authorization_20261005.json",
+        "stage": "COMPONENTS",
+        "status": "IN_PROGRESS",
+        "symbol": "518850.SH"
+      },
+      "research_state": "RESEARCHING",
+      "created_at": "2026-10-04T03:56:59+08:00",
+      "created_by": "RSCH",
+      "updated_at": "2026-10-05T23:09:51+08:00"
+    }
+  },
+  "artifacts": {},
+  "warnings": []
+}

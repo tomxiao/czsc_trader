@@ -1,0 +1,156 @@
+{
+  "strategy_id": "S012",
+  "symbol": "518850.SH",
+  "window": [
+    "2020-06-05",
+    "2026-09-30"
+  ],
+  "sessions": 1535,
+  "scope": "全部已见开发池，阶段二组件；未执行阶段三账户、候选或生产。",
+  "current_experiments": {
+    "EX015_20261005": 1152,
+    "EX016_20261005": 336,
+    "EX017_20261005": 264
+  },
+  "current_comparisons_total": 1752,
+  "unique_signal_definitions_including_controls": 64,
+  "signal_names": [
+    "actual_vwap_high",
+    "actual_vwap_low",
+    "actual_vwap_mid",
+    "afternoon_continuation",
+    "afternoon_high",
+    "afternoon_low",
+    "afternoon_repair",
+    "daily_momentum_control",
+    "daily_reversal_control",
+    "dry_pullback",
+    "efficiency_high",
+    "efficiency_low",
+    "efficient_advance",
+    "flow_divergence",
+    "fresh_return__absolute_sum_of_changes_high",
+    "fresh_return__absolute_sum_of_changes_low",
+    "fresh_return__autocorrelation__lag_1_high",
+    "fresh_return__autocorrelation__lag_1_low",
+    "fresh_return__kurtosis_high",
+    "fresh_return__kurtosis_low",
+    "fresh_return__linear_trend__attr_\"slope\"_high",
+    "fresh_return__linear_trend__attr_\"slope\"_low",
+    "last_hour_high",
+    "last_hour_low",
+    "late_volume_high",
+    "late_volume_low",
+    "mid_late_thin",
+    "mid_momentum_positive",
+    "mid_negative",
+    "mid_nonnegative",
+    "morning_high",
+    "morning_low",
+    "o01",
+    "o01_mid",
+    "peer_gap_high",
+    "peer_gap_low",
+    "peer_lag_absorbed",
+    "pre_long_closure",
+    "pre_weekend",
+    "recovery_high",
+    "recovery_low",
+    "sell_pressure_high",
+    "sell_pressure_low",
+    "selling_absorbed",
+    "shock_high",
+    "shock_low",
+    "shock_time_high",
+    "shock_time_low",
+    "thin_impact_high",
+    "thin_impact_low",
+    "thin_shock_recovered",
+    "unconditional",
+    "unrecovered_late_shock",
+    "volume_concentration_high",
+    "volume_concentration_low",
+    "vwap_below_cost",
+    "vwap_close_proxy_gap_high",
+    "vwap_close_proxy_gap_low",
+    "vwap_low_down_day",
+    "vwap_low_late_heavy",
+    "vwap_low_late_thin",
+    "vwap_low_recovered",
+    "vwap_near_zero",
+    "vwap_negative"
+  ],
+  "current_source_rows": {
+    "daily": 1535,
+    "5m": 73680,
+    "reference_daily": 1535
+  },
+  "resources_used": [
+    "DFLS受管历史输入及经SHA绑定的S012前驱",
+    "FSC公开纯计算实际VWAP偏离",
+    "tsfresh日内收益4特征、多核提取",
+    "expr_codegen pandas批量3表达式及逐值核验",
+    "NumPy/pandas/scipy价量控制与统计",
+    "既有汇率、SGE、境外黄金、SHFE、利率、份额等S012历史证据",
+    "公开原始论文机制动机",
+    "半CPU8并发/native1"
+  ],
+  "coverage_families": [
+    {
+      "family": "日线价量/风险/宏观/跨市场/份额",
+      "source": [
+        "EX004_20261004",
+        "EX005_20261004"
+      ],
+      "history": "63特征504路径，96复核及51交互；保留原三状态职责。"
+    },
+    {
+      "family": "汇率、境外黄金和执行时间",
+      "source": [
+        "EX006_20261004",
+        "EX007_20261004",
+        "EX008_20261004",
+        "EX010_20261004"
+      ],
+      "history": "时间修正后168FX/96黄金路径；O01条件机会、其他弱或反证。"
+    },
+    {
+      "family": "全历史数据可用与同类尾盘落后",
+      "source": [
+        "EX013_20261005",
+        "EX014_20261005"
+      ],
+      "history": "数据门通过且52/26异常保留；相对落后主路径失败。"
+    },
+    {
+      "family": "日内路径顺序、成交权重、低量冲击、形态与休市",
+      "source": [
+        "EX015_20261005"
+      ],
+      "history": "48信号，1152比较；多数成本后无增量，弱候选/反证完整。"
+    },
+    {
+      "family": "实际VWAP偏离、选后稳定性与互补",
+      "source": [
+        "EX016_20261005"
+      ],
+      "history": "8新增方向、6复核共336比较；年度前缀选型不稳定。"
+    },
+    {
+      "family": "正常定价状态及趋势、O01过滤竞争解释",
+      "source": [
+        "EX017_20261005"
+      ],
+      "history": "7新增方向、4对照264比较；条件性机会较有用、O01过滤反证。"
+    }
+  ],
+  "counting_limit": "比较次数含费用、期限、敏感性和重复对照，不等于独立机制数；64定义含无条件等对照，不能计作64有效组件。",
+  "source_quality_limit": "日线100%及5m96.6124%为既有DFLS自洽口径；来源真实逐日发布、每根K线独立真值和真实成交未证明。",
+  "closure_judgment": "已覆盖当前资源中有明确动机的价格、跨市场、日内路径与成交结构竞争解释，后继补齐真实VWAP及正常状态。继续扩大无机制阈值搜索的信息增量有限；交付可用于后续账户比较，收益可靠性与密度仍有限。",
+  "remaining_questions": [
+    "O01与正常定价上涨在完整账户中是否相对BuyHold改善净年化及回撤。",
+    "限价未成交和退出方式如何影响闭合次数；当前事件容量不能判定完整策略目标。",
+    "源逐日可得、盘口/iNAV及独立分钟真值需要可追溯新增资源或用户另行授权。"
+  ],
+  "next_stage": "建议用户审阅后批准阶段三最小账户原型比较；三个经济目标保持，不降低费用或频率硬要求。"
+}

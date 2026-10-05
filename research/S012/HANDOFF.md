@@ -1,5 +1,25 @@
 # S012｜518850.SH 阶段二交接
 
+## 当前状态：职责补齐后继交付完成，等待用户批准阶段三（2026-10-05）
+
+用户授权“基本认同。你来主导继续完成阶段二，达成目标”。在`codex/s012-research-resume`完成EX018/EX019，发布EX019 COMPONENTS修订1。登记保持RESEARCHING，阶段二COMPLETE；阶段三未进入。
+
+- [阶段二人工报告](../../experiments/S012/EX019_20261005/04_conclusion.md)、[正式组件面板](../../experiments/S012/EX019_20261005/deliveries/COMPONENTS/1/report.md)、[职责覆盖](../../experiments/S012/EX019_20261005/role_coverage.json)。
+- 面板39条研究记录、204事实；按独立定义及支持职责去重6个：2条件机会、3风险/状态、1有边界确认。R01重复汇总风险，确认每父机会测试不另计组件。
+- 新确认Q07为目标Close>Open，仅O01主5日有条件支持。79原事件保留30，净均值1.6977%，条件提升0.9192pp；原父固定时间表贡献+0.2308pp、限价贡献+0.1619pp。重新去重17潜在触价，0.6645/60日，触价净均值0.9213%。q=.24、贡献区间跨0、2024/年度及延迟限价反证、容量损失保留。
+- N09无推荐强制确认门。同类ETF方向Q05仍为候选，自身符号不一致子组不足；不加算第二个独立确认。风险组件保持原定义；机会内短周期原价上下文支持波动尺度，动量/峰度不能机械成为共同过滤。
+- EX018/19共480确认诊断（含重复和敏感性）、12风险上下文，7新增门及20主条件检验，检验数量不等于独立组件。
+- [独立复算EX018](materials/confirmation_independent_verification_20261005.json)和[EX019](materials/confirmation_competition_verification_20261005.json)均PASS：90,684及75,168个数值字段，含全部路径、年度、推断、原始输入门和哈希链。
+- [交付FULL](materials/confirmation_components_validation_20261005.json)、[两档案核验](materials/confirmation_archives_validation_20261005.json)均PASS。技术PASS与角色支持、用户经济目标分别解释。
+- [本轮授权](materials/confirmation_stage2_authorization_20261005.json)。完整账户三个经济目标尚未联合验证；阶段三、来源依赖、DEV、合并和推送各自另行授权。
+
+精确交付：owner=`ExperimentOwner(S012, EX019_20261005)`，stage=`COMPONENTS`，revision=`1`，content_sha256=`d5ed294ec2f3e585c5cd0a56f2dd6b5c08b4531c6e18689d2d59c793c9a65c57`。
+
+阶段二本轮目标已达成：形成明确用途、适用边界、反证与完整台账的后继面板。建议用户审阅并批准阶段三，最小完整账户对照O01有无Q07、N09基础机会和三风险组件的仓位/退出职责，再检验原收益、回撤、频率目标。现有事件和日线触价不是账户达标证据。本轮仅本地提交；完整制品与17实验引用闭包本地保存，跨机器复验须同步被Git忽略的真实制品。
+
+## 上一轮EX017交付与恢复历史
+
+
 ## 当前状态：阶段二汇总交付完成，等待用户决定下一阶段（2026-10-05）
 
 用户授权“以阶段二交付产物为目标，充分利用已有资源，重点挖掘收益机会，请你自主进行研究”。已在`codex/s012-research-resume`完成EX015—EX017，并发布EX017的COMPONENTS修订1。登记保持`RESEARCHING`，意图`COMPONENTS/COMPLETE`；阶段三未进入。

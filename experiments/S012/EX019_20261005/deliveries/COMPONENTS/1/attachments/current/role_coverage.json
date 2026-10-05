@@ -1,0 +1,36 @@
+{
+  "stage": "COMPONENTS",
+  "status": "COMPLETE",
+  "ledger_entries": 39,
+  "distinct_supported_role_components": 6,
+  "opportunity_count": 2,
+  "risk_count": 3,
+  "confirmation_count": 1,
+  "active_components": {
+    "opportunity": [
+      "O01_FX_DIP",
+      "N09_NORMAL_PRICING_MOMENTUM"
+    ],
+    "risk": [
+      "C01_VOL20",
+      "C02_MOM20",
+      "C03_KURT60"
+    ],
+    "confirmation": [
+      "Q07_OWN_INTRADAY_SUPPORT"
+    ]
+  },
+  "confirmation_scope": "Q07仅O01有条件支持；N09无推荐强制门。Q05同类独立性不足。",
+  "deduplication": "R01_AUXILIARY重复C01/C02/C03；每父机会测试不另计组件。",
+  "current_confirmation_paths": 480,
+  "risk_context_paths": 12,
+  "new_gate_definitions": 7,
+  "economic_targets_jointly_verified": false,
+  "stage_three_authorized": false,
+  "closure_reason": "角色证据、条件增量、过滤得失与自身竞争解释已完成，未见应继续无机制扩阈值的依据。",
+  "reopen_conditions": [
+    "新增可得时点或成交真值证据改变判断",
+    "账户归因提出明确未解释损失机制",
+    "用户批准新资源或机制路线"
+  ]
+}
