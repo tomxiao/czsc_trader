@@ -3,6 +3,7 @@ import json
 import shutil
 import sqlite3
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -25,7 +26,7 @@ from paper_trading_engine.store import (
 )
 from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
 from paper_trading_engine.release_cli import deploy_previous_release, deploy_release
-from paper_trading_engine.watchdog import Watchdog, rotate_log
+from paper_trading_engine.watchdog import Watchdog, health_payload_is_healthy, rotate_log
 from paper_trading_engine.windows_service import (
     _validate_service_host,
     build_bootstrap_source,
@@ -45,6 +46,75 @@ class Process:
     def terminate(self): self.terminated, self.code = True, 0
     def wait(self, timeout=None): return self.code or 0
     def kill(self): self.code = -9
+
+
+@pytest.mark.parametrize("payload,expected", [
+    ({"runtime": "RUNNING", "watchdog_healthy": True}, True),
+    ({"runtime": "RUNNING", "watchdog_healthy": False}, False),
+    ({"runtime": "RUNNING"}, False),
+    ({"runtime": "STOPPED", "watchdog_healthy": True}, False),
+    ({"runtime": "RUNNING", "watchdog_healthy": "true"}, False),
+    ([], False),
+])
+def test_runtime_health_requires_explicit_healthy_scheduler(payload, expected):
+    assert health_payload_is_healthy(payload) is expected
+
+
+@pytest.mark.parametrize("becomes_healthy", [False, True])
+def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch, becomes_healthy):
+    from paper_trading_engine import cli
+
+    database = tmp_path / "restart.db"
+    store = new_store(database)
+    store.set_setting("control_token", "test-token")
+    store.close()
+    responses = deque([
+        (200, {"instance_id": "old"}),
+        (202, {"instance_id": "old"}),
+        (200, {"instance_id": "new", "runtime": "RUNNING", "watchdog_healthy": False}),
+    ])
+    if becomes_healthy:
+        responses.append((200, {
+            "instance_id": "new", "runtime": "RUNNING", "watchdog_healthy": True,
+        }))
+    calls = []
+
+    def read(*args, **kwargs):
+        calls.append(args[0])
+        return responses.popleft() if responses else (200, {
+            "instance_id": "new", "runtime": "RUNNING", "watchdog_healthy": False,
+        })
+
+    clock = iter(range(100))
+    monkeypatch.setattr(cli, "_read_json", read)
+    monkeypatch.setattr(cli.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(cli.time, "sleep", lambda _: None)
+    args = SimpleNamespace(host="127.0.0.1", port=8080, database=database, wait=5)
+    if becomes_healthy:
+        assert cli._restart_running_pte(args) == {
+            "status": "READY", "old_instance_id": "old", "new_instance_id": "new",
+        }
+        assert len(calls) == 4
+    else:
+        with pytest.raises(RuntimeError, match="did not become healthy"):
+            cli._restart_running_pte(args)
+
+
+@pytest.mark.parametrize("healthy", [False, True])
+def test_deployment_health_checks_scheduler_before_accepting_release(monkeypatch, healthy):
+    from contextlib import nullcontext
+    from paper_trading_engine import release_cli
+
+    response = SimpleNamespace(status=200, read=lambda: json.dumps({
+        "runtime": "RUNNING", "watchdog_healthy": healthy,
+        "release": {"release_id": "v0.6.6"},
+    }).encode())
+    monkeypatch.setattr(release_cli, "urlopen", lambda *_a, **_k: nullcontext(response))
+    if healthy:
+        assert release_cli._running_release("127.0.0.1", 8080) == "v0.6.6"
+    else:
+        with pytest.raises(RuntimeError, match="health check failed"):
+            release_cli._running_release("127.0.0.1", 8080)
 
 
 def create_release(strategy_root, runtime_root, release_id, marker):

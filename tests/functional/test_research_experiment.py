@@ -173,6 +173,138 @@ def _preflight_fixture(tmp_path, *, extra="", real_data=False):
     return load_experiment(root)
 
 
+def _execution_boundary_fixture(tmp_path, *, prelude="", artifact=False, mutable_definition=False):
+    root = _write_v3_experiment(tmp_path / "S009" / "20260925_S009_EX99")
+    source = root / "experiment.py"
+    text = source.read_text(encoding="utf-8").replace("        del context", prelude)
+    if mutable_definition:
+        text = text.replace("random_seed=99,", "random_seed=getattr(self, 'seed', 99),")
+    if artifact:
+        text = text.replace("diagnostics={},", "diagnostics={}, artifacts=(artifact,),")
+    source.write_text(text, encoding="utf-8")
+    binding_path = root / "experiment_binding.json"
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding["source_sha256"] = experiment_source_sha256(root, ("experiment.py",))
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    loaded = load_experiment(root)
+    context = create_experiment_context(
+        loaded.definition, repository_root=tmp_path, dataflows=_flows(tmp_path),
+        workspace=_workspace(tmp_path, "execution-boundary"), resources=ExperimentResources(1, 99),
+    )
+    return loaded, context
+
+
+@pytest.mark.parametrize(
+    ("prelude", "artifact", "mutable_definition", "error_type", "message"),
+    [
+        (
+            "        from pathlib import Path\n"
+            "        source = Path(__file__)\n"
+            "        source.write_text(source.read_text() + '\\n# changed during execution\\n')",
+            False, False, ValueError, "source SHA-256 differs",
+        ),
+        ("        self.seed = 100", False, True, ValueError, "definition changed"),
+        ("        return None", False, False, TypeError, "invalid result"),
+        (
+            "        path = context.workspace.path('result.txt')\n"
+            "        path.write_text('original')\n"
+            "        artifact = context.workspace.register_artifact('result.txt', 'result')\n"
+            "        path.write_text('changed')",
+            True, False, ValueError, "artifact hash differs",
+        ),
+    ],
+)
+def test_executor_records_post_execution_identity_and_result_failures(
+    tmp_path, prelude, artifact, mutable_definition, error_type, message,
+):
+    loaded, context = _execution_boundary_fixture(
+        tmp_path, prelude=prelude, artifact=artifact, mutable_definition=mutable_definition,
+    )
+    with pytest.raises(error_type, match=message):
+        execute_experiment(loaded, context)
+    failure_path = context.workspace.path("execution_failure.json")
+    original = failure_path.read_bytes()
+    failure = json.loads(original)
+    assert failure["error_code"] == error_type.__name__
+    assert failure["source_sha256"] == loaded.binding.source_sha256
+    assert failure["definition_sha256"] == loaded.definition.sha256
+    assert not context.workspace.path("execution_receipt.json").exists()
+    assert not context.workspace.path("execution_envelope.json").exists()
+    with pytest.raises(FileExistsError, match="evidence already exists"):
+        execute_experiment(loaded, context)
+    assert failure_path.read_bytes() == original
+
+
+def test_executor_failure_is_terminal_for_execution_and_evaluation(tmp_path):
+    loaded, context = _execution_boundary_fixture(
+        tmp_path,
+        prelude="        context.workspace.path('result.txt').write_text('retained')\n"
+        "        raise RuntimeError('synthetic computation failure')",
+    )
+    with pytest.raises(RuntimeError, match="synthetic computation failure"):
+        execute_experiment(loaded, context)
+    original = context.workspace.path("execution_failure.json").read_bytes()
+    with pytest.raises(FileExistsError, match="evidence already exists"):
+        execute_experiment(loaded, context)
+    with pytest.raises(RuntimeError, match="execution is already complete"):
+        context.evaluation.evaluate(object())
+    with pytest.raises(RuntimeError, match="execution is already complete"):
+        context.evaluation.evaluate_many(())
+    assert context.workspace.path("execution_failure.json").read_bytes() == original
+    assert context.workspace.path("result.txt").read_text() == "retained"
+
+
+def test_executor_preserves_partial_publication_and_records_failure(tmp_path, monkeypatch):
+    from czsc_trader.research_tools import experiment as execution
+
+    loaded, context = _execution_boundary_fixture(tmp_path)
+    publish = execution._atomic_execution_document
+
+    def interrupt_receipt(workspace, name, payload):
+        if name == "execution_receipt.json":
+            raise OSError("synthetic receipt publication failure")
+        publish(workspace, name, payload)
+
+    monkeypatch.setattr(execution, "_atomic_execution_document", interrupt_receipt)
+    with pytest.raises(OSError, match="synthetic receipt publication failure"):
+        execute_experiment(loaded, context)
+    envelope_path = context.workspace.path("execution_envelope.json")
+    envelope = envelope_path.read_bytes()
+    assert context.workspace.path("execution_failure.json").is_file()
+    assert not context.workspace.path("execution_receipt.json").exists()
+    with pytest.raises(ValueError, match="failed experiment execution"):
+        load_experiment_input(
+            context.workspace.root,
+            expected_receipt_sha256=json.loads(envelope)["receipt_sha256"],
+        )
+    with pytest.raises(FileExistsError, match="evidence already exists"):
+        execute_experiment(loaded, context)
+    assert envelope_path.read_bytes() == envelope
+
+
+def test_completed_evidence_rejects_conflicting_failure_terminal(tmp_path):
+    loaded, context = _execution_boundary_fixture(tmp_path)
+    result = execute_experiment(loaded, context)
+    assert load_experiment_input(
+        context.workspace.root, expected_receipt_sha256=result.receipt.sha256,
+    ).experiment_id == loaded.definition.experiment_id
+    context.workspace.path("execution_failure.json").write_text('{"error_code":"old_failure"}')
+    with pytest.raises(ValueError, match="failed experiment execution"):
+        load_experiment_input(context.workspace.root, expected_receipt_sha256=result.receipt.sha256)
+
+
+def test_execution_document_publication_never_replaces_existing_evidence(tmp_path):
+    from czsc_trader.research_tools.experiment import _atomic_execution_document
+
+    workspace = _workspace(tmp_path, "terminal-publication")
+    _atomic_execution_document(workspace, "execution_failure.json", {"error": "first"})
+    original = workspace.path("execution_failure.json").read_bytes()
+    with pytest.raises(FileExistsError):
+        _atomic_execution_document(workspace, "execution_failure.json", {"error": "second"})
+    assert workspace.path("execution_failure.json").read_bytes() == original
+    assert list(workspace.path(".tmp/execution").glob("*.json")) == []
+
+
 @pytest.mark.parametrize("status", [ExperimentPreflightStatus.PASS, ExperimentPreflightStatus.FAIL])
 def test_preflight_named_checks_and_nested_result_serialization(tmp_path, monkeypatch, status):
     loaded = _preflight_fixture(tmp_path)

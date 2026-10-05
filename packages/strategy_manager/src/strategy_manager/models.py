@@ -483,7 +483,7 @@ class PerformanceEvidence:
     initial_capital: float
     fee_rate: float
     maximum_drawdown: float
-    calmar_ratio: float
+    calmar_ratio: float | None
     win_loss_ratio: float | None
     win_loss_ratio_status: str
     total_return: float
@@ -547,7 +547,9 @@ class PerformanceEvidence:
             initial_capital=require_number(value["initial_capital"], "initial_capital", minimum=0),
             fee_rate=require_number(value["fee_rate"], "fee_rate", minimum=0),
             maximum_drawdown=require_number(value["maximum_drawdown"], "maximum_drawdown"),
-            calmar_ratio=require_number(value["calmar_ratio"], "calmar_ratio"),
+            calmar_ratio=None
+            if value["calmar_ratio"] is None
+            else require_number(value["calmar_ratio"], "calmar_ratio"),
             win_loss_ratio=None
             if win_loss_ratio is None
             else require_number(win_loss_ratio, "win_loss_ratio", minimum=0),

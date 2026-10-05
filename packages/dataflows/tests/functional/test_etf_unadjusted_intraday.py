@@ -28,6 +28,11 @@ class FakePro:
     def fund_adj(self, **kwargs):
         pytest.fail("Raw minute prices must not fetch adjustment factors")
 
+    def trade_cal(self, *, start_date, end_date, **kwargs):
+        dates = pd.date_range(start_date, end_date)
+        return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
+                             "is_open": (dates.dayofweek < 5).astype(int)})
+
 
 def request(frequency="5m"):
     return DataRequest(Dataset.ETF_UNADJUSTED_INTRADAY, "518850.SH", "2026-09-29",
@@ -69,6 +74,31 @@ def test_raw_intraday_preserves_cross_frequency_failure(flow_factory, publish_da
     assert result.status is DataStatus.FAILED
     assert result.dataframe.empty
     assert result.error.code == "DATA_REPAIR_FAILED"
+
+
+def test_raw_intraday_rejects_a_day_missing_from_both_sources(flow_factory, publish_data, monkeypatch):
+    class GappedPro(FakePro):
+        def etf_mins(self, **kwargs):
+            original = super().etf_mins(**kwargs)
+            return pd.concat([
+                original.assign(trade_time=original.trade_time - pd.Timedelta(days=days))
+                for days in (4, 0)
+            ], ignore_index=True)
+
+        def fund_daily(self, **kwargs):
+            original = super().fund_daily(**kwargs)
+            return pd.concat([
+                original.assign(trade_date=day) for day in ("20260925", "20260929")
+            ], ignore_index=True)
+
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: GappedPro())
+    result = publish_data(flow_factory(), DataRequest(
+        Dataset.ETF_UNADJUSTED_INTRADAY, "518850.SH", "2026-09-25", "2026-09-29",
+        "2026-09-29", frequency="5m",
+    ))
+    assert result.status is DataStatus.INCOMPLETE
+    assert result.error.context["missing_dates"] == ["2026-09-28"]
+    assert result.dataframe.empty
 
 
 @pytest.mark.parametrize("frequency", ["daily", "weekly", "60m"])

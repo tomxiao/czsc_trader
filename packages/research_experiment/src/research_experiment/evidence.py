@@ -201,6 +201,8 @@ def load_experiment_input(
     """Load predecessor evidence matching an independently retained receipt identity."""
 
     root = Path(workspace_root).resolve()
+    if (root / "execution_failure.json").exists():
+        raise ValueError("failed experiment execution cannot supply completed evidence")
     envelope = _exact_mapping(
         _read_document(root / _ENVELOPE_FILE, "experiment execution envelope"),
         {"schema_version", "receipt", "receipt_sha256", "result"},

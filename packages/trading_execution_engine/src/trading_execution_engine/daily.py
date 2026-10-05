@@ -35,6 +35,12 @@ def execute_target_positions(
     frame = frame.sort_index()
     if not {"open", "close"} <= set(frame.columns):
         raise ValueError("prices require open and close columns")
+    try:
+        price_values = frame[["open", "close"]].to_numpy(dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("prices must be positive and finite") from exc
+    if not np.isfinite(price_values).all() or (price_values <= 0).any():
+        raise ValueError("prices must be positive and finite")
     target = execution_target.astype(float).copy()
     target.index = pd.DatetimeIndex(pd.to_datetime(target.index), name="dt")
     target = target.reindex(frame.index)
@@ -44,8 +50,8 @@ def execute_target_positions(
         raise ValueError("fee_rate must be finite and in [0, 1)")
     if not np.isfinite(float(initial_cash)) or initial_cash <= 0:
         raise ValueError("initial_cash must be positive and finite")
-    if not np.isfinite(float(slippage_bp)) or slippage_bp < 0:
-        raise ValueError("slippage_bp must be non-negative and finite")
+    if not np.isfinite(float(slippage_bp)) or not 0 <= slippage_bp < 10_000:
+        raise ValueError("slippage_bp must be finite and in [0, 10000)")
     if lot_size is not None:
         if type(lot_size) is not int:
             raise TypeError("lot_size must be an integer")
@@ -68,6 +74,8 @@ def execute_target_positions(
             delta_value = desired * portfolio_value - shares * open_price
             if delta_value > 0:
                 price = open_price * (1.0 + slippage)
+                if not np.isfinite(price) or price <= 0:
+                    raise ValueError("fill price must be positive and finite")
                 requested = delta_value / price
                 affordable = cash / (price * (1.0 + fee_rate))
                 quantity = min(requested, affordable)
@@ -83,6 +91,8 @@ def execute_target_positions(
                     )
             elif delta_value < 0:
                 price = open_price * (1.0 - slippage)
+                if not np.isfinite(price) or price <= 0:
+                    raise ValueError("fill price must be positive and finite")
                 quantity = min(-delta_value / price, shares)
                 if lot_size is not None and desired > 0:
                     quantity = float(int(quantity // lot_size) * lot_size)

@@ -42,6 +42,7 @@ from .runtime_lock import RuntimeDatabaseLock
 from .trading_window import shanghai_now
 from .runtime_config import PteRuntimeConfig
 from .runtime_release import load_manifest_identity, resolve_active_release
+from .watchdog import health_payload_is_healthy
 
 
 class PortUnavailableError(RuntimeError):
@@ -491,7 +492,7 @@ def _record_service_lifecycle(
 def _restart_running_pte(args: argparse.Namespace) -> dict[str, object]:
     if args.host != "127.0.0.1":
         raise ValueError("PTE control host must be 127.0.0.1")
-    store = PaperStore(args.database)
+    store = PaperStore.open_readonly(args.database)
     try:
         token = store.get_setting("control_token")
     finally:
@@ -518,11 +519,14 @@ def _restart_running_pte(args: argparse.Namespace) -> dict[str, object]:
     while time.monotonic() < deadline:
         time.sleep(0.25)
         try:
-            _, latest = _read_json(base + "/api/health", timeout=1.0)
+            health_status, latest = _read_json(base + "/api/health", timeout=1.0)
         except (OSError, URLError, ValueError, json.JSONDecodeError):
             continue
         new_instance = latest.get("instance_id")
-        if new_instance and new_instance != old_instance:
+        if (
+            health_status == 200 and new_instance and new_instance != old_instance
+            and health_payload_is_healthy(latest)
+        ):
             return {
                 "status": "READY", "old_instance_id": old_instance,
                 "new_instance_id": new_instance,
@@ -533,7 +537,7 @@ def _restart_running_pte(args: argparse.Namespace) -> dict[str, object]:
 def _repair_running_ledger(args: argparse.Namespace) -> dict[str, object]:
     if args.host != "127.0.0.1":
         raise ValueError("PTE control host must be 127.0.0.1")
-    store = PaperStore(args.database)
+    store = PaperStore.open_readonly(args.database)
     try:
         token = store.get_setting("control_token")
     finally:
@@ -582,7 +586,7 @@ def _retire_running_account(args: argparse.Namespace) -> dict[str, object]:
 def _create_running_reconciliation_account(args: argparse.Namespace) -> dict[str, object]:
     if args.host != "127.0.0.1":
         raise ValueError("PTE control host must be 127.0.0.1")
-    store = PaperStore(args.database)
+    store = PaperStore.open_readonly(args.database)
     try:
         token = store.get_setting("control_token")
     finally:
@@ -601,14 +605,31 @@ def _create_running_reconciliation_account(args: argparse.Namespace) -> dict[str
 
 
 def _run_account_command(args: argparse.Namespace) -> dict[str, object] | list[dict[str, object]]:
+    if args.account_action == "list":
+        store = PaperStore.open_readonly(args.database)
+        try:
+            return store.strategy_virtual_accounts()
+        finally:
+            store.close()
+    with RuntimeDatabaseLock(args.database):
+        return _run_writable_account_command(args)
+
+
+def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]:
     store = PaperStore(args.database)
     try:
-        if args.account_action == "list":
-            return store.strategy_virtual_accounts()
-        if args.account_action == "pause":
-            return store.set_virtual_paused(args.account_id, True)
-        if args.account_action == "resume":
-            return store.set_virtual_paused(args.account_id, False)
+        if args.account_action in {"pause", "resume"}:
+            paused = args.account_action == "pause"
+            with store.atomic_decision_update():
+                account = store.set_virtual_paused(args.account_id, paused)
+                AuditRecorder(store).record(
+                    "ACCOUNT_PAUSED" if paused else "ACCOUNT_RESUMED", source="cli.account",
+                    actor_type="OPERATOR", account_id=args.account_id,
+                    strategy_id=account.get("strategy_id"),
+                    strategy_version=account.get("strategy_version"),
+                    release_hash=account.get("release_hash"), channel=FUTU_SIMULATE_CN_CHANNEL_ID,
+                )
+            return account
         if args.account_action == "create-reconciliation":
             return store.create_channel_reconciliation_account(account_id=args.account_id)
         identity = _validate_strategy(args)
@@ -669,7 +690,7 @@ def main(
         if args.action == "performance":
             from .performance_export import export_performance
 
-            store = PaperStore(args.database)
+            store = PaperStore.open_readonly(args.database)
             try:
                 result = export_performance(
                     store,

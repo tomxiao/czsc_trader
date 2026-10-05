@@ -165,6 +165,30 @@ def backup_runtime_database(path: Path, *, retention: int = 1) -> Path | None:
 
 
 class PaperStore:
+    @classmethod
+    def open_readonly(cls, path: Path) -> "PaperStore":
+        """Read a consistent current-schema snapshot without creating or migrating it."""
+        store = cls.__new__(cls)
+        store.path = Path(path)
+        store._lock = RLock()
+        store._atomic_decision_depth = 0
+        store._connection = sqlite3.connect(
+            store.path.resolve().as_uri() + "?mode=ro", uri=True, check_same_thread=False,
+        )
+        store._connection.row_factory = sqlite3.Row
+        try:
+            store._connection.execute("PRAGMA query_only=ON")
+            store._connection.execute("BEGIN")
+            row = store._connection.execute(
+                "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
+            ).fetchone()
+            if row is None or row[0] != str(RUNTIME_DATABASE_SCHEMA_VERSION):
+                raise RuntimeError("read-only access requires the current PTE database schema")
+        except BaseException:
+            store._connection.close()
+            raise
+        return store
+
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -938,7 +962,7 @@ class PaperStore:
         except (TypeError, ValueError) as exc:
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
         now = _utc_now()
-        with self._lock, self._connection:
+        with self.atomic_decision_update():
             if cash > self.capital_pool_balance().unallocated_cash:
                 raise ValueError("initial cash exceeds unallocated capital pool cash")
             self._connection.execute(
@@ -1290,7 +1314,7 @@ class PaperStore:
         return None if row is None else dict(row)
 
     def set_virtual_paused(self, account_id: str, paused: bool):
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             account = self._connection.execute(
                 "SELECT account_type,status FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()

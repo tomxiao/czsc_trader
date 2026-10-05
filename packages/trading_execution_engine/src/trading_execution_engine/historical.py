@@ -363,8 +363,6 @@ class HistoricalExecutor:
         decision_id = self._decision_id(plan)
         if target == 1 and self._quantity == 0 and self._cycle_id is None:
             self._cycle_id = _id("CYC", self._strategy_reference, signal_date)
-        exit_proceeds = 0.0
-        exit_fees = 0.0
         exit_time: pd.Timestamp | None = None
         exit_quantity = 0
         fee_rate = float(plan.fee_rate)
@@ -447,13 +445,18 @@ class HistoricalExecutor:
                         "quantity": 0,
                         "gross": 0.0,
                         "fees": 0.0,
+                        "exit_proceeds": 0.0,
+                        "exit_fees": 0.0,
+                        "exit_quantity": 0,
                     }
                 self._open_trade["quantity"] = int(self._open_trade["quantity"]) + quantity
                 self._open_trade["gross"] = float(self._open_trade["gross"]) + gross
                 self._open_trade["fees"] = float(self._open_trade["fees"]) + fees
             else:
-                exit_proceeds += gross - fees
-                exit_fees += fees
+                if self._open_trade is not None:
+                    self._open_trade["exit_proceeds"] = float(self._open_trade["exit_proceeds"]) + (gross - fees)
+                    self._open_trade["exit_fees"] = float(self._open_trade["exit_fees"]) + fees
+                    self._open_trade["exit_quantity"] = int(self._open_trade["exit_quantity"]) + quantity
                 exit_time = fill_time
                 exit_quantity += quantity
         if (
@@ -465,6 +468,9 @@ class HistoricalExecutor:
             entry_quantity = int(self._open_trade["quantity"])
             entry_gross = float(self._open_trade["gross"])
             entry_cost = entry_gross + float(self._open_trade["fees"])
+            exit_proceeds = float(self._open_trade["exit_proceeds"])
+            exit_fees = float(self._open_trade["exit_fees"])
+            cycle_exit_quantity = int(self._open_trade["exit_quantity"])
             self._trade_rows.append(
                 {
                     "cycle_id": self._cycle_id,
@@ -473,7 +479,7 @@ class HistoricalExecutor:
                     "exit_date": exit_time,
                     "quantity": entry_quantity,
                     "entry_price": entry_gross / entry_quantity,
-                    "exit_price": (exit_proceeds + exit_fees) / exit_quantity,
+                    "exit_price": (exit_proceeds + exit_fees) / cycle_exit_quantity,
                     "net_return": exit_proceeds / entry_cost - 1.0,
                 }
             )

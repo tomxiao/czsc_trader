@@ -19,17 +19,22 @@ class ChildProcess(Protocol):
     def kill(self) -> None: ...
 
 
+def health_payload_is_healthy(payload: object) -> bool:
+    """Require the runtime's explicit process and scheduler health assertions."""
+    return bool(
+        isinstance(payload, dict)
+        and payload.get("runtime") == "RUNNING"
+        and payload.get("watchdog_healthy") is True
+    )
+
+
 def http_is_healthy(url: str, timeout: float) -> bool:
     try:
         with urlopen(url, timeout=timeout) as response:  # noqa: S310 - validated localhost URL
             if response.status != 200:
                 return False
             payload = json.loads(response.read())
-        return bool(
-            isinstance(payload, dict)
-            and payload.get("runtime") == "RUNNING"
-            and payload.get("watchdog_healthy", True) is True
-        )
+        return health_payload_is_healthy(payload)
     except (OSError, ValueError, TypeError):
         return False
 

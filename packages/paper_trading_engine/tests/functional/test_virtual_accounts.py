@@ -1,5 +1,5 @@
 from argparse import Namespace
-from concurrent.futures import Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import replace
 from datetime import date, timedelta
 import json
@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 import subprocess
-from threading import Event, get_ident
+from threading import Barrier, Event, get_ident
 import time
 from types import SimpleNamespace
 
@@ -21,6 +21,7 @@ from paper_trading_engine.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
 from paper_trading_engine.web_api import PteWebApi
+from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
 from pte_support import decision
 
 
@@ -31,6 +32,155 @@ def create_account(store, account_id, version, marker):
         strategy_version=version, release_hash=marker * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+
+
+@pytest.mark.parametrize("action", ["create", "pause", "resume", "create-reconciliation"])
+def test_account_cli_writes_require_runtime_ownership(tmp_path, action):
+    database = tmp_path / "owned.db"
+    with RuntimeDatabaseLock(database):
+        with pytest.raises(RuntimeAlreadyOwnedError):
+            pte_cli._run_account_command(Namespace(database=database, account_action=action))
+    assert not database.exists()
+
+
+def test_offline_account_pause_and_resume_are_audited(new_store, tmp_path):
+    database = tmp_path / "pause.db"
+    store = new_store(database)
+    create_account(store, "one", "v1", "a")
+    for action, paused, event_type in (
+        ("pause", True, "ACCOUNT_PAUSED"), ("resume", False, "ACCOUNT_RESUMED"),
+    ):
+        result = pte_cli._run_account_command(Namespace(
+            database=database, account_action=action, account_id="one",
+        ))
+        assert bool(result["paused"]) is paused
+        assert len(store.query_audit_events(event_type=event_type, account_id="one")) == 1
+    store.close()
+
+
+def test_offline_account_pause_rolls_back_if_audit_cannot_be_saved(new_store, tmp_path, monkeypatch):
+    database = tmp_path / "pause-rollback.db"
+    store = new_store(database)
+    create_account(store, "one", "v1", "a")
+
+    def reject(*args, **kwargs):
+        raise RuntimeError("audit unavailable")
+
+    monkeypatch.setattr(pte_cli.AuditRecorder, "record", reject)
+    with pytest.raises(RuntimeError, match="audit unavailable"):
+        pte_cli._run_account_command(Namespace(
+            database=database, account_action="pause", account_id="one",
+        ))
+    assert store.virtual_account("one")["paused"] == 0
+    store.close()
+
+
+def test_account_capital_allocation_is_atomic_across_connections(new_store, tmp_path):
+    database = tmp_path / "capital.db"
+    stores = [new_store(database), PaperStore(database)]
+    barrier = Barrier(2)
+
+    def create(index):
+        store = stores[index]
+        balance = store.capital_pool_balance
+
+        def checked_balance():
+            assert store._connection.in_transaction, "capital read must be in the write transaction"
+            return balance()
+
+        store.capital_pool_balance = checked_balance
+        barrier.wait(timeout=5)
+        try:
+            store.create_virtual_account(
+                f"account-{index}", "Audit", "S001-v1", "a" * 64, "600000",
+                selection_data_cutoff="2026-09-02",
+            )
+            return "CREATED"
+        except ValueError as exc:
+            assert "unallocated capital" in str(exc)
+            return "REJECTED"
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            assert sorted(pool.map(create, range(2))) == ["CREATED", "REJECTED"]
+        assert len(stores[0].virtual_accounts()) == 1
+        assert stores[0]._connection.execute(
+            "SELECT sum(CAST(initial_cash AS REAL)) FROM virtual_accounts"
+        ).fetchone()[0] == 600000
+    finally:
+        for store in stores:
+            store.close()
+
+
+def test_readonly_account_list_never_creates_or_migrates_database(new_store, tmp_path):
+    database = tmp_path / "missing" / "runtime.db"
+    with pytest.raises(sqlite3.OperationalError):
+        pte_cli._run_account_command(Namespace(database=database, account_action="list"))
+    assert not database.parent.exists()
+
+    store = new_store(database)
+    store.set_setting("runtime_database_schema_version", "2")
+    store.close()
+    before = database.read_bytes()
+    with pytest.raises(RuntimeError, match="current PTE database schema"):
+        pte_cli._run_account_command(Namespace(database=database, account_action="list"))
+    assert database.read_bytes() == before
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
+        ).fetchone()[0] == "2"
+
+
+def test_readonly_store_keeps_consistent_snapshot_and_rejects_writes(new_store, tmp_path):
+    database = tmp_path / "snapshot.db"
+    writer = new_store(database)
+    create_account(writer, "one", "v1", "a")
+    reader = PaperStore.open_readonly(database)
+    try:
+        assert reader.virtual_account("one")["paused"] == 0
+        writer.set_virtual_paused("one", True)
+        assert reader.virtual_account("one")["paused"] == 0
+        with pytest.raises(sqlite3.OperationalError, match="readonly"):
+            reader.set_setting("unauthorized", "1")
+    finally:
+        reader.close()
+        writer.close()
+
+
+def test_performance_cli_uses_readonly_store(new_store, tmp_path, monkeypatch):
+    database = tmp_path / "export.db"
+    store = new_store(database)
+    store.close()
+    called = []
+
+    def export(reader, *args, **kwargs):
+        with pytest.raises(sqlite3.OperationalError, match="readonly"):
+            reader.set_setting("forbidden", "1")
+        called.append(True)
+        return {}
+
+    monkeypatch.setattr("paper_trading_engine.performance_export.export_performance", export)
+    assert pte_cli.main([
+        "performance", "export", "--repo-root", str(tmp_path), "--database", str(database),
+        "--account-id", "audit", "--recorded-by", "tester", "--output", str(tmp_path / "output.json"),
+    ]) == 0
+    assert called == [True]
+
+
+@pytest.mark.parametrize("operation", [
+    pte_cli._restart_running_pte, pte_cli._repair_running_ledger,
+    pte_cli._create_running_reconciliation_account,
+])
+def test_control_token_lookup_does_not_migrate_database(new_store, tmp_path, monkeypatch, operation):
+    database = tmp_path / "control-schema.db"
+    store = new_store(database)
+    store.set_setting("runtime_database_schema_version", "2")
+    store.close()
+    before = database.read_bytes()
+    monkeypatch.setattr(pte_cli, "_read_json", lambda *_a, **_k: pytest.fail("no HTTP call expected"))
+    with pytest.raises(RuntimeError, match="current PTE database schema"):
+        operation(Namespace(database=database, host="127.0.0.1"))
+    assert database.read_bytes() == before
 
 
 @pytest.mark.parametrize("accounts", [[], [{"strategy_id": "S001", "strategy_version": "v1", "release_hash": "e" * 64}]])

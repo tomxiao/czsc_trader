@@ -20,7 +20,7 @@ from .bar_utils import (
     with_scheduled_hfq_availability,
 )
 from .contract import ETF_INTRADAY_OBSERVATION_RULE
-from .errors import DataContractError, EmptyDataError
+from .errors import DataContractError, EmptyDataError, IncompleteDataError
 from .formatting import format_dataframe_report
 from .history_repair import (
     SeriesKey,
@@ -196,6 +196,66 @@ def _fetch_daily_vendor(
     )
 
 
+def _verify_daily_sessions(pro, ts_code: str, dataframe: pd.DataFrame) -> dict[str, Any]:
+    """Verify interior session coverage without inferring suspension or listing dates."""
+    dates = pd.DatetimeIndex(pd.to_datetime(dataframe["Date"])).normalize()
+    if dates.empty:
+        raise IncompleteDataError("ETF daily reference is empty", symbol=ts_code)
+    start, end = dates.min(), dates.max()
+    exchange = "SSE" if ts_code.endswith(".SH") else "SZSE"
+    pieces = [
+        pro.trade_cal(
+            exchange=exchange,
+            start_date=segment_start.replace("-", ""),
+            end_date=segment_end.replace("-", ""),
+        )
+        for segment_start, segment_end in _calendar_year_segments(
+            start.date().isoformat(), end.date().isoformat()
+        )
+    ]
+    available = [piece for piece in pieces if piece is not None and not piece.empty]
+    if not available:
+        raise IncompleteDataError("ETF trading calendar is unavailable", symbol=ts_code)
+    calendar = pd.concat(available, ignore_index=True)
+    if not {"cal_date", "is_open"}.issubset(calendar.columns):
+        raise DataContractError("ETF trading calendar requires cal_date and is_open")
+    calendar_dates = pd.to_datetime(
+        calendar["cal_date"].astype(str), format="%Y%m%d", errors="coerce"
+    )
+    flags = pd.to_numeric(calendar["is_open"], errors="coerce")
+    if calendar_dates.isna().any() or calendar_dates.duplicated().any() or not flags.isin([0, 1]).all():
+        raise DataContractError("ETF trading calendar contains invalid dates or session flags")
+    expected = pd.date_range(start, end)
+    if not pd.DatetimeIndex(calendar_dates).sort_values().equals(expected):
+        raise IncompleteDataError(
+            "ETF trading calendar does not cover the observed daily span", symbol=ts_code,
+            missing_calendar_dates=expected.difference(calendar_dates).strftime("%Y-%m-%d").tolist(),
+        )
+    open_dates = pd.DatetimeIndex(calendar_dates[flags.eq(1)])
+    closed_bars = dates.difference(open_dates)
+    if not closed_bars.empty:
+        raise DataContractError(
+            "ETF daily bars include closed exchange sessions", symbol=ts_code,
+            dates=closed_bars.strftime("%Y-%m-%d").tolist(),
+        )
+    missing = open_dates.difference(dates)
+    if not missing.empty:
+        raise IncompleteDataError(
+            "ETF daily bars omit open sessions with unverified absence reasons",
+            symbol=ts_code, missing_dates=missing.strftime("%Y-%m-%d").tolist(),
+            absence_reason="UNVERIFIED",
+        )
+    canonical = pd.DataFrame({
+        "Date": calendar_dates.dt.strftime("%Y-%m-%d"), "is_open": flags.astype(int),
+    }).sort_values("Date").reset_index(drop=True)
+    return {
+        "source": "trade_cal", "exchange": exchange,
+        "start_date": start.date().isoformat(), "end_date": end.date().isoformat(),
+        "verified_sessions": len(open_dates),
+        "calendar_sha256": frame_content_sha256(canonical),
+    }
+
+
 def _repair_daily_once(
     dataframe: pd.DataFrame,
     ts_code: str,
@@ -263,6 +323,7 @@ def _fetch_tushare_etf_ohlcv(
         daily_vendor = _fetch_daily_vendor(pro, ts_code, start_date, end_date)
         daily = _standardize_etf_ohlcv(daily_vendor, intraday=False)
         daily, daily_records = _repair_daily_once(daily, ts_code)
+        daily_session_coverage = _verify_daily_sessions(pro, ts_code, daily)
         repair_records.extend(daily_records)
         reference_daily_sha256 = frame_content_sha256(daily)
         report = inspect_intraday_against_daily(normalized, daily, period)
@@ -306,6 +367,7 @@ def _fetch_tushare_etf_ohlcv(
             inspect_intraday_against_daily(normalized, daily, period).require_pass()
     else:
         normalized, daily_records = _repair_daily_once(normalized, ts_code)
+        daily_session_coverage = _verify_daily_sessions(pro, ts_code, normalized)
         repair_records.extend(daily_records)
         if period == "weekly":
             daily = normalized
@@ -314,6 +376,7 @@ def _fetch_tushare_etf_ohlcv(
         reference_daily_sha256 = frame_content_sha256(
             daily if period == "weekly" else normalized
         )
+    normalized.attrs["daily_session_coverage"] = daily_session_coverage
     if repair_records:
         normalized.attrs["repair_records"] = repair_records
     if reference_daily_sha256:
@@ -371,6 +434,7 @@ def fetch_etf_ohlcv(
     if dataframe.empty:
         raise EmptyDataError(f"Tushare returned no data for {symbol} {normalized_period}")
     repair_records = dataframe.attrs.get("repair_records", [])
+    daily_session_coverage = dataframe.attrs["daily_session_coverage"]
     reference_daily_sha256 = dataframe.attrs.get("reference_daily_sha256")
     factors = _fetch_hfq_factors(
         ts_code, pd.Timestamp(start_date).date().isoformat(),
@@ -403,6 +467,7 @@ def fetch_etf_ohlcv(
         "availability_time_field": "AvailableDate",
         "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
         "validation": validation.to_dict(),
+        "daily_session_coverage": daily_session_coverage,
     }
     if reference_daily_sha256:
         metadata["reference_daily_sha256"] = str(reference_daily_sha256)
@@ -449,7 +514,7 @@ def fetch_etf_unadjusted_intraday(
         "vendor_history_update_window": "post-session 17:00-21:00 Asia/Shanghai",
         "validation": validation.to_dict(),
     }
-    for name in ("reference_daily_sha256", "repair_records"):
+    for name in ("reference_daily_sha256", "repair_records", "daily_session_coverage"):
         if name in dataframe.attrs:
             metadata[name] = dataframe.attrs[name]
     dataframe = dataframe.copy()
@@ -487,6 +552,7 @@ def fetch_etf_unadjusted_daily(
     validation = inspect_ohlcv_frame(dataframe, "daily")
     validation.require_pass()
     metadata["validation"] = validation.to_dict()
+    metadata["daily_session_coverage"] = dataframe.attrs["daily_session_coverage"]
     if reference_daily_sha256:
         metadata["reference_daily_sha256"] = str(reference_daily_sha256)
     if repair_records:

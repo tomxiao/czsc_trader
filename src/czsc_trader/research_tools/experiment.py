@@ -300,7 +300,7 @@ class _ExperimentEvaluationAccess:
             raise RuntimeError("experiment evaluation call is already active")
         try:
             if any(self._workspace.path(name).exists() for name in (
-                "execution_receipt.json", "execution_envelope.json",
+                "execution_receipt.json", "execution_envelope.json", "execution_failure.json",
             )):
                 raise RuntimeError("experiment execution is already complete")
             yield
@@ -777,18 +777,8 @@ def execute_experiment(
         raise TypeError("experiment must be loaded by load_experiment")
     if not isinstance(context, _PlatformExperimentContext):
         raise TypeError("context must be created by a platform experiment context factory")
-    if (
-        context.workspace.path("execution_receipt.json").exists()
-        or context.workspace.path("execution_envelope.json").exists()
-    ):
-        raise FileExistsError("platform execution evidence already exists")
-    actual_hash = experiment_source_sha256(experiment.root, experiment.binding.source_files)
-    if actual_hash != experiment.binding.source_sha256:
-        raise ValueError("experiment source SHA-256 differs from binding")
-    if experiment.implementation.definition.sha256 != experiment.definition.sha256:
-        raise ValueError("experiment definition changed after loading")
-    if experiment.definition.sha256 != context.definition.sha256:
-        raise ValueError("experiment and context definitions differ")
+    _require_open_execution(context.workspace)
+    _validate_execution_identity(experiment, context)
     if context._formal != (experiment.definition.mode is ExperimentMode.FORMAL):
         raise ValueError("experiment mode and context assurance differ")
     preflight_experiment(
@@ -799,6 +789,50 @@ def execute_experiment(
     try:
         with threadpool_limits(limits=context.resources.native_threads_per_worker):
             result = experiment.implementation.execute(context)
+        _validate_execution_identity(experiment, context)
+        if not isinstance(result, ExperimentResult):
+            raise TypeError("experiment returned an invalid result")
+        artifacts = {item.path: item for item in result.artifacts}
+        for item in (*context.evaluation._artifacts, *context._artifacts):
+            if item.path in artifacts and artifacts[item.path] != item:
+                raise ValueError("experiment artifact conflicts with platform evidence")
+            artifacts[item.path] = item
+        result = replace(result, artifacts=tuple(artifacts.values()))
+        if result.candidate is not None:
+            context.record_capability(ExperimentCapability.CREATE_CANDIDATE)
+        for artifact in result.artifacts:
+            context.workspace.validate_artifact(artifact)
+        if result.receipt is not None:
+            raise ValueError("experiment implementation cannot supply a platform receipt")
+        receipt = ExperimentReceipt._from_execution(
+            schema_version=2,
+            experiment_id=experiment.definition.experiment_id,
+            definition_sha256=experiment.definition.sha256,
+            source_sha256=experiment.binding.source_sha256,
+            resources_sha256=context.resources.sha256,
+            predecessor_receipts={
+                key: item.receipt_sha256 for key, item in context.predecessors.items()
+            },
+            result_sha256=experiment_result_sha256(result),
+            artifact_sha256={item.path: item.sha256 for item in result.artifacts},
+            trace=context.trace,
+        )
+        _require_open_execution(context.workspace)
+        _atomic_execution_document(
+            context.workspace,
+            "execution_envelope.json",
+            {
+                "schema_version": 1,
+                "receipt": receipt.to_dict(),
+                "receipt_sha256": receipt.sha256,
+                "result": result.to_dict(),
+            },
+        )
+        _atomic_execution_document(
+            context.workspace,
+            "execution_receipt.json",
+            {**receipt.to_dict(), "receipt_sha256": receipt.sha256},
+        )
     except BaseException as exc:
         _atomic_execution_document(
             context.workspace,
@@ -813,53 +847,24 @@ def execute_experiment(
             },
         )
         raise
-    if not isinstance(result, ExperimentResult):
-        raise TypeError("experiment returned an invalid result")
-    artifacts = {item.path: item for item in result.artifacts}
-    for item in (*context.evaluation._artifacts, *context._artifacts):
-        if item.path in artifacts and artifacts[item.path] != item:
-            raise ValueError("experiment artifact conflicts with platform evidence")
-        artifacts[item.path] = item
-    result = replace(result, artifacts=tuple(artifacts.values()))
-    if result.candidate is not None:
-        context.record_capability(ExperimentCapability.CREATE_CANDIDATE)
-    for artifact in result.artifacts:
-        context.workspace.validate_artifact(artifact)
-    if result.receipt is not None:
-        raise ValueError("experiment implementation cannot supply a platform receipt")
-    receipt = ExperimentReceipt._from_execution(
-        schema_version=2,
-        experiment_id=experiment.definition.experiment_id,
-        definition_sha256=experiment.definition.sha256,
-        source_sha256=experiment.binding.source_sha256,
-        resources_sha256=context.resources.sha256,
-        predecessor_receipts={
-            key: item.receipt_sha256 for key, item in context.predecessors.items()
-        },
-        result_sha256=experiment_result_sha256(result),
-        artifact_sha256={item.path: item.sha256 for item in result.artifacts},
-        trace=context.trace,
-    )
-    receipt_path = context.workspace.path("execution_receipt.json")
-    envelope_path = context.workspace.path("execution_envelope.json")
-    if receipt_path.exists() or envelope_path.exists():
-        raise FileExistsError("platform execution evidence already exists")
-    _atomic_execution_document(
-        context.workspace,
-        "execution_envelope.json",
-        {
-            "schema_version": 1,
-            "receipt": receipt.to_dict(),
-            "receipt_sha256": receipt.sha256,
-            "result": result.to_dict(),
-        },
-    )
-    _atomic_execution_document(
-        context.workspace,
-        "execution_receipt.json",
-        {**receipt.to_dict(), "receipt_sha256": receipt.sha256},
-    )
     return replace(result, receipt=receipt)
+
+
+def _require_open_execution(workspace):
+    if any(workspace.path(name).exists() for name in (
+        "execution_receipt.json", "execution_envelope.json", "execution_failure.json",
+    )):
+        raise FileExistsError("platform execution evidence already exists")
+
+
+def _validate_execution_identity(experiment, context):
+    actual_hash = experiment_source_sha256(experiment.root, experiment.binding.source_files)
+    if actual_hash != experiment.binding.source_sha256:
+        raise ValueError("experiment source SHA-256 differs from binding")
+    if experiment.implementation.definition.sha256 != experiment.definition.sha256:
+        raise ValueError("experiment definition changed after loading")
+    if experiment.definition.sha256 != context.definition.sha256:
+        raise ValueError("experiment and context definitions differ")
 
 
 def _atomic_execution_document(workspace, name, payload):
@@ -870,7 +875,11 @@ def _atomic_execution_document(workspace, name, payload):
         ),
         encoding="utf-8", newline="\n",
     )
-    temporary.replace(workspace.path(name))
+    try:
+        # Publish complete bytes without replacing any previously recorded terminal.
+        os.link(temporary, workspace.path(name))
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 __all__ = [

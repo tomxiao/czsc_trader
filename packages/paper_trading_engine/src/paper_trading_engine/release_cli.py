@@ -42,6 +42,7 @@ from .store import (
     RUNTIME_DATABASE_COMPATIBLE_VERSIONS,
     RUNTIME_DATABASE_SCHEMA_VERSION,
 )
+from .watchdog import health_payload_is_healthy
 
 
 PTE_LOCAL_PROJECTS = (
@@ -906,7 +907,11 @@ def _restart_command(
 
 def _running_release(host: str, port: int, timeout: float = 5.0) -> str | None:
     with urlopen(f"http://{host}:{port}/api/health", timeout=timeout) as response:  # noqa: S310
+        if response.status != 200:
+            raise RuntimeError("PTE runtime health check failed")
         payload = json.loads(response.read().decode("utf-8"))
+    if not health_payload_is_healthy(payload):
+        raise RuntimeError("PTE runtime health check failed")
     release = payload.get("release")
     if not isinstance(release, dict):
         return None

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 import hashlib
 import json
 import math
 from pathlib import Path
 import statistics
 import uuid
+
+from strategy_manager import PerformanceEvidence
 
 
 MIN_ANNUALIZATION_OBSERVATIONS = 20
@@ -90,6 +92,11 @@ def export_performance(
     start: str | None = None,
     end: str | None = None,
 ) -> dict[str, object]:
+    for bound in (start, end):
+        if bound is not None and date.fromisoformat(bound).isoformat() != bound:
+            raise ValueError("performance period dates must use YYYY-MM-DD")
+    if start is not None and end is not None and start > end:
+        raise ValueError("performance period start must not follow end")
     account = store.virtual_account(account_id)
     identity_fields = (
         "strategy_id",
@@ -100,13 +107,24 @@ def export_performance(
     )
     if any(not account.get(field) for field in identity_fields):
         raise ValueError("virtual account has no formal strategy identity")
+    history = store.account_snapshots(account_id)
     snapshots = [
         {"session": item["session"], "total_assets": item["total_assets"]}
-        for item in store.account_snapshots(account_id)
+        for item in history
         if (start is None or item["session"] >= start) and (end is None or item["session"] <= end)
     ]
     if not snapshots:
         raise ValueError("performance export requires at least one snapshot")
+    previous = [item for item in history if item["session"] < snapshots[0]["session"]]
+    opening = (
+        {"basis": "ACCOUNT_SNAPSHOT", "session": previous[-1]["session"],
+         "total_assets": previous[-1]["total_assets"]}
+        if previous else
+        {"basis": "INITIAL_CASH", "session": None, "total_assets": account["initial_cash"]}
+    )
+    initial_assets = float(opening["total_assets"])
+    if not math.isfinite(initial_assets) or initial_assets <= 0:
+        raise ValueError("performance period requires positive finite opening assets")
     fills = [
         item
         for item in store.account_fills(account_id)
@@ -123,6 +141,10 @@ def export_performance(
     }
     if len(fee_rates) != 1:
         raise ValueError("performance export requires one unambiguous fee rate")
+    metrics = calculate_metrics(initial_assets, snapshots, pnl)
+    statistics = {
+        key: metrics.pop(key) for key in ("observation_count", "annualization_status")
+    }
     source = {
         "schema_version": 1,
         "account": {
@@ -132,11 +154,12 @@ def export_performance(
             "release_hash": account["release_hash"],
             "initial_cash": account["initial_cash"],
         },
+        "opening_assets": opening,
         "snapshots": snapshots,
         "closed_trade_pnl": pnl,
+        "statistics": statistics,
     }
     source_hash = _canonical_sha256(source)
-    metrics = calculate_metrics(float(account["initial_cash"]), snapshots, pnl)
     recorded_at = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
     evidence_id = f"EVD-PTE-{uuid.uuid4().hex.upper()}"
     evidence = {
@@ -153,7 +176,7 @@ def export_performance(
             "account_created_at": account["created_at"],
             "observation_start": account["observation_start"],
         },
-        "initial_capital": float(account["initial_cash"]),
+        "initial_capital": initial_assets,
         "fee_rate": fee_rates.pop(),
         **metrics,
         "source_path": f"pte://virtual-account/{account_id}",
@@ -163,6 +186,7 @@ def export_performance(
     }
     if not evidence["recorded_by"]:
         raise ValueError("recorded_by is required")
+    evidence = PerformanceEvidence.from_dict(evidence).to_dict()
     bundle = {"bundle_schema_version": 1, "evidence": evidence, "source": source}
     path = Path(output)
     path.parent.mkdir(parents=True, exist_ok=True)

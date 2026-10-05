@@ -52,8 +52,11 @@ def resolve_fill(
     slippage = float(slippage_bp) / 10_000.0
     if not isfinite(open_price) or open_price <= 0:
         raise ValueError("session open must be positive and finite")
-    if not isfinite(slippage) or slippage < 0:
-        raise ValueError("slippage_bp must be non-negative and finite")
+    if not isfinite(slippage) or not 0 <= slippage < 1:
+        raise ValueError("slippage_bp must be finite and in [0, 10000)")
+    touches = tuple((timestamp, float(value)) for timestamp, value in intraday_touches)
+    if any(not isfinite(value) or value <= 0 for _, value in touches):
+        raise ValueError("intraday prices must be positive and finite")
 
     raw_price: float | None = None
     filled_at: datetime | None = None
@@ -66,8 +69,7 @@ def resolve_fill(
         if open_crosses:
             raw_price, filled_at, trigger = open_price, session_time, "OPEN"
         else:
-            for timestamp, touch_value in intraday_touches:
-                touch = float(touch_value)
+            for timestamp, touch in touches:
                 if order.side == "BUY":
                     crosses = touch <= limit if inclusive_touch else touch < limit
                 else:
@@ -78,4 +80,6 @@ def resolve_fill(
     if raw_price is None or filled_at is None:
         return FillDecision(False, None, None, None)
     price = raw_price * (1.0 + slippage if order.side == "BUY" else 1.0 - slippage)
+    if not isfinite(price) or price <= 0:
+        raise ValueError("fill price must be positive and finite")
     return FillDecision(True, price, filled_at, trigger)
