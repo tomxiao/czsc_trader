@@ -209,6 +209,7 @@ def test_workspace_rejects_escape_and_detects_artifact_change(
     target = workspace.path("facts/result.json")
     target.write_text("{}", encoding="utf-8")
     artifact = workspace.register_artifact("facts/result.json", "facts")
+    workspace.validate_artifact(artifact)
     target.write_text('{"changed":true}', encoding="utf-8")
 
     with pytest.raises(ValueError, match="artifact hash differs"):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import date
+from hashlib import sha256
 import json
 from pathlib import Path
 import subprocess
@@ -23,10 +24,11 @@ from research_experiment import (
     ExperimentResources,
     ExperimentResult,
     ExperimentStage,
-    ExperimentWorkspace,
+    ExperimentTrace,
     LoadedExperiment,
     experiment_source_sha256,
     load_experiment,
+    load_experiment_input,
 )
 
 
@@ -84,7 +86,7 @@ def test_definition_rejects_retired_or_implicit_scope(changes):
         replace(_definition(), **changes)
 
 
-def test_definition_records_research_declarations_without_authorizing_actions() -> None:
+def test_definition_records_research_declarations_without_authorizing_actions(tmp_path: Path) -> None:
     formal = replace(
         _definition(), mode=ExperimentMode.FORMAL, capabilities=ExperimentCapabilities()
     )
@@ -101,6 +103,42 @@ def test_definition_records_research_declarations_without_authorizing_actions() 
     assert not sealed.capabilities.reads_real_returns
     assert not sealed.capabilities.reads_sealed_validation
     assert len({formal.sha256, sealed.sha256, declared.sha256}) == 3
+
+    # Capability names are a serialized boundary, including undeclared actions.
+    names = [
+        "reads_real_returns", "searches_parameters", "selects_parameters",
+        "creates_candidate", "reads_sealed_validation",
+    ]
+    trace = ExperimentTrace(
+        capabilities=tuple(ExperimentCapability), operations=(), data_requests=(),
+        data_scope=ExperimentDataScope.DEVELOPMENT,
+    )
+    assert trace.to_dict()["capabilities"] == names
+    result = ExperimentResult(ExperimentOutcome.PASS, {"names": names}, {}).to_dict()
+
+    def digest(value):
+        return sha256(json.dumps(
+            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+        ).encode("utf-8")).hexdigest()
+
+    receipt = {
+        "schema_version": 2, "experiment_id": formal.experiment_id,
+        "definition_sha256": formal.sha256, "source_sha256": "a" * 64,
+        "resources_sha256": ExperimentResources(1, 99).sha256,
+        "predecessor_receipts": {}, "result_sha256": digest(result),
+        "artifact_sha256": {}, "trace": trace.to_dict(),
+    }
+    receipt_sha256 = digest(receipt)
+    (tmp_path / "execution_envelope.json").write_text(json.dumps({
+        "schema_version": 1, "receipt": receipt,
+        "receipt_sha256": receipt_sha256, "result": result,
+    }), encoding="utf-8")
+    (tmp_path / "execution_receipt.json").write_text(json.dumps({
+        **receipt, "receipt_sha256": receipt_sha256,
+    }), encoding="utf-8")
+    verified = load_experiment_input(tmp_path, expected_receipt_sha256=receipt_sha256)
+    assert verified.receipt_sha256 == receipt_sha256
+    assert verified.facts["names"] == tuple(names)
     with pytest.raises(ValueError, match="validation_cutoff after development_cutoff"):
         replace(sealed, validation_cutoff=sealed.development_cutoff)
     with pytest.raises(ValueError, match="DEVELOPMENT cannot declare validation_cutoff"):
@@ -119,32 +157,30 @@ def test_loaded_experiment_cannot_be_constructed_directly() -> None:
         ExperimentReceipt()
 
 
-def test_contracts_freeze_payloads_and_validate_resources(tmp_path: Path) -> None:
+def test_result_freezes_nested_payloads_without_aliasing() -> None:
+    facts = {"nested": {"values": [1, 2]}}
     result = ExperimentResult(
         outcome=ExperimentOutcome.INCONCLUSIVE,
-        facts={"nested": {"values": [1, 2]}},
+        facts=facts,
         diagnostics={},
     )
-    repository_root = tmp_path / "repo"
-    workspace = ExperimentWorkspace(
-        repository_root / ".tmp" / "rex-test", repository_root
-    )
-    artifact_path = workspace.path("facts/result.json")
-    artifact_path.write_text("{}", encoding="utf-8")
-    artifact = workspace.register_artifact("facts/result.json", "facts")
-
-    assert len(_definition().sha256) == 64
+    facts["nested"]["values"].append(3)
     assert result.facts["nested"]["values"] == (1, 2)
-    assert artifact.sha256
-    workspace.validate_artifact(artifact)
     with pytest.raises(TypeError):
         result.facts["changed"] = True
+    with pytest.raises(TypeError):
+        result.facts["nested"]["changed"] = True
+    payload = result.to_dict()
+    payload["facts"]["nested"]["values"].append(4)
+    assert result.facts["nested"]["values"] == (1, 2)
+
+
+def test_resources_and_dependencies_require_explicit_execution_configuration() -> None:
+    assert len(ExperimentResources(max_workers=1, random_seed=99).sha256) == 64
     with pytest.raises(ValueError, match="positive integer"):
         ExperimentResources(max_workers=0, random_seed=99)
     with pytest.raises(ValueError, match="must be exact"):
         ExperimentDependency("optuna", ">=4.0")
-    with pytest.raises(ValueError, match="experiment workspace"):
-        workspace.path("../outside.json")
 
 
 def test_loader_rejects_undeclared_relative_source(tmp_path: Path) -> None:
@@ -240,7 +276,7 @@ def test_loader_checks_dependencies_before_importing_experiment(tmp_path: Path) 
     assert not marker.exists()
 
 
-def test_loader_does_not_retain_experiment_modules(tmp_path: Path) -> None:
+def test_loader_isolates_same_named_modules_and_repeated_loads(tmp_path: Path) -> None:
     root = tmp_path / "S008" / "20260924_S008_EX95"
     root.mkdir(parents=True)
     source = root / "experiment.py"
@@ -251,6 +287,9 @@ from research_experiment import (
     ExperimentOutcome, ExperimentProtocol, ExperimentResult,
     ExperimentStage, ResearchExperiment,
 )
+from .helper import VALUE
+
+CALLS = 0
 
 class Experiment(ResearchExperiment):
     @property
@@ -260,9 +299,9 @@ class Experiment(ResearchExperiment):
             experiment_id='20260924_S008_EX95',
             strategy_id='S008',
             mode=ExperimentMode.DISCOVERY,
-            research_question='Does the loader retain isolated modules?',
-            hypothesis='The namespace is removed after construction.',
-            falsification_conditions=('The module remains cached',),
+            research_question='Does the loader isolate same-named source modules?',
+            hypothesis='Each load owns its module state and declared helper.',
+            falsification_conditions=('The returned helper value or counter leaks',),
             development_cutoff=date(2026, 9, 2),
             random_seed=95,
             allowed_datasets=('etf.ohlcv',),
@@ -271,26 +310,30 @@ class Experiment(ResearchExperiment):
                 first_principles=('Module state must not leak between loads',),
                 information_paths=('Import namespace -> implementation instance',),
                 stage_objectives=('Verify loader isolation',),
-                observation_metrics=('module cache membership',),
-                methodology=('Load and inspect sys.modules',),
+                observation_metrics=('returned helper value and invocation count',),
+                methodology=('Execute two same-named modules and reload the first',),
             ),
             capabilities=ExperimentCapabilities(),
         )
 
     def execute(self, context):
         del context
+        global CALLS
+        CALLS += 1
         return ExperimentResult(
-            outcome=ExperimentOutcome.PASS, facts={'loaded': True}, diagnostics={}
+            outcome=ExperimentOutcome.PASS,
+            facts={'value': VALUE, 'calls': CALLS}, diagnostics={}
         )
 """,
         encoding="utf-8",
     )
+    (root / "helper.py").write_text("VALUE = 'first'\n", encoding="utf-8")
     binding = {
         "schema_version": 3,
         "module": "experiment",
         "qualname": "Experiment",
-        "source_files": ["experiment.py"],
-        "source_sha256": experiment_source_sha256(root, ("experiment.py",)),
+        "source_files": ["experiment.py", "helper.py"],
+        "source_sha256": experiment_source_sha256(root, ("experiment.py", "helper.py")),
         "dependencies": [],
     }
     (root / "experiment_binding.json").write_text(
@@ -298,21 +341,36 @@ class Experiment(ResearchExperiment):
     )
 
     loaded = load_experiment(root)
-
     assert loaded.definition.experiment_id == root.name
+    assert dict(loaded.implementation.execute(None).facts) == {"value": "first", "calls": 1}
+
+    # A distinct research root deliberately uses identical module and class names.
+    other_root = tmp_path / "S008" / "20260924_S008_EX94"
+    other_root.mkdir()
+    (other_root / "experiment.py").write_text(
+        source.read_text(encoding="utf-8").replace(root.name, other_root.name),
+        encoding="utf-8",
+    )
+    (other_root / "helper.py").write_text("VALUE = 'second'\n", encoding="utf-8")
+    other_binding = {
+        **binding,
+        "source_sha256": experiment_source_sha256(other_root, ("experiment.py", "helper.py")),
+    }
+    (other_root / "experiment_binding.json").write_text(
+        json.dumps(other_binding), encoding="utf-8"
+    )
+    other = load_experiment(other_root)
+    assert other.definition.experiment_id == other_root.name
+    assert dict(other.implementation.execute(None).facts) == {"value": "second", "calls": 1}
+    assert dict(loaded.implementation.execute(None).facts) == {"value": "first", "calls": 2}
+
+    reloaded = load_experiment(root)
+    assert dict(reloaded.implementation.execute(None).facts) == {"value": "first", "calls": 1}
+    assert dict(other.implementation.execute(None).facts) == {"value": "second", "calls": 2}
+    # Cache cleanup is supplemental; public execution above proves isolation.
     assert not any(
         name.startswith("_czsc_research_experiment_")
         and getattr(module, "__file__", None)
-        and Path(module.__file__).resolve().is_relative_to(root)
+        and any(Path(module.__file__).resolve().is_relative_to(path) for path in (root, other_root))
         for name, module in sys.modules.items()
-    )
-
-
-def test_capability_names_are_stable() -> None:
-    assert tuple(item.value for item in ExperimentCapability) == (
-        "reads_real_returns",
-        "searches_parameters",
-        "selects_parameters",
-        "creates_candidate",
-        "reads_sealed_validation",
     )

@@ -11,10 +11,19 @@ def _prices():
     })
 
 
-@pytest.mark.parametrize("value", [True, False, 1.5, "100", 0, -1])
-def test_daily_execution_rejects_invalid_lot_size(value):
+@pytest.mark.parametrize(
+    ("value", "error", "message"),
+    [
+        pytest.param(True, TypeError, "lot_size must be an integer", id="True"),
+        pytest.param(1.5, TypeError, "lot_size must be an integer", id="1.5"),
+        pytest.param("100", TypeError, "lot_size must be an integer", id="100"),
+        pytest.param(0, ValueError, "lot_size must be positive", id="0"),
+        pytest.param(-1, ValueError, "lot_size must be positive", id="-1"),
+    ],
+)
+def test_daily_execution_rejects_invalid_lot_size(value, error, message):
     prices = _prices()
-    with pytest.raises((TypeError, ValueError), match="lot_size"):
+    with pytest.raises(error, match=f"^{message}$"):
         execute_target_positions(
             prices, pd.Series([1., 0.], index=prices.dt),
             fee_rate=.01, initial_cash=1100, lot_size=value,

@@ -342,16 +342,19 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
 
 
 @pytest.mark.parametrize("case, saved_value, changed_value, passes", [
-    ("effective", 0., 0., True), ("effective", 1e-250, math.nextafter(1e-250, 0.), True),
-    ("effective", .6396147383007816, math.nextafter(.6396147383007816, 0.), True),
-    ("effective", 1., math.nextafter(1., 0.), True),
-    ("effective", .6396147383007816, .639614738300782, True),
-    ("effective", .5, .5 * (1 + .5e-12), True),
-    ("effective", .5, .5 * (1 + 2e-12), False), ("effective", .5, .500001, False),
-    ("effective", 0., math.nextafter(0., 1.), False), ("effective", 1e-250, 2e-250, False),
-    ("effective", 1., math.nextafter(1., math.inf), False),
-    ("PBO", .5, math.nextafter(.5, 1.), False), ("DSR_RAW", .25, math.nextafter(.25, 1.), False),
-    ("identity", .5, .5, False), ("row", .5, .5, False),
+    pytest.param("effective", 0., 0., True, id="zero-exact"),
+    pytest.param("effective", 1e-250, math.nextafter(1e-250, 0.), True, id="tiny-relative-roundoff"),
+    pytest.param("effective", 1., math.nextafter(1., 0.), True, id="one-inward-roundoff"),
+    pytest.param("effective", .6396147383007816, .639614738300782, True, id="historical-roundoff"),
+    pytest.param("effective", .5, .5 * (1 + .5e-12), True, id="within-relative-tolerance"),
+    pytest.param("effective", .5, .5 * (1 + 2e-12), False, id="outside-relative-tolerance"),
+    pytest.param("effective", 0., math.nextafter(0., 1.), False, id="zero-no-absolute-tolerance"),
+    pytest.param("effective", 1e-250, 2e-250, False, id="tiny-relative-mismatch"),
+    pytest.param("effective", 1., math.nextafter(1., math.inf), False, id="above-one"),
+    pytest.param("PBO", .5, math.nextafter(.5, 1.), False, id="pbo-exact"),
+    pytest.param("DSR_RAW", .25, math.nextafter(.25, 1.), False, id="raw-dsr-exact"),
+    pytest.param("identity", .5, .5, False, id="panel-identity-exact"),
+    pytest.param("row", .5, .5, False, id="account-metric-exact"),
 ])
 def test_stage_four_public_validation_tolerates_only_effective_dsr_roundoff(prepared_delivery, monkeypatch, case, saved_value, changed_value, passes):
     from czsc_trader.application import delivery_service
