@@ -24,6 +24,7 @@ from .contracts import (
 )
 
 
+_STRATEGY_ID = re.compile(r"S\d{3}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _LOAD_LOCK = RLock()
 
@@ -236,6 +237,10 @@ def load_experiment(root: Path) -> LoadedExperiment:
     definition = experiment.definition
     if not isinstance(definition, ExperimentDefinition):
         raise TypeError("bound experiment definition must be ExperimentDefinition")
+    if definition.experiment_id != root.name:
+        raise ValueError("experiment definition id differs from its directory")
+    if _STRATEGY_ID.fullmatch(root.parent.name) and (definition.strategy_id != root.parent.name):
+        raise ValueError("experiment definition strategy differs from its directory")
     if definition.dependencies != binding.dependencies:
         raise ValueError("experiment definition dependencies differ from binding")
     return LoadedExperiment._from_verified(

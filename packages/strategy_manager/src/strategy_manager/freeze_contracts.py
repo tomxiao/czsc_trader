@@ -114,21 +114,16 @@ class ResearchEvidenceOwner(Record):
             if match is None or (match[1] is not None and match[1] != self.strategy_id):
                 raise ValueError("invalid research evidence experiment owner")
 
-
-@dataclass(frozen=True, slots=True)
-class ResearchEvidenceLocation(Record):
-    """Caller-selected repository-relative evidence root for one logical owner."""
-
-    owner: ResearchEvidenceOwner
-    path: str
-
-    def _validate(self):
-        CandidateEvidence(self.path, "0" * 64)
+    @property
+    def repository_path(self):
+        if self.experiment_id is None:
+            return f"research/{self.strategy_id}"
+        return f"experiments/{self.strategy_id}/{self.experiment_id}"
 
 
 @dataclass(frozen=True, slots=True)
 class ResearchEvidenceRef(Record):
-    """Owner-relative evidence resolved through an explicitly supplied location."""
+    """Owner-relative immutable evidence, resolved only from a repository root."""
 
     owner: ResearchEvidenceOwner
     path: str
@@ -137,20 +132,22 @@ class ResearchEvidenceRef(Record):
     def _validate(self):
         CandidateEvidence(self.path, self.sha256)
 
-    def resolve(self, repository_root, *, location: ResearchEvidenceLocation):
+    @property
+    def repository_path(self):
+        return f"{self.owner.repository_path}/{self.path}"
+
+    def resolve(self, repository_root):
         from pathlib import Path
         from .errors import ValidationError
 
         root = Path(repository_root).resolve()
-        if type(location) is not ResearchEvidenceLocation or location.owner != self.owner:
-            raise ValidationError("research evidence location owner differs")
-        target = root / location.path / self.path
+        target = root / self.repository_path
         for parent in (target, *target.parents):
             if parent == root:
                 break
             if parent.is_symlink() or parent.is_junction():
                 raise ValidationError("research evidence path contains a link")
-        owner = (root / location.path).resolve()
+        owner = (root / self.owner.repository_path).resolve()
         if not owner.is_relative_to(root):
             raise ValidationError("research evidence owner escapes repository")
         return CandidateEvidence(self.path, self.sha256).resolve(owner)
@@ -164,7 +161,7 @@ class DecisionAction(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class StageAdvanceSubject(Record):
-    delivery: ResearchEvidenceRef
+    delivery: CandidateEvidence
     target_stage: str
 
     def _validate(self):
@@ -174,7 +171,7 @@ class StageAdvanceSubject(Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateSelectionSubject(Record):
-    delivery: ResearchEvidenceRef
+    delivery: CandidateEvidence
     candidate: CandidateKey
     content_sha256: str
 
@@ -208,10 +205,6 @@ class ResearchDecision(Record):
     def _validate(self):
         _id(self.decision_id)
         require_strategy_id(self.strategy_id)
-        if isinstance(self.subject, (StageAdvanceSubject, CandidateSelectionSubject)) and (
-            self.subject.delivery.owner.strategy_id != self.strategy_id
-        ):
-            raise ValueError("decision delivery family differs")
         if not self.reason.strip():
             raise ValueError("decision requires reason")
         if (

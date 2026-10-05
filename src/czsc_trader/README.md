@@ -15,7 +15,7 @@
 | 自检证据适配 | `research_tools.build_assessment_evidence` | 将受管评价事实转换为SE的`AssessmentEvidence` |
 | 技术检验与获批冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 用户选型、检验、冻结批准分别绑定证据 |
 | 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放类型；业务执行使用`application.run_backtest` |
-| 研究身份 | `create_research_batch`、`update_research_intent` | 核验调用方材料并写入显式登记空间，调用前取得授权 |
+| 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | 完整模板操作包含跨FSC绑定校验 |
 | 项目因子计算 | [FSC计算模块](../../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py) | 由FSC提供纯计算函数；研究员提供输入数据并核对因果时点 |
 | 档案校验 | `validate_archives` | 只读验证；不重签原件 |
@@ -47,30 +47,6 @@ TDR提供研究执行、评价、回测及证据业务接口。独立取数使�
 实验内通过`context.data`调用并记录请求、结果和准备引用。TDR不提供独立行情准备、CSV加载
 或数据校验API。研究员负责取得研究授权、选择可用数据范围并遵守阶段约束；TDR校验请求
 自身的数据身份、日期范围、资源配置和执行证据，不将研究声明作为权限门槛。
-
-### 研究身份登记与文件化评价空间
-
-`RepositoryContext`不再提供默认`research_root/research_registry_root/experiments_root`。
-研究身份、候选、决定及冻结操作使用调用方声明的`ResearchWorkspace`；登记位置由
-`registry_path`给出。研究目录的组织规范见[研究空间](../../research/README.md)和
-[实验空间](../../experiments/README.md)。
-
-`create_research_batch(context, input_path, material=ref, actor=..., reason=...)`
-读取显式JSON请求：必填`strategy_id/name/scope/research_intent/credential_id`，可选
-`research_state`。`material`必须为`ResearchEvidenceRef`，归属为
-`ResearchEvidenceOwner(strategy_id)`；调用方在`ResearchWorkspace.evidence`中绑定其根目录。
-平台先核验材料的归属、可用性及原始字节哈希，再通过SM登记身份、意图及凭据；不创建或修改
-研究交接文档，不按研究目录是否存在分配凭据编号，不在失败时删除研究资料。
-`update_research_intent`使用同一个显式登记位置，只更新登记事实。
-
-`EvaluationFiles(input_root="调用方选择的输入根目录", output_path="调用方选择的发布目录")`
-从`research_tools`导入。两个字段均为仓库相对路径；文件化评价必须通过`files=`提供该对象。
-请求文件的位置和名称独立指定，请求中的`runtime_root/runtime_binding`相对`input_root`；
-策略及实验身份来自请求字段，目录名不提供身份。输出目录由调用方选择，平台在其中保存
-`evaluation_result.json`和各窗口／场景产物，拒绝输出覆盖请求、源码及绑定。重复发布仍核验
-完整文件集合、身份及哈希，不覆盖不同内容的证据。调用方迁移空间时重新提供路径绑定。
-显式`Path`参数可使用仓库相对路径或仓库内绝对路径，相对路径以`context.root`为基准，
-越界、父目录跳转及链接路径在读写前失败。
 
 ## 3. 实验预检与执行
 
@@ -119,7 +95,7 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 | --- | --- | --- |
 | 实验内账户评价 | `context.evaluation.evaluate(EvaluationRequest)` | `EvaluationResult`，含各窗口／成本场景的账户、基准及身份 |
 | 实验内批量评价 | `context.evaluation.evaluate_many(tuple[EvaluationRequest, ...])` | 按输入顺序返回`EvaluationOutcome`，分别携带终态记录和可选成功结果 |
-| 文件化评价及发布 | `evaluate_research_request(context, input_path, files=EvaluationFiles(...))` | 调用方指定目录中的评价产物及文件哈希 |
+| 文件化评价及发布 | `evaluate_research_request(context, input_path)` | 实验`artifacts/evaluation/`及文件哈希 |
 | 候选或版本完整回测 | `run_backtest(context, strategy, request)` | 账户、指标、审计、报告及图表，位于返回的`artifacts.output_dir` |
 
 `run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequest`。
@@ -200,7 +176,7 @@ DFLS统一管理数据资产及复用，TDR不再生成供独立取数使用的C
 ## 5. 证据读取与失败语义
 
 - 前驱通过REX `load_experiment_input`及可信的`expected_receipt_sha256`读取。
-- 当前契约档案通过`validate_archives(context, archives)`校验；`archives`必须是非空`tuple[Path, ...]`。调用方选择全部目标，平台不扫描默认目录。空清单、重复路径、越界及链接路径明确失败；遇到不支持的历史格式也明确失败。档案身份取自manifest，不依赖保存目录名。
+- 当前契约档案通过`validate_archives(context, archive)`或`all_archives=True`校验，二者只能选一。全库调用遇到不支持的历史格式会明确失败，不等于平台承诺全部历史档案可复验。
 - 文件化评价重复发布校验既有身份及文件哈希；不同结果不得覆盖旧证据。
 - 重复调用可能重新准备数据和执行计算，不推定无副作用。
 - 数据截止日缺口、输入身份不符、未完成审计均显式报告，不静默缩窗或降级。
@@ -224,11 +200,9 @@ DFLS统一管理数据资产及复用，TDR不再生成供独立取数使用的C
 | `register_candidate(context, request)` | `CandidateRegistrationRequest(candidate, origin, dependencies, derivation=None)` → `CandidateRegistration` |
 | `load_candidate(context, key)` | `CandidateKey(strategy_id, candidate_id)` → `StrategyCandidate` |
 
-来源绑定实验定义、源码绑定和预检证据。调用方通过`ResearchWorkspace.registry_path`选择登记根目录，
-通过`CandidateLocation(key, experiment_id)`声明候选来源，再由`DeliveryWorkspace.experiments`
-提供该实验的实际目录。登记根目录内的`<策略ID>/candidates/`是SM机器记录布局。
+来源绑定实验定义、源码绑定和预检证据。登记记录位于`research/registrations/<策略ID>/candidates/`，
 新登记使用`CandidateRegistration.schema_version=2`；源码、载荷和来源证据保存在来源实验的
-调用方声明的实验根目录内的`objects/`。登记内的文件引用相对该实验根目录，
+`experiments/<策略ID>/<实验ID>/objects/`。登记内的文件引用相对该实验根目录，
 `CandidateRegistrationRequest`中的输入证据路径仍相对仓库。同一键和登记内容重复调用返回原记录；
 不同内容拒绝覆盖。实验封存后不得补写候选对象；已存在且一致的对象可只读复用。
 读取与写入只接受schema 2登记；序列化记录须显式提供`schema_version=2`与`identity_schema_version=2`。
@@ -330,44 +304,23 @@ costs = (
 | `INSPECTION` | `CandidateInspectionDelivery`：技术检验、用户决定、可选冻结回执及待决事项 |
 
 新`DeliveryDefinition`和`DeliveryReceipt`使用schema 4；`DeliveryDefinition`及`DeliveryReference`
-以`owner`明确逻辑归属。调用方通过`RepositoryContext.discover(..., delivery_workspace=...)`
-明确提供交付目录、前驱交付目录及绑定实验源码目录；TDR按声明位置读写，不从研究ID、
-实验ID、阶段或修订号推导目录。遗漏位置时明确失败，即使原约定目录下存在文件也不会自动读取。
+以`owner`明确归属，调用方不指定任意发布目录：
 
-| 归属类型 | 允许阶段 | 位置契约 |
+| 归属类型 | 允许阶段 | 发布路径（相对仓库） |
 | --- | --- | --- |
-| `MandateOwner(strategy_id)` | `MANDATE` | `DeliveryLocation(owner, stage, revision, path)` |
-| `ExperimentOwner(strategy_id, experiment_id)` | 阶段二至五 | `DeliveryLocation`及`ExperimentLocation(owner, path)` |
+| `MandateOwner(strategy_id)` | `MANDATE` | `research/<策略ID>/mandates/<修订>/` |
+| `ExperimentOwner(strategy_id, experiment_id)` | 阶段二至五 | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
 
 ```python
-from pathlib import Path
-from czsc_trader.application import RepositoryContext
-from czsc_trader.research_tools import (
-    DeliveryDefinition, DeliveryStage, ExperimentOwner,
-    DeliveryLocation, ExperimentLocation, DeliveryWorkspace,
-)
+from czsc_trader.research_tools import DeliveryDefinition, DeliveryStage, ExperimentOwner
 
 definition = DeliveryDefinition(
     owner=ExperimentOwner("S900", "EX001_20261004"),
     stage=DeliveryStage.COMPONENTS,
     revision=1,
 )
-workspace = DeliveryWorkspace(
-    deliveries=(DeliveryLocation(definition.owner, definition.stage, 1,
-                                 "experiments/S900/EX001_20261004/results/components-1"),),
-    experiments=(ExperimentLocation(definition.owner,
-                                    "experiments/S900/EX001_20261004"),),
-)
-context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 # 发布前，该归属实验须已存在有效定义和源码绑定，且尚未生成实验manifest。
 ```
-
-`DeliveryWorkspace`覆盖本次交付及其前驱链条所需的位置；所有路径相对仓库，拒绝越界路径、
-链接、重复身份及相互重叠的交付目录。迁移目录后重新提供位置即可复验原`DeliveryReference`，
-物理路径不改变内容身份。实验身份取自REX源码定义，保存目录及目录名由调用方指定；
-所有支持的实验编号都核对定义中的策略、实验身份及执行回执中的定义和源码哈希。
-复验会通过REX加载绑定源码的定义，不调用实验预检或正式执行。
-候选、决定、检验和冻结空间另由下述`ResearchWorkspace`显式声明。
 
 每份交付包含`delivery.json`、`report.md`、`receipt.json`及声明证据；`attachments/`保存附件，
 `experiments/`保存声明实验的回执与制品副本。`EvidenceFile.source_path`相对仓库，
@@ -379,10 +332,6 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 先完成受管执行并保存回执及制品，再保存需要交接的候选实体、发布阶段交付，最后生成
 `experiment_manifest.json`封存整个实验。封存后拒绝追加交付，后续修订由新实验承接；
 已有同内容交付可只读核验后返回。`build_experiment_manifest`也拒绝覆盖不同内容的已有清单。
-调用方指定的研究写入位置同样受此约束：检查目标及其祖先目录的封存清单，禁止向封存实验
-追加评价、交付、候选、研究登记、决定、检验证据或冻结事务日志；研究写入位置不得与平台运行发布空间
-重叠。新评价在执行前检查位置，发布前再次检查；已有同内容产物可只读复核。正式冻结发布
-仍通过专用冻结API写入运行发布空间。
 `COMPLETE/PARTIAL/BLOCKED`表达交付完整度，与验证`PASS/FAIL`分别判定。
 
 交付读写只支持schema 4及带`owner`的`DeliveryReference`，旧回执不能由当前API恢复或复验。
@@ -412,19 +361,6 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 | `inspect_candidate(context, request)` | `CandidateInspectionRequest` → `CandidateInspectionReport` |
 | `freeze_candidate(context, request)` | `FreezeCandidateRequest(request_id, inspection, approval)` → `FreezeReceipt` |
 | `get_freeze_result(context, request_id)` | `FreezeRequestId(strategy_id, value)` → `FreezeReceipt` |
-
-上述入口要求`context.research_workspace`。从`czsc_trader.research_tools`导入
-`ResearchWorkspace/CandidateLocation/FreezeJournalLocation`，从`strategy_manager`导入
-`ResearchEvidenceLocation/ResearchEvidenceOwner`；调用方声明登记、候选来源、逻辑归属的证据根目录
-和冻结事务根目录。目录位置由研究员选择，未声明时明确失败，不查找既有研究目录。
-`RepositoryContext.discover(..., delivery_workspace=..., research_workspace=...)`分别接收两组绑定。
-
-| `ResearchWorkspace`字段 | 声明内容 |
-| --- | --- |
-| `registry_path` | SM登记根目录，相对仓库 |
-| `candidates` | `CandidateLocation`元组；候选键与来源实验ID的绑定，实际目录在`DeliveryWorkspace.experiments`声明 |
-| `evidence` | `ResearchEvidenceLocation`元组；每个逻辑归属的实际证据根目录 |
-| `freeze_journals` | `FreezeJournalLocation`元组；每个策略的实际事务日志根目录 |
 
 调用顺序与必要输入：
 
@@ -461,8 +397,7 @@ from czsc_trader.research_tools import ExperimentEvidenceRef, ExperimentEvidence
 from research_experiment import load_experiment_input
 from strategy_manager import CandidateEvidence
 
-# experiment_root由研究员明确提供，须指向该回执的归属实验。
-archived_workspace = experiment_root / "artifacts/rex"
+archived_workspace = context.experiments_root / strategy_id / record.experiment_id / "artifacts/rex"
 load_experiment_input(archived_workspace, expected_receipt_sha256=source_receipt.sha256)
 reference = EvaluationEvidenceReference(
     experiment=ExperimentEvidenceRef(
@@ -497,12 +432,9 @@ REX执行回执仍为schema 2。新归档检验要求评价产物schema 4，旧�
 `release_id/release_hash`形成`RuntimeBinding`。观察定义绑定到候选内容，不保存策略绘图代码。
 
 检验、计划和确认材料使用`ResearchEvidenceRef(owner, path, sha256)`，`path`相对其强类型归属。
-`ResearchEvidenceLocation(owner, path)`将归属绑定到调用方选择的仓库相对目录。
-用户决定及确认材料使用该证据根目录内的`decisions/`机器记录；检验证据使用其归属证据根目录内的
-`objects/inspection/`；冻结请求及查询事实使用`FreezeJournalLocation`指定根目录内的`<请求ID>/`。
-调用方复用API返回的引用，通过`ref.resolve(context.root, location=declared_location)`核验。
-`StageAdvanceSubject.delivery`和`CandidateSelectionSubject.delivery`要求`ResearchEvidenceRef`，
-使决定随归属空间迁移后仍能定位原交付。原仓库路径形式的决定不自动转换或改写。
+用户决定及确认材料存于`research/<策略ID>/decisions/`；检验证据存于当前正式实验的
+`objects/inspection/`；冻结请求与查询事实存于`research/<策略ID>/freeze_requests/<请求ID>/`。
+调用方直接复用API返回的引用，通过`resolve(context.root)`核验，不自行拼接`strategies/`路径。
 `CandidateEvidence`仍用于原评价产物及登记输入，路径按对应接口声明的根目录解析。
 
 仅`COMMITTED`表示版本完成冻结；新版本使用schema 5，保留来源实验、候选编号及固定运行内容。

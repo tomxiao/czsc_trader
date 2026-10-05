@@ -20,7 +20,6 @@ from strategy_evaluator import (
 )
 
 from .context import RepositoryContext
-from .research_storage import require_research_write
 from ..research_tools import delivery as d
 from ..temp_workspace import create_temporary_directory
 
@@ -46,26 +45,14 @@ def _resolve(root: Path, relative: str) -> Path:
 
 
 def _delivery_path(context: RepositoryContext, reference) -> Path:
-    workspace = _workspace(context)
-    for location in workspace.deliveries:
-        if (location.owner, location.stage, location.revision) == (
-            reference.owner, reference.stage, reference.revision
-        ):
-            return _resolve(context.root, location.path)
-    _fail("DELIVERY_LOCATION", "delivery_workspace.deliveries", "delivery location is not declared")
-
-
-def _workspace(context):
-    if type(context.delivery_workspace) is not d.DeliveryWorkspace:
-        _fail("DELIVERY_LOCATION", "delivery_workspace", "explicit DeliveryWorkspace is required")
-    return context.delivery_workspace
-
-
-def _experiment_path(context, owner):
-    for location in _workspace(context).experiments:
-        if location.owner == owner:
-            return _resolve(context.root, location.path)
-    _fail("EXPERIMENT_LOCATION", "delivery_workspace.experiments", "experiment source location is not declared")
+    if isinstance(reference.owner, d.MandateOwner):
+        return _resolve(
+            context.root, f"research/{reference.strategy_id}/mandates/{reference.revision}"
+        )
+    return _resolve(
+        context.root,
+        f"experiments/{reference.strategy_id}/{reference.owner.experiment_id}/deliveries/{reference.stage.value}/{reference.revision}",
+    )
 
 
 def _validate_owner(context, definition, *, publishing=False):
@@ -75,13 +62,14 @@ def _validate_owner(context, definition, *, publishing=False):
     from ..experiment_archive import validate_experiment_archive
 
     owner = definition.owner
-    root = _experiment_path(context, owner)
+    root = _resolve(context.root, f"experiments/{owner.strategy_id}/{owner.experiment_id}")
     binding = ExperimentBinding.from_mapping(_read_json(_resolve(root, "experiment_binding.json")))
     for name in binding.source_files:
         _resolve(root, name)
     if experiment_source_sha256(root, binding.source_files) != binding.source_sha256:
         _fail("OWNER_BINDING", "owner", "experiment source differs from binding")
-    _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
+    if owner.experiment_id.startswith("EX"):
+        _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
     if (root / "experiment_manifest.json").exists():
         if publishing:
             _fail("EXPERIMENT_SEALED", "owner", "cannot publish into a sealed experiment")
@@ -121,7 +109,7 @@ def _walk(value):
 def _load_scoped_experiment(context, strategy_id, experiment_id):
     from research_experiment import load_experiment
 
-    source = _experiment_path(context, d.ExperimentOwner(strategy_id, experiment_id))
+    source = _resolve(context.root, f"experiments/{strategy_id}/{experiment_id}")
     loaded = load_experiment(source)
     if (loaded.definition.strategy_id, loaded.definition.experiment_id) != (
         strategy_id, experiment_id
@@ -145,11 +133,12 @@ def _load_experiments(definition, root: Path, *, published: bool, context):
         if result.experiment_id != ref.experiment_id:
             _fail("EXPERIMENT_IDENTITY", relative, "experiment ID differs from reference")
         receipt = envelope["receipt"]
-        loaded = _load_scoped_experiment(context, definition.strategy_id, ref.experiment_id)
-        if (receipt["definition_sha256"], receipt["source_sha256"]) != (
-            loaded.definition.sha256, loaded.binding.source_sha256
-        ):
-            _fail("EXPERIMENT_IDENTITY", relative, "receipt differs from bound experiment")
+        if ref.experiment_id.startswith("EX"):
+            loaded = _load_scoped_experiment(context, definition.strategy_id, ref.experiment_id)
+            if (receipt["definition_sha256"], receipt["source_sha256"]) != (
+                loaded.definition.sha256, loaded.binding.source_sha256
+            ):
+                _fail("EXPERIMENT_IDENTITY", relative, "receipt differs from bound experiment")
         if ref.use is d.ExperimentEvidenceUse.CURRENT_EVALUATION and receipt["schema_version"] != 2:
             _fail(
                 "EXPERIMENT_SCHEMA",
@@ -310,7 +299,6 @@ def _validate_inspection_delivery(definition, content, root, context):
     from strategy_manager import ResearchEvidenceRef
     from strategy_manager import freeze_contracts as f
     from .research_evidence import read_decision, validate_inspection
-    from .research_paths import resolve_evidence, journal_root
 
     payload = content.payload
     if (payload.inspection.owner.strategy_id, payload.inspection.owner.experiment_id) != (definition.strategy_id, definition.owner.experiment_id):
@@ -321,13 +309,13 @@ def _validate_inspection_delivery(definition, content, root, context):
         json.loads(_read_evidence(root, payload.inspection_evidence))
     )
     if report != payload.inspection or report != validate_inspection(
-        context, report.reference
+        context.root, report.reference
     ):
         _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
-    selection = read_decision(context, report.selection)
+    selection = read_decision(context.root, report.selection)
     receipt_path = _delivery_path(context, payload.source_assessment) / "receipt.json"
     if (
-        resolve_evidence(context, selection.subject.delivery) != receipt_path.resolve()
+        selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
         or selection.subject.delivery.sha256 != sha256(receipt_path.read_bytes()).hexdigest()
     ):
         _fail("INSPECTION_SELECTION", "source_assessment", "selection refers to another assessment")
@@ -337,13 +325,13 @@ def _validate_inspection_delivery(definition, content, root, context):
     }
     records = [report]
     for ref in (report.selection, *payload.decisions):
-        record = read_decision(context, ref)
+        record = read_decision(context.root, ref)
         if record.strategy_id != definition.strategy_id:
             _fail("INSPECTION_DECISION", ref.decision_id, "decision family differs")
         for evidence in (ref.evidence, record.confirmation_source):
             if (
                 evidence.sha256,
-                resolve_evidence(context, evidence).read_bytes(),
+                evidence.resolve(context.root).read_bytes(),
             ) not in attached:
                 _fail("INSPECTION_EVIDENCE", evidence.path, "decision evidence must be attached")
         if (
@@ -353,7 +341,7 @@ def _validate_inspection_delivery(definition, content, root, context):
             _fail("INSPECTION_DECISION", ref.decision_id, "freeze decision report differs")
     for value in _walk(records[0]):
         if isinstance(value, ResearchEvidenceRef):
-            if (value.sha256, resolve_evidence(context, value).read_bytes()) not in attached:
+            if (value.sha256, value.resolve(context.root).read_bytes()) not in attached:
                 _fail("INSPECTION_EVIDENCE", value.path, "inspection evidence must be attached")
     if payload.freeze is not None:
         from .inspection_service import get_freeze_result
@@ -361,7 +349,8 @@ def _validate_inspection_delivery(definition, content, root, context):
         if receipt != payload.freeze:
             _fail("FREEZE_RECEIPT", "freeze", "freeze receipt differs from actual result")
         if receipt.status is f.FreezeStatus.COMMITTED:
-            request_path = (journal_root(context, receipt.request_id) / receipt.request_id.value / "research_request.json")
+            request_path = (context.research_root / receipt.request_id.strategy_id
+                            / "freeze_requests" / receipt.request_id.value / "research_request.json")
             request = f.FreezeCandidateRequest.from_dict(
                 json.loads(request_path.read_text(encoding="utf-8")))
             if (
@@ -1011,7 +1000,6 @@ def validate_delivery(
 
     Predecessors receive integrity validation. Neither scope reruns account backtests.
     Experiment definitions may be loaded to verify source and owner binding.
-    All delivery/source locations come from context.delivery_workspace.
     """
     if type(scope) is not d.DeliveryValidationScope:
         raise TypeError("scope requires DeliveryValidationScope")
@@ -1059,10 +1047,7 @@ def _validate_new_catalog_references(content: d.DeliveryContent, context: Reposi
 def assemble_delivery(
     context: RepositoryContext, deliverable: d.ResearchDeliverable
 ) -> d.DeliveryReceipt:
-    """Publish into the explicit context.delivery_workspace location atomically.
-
-    All predecessor and experiment source locations must be declared by the caller.
-    """
+    """Build once, verify, then publish one immutable revision with an atomic rename."""
     if not isinstance(context, RepositoryContext) or not isinstance(
         deliverable, d.ResearchDeliverable
     ):
@@ -1091,7 +1076,6 @@ def assemble_delivery(
                 )
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
             return _read_delivery(context, receipt.reference, destination, set())
-        require_research_write(context, destination)
         _validate_new_catalog_references(content, context)
         owner_root = _validate_owner(context, definition, publishing=True)
         if owner_root is not None:
@@ -1106,14 +1090,16 @@ def assemble_delivery(
             _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
         experiments = _load_experiments(definition, context.root, published=False, context=context)
         if isinstance(content.payload, d.CandidateSet):
-            from strategy_manager import StrategyManagerError
+            from strategy_manager import StrategyRegistry, StrategyManagerError
             from strategy_runtime.errors import StrategyRuntimeError
-            from .candidate_service import load_candidate, _registration
+            from .candidate_service import load_candidate
 
             identities = {x.identity.key: x.identity for x in content.payload.candidates}
             for key in content.payload.handoff:
                 try:
-                    registration = _registration(context, key)
+                    registration = StrategyRegistry(context.research_registry_root).get_candidate(
+                        key, experiments_root=context.experiments_root
+                    )
                     if registration.content_sha256 != identities[key].content_sha256:
                         raise ValueError("registered candidate content differs from handoff")
                     load_candidate(context, key)
@@ -1167,7 +1153,6 @@ def assemble_delivery(
         _validate_owner(context, definition, publishing=True)
         if destination.exists():
             return _existing(context, reference, destination)
-        require_research_write(context, destination)
         destination.parent.mkdir(parents=True, exist_ok=True)
         try:
             staging.rename(destination)

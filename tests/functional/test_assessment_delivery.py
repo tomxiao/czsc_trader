@@ -1,4 +1,3 @@
-from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -90,7 +89,7 @@ class Experiment(ResearchExperiment):
         use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     evaluation_result = loaded.implementation.result
-    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
+    context = RepositoryContext.discover(root)
     family = StrategyFamily(
         2,
         "S900",
@@ -102,10 +101,10 @@ class Experiment(ResearchExperiment):
         "test",
         "2026-10-01T00:00:00+00:00",
     )
-    StrategyRegistry((context.root / "research/registrations")).create_family(
+    StrategyRegistry(context.research_registry_root).create_family(
         family, actor="test", reason="fixture"
     )
-    path = (context.root / "experiments") / "S900" / request.experiment_id
+    path = context.experiments_root / "S900" / request.experiment_id
     loaded = load_experiment(path)
     preflight = preflight_experiment(loaded, resources=ExperimentResources(1, 1))
     preflight.require_pass()
@@ -615,24 +614,24 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
 ):
     context, _, _, _, _ = completed
     prepare(completed)
-    root = (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/CANDIDATES/1"
+    root = context.experiments_root / "S900/20261001_S900_EX01/deliveries/CANDIDATES/1"
     document = json.loads((root / "delivery.json").read_text(encoding="utf-8"))
     definition = d.DeliveryDefinition.from_dict(document["definition"])
     value = d.DeliveryContent.from_dict(document["content"])
     receipt = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text()))
-    registry = StrategyRegistry((context.root / "research/registrations"))
+    registry = StrategyRegistry(context.research_registry_root)
     registration = registry.get_candidate(
-        CandidateKey("S900", "C0001"), evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01"
+        CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
     )
     if damage == "missing":
-        path = (context.root / "research/registrations") / "S900/candidates/C0001.json"
+        path = context.research_registry_root / "S900/candidates/C0001.json"
         path.rename(path.with_suffix(".removed"))
     elif damage == "content":
-        path = registration.payload.resolve((context.root / "experiments") / "S900/20261001_S900_EX01")
+        path = registration.payload.resolve(context.experiments_root / "S900/20261001_S900_EX01")
         path.write_text("{}")
     else:
         path = registration.source_files[0].resolve(
-            (context.root / "experiments") / "S900/20261001_S900_EX01"
+            context.experiments_root / "S900/20261001_S900_EX01"
         )
         path.write_bytes(path.read_bytes() + b"\n# changed\n")
     with pytest.raises(d.DeliveryValidationError) as error:
@@ -684,4 +683,4 @@ def prepared_delivery(request, tmp_path, frozen_seed_root):
     root = tmp_path / "assessment-repo"
     shutil.copytree(seed, root)
     definition, value = pickle.loads(data.read_bytes())
-    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace()), definition, value
+    return RepositoryContext.discover(root), definition, value

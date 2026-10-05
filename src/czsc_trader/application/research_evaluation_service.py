@@ -12,7 +12,6 @@ from typing import Any, BinaryIO, Iterator, Mapping
 
 import pandas as pd
 from strategy_runtime import StrategyCandidate
-from strategy_manager import CandidateKey, StrategyManagerError
 
 from czsc_trader.research_tools import (
     EvaluationBenchmark,
@@ -20,16 +19,12 @@ from czsc_trader.research_tools import (
     EvaluationRequest,
     EvaluationResult,
     EvaluationWindow,
-    EvaluationFiles,
     evaluate_strategy,
 )
 from czsc_trader.temp_workspace import create_temporary_directory, replace_directory
 
 from .context import RepositoryContext
-from .delivery_service import _resolve
 from .errors import ValidationError
-from .research_paths import repository_path
-from .research_storage import require_research_write
 from .results import CommandResult
 
 
@@ -66,14 +61,31 @@ def _safe_child(root: Path, value: object, field: str) -> Path:
     relative = PurePosixPath(value)
     if relative.is_absolute() or ".." in relative.parts or "\\" in value or ":" in value:
         raise ValueError(f"{field} contains an unsafe path")
-    return _resolve(root, relative.as_posix())
+    target = (root / Path(*relative.parts)).resolve()
+    try:
+        target.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ValueError(f"{field} escapes the experiment") from exc
+    return target
+
+
+def _request_path(context: RepositoryContext, input_path: Path) -> tuple[Path, Path]:
+    path = input_path.resolve() if input_path.is_absolute() else (context.root / input_path).resolve()
+    if not path.is_file():
+        raise ValueError(f"evaluation request is unavailable: {path}")
+    relative = path.relative_to(context.experiments_root.resolve())
+    if len(relative.parts) != 3 or path.name != "evaluation_request.json":
+        raise ValueError(
+            "evaluation request must be experiments/<strategy>/<experiment>/evaluation_request.json"
+        )
+    return path, path.parent
 
 
 def _evaluation_request(
     context: RepositoryContext,
     path: Path,
-    input_root: Path,
-) -> tuple[EvaluationRequest, Path]:
+    experiment: Path,
+) -> EvaluationRequest:
     raw = _read_object(path)
     _exact(
         raw,
@@ -83,8 +95,8 @@ def _evaluation_request(
         },
         "evaluation request",
     )
-    if type(raw["schema_version"]) is not int or raw["schema_version"] != 2:
-        raise ValueError("evaluation request schema is invalid")
+    if type(raw["schema_version"]) is not int or raw["schema_version"] != 2 or raw["experiment_id"] != experiment.name:
+        raise ValueError("evaluation request schema or experiment identity is invalid")
 
     strategy_raw = raw["strategy"]
     if not isinstance(strategy_raw, dict):
@@ -97,10 +109,11 @@ def _evaluation_request(
         },
         "evaluation strategy",
     )
-    CandidateKey(strategy_raw["strategy_id"], strategy_raw["candidate_id"])
-    runtime_root = _safe_child(input_root, strategy_raw["runtime_root"], "runtime_root")
+    if strategy_raw["strategy_id"] != experiment.parent.name:
+        raise ValueError("evaluation strategy identity differs from the experiment directory")
+    runtime_root = _safe_child(experiment, strategy_raw["runtime_root"], "runtime_root")
     binding_path = _safe_child(
-        input_root, strategy_raw["runtime_binding"], "runtime_binding"
+        experiment, strategy_raw["runtime_binding"], "runtime_binding"
     )
     binding = _read_object(binding_path)
     candidate = StrategyCandidate(
@@ -171,9 +184,9 @@ def _evaluation_request(
         "evaluation execution",
     )
 
-    request = EvaluationRequest(
+    return EvaluationRequest(
         repository_root=context.root,
-        experiment_id=_json_string(raw["experiment_id"], "experiment_id"),
+        experiment_id=experiment.name,
         strategy=candidate,
         runtime_binding=binding,
         symbol=_json_string(market["symbol"], "symbol"),
@@ -187,7 +200,6 @@ def _evaluation_request(
         frequency_window_days=_json_number(execution["frequency_window_days"], "frequency_window_days", integer=True),
         execution_mode=_json_string(execution["mode"], "mode"),
     )
-    return request, binding_path
 
 
 def _file_hash(path: Path) -> str:
@@ -286,9 +298,10 @@ def _run_documents(result: EvaluationResult) -> list[dict[str, object]]:
 
 def _publish_result(
     context: RepositoryContext,
-    destination: Path,
+    experiment: Path,
     result: EvaluationResult,
 ) -> tuple[Path, dict[str, object]]:
+    destination = experiment / "artifacts" / "evaluation"
     result_path = destination / "evaluation_result.json"
     if destination.exists():
         if not result_path.is_file():
@@ -337,11 +350,10 @@ def _publish_result(
                 raise ValueError(f"evaluation artifact hash differs: {name}")
         return destination, existing
 
-    require_research_write(context, destination)
     staging = create_temporary_directory(
-        destination,
+        experiment,
         "research-evaluation",
-        prefix="evaluation-",
+        prefix=f"{experiment.name.lower()}-",
         repository_root=context.root,
     )
     try:
@@ -360,7 +372,6 @@ def _publish_result(
             "files": dict(sorted(files.items())),
         }
         _write_json(staging / "evaluation_result.json", document)
-        require_research_write(context, destination)
         destination.parent.mkdir(parents=True, exist_ok=True)
         replace_directory(staging, destination)
     except Exception:
@@ -372,29 +383,15 @@ def _publish_result(
 def evaluate_research_request(
     context: RepositoryContext,
     input_path: Path,
-    *,
-    files: EvaluationFiles,
 ) -> CommandResult:
     """Execute and atomically publish one complete research evaluation request."""
 
     try:
-        if type(files) is not EvaluationFiles:
-            raise TypeError("file evaluation requires EvaluationFiles")
-        path = repository_path(context, input_path)
-        input_root = _resolve(context.root, files.input_root)
-        destination = _resolve(context.root, files.output_path)
-        if not destination.exists():
-            require_research_write(context, destination)
-        if not path.is_file() or not input_root.is_dir():
-            raise ValueError("evaluation request or input root is unavailable")
-        request, binding = _evaluation_request(context, path, input_root)
-        if any(p.is_relative_to(destination) for p in (path, request.strategy.source_root, binding)):
-            raise ValueError("evaluation output overlaps its input files")
-        if destination.is_relative_to(request.strategy.source_root):
-            raise ValueError("evaluation output overlaps its runtime source")
+        path, experiment = _request_path(context, input_path)
+        request = _evaluation_request(context, path, experiment)
         result = evaluate_strategy(request)
-        output, document = _publish_result(context, destination, result)
-    except (StrategyManagerError, KeyError, TypeError, ValueError, OSError) as exc:
+        output, document = _publish_result(context, experiment, result)
+    except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError) as exc:
         raise ValidationError(
             "research_evaluation_failed",
             str(exc),

@@ -1,4 +1,3 @@
-from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from strategy_evaluator import research_models as m
 from dataclasses import replace
 from hashlib import sha256
@@ -45,7 +44,7 @@ class Deliverable(d.ResearchDeliverable):
 def context(tmp_path):
     (tmp_path / "src/czsc_trader").mkdir(parents=True)
     (tmp_path / "pyproject.toml").write_text("")
-    result = RepositoryContext.discover(tmp_path, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
+    result = RepositoryContext.discover(tmp_path)
     owner_experiment(result)
     return result
 
@@ -94,14 +93,7 @@ def published(context, receipt):
 
 def experiment(context, *, records=(), number=1, predecessors=None):
     """Construct deterministic executor-format evidence, verified by the real REX reader."""
-    from research_experiment import load_experiment
-    from czsc_trader.application.delivery_service import _experiment_path
-
     experiment_id = f"20261001_S900_EX{number:02}"
-    source = _experiment_path(context, d.ExperimentOwner("S900", experiment_id))
-    if not source.exists():
-        owner_experiment(context, number)
-    loaded = load_experiment(source)
     root = context.root / ".tmp" / experiment_id
     root.mkdir(parents=True)
     (root / "result.json").write_text('{"measurement":0.25}')
@@ -119,8 +111,8 @@ def experiment(context, *, records=(), number=1, predecessors=None):
     receipt = ExperimentReceipt._from_execution(
         schema_version=2,
         experiment_id=experiment_id,
-        definition_sha256=loaded.definition.sha256,
-        source_sha256=loaded.binding.source_sha256,
+        definition_sha256="a" * 64,
+        source_sha256="b" * 64,
         resources_sha256="c" * 64,
         predecessor_receipts=predecessors or {},
         result_sha256=canonical_sha256(result.to_dict()),
@@ -176,7 +168,7 @@ def new_named_experiment(context, strategy_id="S900"):
     )
     from czsc_trader.research_tools import create_experiment_context, execute_experiment
 
-    root = (context.root / "experiments") / strategy_id / "EX078_20261003"
+    root = context.experiments_root / strategy_id / "EX078_20261003"
     _write_v3_experiment(root)
     source = root / "experiment.py"
     source.write_text(
@@ -224,39 +216,14 @@ def test_delivery_rejects_foreign_family_executor_receipt(context):
     assert not (root / "deliveries").exists()
 
 
-@pytest.mark.parametrize("naming", ["dated", "sequence"])
-@pytest.mark.parametrize("field", ["definition_sha256", "source_sha256"])
-def test_delivery_checks_bound_receipt_identity_for_all_experiment_names(context, naming, field):
-    if naming == "sequence":
-        source, ref = new_named_experiment(context)
-        owner = d.ExperimentOwner("S900", source.name)
-    else:
-        ref, _ = experiment(context)
-        owner = definition().owner
-    root = context.root / ref.workspace_path
-    envelope = json.loads((root / "execution_envelope.json").read_text())
-    envelope["receipt"][field] = "f" * 64
-    digest = canonical_sha256(envelope["receipt"])
-    envelope["receipt_sha256"] = digest
-    (root / "execution_envelope.json").write_text(json.dumps(envelope))
-    (root / "execution_receipt.json").write_text(json.dumps({**envelope["receipt"], "receipt_sha256": digest}))
-    changed = replace(ref, receipt_sha256=digest)
-    defined = d.DeliveryDefinition(owner, d.DeliveryStage.COMPONENTS, 1, experiments=(changed,))
-    with pytest.raises(d.DeliveryValidationError, match="receipt differs from bound experiment") as error:
-        assemble_delivery(context, Deliverable(defined, content()))
-    assert error.value.issues[0].code == "EXPERIMENT_IDENTITY"
-    from czsc_trader.application.delivery_service import _delivery_path
-    assert not _delivery_path(context, defined).exists()
-
-
 def test_new_experiment_owner_rejects_definition_from_other_family(context):
     root, _ = new_named_experiment(context, "S901")
-    target = (context.root / "experiments") / "S900" / root.name
+    target = context.experiments_root / "S900" / root.name
     shutil.copytree(root, target)
     defined = d.DeliveryDefinition(
         d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1
     )
-    with pytest.raises(d.DeliveryValidationError, match="definition family or ID differs"):
+    with pytest.raises(d.DeliveryValidationError, match="definition strategy differs"):
         assemble_delivery(context, Deliverable(defined, content()))
 
 
@@ -439,7 +406,6 @@ def test_delivery_requires_complete_predecessor_receipt_closure(context):
 
 def test_custom_component_and_bound_test_evidence(context):
     exp, artifact = experiment(context)
-    receipt = json.loads((context.root / exp.workspace_path / "execution_envelope.json").read_text())["receipt"]
     protocol = attachment(context, "protocol.json", {"control": "constant"})
     ref = d.EvidenceRef(
         f"experiments/{exp.experiment_id}/{artifact.path}", artifact.sha256, "application/json"
@@ -454,8 +420,7 @@ def test_custom_component_and_bound_test_evidence(context):
     )
     component = d.ComponentEntry(
         "component",
-        d.ExperimentDefinitionRef(exp.experiment_id, receipt["definition_sha256"],
-                                  receipt["source_sha256"], "experiment.Component"),
+        d.ExperimentDefinitionRef(exp.experiment_id, "a" * 64, "b" * 64, "experiment.Component"),
         "环境识别",
         "未来收益",
         "5日",
@@ -604,7 +569,7 @@ def test_delivery_content_rejects_unknown_serialized_fields():
 def test_delivery_rejects_stage_content_mismatch_without_publication(context):
     with pytest.raises(d.DeliveryValidationError, match="stage"):
         assemble_delivery(context, Deliverable(definition(d.DeliveryStage.MANDATE), content()))
-    assert not ((context.root / "research") / "S900/mandates").exists()
+    assert not (context.research_root / "S900/mandates").exists()
 
 
 def test_delivery_rejects_changed_attachment_without_publication(context):
@@ -612,7 +577,7 @@ def test_delivery_rejects_changed_attachment_without_publication(context):
     (context.root / source.source_path).write_text("changed")
     with pytest.raises(d.DeliveryValidationError, match="hash"):
         assemble_delivery(context, Deliverable(definition(), content(attachments=(source,))))
-    assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
+    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
 
 
 def test_delivery_publication_interruption_leaves_no_visible_revision(context, monkeypatch):
@@ -623,7 +588,7 @@ def test_delivery_publication_interruption_leaves_no_visible_revision(context, m
     with pytest.raises(d.DeliveryValidationError, match="interruption"):
         assemble_delivery(context, Deliverable(definition(), content()))
     assert not (
-        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
     ).exists()
 
 
@@ -673,7 +638,7 @@ def test_actual_rex_executor_receipt_can_be_published(context):
         experiments=(ref,),
     )
     owner_root = (
-        (context.root / "experiments") / loaded.definition.strategy_id / loaded.definition.experiment_id
+        context.experiments_root / loaded.definition.strategy_id / loaded.definition.experiment_id
     )
     shutil.copytree(loaded.root, owner_root)
     receipt = assemble_delivery(context, Deliverable(defined, content()))
@@ -707,7 +672,7 @@ def test_real_filesystem_link_cannot_supply_delivery_evidence(context):
             assemble_delivery(
                 context, Deliverable(definition(), content(attachments=(linked_source,)))
             )
-        assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
+        assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
     finally:
         if os.name == "nt":
             linked.rmdir()
@@ -835,7 +800,7 @@ def test_new_catalog_reference_requires_real_fsc_membership(context, delivery_ca
         return
     with pytest.raises(d.DeliveryValidationError, match="registered FSC"):
         assemble_delivery(context, Deliverable(definition(), package))
-    assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
+    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
 
 
 
@@ -844,7 +809,7 @@ def owner_experiment(context, number=1):
     from test_research_experiment import _write_v3_experiment
     from research_experiment import experiment_source_sha256
 
-    root = (context.root / "experiments") / "S900" / f"20261001_S900_EX{number:02}"
+    root = context.experiments_root / "S900" / f"20261001_S900_EX{number:02}"
     _write_v3_experiment(root)
     source = root / "experiment.py"
     source.write_text(

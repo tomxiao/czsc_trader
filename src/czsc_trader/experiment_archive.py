@@ -27,6 +27,26 @@ EXPERIMENT_DIRECTORY_PATTERN = re.compile(r"EX(?P<number>(?!000_)[0-9]{3})_(?P<d
 STRATEGY_ID_PATTERN = re.compile(r"S[0-9]{3}$")
 
 
+def iter_experiment_dirs(root: Path) -> tuple[Path, ...]:
+    """Return every archive below the strategy-organized experiment root."""
+    root = Path(root).resolve()
+    if not root.is_dir():
+        return ()
+    directories = sorted(
+        {path.parent for path in root.rglob(MANIFEST_NAME)},
+        key=lambda path: path.relative_to(root).as_posix(),
+    )
+    identities: dict[tuple[str, str], Path] = {}
+    for directory in directories:
+        relative = directory.relative_to(root)
+        if len(relative.parts) > 2:
+            raise ValueError(f"experiment archive is nested too deeply: {relative.as_posix()}")
+        previous = identities.setdefault((directory.parent.name, directory.name), directory)
+        if previous != directory:
+            raise ValueError(f"duplicate experiment_id directory: {directory.name}")
+    return tuple(directories)
+
+
 def resolve_experiment_dir(root: Path, experiment_id: str, *, strategy_id: str | None = None) -> Path:
     """Resolve an experiment; require its strategy when names are ambiguous."""
     if not experiment_id or Path(experiment_id).name != experiment_id:
@@ -54,6 +74,31 @@ def resolve_experiment_dir(root: Path, experiment_id: str, *, strategy_id: str |
     if len(matches) > 1:
         raise ValueError(f"experiment ID is ambiguous: {experiment_id}")
     return matches[0]
+
+
+def experiment_repository_reference(experiments_root: Path, experiment_dir: Path) -> str:
+    """Return the repository-relative reference for an archive directory."""
+    root = Path(experiments_root).resolve()
+    directory = Path(experiment_dir).resolve()
+    relative = directory.relative_to(root)
+    return f"experiments/{relative.as_posix()}"
+
+
+def resolve_repository_experiment_reference(repository_root: Path, reference: str) -> Path:
+    """Resolve current and historical ``experiments/<id>/...`` references."""
+    root = Path(repository_root).resolve()
+    relative = Path(reference)
+    if ".." in relative.parts:
+        raise ValueError("repository reference must not contain parent traversal")
+    if relative.is_absolute() or not relative.parts or relative.parts[0] != "experiments":
+        return (root / relative).resolve()
+    direct = (root / relative).resolve()
+    if direct.exists() or len(relative.parts) < 2:
+        return direct
+    experiment = resolve_experiment_dir(root / "experiments", relative.parts[1])
+    resolved = experiment.joinpath(*relative.parts[2:]).resolve()
+    resolved.relative_to(experiment)
+    return resolved
 
 
 def create_experiment_dir(root: Path, run_date: date, strategy_id: str) -> Path:
@@ -113,20 +158,22 @@ def _is_managed_file(experiment_dir: Path, path: Path) -> bool:
     )
 
 
-def _validate_archive_identity(metadata: dict[str, object]) -> None:
-    identity = metadata.get("experiment_id")
-    if not isinstance(identity, str) or not identity or identity in {".", ".."} or any(
-        c in '/\\:<>"|?*' or ord(c) < 32 for c in identity
-    ):
-        raise ValueError("experiment_id must be a safe nonempty logical identity")
-    if "strategy_id" not in metadata:
+def _validate_strategy_experiment_identity(
+    experiment_dir: Path, metadata: dict[str, object]
+) -> None:
+    match = STRATEGY_EXPERIMENT_PATTERN.fullmatch(experiment_dir.name)
+    current = EXPERIMENT_DIRECTORY_PATTERN.fullmatch(experiment_dir.name)
+    if match is None and current is None:
         return
-    owner = metadata["strategy_id"]
-    if not isinstance(owner, str) or not STRATEGY_ID_PATTERN.fullmatch(owner):
-        raise ValueError("strategy_id must match S plus three digits")
-    match = STRATEGY_EXPERIMENT_PATTERN.fullmatch(identity)
-    if match is not None and match.group("strategy_id") != owner:
-        raise ValueError("experiment identity strategy differs from strategy_id")
+    if metadata.get("experiment_id") != experiment_dir.name:
+        raise ValueError("experiment_id must equal the strategy experiment directory")
+    owner = match.group("strategy_id") if match is not None else experiment_dir.parent.name
+    if not STRATEGY_ID_PATTERN.fullmatch(owner) or metadata.get("strategy_id") != owner:
+        raise ValueError("strategy_id must equal the strategy experiment owner")
+    if STRATEGY_ID_PATTERN.fullmatch(experiment_dir.parent.name) and (
+        experiment_dir.parent.name != owner
+    ):
+        raise ValueError("strategy experiment directory must match the strategy owner")
     if not isinstance(metadata.get("symbol"), str) or not metadata["symbol"]:
         raise ValueError("strategy experiment must declare symbol")
     try:
@@ -153,7 +200,7 @@ def validate_experiment_manifest_metadata(
         raise ValueError("experiment manifest metadata must be JSON-safe") from exc
     if "outputs/" in serialized or re.search(r"_R\d{2}", serialized):
         raise ValueError("experiment manifest must not reference outputs revisions")
-    _validate_archive_identity(metadata)
+    _validate_strategy_experiment_identity(experiment_dir, metadata)
 
 
 def build_experiment_manifest(
@@ -199,20 +246,10 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
         raise ValueError("experiment manifest schema_version must be 1")
     if "integrity_repair" in manifest:
         raise ValueError("experiment manifest must not declare integrity repair")
-    _validate_archive_identity(manifest)
+    _validate_strategy_experiment_identity(experiment_dir, manifest)
     files = manifest.get("files")
     if not isinstance(files, dict):
         raise ValueError("experiment manifest files must be an object")
-    for name, record in files.items():
-        if (
-            not isinstance(record, dict)
-            or set(record) != {"bytes", "sha256"}
-            or type(record["bytes"]) is not int
-            or record["bytes"] < 0
-            or not isinstance(record["sha256"], str)
-            or re.fullmatch(r"[0-9a-f]{64}", record["sha256"]) is None
-        ):
-            raise ValueError(f"invalid manifest file descriptor: {name}")
     actual_names = {
         path.relative_to(experiment_dir).as_posix()
         for path in experiment_dir.rglob("*")
@@ -238,8 +275,8 @@ def validate_experiment_archive(experiment_dir: Path) -> dict[str, object]:
         if not path.is_file():
             raise ValueError(f"missing declared experiment file: {relative_name}")
         actual = _file_record(path)
-        if actual["bytes"] != expected["bytes"]:
+        if actual["bytes"] != expected.get("bytes"):
             raise ValueError(f"file size differs from manifest: {relative_name}")
-        if actual["sha256"] != expected["sha256"]:
+        if actual["sha256"] != expected.get("sha256"):
             raise ValueError(f"SHA-256 differs from manifest: {relative_name}")
     return manifest

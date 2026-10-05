@@ -1,5 +1,3 @@
-from czsc_trader.application.research_paths import resolve_evidence
-from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -42,13 +40,13 @@ def file_ref(root, path):
 
 def _build_inspection(completed):
     context, old_execution, request, result, experiment = completed
-    registration = StrategyRegistry((context.root / "research/registrations")).get_candidate(
-        CandidateKey("S900", "C0001"), evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01"
+    registration = StrategyRegistry(context.research_registry_root).get_candidate(
+        CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
     )
     definition, content = prepare(completed)
     assemble_delivery(context, Deliverable(definition, content))
     delivery_path = (
-        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/receipt.json"
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/receipt.json"
     )
     source = context.root / ".tmp/user-confirmation.json"
     source.write_text('{"message":"synthetic user approval"}')
@@ -59,10 +57,7 @@ def _build_inspection(completed):
             "S900",
             f.DecisionAction.APPROVE,
             f.CandidateSelectionSubject(
-                f.ResearchEvidenceRef(
-                    f.ResearchEvidenceOwner("S900", "20261001_S900_EX01"),
-                    "deliveries/ASSESSMENT/1/receipt.json", sha256(delivery_path.read_bytes()).hexdigest()),
-                registration.key, registration.content_sha256
+                file_ref(context.root, delivery_path), registration.key, registration.content_sha256
             ),
             file_ref(context.root, source),
             "选择合成候选",
@@ -129,7 +124,7 @@ def inspection(request, tmp_path, frozen_seed_root, monkeypatch):
     payload = pickle.loads(payload_path.read_bytes())
     root = tmp_path / "inspection-repo"
     shutil.copytree(seed, root)
-    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
+    context = RepositoryContext.discover(root)
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
@@ -174,7 +169,7 @@ def inspected_candidate(request, tmp_path, frozen_seed_root):
     report = f.CandidateInspectionReport.from_dict(
         json.loads(report_path.read_text(encoding="utf-8"))
     )
-    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace()), report, root / ".tmp/user-confirmation.json"
+    return RepositoryContext.discover(root), report, root / ".tmp/user-confirmation.json"
 
 
 def approve(context, report, source, decision_id="freeze1", request_id="request1"):
@@ -200,84 +195,6 @@ def approve(context, report, source, decision_id="freeze1", request_id="request1
     )
 
 
-def test_inspection_and_freeze_survive_caller_space_relocation(inspection):
-    """Decisions retain owner-relative references while every research root moves."""
-    from czsc_trader.application import load_candidate
-    from test_delivery_storage import tree
-
-    context, request, source = inspection
-    experiment_id = request.execution.definition.experiment_id
-    old_source = f"experiments/S900/{experiment_id}"
-    roots = {
-        "research/registrations": "caller/catalogue",
-        "research/S900": "caller/decisions",
-        old_source: f"caller/bound/{experiment_id}",
-    }
-    for old, new in roots.items():
-        target = context.root / new
-        assert target.resolve().is_relative_to(context.root.resolve())
-        target.parent.mkdir(parents=True, exist_ok=True)
-        (context.root / old).rename(target)
-
-    def moved(path):
-        for old, new in roots.items():
-            if path == old or path.startswith(old + "/"):
-                return new + path[len(old):]
-        return path
-
-    deliveries = context.delivery_workspace
-    research = context.research_workspace
-    context = replace(
-        context,
-        delivery_workspace=replace(deliveries,
-            deliveries=tuple(replace(x, path=moved(x.path)) for x in deliveries.deliveries),
-            experiments=tuple(replace(x, path=moved(x.path)) for x in deliveries.experiments)),
-        research_workspace=replace(research,
-            registry_path=moved(research.registry_path),
-            evidence=tuple(replace(x, path=moved(x.path)) for x in research.evidence),
-            freeze_journals=tuple(replace(x, path="caller/transactions")
-                                 if x.strategy_id == "S900" else x for x in research.freeze_journals)),
-    )
-    candidate = load_candidate(context, request.candidate)
-    request = replace(request, replays=tuple(replace(
-        replay,
-        reference=replace(replay.reference, experiment=replace(replay.reference.experiment,
-            workspace_path=moved(replay.reference.experiment.workspace_path))),
-        reproduction_request=replace(replay.reproduction_request, strategy=candidate),
-    ) for replay in request.replays))
-    report = inspect_candidate(context, request)
-    assert report.status is f.InspectionStatus.PASS, report.checks
-    operation = approve(context, report, source)
-    receipt = freeze_candidate(context, operation)
-    assert receipt.status is f.FreezeStatus.COMMITTED, receipt
-    before = tree(context.root)
-    assert get_freeze_result(context, operation.request_id) == receipt
-    assert freeze_candidate(context, operation) == receipt
-    assert tree(context.root) == before
-    assert not (context.root / "research/S900").exists()
-    assert not (context.root / "research/registrations").exists()
-    assert not (context.root / old_source).exists()
-
-
-@pytest.mark.parametrize("missing", ["workspace", "candidate", "evidence", "journal"])
-def test_freeze_requires_explicit_research_locations(inspected_candidate, missing):
-    from test_delivery_storage import tree
-
-    context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    workspace = context.research_workspace
-    if missing == "workspace":
-        workspace = None
-    else:
-        field = {"candidate": "candidates", "evidence": "evidence", "journal": "freeze_journals"}[missing]
-        workspace = replace(workspace, **{field: ()})
-    context = replace(context, research_workspace=workspace)
-    before = tree(context.root)
-    with pytest.raises(ValueError, match="required|not declared"):
-        freeze_candidate(context, operation)
-    assert tree(context.root) == before
-
-
 def test_managed_inspection_freeze_and_idempotent_query(inspection, monkeypatch):
     from czsc_trader.application import delivery_service
 
@@ -295,13 +212,13 @@ def test_managed_inspection_freeze_and_idempotent_query(inspection, monkeypatch)
     )
     assert len(request.execution.trace.evaluations) == 1
     assert not context.strategy_root.exists()
-    assert resolve_evidence(context, report.reference).is_relative_to(
-        (context.root / "experiments") / "S900" / request.execution.definition.experiment_id
+    assert report.reference.resolve(context.root).is_relative_to(
+        context.experiments_root / "S900" / request.execution.definition.experiment_id
     )
     assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
     operation = approve(context, report, source)
-    assert resolve_evidence(context, operation.approval.evidence).is_relative_to(
-        (context.root / "research") / "S900/decisions"
+    assert operation.approval.evidence.resolve(context.root).is_relative_to(
+        context.research_root / "S900/decisions"
     )
     assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
     assert not context.strategy_root.exists()
@@ -374,7 +291,7 @@ def test_approval_identity_and_version_conflicts(inspected_candidate):
 def test_changed_inspected_file_is_rejected(inspected_candidate):
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
-    file = resolve_evidence(context, report.plan.source_files[0].source)
+    file = report.plan.source_files[0].source.resolve(context.root)
     file.write_bytes(file.read_bytes() + b"\n# altered\n")
     from strategy_manager import ValidationError
 
@@ -396,9 +313,9 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
 
     monkeypatch.setattr(delivery_service, "assess_candidates", forbidden)
     monkeypatch.setattr(delivery_service, "compare_candidates", forbidden)
-    selection = f.ResearchDecision.from_dict(json.loads(resolve_evidence(context, report.selection.evidence).read_text(encoding="utf-8")))
+    selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
     assessment = d.DeliveryReceipt.from_dict(
-        json.loads(resolve_evidence(context, selection.subject.delivery).read_text())
+        json.loads(selection.subject.delivery.resolve(context.root).read_text())
     ).reference
     refs = [report.reference, report.selection.evidence, selection.confirmation_source]
     refs.extend((report.plan.origin.registration, report.plan.payload, report.plan.runtime_binding,
@@ -406,7 +323,7 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
         *(ref for check in report.checks for ref in check.evidence)))
     attachments = {}
     for ref in refs:
-        path = resolve_evidence(context, ref)
+        path = ref.resolve(context.root)
         attachments[ref.sha256] = d.EvidenceFile(
             path.relative_to(context.root).as_posix(),
             d.EvidenceRef(f"attachments/{ref.sha256}", ref.sha256, "application/octet-stream"),
@@ -430,7 +347,7 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert assemble_delivery(context, Deliverable(definition, value)) == receipt
     published = (
-        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/INSPECTION/1/report.md"
+        context.experiments_root / "S900/20261001_S900_EX01/deliveries/INSPECTION/1/report.md"
     )
     assert "技术检验：PASS" in published.read_text(encoding="utf-8")
     assert "尚未请求" in published.read_text(encoding="utf-8")
@@ -442,7 +359,7 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
     for status, failed_file in ((f.FreezeStatus.FAILED, "committed.json"), (f.FreezeStatus.UNKNOWN, "v1.json")):
         private = context.root.parent / f"delivery-{status.value}"
         shutil.copytree(context.root, private)
-        copied = RepositoryContext.discover(private, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
+        copied = RepositoryContext.discover(private)
         failure_operation = approve(copied, report, private / source.relative_to(context.root),
             decision_id=f"freeze_{status.value}", request_id=f"request_{status.value}")
         durable = freeze_store._durable
@@ -454,10 +371,10 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
             fault.setattr(freeze_store, "_durable", fail)
             failed = freeze_candidate(copied, failure_operation)
         assert failed.status is status and failed.version is None
-        decision = f.ResearchDecision.from_dict(json.loads(resolve_evidence(copied, failure_operation.approval.evidence).read_text(encoding="utf-8")))
+        decision = f.ResearchDecision.from_dict(json.loads(failure_operation.approval.evidence.resolve(private).read_text(encoding="utf-8")))
         copied_attachments = dict(attachments)
         for ref in (failure_operation.approval.evidence, decision.confirmation_source):
-            path = resolve_evidence(copied, ref)
+            path = ref.resolve(private)
             copied_attachments[ref.sha256] = d.EvidenceFile(path.relative_to(private).as_posix(),
                 d.EvidenceRef(f"attachments/{ref.sha256}", ref.sha256, "application/octet-stream"))
         failed_payload = replace(payload, decisions=(failure_operation.approval,), freeze=failed)
@@ -472,9 +389,9 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
         assert "已冻结版本" not in rendered
     operation = approve(context, report, source)
     frozen = freeze_candidate(context, operation)
-    approved = f.ResearchDecision.from_dict(json.loads(resolve_evidence(context, operation.approval.evidence).read_text(encoding="utf-8")))
+    approved = f.ResearchDecision.from_dict(json.loads(operation.approval.evidence.resolve(context.root).read_text(encoding="utf-8")))
     for ref in (operation.approval.evidence, approved.confirmation_source):
-        path = resolve_evidence(context, ref)
+        path = ref.resolve(context.root)
         attachments[ref.sha256] = d.EvidenceFile(
             path.relative_to(context.root).as_posix(),
             d.EvidenceRef(f"attachments/{ref.sha256}", ref.sha256, "application/octet-stream"),
@@ -507,7 +424,7 @@ def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_c
         load_strategy_deployment(context.strategy_root, "S900-v1").release_hash
         == receipt.version.release_hash
     )
-    marker = (context.root / "research") / "S900/freeze_requests/request1/committed.json"
+    marker = context.research_root / "S900/freeze_requests/request1/committed.json"
     marker.rename(marker.with_name("simulated-lost-commit.json"))
     assert load_strategy_deployment(context.strategy_root, "S900-v1").release_hash == receipt.version.release_hash
 
@@ -519,7 +436,7 @@ def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch)
     context, request, _ = inspection
     report = inspect_candidate(context, request)
     loaded = load_experiment(
-        (context.root / "experiments") / "S900" / request.execution.definition.experiment_id
+        context.experiments_root / "S900" / request.execution.definition.experiment_id
     )
     monkeypatch.setattr(
         loaded.implementation,
@@ -543,7 +460,7 @@ def test_corrupt_research_commit_does_not_change_runtime_version(inspected_candi
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
     freeze_candidate(context, operation)
-    path = (context.root / "research") / "S900/freeze_requests/request1/committed.json"
+    path = context.research_root / "S900/freeze_requests/request1/committed.json"
     path.write_text("{malformed")
     receipt = get_freeze_result(context, operation.request_id)
     assert receipt.status is f.FreezeStatus.UNKNOWN
@@ -615,64 +532,15 @@ def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_c
 
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
-    binding_path = resolve_evidence(context, report.plan.runtime_binding)
+    binding_path = report.plan.runtime_binding.resolve(context.root)
     binding_path.write_bytes(binding_path.read_bytes() + b" ")
     with pytest.raises(ValidationError, match="hash"):
         freeze_candidate(context, operation)
-    selection = f.ResearchDecision.from_dict(json.loads(resolve_evidence(context, report.selection.evidence).read_text(encoding="utf-8")))
+    selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
     repeated = replace(selection, confirmation_source=file_ref(context.root, source))
     assert record_research_decision(context, repeated) == report.selection
     with pytest.raises(ValidationError, match="hash differs"):
         record_research_decision(context, replace(repeated, reason="changed decision content"))
-
-
-@pytest.mark.parametrize("space", ["sealed", "runtime"])
-@pytest.mark.parametrize("operation", ["decision", "inspection", "freeze"])
-def test_research_evidence_and_journal_reject_protected_locations(request, operation, space):
-    from test_delivery_storage import seal, tree
-
-    if operation == "inspection":
-        context, operation_request, _ = request.getfixturevalue("inspection")
-        owner = f.ResearchEvidenceOwner(operation_request.candidate.strategy_id, operation_request.execution.definition.experiment_id)
-    else:
-        context, report, source = request.getfixturevalue("inspected_candidate")
-        owner = f.ResearchEvidenceOwner("S900")
-        if operation == "freeze":
-            operation_request = approve(context, report, source)
-        else:
-            decision = f.ResearchDecision.from_dict(json.loads(resolve_evidence(context, report.selection.evidence).read_text(encoding="utf-8")))
-            operation_request = replace(decision, decision_id="new-selection", confirmation_source=file_ref(context.root, source))
-    if space == "sealed":
-        parent = context.root / "caller/other-sealed-experiment"
-        parent.mkdir(parents=True)
-    else:
-        parent = context.strategy_root
-    chosen = (parent / "nested/records").relative_to(context.root).as_posix()
-    workspace = context.research_workspace
-    if operation == "inspection":
-        old = next(x.path for x in workspace.evidence if x.owner == owner)
-        shutil.copytree(context.root / old, context.root / chosen)
-        context = replace(context, delivery_workspace=replace(context.delivery_workspace,
-            deliveries=tuple(replace(x, path=chosen + x.path[len(old):])
-                             if (x.owner.strategy_id, getattr(x.owner, "experiment_id", None))
-                             == (owner.strategy_id, owner.experiment_id) else x
-                             for x in context.delivery_workspace.deliveries)))
-    if space == "sealed":
-        seal(parent)
-    if operation == "freeze":
-        workspace = replace(workspace, freeze_journals=tuple(
-            replace(x, path=chosen) if x.strategy_id == "S900" else x for x in workspace.freeze_journals
-        ))
-    else:
-        workspace = replace(workspace, evidence=tuple(
-            replace(x, path=chosen) if x.owner == owner else x for x in workspace.evidence
-        ))
-    context = replace(context, research_workspace=workspace)
-    before = tree(context.root)
-    api = {"decision": record_research_decision, "inspection": inspect_candidate, "freeze": freeze_candidate}[operation]
-    with pytest.raises(ValueError, match="sealed|runtime publication|separate from runtime registry"):
-        api(context, operation_request)
-    assert tree(context.root) == before
 
 
 @pytest.mark.parametrize("field", ["attempt", "evaluation", "artifact"])
@@ -781,14 +649,14 @@ def _cold_start_inspection(path):
         name: StrategyInputBinding.from_mapping(binding)
         for name, binding in values["input_bindings"].items()
     }
-    context = RepositoryContext.discover(values["repository_root"], delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
+    context = RepositoryContext.discover(values["repository_root"])
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
     with pytest.MonkeyPatch.context() as patch:
         _install_candidate_dataflows(patch, flow, daily, base_dir=context.root)
         definition = load_experiment(
-            (context.root / "experiments") / "S900" / values["experiment_id"]
+            context.experiments_root / "S900" / values["experiment_id"]
         ).definition
         execution = create_formal_experiment_context(
             definition,

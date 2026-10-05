@@ -412,10 +412,7 @@ def test_preflight_successful_explicit_data_probe(tmp_path, real_data, end):
             "Amount": 1.0,
         }
     )
-    from functional_support import synthetic_ohlcv_evidence
-
-    flows = _configured_flows(tmp_path, lambda request: (
-        frame, {"vendor": "synthetic", **synthetic_ohlcv_evidence(request, frame, frame)}))
+    flows = _configured_flows(tmp_path, lambda request: (frame, {"vendor": "synthetic"}))
     report = preflight_experiment(
         loaded,
         resources=ExperimentResources(1, 99),
@@ -510,15 +507,12 @@ def _flows(tmp_path: Path, calls: list[DataRequest] | None = None) -> Dataflows:
     def provider(request: DataRequest):
         if calls is not None:
             calls.append(request)
-        from functional_support import synthetic_ohlcv_evidence
-
         return _frame(), {
             "vendor": "synthetic-test",
             "vendor_symbol": request.symbol,
             "asset_type": "etf",
             "period": "daily",
             "adjustment": "hfq",
-            **synthetic_ohlcv_evidence(request, _frame(), _frame(), adjustment="hfq"),
         }
 
     return _configured_flows(tmp_path, provider)
@@ -762,11 +756,8 @@ def test_data_access_records_operations_without_interpreting_research_declaratio
     def provider(request):
         calls.append(request)
         frame = _frame()
-        if pd.Timestamp(end) > frame.Date.max():
-            frame = pd.concat([frame, frame.iloc[[-1]].assign(Date=pd.Timestamp(end))], ignore_index=True)
-        from functional_support import synthetic_ohlcv_evidence
-
-        return frame, {"vendor": "synthetic", **synthetic_ohlcv_evidence(request, frame, frame)}
+        frame.loc[1, "Date"] = pd.Timestamp(end)
+        return frame, {"vendor": "synthetic"}
     definition = replace(_definition(), allowed_datasets=declared_datasets)
     context = create_experiment_context(
         definition, repository_root=tmp_path,

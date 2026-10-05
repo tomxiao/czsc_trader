@@ -250,55 +250,6 @@ class DeliveryDefinition(_Record):
             ExperimentOwner(self.strategy_id, ref.experiment_id)
 
 
-@dataclass(frozen=True, slots=True)
-class DeliveryLocation(_Record):
-    """Caller-selected publication directory, separate from evidence identity."""
-
-    owner: MandateOwner | ExperimentOwner
-    stage: DeliveryStage
-    revision: int
-    path: str
-
-    def _validate(self):
-        _validate_owner_stage(self.owner, self.stage)
-        if self.revision < 1:
-            raise ValueError("revision must be positive")
-        _path(self.path)
-
-
-@dataclass(frozen=True, slots=True)
-class ExperimentLocation(_Record):
-    """Caller-selected directory containing the bound experiment source."""
-
-    owner: ExperimentOwner
-    path: str
-
-    def _validate(self):
-        _path(self.path)
-
-
-@dataclass(frozen=True, slots=True)
-class DeliveryWorkspace(_Record):
-    """Explicit locations for this operation and its predecessor/source closure.
-
-    Paths are repository-relative. There is no directory discovery or default
-    layout. Rebinding locations does not change retained delivery references.
-    """
-
-    deliveries: tuple[DeliveryLocation, ...]
-    experiments: tuple[ExperimentLocation, ...]
-
-    def _validate(self):
-        _unique(((x.owner, x.stage, x.revision) for x in self.deliveries), "delivery location")
-        _unique((x.owner for x in self.experiments), "experiment location")
-        paths = tuple(x.path.casefold() for x in self.deliveries)
-        _unique(paths, "publication path")
-        for path in paths:
-            if any(other.startswith(path + "/") for other in paths):
-                raise ValueError("publication directories must not overlap")
-        _unique((x.path.casefold() for x in self.experiments), "experiment source path")
-
-
 class ConfirmationStatus(StrEnum):
     PROPOSED = "PROPOSED"
     CONFIRMED = "CONFIRMED"

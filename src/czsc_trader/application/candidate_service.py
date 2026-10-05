@@ -22,9 +22,6 @@ from strategy_manager import (
 )
 
 from .context import RepositoryContext
-from .research_paths import candidate_root, registry_root
-from .research_storage import require_research_write
-from .delivery_service import _resolve
 from ..temp_workspace import create_temporary_directory
 
 
@@ -48,19 +45,19 @@ class CandidateRegistrationRequest:
             raise TypeError("derivation must be CandidateDerivation")
 
 
-def _publish(context, root: Path, relative: str, data: bytes, temporary: Path) -> CandidateEvidence:
+def _publish(root: Path, relative: str, data: bytes, temporary: Path) -> CandidateEvidence:
     ref = CandidateEvidence(relative, sha256(data).hexdigest())
-    target = _resolve(root, relative)
+    target = root / relative
     if not target.resolve().is_relative_to(root.resolve()):
         raise ValueError("candidate file escapes registry root")
     if target.exists():
         ref.resolve(root)
         return ref
-    require_research_write(context, target)
+    if (root / "experiment_manifest.json").exists():
+        raise ValueError("cannot add candidate objects to a sealed experiment")
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = temporary / ref.sha256
     stage.write_bytes(data)
-    require_research_write(context, target)
     # Exclusive creation prevents replacing an already published content address.
     try:
         with target.open("xb") as output:
@@ -82,14 +79,14 @@ def register_candidate(
     ):
         raise ValueError("registration requires candidate sources inside repository")
     origin = request.origin
-    experiment_root = candidate_root(context, CandidateKey(candidate.strategy_family_id, candidate.candidate_id),
-                                     experiment_id=origin.experiment_id)
+    experiment_root = context.experiments_root / candidate.strategy_family_id / origin.experiment_id
+    for path in (experiment_root, experiment_root.parent, context.experiments_root):
+        if path.is_symlink() or path.is_junction():
+            raise ValueError("candidate experiment root contains a link")
     loaded = load_experiment(experiment_root)
     binding_path = loaded.root / "experiment_binding.json"
     if (
         loaded.definition.schema_version != 2
-        or loaded.definition.strategy_id != candidate.strategy_family_id
-        or loaded.definition.experiment_id != origin.experiment_id
         or loaded.definition.sha256 != origin.definition_sha256
         or sha256(binding_path.read_bytes()).hexdigest() != origin.binding_sha256
     ):
@@ -132,16 +129,14 @@ def register_candidate(
         raise ValueError("preflight does not bind the candidate origin")
     runtime = StrategyRuntime()
     identity = runtime.identify(candidate, dependencies=request.dependencies)
-    registry_path = registry_root(context)
-    require_research_write(context, registry_path)
-    registry = StrategyRegistry(registry_path)
+    registry = StrategyRegistry(context.research_registry_root)
     registry.get_family(candidate.strategy_family_id)
     temporary = create_temporary_directory(context.root, "candidate-registration")
     root = loaded.root
 
     def copy_evidence(ref):
         data = ref.resolve(context.root).read_bytes()
-        return _publish(context, root, f"objects/evidence/{ref.sha256}.json", data, temporary)
+        return _publish(root, f"objects/evidence/{ref.sha256}.json", data, temporary)
 
     payload_data = json.dumps(
         dict(candidate.payload),
@@ -152,7 +147,7 @@ def register_candidate(
         allow_nan=False,
     ).encode("utf-8")
     payload = _publish(
-        context, root, f"objects/payload/{sha256(payload_data).hexdigest()}.json", payload_data, temporary
+        root, f"objects/payload/{sha256(payload_data).hexdigest()}.json", payload_data, temporary
     )
     source_files = []
     prefix = f"objects/source/{identity.source_sha256}/strategy_runtime"
@@ -160,7 +155,7 @@ def register_candidate(
         source = (candidate.source_root / name).resolve()
         if not source.is_relative_to(candidate.source_root):
             raise ValueError("candidate source escapes source_root")
-        source_files.append(_publish(context, root, f"{prefix}/{name}", source.read_bytes(), temporary))
+        source_files.append(_publish(root, f"{prefix}/{name}", source.read_bytes(), temporary))
     saved_candidate = StrategyCandidate(
         candidate.strategy_family_id, candidate.candidate_id, candidate.payload, root / prefix
     )
@@ -195,24 +190,17 @@ def register_candidate(
         replace(origin, preflight=copy_evidence(origin.preflight)),
         derivation,
     )
-    require_research_write(context, registry_path)
-    return registry.register_candidate(record, evidence_root=loaded.root)
+    return registry.register_candidate(record, experiments_root=context.experiments_root)
 
 
 def _registered_root(context, record):
-    return candidate_root(context, record.key, experiment_id=record.origin.experiment_id)
-
-
-def _registration(context, key):
-    record = StrategyRegistry(registry_root(context)).get_candidate(
-        key, evidence_root=candidate_root(context, key)
-    )
-    _registered_root(context, record)
-    return record
+    return context.experiments_root / record.key.strategy_id / record.origin.experiment_id
 
 
 def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCandidate:
-    record = _registration(context, key)
+    record = StrategyRegistry(context.research_registry_root).get_candidate(
+        key, experiments_root=context.experiments_root
+    )
     evidence_root = _registered_root(context, record)
     payload = json.loads(record.payload.resolve(evidence_root).read_text(encoding="utf-8"))
     root = evidence_root / f"objects/source/{record.source_sha256}/strategy_runtime"

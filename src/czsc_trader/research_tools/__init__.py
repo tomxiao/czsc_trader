@@ -19,9 +19,6 @@ from .delivery import (
     MandateOwner,
     ExperimentOwner,
     DeliveryDefinition,
-    DeliveryLocation,
-    ExperimentLocation,
-    DeliveryWorkspace,
     ConfirmationStatus,
     ConfirmationRecord,
     MandateItemKind,
@@ -84,10 +81,8 @@ from .experiment import (
     preflight_experiment,
 )
 from .assessment import build_assessment_evidence
-from .workspace import CandidateLocation, EvaluationFiles, FreezeJournalLocation, ResearchWorkspace
 
 __all__ = [
-    "CandidateLocation", "EvaluationFiles", "FreezeJournalLocation", "ResearchWorkspace",
     "CandidateInspectionDelivery",
     "CandidateAssessmentDelivery",
     "TargetMandateBinding",
@@ -120,9 +115,6 @@ __all__ += [
     "MandateOwner",
     "ExperimentOwner",
     "DeliveryDefinition",
-    "DeliveryLocation",
-    "ExperimentLocation",
-    "DeliveryWorkspace",
     "ConfirmationStatus",
     "ConfirmationRecord",
     "MandateItemKind",
