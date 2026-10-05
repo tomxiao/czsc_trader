@@ -300,7 +300,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 - **离线功能回归**：根目录`tests/functional/`覆盖TDR公开API、实验评价、证据漂移、统一回测与失败语义；
   各包`tests/functional/`覆盖模块契约、候选与冻结SRT、TXE账本、PTE发布代次和服务配置。
-- **档案完整性**：调用公开API `validate_archives(context, archive=...)`核验当前契约实验的受管文件、结构和
+- **档案完整性**：调用公开API `validate_archives(context, archives=(...,))`核验当前契约实验的受管文件、结构和
   哈希。全库扫描遇到不支持的旧格式时明确失败；历史原件保留供人工查阅，不要求其通过当前机器复验。
 - **发布验收**：PTE构建验证附注tag、提交、策略快照和制品身份；发布前置检查验证目标版本及
   数据库兼容性。取得生产写入授权后，再检查服务、健康接口、活动版本和关键账户读取。

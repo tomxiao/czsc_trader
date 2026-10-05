@@ -33,7 +33,7 @@ def test_caller_locations_support_mixed_roots_and_relocation(context):
         path = f"caller/sources/group{index}/{owner.experiment_id}"
         source = context.root / path
         source.parent.mkdir(parents=True)
-        original = context.experiments_root / "S900" / owner.experiment_id
+        original = (context.root / "experiments") / "S900" / owner.experiment_id
         assert source.resolve().is_relative_to(context.root.resolve())
         original.rename(source)
         sources.append(d.ExperimentLocation(owner, path))
@@ -43,8 +43,8 @@ def test_caller_locations_support_mixed_roots_and_relocation(context):
     first = assemble_delivery(context, Deliverable(definition(), content()))
     second_definition = replace(definition(), owner=owners[1], predecessors=(first.reference,))
     second = assemble_delivery(context, Deliverable(second_definition, content()))
-    assert not (context.research_root / "S900").exists()
-    assert not (context.experiments_root / "S900" / owners[0].experiment_id).exists()
+    assert not ((context.root / "research") / "S900").exists()
+    assert not ((context.root / "experiments") / "S900" / owners[0].experiment_id).exists()
 
     moved_deliveries = []
     moved_sources = []
@@ -91,7 +91,7 @@ def test_explicit_location_is_required_even_when_default_files_exist(context, mi
 
 def test_selected_source_does_not_fall_back_to_valid_default_owner(context):
     source = context.root / "caller" / definition().owner.experiment_id
-    shutil.copytree(context.experiments_root / "S900" / source.name, source)
+    shutil.copytree((context.root / "experiments") / "S900" / source.name, source)
     (source / "experiment.py").write_text("changed")
     workspace = replace(context.delivery_workspace, experiments=(d.ExperimentLocation(
         definition().owner, source.relative_to(context.root).as_posix()),))
@@ -178,7 +178,7 @@ def test_cross_experiment_revision_one_and_read_only_validation(context, monkeyp
     monkeypatch.setattr("research_experiment.load_experiment", no_execution)
     assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
     assert tree(context.root) == before
-    assert not (context.research_root / "S900/deliveries").exists()
+    assert not ((context.root / "research") / "S900/deliveries").exists()
 
 
 @pytest.mark.parametrize("stage", list(d.DeliveryStage))
@@ -203,11 +203,11 @@ def test_delivery_refuses_missing_source_bound_owner(context):
     missing = replace(definition(), owner=d.ExperimentOwner("S900", "20261001_S900_EX99"))
     with pytest.raises(d.DeliveryValidationError):
         assemble_delivery(context, Deliverable(missing, content()))
-    assert not (context.experiments_root / "S900/20261001_S900_EX99/deliveries").exists()
+    assert not ((context.root / "experiments") / "S900/20261001_S900_EX99/deliveries").exists()
 
 
 def test_delivery_refuses_changed_owner_source(context):
-    root = context.experiments_root / "S900/20261001_S900_EX01"
+    root = (context.root / "experiments") / "S900/20261001_S900_EX01"
     (root / "experiment.py").write_text("tampered")
     with pytest.raises(d.DeliveryValidationError, match="binding"):
         assemble_delivery(context, Deliverable(definition(), content()))
@@ -217,7 +217,7 @@ def test_delivery_refuses_changed_owner_source(context):
 def test_seal_includes_deliveries_and_blocks_append_and_overwrite(context):
     item = Deliverable(definition(), content())
     receipt = assemble_delivery(context, item)
-    root = context.experiments_root / "S900/20261001_S900_EX01"
+    root = (context.root / "experiments") / "S900/20261001_S900_EX01"
     manifest = seal(root)
     assert "deliveries/COMPONENTS/1/receipt.json" in manifest["files"]
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
@@ -243,32 +243,32 @@ def test_seal_includes_deliveries_and_blocks_append_and_overwrite(context):
 
 def test_candidate_objects_are_owned_and_sealed_with_experiment(candidate_archive):
     context = candidate_archive
-    registry = StrategyRegistry(context.research_registry_root)
+    registry = StrategyRegistry((context.root / "research/registrations"))
     key = CandidateKey("S900", "C0001")
-    record = registry.get_candidate(key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01")
-    root = context.experiments_root / "S900" / record.origin.experiment_id
+    record = registry.get_candidate(key, evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01")
+    root = (context.root / "experiments") / "S900" / record.origin.experiment_id
     assert record.schema_version == 2
     assert (root / "objects").is_dir()
-    assert not (context.research_registry_root / "objects").exists()
+    assert not ((context.root / "research/registrations") / "objects").exists()
     assert load_candidate(context, key).candidate_id == "C0001"
     seal(root)
-    assert registry.register_candidate(record, evidence_root=context.experiments_root / "S900/20261001_S900_EX01") == record
+    assert registry.register_candidate(record, evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01") == record
     validate_experiment_archive(root)
 
 
 def test_loading_retired_registration_keeps_archive_read_only(candidate_archive):
     context = candidate_archive
-    registry = StrategyRegistry(context.research_registry_root)
+    registry = StrategyRegistry((context.root / "research/registrations"))
     key = CandidateKey("S900", "C0001")
-    record = registry.get_candidate(key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01")
+    record = registry.get_candidate(key, evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01")
     raw = record.to_dict()
     raw["schema_version"] = 1
-    registration_path = context.research_registry_root / "S900/candidates/C0001.json"
+    registration_path = (context.root / "research/registrations") / "S900/candidates/C0001.json"
     registration_path.write_text(json.dumps({"record": raw, "record_sha256": record.record_sha256}))
-    before = tree(context.research_registry_root)
+    before = tree((context.root / "research/registrations"))
     with pytest.raises(ValidationError, match="unsupported candidate registration schema"):
         load_candidate(context, key)
-    assert tree(context.research_registry_root) == before
+    assert tree((context.root / "research/registrations")) == before
 
 
 def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive):
@@ -280,10 +280,10 @@ def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive
 
     context = candidate_archive
     key = CandidateKey("S900", "C0001")
-    record = StrategyRegistry(context.research_registry_root).get_candidate(
-        key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
+    record = StrategyRegistry((context.root / "research/registrations")).get_candidate(
+        key, evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01"
     )
-    root = context.experiments_root / "S900" / record.origin.experiment_id
+    root = (context.root / "experiments") / "S900" / record.origin.experiment_id
     original = load_candidate(context, key)
     payload = json.loads(record.payload.resolve(root).read_text())
     payload["parameters"]["threshold"] = 0.8
@@ -311,10 +311,10 @@ def test_registered_candidate_can_be_loaded_after_repository_relocation(candidat
     context = candidate_archive
     key = CandidateKey("S900", "C0001")
     original = load_candidate(context, key)
-    record = StrategyRegistry(context.research_registry_root).get_candidate(
-        key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
+    record = StrategyRegistry((context.root / "research/registrations")).get_candidate(
+        key, evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01"
     )
-    seal(context.experiments_root / "S900" / record.origin.experiment_id)
+    seal((context.root / "experiments") / "S900" / record.origin.experiment_id)
     destination = context.root.parent / (context.root.name + "-relocated")
     shutil.copytree(context.root, destination)
     restored = load_candidate(RepositoryContext.discover(destination, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace()), key)

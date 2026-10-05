@@ -1,10 +1,20 @@
 """Resolve caller-declared locations without inspecting a research directory layout."""
 
+from pathlib import Path
+
 from strategy_manager import CandidateEvidence, CandidateKey, ResearchEvidenceRef
 
 from .delivery_service import _resolve, _experiment_path
 from ..research_tools.delivery import ExperimentOwner
 from ..research_tools.workspace import ResearchWorkspace
+
+
+def repository_path(context, path: Path) -> Path:
+    """Resolve an explicit path lexically, retaining link checks before resolution."""
+    if not isinstance(path, Path):
+        raise TypeError("repository path requires Path")
+    relative = path.relative_to(context.root) if path.is_absolute() else path
+    return _resolve(context.root, relative.as_posix())
 
 
 def workspace(context):

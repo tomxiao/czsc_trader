@@ -347,6 +347,12 @@ def evaluation_json(candidate_payload, minimal_repo):
     return context, request_path, request
 
 
+def _evaluation_files(context, request_path):
+    from czsc_trader.research_tools import EvaluationFiles
+    relative = request_path.parent.relative_to(context.root).as_posix()
+    return EvaluationFiles(relative, relative + "/artifacts/evaluation")
+
+
 @pytest.mark.parametrize("section, field, invalid", [
     ("execution", "workers", True),
     ("execution", "workers", 1.5),
@@ -373,7 +379,7 @@ def test_evaluation_json_rejects_coercion_before_execution(evaluation_json, monk
         pytest.fail("invalid JSON must be rejected before execution or data preparation")
     monkeypatch.setattr("czsc_trader.application.research_evaluation_service.evaluate_strategy", forbidden)
     with pytest.raises(ValidationError, match=field if section else "schema"):
-        evaluate_research_request(context, path)
+        evaluate_research_request(context, path, files=_evaluation_files(context, path))
     assert not (path.parent / "artifacts").exists()
 
 
@@ -404,7 +410,7 @@ def published_evaluation(request, frozen_seed_root, monkeypatch):
             return result
         with monkeypatch.context() as patch:
             patch.setattr(service, "evaluate_strategy", record)
-            first = evaluate_research_request(context, request_path)
+            first = evaluate_research_request(context, request_path, files=_evaluation_files(context, request_path))
         output = request_path.parent / "artifacts/evaluation"
         document = json.loads((output / "evaluation_result.json").read_text(encoding="utf-8"))
         seed.write_bytes(pack((context, request_path, first, captured[0], document)))
@@ -425,7 +431,7 @@ def test_research_evaluate_api_publishes_complete_hashed_evidence(published_eval
     assert first["result"]["run_count"] == 1
     assert first["result"]["execution_mode"] == "FULL"
     assert first["artifacts"] == {"directory": "experiments/S900/EXPLICIT01/artifacts/evaluation"}
-    second = asdict(evaluate_research_request(context, request_path.relative_to(context.root)))
+    second = asdict(evaluate_research_request(context, request_path.relative_to(context.root), files=_evaluation_files(context, request_path)))
     assert second["result"] == first["result"]
 
     output = request_path.parent / "artifacts/evaluation"
@@ -474,7 +480,7 @@ def test_repeated_publication_rejects_changed_evidence(published_evaluation, tmp
             current["files"][name] = sha256((copied / name).read_bytes()).hexdigest()
     (copied / "evaluation_result.json").write_text(json.dumps(current), encoding="utf-8")
     with pytest.raises(ValidationError, match="file set|hash differs") as refused:
-        evaluate_research_request(copied_context, copied_request.relative_to(owner))
+        evaluate_research_request(copied_context, copied_request.relative_to(owner), files=_evaluation_files(copied_context, copied_request))
     assert refused.value.code == "research_evaluation_failed"
 
 
@@ -486,3 +492,69 @@ def test_repeated_publication_rejects_changed_evidence(published_evaluation, tmp
 def managed_evaluation(candidate_payload, tmp_path, monkeypatch):
     from test_research_contract_upgrade import managed_evaluation as prepare_managed
     return prepare_managed.__wrapped__(candidate_payload, tmp_path, monkeypatch)
+
+def test_file_evaluation_uses_caller_locations_after_relocation(published_evaluation, tmp_path, monkeypatch):
+    import shutil
+    from czsc_trader.application import RepositoryContext, evaluate_research_request
+    from czsc_trader.research_tools import EvaluationFiles
+
+    context, request_path, command, _, _ = published_evaluation
+    owner = tmp_path / "relocated"
+    shutil.copytree(context.root, owner)
+    source = owner / request_path.parent.relative_to(context.root)
+    input_root = owner / "caller-layout/deep/input-snapshot"
+    input_root.parent.mkdir(parents=True)
+    source.rename(input_root)
+    request = owner / "requests/run-any-name.json"
+    request.parent.mkdir()
+    (input_root / request_path.name).rename(request)
+    # The relocated request has a different filename and is outside input_root.
+    flows_context = RepositoryContext.discover(owner)
+    _publication_flows(monkeypatch, owner)
+    result = evaluate_research_request(
+        flows_context, request.relative_to(owner),
+        files=EvaluationFiles("caller-layout/deep/input-snapshot", "results/another/evaluation"),
+    )
+    assert result.status == "PASS"
+    assert result.result == command.result
+    assert result.artifacts == {"directory": "results/another/evaluation"}
+    assert not (owner / "experiments/S900/EXPLICIT01").exists()
+
+
+@pytest.mark.parametrize("fault", ["untyped", "missing_root", "overlap", "source_overlap", "outside", "linked"])
+def test_file_evaluation_rejects_invalid_space_before_execution(evaluation_json, monkeypatch, fault):
+    import os
+    import subprocess
+    from czsc_trader.application import ValidationError, evaluate_research_request
+    from czsc_trader.research_tools import EvaluationFiles
+
+    context, path, _ = evaluation_json
+    input_root = path.parent.relative_to(context.root).as_posix()
+    files = EvaluationFiles(input_root, "chosen-result")
+    if fault == "untyped":
+        files = None
+    elif fault == "missing_root":
+        files = EvaluationFiles("absent-inputs", "chosen-result")
+    elif fault == "overlap":
+        files = EvaluationFiles(input_root, input_root)
+    elif fault == "source_overlap":
+        files = EvaluationFiles(input_root, input_root + "/runtime/strategy_runtime/outputs")
+    elif fault == "outside":
+        path = context.root.parent / "outside.json"
+    else:
+        link = context.root / "linked-input"
+        if os.name == "nt":
+            linked = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(path.parent)],
+                                    capture_output=True, text=True)
+            assert linked.returncode == 0, linked.stderr
+        else:
+            link.symlink_to(path.parent, target_is_directory=True)
+        files = EvaluationFiles("linked-input", "chosen-result")
+    before = set(context.root.rglob("*"))
+    def forbidden(*args, **kwargs):
+        pytest.fail("invalid file locations must fail before execution")
+    monkeypatch.setattr("czsc_trader.application.research_evaluation_service.evaluate_strategy", forbidden)
+    with pytest.raises(ValidationError) as failure:
+        evaluate_research_request(context, path, files=files)
+    assert failure.value.code == "research_evaluation_failed"
+    assert set(context.root.rglob("*")) == before

@@ -42,13 +42,13 @@ def file_ref(root, path):
 
 def _build_inspection(completed):
     context, old_execution, request, result, experiment = completed
-    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        CandidateKey("S900", "C0001"), evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
+    registration = StrategyRegistry((context.root / "research/registrations")).get_candidate(
+        CandidateKey("S900", "C0001"), evidence_root=(context.root / "experiments") / "S900/20261001_S900_EX01"
     )
     definition, content = prepare(completed)
     assemble_delivery(context, Deliverable(definition, content))
     delivery_path = (
-        context.experiments_root / "S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/receipt.json"
+        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/ASSESSMENT/1/receipt.json"
     )
     source = context.root / ".tmp/user-confirmation.json"
     source.write_text('{"message":"synthetic user approval"}')
@@ -296,12 +296,12 @@ def test_managed_inspection_freeze_and_idempotent_query(inspection, monkeypatch)
     assert len(request.execution.trace.evaluations) == 1
     assert not context.strategy_root.exists()
     assert resolve_evidence(context, report.reference).is_relative_to(
-        context.experiments_root / "S900" / request.execution.definition.experiment_id
+        (context.root / "experiments") / "S900" / request.execution.definition.experiment_id
     )
     assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
     operation = approve(context, report, source)
     assert resolve_evidence(context, operation.approval.evidence).is_relative_to(
-        context.research_root / "S900/decisions"
+        (context.root / "research") / "S900/decisions"
     )
     assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
     assert not context.strategy_root.exists()
@@ -430,7 +430,7 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert assemble_delivery(context, Deliverable(definition, value)) == receipt
     published = (
-        context.experiments_root / "S900/20261001_S900_EX01/deliveries/INSPECTION/1/report.md"
+        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/INSPECTION/1/report.md"
     )
     assert "技术检验：PASS" in published.read_text(encoding="utf-8")
     assert "尚未请求" in published.read_text(encoding="utf-8")
@@ -507,7 +507,7 @@ def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_c
         load_strategy_deployment(context.strategy_root, "S900-v1").release_hash
         == receipt.version.release_hash
     )
-    marker = context.research_root / "S900/freeze_requests/request1/committed.json"
+    marker = (context.root / "research") / "S900/freeze_requests/request1/committed.json"
     marker.rename(marker.with_name("simulated-lost-commit.json"))
     assert load_strategy_deployment(context.strategy_root, "S900-v1").release_hash == receipt.version.release_hash
 
@@ -519,7 +519,7 @@ def test_inspection_artifacts_are_sealed_in_rex_receipt(inspection, monkeypatch)
     context, request, _ = inspection
     report = inspect_candidate(context, request)
     loaded = load_experiment(
-        context.experiments_root / "S900" / request.execution.definition.experiment_id
+        (context.root / "experiments") / "S900" / request.execution.definition.experiment_id
     )
     monkeypatch.setattr(
         loaded.implementation,
@@ -543,7 +543,7 @@ def test_corrupt_research_commit_does_not_change_runtime_version(inspected_candi
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
     freeze_candidate(context, operation)
-    path = context.research_root / "S900/freeze_requests/request1/committed.json"
+    path = (context.root / "research") / "S900/freeze_requests/request1/committed.json"
     path.write_text("{malformed")
     receipt = get_freeze_result(context, operation.request_id)
     assert receipt.status is f.FreezeStatus.UNKNOWN
@@ -739,7 +739,7 @@ def _cold_start_inspection(path):
     with pytest.MonkeyPatch.context() as patch:
         _install_candidate_dataflows(patch, flow, daily, base_dir=context.root)
         definition = load_experiment(
-            context.experiments_root / "S900" / values["experiment_id"]
+            (context.root / "experiments") / "S900" / values["experiment_id"]
         ).definition
         execution = create_formal_experiment_context(
             definition,

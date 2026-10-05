@@ -13,7 +13,9 @@
 空间，不自行构造平台回执。
 
 实验源码以`experiment_binding.json`声明模块、类、源码闭包和依赖身份；
-`load_experiment(...)`核对哈希并隔离加载。探索使用
+`load_experiment(root)`核对哈希并隔离加载。`root`由调用方显式提供，目录名和父目录名不提供
+实验或策略身份；身份取自绑定源码中的`ExperimentDefinition`，由业务调用方核对其请求归属。
+移动或重命名保存目录无需修改已绑定的定义与源码。探索使用
 `czsc_trader.research_tools.create_experiment_context(...)`，正式实验使用
 `create_formal_experiment_context(...)`；两者不可互换。`execute_experiment(...)`在调用实验前及
 `execute(context)`返回后核验源码闭包与定义身份，再校验结果、产物及资源使用并生成平台回执。

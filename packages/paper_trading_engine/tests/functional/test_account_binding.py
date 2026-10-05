@@ -59,7 +59,7 @@ def test_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkey
     assert binding.release_hash == version.release_hash
     assert binding.qualification is Qualification.PAPER_READY
     assert binding.selection_data_cutoff == date.fromisoformat(version.selection_data_cutoff)
-    commit = context.research_root / "S900/freeze_requests/request1/committed.json"
+    commit = (context.root / "research") / "S900/freeze_requests/request1/committed.json"
     commit.parent.mkdir(parents=True)
     commit.write_text("{}", encoding="utf-8")
     assert client.validate_account_binding(

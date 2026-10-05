@@ -169,7 +169,7 @@ def new_named_experiment(context, strategy_id="S900"):
     )
     from czsc_trader.research_tools import create_experiment_context, execute_experiment
 
-    root = context.experiments_root / strategy_id / "EX078_20261003"
+    root = (context.root / "experiments") / strategy_id / "EX078_20261003"
     _write_v3_experiment(root)
     source = root / "experiment.py"
     source.write_text(
@@ -219,12 +219,12 @@ def test_delivery_rejects_foreign_family_executor_receipt(context):
 
 def test_new_experiment_owner_rejects_definition_from_other_family(context):
     root, _ = new_named_experiment(context, "S901")
-    target = context.experiments_root / "S900" / root.name
+    target = (context.root / "experiments") / "S900" / root.name
     shutil.copytree(root, target)
     defined = d.DeliveryDefinition(
         d.ExperimentOwner("S900", root.name), d.DeliveryStage.COMPONENTS, 1
     )
-    with pytest.raises(d.DeliveryValidationError, match="definition strategy differs"):
+    with pytest.raises(d.DeliveryValidationError, match="definition family or ID differs"):
         assemble_delivery(context, Deliverable(defined, content()))
 
 
@@ -570,7 +570,7 @@ def test_delivery_content_rejects_unknown_serialized_fields():
 def test_delivery_rejects_stage_content_mismatch_without_publication(context):
     with pytest.raises(d.DeliveryValidationError, match="stage"):
         assemble_delivery(context, Deliverable(definition(d.DeliveryStage.MANDATE), content()))
-    assert not (context.research_root / "S900/mandates").exists()
+    assert not ((context.root / "research") / "S900/mandates").exists()
 
 
 def test_delivery_rejects_changed_attachment_without_publication(context):
@@ -578,7 +578,7 @@ def test_delivery_rejects_changed_attachment_without_publication(context):
     (context.root / source.source_path).write_text("changed")
     with pytest.raises(d.DeliveryValidationError, match="hash"):
         assemble_delivery(context, Deliverable(definition(), content(attachments=(source,))))
-    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
+    assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
 
 
 def test_delivery_publication_interruption_leaves_no_visible_revision(context, monkeypatch):
@@ -589,7 +589,7 @@ def test_delivery_publication_interruption_leaves_no_visible_revision(context, m
     with pytest.raises(d.DeliveryValidationError, match="interruption"):
         assemble_delivery(context, Deliverable(definition(), content()))
     assert not (
-        context.experiments_root / "S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
+        (context.root / "experiments") / "S900/20261001_S900_EX01/deliveries/COMPONENTS/1"
     ).exists()
 
 
@@ -639,7 +639,7 @@ def test_actual_rex_executor_receipt_can_be_published(context):
         experiments=(ref,),
     )
     owner_root = (
-        context.experiments_root / loaded.definition.strategy_id / loaded.definition.experiment_id
+        (context.root / "experiments") / loaded.definition.strategy_id / loaded.definition.experiment_id
     )
     shutil.copytree(loaded.root, owner_root)
     receipt = assemble_delivery(context, Deliverable(defined, content()))
@@ -673,7 +673,7 @@ def test_real_filesystem_link_cannot_supply_delivery_evidence(context):
             assemble_delivery(
                 context, Deliverable(definition(), content(attachments=(linked_source,)))
             )
-        assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
+        assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
     finally:
         if os.name == "nt":
             linked.rmdir()
@@ -801,7 +801,7 @@ def test_new_catalog_reference_requires_real_fsc_membership(context, delivery_ca
         return
     with pytest.raises(d.DeliveryValidationError, match="registered FSC"):
         assemble_delivery(context, Deliverable(definition(), package))
-    assert not (context.experiments_root / "S900/20261001_S900_EX01/deliveries").exists()
+    assert not ((context.root / "experiments") / "S900/20261001_S900_EX01/deliveries").exists()
 
 
 
@@ -810,7 +810,7 @@ def owner_experiment(context, number=1):
     from test_research_experiment import _write_v3_experiment
     from research_experiment import experiment_source_sha256
 
-    root = context.experiments_root / "S900" / f"20261001_S900_EX{number:02}"
+    root = (context.root / "experiments") / "S900" / f"20261001_S900_EX{number:02}"
     _write_v3_experiment(root)
     source = root / "experiment.py"
     source.write_text(

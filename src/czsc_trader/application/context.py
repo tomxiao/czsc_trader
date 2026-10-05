@@ -35,17 +35,14 @@ class RepositoryContext:
     """Repository resources and caller-supplied delivery/research locations.
 
     Delivery operations require delivery_workspace; discovery never creates it.
-    Candidate, evidence and freeze operations require research_workspace.
+    Governance, candidate, evidence and freeze operations require research_workspace.
     """
 
     root: Path
-    research_root: Path
-    research_registry_root: Path
     raw_dir: Path
     research_data_root: Path
     tdr_srt_root: Path
     strategy_root: Path
-    experiments_root: Path
     outputs_root: Path
     delivery_workspace: DeliveryWorkspace | None = None
     research_workspace: ResearchWorkspace | None = None
@@ -82,13 +79,10 @@ class RepositoryContext:
             )
         return cls(
             root=root,
-            research_root=root / "research",
-            research_registry_root=root / "research" / "registrations",
             raw_dir=root / "data" / "raw",
             research_data_root=root / "data" / "raw",
             tdr_srt_root=root / "data" / "backtest",
             strategy_root=root / "strategies",
-            experiments_root=root / "experiments",
             outputs_root=root / "outputs",
             delivery_workspace=delivery_workspace,
             research_workspace=research_workspace,

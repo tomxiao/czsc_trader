@@ -202,6 +202,30 @@ def test_public_preflight_reports_archive_warnings():
 
 
 def test_public_evaluation_rejects_missing_request(minimal_repo):
+    from czsc_trader.research_tools import EvaluationFiles
     with pytest.raises(ValidationError) as error:
-        evaluate_research_request(RepositoryContext.discover(minimal_repo), Path("missing.json"))
+        evaluate_research_request(RepositoryContext.discover(minimal_repo), Path("missing.json"),
+                                  files=EvaluationFiles("inputs", "results"))
     assert error.value.code == "research_evaluation_failed"
+
+
+@pytest.mark.parametrize("workspace,receipt,error", [
+    ("relative", "0" * 64, TypeError),
+    (Path("relative"), "bad", ValueError),
+    (Path("relative"), "A" * 64, ValueError),
+])
+def test_predecessor_evidence_rejects_invalid_boundary_input(workspace, receipt, error):
+    from czsc_trader.application import PredecessorEvidence
+    with pytest.raises(error):
+        PredecessorEvidence(workspace, receipt)
+
+
+def test_preflight_uses_explicit_relative_location_after_relocation(minimal_repo):
+    source = ROOT / "tests/fixtures/s008_research_cases/20260924_S008_EX99"
+    target = minimal_repo / "chosen-space/deeper/different-name"
+    shutil.copytree(source, target)
+    context = RepositoryContext.discover(minimal_repo)
+    result = preflight_experiment_archive(context, target.relative_to(minimal_repo))
+    assert result.status == "PASS"
+    assert result.result["experiment_id"] == "20260924_S008_EX99"
+    assert not (minimal_repo / "research").exists()

@@ -454,7 +454,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_pay
     candidate_root = minimal_repo / "candidate" / "strategy_runtime"
     shutil.copytree(source, candidate_root)
     candidate = StrategyCandidate("S009", "C0001", payload, candidate_root)
-    experiment_path = context.experiments_root / "S009" / "EX001_20261003"
+    experiment_path = (context.root / "experiments") / "S009" / "EX001_20261003"
     _write_v3_experiment(experiment_path)
     implementation = experiment_path / "experiment.py"
     implementation.write_text(
@@ -481,7 +481,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_pay
             sha256(preflight.read_bytes()).hexdigest(),
         ),
     )
-    registry = StrategyRegistry(context.research_registry_root)
+    registry = StrategyRegistry((context.root / "research/registrations"))
     family = StrategyFamily(
         2,
         "S009",
@@ -522,7 +522,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_pay
     (foreign_root / "preflight.json").write_text(
         json.dumps(foreign_report.to_dict()), encoding="utf-8"
     )
-    claimed_root = context.experiments_root / "S009" / foreign_root.name
+    claimed_root = (context.root / "experiments") / "S009" / foreign_root.name
     shutil.copytree(foreign_root, claimed_root)
     claimed_preflight = claimed_root / "preflight.json"
     foreign_origin = CandidateRegistrationOrigin(
@@ -546,7 +546,7 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_pay
             d.ExperimentLocation(d.ExperimentOwner("S009", foreign_root.name),
                                  claimed_root.relative_to(context.root).as_posix()),)),
     )
-    with pytest.raises(ValueError, match="strategy differs from its directory"):
+    with pytest.raises(ValueError, match="candidate origin differs from bound experiment"):
         register_candidate(foreign_context, replace(request, origin=foreign_origin))
     assert not (claimed_root / "objects").exists()
     changed = deepcopy(payload)

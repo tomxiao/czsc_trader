@@ -9,6 +9,18 @@ from .delivery import _Record, _path, _unique, ExperimentOwner
 
 
 @dataclass(frozen=True, slots=True)
+class EvaluationFiles(_Record):
+    """Repository-relative input base and publication directory selected by the caller."""
+
+    input_root: str
+    output_path: str
+
+    def _validate(self):
+        _path(self.input_root)
+        _path(self.output_path)
+
+
+@dataclass(frozen=True, slots=True)
 class CandidateLocation(_Record):
     key: CandidateKey
     experiment_id: str

@@ -15,7 +15,7 @@
 | 自检证据适配 | `research_tools.build_assessment_evidence` | 将受管评价事实转换为SE的`AssessmentEvidence` |
 | 技术检验与获批冻结 | `inspect_candidate`、`record_research_decision`、`freeze_candidate`、`get_freeze_result` | 用户选型、检验、冻结批准分别绑定证据 |
 | 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放类型；业务执行使用`application.run_backtest` |
-| 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
+| 研究身份 | `create_research_batch`、`update_research_intent` | 核验调用方材料并写入显式登记空间，调用前取得授权 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | 完整模板操作包含跨FSC绑定校验 |
 | 项目因子计算 | [FSC计算模块](../../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py) | 由FSC提供纯计算函数；研究员提供输入数据并核对因果时点 |
 | 档案校验 | `validate_archives` | 只读验证；不重签原件 |
@@ -47,6 +47,30 @@ TDR提供研究执行、评价、回测及证据业务接口。独立取数使�
 实验内通过`context.data`调用并记录请求、结果和准备引用。TDR不提供独立行情准备、CSV加载
 或数据校验API。研究员负责取得研究授权、选择可用数据范围并遵守阶段约束；TDR校验请求
 自身的数据身份、日期范围、资源配置和执行证据，不将研究声明作为权限门槛。
+
+### 研究身份登记与文件化评价空间
+
+`RepositoryContext`不再提供默认`research_root/research_registry_root/experiments_root`。
+研究身份、候选、决定及冻结操作使用调用方声明的`ResearchWorkspace`；登记位置由
+`registry_path`给出。研究目录的组织规范见[研究空间](../../research/README.md)和
+[实验空间](../../experiments/README.md)。
+
+`create_research_batch(context, input_path, material=ref, actor=..., reason=...)`
+读取显式JSON请求：必填`strategy_id/name/scope/research_intent/credential_id`，可选
+`research_state`。`material`必须为`ResearchEvidenceRef`，归属为
+`ResearchEvidenceOwner(strategy_id)`；调用方在`ResearchWorkspace.evidence`中绑定其根目录。
+平台先核验材料的归属、可用性及原始字节哈希，再通过SM登记身份、意图及凭据；不创建或修改
+研究交接文档，不按研究目录是否存在分配凭据编号，不在失败时删除研究资料。
+`update_research_intent`使用同一个显式登记位置，只更新登记事实。
+
+`EvaluationFiles(input_root="调用方选择的输入根目录", output_path="调用方选择的发布目录")`
+从`research_tools`导入。两个字段均为仓库相对路径；文件化评价必须通过`files=`提供该对象。
+请求文件的位置和名称独立指定，请求中的`runtime_root/runtime_binding`相对`input_root`；
+策略及实验身份来自请求字段，目录名不提供身份。输出目录由调用方选择，平台在其中保存
+`evaluation_result.json`和各窗口／场景产物，拒绝输出覆盖请求、源码及绑定。重复发布仍核验
+完整文件集合、身份及哈希，不覆盖不同内容的证据。调用方迁移空间时重新提供路径绑定。
+显式`Path`参数可使用仓库相对路径或仓库内绝对路径，相对路径以`context.root`为基准，
+越界、父目录跳转及链接路径在读写前失败。
 
 ## 3. 实验预检与执行
 
@@ -95,7 +119,7 @@ Optuna维持独立第三方库使用方式。研究员负责study、trial、搜�
 | --- | --- | --- |
 | 实验内账户评价 | `context.evaluation.evaluate(EvaluationRequest)` | `EvaluationResult`，含各窗口／成本场景的账户、基准及身份 |
 | 实验内批量评价 | `context.evaluation.evaluate_many(tuple[EvaluationRequest, ...])` | 按输入顺序返回`EvaluationOutcome`，分别携带终态记录和可选成功结果 |
-| 文件化评价及发布 | `evaluate_research_request(context, input_path)` | 实验`artifacts/evaluation/`及文件哈希 |
+| 文件化评价及发布 | `evaluate_research_request(context, input_path, files=EvaluationFiles(...))` | 调用方指定目录中的评价产物及文件哈希 |
 | 候选或版本完整回测 | `run_backtest(context, strategy, request)` | 账户、指标、审计、报告及图表，位于返回的`artifacts.output_dir` |
 
 `run_backtest`接受SRT的`StrategyCandidate`或SM的`StrategyVersion`，请求统一使用`BacktestRequest`。
@@ -176,7 +200,7 @@ DFLS统一管理数据资产及复用，TDR不再生成供独立取数使用的C
 ## 5. 证据读取与失败语义
 
 - 前驱通过REX `load_experiment_input`及可信的`expected_receipt_sha256`读取。
-- 当前契约档案通过`validate_archives(context, archive)`或`all_archives=True`校验，二者只能选一。全库调用遇到不支持的历史格式会明确失败，不等于平台承诺全部历史档案可复验。
+- 当前契约档案通过`validate_archives(context, archives)`校验；`archives`必须是非空`tuple[Path, ...]`。调用方选择全部目标，平台不扫描默认目录。空清单、重复路径、越界及链接路径明确失败；遇到不支持的历史格式也明确失败。档案身份取自manifest，不依赖保存目录名。
 - 文件化评价重复发布校验既有身份及文件哈希；不同结果不得覆盖旧证据。
 - 重复调用可能重新准备数据和执行计算，不推定无副作用。
 - 数据截止日缺口、输入身份不符、未完成审计均显式报告，不静默缩窗或降级。
@@ -431,7 +455,8 @@ from czsc_trader.research_tools import ExperimentEvidenceRef, ExperimentEvidence
 from research_experiment import load_experiment_input
 from strategy_manager import CandidateEvidence
 
-archived_workspace = context.experiments_root / strategy_id / record.experiment_id / "artifacts/rex"
+# experiment_root由研究员明确提供，须指向该回执的归属实验。
+archived_workspace = experiment_root / "artifacts/rex"
 load_experiment_input(archived_workspace, expected_receipt_sha256=source_receipt.sha256)
 reference = EvaluationEvidenceReference(
     experiment=ExperimentEvidenceRef(
