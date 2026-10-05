@@ -311,6 +311,7 @@ def _validate_inspection_delivery(definition, content, root, context):
     from strategy_manager import ResearchEvidenceRef
     from strategy_manager import freeze_contracts as f
     from .research_evidence import read_decision, validate_inspection
+    from .research_paths import resolve_evidence, journal_root
 
     payload = content.payload
     if (payload.inspection.owner.strategy_id, payload.inspection.owner.experiment_id) != (definition.strategy_id, definition.owner.experiment_id):
@@ -321,13 +322,13 @@ def _validate_inspection_delivery(definition, content, root, context):
         json.loads(_read_evidence(root, payload.inspection_evidence))
     )
     if report != payload.inspection or report != validate_inspection(
-        context.root, report.reference
+        context, report.reference
     ):
         _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
-    selection = read_decision(context.root, report.selection)
+    selection = read_decision(context, report.selection)
     receipt_path = _delivery_path(context, payload.source_assessment) / "receipt.json"
     if (
-        selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
+        resolve_evidence(context, selection.subject.delivery) != receipt_path.resolve()
         or selection.subject.delivery.sha256 != sha256(receipt_path.read_bytes()).hexdigest()
     ):
         _fail("INSPECTION_SELECTION", "source_assessment", "selection refers to another assessment")
@@ -337,13 +338,13 @@ def _validate_inspection_delivery(definition, content, root, context):
     }
     records = [report]
     for ref in (report.selection, *payload.decisions):
-        record = read_decision(context.root, ref)
+        record = read_decision(context, ref)
         if record.strategy_id != definition.strategy_id:
             _fail("INSPECTION_DECISION", ref.decision_id, "decision family differs")
         for evidence in (ref.evidence, record.confirmation_source):
             if (
                 evidence.sha256,
-                evidence.resolve(context.root).read_bytes(),
+                resolve_evidence(context, evidence).read_bytes(),
             ) not in attached:
                 _fail("INSPECTION_EVIDENCE", evidence.path, "decision evidence must be attached")
         if (
@@ -353,7 +354,7 @@ def _validate_inspection_delivery(definition, content, root, context):
             _fail("INSPECTION_DECISION", ref.decision_id, "freeze decision report differs")
     for value in _walk(records[0]):
         if isinstance(value, ResearchEvidenceRef):
-            if (value.sha256, value.resolve(context.root).read_bytes()) not in attached:
+            if (value.sha256, resolve_evidence(context, value).read_bytes()) not in attached:
                 _fail("INSPECTION_EVIDENCE", value.path, "inspection evidence must be attached")
     if payload.freeze is not None:
         from .inspection_service import get_freeze_result
@@ -361,8 +362,7 @@ def _validate_inspection_delivery(definition, content, root, context):
         if receipt != payload.freeze:
             _fail("FREEZE_RECEIPT", "freeze", "freeze receipt differs from actual result")
         if receipt.status is f.FreezeStatus.COMMITTED:
-            request_path = (context.research_root / receipt.request_id.strategy_id
-                            / "freeze_requests" / receipt.request_id.value / "research_request.json")
+            request_path = (journal_root(context, receipt.request_id) / receipt.request_id.value / "research_request.json")
             request = f.FreezeCandidateRequest.from_dict(
                 json.loads(request_path.read_text(encoding="utf-8")))
             if (
@@ -1106,16 +1106,14 @@ def assemble_delivery(
             _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
         experiments = _load_experiments(definition, context.root, published=False, context=context)
         if isinstance(content.payload, d.CandidateSet):
-            from strategy_manager import StrategyRegistry, StrategyManagerError
+            from strategy_manager import StrategyManagerError
             from strategy_runtime.errors import StrategyRuntimeError
-            from .candidate_service import load_candidate
+            from .candidate_service import load_candidate, _registration
 
             identities = {x.identity.key: x.identity for x in content.payload.candidates}
             for key in content.payload.handoff:
                 try:
-                    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-                        key, experiments_root=context.experiments_root
-                    )
+                    registration = _registration(context, key)
                     if registration.content_sha256 != identities[key].content_sha256:
                         raise ValueError("registered candidate content differs from handoff")
                     load_candidate(context, key)

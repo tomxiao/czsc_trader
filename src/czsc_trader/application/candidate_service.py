@@ -22,6 +22,8 @@ from strategy_manager import (
 )
 
 from .context import RepositoryContext
+from .research_paths import candidate_root, registry_root
+from .delivery_service import _resolve
 from ..temp_workspace import create_temporary_directory
 
 
@@ -47,7 +49,7 @@ class CandidateRegistrationRequest:
 
 def _publish(root: Path, relative: str, data: bytes, temporary: Path) -> CandidateEvidence:
     ref = CandidateEvidence(relative, sha256(data).hexdigest())
-    target = root / relative
+    target = _resolve(root, relative)
     if not target.resolve().is_relative_to(root.resolve()):
         raise ValueError("candidate file escapes registry root")
     if target.exists():
@@ -79,14 +81,14 @@ def register_candidate(
     ):
         raise ValueError("registration requires candidate sources inside repository")
     origin = request.origin
-    experiment_root = context.experiments_root / candidate.strategy_family_id / origin.experiment_id
-    for path in (experiment_root, experiment_root.parent, context.experiments_root):
-        if path.is_symlink() or path.is_junction():
-            raise ValueError("candidate experiment root contains a link")
+    experiment_root = candidate_root(context, CandidateKey(candidate.strategy_family_id, candidate.candidate_id),
+                                     experiment_id=origin.experiment_id)
     loaded = load_experiment(experiment_root)
     binding_path = loaded.root / "experiment_binding.json"
     if (
         loaded.definition.schema_version != 2
+        or loaded.definition.strategy_id != candidate.strategy_family_id
+        or loaded.definition.experiment_id != origin.experiment_id
         or loaded.definition.sha256 != origin.definition_sha256
         or sha256(binding_path.read_bytes()).hexdigest() != origin.binding_sha256
     ):
@@ -129,7 +131,7 @@ def register_candidate(
         raise ValueError("preflight does not bind the candidate origin")
     runtime = StrategyRuntime()
     identity = runtime.identify(candidate, dependencies=request.dependencies)
-    registry = StrategyRegistry(context.research_registry_root)
+    registry = StrategyRegistry(registry_root(context))
     registry.get_family(candidate.strategy_family_id)
     temporary = create_temporary_directory(context.root, "candidate-registration")
     root = loaded.root
@@ -190,17 +192,23 @@ def register_candidate(
         replace(origin, preflight=copy_evidence(origin.preflight)),
         derivation,
     )
-    return registry.register_candidate(record, experiments_root=context.experiments_root)
+    return registry.register_candidate(record, evidence_root=loaded.root)
 
 
 def _registered_root(context, record):
-    return context.experiments_root / record.key.strategy_id / record.origin.experiment_id
+    return candidate_root(context, record.key, experiment_id=record.origin.experiment_id)
+
+
+def _registration(context, key):
+    record = StrategyRegistry(registry_root(context)).get_candidate(
+        key, evidence_root=candidate_root(context, key)
+    )
+    _registered_root(context, record)
+    return record
 
 
 def load_candidate(context: RepositoryContext, key: CandidateKey) -> StrategyCandidate:
-    record = StrategyRegistry(context.research_registry_root).get_candidate(
-        key, experiments_root=context.experiments_root
-    )
+    record = _registration(context, key)
     evidence_root = _registered_root(context, record)
     payload = json.loads(record.payload.resolve(evidence_root).read_text(encoding="utf-8"))
     root = evidence_root / f"objects/source/{record.source_sha256}/strategy_runtime"

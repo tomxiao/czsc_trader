@@ -129,15 +129,18 @@ def test_public_research_evidence_resolves_only_within_its_owner(tmp_path):
     evidence.parent.mkdir(parents=True)
     evidence.write_text('{"decision":"synthetic"}', encoding="utf-8")
     reference = ResearchEvidenceRef(ResearchEvidenceOwner("S900"), "decisions/selection.json", sha256(evidence.read_bytes()).hexdigest())
-    assert reference.resolve(tmp_path) == evidence
+    from strategy_manager import ResearchEvidenceLocation
+
+    location = ResearchEvidenceLocation(reference.owner, "research/S900")
+    assert reference.resolve(tmp_path, location=location) == evidence
     assert ResearchEvidenceRef.from_dict(reference.to_dict()) == reference
     with pytest.raises(ValidationError):
-        reference.resolve(tmp_path / "strategies")
+        reference.resolve(tmp_path / "strategies", location=location)
     with pytest.raises(ValidationError):
         replace(reference, path="../other.json")
     with pytest.raises(ValueError, match="owner"):
         ResearchEvidenceOwner("S900", "20261001_S901_EX01")
     with pytest.raises(ValidationError):
-        replace(reference, owner=ResearchEvidenceOwner("S901")).resolve(tmp_path)
+        replace(reference, owner=ResearchEvidenceOwner("S901")).resolve(tmp_path, location=location)
     with pytest.raises(TypeError):
         DecisionReference("selection", CandidateEvidence("arbitrary.json", "a" * 64))

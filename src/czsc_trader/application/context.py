@@ -9,6 +9,7 @@ from .errors import UsageError
 
 if TYPE_CHECKING:
     from ..research_tools.delivery import DeliveryWorkspace
+    from ..research_tools.workspace import ResearchWorkspace
 
 
 def _is_repository_root(path: Path) -> bool:
@@ -31,9 +32,10 @@ def _is_repository_root(path: Path) -> bool:
 
 @dataclass(frozen=True)
 class RepositoryContext:
-    """Repository resources and caller-supplied delivery/source locations.
+    """Repository resources and caller-supplied delivery/research locations.
 
     Delivery operations require delivery_workspace; discovery never creates it.
+    Candidate, evidence and freeze operations require research_workspace.
     """
 
     root: Path
@@ -46,6 +48,7 @@ class RepositoryContext:
     experiments_root: Path
     outputs_root: Path
     delivery_workspace: DeliveryWorkspace | None = None
+    research_workspace: ResearchWorkspace | None = None
 
     def __post_init__(self):
         if self.delivery_workspace is not None:
@@ -53,6 +56,11 @@ class RepositoryContext:
 
             if type(self.delivery_workspace) is not DeliveryWorkspace:
                 raise TypeError("delivery_workspace requires DeliveryWorkspace")
+        if self.research_workspace is not None:
+            from ..research_tools.workspace import ResearchWorkspace
+
+            if type(self.research_workspace) is not ResearchWorkspace:
+                raise TypeError("research_workspace requires ResearchWorkspace")
 
     @classmethod
     def discover(
@@ -61,6 +69,7 @@ class RepositoryContext:
         *,
         explicit_root: Path | None = None,
         delivery_workspace: DeliveryWorkspace | None = None,
+        research_workspace: ResearchWorkspace | None = None,
     ) -> "RepositoryContext":
         candidate = Path(explicit_root if explicit_root is not None else start).resolve()
         candidates = (candidate, *candidate.parents) if explicit_root is None else (candidate,)
@@ -82,4 +91,5 @@ class RepositoryContext:
             experiments_root=root / "experiments",
             outputs_root=root / "outputs",
             delivery_workspace=delivery_workspace,
+            research_workspace=research_workspace,
         )

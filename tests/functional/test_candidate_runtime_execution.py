@@ -36,7 +36,7 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
         ("High", market[["Open", "Close"]].max(axis=1)),
         ("Low", market[["Open", "Close"]].min(axis=1)),
         ("Volume", 1000.0),
-        ("Amount", 1000.0),
+        ("Amount", market["Close"] * market.get("Volume", 1000.0)),
     ):
         if column not in market:
             market[column] = value
@@ -87,6 +87,11 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
                 source_publication_timestamp_verified=False,
                 historical_revision_history_verified=False, live_feed_latency_verified=False,
             )
+        if dataset in {Dataset.ETF_OHLCV.value, Dataset.ETF_UNADJUSTED_DAILY.value,
+                       Dataset.ETF_UNADJUSTED_INTRADAY.value}:
+            from functional_support import synthetic_ohlcv_evidence
+
+            metadata.update(synthetic_ohlcv_evidence(request, frame, market))
         return frame, metadata
 
     from czsc_trader.temp_workspace import create_temporary_directory

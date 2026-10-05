@@ -1,4 +1,4 @@
-from delivery_workspace_support import fixture_delivery_workspace
+from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -90,7 +90,7 @@ class Experiment(ResearchExperiment):
         use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     evaluation_result = loaded.implementation.result
-    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace())
+    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
     family = StrategyFamily(
         2,
         "S900",
@@ -622,7 +622,7 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
     receipt = d.DeliveryReceipt.from_dict(json.loads((root / "receipt.json").read_text()))
     registry = StrategyRegistry(context.research_registry_root)
     registration = registry.get_candidate(
-        CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
+        CandidateKey("S900", "C0001"), evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
     )
     if damage == "missing":
         path = context.research_registry_root / "S900/candidates/C0001.json"
@@ -684,4 +684,4 @@ def prepared_delivery(request, tmp_path, frozen_seed_root):
     root = tmp_path / "assessment-repo"
     shutil.copytree(seed, root)
     definition, value = pickle.loads(data.read_bytes())
-    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace()), definition, value
+    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace()), definition, value

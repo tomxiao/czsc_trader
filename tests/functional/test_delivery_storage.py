@@ -1,3 +1,4 @@
+from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -244,14 +245,14 @@ def test_candidate_objects_are_owned_and_sealed_with_experiment(candidate_archiv
     context = candidate_archive
     registry = StrategyRegistry(context.research_registry_root)
     key = CandidateKey("S900", "C0001")
-    record = registry.get_candidate(key, experiments_root=context.experiments_root)
+    record = registry.get_candidate(key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01")
     root = context.experiments_root / "S900" / record.origin.experiment_id
     assert record.schema_version == 2
     assert (root / "objects").is_dir()
     assert not (context.research_registry_root / "objects").exists()
     assert load_candidate(context, key).candidate_id == "C0001"
     seal(root)
-    assert registry.register_candidate(record, experiments_root=context.experiments_root) == record
+    assert registry.register_candidate(record, evidence_root=context.experiments_root / "S900/20261001_S900_EX01") == record
     validate_experiment_archive(root)
 
 
@@ -259,7 +260,7 @@ def test_loading_retired_registration_keeps_archive_read_only(candidate_archive)
     context = candidate_archive
     registry = StrategyRegistry(context.research_registry_root)
     key = CandidateKey("S900", "C0001")
-    record = registry.get_candidate(key, experiments_root=context.experiments_root)
+    record = registry.get_candidate(key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01")
     raw = record.to_dict()
     raw["schema_version"] = 1
     registration_path = context.research_registry_root / "S900/candidates/C0001.json"
@@ -280,7 +281,7 @@ def test_sealed_candidate_owner_refuses_new_registered_content(candidate_archive
     context = candidate_archive
     key = CandidateKey("S900", "C0001")
     record = StrategyRegistry(context.research_registry_root).get_candidate(
-        key, experiments_root=context.experiments_root
+        key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
     )
     root = context.experiments_root / "S900" / record.origin.experiment_id
     original = load_candidate(context, key)
@@ -311,12 +312,12 @@ def test_registered_candidate_can_be_loaded_after_repository_relocation(candidat
     key = CandidateKey("S900", "C0001")
     original = load_candidate(context, key)
     record = StrategyRegistry(context.research_registry_root).get_candidate(
-        key, experiments_root=context.experiments_root
+        key, evidence_root=context.experiments_root / "S900/20261001_S900_EX01"
     )
     seal(context.experiments_root / "S900" / record.origin.experiment_id)
     destination = context.root.parent / (context.root.name + "-relocated")
     shutil.copytree(context.root, destination)
-    restored = load_candidate(RepositoryContext.discover(destination), key)
+    restored = load_candidate(RepositoryContext.discover(destination, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace()), key)
     assert restored.runtime_identity_sha256 == original.runtime_identity_sha256
     assert restored.source_root.is_relative_to(destination)
 
@@ -331,4 +332,4 @@ def candidate_archive(request, tmp_path, frozen_seed_root):
         shutil.copytree(context.root, seed)
     repository = tmp_path / "candidate-archive"
     shutil.copytree(seed, repository)
-    return RepositoryContext.discover(repository)
+    return RepositoryContext.discover(repository, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())

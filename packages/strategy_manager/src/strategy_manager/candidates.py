@@ -283,13 +283,13 @@ def validate_registration_files(record: CandidateRegistration, root: Path) -> No
         raise ValidationError("registered source closure hash differs")
 
 
-def _registration_evidence_root(record, experiments_root: Path) -> Path:
-    if not isinstance(experiments_root, Path):
-        raise TypeError("experiments_root requires Path")
-    root = experiments_root / record.key.strategy_id / record.origin.experiment_id
-    for path in (root, root.parent, experiments_root):
+def _registration_evidence_root(evidence_root: Path) -> Path:
+    if not isinstance(evidence_root, Path):
+        raise TypeError("evidence_root requires Path")
+    root = evidence_root
+    for path in (root, *root.parents):
         if path.is_symlink() or path.is_junction():
             raise ValidationError("candidate experiment root contains a link")
-    if not root.is_dir() or not root.resolve().is_relative_to(experiments_root.resolve()):
-        raise ValidationError("candidate experiment is missing or escapes experiments root")
+    if not root.is_dir():
+        raise ValidationError("candidate evidence root is missing")
     return root

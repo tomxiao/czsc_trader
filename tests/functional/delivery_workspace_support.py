@@ -1,6 +1,8 @@
 """The synthetic researcher chooses fixture locations; TDR never infers them."""
 
 from czsc_trader.research_tools import delivery as d
+from czsc_trader.research_tools import ResearchWorkspace, CandidateLocation, FreezeJournalLocation
+from strategy_manager import CandidateKey, ResearchEvidenceLocation, ResearchEvidenceOwner
 
 
 def fixture_delivery_workspace():
@@ -31,4 +33,22 @@ def fixture_delivery_workspace():
     experiments.append(d.ExperimentLocation(owner, source))
     deliveries.append(d.DeliveryLocation(owner, d.DeliveryStage.COMPONENTS, 1,
                                         f"{source}/deliveries/COMPONENTS/1"))
+    experiments.append(d.ExperimentLocation(d.ExperimentOwner("S009", "EX001_20261003"),
+                                            "experiments/S009/EX001_20261003"))
     return d.DeliveryWorkspace(tuple(deliveries), tuple(experiments))
+
+
+def fixture_research_workspace():
+    candidates = tuple(CandidateLocation(CandidateKey("S900", name), "20261001_S900_EX01")
+                       for name in ("C0001", "C0002", "C0003"))
+    candidates += (CandidateLocation(CandidateKey("S009", "C0001"), "EX001_20261003"),)
+    evidence = [ResearchEvidenceLocation(ResearchEvidenceOwner(strategy), f"research/{strategy}")
+                for strategy in ("S900", "S901", "S009")]
+    evidence.extend(ResearchEvidenceLocation(
+        ResearchEvidenceOwner(x.owner.strategy_id, x.owner.experiment_id), x.path)
+                    for x in fixture_delivery_workspace().experiments)
+    return ResearchWorkspace(
+        "research/registrations", candidates, tuple(evidence),
+        tuple(FreezeJournalLocation(strategy, f"research/{strategy}/freeze_requests")
+              for strategy in ("S900", "S901", "S009")),
+    )

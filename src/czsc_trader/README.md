@@ -200,9 +200,11 @@ DFLS统一管理数据资产及复用，TDR不再生成供独立取数使用的C
 | `register_candidate(context, request)` | `CandidateRegistrationRequest(candidate, origin, dependencies, derivation=None)` → `CandidateRegistration` |
 | `load_candidate(context, key)` | `CandidateKey(strategy_id, candidate_id)` → `StrategyCandidate` |
 
-来源绑定实验定义、源码绑定和预检证据。登记记录位于`research/registrations/<策略ID>/candidates/`，
+来源绑定实验定义、源码绑定和预检证据。调用方通过`ResearchWorkspace.registry_path`选择登记根目录，
+通过`CandidateLocation(key, experiment_id)`声明候选来源，再由`DeliveryWorkspace.experiments`
+提供该实验的实际目录。登记根目录内的`<策略ID>/candidates/`是SM机器记录布局。
 新登记使用`CandidateRegistration.schema_version=2`；源码、载荷和来源证据保存在来源实验的
-`experiments/<策略ID>/<实验ID>/objects/`。登记内的文件引用相对该实验根目录，
+调用方声明的实验根目录内的`objects/`。登记内的文件引用相对该实验根目录，
 `CandidateRegistrationRequest`中的输入证据路径仍相对仓库。同一键和登记内容重复调用返回原记录；
 不同内容拒绝覆盖。实验封存后不得补写候选对象；已存在且一致的对象可只读复用。
 读取与写入只接受schema 2登记；序列化记录须显式提供`schema_version=2`与`identity_schema_version=2`。
@@ -339,7 +341,7 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 `DeliveryWorkspace`覆盖本次交付及其前驱链条所需的位置；所有路径相对仓库，拒绝越界路径、
 链接、重复身份及相互重叠的交付目录。迁移目录后重新提供位置即可复验原`DeliveryReference`，
 物理路径不改变内容身份。实验源码目录名称仍遵守REX加载契约。
-候选登记、研究决定和冻结材料的位置仍按各自现行契约处理，其目录解耦另行实施。
+候选、决定、检验和冻结空间另由下述`ResearchWorkspace`显式声明。
 
 每份交付包含`delivery.json`、`report.md`、`receipt.json`及声明证据；`attachments/`保存附件，
 `experiments/`保存声明实验的回执与制品副本。`EvidenceFile.source_path`相对仓库，
@@ -380,6 +382,19 @@ context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 | `inspect_candidate(context, request)` | `CandidateInspectionRequest` → `CandidateInspectionReport` |
 | `freeze_candidate(context, request)` | `FreezeCandidateRequest(request_id, inspection, approval)` → `FreezeReceipt` |
 | `get_freeze_result(context, request_id)` | `FreezeRequestId(strategy_id, value)` → `FreezeReceipt` |
+
+上述入口要求`context.research_workspace`。从`czsc_trader.research_tools`导入
+`ResearchWorkspace/CandidateLocation/FreezeJournalLocation`，从`strategy_manager`导入
+`ResearchEvidenceLocation/ResearchEvidenceOwner`；调用方声明登记、候选来源、逻辑归属的证据根目录
+和冻结事务根目录。目录位置由研究员选择，未声明时明确失败，不查找既有研究目录。
+`RepositoryContext.discover(..., delivery_workspace=..., research_workspace=...)`分别接收两组绑定。
+
+| `ResearchWorkspace`字段 | 声明内容 |
+| --- | --- |
+| `registry_path` | SM登记根目录，相对仓库 |
+| `candidates` | `CandidateLocation`元组；候选键与来源实验ID的绑定，实际目录在`DeliveryWorkspace.experiments`声明 |
+| `evidence` | `ResearchEvidenceLocation`元组；每个逻辑归属的实际证据根目录 |
+| `freeze_journals` | `FreezeJournalLocation`元组；每个策略的实际事务日志根目录 |
 
 调用顺序与必要输入：
 
@@ -451,9 +466,12 @@ REX执行回执仍为schema 2。新归档检验要求评价产物schema 4，旧�
 `release_id/release_hash`形成`RuntimeBinding`。观察定义绑定到候选内容，不保存策略绘图代码。
 
 检验、计划和确认材料使用`ResearchEvidenceRef(owner, path, sha256)`，`path`相对其强类型归属。
-用户决定及确认材料存于`research/<策略ID>/decisions/`；检验证据存于当前正式实验的
-`objects/inspection/`；冻结请求与查询事实存于`research/<策略ID>/freeze_requests/<请求ID>/`。
-调用方直接复用API返回的引用，通过`resolve(context.root)`核验，不自行拼接`strategies/`路径。
+`ResearchEvidenceLocation(owner, path)`将归属绑定到调用方选择的仓库相对目录。
+用户决定及确认材料使用该证据根目录内的`decisions/`机器记录；检验证据使用其归属证据根目录内的
+`objects/inspection/`；冻结请求及查询事实使用`FreezeJournalLocation`指定根目录内的`<请求ID>/`。
+调用方复用API返回的引用，通过`ref.resolve(context.root, location=declared_location)`核验。
+`StageAdvanceSubject.delivery`和`CandidateSelectionSubject.delivery`要求`ResearchEvidenceRef`，
+使决定随归属空间迁移后仍能定位原交付。原仓库路径形式的决定不自动转换或改写。
 `CandidateEvidence`仍用于原评价产物及登记输入，路径按对应接口声明的根目录解析。
 
 仅`COMMITTED`表示版本完成冻结；新版本使用schema 5，保留来源实验、候选编号及固定运行内容。

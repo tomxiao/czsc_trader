@@ -1,4 +1,4 @@
-from delivery_workspace_support import fixture_delivery_workspace
+from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from strategy_evaluator import research_models as m
 from dataclasses import replace
 from hashlib import sha256
@@ -45,7 +45,7 @@ class Deliverable(d.ResearchDeliverable):
 def context(tmp_path):
     (tmp_path / "src/czsc_trader").mkdir(parents=True)
     (tmp_path / "pyproject.toml").write_text("")
-    result = RepositoryContext.discover(tmp_path, delivery_workspace=fixture_delivery_workspace())
+    result = RepositoryContext.discover(tmp_path, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
     owner_experiment(result)
     return result
 

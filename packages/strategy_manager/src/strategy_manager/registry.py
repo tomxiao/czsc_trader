@@ -93,7 +93,7 @@ class StrategyRegistry:
 
     @registry_write
     def register_candidate(
-        self, record: CandidateRegistration, *, experiments_root: Path
+        self, record: CandidateRegistration, *, evidence_root: Path
     ) -> CandidateRegistration:
         if not isinstance(record, CandidateRegistration):
             raise TypeError("register_candidate requires CandidateRegistration")
@@ -101,7 +101,7 @@ class StrategyRegistry:
             raise ValidationError("new candidate registrations require schema 2")
         self.get_family(record.key.strategy_id)
         validate_registration_files(
-            record, _registration_evidence_root(record, experiments_root)
+            record, _registration_evidence_root(evidence_root)
         )
         path = (
             self._strategy_dir(record.key.strategy_id)
@@ -109,7 +109,7 @@ class StrategyRegistry:
             / f"{record.key.candidate_id}.json"
         )
         if path.exists():
-            existing = self.get_candidate(record.key, experiments_root=experiments_root)
+            existing = self.get_candidate(record.key, evidence_root=evidence_root)
             if existing.record_sha256 != record.record_sha256:
                 raise CandidateIdentityConflict(
                     "candidate key is already bound to different content"
@@ -121,7 +121,7 @@ class StrategyRegistry:
         )
         return record
 
-    def get_candidate(self, key: CandidateKey, *, experiments_root: Path) -> CandidateRegistration:
+    def get_candidate(self, key: CandidateKey, *, evidence_root: Path) -> CandidateRegistration:
         if not isinstance(key, CandidateKey):
             raise TypeError("get_candidate requires CandidateKey")
         path = self._strategy_dir(key.strategy_id) / "candidates" / f"{key.candidate_id}.json"
@@ -134,7 +134,7 @@ class StrategyRegistry:
         if record.key != key or record.record_sha256 != value["record_sha256"]:
             raise RegistryError("candidate registration identity differs")
         validate_registration_files(
-            record, _registration_evidence_root(record, experiments_root)
+            record, _registration_evidence_root(evidence_root)
         )
         return record
 

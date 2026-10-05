@@ -1,3 +1,4 @@
+from delivery_workspace_support import fixture_delivery_workspace, fixture_research_workspace
 from copy import deepcopy
 from pathlib import Path
 from dataflows import DataSpace, Dataflows, ProviderConfig
@@ -449,7 +450,7 @@ def test_evaluator_cannot_report_success_with_wrong_identity(managed_evaluation)
 
 def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_payload, minimal_repo):
     payload, source = candidate_payload
-    context = RepositoryContext.discover(minimal_repo)
+    context = RepositoryContext.discover(minimal_repo, delivery_workspace=fixture_delivery_workspace(), research_workspace=fixture_research_workspace())
     candidate_root = minimal_repo / "candidate" / "strategy_runtime"
     shutil.copytree(source, candidate_root)
     candidate = StrategyCandidate("S009", "C0001", payload, candidate_root)
@@ -533,8 +534,20 @@ def test_registration_is_explicit_immutable_and_uses_saved_sources(candidate_pay
             sha256(claimed_preflight.read_bytes()).hexdigest(),
         ),
     )
+    from czsc_trader.research_tools import delivery as d
+    from czsc_trader.research_tools import CandidateLocation
+
+    foreign_context = replace(
+        context,
+        research_workspace=replace(context.research_workspace, candidates=(
+            CandidateLocation(CandidateKey("S009", "C0001"), foreign_root.name),)),
+        delivery_workspace=replace(context.delivery_workspace, experiments=(
+            *context.delivery_workspace.experiments,
+            d.ExperimentLocation(d.ExperimentOwner("S009", foreign_root.name),
+                                 claimed_root.relative_to(context.root).as_posix()),)),
+    )
     with pytest.raises(ValueError, match="strategy differs from its directory"):
-        register_candidate(context, replace(request, origin=foreign_origin))
+        register_candidate(foreign_context, replace(request, origin=foreign_origin))
     assert not (claimed_root / "objects").exists()
     changed = deepcopy(payload)
     changed["parameters"]["threshold"] = 0.8

@@ -84,8 +84,10 @@ from .experiment import (
     preflight_experiment,
 )
 from .assessment import build_assessment_evidence
+from .workspace import CandidateLocation, FreezeJournalLocation, ResearchWorkspace
 
 __all__ = [
+    "CandidateLocation", "FreezeJournalLocation", "ResearchWorkspace",
     "CandidateInspectionDelivery",
     "CandidateAssessmentDelivery",
     "TargetMandateBinding",
