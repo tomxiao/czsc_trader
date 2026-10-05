@@ -1,4 +1,22 @@
-# S012｜518850.SH 阶段三交接
+# S012｜518850.SH 阶段二第一性原理交接
+
+## 当前状态：重建及首轮普查完成，阶段二研究进行中（2026-10-06）
+
+用户批准按黄金第一性原理回到阶段二重做收益假设，并提供宏观金融、资金流与持仓、微观量价建议。当前分支codex/s012-research-resume；RSCH使用既有S012来源，无新外部行情接入、DEV或阶段三授权。研究登记RESEARCHING、意图COMPONENTS/IN_PROGRESS、正式交付PARTIAL。
+
+- [新收益假设与全主结果](../../experiments/S012/EX029_20261006/04_conclusion.md)、[外部建议审查](../../experiments/S012/EX029_20261006/external_advice_review.md)、[正式25记录面板](../../experiments/S012/EX029_20261006/deliveries/COMPONENTS/1/report.md)。19已检验定义、6缺资源记录；新确认有效收益组件0，历史39记录和阶段三空达标结果保留前驱，不改写原判断。
+- EX029受管REX为INCONCLUSIVE；实际19假设、11对照、600路径、4200年度，全部1535上市日已见开发池。[原协议数量说明](../../experiments/S012/EX029_20261006/protocol_count_correction.md)只纠正18文字计数，未改固定19定义或计算。
+- M05时变避险确认5日净均值0.6345%、匹配+0.3674pp，34潜在触价、1.329/60日；年度2024负、延迟匹配负、区间跨0、q=0.9685。M01趋势质量10日净均值1.2651%、107事件、13触价，2025集中、2026负、延迟失效。两者仅后继线索，不是账户或Alpha。
+- L03份额增长未涨组5日净均值-0.1980%，相对父对照-0.2985pp；追涨组匹配增量负。回调修复G08/L06及低ATR/缩量直接门未得到稳定增量。全部正负结果完整留存。
+- [独立复算](../../experiments/S012/EX029_20261006/artifacts/verification/independent.json)PASS，198004字段、源SHA、时间与换月排除、全部标签/路径/年度/BH一致；不重复随机抽样，不证明源政策等于历史公布时间或账户绩效。[交付FULL](materials/first_principles_components_validation_20261006.json)、[EX029档案](materials/first_principles_archive_validation_20261006.json)PASS。
+- 用户要求优先核实Tushare；实查69个FXCM标的仅USDOLLAR.FXCM命中，它是四币篮子，不能标为六币ICE DXY。Tushare公开目录未确认DXY/GVZ。[核查及最小实施方案](../../experiments/S012/EX029_20261006/tushare_resource_verification.md)：USDOLLAR可复用现有DFLS FXCM入口，但尚未验证全历史；GVZ建议FRED GVZCLS，需要DEV最小新增明确语义的数据契约和提供器；坚持DXY则需ICE历史许可路线，未确认免费完整获取。
+- 原阶段三19正式账户/603搜索成功账户均无达标候选；原净年化≥1.5BH、回撤<BH、闭合频率≥5/60日不变。本轮不建账户。新来源、DEV、阶段三、prod、合并/tag/推送均须各自授权。
+
+精确新交付：owner=ExperimentOwner(S012, EX029_20261006)，stage=COMPONENTS，revision=1，content_sha256=a196cfdd5f9d84634adb9e08392d748cd431042e25dcb013826efc56d6e777eb。
+
+重建假设与首轮检验目标已达成。下一步请用户决定USDOLLAR明确命名代理+FRED GVZ的最小路线，或坚持ICE DXY原序列；获批相应资源和DEV契约后回RSCH继续固定机制检验，阶段二尚未完成。仅本地提交，完整真实证据闭包需跨机器同步。
+
+# 历史阶段三交接
 
 ## 当前状态：阶段三交付完成，达标候选0（2026-10-06）
 

@@ -17,7 +17,8 @@
       "research/S012/materials/dev_performance_authorization_20261005.json",
       "research/S012/materials/autonomous_stage2_authorization_20261005.json",
       "research/S012/materials/confirmation_stage2_authorization_20261005.json",
-      "research/S012/materials/stage3_authorization_20261005.json"
+      "research/S012/materials/stage3_authorization_20261005.json",
+      "research/S012/materials/first_principles_stage2_authorization_20261006.json"
     ],
     "confirmed_capital_and_benchmark": {
       "benchmark": {
@@ -40,14 +41,14 @@
       "net_annual_return": ">= BuyHold * 1.5"
     },
     "delivery": {
-      "content_sha256": "f3547d436382c506e29ae5a275bc2ad53c12e919d2ec9b4c8dc8b5acc9bbc922",
+      "content_sha256": "a196cfdd5f9d84634adb9e08392d748cd431042e25dcb013826efc56d6e777eb",
       "owner": {
-        "experiment_id": "EX028_20261006",
+        "experiment_id": "EX029_20261006",
         "strategy_id": "S012",
         "type": "ExperimentOwner"
       },
       "revision": 1,
-      "stage": "CANDIDATES",
+      "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
     "experiments": [
@@ -77,9 +78,10 @@
       "EX025_20261005",
       "EX026_20261006",
       "EX027_20261006",
-      "EX028_20261006"
+      "EX028_20261006",
+      "EX029_20261006"
     ],
-    "next_stage": "用户审阅空达标交接集合，决定是否回退阶段二研究更强净收益机会；阶段四须另行批准。",
+    "next_stage": "先由用户决定USDOLLAR代理+FRED GVZ或ICE DXY原序列的资源与DEV实现；继续阶段二固定机制，重进阶段三需批准。",
     "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
     "observed_daily_coverage": {
       "end": "2026-09-30",
@@ -88,10 +90,22 @@
     },
     "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
     "pending": [
-      "三个原经济目标尚未共同达成，达标候选0。",
-      "用户决定后续阶段与路线。",
-      "全部历史已见开发池、可得时间假设及分钟数据误差保留。"
+      "原三个账户经济目标未共同达成；本轮未创建新账户。",
+      "19固定假设首轮无新确认有效机会；M05/M01仅线索，延迟和年度反证保留。",
+      "Tushare仅确认USDOLLAR不同口径代理；FRED GVZ、ICE DXY及DEV接入尚未获批。",
+      "全部历史已见开发池、源时间政策、日线潜在触价局限保留。"
     ],
+    "prior_candidate_delivery": {
+      "content_sha256": "f3547d436382c506e29ae5a275bc2ad53c12e919d2ec9b4c8dc8b5acc9bbc922",
+      "owner": {
+        "experiment_id": "EX028_20261006",
+        "strategy_id": "S012",
+        "type": "ExperimentOwner"
+      },
+      "revision": 1,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
     "prior_component_delivery": {
       "content_sha256": "d5ed294ec2f3e585c5cd0a56f2dd6b5c08b4531c6e18689d2d59c793c9a65c57",
       "owner": {
@@ -103,10 +117,10 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "research_summary": "772提议、603成功研究账户、19个正式完整账户，达标0；可行最佳净年化10.2881%、回撤20.9307%、132闭合、5.1596/60日，目标21.4300%。广域及局部改善均0，正式前沿复算及独立审计PASS，CANDIDATES完整负结果交付。",
+    "research_summary": "返回阶段二重建第一性原理收益假设，EX029正式19假设+11对照、600路径/4200年度完成，198004字段独立审计PASS；发布25记录PARTIAL面板，M05/M01仅线索，无新增确认有效机会。核实Tushare69 FXCM品种仅USDOLLAR，提出FRED GVZ和ICE DXY资源/DEV方案，待用户路线决定。",
     "resume_authorization": "research/S012/materials/resume_authorization_20261005.json",
-    "stage": "CANDIDATES",
-    "status": "COMPLETE",
+    "stage": "COMPONENTS",
+    "status": "IN_PROGRESS",
     "symbol": "518850.SH"
   },
   "research_state": "RESEARCHING",
@@ -115,5 +129,5 @@
     "518850.SH"
   ],
   "strategy_id": "S012",
-  "updated_at": "2026-10-06T00:41:03+08:00"
+  "updated_at": "2026-10-06T01:36:16+08:00"
 }
