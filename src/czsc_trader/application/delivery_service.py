@@ -45,14 +45,26 @@ def _resolve(root: Path, relative: str) -> Path:
 
 
 def _delivery_path(context: RepositoryContext, reference) -> Path:
-    if isinstance(reference.owner, d.MandateOwner):
-        return _resolve(
-            context.root, f"research/{reference.strategy_id}/mandates/{reference.revision}"
-        )
-    return _resolve(
-        context.root,
-        f"experiments/{reference.strategy_id}/{reference.owner.experiment_id}/deliveries/{reference.stage.value}/{reference.revision}",
-    )
+    workspace = _workspace(context)
+    for location in workspace.deliveries:
+        if (location.owner, location.stage, location.revision) == (
+            reference.owner, reference.stage, reference.revision
+        ):
+            return _resolve(context.root, location.path)
+    _fail("DELIVERY_LOCATION", "delivery_workspace.deliveries", "delivery location is not declared")
+
+
+def _workspace(context):
+    if type(context.delivery_workspace) is not d.DeliveryWorkspace:
+        _fail("DELIVERY_LOCATION", "delivery_workspace", "explicit DeliveryWorkspace is required")
+    return context.delivery_workspace
+
+
+def _experiment_path(context, owner):
+    for location in _workspace(context).experiments:
+        if location.owner == owner:
+            return _resolve(context.root, location.path)
+    _fail("EXPERIMENT_LOCATION", "delivery_workspace.experiments", "experiment source location is not declared")
 
 
 def _validate_owner(context, definition, *, publishing=False):
@@ -62,7 +74,7 @@ def _validate_owner(context, definition, *, publishing=False):
     from ..experiment_archive import validate_experiment_archive
 
     owner = definition.owner
-    root = _resolve(context.root, f"experiments/{owner.strategy_id}/{owner.experiment_id}")
+    root = _experiment_path(context, owner)
     binding = ExperimentBinding.from_mapping(_read_json(_resolve(root, "experiment_binding.json")))
     for name in binding.source_files:
         _resolve(root, name)
@@ -109,7 +121,7 @@ def _walk(value):
 def _load_scoped_experiment(context, strategy_id, experiment_id):
     from research_experiment import load_experiment
 
-    source = _resolve(context.root, f"experiments/{strategy_id}/{experiment_id}")
+    source = _experiment_path(context, d.ExperimentOwner(strategy_id, experiment_id))
     loaded = load_experiment(source)
     if (loaded.definition.strategy_id, loaded.definition.experiment_id) != (
         strategy_id, experiment_id
@@ -1000,6 +1012,7 @@ def validate_delivery(
 
     Predecessors receive integrity validation. Neither scope reruns account backtests.
     Experiment definitions may be loaded to verify source and owner binding.
+    All delivery/source locations come from context.delivery_workspace.
     """
     if type(scope) is not d.DeliveryValidationScope:
         raise TypeError("scope requires DeliveryValidationScope")
@@ -1047,7 +1060,10 @@ def _validate_new_catalog_references(content: d.DeliveryContent, context: Reposi
 def assemble_delivery(
     context: RepositoryContext, deliverable: d.ResearchDeliverable
 ) -> d.DeliveryReceipt:
-    """Build once, verify, then publish one immutable revision with an atomic rename."""
+    """Publish into the explicit context.delivery_workspace location atomically.
+
+    All predecessor and experiment source locations must be declared by the caller.
+    """
     if not isinstance(context, RepositoryContext) or not isinstance(
         deliverable, d.ResearchDeliverable
     ):

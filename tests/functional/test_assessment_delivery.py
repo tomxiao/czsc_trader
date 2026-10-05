@@ -1,3 +1,4 @@
+from delivery_workspace_support import fixture_delivery_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -89,7 +90,7 @@ class Experiment(ResearchExperiment):
         use=d.ExperimentEvidenceUse.CURRENT_EVALUATION,
     )
     evaluation_result = loaded.implementation.result
-    context = RepositoryContext.discover(root)
+    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace())
     family = StrategyFamily(
         2,
         "S900",
@@ -683,4 +684,4 @@ def prepared_delivery(request, tmp_path, frozen_seed_root):
     root = tmp_path / "assessment-repo"
     shutil.copytree(seed, root)
     definition, value = pickle.loads(data.read_bytes())
-    return RepositoryContext.discover(root), definition, value
+    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace()), definition, value

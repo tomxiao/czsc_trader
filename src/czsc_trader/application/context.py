@@ -3,8 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .errors import UsageError
+
+if TYPE_CHECKING:
+    from ..research_tools.delivery import DeliveryWorkspace
 
 
 def _is_repository_root(path: Path) -> bool:
@@ -27,7 +31,10 @@ def _is_repository_root(path: Path) -> bool:
 
 @dataclass(frozen=True)
 class RepositoryContext:
-    """Repository-relative paths required by application services."""
+    """Repository resources and caller-supplied delivery/source locations.
+
+    Delivery operations require delivery_workspace; discovery never creates it.
+    """
 
     root: Path
     research_root: Path
@@ -38,6 +45,14 @@ class RepositoryContext:
     strategy_root: Path
     experiments_root: Path
     outputs_root: Path
+    delivery_workspace: DeliveryWorkspace | None = None
+
+    def __post_init__(self):
+        if self.delivery_workspace is not None:
+            from ..research_tools.delivery import DeliveryWorkspace
+
+            if type(self.delivery_workspace) is not DeliveryWorkspace:
+                raise TypeError("delivery_workspace requires DeliveryWorkspace")
 
     @classmethod
     def discover(
@@ -45,6 +60,7 @@ class RepositoryContext:
         start: Path,
         *,
         explicit_root: Path | None = None,
+        delivery_workspace: DeliveryWorkspace | None = None,
     ) -> "RepositoryContext":
         candidate = Path(explicit_root if explicit_root is not None else start).resolve()
         candidates = (candidate, *candidate.parents) if explicit_root is None else (candidate,)
@@ -65,4 +81,5 @@ class RepositoryContext:
             strategy_root=root / "strategies",
             experiments_root=root / "experiments",
             outputs_root=root / "outputs",
+            delivery_workspace=delivery_workspace,
         )

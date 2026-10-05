@@ -304,23 +304,42 @@ costs = (
 | `INSPECTION` | `CandidateInspectionDelivery`：技术检验、用户决定、可选冻结回执及待决事项 |
 
 新`DeliveryDefinition`和`DeliveryReceipt`使用schema 4；`DeliveryDefinition`及`DeliveryReference`
-以`owner`明确归属，调用方不指定任意发布目录：
+以`owner`明确逻辑归属。调用方通过`RepositoryContext.discover(..., delivery_workspace=...)`
+明确提供交付目录、前驱交付目录及绑定实验源码目录；TDR按声明位置读写，不从研究ID、
+实验ID、阶段或修订号推导目录。遗漏位置时明确失败，即使原约定目录下存在文件也不会自动读取。
 
-| 归属类型 | 允许阶段 | 发布路径（相对仓库） |
+| 归属类型 | 允许阶段 | 位置契约 |
 | --- | --- | --- |
-| `MandateOwner(strategy_id)` | `MANDATE` | `research/<策略ID>/mandates/<修订>/` |
-| `ExperimentOwner(strategy_id, experiment_id)` | 阶段二至五 | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
+| `MandateOwner(strategy_id)` | `MANDATE` | `DeliveryLocation(owner, stage, revision, path)` |
+| `ExperimentOwner(strategy_id, experiment_id)` | 阶段二至五 | `DeliveryLocation`及`ExperimentLocation(owner, path)` |
 
 ```python
-from czsc_trader.research_tools import DeliveryDefinition, DeliveryStage, ExperimentOwner
+from pathlib import Path
+from czsc_trader.application import RepositoryContext
+from czsc_trader.research_tools import (
+    DeliveryDefinition, DeliveryStage, ExperimentOwner,
+    DeliveryLocation, ExperimentLocation, DeliveryWorkspace,
+)
 
 definition = DeliveryDefinition(
     owner=ExperimentOwner("S900", "EX001_20261004"),
     stage=DeliveryStage.COMPONENTS,
     revision=1,
 )
+workspace = DeliveryWorkspace(
+    deliveries=(DeliveryLocation(definition.owner, definition.stage, 1,
+                                 "experiments/S900/EX001_20261004/results/components-1"),),
+    experiments=(ExperimentLocation(definition.owner,
+                                    "experiments/S900/EX001_20261004"),),
+)
+context = RepositoryContext.discover(Path.cwd(), delivery_workspace=workspace)
 # 发布前，该归属实验须已存在有效定义和源码绑定，且尚未生成实验manifest。
 ```
+
+`DeliveryWorkspace`覆盖本次交付及其前驱链条所需的位置；所有路径相对仓库，拒绝越界路径、
+链接、重复身份及相互重叠的交付目录。迁移目录后重新提供位置即可复验原`DeliveryReference`，
+物理路径不改变内容身份。实验源码目录名称仍遵守REX加载契约。
+候选登记、研究决定和冻结材料的位置仍按各自现行契约处理，其目录解耦另行实施。
 
 每份交付包含`delivery.json`、`report.md`、`receipt.json`及声明证据；`attachments/`保存附件，
 `experiments/`保存声明实验的回执与制品副本。`EvidenceFile.source_path`相对仓库，

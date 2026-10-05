@@ -1,3 +1,4 @@
+from delivery_workspace_support import fixture_delivery_workspace
 from dataclasses import replace
 from hashlib import sha256
 import json
@@ -124,7 +125,7 @@ def inspection(request, tmp_path, frozen_seed_root, monkeypatch):
     payload = pickle.loads(payload_path.read_bytes())
     root = tmp_path / "inspection-repo"
     shutil.copytree(seed, root)
-    context = RepositoryContext.discover(root)
+    context = RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace())
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
@@ -169,7 +170,7 @@ def inspected_candidate(request, tmp_path, frozen_seed_root):
     report = f.CandidateInspectionReport.from_dict(
         json.loads(report_path.read_text(encoding="utf-8"))
     )
-    return RepositoryContext.discover(root), report, root / ".tmp/user-confirmation.json"
+    return RepositoryContext.discover(root, delivery_workspace=fixture_delivery_workspace()), report, root / ".tmp/user-confirmation.json"
 
 
 def approve(context, report, source, decision_id="freeze1", request_id="request1"):
@@ -359,7 +360,7 @@ def test_stage_five_delivery_captures_report_and_decision_closure(inspected_cand
     for status, failed_file in ((f.FreezeStatus.FAILED, "committed.json"), (f.FreezeStatus.UNKNOWN, "v1.json")):
         private = context.root.parent / f"delivery-{status.value}"
         shutil.copytree(context.root, private)
-        copied = RepositoryContext.discover(private)
+        copied = RepositoryContext.discover(private, delivery_workspace=fixture_delivery_workspace())
         failure_operation = approve(copied, report, private / source.relative_to(context.root),
             decision_id=f"freeze_{status.value}", request_id=f"request_{status.value}")
         durable = freeze_store._durable
@@ -649,7 +650,7 @@ def _cold_start_inspection(path):
         name: StrategyInputBinding.from_mapping(binding)
         for name, binding in values["input_bindings"].items()
     }
-    context = RepositoryContext.discover(values["repository_root"])
+    context = RepositoryContext.discover(values["repository_root"], delivery_workspace=fixture_delivery_workspace())
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})

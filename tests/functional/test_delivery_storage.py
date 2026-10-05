@@ -15,10 +15,124 @@ from test_research_delivery import (
     content,
     definition,
     owner_experiment,
+    new_named_experiment,
     published,
 )
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 from test_assessment_delivery import completed as completed
+
+
+def test_caller_locations_support_mixed_roots_and_relocation(context):
+    """A predecessor graph keeps its identity after all caller-selected roots move."""
+    owner_experiment(context, 2)
+    owners = (definition().owner, d.ExperimentOwner("S900", "20261001_S900_EX02"))
+    sources = []
+    locations = []
+    for index, owner in enumerate(owners):
+        path = f"caller/sources/group{index}/{owner.experiment_id}"
+        source = context.root / path
+        source.parent.mkdir(parents=True)
+        original = context.experiments_root / "S900" / owner.experiment_id
+        assert source.resolve().is_relative_to(context.root.resolve())
+        original.rename(source)
+        sources.append(d.ExperimentLocation(owner, path))
+        locations.append(d.DeliveryLocation(owner, d.DeliveryStage.COMPONENTS, 1,
+                                            f"caller/results/result{index}"))
+    context = replace(context, delivery_workspace=d.DeliveryWorkspace(tuple(locations), tuple(sources)))
+    first = assemble_delivery(context, Deliverable(definition(), content()))
+    second_definition = replace(definition(), owner=owners[1], predecessors=(first.reference,))
+    second = assemble_delivery(context, Deliverable(second_definition, content()))
+    assert not (context.research_root / "S900").exists()
+    assert not (context.experiments_root / "S900" / owners[0].experiment_id).exists()
+
+    moved_deliveries = []
+    moved_sources = []
+    for location in (*locations, *sources):
+        path = location.path.replace("caller/", "relocated/", 1)
+        target = context.root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        assert target.resolve().is_relative_to(context.root.resolve())
+        (context.root / location.path).rename(target)
+        moved = replace(location, path=path)
+        (moved_deliveries if isinstance(location, d.DeliveryLocation) else moved_sources).append(moved)
+    context = replace(context, delivery_workspace=d.DeliveryWorkspace(tuple(moved_deliveries), tuple(moved_sources)))
+    before = tree(context.root)
+    assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
+    assert assemble_delivery(context, Deliverable(second_definition, content())) == second
+    assert tree(context.root) == before
+
+
+@pytest.mark.parametrize("missing", ["workspace", "delivery", "experiment", "predecessor"])
+def test_explicit_location_is_required_even_when_default_files_exist(context, missing):
+    first = assemble_delivery(context, Deliverable(definition(), content()))
+    successor = replace(definition(), revision=2, predecessors=(first.reference,))
+    second = assemble_delivery(context, Deliverable(successor, content()))
+    workspace = context.delivery_workspace
+    if missing == "workspace":
+        workspace = None
+    elif missing == "experiment":
+        workspace = replace(workspace, experiments=())
+    else:
+        revision = 2 if missing == "delivery" else 1
+        workspace = replace(workspace, deliveries=tuple(
+            x for x in workspace.deliveries
+            if (x.owner, x.stage, x.revision) != (definition().owner, definition().stage, revision)
+        ))
+    context = replace(context, delivery_workspace=workspace)
+    before = tree(context.root)
+    validation = validate_delivery(context, second.reference)
+    assert validation.status is d.ValidationStatus.FAIL
+    assert validation.issues[0].code == ("EXPERIMENT_LOCATION" if missing == "experiment" else "DELIVERY_LOCATION")
+    with pytest.raises(d.DeliveryValidationError):
+        assemble_delivery(context, Deliverable(successor, content()))
+    assert tree(context.root) == before
+
+
+def test_selected_source_does_not_fall_back_to_valid_default_owner(context):
+    source = context.root / "caller" / definition().owner.experiment_id
+    shutil.copytree(context.experiments_root / "S900" / source.name, source)
+    (source / "experiment.py").write_text("changed")
+    workspace = replace(context.delivery_workspace, experiments=(d.ExperimentLocation(
+        definition().owner, source.relative_to(context.root).as_posix()),))
+    context = replace(context, delivery_workspace=workspace)
+    with pytest.raises(d.DeliveryValidationError, match="binding"):
+        assemble_delivery(context, Deliverable(definition(), content()))
+    location = next(x for x in workspace.deliveries
+                    if (x.owner, x.stage, x.revision) == (definition().owner, definition().stage, 1))
+    assert not (context.root / location.path).exists()
+
+
+@pytest.mark.parametrize("foreign", [False, True])
+def test_bound_source_location_checks_identity_without_default_layout(context, foreign):
+    source, evidence = new_named_experiment(context, strategy_id="S901" if foreign else "S900")
+    target = context.root / "caller" / "bound-code" / source.name
+    target.parent.mkdir(parents=True)
+    assert target.resolve().is_relative_to(context.root.resolve())
+    source.rename(target)
+    evidence = replace(evidence, workspace_path=f"{target.relative_to(context.root).as_posix()}/artifacts")
+    owner = d.ExperimentOwner("S900", source.name)
+    defined = d.DeliveryDefinition(owner, d.DeliveryStage.COMPONENTS, 1, experiments=(evidence,))
+    workspace = d.DeliveryWorkspace(
+        (d.DeliveryLocation(owner, defined.stage, 1, "caller/results/component-panel"),),
+        (d.ExperimentLocation(owner, target.relative_to(context.root).as_posix()),),
+    )
+    context = replace(context, delivery_workspace=workspace)
+    item = Deliverable(defined, content())
+    if foreign:
+        with pytest.raises(d.DeliveryValidationError, match="family or ID differs"):
+            assemble_delivery(context, item)
+        assert not (context.root / workspace.deliveries[0].path).exists()
+    else:
+        receipt = assemble_delivery(context, item)
+        assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+
+
+@pytest.mark.parametrize("paths", [("same", "same"), ("Case", "case"), ("a", "a/b")])
+def test_workspace_rejects_conflicting_publication_locations(paths):
+    owner = definition().owner
+    with pytest.raises(ValueError):
+        d.DeliveryWorkspace(tuple(d.DeliveryLocation(owner, d.DeliveryStage.COMPONENTS, index + 1, path)
+                                  for index, path in enumerate(paths)), ())
 
 
 def seal(root):
