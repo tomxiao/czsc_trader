@@ -81,34 +81,16 @@
 | 四 | `ASSESSMENT` | `CandidateAssessmentDelivery` |
 | 五 | `INSPECTION` | `CandidateInspectionDelivery` |
 
-`assemble_delivery(context, deliverable)`验证内容及证据，发布机器产物、人工报告和
-`DeliveryReceipt`；`validate_delivery(context, reference, *, scope=DeliveryValidationScope.FULL)`
-只读核验已发布修订，返回包含实际范围的`DeliveryValidation`。`INTEGRITY`核验结构、身份、
-引用及文件哈希；默认`FULL`还复算本次阶段四的SE结果，前驱只做完整性核验，均不重新运行账户回测。
-新交付定义和回执使用schema 4，通过强类型`owner`确定保存空间：
+研究员负责完整记录事实、解释、反面证据和复算要求，使用公共交付契约发布与验证。
+技术状态与研究结论分别判断，具体接口见[TDR使用说明](../src/czsc_trader/README.md)。
 
-| 阶段 | 归属契约 | 保存位置（相对仓库） |
-| --- | --- | --- |
-| 一 | `MandateOwner(strategy_id)` | `research/<策略ID>/mandates/<修订>/` |
-| 二至五 | `ExperimentOwner(strategy_id, experiment_id)` | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
+目录使用规范按以下层次阅读，存放、命名、引用和封存规则由对应README统一维护：
 
-阶段交付归入形成该交付的实验，可引用多个来源实验。修订号在“归属＋阶段”内计数，不同实验
-可以各自从1开始；同归属、同阶段、同修订的不同内容拒绝覆盖。通过包含归属和内容哈希的
-`DeliveryReference`引用前驱，不能仅凭文件名或最新目录决定交接对象。
-交付包含机器内容、人工报告、回执、附件及声明实验的证据副本；来源实验保留原始档案。
-事实、解释、反面证据和复算要求分别使用
-`FactValue`、`Explanation`、`EvidenceRef/EvidenceFile`和`ReproductionSpec`表达。
+1. [研究治理空间规范](README.md)：批次意图、目标约束、确认依据及交接导航。
+2. [实验空间规范](../experiments/README.md)：实验输入、代码、机器证据、阶段交付及封存。
 
-先完成受管执行，将执行回执及声明制品保存到实验归档位置，再保存需要交接的候选实体并登记、
-发布阶段交付，最后生成`experiment_manifest.json`封存整个实验。执行回执完成后不能追加执行
-或技术检验；整个实验封存后不能追加交付或候选对象，也不能覆盖已有manifest。
-同一冻结问题、假设和协议下的候选、窗口、成本场景及计算分片归入同一实验。执行过程中失败请求
-的显式重试生成新的评价`attempt_id`；变更假设、协议或绑定源码，或在回执完成后追加研究，使用
-后继实验。新目录为`experiments/<策略ID>/EXxxx_YYYYMMDD/`，编号在同一策略研究内从001跨日期
-单调递增，保留已分配目录，不回收编号。后续交付修订由后继实验承接；同内容已有交付只读核验返回。
-交付读写只支持schema 4及`DeliveryReference`；旧schema 1/2/3原件保留原位供人工查阅。
-旧回执和旧交付不能作为当前强类型引用直接输入平台；获准继续研究后，由后继实验生成当前证据。
-保存范围、Git忽略制品及恢复核验要求见[实验档案说明](../experiments/README.md)。
+进入实验前，研究员核对真实授权、确认合同和证据范围，并按实验空间规范固定输入依据。
+授权与身份核验属于治理职责；实验计算与复验按已固定的依据开展。
 
 `DeliveryStatus.COMPLETE/PARTIAL/BLOCKED`表达研究员声明的交付完整度；技术验证`PASS/FAIL`
 只表达结构、身份和引用是否成立。负面结论、空面板和无达标候选仍可形成完整交付。研究员负责
@@ -341,14 +323,9 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 - FSC提供信息族、因子与信号定义及项目复用因子的纯计算；STC提供结构模板。两者提供研究起点，不限定新机制或自定义策略表达。FSC计算消费调用方准备的输入，不获取数据或读取研究档案；研究员核对输入在决策时点的可得性。
 - 历史研究按授权范围读取，记录已见信息与复用身份；其他批次结论不自动移植为本研究证据。
 
-研究任务开始时明确DFLS数据空间，使用相对仓库根目录的`DataSpace`，默认按任务设为
-`data/research/<策略ID>/`；需要隔离试验数据或权限范围时由宿主明确选择其他任务子目录。
-同一授权任务的实验可复用该空间，空间共享不扩大研究数据授权。正式上下文通过
-`create_formal_experiment_context(..., data_space=...)`指定；探索上下文注入已经绑定空间的DFLS。
-
-上述配置用于研究过程取数和SRT运行。账户评价、候选及冻结策略回测由TDR统一使用
-`data/backtest/`，调用方无需指定回测空间或传入DFLS。研究评价请求可省略`execution_data`，
-平台内部按策略和窗口准备；直接取数使用DFLS或`context.data`的两阶段接口。
+研究任务开始时明确获授权的数据空间和数据范围，空间共享不扩大授权。
+空间归属及保留要求见[研究治理空间规范](README.md)，受管输入与复算依赖见
+[实验空间规范](../experiments/README.md)，上下文及调用方式见[REX说明](../packages/research_experiment/README.md)。
 
 实验先调用`context.data.prepare(requests, policy=...)`，全部准备成功后保存返回的
 `PreparedDataRef`，再通过`context.data.fetch(request, prepared=ref)`读取指定版本。
@@ -416,22 +393,13 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 
 ### 5.2 写入边界
 
-| 区域 | 规则 |
-| --- | --- |
-| `research/` | 研究治理：意图、目标约束、确认依据、阶段一任务、登记索引和交接导航；新阶段二至五交付和候选实体写入实验目录；历史原件只读 |
-| 新建`experiments/<策略ID>/<实验ID>/` | 授权范围内的研究代码、实验材料、机器证据、阶段二至五交付及候选实体；通过相应公共API登记和发布，整体封存后只读 |
-| `outputs/` | 可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
-| `.tmp/` | 一次性脚本、临时数据及工具缓存；交付不得隐含依赖未声明临时内容 |
-| `data/raw/` | 既有本地历史数据保留；TDR不再提供独立CSV准备和加载接口 |
-| `data/backtest/` | TDR回测固定数据空间，由业务入口调用DFLS准备和读取；保留复算引用所需资产 |
-| `data/research/<策略ID>/` | 当前授权研究任务的DFLS数据空间；通过公共API准备和读取，不直接修改内部资产、索引或准备记录；保留复算引用所需资产 |
-| `research/<策略ID>/decisions/`及其`objects/` | 在获准阶段内，通过TDR `record_research_decision`留存真实用户决定和确认材料；不得人工编辑 |
-| 当前正式实验的`objects/inspection/` | 在获准阶段内，通过TDR `inspect_candidate`保存检验、计划及证据；可在冻结批准前写入，不生成冻结版本；实验封存后只读 |
-| `research/<策略ID>/freeze_requests/`、`strategies/<策略ID>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`保存研究侧事务日志及运行发布；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |
-| `strategies/`其他治理与部署区域 | 按相应公共操作及授权边界处理，不因研究或冻结授权取得任意写入权限 |
-| 平台模块、第三方依赖、生产环境 | 按DEV及生产安全规则另行授权 |
+研究员在获准范围内编写批次治理材料和新实验内容；目录归属遵循
+[研究治理空间规范](README.md)及[实验空间规范](../experiments/README.md)，不在本文重复维护。
 
-仓库外生产数据库、账户控制面与凭据不在默认读取范围；敏感信息不展示、不写入Git。文档使用相对路径。Git提交、合并、tag及推送遵守当前AGENTS规则。
+平台治理记录、登记、用户决定、检验和冻结产物通过相应公共API生成，不人工编辑。
+平台模块、第三方依赖、生产环境及部署操作须另行取得相应授权。
+仓库外生产数据库、账户控制面与凭据不在默认读取范围；敏感信息不展示、不写入Git。
+Git提交、合并、tag及推送遵守当前AGENTS规则。
 
 ### 5.3 每轮交付
 
