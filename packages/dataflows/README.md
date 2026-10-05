@@ -1,145 +1,247 @@
-# 金融数据流（Dataflows，DFLS）
+# 金融数据流（Dataflows，DFLS）研究员使用手册
 
-DFLS负责取数、规范化、校验与管理数据空间中的数据资产。业务方拥有输入清单，决定空间位置、
-准备时机和引用保存位置；研究封存、候选资格、冻结及生产生效由业务方管理。
+DFLS负责获取、规范化、校验和保存研究所需的数据。研究员声明标的、窗口、频率和数据用途，
+通过`prepare`准备数据，再持准备引用调用`fetch`读取。研究输入范围、决策时点、策略预热和
+实验结论由研究员负责；DFLS返回`READY`表示数据满足本次请求的契约。
 
-## 公共接口
+正式研究使用所在研究流程提供的数据空间。TDR中的研究回测、候选和冻结策略统一使用
+`data/backtest/`；直接调用DFLS时，由调用方显式配置空间并保存准备引用。
+以下示例使用`.tmp/`下的独立空间，适合试用和验证。
+
+## 1. 先选择数据用途
+
+研究信号和成交、估值所用的价格口径应在输入清单中分别声明。
+后复权行情调整了历史价格和成交量，用于研究收益表现；不复权行情保留实际市场成交价格，
+用于执行和估值。DFLS处理单位换算及复权，返回标准字段`Date`、`Open`、`High`、`Low`、
+`Close`、`Volume`、`Amount`，必要时附带`AvailableDate`。
+
+| 数据集 | 市场与频率 | 研究用途 |
+| --- | --- | --- |
+| `Dataset.ETF_OHLCV` | A股ETF；`daily`、`weekly`、`1m`、`5m`、`15m`、`30m` | 后复权研究行情 |
+| `Dataset.STOCK_OHLCV` | A股股票；`daily`、`weekly`、`1m`、`5m`、`15m`、`30m` | 后复权研究行情 |
+| `Dataset.STOCK_OHLCV` | 港股，如`00700.HK`；`daily`、`weekly`、`30m` | 当前接入原始行情，周线由日线聚合 |
+| `Dataset.STOCK_OHLCV` | 美股，如`AAPL`；`daily`、`weekly` | 当前接入原始行情，周线由日线聚合 |
+| `Dataset.ETF_UNADJUSTED_DAILY` / `Dataset.STOCK_UNADJUSTED_DAILY` | 对应A股资产；`daily` | 不复权成交价格和估值价格 |
+| `Dataset.ETF_UNADJUSTED_INTRADAY` / `Dataset.STOCK_UNADJUSTED_INTRADAY` | 对应A股资产；`1m`、`5m`、`15m`、`30m` | 不复权日内成交价格和估值价格 |
+
+以上为内置Tushare适配器的范围。实际可获取的窗口取决于账户权限、历史深度和供应商数据。
+港股分钟线目前按常规完整交易时段检查，半日市尚未自动识别。跨市场数据接入与该市场的
+策略回测、交易链路就绪情况应分别确认。
+
+宏观、资金流、指数、期货、申赎篮子等输入也使用同一套准备和读取接口。
+完整数据集及请求参数见公开[契约定义](src/dataflows/contract.py)，公共类型统一从
+[dataflows](src/dataflows/__init__.py)导入。
+
+## 2. 准备数据并读取
+
+在项目根目录运行下面的示例。凭据文件由运行环境提供，Tushare优先读取环境变量
+`TUSHARE_TOKEN`，其次读取显式指定的凭据文件。凭据应保留在运行环境中。
 
 ```python
 from pathlib import Path
-from dataflows import (
-    DataCoverageRequirement, Dataflows, DataRequest, DataSpace,
-    Dataset, PreparePolicy, ProviderConfig,
-)
+from dataflows import Dataflows, DataRequest, DataSpace, Dataset, PreparePolicy, ProviderConfig
 
+root = Path.cwd()
 flows = Dataflows(
-    base_dir=Path.cwd(),
+    base_dir=root,
     space=DataSpace(Path(".tmp/dataflows-example")),
-    providers=ProviderConfig(env_file=Path(".env")),
+    providers=ProviderConfig(env_file=root / ".env"),
 )
-request = DataRequest(
+requests = tuple(
+    DataRequest(
+        dataset=Dataset.ETF_OHLCV,
+        symbol="588080.SH",
+        start="2026-09-14",
+        end="2026-09-15",
+        required_cutoff="2026-09-15",
+        frequency=frequency,
+    )
+    for frequency in ("daily", "30m")
+)
+prepared = flows.prepare(requests, policy=PreparePolicy.REUSE)
+if not prepared.ready:
+    for item in prepared.items:
+        print(item.request.symbol, item.request.frequency, item.status, item.error)
+    raise RuntimeError("数据准备未通过，请按逐项错误处理")
+
+reference = prepared.reference
+results = {}
+for request in requests:
+    result = flows.fetch(request, prepared=reference)
+    if not result.ready:
+        raise RuntimeError(result.error)
+    results[request.frequency] = result
+
+daily_bars = results["daily"].dataframe
+minute_bars = results["30m"].dataframe
+```
+
+`prepare`接收非空`tuple[DataRequest, ...]`。同批所有请求通过且重叠数据一致时，
+才返回可供读取的`PreparedDataRef`。仅请求日线时，DFLS按日线要求验收，无需获取分钟线。
+请求分钟线时，DFLS另外获取独立日线锚，并同时验收两者。
+需要单独读取日线时，将日线请求也纳入准备批次，如上例所示。
+
+| 调用方式 | 何时使用 | 行为 |
+| --- | --- | --- |
+| `prepare(..., policy=PreparePolicy.REUSE)` | 重复研究、恢复工作 | 复用满足当前请求的资产；缺失、覆盖不足或实现版本变化时重新取源 |
+| `prepare(..., policy=PreparePolicy.REFRESH)` | 明确获取供应商当前版本 | 重新取源、校验，成功后保存取得的数据版本和新的准备引用 |
+| `fetch(request, prepared=reference)` | 读取已准备的研究输入 | 只读本地资产，重新验收本次读取范围；全程不访问供应商 |
+
+`DataSpace.path`必须相对`base_dir`。空间位置属于调用方配置，准备引用必须与对应空间配套。
+
+## 3. 声明窗口与额外覆盖要求
+
+`start`和`end`使用ISO日期或时间戳。日期形式的`end`包含当天；时间戳形式包含指定时刻。
+`required_cutoff`表示实际数据必须达到的截止日期或时刻；允许为`None`。
+OHLCV仍须满足整个请求窗口的交易日完备率要求。
+
+OHLCV的交易日分母由请求窗口、对应交易所日历和标的上市日期确定。
+上市前日期不适用；上市后的应有开市日全部纳入。缺失日期不会自动按停牌解释。
+
+需要最少记录数、最少交易日数或限制实际起点偏移时，增加`DataCoverageRequirement`：
+
+```python
+from dataflows import DataCoverageRequirement
+
+long_request = DataRequest(
     dataset=Dataset.ETF_OHLCV,
     symbol="588080.SH",
-    start="2026-09-14",
-    end="2026-09-15",
-    required_cutoff="2026-09-15",
+    start="2020-01-01",
+    end="2026-09-30",
+    required_cutoff="2026-09-30",
     frequency="daily",
-    coverage=DataCoverageRequirement(minimum_observations=2, minimum_sessions=2),
+    coverage=DataCoverageRequirement(
+        maximum_start_lag_days=None,
+        minimum_sessions=252,
+    ),
 )
-prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
-if not prepared.ready:
-    raise RuntimeError(prepared.items)
-result = flows.fetch(request, prepared=prepared.reference)
-if not result.ready:
-    raise RuntimeError(result.error)
-bars, identity = result.dataframe, result.identity
 ```
 
-示例使用临时空间；正式空间由业务方配置。PTE在环境配置声明空间，研究由上下文工厂接收空间；
-候选、冻结策略及研究内回测由TDR固定使用仓库根目录下的`data/backtest/`，调用方不另行指定。
-三类主调方均通过以下准备与读取接口管理输入。研究授权由研究员保证，DFLS只校验数据契约。
-本次接口替换不提供旧`Dataflows()`、隐式取数`fetch(request)`、`LocalCacheConfig`或`options`兼容层。
+`minimum_observations`统计记录数，`minimum_sessions`统计不同来源日期数。
+`maximum_start_lag_days`限制实际起点比请求起点晚多少个自然日。
+该字段在`DataCoverageRequirement`中的默认值为`0`；如只需数量要求，并允许请求窗口包含
+上市前日期或非交易日，应像上例一样显式设置为`None`，继承来源的起点约束。
+数量要求与OHLCV逐交易日完备性分别验收。
 
-| 接口 | 契约 |
-| --- | --- |
-| `Dataflows(base_dir, space, providers)` | 三项均为必填关键字参数；初始化并核验数据空间 |
-| `prepare(requests, policy=...)` | 非空`tuple[DataRequest, ...]`；取数或复用、校验、持久化，返回逐项结果和批次状态 |
-| `fetch(request, prepared=...)` | 强制绑定`PreparedDataRef`；只读本地资产，重新核验并返回请求范围的数据 |
+## 4. OHLCV通过规则
 
-`PrepareStatus.READY`要求所有输入满足各自契约且重叠数据一致，才返回`PreparedDataRef`。
-`PARTIAL`表示仅部分输入成功；`FAILED`表示整批失败或无成功项。未完整准备的批次没有引用；
-部分成功资产可供下一次`REUSE`复用。逐项状态保留`WAITING_SOURCE`、`EMPTY`、`INCOMPLETE`、`FAILED`
-及结构化错误，失败结果不暴露可用数据。
+一次准备先执行现有结构、时间、身份及数值校验，按已登记且适用的可信补丁修复，
+再对修复后的序列统计完备率和准确率。
 
-同批相同取数选择只访问一次供应商，分别检查各项验收要求。`REUSE`复用满足本批要求的资产，
-缺失或覆盖不足时取源；`REFRESH`显式访问数据源。源失败、损坏资产和冲突内容均明确失败。
-`fetch`不会补数、访问网络或切换来源。
-
-## 强类型契约
-
-公共类型从[dataflows](src/dataflows/__init__.py)导入，字段定义见[contract.py](src/dataflows/contract.py)。
-
-- `DataSpace(path: Path)`：相对`base_dir`的非空路径，拒绝绝对路径、`..`及越界符号链接。
-- `DataRequest`：有限`Dataset`、标的、ISO起止日期/时间、截止要求、合法频率和数据集专用参数。
-  日期形式的`end`包含当天；时间戳包含该精确时刻。日期形式的截止要求按日检查。
-  SHIBOR、美国国债收益率等固定宏观序列要求`symbol=None`；传入标的在构造时拒绝，不能用于改选序列。
-- `DataCoverageRequirement`：`minimum_observations`为记录数，`minimum_sessions`为不同来源日期数，
-  `maximum_start_lag_days`为实际起点相对请求起点允许的最大自然日偏移；这些阈值不等于
-  逐交易日覆盖证明。具体日期覆盖检查见下文的数据集校验边界。
-- `NoParameters`、`PcfParameters`、`MoneyflowParameters`、`EvidenceParameters`替代任意`options`字典。
-  参数类型与数据集不匹配时，在构造请求时拒绝。
-- `ProviderConfig`：宿主凭据文件及可选的`Dataset → ProviderBinding`映射；默认使用内置适配器。
-  显式映射仅注册列出的数据集，不自动补默认来源。
-- `ProviderBinding(name, revision, fetch)`：来源实现及语义版本；适配器返回规范化DataFrame和来源元数据。
-  自定义适配器或来源语义改变时必须修改`revision`。凭据文件路径不进入数据请求和资产身份。
-- `PreparedDataRef`：空间UUID、准备UUID及清单哈希，可由业务方序列化保存、进程重启后恢复使用。
-  构造时UUID字段使用`UUID`对象；没有路径、封存标志或生命周期审批状态。
-
-`DataIdentity`记录来源、内容哈希、实际覆盖及时间口径；`DataResult.prepared`记录读取绑定。
-返回切片的内容哈希对应实际返回的数据。同一准备引用支持已准备范围内的子集；多项区间不会自动
-拼接为更大的请求。资金流显式日期参数可读取已准备日期集合的子集。
-
-## 行情数据集与市场边界
-
-行情使用同一套`DataRequest → prepare → fetch`接口。以下为内置Tushare适配器的实现范围；
-账号权限、历史深度及指定区间的可用性须另行核验，注册数据集不代表真实取数已验收。
-
-| 数据集 | 市场与周期 | 价格用途与边界 |
+| 请求 | 完备率要求 | 准确率要求 |
 | --- | --- | --- |
-| `ETF_OHLCV` | A股ETF；日、周、1/5/15/30分钟 | 后复权研究行情 |
-| `STOCK_OHLCV` | A股股票；日、周、1/5/15/30分钟 | 后复权研究行情 |
-| `STOCK_OHLCV` | 港股，如`00700.HK`；日、周、30分钟 | 日线调用`hk_daily`，周线由日线聚合，30分钟调用`hk_mins`；没有接入港股1/5/15分钟或A股式复权因子处理 |
-| `ETF_UNADJUSTED_DAILY` / `STOCK_UNADJUSTED_DAILY` | 对应A股资产；日线 | 执行与估值使用的不复权价格 |
-| `ETF_UNADJUSTED_INTRADAY` / `STOCK_UNADJUSTED_INTRADAY` | 对应A股资产；1/5/15/30分钟 | 直接获取原始分钟行情，与原始日线校验；保留日线参考哈希及观察时间口径 |
+| 日线 | 应有交易日全部有日线，即100% | 准确交易日数 / 应有交易日数 ≥99% |
+| 分钟线的日线锚 | 应有交易日全部有日线，即100% | 日线准确率 ≥99% |
+| 分钟线 | 应有交易日及对应频率的应有柱全部齐全，即100% | 准确交易日数 / 应有交易日数 ≥95% |
 
-股票分钟数据按标的市场检查交易时段。港股目前采用常规完整交易时段，尚不能通过交易所日历
-自动识别半日市；专用不复权执行数据集仍限定A股。已有港股行情适配代码不代表港股回测链路就绪。
+分钟请求须同时满足日线锚和分钟线两项要求。周线由底层日线验收并核对聚合结果，
+其质量统计分母仍为交易日。
 
-## 数据空间与资产管理
+日线准确性检查成交均价`Amount / Volume`是否处于当日`Low`至`High`范围内，
+使用现有价格容差；非正成交量的日线判为不准确。
+分钟线按日聚合：首柱开盘、最高价、最低价、末柱收盘、成交量及成交额汇总与独立日线锚核对。
+任一字段超出容差，该交易日判为不准确；一天多个字段异常只计一个不准确交易日。
 
-每个空间使用`assets.sqlite3`管理数据资产、请求索引和准备清单。空间UUID独立于机器绝对路径，
-完整复制空间后仍可用原引用读取。内部表与文件布局属于DFLS实现，调用方通过公开接口访问。
+现有容差为：价格绝对差不超过`0.005`；成交量、成交额相对差不超过`1e-5`（0.001%），
+相对差分母为`max(abs(日线值), 1)`，另忽略浮点运算误差。
+容差适用于实际校验使用的价格和单位口径。
 
-复用依据包括数据集、标的、频率、取数参数、范围、供应商标识/版本及DFLS实现版本。
-截止日和覆盖阈值属于验收要求，每次单独检查。DFLS代码或适配器版本变化会阻止新准备复用旧实现的索引。
-旧引用继续读取原资产，并经过当前校验逻辑；校验规则改变后可能明确失败。
+达到准确率门槛时，数据可以包含少量不准确交易日，这些日期及异常字段会保留在质量证据中。
+可信补丁没有覆盖的自洽偏差计入准确率；缺日、缺柱、结构非法、身份或证据不一致等问题仍会阻断。
+研究员可查看异常对自身组件的影响，研究结论按已确认的目标和约束作出。
 
-数据内容身份包含字段、类型、分类域、索引和值。相同资产去重；刷新写入新资产与新准备记录，
-保留旧引用对应的版本。首次入库时间与准备时间分别记录UTC事实，不参与内容去重。
-数据资产同时承担复用功能；没有另一套缓存目录、TTL或自动删除策略。本版本不提供资产清理API，
-业务方须保留有效引用所依赖的完整空间。
+## 5. 查看结果与处理失败
 
-SQLite事务串行化同空间写入，锁等待上限60秒；首次创建使用完整数据库的原子发布。
-损坏文件不自动重建，事务失败不发布引用。读取核验空间身份、清单哈希、资产字节及内容身份，
-每次返回独立DataFrame。`SPACE_*`、`ASSET_*`、`PREPARATION_*`错误通过结构化状态返回；
-初始化阶段的路径、空间损坏或版本问题直接抛出异常，阻止创建不可用对象。
+批次状态`READY`表示全部请求通过；`PARTIAL`表示部分通过；`FAILED`表示全部未通过。
+`PARTIAL`和`FAILED`均没有准备引用。部分成功的资产可供下一次`REUSE`复用。
+具体原因应查看`prepared.items`中每个请求的状态及`error`。
 
-存储使用pickle保留pandas类型、时区和精度，因此空间必须只允许可信本地进程写入；
-外部数据库文件不能直接作为可信数据空间导入。读取失败不会回退到供应商或其他资产版本。
+| 逐项状态 | 含义 | 建议处理 |
+| --- | --- | --- |
+| `READY` | 本次请求满足数据契约 | 保存引用，读取数据及质量证据 |
+| `WAITING_SOURCE` | 来源尚未达到可用时点 | 核对来源更新时间，再重新准备 |
+| `EMPTY` | 来源或读取范围没有记录 | 核对标的、上市日期、窗口及账号权限 |
+| `INCOMPLETE` | 缺日、缺柱或其他覆盖要求未满足 | 查看缺失明细，核实数据缺口；调整研究窗口须符合研究授权 |
+| `FAILED` | 准确率不足、结构非法、身份或证据不一致、来源调用失败等 | 查看错误代码和上下文，必要时交DEV定位 |
 
-## 数据校验与研究证据边界
+失败结果不提供可用数据。`error`包含`code`、`message`、`context`和`retryable`；
+仅更换调用方式或反复刷新不能保证消除数据问题。
 
-内置Tushare ETF适配器在新取数时，按实际日线首日至末日的SSE／SZSE交易日历核验日线覆盖；
-周线和分钟线同时核验其原始日线或参考日线。缺失开市日且原因未核实时返回`INCOMPLETE`，
-不自动推断停牌或补造行情。请求首尾覆盖由`DataCoverageRequirement`及`required_cutoff`另行验收。
-核验事实记录于`DataIdentity.metadata.daily_session_coverage`。旧准备引用继续读取原资产，
-读取成功不表示补做了新增日历核验；股票及自定义适配器不自动获得该项证明。
+成功读取后，可直接查看质量统计、逐日证据和修复记录：
 
-分钟`prepare`与`fetch`均按标的市场和请求起止时间检查应有柱；允许显式日内子区间，
-区间内缺柱仍拒绝。内置A股分钟适配器先取得边界日期的整日行情并完成分钟／日线校验，
-再裁剪为请求区间；这部分校验取数不扩大返回的数据范围。已登记供应商异常按
-“校验→匹配补丁→重新校验”处理，修复记录进入`DataIdentity.metadata.repair_records`。
-未知异常或修复后不合格时明确失败。
+```python
+metadata = results["30m"].identity.metadata
+quality = metadata["ohlcv_quality"]
+print("交易日数：", quality["total_sessions"])
+for kind in ("daily", "minute"):
+    detail = quality[kind]
+    print(kind, "完备率：", detail["completeness"], "准确率：", detail["accuracy"])
+    print("缺失日期：", detail["incomplete_dates"])
+    print("不准确日期：", detail["inaccurate_dates"])
 
-每项数据保留来源时间、来源日历、可用时点和价格口径。股票、ETF信号用后复权经济表现时，
-须与实际执行使用的不复权价格区分。跨市场、跨频率因果对齐、策略预热和完整输入清单由业务方负责；
-`READY`不自动证明历史可得性、研究有效性或交易资格。凭据不能写入数据请求、实验包或Git。
-
-本地特征证据在`prepare`时核对路径和文件哈希，随后保存为数据资产；`fetch`读取已准备版本，
-原外部文件的后续变化不会改写旧引用。获取新版本须提交新的证据参数并重新准备。
-
-模块测试使用离线夹具，不访问真实供应商或生产环境：
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest packages/dataflows/tests/functional -q
+sessions = metadata["ohlcv_quality_evidence"]["sessions"]
+for day in quality["minute"]["inaccurate_dates"]:
+    print(day, sessions[day]["minute_fields"], sessions[day]["minute_differences"])
+print("可信修复记录：", metadata.get("repair_records", []))
 ```
+
+完备率和准确率字段取值为0至1；例如`0.9831`约为98.31%。
+`daily_session_coverage`记录交易日分母和上市依据；`repair_records`记录适用补丁及修复日期。
+若准备失败，质量统计可能位于`item.error.context["quality"]`；其他硬错误应按具体上下文判读。
+
+## 6. 保存引用、恢复工作与读取子窗口
+
+实验应保存准备引用及使用的数据请求。准备引用包含空间UUID、准备UUID和清单哈希，
+可序列化保存，并在进程重启后恢复。以下接续前面的示例：
+
+```python
+import json
+from uuid import UUID
+from dataflows import PreparedDataRef
+
+reference_file = root / ".tmp/dataflows-example/prepared-reference.json"
+reference_file.write_text(json.dumps({
+    "space_id": str(reference.space_id),
+    "preparation_id": str(reference.preparation_id),
+    "manifest_sha256": reference.manifest_sha256,
+}, indent=2), encoding="utf-8")
+
+saved = json.loads(reference_file.read_text(encoding="utf-8"))
+restored_reference = PreparedDataRef(
+    space_id=UUID(saved["space_id"]),
+    preparation_id=UUID(saved["preparation_id"]),
+    manifest_sha256=saved["manifest_sha256"],
+)
+restored = flows.fetch(requests[0], prepared=restored_reference)
+if not restored.ready:
+    raise RuntimeError(restored.error)
+```
+
+正式实验应将引用保存到自身流程指定的位置，并保留对应数据空间。
+复制或迁移空间时应保留完整空间身份和资产；单独保存引用不能恢复丢失的数据。
+
+同一引用支持已准备范围内的子请求。`fetch`重新统计所选交易日的质量，
+因此大窗口通过后，包含异常日的小窗口仍可能因准确率不足而失败。
+分钟日内切片继承所在交易日的完整日质量证据；裁掉异常柱不会隐藏该日的异常。
+多个准备区间不会自动拼接为一个更大的请求。
+
+`REFRESH`成功后产生新引用，旧引用仍指向原版本。DFLS实现变化会影响新准备时的复用，
+旧引用读取也需满足当前校验；旧资产缺少当前所需证据时可能明确失败，应重新`prepare`取得新引用。
+历史研究记录继续保留其原引用及结果。
+
+## 7. 其他研究输入与时间边界
+
+非OHLCV数据按各自的字段、覆盖、时间和证据契约验收，上述99%／95%规则仅适用于OHLCV。
+
+- 宏观序列按数据集指定标的参数；例如SHIBOR、美国国债收益率等固定序列要求`symbol=None`。
+- 申赎篮子、资金流及本地特征证据使用`PcfParameters`、`MoneyflowParameters`、
+  `EvidenceParameters`等公开类型，参数须与数据集匹配。
+- 本地特征证据准备时核对源文件及哈希，读取时使用已准备版本。源文件变化后，
+  获取新版本需要新的证据参数及准备引用。
+- 决策时点应结合`DataIdentity.temporal_contract`及可用时间字段检查。
+  历史K线完成时间、供应商发布时间和研究决策可用时间应分别确认。
+- 跨市场、跨频率对齐和策略预热由研究流程声明；DFLS的`READY`不自动证明历史可得性、
+  策略有效性或交易资格。
+
+新增数据来源或修改来源语义时，由DEV提供明确的`ProviderBinding`和版本，研究员使用其
+已约定的契约。自定义OHLCV来源也须提供可核验的日历、日线锚和质量证据。
