@@ -64,7 +64,8 @@ bars, identity = result.dataframe, result.identity
   日期形式的`end`包含当天；时间戳包含该精确时刻。日期形式的截止要求按日检查。
   SHIBOR、美国国债收益率等固定宏观序列要求`symbol=None`；传入标的在构造时拒绝，不能用于改选序列。
 - `DataCoverageRequirement`：`minimum_observations`为记录数，`minimum_sessions`为不同来源日期数，
-  `maximum_start_lag_days`为起点最大自然日偏移。交易日历、应有交易日及停牌判断仍由数据集校验负责。
+  `maximum_start_lag_days`为实际起点相对请求起点允许的最大自然日偏移；这些阈值不等于
+  逐交易日覆盖证明。具体日期覆盖检查见下文的数据集校验边界。
 - `NoParameters`、`PcfParameters`、`MoneyflowParameters`、`EvidenceParameters`替代任意`options`字典。
   参数类型与数据集不匹配时，在构造请求时拒绝。
 - `ProviderConfig`：宿主凭据文件及可选的`Dataset → ProviderBinding`映射；默认使用内置适配器。
@@ -117,6 +118,12 @@ SQLite事务串行化同空间写入，锁等待上限60秒；首次创建使用
 外部数据库文件不能直接作为可信数据空间导入。读取失败不会回退到供应商或其他资产版本。
 
 ## 数据校验与研究证据边界
+
+内置Tushare ETF适配器在新取数时，按实际日线首日至末日的SSE／SZSE交易日历核验日线覆盖；
+周线和分钟线同时核验其原始日线或参考日线。缺失开市日且原因未核实时返回`INCOMPLETE`，
+不自动推断停牌或补造行情。请求首尾覆盖由`DataCoverageRequirement`及`required_cutoff`另行验收。
+核验事实记录于`DataIdentity.metadata.daily_session_coverage`。旧准备引用继续读取原资产，
+读取成功不表示补做了新增日历核验；股票及自定义适配器不自动获得该项证明。
 
 分钟`prepare`与`fetch`均按标的市场和请求起止时间检查应有柱；允许显式日内子区间，
 区间内缺柱仍拒绝。内置A股分钟适配器先取得边界日期的整日行情并完成分钟／日线校验，

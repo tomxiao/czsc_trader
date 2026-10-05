@@ -11,7 +11,7 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 | 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate` |
 | 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | TDR `record_research_decision`核验并写入研究目录 |
 | 技术检验记录 | `InspectionProtocol`、`InspectionCheckResult`、`CandidateInspectionReport`、`FreezePlan` | TDR `inspect_candidate`执行计算并保存实验内证据 |
-| 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeGovernance`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
+| 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
 | 策略身份查询 | `StrategyFamily`、`StrategyVersion` | `StrategyRegistry.list_families/get_family/get_version/versions` |
 | 生命周期与运行资格 | `PaperTradingApproval`、版本及绩效证据 | `validate_all/evidence/lifecycle_events/current_qualification/approve_paper_trading` |
 
@@ -63,7 +63,7 @@ SM在写锁内核验发布身份及文件闭包；研究批准的认证由TDR业
 `get_version/versions`读取版本及其内容哈希，运行加载和部署另核验发布包及部署身份，均不读取研究日志。
 
 `StrategyVersion`只接受schema 5，保存来源实验、来源候选编号、选择截止日、前瞻起始日、固定
-策略载荷和发布元数据；不包含`CandidateOrigin/FreezeGovernance`。`release_hash`覆盖完整版本
+策略载荷和发布元数据。研究决定及技术检验证据独立保存。`release_hash`覆盖完整版本
 内容并排除哈希自身，追加研究决定不改变发布身份。旧schema 1/2/3/4在读取边界拒绝。
 SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志根目录；研究员使用TDR查询入口。
 
@@ -97,5 +97,8 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 `research/registrations/`；运行注册表在首次冻结发布时登记策略族。研究认证不进入运行发布合同。
 新冻结版本初始为`RESEARCH`；获准后平台可用`approve_paper_trading(PaperTradingApproval)`
 绑定准确发布哈希授予`PAPER_READY`，部署和PTE账户创建仍需各自授权。
+登记PTE导出时，`StrategyRegistry.record_evidence`校验`PerformanceEvidence`、发布身份及源文件哈希。
+`calmar_ratio`和`sharpe_ratio`允许`None`，表示指标未定义；数值、空值均按原事实保存。
+PTE导出的观察数和年化状态位于`source.statistics`，随整个`source`参与哈希。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。
 角色分工与工程决策见[RSCH契约](../../research/RSCH_AGENT.md)和[DEV Agent](../../docs/DEV_AGENT.md)。

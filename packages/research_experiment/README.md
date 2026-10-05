@@ -15,8 +15,9 @@
 实验源码以`experiment_binding.json`声明模块、类、源码闭包和依赖身份；
 `load_experiment(...)`核对哈希并隔离加载。探索使用
 `czsc_trader.research_tools.create_experiment_context(...)`，正式实验使用
-`create_formal_experiment_context(...)`；两者不可互换。`execute_experiment(...)`核对定义、
-源码身份、产物及资源使用，并生成平台回执。公共导出和类型签名以
+`create_formal_experiment_context(...)`；两者不可互换。`execute_experiment(...)`在调用实验前及
+`execute(context)`返回后核验源码闭包与定义身份，再校验结果、产物及资源使用并生成平台回执。
+执行期间源码或定义发生变化时明确失败，不生成成功回执。公共导出和类型签名以
 [`research_experiment`顶层](src/research_experiment/__init__.py)及
 [`czsc_trader.research_tools`顶层](../../src/czsc_trader/research_tools/__init__.py)为准。
 
@@ -29,6 +30,12 @@
 `experiment_manifest.json`。阶段二至五交付位于归属实验的`deliveries/<阶段>/<修订>/`；
 回执完成后不能追加执行或技术检验，实验manifest生成后不能追加交付或候选对象。
 后续研究或交付修订由后继实验承接；阶段一任务与确认材料保留在研究治理区。
+
+实际执行开始后的计算、结果校验或回执发布失败，会记录`execution_failure.json`并保留已生成证据。
+存在执行回执、执行封装或失败终态的工作空间拒绝重新执行及追加评价，已有终态文件不得覆盖。
+失败空间及同时存在失败和成功记录的空间不能作为已完成实验输入。需要重试时保留原空间并
+使用新工作空间；变更假设、协议或绑定源码时，按档案规则创建后继实验。执行中的单次评价失败
+仍可显式重试，每次产生独立`attempt_id`。执行前合同或预检拒绝不记作已开始执行的失败。
 
 ## 正式实验预检
 

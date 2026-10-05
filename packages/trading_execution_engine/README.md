@@ -54,6 +54,9 @@ RSCH正式比较策略时，通过TDR的`context.evaluation.evaluate(EvaluationR
 
 ## 整手数量与完成状态
 
+`execute_target_positions`的开盘价和收盘价、`resolve_fill`的开盘价及传入触价必须为正且有限；
+`slippage_bp`须有限并满足`0 <= slippage_bp < 10000`。非法输入或计算后无效成交价明确失败。
+
 `execute_target_positions(..., lot_size=100)`要求`lot_size`为正整数，拒绝`bool`、浮点数、
 字符串及非正数。通用辅助接口的`lot_size=None`表示允许小数数量；TDR回测及基准始终显式传入
 整手单位，BuyHold与MA5/MA20共享这一数量口径。资金不足一手时保留现金，不生成零数量订单。
@@ -67,6 +70,9 @@ RSCH正式比较策略时，通过TDR的`context.evaluation.evaluate(EvaluationR
 SRT在首次账户快照前检查策略要求，并逐计划复核，避免运行到不支持的订单后才发现能力不足。
 
 ## 研究账户评价口径
+
+`HistoricalExecutor`按整个交易周期累计买入成本、退出收入及费用；分日退出后再次加仓仍归入
+同一未结束周期，清仓时计算完整周期收益率和按成交数量加权的买入、退出均价。
 
 先核对[TXE公共导出](src/trading_execution_engine/__init__.py)及[SRT公共导出](../strategy_runtime/src/strategy_runtime/__init__.py)。下表为研究评价合同要求，不代表现有执行器自动覆盖全部场景；能力不满足合同时须报告限制并请求用户决定。
 

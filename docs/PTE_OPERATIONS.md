@@ -50,7 +50,9 @@ $RuntimeArgs = @(
 )
 ```
 
-常用账户命令：
+`account list`为只读查询，可在服务运行时执行。`account create/pause/resume/create-reconciliation`
+为离线写操作，必须取得该数据库的单写锁；服务运行时明确拒绝。生产离线维护须先取得停服
+授权，停止WDG并确认写进程退出。常用账户命令：
 
 ```powershell
 & $Pte account list @RuntimeArgs
@@ -61,6 +63,10 @@ $RuntimeArgs = @(
 & $Pte account pause @RuntimeArgs --account-id s002-v1
 & $Pte account resume @RuntimeArgs --account-id s002-v1
 ```
+
+服务运行期间，账户暂停和恢复使用控制台，或向`/api/virtual-accounts/{account_id}/pause`、
+`/resume`发送`Content-Type: application/json`、正文`{}`的POST请求。在线创建渠道平账账户使用
+`pte control create-reconciliation`；控制令牌由CLI只读取得，实际变更由运行中的服务执行。
 
 需要立即驱动单个虚拟账户决策时，在控制台调用：
 
@@ -89,10 +95,18 @@ Content-Type: application/json
   --start 2026-09-03 --end 2026-12-03 --output .tmp\paper-forward.json
 ```
 
+`--start`、`--end`使用`YYYY-MM-DD`，筛选端点均包含。数据库读取使用一致性只读快照，
+导出文件写入显式`--output`；数据库缺失或schema不符时失败。`initial_capital`为所选区间期初
+资产，期初来源、快照及统计状态保存在`source`并参与哈希。
+
 日常净值保留在PTE数据库；导出的里程碑证据须先经过人工复核。获准后通过SM的
 `StrategyRegistry.record_evidence`登记生命周期证据；TDR不提供对应CLI。
 
 ### WDG、健康检查与故障处理
+
+重启验收要求健康接口返回HTTP 200、`runtime=RUNNING`、`watchdog_healthy=true`，并确认
+`instance_id`已改变；版本切换验收还须确认目标`release_id`。超时或健康条件未满足时明确失败。
+进程健康与账户、渠道业务告警分别核对；重复发布同一活动版本的身份查询不替代健康验收。
 
 首次发布完成后，管理员PowerShell从已发布的轻量宿主安装WDG。普通PTE版本和策略发布继续
 复用该宿主；只有WDG依赖或服务配置变化时重新执行`install-config`。
@@ -118,8 +132,8 @@ Restart-Service CZSC-PTE-Watchdog
 ```
 
 开发调试可以运行`.\.venv\Scripts\pte.exe serve --repo-root .`，它只使用可丢弃的
-`state/paper_trading/`。生产环境由WDG托管时禁止再启动第二个`serve`或并发执行`pte once`；
-数据库独占锁会拒绝第二个写进程。
+`state/paper_trading/`。`serve`、`once`和离线账户写命令使用同一数据库所有权锁，第二个写进程
+将被拒绝。服务运行期间通过现有HTTP/control入口提交在线操作；账户列表与绩效导出使用只读连接。
 
 日常只读检查：
 
