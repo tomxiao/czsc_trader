@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from conftest import ohlcv_fixture_metadata
+from dataflows.ohlcv_quality import bind_quality_frame
 
 from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.bar_utils import with_scheduled_hfq_availability
@@ -50,6 +52,10 @@ def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, pu
     request = DataRequest(
         Dataset.STOCK_OHLCV, "600089.SH", "2026-09-08", "2026-09-08", "2026-09-08"
     )
+    metadata.update(ohlcv_fixture_metadata(
+        frame, start="2026-09-08", end="2026-09-08",
+    ))
+    metadata["ohlcv_quality_evidence"] = bind_quality_frame(metadata["ohlcv_quality_evidence"], frame, adjustment="hfq")
     supplied_metadata = metadata.copy()
     flows, ready = clone_published_flow("stock-hfq", {
         request.dataset: lambda _: (frame, supplied_metadata),

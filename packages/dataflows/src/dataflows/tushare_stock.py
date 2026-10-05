@@ -38,6 +38,7 @@ from .market_resolver import (
     detect_market,
     normalize_symbol_for_vendor,
 )
+from .ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 from .tushare_common import get_tushare_pro
 
 
@@ -230,7 +231,7 @@ def fetch_stock_ohlcv(
     source_end = pd.Timestamp(end_date).date().isoformat()
     fetch_period = (
         "daily"
-        if normalized_period == "weekly" and detect_market(symbol) == MARKET_A_SHARE
+        if normalized_period == "weekly"
         else normalized_period
     )
     dataframe, market, ts_code = _fetch_tushare_ohlcv(
@@ -251,6 +252,7 @@ def fetch_stock_ohlcv(
         "asset_type": "stock",
     }
     if market == MARKET_A_SHARE:
+        raw_daily = dataframe.copy() if normalized_period not in INTRADAY_PERIOD_MINUTES else None
         factors = _fetch_hfq_factors(ts_code, source_start, source_end, env_file=env_file)
         dataframe = apply_hfq_adjustment(dataframe, factors)
         if normalized_period == "weekly":
@@ -258,7 +260,7 @@ def fetch_stock_ohlcv(
             dataframe = _resample_weekly(dataframe)
             inspect_daily_against_weekly(daily, dataframe).require_pass()
         elif normalized_period in INTRADAY_PERIOD_MINUTES:
-            daily, _daily_market, _daily_symbol = _fetch_tushare_ohlcv(
+            raw_daily, _daily_market, _daily_symbol = _fetch_tushare_ohlcv(
                 symbol,
                 source_start,
                 source_end,
@@ -266,10 +268,19 @@ def fetch_stock_ohlcv(
                 asset_type="stock",
                 env_file=env_file,
             )
-            daily = apply_hfq_adjustment(daily, factors)
-            inspect_intraday_against_daily(
-                dataframe, daily, normalized_period
-            ).require_pass()
+            daily = apply_hfq_adjustment(raw_daily, factors)
+        daily_session_coverage = verify_daily_sessions(
+            get_tushare_pro(env_file), ts_code, raw_daily,
+            start=source_start, end=source_end, asset_type="stock",
+        )
+        metadata["daily_session_coverage"] = daily_session_coverage
+        metadata["ohlcv_quality_evidence"] = build_quality_evidence(
+            raw_daily,
+            intraday=dataframe if normalized_period in INTRADAY_PERIOD_MINUTES else None,
+            frequency=normalized_period,
+            expected_dates=daily_session_coverage["expected_dates"],
+            comparison_daily=daily if normalized_period in INTRADAY_PERIOD_MINUTES else None,
+        )
         metadata.update(
             {
                 "adjustment": "hfq",
@@ -285,10 +296,31 @@ def fetch_stock_ohlcv(
                 ),
             }
         )
+    elif market in {MARKET_HK, MARKET_US}:
+        if normalized_period in INTRADAY_PERIOD_MINUTES:
+            raw_daily, _daily_market, _daily_symbol = _fetch_tushare_ohlcv(
+                symbol, source_start, source_end, period="daily", asset_type="stock",
+                env_file=env_file,
+            )
+        else:
+            raw_daily = dataframe.copy()
+        daily_session_coverage = verify_daily_sessions(
+            get_tushare_pro(env_file), ts_code, raw_daily,
+            start=source_start, end=source_end, asset_type="stock", market=market,
+        )
+        metadata["daily_session_coverage"] = daily_session_coverage
+        metadata["ohlcv_quality_evidence"] = build_quality_evidence(
+            raw_daily,
+            intraday=dataframe if normalized_period in INTRADAY_PERIOD_MINUTES else None,
+            frequency=normalized_period,
+            expected_dates=daily_session_coverage["expected_dates"], market=market,
+        )
+        if normalized_period == "weekly":
+            dataframe = _resample_weekly(dataframe)
+            inspect_daily_against_weekly(raw_daily, dataframe).require_pass()
     validation = inspect_ohlcv_frame(
         dataframe,
         normalized_period,
-        require_complete_days=normalized_period in INTRADAY_PERIOD_MINUTES,
         market=market,
     )
     validation.require_pass()
@@ -297,6 +329,13 @@ def fetch_stock_ohlcv(
             dataframe, factor_source="adj_factor", period=normalized_period
         )
     metadata["validation"] = validation.to_dict()
+    if "ohlcv_quality_evidence" in metadata:
+        metadata["ohlcv_quality_evidence"] = bind_quality_frame(
+            metadata["ohlcv_quality_evidence"], dataframe,
+            adjustment=metadata.get("adjustment", "none"),
+            daily=(daily if market == MARKET_A_SHARE else raw_daily)
+            if normalized_period == "weekly" else None,
+        )
     if normalized_period in INTRADAY_PERIOD_MINUTES:
         dataframe = slice_intraday_request(dataframe, start_date, end_date)
     return dataframe.copy(), metadata
@@ -328,7 +367,14 @@ def fetch_stock_unadjusted_intraday(
         env_file=env_file,
     )
     validation = inspect_intraday_against_daily(dataframe, daily, period)
-    validation.require_pass()
+    daily_session_coverage = verify_daily_sessions(
+        get_tushare_pro(env_file), ts_code, daily,
+        start=source_start, end=source_end, asset_type="stock",
+    )
+    quality_evidence = build_quality_evidence(
+        daily, intraday=dataframe, frequency=period,
+        expected_dates=daily_session_coverage["expected_dates"],
+    )
     metadata: dict[str, Any] = {
         "vendor": "tushare", "market": market, "vendor_symbol": ts_code,
         "period": period, "asset_type": "stock", "adjustment": "none",
@@ -340,6 +386,8 @@ def fetch_stock_unadjusted_intraday(
         "historical_revision_history_verified": False,
         "live_feed_latency_verified": False,
         "reference_daily_sha256": frame_content_sha256(daily),
+        "daily_session_coverage": daily_session_coverage,
+        "ohlcv_quality_evidence": quality_evidence,
         "validation": validation.to_dict(),
     }
     dataframe = dataframe.copy()
@@ -369,6 +417,14 @@ def fetch_stock_unadjusted_daily(
         raise EmptyDataError(f"Tushare returned no data for {symbol} unadjusted daily")
     validation = inspect_ohlcv_frame(dataframe, "daily")
     validation.require_pass()
+    daily_session_coverage = verify_daily_sessions(
+        get_tushare_pro(env_file), ts_code, dataframe,
+        start=pd.Timestamp(start_date).date().isoformat(),
+        end=pd.Timestamp(end_date).date().isoformat(), asset_type="stock",
+    )
+    quality_evidence = build_quality_evidence(
+        dataframe, expected_dates=daily_session_coverage["expected_dates"],
+    )
     return dataframe.copy(), {
         "vendor": "tushare",
         "market": market,
@@ -376,6 +432,8 @@ def fetch_stock_unadjusted_daily(
         "period": "daily",
         "asset_type": "stock",
         "adjustment": "none",
+        "daily_session_coverage": daily_session_coverage,
+        "ohlcv_quality_evidence": quality_evidence,
         "validation": validation.to_dict(),
     }
 

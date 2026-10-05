@@ -12,6 +12,22 @@ INTRADAY_PERIOD_MINUTES = {"1m": 1, "5m": 5, "15m": 15, "30m": 30}
 SUPPORTED_PERIODS = {"daily", "weekly", *INTRADAY_PERIOD_MINUTES}
 
 
+def intraday_close_times(frequency: str, market: str = "a_share") -> tuple[str, ...]:
+    if market == "a_share":
+        return a_share_intraday_close_times(frequency)
+    if market != "hk":
+        raise ValueError(f"Unsupported intraday market: {market}")
+    minutes = INTRADAY_PERIOD_MINUTES[frequency]
+    return tuple(
+        timestamp.strftime("%H:%M:%S")
+        for start, end in (("09:30", "12:00"), ("13:00", "16:00"))
+        for timestamp in pd.date_range(
+            pd.Timestamp(f"2000-01-01 {start}") + pd.Timedelta(minutes=minutes),
+            pd.Timestamp(f"2000-01-01 {end}"), freq=f"{minutes}min",
+        )
+    )
+
+
 def slice_intraday_request(
     dataframe: pd.DataFrame, start_date: str, end_date: str
 ) -> pd.DataFrame:

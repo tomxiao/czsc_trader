@@ -10,7 +10,7 @@ from typing import Any, Literal, Mapping
 import numpy as np
 import pandas as pd
 
-from .bar_utils import INTRADAY_PERIOD_MINUTES, a_share_intraday_close_times
+from .bar_utils import INTRADAY_PERIOD_MINUTES, intraday_close_times
 from .errors import DataContractError
 from .market_resolver import MARKET_A_SHARE, MARKET_HK
 
@@ -157,23 +157,14 @@ def inspect_ohlcv_frame(
 
     metrics: dict[str, Any] = {"row_count": int(len(frame))}
     if frequency in INTRADAY_PERIOD_MINUTES and not timestamps.isna().any():
-        if market == MARKET_A_SHARE:
-            expected_times = set(a_share_intraday_close_times(frequency))
-        elif market == MARKET_HK:
-            minutes = INTRADAY_PERIOD_MINUTES[frequency]
-            expected_times = {
-                timestamp.strftime("%H:%M:%S")
-                for start, end in (("09:30", "12:00"), ("13:00", "16:00"))
-                for timestamp in pd.date_range(
-                    pd.Timestamp(f"2000-01-01 {start}") + pd.Timedelta(minutes=minutes),
-                    pd.Timestamp(f"2000-01-01 {end}"), freq=f"{minutes}min",
-                )
-            }
-        else:
+        if market not in {MARKET_A_SHARE, MARKET_HK}:
             return ValidationReport(tuple(findings) + (_finding(
                 "UNSUPPORTED_INTRADAY_MARKET", "intraday session calendar is not supported",
                 market=market,
             ),), metrics)
+        expected_times = set(intraday_close_times(frequency, market))
+        if not timestamps.equals(timestamps.dt.floor("s")):
+            findings.append(_finding("INVALID_TIMESTAMP_RESOLUTION", "intraday bars require whole-second timestamps"))
         observed_times = set(timestamps.dt.strftime("%H:%M:%S"))
         unexpected = sorted(observed_times.difference(expected_times))
         if unexpected:
@@ -223,6 +214,7 @@ def inspect_intraday_against_daily(
     daily: pd.DataFrame,
     frequency: str,
     *,
+    market: str = MARKET_A_SHARE,
     price_tolerance: float = PRICE_TOLERANCE,
     volume_relative_tolerance: float = VOLUME_RELATIVE_TOLERANCE,
     amount_relative_tolerance: float = AMOUNT_RELATIVE_TOLERANCE,
@@ -230,7 +222,7 @@ def inspect_intraday_against_daily(
     """Inspect one intraday series against its independently fetched daily reference."""
 
     structural = inspect_ohlcv_frame(
-        intraday, frequency, require_complete_days=True
+        intraday, frequency, require_complete_days=True, market=market
     )
     daily_structural = inspect_ohlcv_frame(daily, "daily")
     findings = [*structural.findings, *daily_structural.findings]

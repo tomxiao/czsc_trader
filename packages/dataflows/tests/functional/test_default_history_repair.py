@@ -22,14 +22,14 @@ def _bars(day, minutes, price=10.0):
     )
     return pd.DataFrame({
         "Date": times, "Open": price, "High": price, "Low": price, "Close": price,
-        "Volume": float(minutes), "Amount": float(minutes * 10),
+        "Volume": float(minutes), "Amount": float(minutes * price),
     })
 
 
 def _daily(days, price=10.0):
     return pd.DataFrame({
         "Date": pd.to_datetime(days), "Open": price, "High": price,
-        "Low": price, "Close": price, "Volume": 240.0, "Amount": 2400.0,
+        "Low": price, "Close": price, "Volume": 240.0, "Amount": 240.0 * price,
     })
 
 
@@ -41,6 +41,11 @@ class _Vendor:
         self.coarse = None if coarse is None else coarse.copy(deep=True)
         self.minute = None if minute is None else minute.copy(deep=True)
         self.calls = []
+
+    def fund_basic(self, *, ts_code, fields):
+        self.calls.append(("fund_basic", {"ts_code": ts_code, "fields": fields}))
+        assert fields == "ts_code,list_date"
+        return pd.DataFrame({"ts_code": [ts_code], "list_date": ["20130101"]})
 
     def fund_daily(self, **kwargs):
         self.calls.append(("fund_daily", kwargs))
@@ -119,11 +124,13 @@ def _raw_hash(frame, *, intraday):
     return frame_content_sha256(normalized)
 
 
-def _assert_failed_refresh_preserves_ref(flow, request, prepared, original, tmp_path, code):
+def _assert_failed_refresh_preserves_ref(
+    flow, request, prepared, original, tmp_path, code, *, item_status=DataStatus.FAILED,
+):
     failed = flow.prepare((request,), policy=PreparePolicy.REFRESH)
     assert failed.status is PrepareStatus.FAILED and failed.reference is None
     item, = failed.items
-    assert item.status is DataStatus.FAILED and item.identity is None
+    assert item.status is item_status and item.identity is None
     assert item.error.code == code
     # Reopen without any supplier: neither failed refresh nor fetch may replace
     # the original immutable published object.
@@ -153,9 +160,9 @@ def test_default_daily_patch_publishes_exact_correction_and_rejects_unknown_sign
     assert result.dataframe.High.tolist() == daily.High.tolist()
     assert result.dataframe.Close.tolist() == daily.Close.tolist()
     assert result.dataframe.Volume.tolist() == [240.0, 240.0]
-    assert result.dataframe.Amount.tolist() == [2400.0, 2400.0]
+    assert result.dataframe.Amount.tolist() == daily.Amount.tolist()
     assert vendor.daily.Low.iloc[0] == 3.317
-    assert [endpoint for endpoint, _ in vendor.calls] == ["fund_daily", "trade_cal"]
+    assert [endpoint for endpoint, _ in vendor.calls] == ["fund_daily", "fund_basic", "trade_cal"]
     vendor.daily.loc[0, "Low"] = 3.400  # Same registered date, unknown numeric signature.
     error = _assert_failed_refresh_preserves_ref(
         flow, request, prepared, result, tmp_path, "DATA_REPAIR_FAILED",
@@ -234,9 +241,11 @@ def test_default_registered_volume_patches_require_post_repair_daily_agreement(t
     error = _assert_failed_refresh_preserves_ref(
         flow, request, prepared, result, tmp_path, "DATA_CONTRACT_MISMATCH",
     )
-    finding, = error.context["findings"]
-    assert finding["code"] == "CROSS_FREQUENCY_MISMATCH"
-    assert finding["context"]["fields_by_date"] == {days[1]: ["Volume"]}
+    quality = error.context["quality"]
+    assert quality["daily"]["accuracy"] == 1.0
+    assert quality["minute"]["complete_sessions"] == 2
+    assert quality["minute"]["accurate_sessions"] == 1
+    assert quality["minute"]["inaccurate_dates"] == [days[1]]
 
 
 def test_default_missing_day_patch_rebuilds_only_registered_day_from_minute_evidence(tmp_path, monkeypatch):
@@ -262,8 +271,7 @@ def test_default_missing_day_patch_rebuilds_only_registered_day_from_minute_evid
     }]
     vendor.coarse = vendor.coarse.loc[vendor.coarse.Date.dt.normalize().ne(pd.Timestamp(days[2]))]
     error = _assert_failed_refresh_preserves_ref(
-        flow, request, prepared, result, tmp_path, "DATA_CONTRACT_MISMATCH",
+        flow, request, prepared, result, tmp_path, "INCOMPLETE_DATA",
+        item_status=DataStatus.INCOMPLETE,
     )
-    finding, = error.context["findings"]
-    assert finding["code"] == "TRADING_DATE_MISMATCH"
-    assert finding["context"]["missing_intraday"] == [days[2]]
+    assert error.context["missing_dates"] == [days[2]]

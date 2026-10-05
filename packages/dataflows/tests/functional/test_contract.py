@@ -5,6 +5,7 @@ import sqlite3
 
 import pandas as pd
 import pytest
+from conftest import ohlcv_fixture_metadata
 
 from dataflows import (
     DataRequest,
@@ -40,7 +41,8 @@ def _request(dataset: str | Dataset = Dataset.ETF_OHLCV) -> DataRequest:
 
 def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publish_data) -> None:
     source = _frame()
-    dataflows = flow_factory({Dataset.ETF_OHLCV.value: lambda request: (source, {"vendor": "test"})})
+    metadata = {"vendor": "test", **ohlcv_fixture_metadata(source, start="2026-09-14", end="2026-09-15")}
+    dataflows = flow_factory({Dataset.ETF_OHLCV.value: lambda request: (source, metadata)})
 
     first = publish_data(dataflows, _request())
     second = publish_data(dataflows, _request())
@@ -151,10 +153,11 @@ def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, pub
     frame = _frame()
     frame.loc[1, "High"] = 0.5
     calls = []
+    metadata = {"vendor": "test", **ohlcv_fixture_metadata(_frame(), start="2026-09-14", end="2026-09-15")}
 
     def provider(request):
         calls.append(request)
-        return frame, {"vendor": "test"}
+        return frame, metadata
 
     flows = flow_factory({Dataset.ETF_OHLCV: provider})
     result = publish_data(flows, _request())
@@ -308,7 +311,7 @@ def test_required_cutoff_prevents_stale_data_from_becoming_ready(flow_factory, p
     )
 
     result = publish_data(flow_factory(
-        {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
+        {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test", **ohlcv_fixture_metadata(frame, start=request.start, end=request.end)})}
     ), request)
 
     assert result.status is DataStatus.INCOMPLETE

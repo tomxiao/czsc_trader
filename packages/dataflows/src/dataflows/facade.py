@@ -37,6 +37,7 @@ from .errors import (
     SourceNotReadyError,
 )
 from .history_validation import inspect_ohlcv_frame
+from .ohlcv_quality import validate_quality_metadata
 from .market_resolver import MARKET_A_SHARE, detect_market
 
 Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
@@ -355,7 +356,7 @@ def _validate_provider_output(
     request: DataRequest,
     metadata: Mapping[str, Any],
     *, complete_sessions: bool = True,
-) -> None:
+) -> dict[str, Any] | None:
     """Apply the final DFLS-owned contract before READY can cross the facade."""
 
     dataset = str(request.dataset)
@@ -457,15 +458,18 @@ def _validate_provider_output(
         market = detect_market(_required_symbol(request))
         if metadata.get("market") is not None and metadata["market"] != market:
             raise DataContractError("provider market differs from requested symbol")
-        inspect_ohlcv_frame(
+        structural = inspect_ohlcv_frame(
             dataframe,
             frequency,
             require_complete_days=complete_sessions and frequency in {"1m", "5m", "15m", "30m"},
             market=market,
             request_start=request.start,
             request_end=request.end,
-        ).require_pass()
-        return
+        )
+        if structural.findings and all(item.code == "INCOMPLETE_TRADING_SESSION" for item in structural.findings):
+            raise IncompleteDataError("OHLCV minute session is incomplete", findings=[item.to_dict() for item in structural.findings])
+        structural.require_pass()
+        return validate_quality_metadata(metadata, request, dataframe)
 
     specification = _DATASET_FIELDS.get(dataset)
     if specification is None:
@@ -1163,10 +1167,13 @@ class Dataflows:
             if canonical_frame_sha256(result.dataframe) != result.identity.content_sha256:
                 raise DataContractError("prepared asset content hash differs")
             _validate_coverage(result.dataframe, request)
-            _validate_provider_output(result.dataframe, request, result.identity.metadata,
-                                      complete_sessions=complete_sessions)
+            quality = _validate_provider_output(result.dataframe, request, result.identity.metadata,
+                                                complete_sessions=complete_sessions)
             start, end = _date_bounds(result.dataframe, request, result.identity.metadata)
-            return replace(result, identity=replace(result.identity, data_start=start, data_cutoff=end))
+            metadata = dict(result.identity.metadata)
+            if str(request.dataset) in _OHLCV_DATASETS:
+                metadata["ohlcv_quality"] = quality
+            return replace(result, identity=replace(result.identity, data_start=start, data_cutoff=end, metadata=metadata))
         except IncompleteDataError as exc:
             return self._expected_failure(DataStatus.INCOMPLETE, exc, request)
         except DataflowError as exc:
@@ -1193,7 +1200,9 @@ class Dataflows:
             metadata = _lineage_metadata(request, frame, metadata)
             metadata.update(provider_binding=provider.name, provider_revision=provider.revision,
                             dfls_revision=self._revision)
-            _validate_provider_output(frame, request, metadata)
+            quality = _validate_provider_output(frame, request, metadata)
+            if str(request.dataset) in _OHLCV_DATASETS:
+                metadata["ohlcv_quality"] = quality
             data_start, data_cutoff = _date_bounds(frame, request, metadata)
             source = str(metadata.get("vendor", "unknown"))
             identity = DataIdentity(

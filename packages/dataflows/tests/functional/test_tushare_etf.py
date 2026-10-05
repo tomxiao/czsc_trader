@@ -16,10 +16,14 @@ def etf_adjusted_source(publication_seeds):
         def fund_daily(self, **_kwargs):
             return pd.DataFrame([
                 {"trade_date": "20130315", "open": 1, "high": 1, "low": 1,
-                 "close": 1, "vol": 1, "amount": 1},
+                 "close": 1, "vol": 1, "amount": 0.1},
                 {"trade_date": "20260908", "open": 2, "high": 2, "low": 2,
-                 "close": 2, "vol": 1, "amount": 1},
+                 "close": 2, "vol": 1, "amount": 0.2},
             ])
+
+        def fund_basic(self, *, ts_code, fields):
+            assert fields == "ts_code,list_date"
+            return pd.DataFrame({"ts_code": [ts_code], "list_date": ["20130315"]})
 
         def fund_adj(self, *, start_date, end_date, **_kwargs):
             self.factor_requests.append((start_date, end_date))
@@ -99,8 +103,12 @@ def test_etf_publication_requires_verified_daily_session_coverage(
         closed_day_bar = False
         invalid_flag = False
 
+        def fund_basic(self, *, ts_code, fields):
+            assert fields == "ts_code,list_date"
+            return pd.DataFrame({"ts_code": [ts_code], "list_date": ["20260914"]})
+
         def fund_daily(self, **kwargs):
-            # The request starts before this synthetic instrument's first observation.
+            # Listing evidence is independent of the first returned observation.
             dates = ["20260914", "20260916"] if self.missing else [
                 "20260914", "20260915", "20260916",
             ]
@@ -143,8 +151,10 @@ def test_etf_publication_requires_verified_daily_session_coverage(
         assert failed.status is DataStatus.INCOMPLETE
         assert failed.error.code == "INCOMPLETE_DATA"
         if defect == "missing":
-            assert failed.error.context["missing_dates"] == ["2026-09-15"]
-            assert failed.error.context["absence_reason"] == "UNVERIFIED"
+            if frequency == "weekly":
+                assert failed.error.context["quality"]["daily"]["incomplete_dates"] == ["2026-09-15"]
+            else:
+                assert failed.error.context["missing_dates"] == ["2026-09-15"]
     else:
         assert failed.status is DataStatus.FAILED
         assert failed.error.code == "DATA_CONTRACT_MISMATCH"

@@ -33,6 +33,7 @@ def apply_repairs_once(
     findings: Sequence[ValidationFinding],
     *,
     references: Mapping[str, pd.DataFrame] | None = None,
+    require_match: bool = True,
 ) -> tuple[pd.DataFrame, tuple[RepairRecord, ...]]:
     """Apply one deterministic repair transaction for the initial findings."""
 
@@ -64,7 +65,7 @@ def apply_repairs_once(
                     frame_content_sha256(result),
                 )
             )
-    if not records:
+    if not records and require_match:
         raise DataRepairError(
             f"no repair patch matched {series.vendor}/{series.symbol}/{series.frequency}",
             finding_codes=sorted(finding_codes),

@@ -12,6 +12,7 @@ from uuid import uuid4
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
+from conftest import ohlcv_fixture_metadata
 
 from dataflows import (
     DataCoverageRequirement, Dataflows, DataRequest, DataSpace, DataStatus,
@@ -28,7 +29,8 @@ def _frame(offset=0.0):
         "Low": [0.9 + offset, 1.0 + offset, 1.1 + offset],
         "Close": [1.1 + offset, 1.2 + offset, 1.3 + offset],
         "Volume": [100, 120, 140],
-        "Amount": [105.1234567890123, 138.000000000001, 175.9],
+        "Amount": [105.1234567890123 + 100 * offset,
+                   138.000000000001 + 120 * offset, 175.9 + 140 * offset],
     })
 
 
@@ -37,10 +39,16 @@ def _request(symbol="518850.SH"):
 
 
 def _flows(base_dir, provider, name="space"):
+    def explicit_provider(request):
+        frame, metadata = provider(request)
+        return frame, {**metadata, **ohlcv_fixture_metadata(
+            frame, start="2026-09-14", end="2026-09-16",
+        )}
+
     return Dataflows(
         base_dir=base_dir, space=DataSpace(Path(name)),
         providers=ProviderConfig(bindings={
-            Dataset.ETF_OHLCV: ProviderBinding("synthetic", "v1", provider),
+            Dataset.ETF_OHLCV: ProviderBinding("synthetic", "v1", explicit_provider),
         }),
     )
 

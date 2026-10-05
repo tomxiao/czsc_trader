@@ -5,6 +5,7 @@ import sqlite3
 
 import pandas as pd
 import pytest
+from conftest import ohlcv_fixture_metadata
 
 from dataflows import (
     DataCoverageRequirement,
@@ -27,6 +28,21 @@ def _rates():
         "Date": pd.date_range("2026-09-14", periods=3),
         "OvernightRate": [1.0, 1.1, 1.2],
     })
+
+
+def _minute_fixture_metadata():
+    clocks = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
+    minute = pd.DataFrame({
+        "Date": pd.to_datetime([f"2026-09-14 {clock}" for clock in clocks]),
+        "Open": 1., "High": 1., "Low": 1., "Close": 1., "Volume": 100., "Amount": 100.,
+    })
+    daily = pd.DataFrame({
+        "Date": pd.to_datetime(["2026-09-14"]), "Open": 1., "High": 1., "Low": 1.,
+        "Close": 1., "Volume": 800., "Amount": 800.,
+    })
+    return {"vendor": "fixture", **ohlcv_fixture_metadata(
+        daily, start="2026-09-14", end="2026-09-14", intraday=minute, frequency="30m",
+    )}
 
 
 def test_refresh_deduplicates_acquisition_but_checks_each_coverage(flow_factory):
@@ -203,7 +219,7 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
         return pd.DataFrame({
             "Date": times, "Open": 1.0, "High": 1.0, "Low": 1.0,
             "Close": 1.0, "Volume": 100.0, "Amount": 100.0,
-        }), {"vendor": "fixture"}
+        }), _minute_fixture_metadata()
 
     flows = flow_factory({Dataset.ETF_OHLCV: provider})
     request = DataRequest(
@@ -242,14 +258,18 @@ def test_partial_intraday_prepare_checks_only_requested_session_bars(flow_factor
         "Date": times, "Open": 1.0, "High": 1.0, "Low": 1.0,
         "Close": 1.0, "Volume": 100.0, "Amount": 100.0,
     })
-    flows = flow_factory({Dataset.ETF_OHLCV: lambda request: (frame, {"vendor": "fixture"})})
+    flows = flow_factory({Dataset.ETF_OHLCV: lambda request: (frame, _minute_fixture_metadata())})
     request = DataRequest(
         Dataset.ETF_OHLCV, "518850.SH", "2026-09-14 10:30", "2026-09-14 11:30", None, "30m",
     )
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready is not missing_bar
     if missing_bar:
-        assert "INCOMPLETE_TRADING_SESSION" in prepared.items[0].error.message
+        assert prepared.items[0].status is DataStatus.INCOMPLETE
+        assert prepared.items[0].error.code == "INCOMPLETE_DATA"
+        finding, = prepared.items[0].error.context["findings"]
+        assert finding["code"] == "INCOMPLETE_TRADING_SESSION"
+        assert finding["context"]["sessions"] == {"2026-09-14": ["2026-09-14 11:00:00"]}
     else:
         result = flows.fetch(request, prepared=prepared.reference)
         assert result.ready and result.dataframe.Date.tolist() == times.tolist()
@@ -261,6 +281,7 @@ def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
         f"2026-09-14 {clock}" for clock in
         ("10:00", "10:30", "11:00", "11:30", "12:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00")
     ])
+    complete_times = times.copy()
     if invalid == "gap":
         times = times.delete(4)
     elif invalid == "time":
@@ -270,6 +291,18 @@ def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
         "Close": 1.0, "Volume": 100.0, "Amount": 100.0,
     })
     metadata = {"vendor": "fixture", "market": "a_share" if invalid == "market" else "hk"}
+    anchor = pd.DataFrame({
+        "Date": pd.to_datetime(["2026-09-14"]), "Open": 1., "High": 1., "Low": 1.,
+        "Close": 1., "Volume": 1100., "Amount": 1100.,
+    })
+    complete = pd.DataFrame({
+        "Date": complete_times, "Open": 1., "High": 1., "Low": 1., "Close": 1.,
+        "Volume": 100., "Amount": 100.,
+    })
+    metadata.update(ohlcv_fixture_metadata(
+        anchor, start="2026-09-14", end="2026-09-14", intraday=complete,
+        frequency="30m", market="hk",
+    ))
     flows = flow_factory({Dataset.STOCK_OHLCV: lambda request: (frame, metadata)})
     request = DataRequest(Dataset.STOCK_OHLCV, "00700.HK", "2026-09-14", "2026-09-14", None, "30m")
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
@@ -277,12 +310,20 @@ def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
     if invalid is not None:
         assert prepared.status is PrepareStatus.FAILED and prepared.reference is None
         item, = prepared.items
-        assert item.status is DataStatus.FAILED
-        assert item.error.code == "DATA_CONTRACT_MISMATCH"
-        if invalid == "market":
+        if invalid == "gap":
+            assert item.status is DataStatus.INCOMPLETE
+            assert item.error.code == "INCOMPLETE_DATA"
+            finding, = item.error.context["findings"]
+            assert finding["code"] == "INCOMPLETE_TRADING_SESSION"
+            assert finding["context"]["sessions"] == {"2026-09-14": ["2026-09-14 12:00:00"]}
+        elif invalid == "market":
+            assert item.status is DataStatus.FAILED
+            assert item.error.code == "DATA_CONTRACT_MISMATCH"
             assert item.error.message == "provider market differs from requested symbol"
         else:
-            assert "INCOMPLETE_TRADING_SESSION" in item.error.message if invalid == "gap" else "UNEXPECTED_SESSION_TIME" in item.error.message
+            assert item.status is DataStatus.FAILED
+            assert item.error.code == "DATA_CONTRACT_MISMATCH"
+            assert "UNEXPECTED_SESSION_TIME" in item.error.message
     if prepared.ready:
         result = flows.fetch(request, prepared=prepared.reference)
         assert result.ready and len(result.dataframe) == 11

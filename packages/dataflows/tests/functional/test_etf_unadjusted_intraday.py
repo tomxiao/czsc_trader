@@ -12,6 +12,10 @@ class FakePro:
         self.mismatch = mismatch
         self.calls = 0
 
+    def fund_basic(self, *, ts_code, fields):
+        assert fields == "ts_code,list_date"
+        return pd.DataFrame({"ts_code": [ts_code], "list_date": ["20200605"]})
+
     def etf_mins(self, **kwargs):
         self.calls += 1
         times = pd.date_range("2026-09-29 09:35", "2026-09-29 11:30", freq="5min").append(
@@ -23,7 +27,7 @@ class FakePro:
     def fund_daily(self, **kwargs):
         return pd.DataFrame([{"trade_date": "20260929", "open": 4., "high": 4.,
                               "low": 4., "close": 4., "vol": 48. if not self.mismatch else 49.,
-                              "amount": 19.2}])
+                              "amount": 19.2 if not self.mismatch else 19.6}])
 
     def fund_adj(self, **kwargs):
         pytest.fail("Raw minute prices must not fetch adjustment factors")
@@ -70,7 +74,9 @@ def test_raw_intraday_routes_validates_and_preserves_market_timing(flow_factory,
     result = publish_data(flows, request())
     assert result.status is DataStatus.FAILED
     assert result.dataframe.empty
-    assert result.error.code == "DATA_REPAIR_FAILED"
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    assert result.error.context["quality"]["daily"]["accuracy"] == 1.0
+    assert result.error.context["quality"]["minute"]["inaccurate_dates"] == ["2026-09-29"]
     old = flows.fetch(request(), prepared=original.prepared)
     assert old.ready and old.identity.content_sha256 == original.identity.content_sha256
 
@@ -98,6 +104,18 @@ def test_raw_intraday_rejects_a_day_missing_from_both_sources(flow_factory, publ
     assert result.status is DataStatus.INCOMPLETE
     assert result.error.context["missing_dates"] == ["2026-09-28"]
     assert result.dataframe.empty
+
+
+def test_raw_intraday_missing_bar_is_incomplete(flow_factory, publish_data, monkeypatch):
+    class MissingBarPro(FakePro):
+        def etf_mins(self, **kwargs):
+            return super().etf_mins(**kwargs).drop(index=10)
+
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: MissingBarPro())
+    result = publish_data(flow_factory(), request())
+    assert result.status is DataStatus.INCOMPLETE
+    assert result.dataframe.empty
+    assert result.prepared is None
 
 
 @pytest.mark.parametrize("frequency", ["daily", "weekly", "60m"])
