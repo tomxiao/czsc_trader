@@ -2,6 +2,8 @@
 
 from itertools import count
 from pathlib import Path
+from shutil import copytree
+from uuid import uuid4
 
 import pytest
 
@@ -45,3 +47,48 @@ def publish_data():
         return DataResult(status=item.status, error=item.error)
 
     return publish
+
+
+@pytest.fixture(scope="module")
+def publication_seeds(frozen_seed_root):
+    """Build each immutable baseline through the real public publication path."""
+    # Reuse only the repository-managed temporary root and its Windows ACLs.
+    base = frozen_seed_root / f"dfls-publications-{uuid4().hex}"
+    base.mkdir()
+    seeds = {}
+
+    def seed(key, bindings, request):
+        if key not in seeds:
+            flow = Dataflows(base_dir=base, space=DataSpace(Path(key)),
+                             providers=ProviderConfig(bindings=bindings))
+            prepared = flow.prepare((request,), policy=PreparePolicy.REFRESH)
+            assert prepared.ready, prepared.items
+            seeds[key] = (base / key, request, prepared.reference)
+        path, original_request, reference = seeds[key]
+        assert original_request == request, "a publication seed must have one request contract"
+        return path, reference
+
+    return seed
+
+
+@pytest.fixture
+def clone_published_flow(tmp_path, publication_seeds):
+    """Each case gets a private copy; no mutable Dataflows/store is shared by cases.
+
+    The copied space identity intentionally refers to the same baseline publication.
+    Space identity/concurrency tests continue to create genuinely new spaces.
+    """
+    def clone(key, providers, request):
+        bindings = None if providers is None else {
+            Dataset(dataset): ProviderBinding(name="fixture", revision="v1", fetch=provider)
+            for dataset, provider in providers.items()
+        }
+        path, reference = publication_seeds(key, bindings, request)
+        copytree(path, tmp_path / key)
+        flow = Dataflows(base_dir=tmp_path, space=DataSpace(Path(key)),
+                         providers=ProviderConfig(bindings=bindings))
+        original = flow.fetch(request, prepared=reference)
+        assert original.ready, original.error
+        return flow, original
+
+    return clone

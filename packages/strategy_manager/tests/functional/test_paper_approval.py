@@ -13,12 +13,28 @@ from strategy_manager import (
     InvalidTransitionError,
     ValidationError,
 )
-from test_current_contracts import (
-    current_frozen as current_frozen,
-    inspection as inspection,
-    completed as completed,
-    managed_evaluation as managed_evaluation,
-)
+from strategy_manager.models import StrategyVersion, canonical_sha256
+
+
+@pytest.fixture
+def registered_version(tmp_path):
+    """Persist a valid SM record; runtime generation belongs to TDR integration."""
+    raw = {
+        "schema_version": 5, "strategy_id": "S900", "version": "v1",
+        "release_id": "S900-v1", "parent_version": None,
+        "change_summary": "synthetic SM lifecycle",
+        "source_experiment": "20261001_S900_EX01", "source_candidate": "C0001",
+        "selection_data_cutoff": "2026-09-21", "forward_start": "2026-09-22",
+        "strategy_payload": {"test": "SM lifecycle only"},
+    }
+    version = StrategyVersion.from_dict({**raw, "release_hash": canonical_sha256(raw)})
+    directory = tmp_path / "S900"
+    (directory / "versions").mkdir(parents=True)
+    (directory / "versions/v1.json").write_text(json.dumps(version.to_dict()), encoding="utf-8")
+    (directory / "lifecycle.jsonl").write_text("", encoding="utf-8")
+    registry = StrategyRegistry(tmp_path)
+    assert registry.get_version("S900", "v1") == version
+    return registry, version
 
 
 @pytest.mark.parametrize(
@@ -47,11 +63,10 @@ def test_approval_rejects_invalid_fields(field, value):
         PaperTradingApproval(**values)
 
 
-def test_approval_is_content_bound_and_rejects_repeat_without_writing(current_frozen):
-    context, version = current_frozen
-    registry = StrategyRegistry(context.strategy_root)
+def test_approval_is_content_bound_and_rejects_repeat_without_writing(registered_version):
+    registry, version = registered_version
     request = PaperTradingApproval("S900", "v1", version.release_hash, "user", "explicit approval")
-    path = context.strategy_root / "S900/lifecycle.jsonl"
+    path = registry.root / "S900/lifecycle.jsonl"
     before = path.read_bytes()
     with pytest.raises(TypeError):
         registry.approve_paper_trading({})
@@ -73,10 +88,9 @@ def test_approval_is_content_bound_and_rejects_repeat_without_writing(current_fr
         registry.approve_paper_trading(request)
 
 
-def test_old_content_events_do_not_grant_or_override_current_qualification(current_frozen):
-    context, version = current_frozen
-    registry = StrategyRegistry(context.strategy_root)
-    path = context.strategy_root / "S900/lifecycle.jsonl"
+def test_old_content_events_do_not_grant_or_override_current_qualification(registered_version):
+    registry, version = registered_version
+    path = registry.root / "S900/lifecycle.jsonl"
     request = PaperTradingApproval("S900", "v1", version.release_hash, "user", "explicit approval")
     event = registry.approve_paper_trading(request)
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]

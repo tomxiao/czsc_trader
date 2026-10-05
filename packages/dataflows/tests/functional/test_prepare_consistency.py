@@ -1,6 +1,7 @@
 """Regression checks for batch consistency and typed subset reads."""
 
 from dataclasses import replace
+import sqlite3
 
 import pandas as pd
 import pytest
@@ -88,6 +89,10 @@ def test_coverage_can_inherit_provider_start_lag(flow_factory, provider_lag, rea
     ))
     prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
     assert prepared.ready is ready
+    if not ready:
+        assert prepared.items[0].status is DataStatus.INCOMPLETE
+        assert prepared.items[0].error.code == "INCOMPLETE_DATA"
+        assert prepared.items[0].error.context["maximum_start_lag_days"] == 0
 
 
 @pytest.mark.parametrize("through", ["2026-09-13", "2026-09-17", "2026-09-15T00:00:00+08:00"])
@@ -102,14 +107,15 @@ def test_observation_boundary_requires_explicit_valid_timestamp(through):
         DataCoverageRequirement(observations_through=through)
 
 
-def test_conflicting_overlap_prevents_batch_publication(flow_factory):
+def test_conflicting_overlap_prevents_batch_publication(flow_factory, tmp_path):
     calls = []
+    conflicting = True
 
     def provider(request):
         calls.append(request)
         frame = _rates()
         frame = frame.loc[frame.Date.between(request.start, request.end)].copy()
-        if request.start == "2026-09-15":
+        if conflicting and request.start == "2026-09-15":
             frame.loc[frame.Date.eq("2026-09-15"), "OvernightRate"] = 9.9
         return frame, {"vendor": "fixture"}
 
@@ -120,6 +126,17 @@ def test_conflicting_overlap_prevents_batch_publication(flow_factory):
     assert len(calls) == 2
     assert result.status is PrepareStatus.FAILED and result.reference is None
     assert all(item.error.code == "INCONSISTENT_PREPARATION" for item in result.items)
+    with sqlite3.connect(tmp_path / "space-0" / "assets.sqlite3") as connection:
+        assert [connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                for table in ("assets", "asset_lookup", "preparations")] == [0, 0, 0]
+    conflicting = False
+    retried = flows.prepare(
+        (_request(), replace(_request(), start="2026-09-15")), policy=PreparePolicy.REUSE,
+    )
+    assert retried.ready and len(calls) == 4
+    for request in (_request(), replace(_request(), start="2026-09-15")):
+        assert flows.fetch(request, prepared=retried.reference).dataframe.OvernightRate.max() == 1.2
+
 
 
 def test_moneyflow_fetch_filters_explicit_date_subset_without_supplier_call(flow_factory):
@@ -241,6 +258,15 @@ def test_hk_intraday_uses_requested_market_session(flow_factory, invalid):
     request = DataRequest(Dataset.STOCK_OHLCV, "00700.HK", "2026-09-14", "2026-09-14", None, "30m")
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready is (invalid is None)
+    if invalid is not None:
+        assert prepared.status is PrepareStatus.FAILED and prepared.reference is None
+        item, = prepared.items
+        assert item.status is DataStatus.FAILED
+        assert item.error.code == "DATA_CONTRACT_MISMATCH"
+        if invalid == "market":
+            assert item.error.message == "provider market differs from requested symbol"
+        else:
+            assert "INCOMPLETE_TRADING_SESSION" in item.error.message if invalid == "gap" else "UNEXPECTED_SESSION_TIME" in item.error.message
     if prepared.ready:
         result = flows.fetch(request, prepared=prepared.reference)
         assert result.ready and len(result.dataframe) == 11
@@ -280,8 +306,11 @@ def test_reuse_refreshes_once_for_all_requirements_independent_of_order(flow_fac
         assert result.ready and len(result.dataframe) == 2
 
 
-def test_mixed_naive_and_aware_series_returns_structured_batch_failure(flow_factory):
+def test_mixed_naive_and_aware_series_returns_structured_batch_failure(flow_factory, tmp_path):
+    calls = []
+
     def provider(request):
+        calls.append(request)
         frame = _rates()
         if pd.Timestamp(request.start).tzinfo is not None:
             frame.Date = frame.Date.dt.tz_localize("Asia/Shanghai")
@@ -294,6 +323,13 @@ def test_mixed_naive_and_aware_series_returns_structured_batch_failure(flow_fact
     result = flows.prepare((_request(), aware), policy=PreparePolicy.REFRESH)
     assert result.status is PrepareStatus.FAILED and result.reference is None
     assert all(item.error.code == "INCONSISTENT_PREPARATION" for item in result.items)
+
+    with sqlite3.connect(tmp_path / "space-0" / "assets.sqlite3") as connection:
+        assert [connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                for table in ("assets", "asset_lookup", "preparations")] == [0, 0, 0]
+    retried = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    assert retried.ready and len(calls) == 3
+    assert flows.fetch(_request(), prepared=retried.reference).dataframe.OvernightRate.tolist() == [1.0, 1.1, 1.2]
 
 
 @pytest.mark.parametrize("requirement", ["coverage", "cutoff"])

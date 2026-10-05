@@ -1,6 +1,7 @@
 from dataclasses import replace
 from datetime import date, datetime
 from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 import sqlite3
 from types import SimpleNamespace
 
@@ -525,10 +526,14 @@ def test_ft_pte03_channel_and_account_pause_block_pending_submission(new_store, 
     store.close()
 
 
-def test_ft_pte03_uncertain_submission_keeps_reservation_and_blocks_account(new_store, tmp_path):
+@pytest.mark.parametrize("failure", ["lost_response", "local_binding"])
+def test_ft_pte03_uncertain_submission_recovers_remote_order_once(new_store, tmp_path, monkeypatch, failure):
     class FailingBroker(FakeBroker):
         def place_order(self, intent):
-            raise TimeoutError("broker response lost")
+            order = super().place_order(intent)
+            if failure == "lost_response":
+                raise TimeoutError("broker response lost")
+            return order
 
     store = new_store(tmp_path / "uncertain.db")
     store.create_virtual_account(
@@ -542,19 +547,50 @@ def test_ft_pte03_uncertain_submission_keeps_reservation_and_blocks_account(new_
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
-    execution = FutuExecution(
-        store, FailingBroker(), symbol="588080.SH", today=lambda: date(2026, 9, 4)
-    )
+    broker = FailingBroker()
+    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 4))
+    if failure == "local_binding":
+        original_insert = store._insert_audit_event
+
+        def fail_binding(event):
+            if event.event_type == "ORDER_SUBMITTED":
+                raise TimeoutError("local binding response lost")
+            return original_insert(event)
+
+        monkeypatch.setattr(store, "_insert_audit_event", fail_binding)
     with pytest.raises(TimeoutError, match="response lost"):
         execution.submit_pending()
     account = store.virtual_account("s001-v1")
     assert float(account["frozen_cash"]) > 0
     assert account["health"] == "BLOCKED"
     assert store.account_intent(intent["intent_id"])["status"] == "SUBMISSION_UNCERTAIN"
+    assert len(broker.placed) == 1
+    assert len(broker.value.orders) == 1
+    assert store.account_orders("s001-v1") == []
+    store.close()
+    store = PaperStore(tmp_path / "uncertain.db")
+    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 4))
+    execution.refresh_orders()
+    assert store.account_intent(intent["intent_id"])["status"] == "SUBMITTED"
+    assert store.virtual_account("s001-v1")["frozen_cash"] == account["frozen_cash"]
+    filled = replace(broker.value.orders[0], status="FILLED_ALL",
+                     cumulative_filled_quantity=1000, average_fill_price=1.67)
+    broker.value = broker_snapshot(orders=(filled,), quantity=1000)
+    execution.refresh()
+    execution.refresh()
+    assert len(broker.placed) == 1
+    assert len(store.account_orders("s001-v1")) == 1
+    assert len(store.account_fills("s001-v1")) == 1
+    assert store.virtual_account("s001-v1")["quantity"] == 1000
+    assert float(store.virtual_account("s001-v1")["frozen_cash"]) == 0
+    assert store.virtual_account("s001-v1")["health"] == "OK"
+    assert len(store.query_audit_events(event_type="ORDER_INTENT_RECOVERED")) == 1
+    assert len(store.query_audit_events(event_type="ORDER_FILLED")) == 1
+    assert store.account_invariant_violations() == []
     store.close()
 
 
-def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomic(new_store, tmp_path):
+def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomic(new_store, tmp_path, monkeypatch):
     class RejectingBroker(FakeBroker):
         def place_order(self, intent):
             self.placed.append(intent)
@@ -593,13 +629,31 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     first = FutuExecution(
         store, safe_broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
+    other_store = PaperStore(tmp_path / "reject.db")
     second_runner = FutuExecution(
-        store, safe_broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
+        other_store, safe_broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
     first.refresh_account()
     second_runner.refresh_account()
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        list(pool.map(lambda runner: runner.submit_pending(reconcile=False), (first, second_runner)))
+    barrier = Barrier(2)
+
+    def competing_read(read):
+        def read_pending():
+            rows = read()
+            assert [row["intent_id"] for row in rows] == [second["intent_id"]]
+            barrier.wait(timeout=5)
+            return rows
+        return read_pending
+
+    try:
+        with monkeypatch.context() as patch:
+            for connection in (store, other_store):
+                patch.setattr(connection, "pending_account_intents",
+                              competing_read(connection.pending_account_intents))
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                list(pool.map(lambda runner: runner.submit_pending(reconcile=False), (first, second_runner)))
+    finally:
+        other_store.close()
     assert len(safe_broker.placed) == 1
     assert store.account_intent(second["intent_id"])["status"] == "SUBMITTED"
     filled = replace(

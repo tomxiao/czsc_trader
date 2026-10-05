@@ -7,7 +7,8 @@ from dataflows import DataRequest, DataStatus, Dataset
 from dataflows import tushare_etf
 
 
-def test_etf_long_history_fetch_segments_adjustment_factors(flow_factory, publish_data, monkeypatch) -> None:
+@pytest.fixture(scope="module")
+def etf_adjusted_source():
     class FakePro:
         def __init__(self) -> None:
             self.factor_requests: list[tuple[str, str]] = []
@@ -39,12 +40,19 @@ def test_etf_long_history_fetch_segments_adjustment_factors(flow_factory, publis
             })
 
     pro = FakePro()
-    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _env=None: pro)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(tushare_etf, "get_tushare_pro", lambda _env=None: pro)
+        bars, metadata = tushare_etf.fetch_etf_ohlcv(
+            "510500.SH", "2013-03-15", "2026-09-08", "daily")
+    return pro, bars, metadata
 
-    bars, metadata = tushare_etf.fetch_etf_ohlcv(
-        "510500.SH", "2013-03-15", "2026-09-08", "daily"
-    )
 
+@pytest.mark.parametrize("mutation", [None, "adjustment", "publication", "early"],
+                         ids=["valid", "adjustment", "publication", "early"])
+def test_etf_long_history_fetch_segments_adjustment_factors(
+    clone_published_flow, publish_data, etf_adjusted_source, mutation,
+):
+    pro, bars, metadata = etf_adjusted_source
     assert pro.factor_requests == [
         ("20130315", "20171231"),
         ("20180101", "20221231"),
@@ -61,29 +69,36 @@ def test_etf_long_history_fetch_segments_adjustment_factors(flow_factory, publis
     request = DataRequest(
         Dataset.ETF_OHLCV, "510500.SH", "2013-03-15", "2026-09-08", "2026-09-08"
     )
-    ready = publish_data(flow_factory({Dataset.ETF_OHLCV.value: lambda ignored: (bars, metadata)}), request)
+    supplied_frame, supplied_metadata = bars.copy(deep=True), metadata.copy()
+    flows, ready = clone_published_flow("etf-adjusted", {
+        request.dataset: lambda _: (supplied_frame, supplied_metadata),
+    }, request)
     assert ready.status is DataStatus.READY
-    assert ready.identity is not None
     assert ready.identity.temporal_contract.availability_time_field == "AvailableDate"
-    for changed_frame, changed_metadata in (
-        (bars, {**metadata, "adjustment": "none"}),
-        (bars, {**metadata, "adjustment_factor_publication_timestamp_verified": True}),
-        (bars.assign(AvailableDate=bars["AvailableDate"] - pd.Timedelta(hours=7)), metadata),
-    ):
-        failed = publish_data(flow_factory({
-            Dataset.ETF_OHLCV.value: lambda ignored: (changed_frame, changed_metadata)
-        }), request)
-        assert failed.status is DataStatus.FAILED
-        assert failed.error is not None and failed.error.code == "DATA_CONTRACT_MISMATCH"
+    if mutation is None:
+        return
+    if mutation == "early":
+        supplied_frame.AvailableDate -= pd.Timedelta(hours=7)
+    elif mutation == "adjustment":
+        supplied_metadata["adjustment"] = "none"
+    else:
+        supplied_metadata["adjustment_factor_publication_timestamp_verified"] = True
+    failed = publish_data(flows, request)
+    assert failed.status is DataStatus.FAILED
+    assert failed.error.code == "DATA_CONTRACT_MISMATCH"
+    old = flows.fetch(request, prepared=ready.prepared)
+    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
-@pytest.mark.parametrize("dataset,frequency,symbol,exchange", [
-    (Dataset.ETF_UNADJUSTED_DAILY, "daily", "588080.SH", "SSE"),
-    (Dataset.ETF_OHLCV, "daily", "159915.SZ", "SZSE"),
-    (Dataset.ETF_OHLCV, "weekly", "588080.SH", "SSE"),
+@pytest.mark.parametrize("dataset,frequency,symbol,exchange,defect", [
+    (Dataset.ETF_UNADJUSTED_DAILY, "daily", "588080.SH", "SSE", "missing"),
+    (Dataset.ETF_OHLCV, "daily", "159915.SZ", "SZSE", "missing"),
+    (Dataset.ETF_OHLCV, "weekly", "588080.SH", "SSE", "missing"),
+    *[(Dataset.ETF_UNADJUSTED_DAILY, "daily", "588080.SH", "SSE", defect)
+      for defect in ("calendar_gap", "duplicate_calendar", "invalid_flag", "closed_day_bar")],
 ])
 def test_etf_publication_requires_verified_daily_session_coverage(
-    flow_factory, publish_data, monkeypatch, dataset, frequency, symbol, exchange,
+    clone_published_flow, publish_data, monkeypatch, dataset, frequency, symbol, exchange, defect,
 ):
     expected_exchange = exchange
 
@@ -131,43 +146,19 @@ def test_etf_publication_requires_verified_daily_session_coverage(
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: pro)
     request = DataRequest(dataset, symbol, "2026-09-12", "2026-09-16",
                           "2026-09-16", frequency=frequency)
-    flows = flow_factory()
-    ready = publish_data(flows, request)
-    assert ready.ready, ready.error
-
-    pro.missing = True
-    missing = publish_data(flows, request)
-    assert missing.status is DataStatus.INCOMPLETE
-    assert missing.error.context["missing_dates"] == ["2026-09-15"]
-    assert missing.error.context["absence_reason"] == "UNVERIFIED"
-    assert missing.dataframe.empty
+    flows, ready = clone_published_flow(f"{dataset.value}-{frequency}-{exchange}", None, request)
+    setattr(pro, defect, True)
+    failed = publish_data(flows, request)
+    if defect in {"missing", "calendar_gap"}:
+        assert failed.status is DataStatus.INCOMPLETE
+        assert failed.error.code == "INCOMPLETE_DATA"
+        if defect == "missing":
+            assert failed.error.context["missing_dates"] == ["2026-09-15"]
+            assert failed.error.context["absence_reason"] == "UNVERIFIED"
+    else:
+        assert failed.status is DataStatus.FAILED
+        assert failed.error.code == "DATA_CONTRACT_MISMATCH"
+    assert failed.dataframe.empty
     assert ready.identity.metadata["daily_session_coverage"]["verified_sessions"] == 3
-    # A rejected refresh cannot mutate a previously pinned, complete publication.
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
-
-    # Every public route checks calendar coverage above. Calendar corruption is
-    # one shared adapter contract, exercised once rather than per market/route.
-    if dataset is not Dataset.ETF_UNADJUSTED_DAILY:
-        return
-
-    pro.missing = False
-    pro.calendar_gap = True
-    unavailable_calendar = publish_data(flows, request)
-    assert unavailable_calendar.status is DataStatus.INCOMPLETE
-    assert unavailable_calendar.error.code == "INCOMPLETE_DATA"
-    pro.calendar_gap = False
-    pro.duplicate_calendar = True
-    malformed = publish_data(flows, request)
-    assert malformed.status is DataStatus.FAILED
-    assert malformed.error.code == "DATA_CONTRACT_MISMATCH"
-    pro.duplicate_calendar = False
-    pro.invalid_flag = True
-    malformed_flag = publish_data(flows, request)
-    assert malformed_flag.status is DataStatus.FAILED
-    assert malformed_flag.error.code == "DATA_CONTRACT_MISMATCH"
-    pro.invalid_flag = False
-    pro.closed_day_bar = True
-    closed_day = publish_data(flows, request)
-    assert closed_day.status is DataStatus.FAILED
-    assert closed_day.error.code == "DATA_CONTRACT_MISMATCH"

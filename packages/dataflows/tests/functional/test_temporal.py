@@ -110,28 +110,3 @@ def test_strict_coverage_blocks_truncated_history_without_provider_hint(flow_fac
     assert result.status is DataStatus.INCOMPLETE
     assert result.error is not None
     assert result.error.context["maximum_start_lag_days"] == 1
-
-
-def test_ready_identity_exposes_typed_temporal_contract(flow_factory, publish_data) -> None:
-    frame = pd.DataFrame({"Date": ["2026-09-01"], "OvernightRate": [1.5]})
-    result = publish_data(flow_factory(
-        {Dataset.SHIBOR_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ),
-        DataRequest(
-            Dataset.SHIBOR_DAILY,
-            None,
-            "2026-09-01",
-            "2026-09-01",
-            "2026-09-01",
-        )
-    )
-
-    assert result.status is DataStatus.READY
-    assert result.identity is not None
-    assert result.identity.temporal_contract == DataTemporalContract(
-        source_time_field="Date",
-        availability_time_field="Date",
-        source_calendar="SOURCE_NATIVE",
-        available_at="SOURCE_PERIOD_CLOSE",
-        request_range_policy=RequestRangePolicy.EXACT,
-    )

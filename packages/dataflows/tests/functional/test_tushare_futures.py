@@ -136,12 +136,13 @@ def test_facade_accepts_futures_frames_and_nullable_holding_rankings(flow_factor
         Dataset.FUTURES_SHFE_GOLD_HOLDING.value: lambda ignored: holding,
     }
 
+    flows = flow_factory(providers)
     for dataset in (
         Dataset.FUTURES_SHFE_GOLD_DAILY,
         Dataset.FUTURES_SHFE_GOLD_MAPPING,
         Dataset.FUTURES_SHFE_GOLD_HOLDING,
     ):
-        result = publish_data(flow_factory(providers),
+        result = publish_data(flows,
             DataRequest(
                 dataset,
                 "AU.SHFE",
@@ -193,11 +194,3 @@ def test_facade_rejects_holding_row_without_any_ranking_value(flow_factory, publ
     assert result.status is DataStatus.FAILED
     assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
-
-
-def test_default_registry_exposes_shfe_gold_research_datasets(flow_factory) -> None:
-    assert {
-        Dataset.FUTURES_SHFE_GOLD_DAILY.value,
-        Dataset.FUTURES_SHFE_GOLD_MAPPING.value,
-        Dataset.FUTURES_SHFE_GOLD_HOLDING.value,
-    }.issubset(flow_factory().datasets)

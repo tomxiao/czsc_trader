@@ -517,30 +517,13 @@ class FutuExecution:
                 self.store.bind_channel_order(
                     intent["intent_id"], order.channel_order_id, asdict(order), recovered,
                 )
-            fill = self.store.apply_fill_increment(
+            self.store.apply_fill_increment(
                 order.channel_order_id,
                 cumulative_quantity=order.cumulative_filled_quantity,
                 average_price=order.average_fill_price,
                 occurred_at=self.store.get_setting("clock_override")
                 or datetime.now(timezone.utc).isoformat(),
             )
-            if fill is not None:
-                event_type = (
-                    "ORDER_FILLED"
-                    if order.cumulative_filled_quantity >= order.quantity
-                    else "ORDER_PARTIALLY_FILLED"
-                )
-                self.audit.record(
-                    event_type, source="futu_execution", account_id=intent["account_id"],
-                    strategy_id=self.store.virtual_account(intent["account_id"])["strategy_id"],
-                    channel=FUTU_SIMULATE_CN_CHANNEL_ID, decision_id=intent["decision_id"],
-                    order_id=order.channel_order_id, correlation_id=intent["decision_id"],
-                    details={
-                        "side": order.side, "quantity": fill["quantity"],
-                        "cumulative_quantity": order.cumulative_filled_quantity,
-                        "average_fill_price": order.average_fill_price,
-                    },
-                )
             self.store.update_channel_order_report(order.channel_order_id, asdict(order))
             if order.status == "TIMEOUT":
                 self.store.set_virtual_health(

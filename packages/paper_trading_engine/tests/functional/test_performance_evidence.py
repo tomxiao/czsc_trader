@@ -65,11 +65,7 @@ def test_performance_export_rejects_invalid_period_before_reading_store(tmp_path
     assert not (tmp_path / "absent.json").exists()
 
 
-@pytest.mark.parametrize("count,flat", [(3, False), (20, False), (20, True)])
-def test_exported_performance_registers_with_sm_and_preserves_source(
-    new_store, pte_frozen, tmp_path, count, flat,
-):
-    context, version = pte_frozen
+def _export_window(new_store, tmp_path, count, flat, version):
     store = new_store(tmp_path / "forward.db")
     store.create_virtual_account(
         "forward", "Synthetic forward", version.release_id, version.release_hash, "100000",
@@ -115,6 +111,21 @@ def test_exported_performance_registers_with_sm_and_preserves_source(
     if count >= 20 and not flat:
         assert evidence["calmar_ratio"] > 0
         assert evidence["sharpe_ratio"] is not None
+    return result, output
+
+
+@pytest.mark.parametrize("count,flat", [(3, False), (20, True)])
+def test_exported_performance_window_boundaries(new_store, tmp_path, count, flat):
+    version = SimpleNamespace(
+        release_id="S900-v1", release_hash="a" * 64, strategy_id="S900", version="v1",
+    )
+    _export_window(new_store, tmp_path, count, flat, version)
+
+
+def test_exported_performance_registers_with_sm_and_preserves_source(new_store, pte_frozen, tmp_path):
+    context, version = pte_frozen
+    result, output = _export_window(new_store, tmp_path, 20, False, version)
+    evidence = result["evidence"]
 
     registry = StrategyRegistry(context.strategy_root)
     registered = registry.record_evidence(evidence, source_file=output)

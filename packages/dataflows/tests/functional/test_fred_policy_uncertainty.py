@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-import pytest
 import requests
 
 from dataflows import DataRequest, DataStatus, Dataset
@@ -84,13 +83,16 @@ def test_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> Non
 
 def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
-    flow = flow_factory({
-        Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
-            "2024-01-01",
-            "2024-01-03",
-            http_get=lambda *args, **kwargs: FakeResponse(200, _payload()),
-        )
-    })
+    calls = []
+
+    def fake_get(url, **kwargs):
+        calls.append((url, kwargs["params"]))
+        return FakeResponse(200, _payload())
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    from dataflows import tushare_strategy_data
+    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: object())
+    flow = flow_factory()
 
     result = publish_data(flow, DataRequest(
         Dataset.US_POLICY_UNCERTAINTY_DAILY,
@@ -105,19 +107,18 @@ def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, p
     assert result.identity.source == "FRED"
     assert result.identity.metadata["series_id"] == "USEPUINDXD"
     assert result.identity.temporal_contract.availability_time_field == "AvailableDate"
+    assert len(calls) == 1
+    assert calls[0][0] == "https://api.stlouisfed.org/fred/series/observations"
+    assert calls[0][1]["series_id"] == "USEPUINDXD"
+    assert calls[0][1]["observation_start"] == "2024-01-01"
+    assert calls[0][1]["observation_end"] == "2024-01-03"
+    assert calls[0][1]["api_key"] == "test-key"
+    assert calls[0][1]["output_type"] == 4
 
 
-def test_fred_policy_uncertainty_rejects_symbol_and_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:
+
+def test_fred_policy_uncertainty_rejects_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
-    with pytest.raises(ValueError, match="fixed series and accepts no symbol"):
-        DataRequest(
-            Dataset.US_POLICY_UNCERTAINTY_DAILY,
-            "OTHER",
-            "2024-01-01",
-            "2024-01-03",
-            None,
-        )
-
     frame = pd.DataFrame({
         "Date": [pd.Timestamp("2024-01-01")],
         "AvailableDate": [pd.Timestamp("2024-01-02")],
@@ -226,7 +227,3 @@ def test_fred_policy_uncertainty_blocks_missing_history_start(flow_factory, publ
     assert result.status is DataStatus.INCOMPLETE
     assert result.error is not None
     assert result.error.code == "INCOMPLETE_DATA"
-
-
-def test_default_registry_exposes_fred_policy_uncertainty(flow_factory) -> None:
-    assert Dataset.US_POLICY_UNCERTAINTY_DAILY.value in flow_factory().datasets

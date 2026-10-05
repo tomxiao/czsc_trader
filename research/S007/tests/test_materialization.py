@@ -11,7 +11,7 @@ import pytest
 from dataflows import DataSpace
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location(
     "s007_materialize", ROOT / "research/S007/materialize_features.py",
 )

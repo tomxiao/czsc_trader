@@ -159,18 +159,31 @@ def test_fxcm_available_timestamp_blocks_next_morning_and_allows_declared_bounda
     assert aligned.dataframe.BidClose.iloc[2] == pytest.approx(7.11)
 
 
+@pytest.fixture(scope="module")
+def fxcm_source():
+    return fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
+
+
 @pytest.mark.parametrize("dataset,symbol", [(Dataset.FXCM_DAILY,"XAUUSD.FXCM"),(Dataset.USDCNH_DAILY,None)])
-def test_fxcm_facade_rejects_missing_or_early_availability(flow_factory, publish_data, dataset, symbol) -> None:
-    frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
+@pytest.mark.parametrize("defect", ["missing", "early"])
+def test_fxcm_facade_rejects_missing_or_early_availability(
+    clone_published_flow, publish_data, fxcm_source, dataset, symbol, defect,
+) -> None:
+    frame, metadata = fxcm_source
     request = DataRequest(dataset, symbol, "2026-09-15", "2026-09-15", None)
-    supplied_frame = frame
-    flows = flow_factory({dataset.value: lambda _: (supplied_frame, metadata)})
-    ready = publish_data(flows, request)
-    assert ready.status is DataStatus.READY
-    supplied_frame = frame.drop(columns="AvailableDate")
-    assert publish_data(flows, request).status is DataStatus.FAILED
-    supplied_frame = frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
-    assert publish_data(flows, request).status is DataStatus.FAILED
+    supplied_frame = frame.copy(deep=True)
+    flows, ready = clone_published_flow(dataset.value, {
+        dataset: lambda _: (supplied_frame, metadata.copy()),
+    }, request)
+    supplied_frame = (frame.drop(columns="AvailableDate") if defect == "missing"
+                      else frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00")))
+    failed = publish_data(flows, request)
+    assert failed.status is DataStatus.FAILED
+    assert failed.error.code == "DATA_CONTRACT_MISMATCH"
+    assert failed.error.message == (
+        "provider availability time field is unavailable" if defect == "missing"
+        else "FXCM daily availability differs from the conservative session policy"
+    )
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 

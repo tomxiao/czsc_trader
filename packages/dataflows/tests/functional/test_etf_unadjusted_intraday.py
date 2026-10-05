@@ -109,30 +109,36 @@ def test_raw_intraday_rejects_nonintraday_frequency_before_fetch(monkeypatch, fr
         request(frequency)
 
 
-def test_raw_intraday_facade_rejects_false_timing_or_price_claims(flow_factory, publish_data, monkeypatch):
-    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
-    frame, meta = tushare_etf.fetch_etf_unadjusted_intraday(
-        "518850.SH", "2026-09-29", "2026-09-29", "5m")
-    supplied_frame, supplied_meta = frame, meta
-    flows = flow_factory({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (supplied_frame, supplied_meta)})
-    ready = publish_data(flows, request())
-    assert ready.ready, ready.error
-    # Reuse the reconciled vendor frame and data space; mutate fresh copies so
-    # every rejected claim exercises its own boundary against a valid baseline.
-    for mutation in ("early", "missing", "hfq", "verified", "basis"):
-        supplied_frame, supplied_meta = frame.copy(deep=True), meta.copy()
-        if mutation == "early":
-            supplied_frame.AvailableDate -= pd.Timedelta(minutes=5)
-        elif mutation == "missing":
-            supplied_frame = supplied_frame.drop(columns="AvailableDate")
-        elif mutation == "hfq":
-            supplied_meta["adjustment"] = "hfq"
-        elif mutation == "verified":
-            supplied_meta["source_publication_timestamp_verified"] = True
-        else:
-            supplied_meta["availability_basis"] = "VERIFIED_LIVE_FEED"
-        result = publish_data(flows, request())
-        assert result.status is DataStatus.FAILED, mutation
-        assert result.error.code == "DATA_CONTRACT_MISMATCH", mutation
+@pytest.fixture(scope="module")
+def raw_intraday_source():
+    # Patch only the vendor transport while generating the immutable source once.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
+        return tushare_etf.fetch_etf_unadjusted_intraday(
+            "518850.SH", "2026-09-29", "2026-09-29", "5m")
+
+
+@pytest.mark.parametrize("mutation", ["early", "missing", "hfq", "verified", "basis"])
+def test_raw_intraday_facade_rejects_false_timing_or_price_claims(
+    clone_published_flow, publish_data, raw_intraday_source, mutation,
+):
+    frame, meta = raw_intraday_source
+    supplied_frame, supplied_meta = frame.copy(deep=True), meta.copy()
+    flows, ready = clone_published_flow("raw-intraday", {
+        Dataset.ETF_UNADJUSTED_INTRADAY: lambda _: (supplied_frame, supplied_meta),
+    }, request())
+    if mutation == "early":
+        supplied_frame.AvailableDate -= pd.Timedelta(minutes=5)
+    elif mutation == "missing":
+        supplied_frame = supplied_frame.drop(columns="AvailableDate")
+    elif mutation == "hfq":
+        supplied_meta["adjustment"] = "hfq"
+    elif mutation == "verified":
+        supplied_meta["source_publication_timestamp_verified"] = True
+    else:
+        supplied_meta["availability_basis"] = "VERIFIED_LIVE_FEED"
+    result = publish_data(flows, request())
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
     old = flows.fetch(request(), prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256

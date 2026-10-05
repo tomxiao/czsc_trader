@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from hashlib import sha256
+import sqlite3
 
 import pandas as pd
 import pytest
 
 from dataflows import (
     DataRequest,
+    DataTemporalContract,
+    PreparePolicy,
     EvidenceParameters,
     DataStatus,
     Dataset,
@@ -52,50 +55,28 @@ def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publis
     assert first.identity.metadata["source_calendar"] == "SOURCE_NATIVE"
     assert first.identity.metadata["available_at"] == "SOURCE_PERIOD_CLOSE"
     assert first.identity.metadata["request_range_policy"] == "EXACT"
+    assert first.identity.temporal_contract == DataTemporalContract(
+        "Date", "Date", "SOURCE_NATIVE", "SOURCE_PERIOD_CLOSE", "EXACT",
+    )
     assert first.identity.content_sha256 == second.identity.content_sha256
     first.dataframe.loc[0, "Close"] = 99
     assert source.loc[0, "Close"] == 1.1
 
 
-def test_ready_result_validates_declared_source_time_metadata(flow_factory, publish_data) -> None:
-    result = publish_data(flow_factory(
-        {
-            Dataset.FXCM_DAILY.value: lambda request: (
-                pd.DataFrame(
-                    {
-                        "Date": ["2026-09-15"],
-                        "BidOpen": [1.0],
-                        "BidHigh": [1.1],
-                        "BidLow": [0.9],
-                        "BidClose": [1.0],
-                        "AskOpen": [1.1],
-                        "AskHigh": [1.2],
-                        "AskLow": [1.0],
-                        "AskClose": [1.1],
-                        "TickQuantity": [10.0],
-                    }
-                ),
-                {
-                    "vendor": "test",
-                    "source_time_field": "Missing",
-                    "source_calendar": "FXCM_24X5",
-                    "available_at": "GMT daily close",
-                },
-            )
-        }
-    ),
-        DataRequest(
-            Dataset.FXCM_DAILY,
-            "XAUUSD.FXCM",
-            "2026-09-15",
-            "2026-09-15",
-            "2026-09-15",
-        )
-    )
-
+@pytest.mark.parametrize("field", ["source_time_field", "availability_time_field"])
+def test_ready_result_validates_declared_source_time_metadata(flow_factory, publish_data, field) -> None:
+    frame = pd.DataFrame({"Date": ["2026-09-15"], "OvernightRate": [1.0]})
+    metadata = {"vendor": "test", "source_time_field": "Date", "availability_time_field": "Date"}
+    flows = flow_factory({Dataset.SHIBOR_DAILY: lambda _: (frame, metadata)})
+    request = DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None)
+    baseline = publish_data(flows, request)
+    assert baseline.ready, baseline.error
+    metadata[field] = "Missing"
+    result = publish_data(flows, request)
     assert result.status is DataStatus.FAILED
-    assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    assert result.error.context[field] == "Missing"
+    assert result.error.message == f"provider {'source' if field == 'source_time_field' else 'availability'} time field is unavailable"
 
 
 def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:
@@ -197,17 +178,26 @@ def test_date_only_end_includes_intraday_rows(flow_factory, publish_data) -> Non
     assert result.status is DataStatus.READY
 
 
-def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, publish_data) -> None:
+def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, publish_data, tmp_path) -> None:
     frame = _frame()
     frame.loc[1, "High"] = 0.5
+    calls = []
 
-    result = publish_data(flow_factory(
-        {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test"})}
-    ), _request())
+    def provider(request):
+        calls.append(request)
+        return frame, {"vendor": "test"}
 
+    flows = flow_factory({Dataset.ETF_OHLCV: provider})
+    result = publish_data(flows, _request())
     assert result.status is DataStatus.FAILED
-    assert result.error is not None
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    with sqlite3.connect(tmp_path / "space-0" / "assets.sqlite3") as connection:
+        assert [connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                for table in ("assets", "asset_lookup", "preparations")] == [0, 0, 0]
+    frame.loc[1, "High"] = 1.3
+    recovered = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    assert recovered.ready and len(calls) == 2
+    assert flows.fetch(_request(), prepared=recovered.reference).dataframe.High.tolist() == [1.2, 1.3]
 
 
 def test_facade_blocks_invalid_calendar_before_ready(flow_factory, publish_data) -> None:
@@ -265,6 +255,10 @@ def test_multi_entity_dataset_uses_declared_primary_key(flow_factory, publish_da
 
 def test_default_registry_covers_all_active_frozen_strategy_inputs(flow_factory) -> None:
     expected = {
+        Dataset.US_POLICY_UNCERTAINTY_DAILY.value,
+        Dataset.FUTURES_SHFE_GOLD_DAILY.value,
+        Dataset.FUTURES_SHFE_GOLD_MAPPING.value,
+        Dataset.FUTURES_SHFE_GOLD_HOLDING.value,
         Dataset.ETF_OHLCV.value,
         Dataset.ETF_UNADJUSTED_DAILY.value,
         Dataset.SHIBOR_DAILY.value,

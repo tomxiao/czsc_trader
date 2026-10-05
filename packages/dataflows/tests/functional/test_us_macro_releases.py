@@ -97,6 +97,7 @@ def test_pmi_fails_closed_on_invalid_source_or_calendar(flow_factory, publish_da
         Dataset.US_ISM_PMI_RELEASE, None, "2024-01-12", "2024-01-12", None
     ))
     assert result.status is expected
+    assert result.error.code == ("INCOMPLETE_DATA" if gap else "DATA_CONTRACT_MISMATCH")
     assert result.identity is None
 
 

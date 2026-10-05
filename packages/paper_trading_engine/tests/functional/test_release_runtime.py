@@ -239,23 +239,37 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
     assert calls[0][-1] == str(runtime / "shared" / "config")
 
 
-def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen):
-    repo = (tmp_path / "repo").resolve()
-    build_root = (repo / ".build" / "pte").resolve()
-    runtime = (tmp_path / "pte-runtime").resolve()
-    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
-    runner = FakeReleaseRunner()
-    fetch_sdist, pinned_runner = _source_build_fakes(runner)
+@pytest.fixture(scope="module")
+def release_build_cache():
+    return {}
 
-    built_result = build_release(
-        repo_root=repo,
-        build_root=build_root,
-        release_id="v0.4.1",
-        source_python=Path("C:/Python/python.exe"),
-        uv_executable=Path("C:/uv/uv.exe"),
-        source_distribution_fetcher=fetch_sdist,
-        runner=pinned_runner,
-    )
+
+@pytest.fixture
+def built_release_copy(request, frozen_seed_root, release_build_cache, tmp_path):
+    """Run the tagged build once; every publication owns an independent bundle."""
+    if not release_build_cache:
+        repo = frozen_seed_root / "release-repo"
+        build_root = repo / ".build" / "pte"
+        _create_tagged_release_repo(repo, request.getfixturevalue("pte_frozen")[0].strategy_root)
+        runner = FakeReleaseRunner()
+        fetch_sdist, pinned_runner = _source_build_fakes(runner)
+        result = build_release(
+            repo_root=repo, build_root=build_root, release_id="v0.4.1",
+            source_python=Path("C:/Python/python.exe"), uv_executable=Path("C:/uv/uv.exe"),
+            source_distribution_fetcher=fetch_sdist, runner=pinned_runner,
+        )
+        release_build_cache.update(repo=repo, root=build_root, result=result, commands=runner.commands)
+    build_root = tmp_path / "repo" / ".build" / "pte"
+    shutil.copytree(release_build_cache["root"], build_root)
+    return build_root, release_build_cache
+
+
+def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_release_copy):
+    build_root, build = built_release_copy
+    repo = build_root.parent.parent
+    runtime = (tmp_path / "pte-runtime").resolve()
+    built_result = build["result"]
+    runner = FakeReleaseRunner()
 
     built = load_built_release(build_root, "v0.4.1")
     assert built_result["build"]["release_id"] == "v0.4.1"
@@ -267,15 +281,15 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
     assert not (built.release_root / ".source-archives").exists()
     assert not runtime.exists()
     assert not (built.release_root / "experiments").exists()
-    wheel_commands = [command for command in runner.commands if command[1] == "build"]
+    wheel_commands = [command for command in build["commands"] if command[1] == "build"]
     assert len(wheel_commands) == len(PTE_LOCAL_PROJECTS) + len(PTE_SOURCE_DISTRIBUTIONS)
     assert sum(
         not str(command[-1]).endswith((".tar.gz", ".zip"))
         for command in wheel_commands
     ) == len(PTE_LOCAL_PROJECTS)
-    wheelhouse = next(command for command in runner.commands if "--constraint" in command)
+    wheelhouse = next(command for command in build["commands"] if "--constraint" in command)
     assert wheelhouse[wheelhouse.index("--cache-dir") + 1] == str(
-        repo / ".tmp" / "pte-release" / "pip"
+        build["repo"] / ".tmp" / "pte-release" / "pip"
     )
     assert wheelhouse[wheelhouse.index("--only-binary") + 1] == ":all:"
 
@@ -355,19 +369,11 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
 
 
 def test_publish_watchdog_host_has_independent_identity_and_rejects_tampering(
-    tmp_path, pte_frozen,
+    tmp_path, built_release_copy,
 ):
-    repo = (tmp_path / "repo").resolve()
-    build_root = repo / ".build" / "pte"
+    build_root, _ = built_release_copy
     runtime = tmp_path / "runtime"
-    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
     runner = FakeReleaseRunner()
-    fetch_sdist, pinned_runner = _source_build_fakes(runner)
-    build_release(
-        repo_root=repo, build_root=build_root, release_id="v0.4.1",
-        uv_executable=Path("uv"), runner=pinned_runner,
-        source_distribution_fetcher=fetch_sdist,
-    )
     kwargs = dict(
         build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
         host_version="v1.0.0", uv_executable=Path("uv"), runner=runner,

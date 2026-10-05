@@ -562,6 +562,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     service.close()
     store.close()
 
+def test_legacy_database_with_active_trading_records_is_rejected(tmp_path):
     legacy = tmp_path / "unsafe-legacy.db"
     connection = sqlite3.connect(legacy)
     connection.executescript(
@@ -579,6 +580,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     with pytest.raises(RuntimeError, match="requires empty legacy trading tables"):
         PaperStore(legacy)
 
+def test_empty_legacy_database_migrates_with_audit(tmp_path):
     safe_legacy = tmp_path / "safe-legacy.db"
     connection = sqlite3.connect(safe_legacy)
     connection.executescript(

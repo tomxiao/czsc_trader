@@ -1,3 +1,4 @@
+import http.client
 import json
 from copy import deepcopy
 from threading import Event, Thread
@@ -422,3 +423,26 @@ def test_channel_cash_reconciliation_includes_internal_frozen_cash(new_store, tm
     assert snapshot["cash_difference"] == pytest.approx(0.0)
     assert "CHANNEL_CASH_MISMATCH" not in snapshot["alerts"]
     store.close()
+
+
+def test_static_resource_rejects_parent_absolute_and_encoded_paths():
+    server = create_server(SimpleNamespace(system_status=lambda: {}), port=0)
+    worker = Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        for suffix in (
+            "../web.py", "..\\web.py", "%2e%2e%2fweb.py", "C:/Windows/win.ini",
+            "../../../../../pyproject.toml", "app.js:stream", "%252e%252e/web.py",
+        ):
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=3)
+            try:
+                connection.request("GET", "/static/" + suffix)
+                response = connection.getresponse()
+                assert response.status == 404, suffix
+                response.read()
+            finally:
+                connection.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join(3)

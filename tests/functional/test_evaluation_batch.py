@@ -9,7 +9,7 @@ import time
 import pandas as pd
 import pytest
 from dataflows import Dataset
-from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, ExperimentResources
+from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, EvaluationRecord, ExperimentResources
 from czsc_trader.research_tools import EvaluationExecutionError
 from czsc_trader.research_tools.evaluation import evaluate_strategy
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
@@ -113,8 +113,13 @@ def test_batch_evidence_write_failure_raises(batch, monkeypatch):
     with pytest.raises(EvaluationExecutionError) as error:
         context.evaluation.evaluate_many((request, request))
     assert error.value.error_code == "EVIDENCE_WRITE_FAILED"
+    assert len(context.trace.evaluations) == 2
+    assert len({x.attempt_id for x in context.trace.evaluations}) == 2
     assert all(x.status is not EvaluationAttemptStatus.SUCCEEDED for x in context.trace.evaluations)
     assert all(x.status is not EvaluationAttemptStatus.STARTED for x in context.trace.evaluations)
+    for record in context.trace.evaluations:
+        saved = context.workspace.path(f"evaluations/{record.attempt_id}/record.json")
+        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == record
 
 
 def test_batch_context_owner_and_completed_guards(batch):
@@ -128,11 +133,26 @@ def test_batch_context_owner_and_completed_guards(batch):
         context.evaluation.evaluate_many((request,))
 
 
-def test_default_formal_evaluator_transport(batch):
+def test_default_formal_evaluator_transport_and_execution(managed_evaluation):
     from czsc_trader.research_tools._evaluation_workers import PlatformEvaluator, pack
-    context, request = batch
+    context, request = managed_evaluation
+    context.resources = context.evaluation._resources = ExperimentResources(2, 1)
+    assert isinstance(context.evaluation._batch_evaluator, PlatformEvaluator)
     assert pack((PlatformEvaluator(request.repository_root), request, 1))
     assert pack(evaluate_strategy)
+    requests = (request, replace(request, initial_cash=200_000))
+    outcomes = context.evaluation.evaluate_many(requests)
+    assert len(outcomes) == len(requests) == 2
+    assert len({item.record.attempt_id for item in outcomes}) == 2
+    assert [item.record for item in outcomes] == list(context.trace.evaluations)
+    for item, original in zip(outcomes, requests):
+        assert item.record.status is EvaluationAttemptStatus.SUCCEEDED
+        assert item.result is not None and len(item.result.runs) == 1
+        assert item.result.attempt_id == item.record.attempt_id
+        assert item.result.runs[0].execution.account_daily.iloc[0].cash_before == original.initial_cash
+        saved = context.workspace.path(f"evaluations/{item.record.attempt_id}/record.json")
+        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == item.record
+        context.workspace.validate_artifact(item.record.result_artifact)
 
 
 def test_platform_worker_rejects_missing_parent_preparation(batch):
@@ -147,5 +167,11 @@ def test_dead_worker_is_unknown_and_never_success(batch):
     context, request = batch
     context.evaluation._batch_evaluator = terminated_worker
     outcomes = context.evaluation.evaluate_many((request, request))
+    assert len(outcomes) == 2
+    assert len({x.record.attempt_id for x in outcomes}) == 2
+    assert [x.record for x in outcomes] == list(context.trace.evaluations)
     assert all(x.record.status is EvaluationAttemptStatus.UNKNOWN for x in outcomes)
     assert all(x.result is None and x.record.completed_count is None for x in outcomes)
+    for item in outcomes:
+        saved = context.workspace.path(f"evaluations/{item.record.attempt_id}/record.json")
+        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == item.record

@@ -261,7 +261,7 @@ def test_missing_recovered_release_can_be_repaired_once_with_audit(new_store, tm
     store.close()
 
 
-def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_store, tmp_path):
+def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_store, tmp_path, monkeypatch):
     store = new_store(tmp_path / "runtime.db")
     store.create_virtual_account(
         "s001-v1", "S001-v1模拟账户", "legacy", "a" * 64, 100_000,
@@ -342,7 +342,29 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
             average_fill_price=1.676,
         ),), quantity=1000,
     )
+    original_insert = store._insert_audit_event
+
+    def fail_fill_audit(event):
+        if event.event_type == "ORDER_FILLED":
+            raise RuntimeError("fill audit unavailable")
+        return original_insert(event)
+
+    monkeypatch.setattr(store, "_insert_audit_event", fail_fill_audit)
+    account_before = store.virtual_account("s001-v1")
+    with pytest.raises(RuntimeError, match="fill audit unavailable"):
+        execution.refresh_orders()
+    assert store.virtual_account("s001-v1") == account_before
+    assert len(store.account_fills("s001-v1")) == 1
+    assert store.account_order(submitted.channel_order_id)["cumulative_filled_quantity"] == 400
+    assert store.query_audit_events(event_type="ORDER_FILLED") == []
+    store.close()
+    store = PaperStore(tmp_path / "runtime.db")
+    execution = FutuExecution(store, broker, today=lambda: date(2026, 9, 2))
+    next_accounts = AccountEngine(store, next_advice)
     execution.refresh_orders()
+    execution.refresh_orders()
+    assert len(broker.placed) == 1
+    assert store.account_invariant_violations() == []
     assert store.virtual_account("s001-v1")["quantity"] == 1000
     assert store.virtual_account("s001-v1")["health"] == "READY"
     next_accounts.refresh_account(
@@ -487,6 +509,8 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
             ),
         ),
     )
+    store.close()
+    store = PaperStore(tmp_path / "runtime.db")
     restarted = FutuExecution(
         store, broker, now=lambda: datetime(2026, 9, 3, 3, 29, 5, tzinfo=timezone.utc),
     )
@@ -936,3 +960,66 @@ def test_operator_supersession_rolls_back_as_one_transaction(new_store, tmp_path
     assert store.query_audit_events(event_type="DECISION_SUPERSEDED") == []
     assert store.query_audit_events(event_type="ORDER_INTENT_SUPERSEDED") == []
     store.close()
+
+
+@pytest.mark.parametrize("existing_quantity", [0, 100])
+def test_core_setup_partial_and_duplicate_fills_are_exactly_once(new_store, tmp_path, existing_quantity):
+    store = new_store(tmp_path / "partial.db")
+    try:
+        store.create_virtual_account(
+            "core", "test", "legacy", "a" * 64, 100000,
+            strategy_id="S003", strategy_name_snapshot="test", strategy_version="v1",
+            release_hash="c" * 64, qualification_snapshot="PAPER_READY",
+            selection_data_cutoff="2026-09-08", symbol="510500.SH",
+        )
+        [intent] = store.create_account_plan_intents(
+            account_id="core", decision_id="DEC-TEST", symbol="510500.SH",
+            valid_session="2026-09-14", fee_rate="0.0005", legs=[{
+                "sequence": 0, "side": "BUY", "quantity": 1000, "order_type": "LIMIT",
+                "limit_price": "7.5000", "plan_mode": "CORE_SETUP", "role": "CORE_SETUP",
+                "checkpoint": "OPEN", "submit_after": "09:30:00", "submit_before": "09:35:00",
+                "dependency_sequence": None, "dependency_required_status": None,
+            }],
+        )
+        assert store.claim_account_intent(intent["intent_id"])
+        store.bind_channel_order(intent["intent_id"], "order", {
+            "channel_order_id": "order", "symbol": "510500.SH", "side": "BUY",
+            "quantity": 1000, "limit_price": 7.5, "status": "SUBMITTED",
+            "cumulative_filled_quantity": 0, "average_fill_price": 0,
+            "remark": intent["intent_id"],
+        })
+        def fill(quantity, price="7.4"):
+            return store.apply_fill_increment(
+                "order", cumulative_quantity=quantity, average_price=price,
+                occurred_at="2026-09-14T01:31:00+00:00",
+            )
+        if existing_quantity:
+            with store._lock, store._connection:
+                store._connection.execute(
+                    "UPDATE virtual_accounts SET quantity=? WHERE account_id='core'",
+                    (existing_quantity,),
+                )
+            before = store.virtual_account("core")
+            with pytest.raises(ValueError, match="initially flat"):
+                fill(400)
+            assert store.virtual_account("core") == before
+            assert store.account_fills("core") == []
+            return
+        fill(400)
+        assert store.virtual_account("core")["quantity"] == 400
+        assert fill(400) is None
+        fill(700, "7.4")
+        fill(1000, "7.43")
+        final = store.virtual_account("core")
+        assert final["quantity"] == final["cycle_target"] == 1000
+        assert float(final["cash"]) + float(final["frozen_cash"]) == pytest.approx(92566.285)
+        assert fill(1000, "7.43") is None
+        assert len(store.account_fills("core")) == 3
+        assert store.account_invariant_violations() == []
+        with pytest.raises(ValueError, match="cannot decrease"):
+            fill(999)
+        with pytest.raises(ValueError, match="exceeds"):
+            fill(1001)
+        assert store.virtual_account("core") == final
+    finally:
+        store.close()

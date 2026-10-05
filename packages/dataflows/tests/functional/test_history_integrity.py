@@ -398,6 +398,9 @@ def test_510500_extrema_repair_uses_complete_minute_evidence(frequency: str) -> 
     drifted.loc[dates.eq(days[0]), "Low"] = 6.84
     with pytest.raises(DataRepairError, match="unknown extrema signature"):
         apply_repairs_once(drifted, series, findings, references=references)
+
+
+def test_510500_unknown_minute_extrema_are_rejected():
     # These daily extremes are absent from the 1m source: keep the failure.
     unknown = _daily(["2020-03-17"])
     unknown_minute = _one_minute_day("2020-03-17").iloc[1:].reset_index(drop=True)

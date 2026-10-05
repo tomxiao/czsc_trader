@@ -87,6 +87,7 @@ def test_raw_stock_intraday_publishes_requested_window_with_daily_reconciliation
     assert {call["freq"] for call in calls} == {"D", "5min"}
     if mismatch:
         assert result.status is DataStatus.FAILED
+        assert result.error.code == "DATA_CONTRACT_MISMATCH"
         assert result.dataframe.empty
         return
     assert result.status is DataStatus.READY, result.error

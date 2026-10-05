@@ -69,13 +69,21 @@ def test_close_only_index_publishes_verified_close_with_causal_identity(flow_fac
     assert full.status is DataStatus.FAILED
     assert full.error is not None and full.error.code == "DATA_CONTRACT_MISMATCH"
     assert "open" not in pro.fields[0]
-    for defect in ("bad_change", "bad_close"):
-        pro.bad_change, pro.bad_close = defect == "bad_change", defect == "bad_close"
-        result = publish_data(flows, _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY))
-        assert result.status is DataStatus.FAILED, defect
-        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH", defect
-    old = flows.fetch(_request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY), prepared=close.prepared)
-    assert old.ready and old.identity.content_sha256 == close.identity.content_sha256
+
+
+@pytest.mark.parametrize("defect", ["bad_change", "bad_close"])
+def test_close_only_rejects_invalid_source(clone_published_flow, publish_data, defect):
+    pro = _IndexPro()
+    request = _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY)
+    flows, ready = clone_published_flow("close-only", {
+        request.dataset: lambda r: fetch_domestic_index_close_daily(r.symbol, r.start, r.end, pro=pro),
+    }, request)
+    setattr(pro, defect, True)
+    result = publish_data(flows, request)
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    old = flows.fetch(request, prepared=ready.prepared)
+    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
 def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contract(flow_factory, publish_data) -> None:
@@ -113,60 +121,57 @@ def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contr
     assert full.status is DataStatus.FAILED
 
 
-def test_close_turnover_rejects_invalid_vendor_fields_and_duplicate_dates(flow_factory, publish_data) -> None:
+@pytest.mark.parametrize("overrides,duplicate", [
+    ({"close": None}, False), ({"change": -9.0}, False), ({"pct_chg": -0.3}, False),
+    ({"vol": None}, False), ({"vol": -1.0}, False), ({"amount": None}, False),
+    ({"amount": -1.0}, False), ({}, True),
+], ids=["missing-close", "change", "percentage", "missing-volume", "negative-volume",
+        "missing-amount", "negative-amount", "duplicate-date"])
+def test_close_turnover_rejects_invalid_vendor_fields_and_duplicate_dates(
+    clone_published_flow, publish_data, overrides, duplicate,
+) -> None:
     pro = _IndexPro()
-    flows = flow_factory(providers={
-        Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda request:
-            fetch_domestic_index_close_turnover_daily(
-                request.symbol, request.start, request.end, pro=pro,
-            ),
-    })
-
     request = _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY)
-    ready = publish_data(flows, request)
-    assert ready.ready, ready.error
-    # One published baseline; each independent source defect is a failed refresh.
-    # Restore the fake vendor for every mutation so failures cannot mask each other.
-    for defect, overrides, duplicate in (
-        ("missing close", {"close": None}, False),
-        ("inconsistent change", {"change": -9.0}, False),
-        ("inconsistent percentage", {"pct_chg": -0.3}, False),
-        ("missing volume", {"vol": None}, False),
-        ("negative volume", {"vol": -1.0}, False),
-        ("missing amount", {"amount": None}, False),
-        ("negative amount", {"amount": -1.0}, False),
-        ("duplicate date", {}, True),
-    ):
-        pro.overrides, pro.duplicate = overrides, duplicate
-        result = publish_data(flows, request)
-        assert result.status is DataStatus.FAILED, defect
-        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH", defect
+    flows, ready = clone_published_flow("close-turnover", {
+        request.dataset: lambda request: fetch_domestic_index_close_turnover_daily(
+            request.symbol, request.start, request.end, pro=pro,
+        ),
+    }, request)
+    pro.overrides, pro.duplicate = overrides, duplicate
+    result = publish_data(flows, request)
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
-def test_close_turnover_facade_rejects_false_metadata(flow_factory, publish_data) -> None:
-    frame, metadata = fetch_domestic_index_close_turnover_daily(
+@pytest.fixture(scope="module")
+def close_turnover_source():
+    return fetch_domestic_index_close_turnover_daily(
         "931994.CSI", "2024-09-09", "2024-09-09", pro=_IndexPro(),
     )
+
+
+@pytest.mark.parametrize("key,value", [
+    ("price_scope", "CLOSE_ONLY"), ("volume_unit", "share"),
+    ("amount_unit", "cny"), ("frequency", "weekly"),
+    ("available_at", "intraday"), ("vendor_update_window", "unknown"),
+    ("source_publication_timestamp_verified", True), ("historical_revision_history_verified", True),
+], ids=["scope", "volume-unit", "amount-unit", "frequency", "availability", "update-window",
+        "publication-claim", "revision-claim"])
+def test_close_turnover_facade_rejects_false_metadata(
+    clone_published_flow, publish_data, close_turnover_source, key, value,
+) -> None:
+    frame, metadata = close_turnover_source
     supplied_metadata = metadata.copy()
-    flows = flow_factory(providers={
-        Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY.value: lambda _request: (frame, supplied_metadata),
-    })
     request = _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY)
-    ready = publish_data(flows, request)
-    assert ready.ready, ready.error
-    for key, value in (
-        ("price_scope", "CLOSE_ONLY"), ("volume_unit", "share"),
-        ("amount_unit", "cny"), ("frequency", "weekly"),
-        ("available_at", "intraday"), ("vendor_update_window", "unknown"),
-        ("source_publication_timestamp_verified", True),
-        ("historical_revision_history_verified", True),
-    ):
-        supplied_metadata = {**metadata, key: value}
-        result = publish_data(flows, request)
-        assert result.status is DataStatus.FAILED, key
-        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH", key
+    flows, ready = clone_published_flow("close-turnover", {
+        request.dataset: lambda _: (frame.copy(deep=True), supplied_metadata),
+    }, request)
+    supplied_metadata[key] = value
+    result = publish_data(flows, request)
+    assert result.status is DataStatus.FAILED
+    assert result.error.code == "DATA_CONTRACT_MISMATCH"
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 

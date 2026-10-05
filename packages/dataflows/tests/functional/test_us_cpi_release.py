@@ -102,6 +102,7 @@ def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(flow_factory, 
     assert result.dataframe.empty
     assert result.identity is None
     assert result.error is not None
+    assert result.error.code == ("INCOMPLETE_DATA" if calendar_gap else "DATA_CONTRACT_MISMATCH")
 
 
 def test_us_cpi_release_rejects_missing_monthly_history(flow_factory, publish_data) -> None:
@@ -123,13 +124,11 @@ def test_us_cpi_release_rejects_missing_monthly_history(flow_factory, publish_da
     assert result.identity is None
 
 
-def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_factory, publish_data) -> None:
-    pro = FakeCpiPro([_row("20240112", "21:30")])
-    flow = flow_factory({
-        Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
-            "2024-01-12", "2024-01-12", pro=pro
-        )
-    })
+def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_factory, publish_data, monkeypatch) -> None:
+    from dataflows import tushare_strategy_data
+    pro = FakeCpiPro([{**_row("20240112", "21:30"), "forecast": "99.0%", "previous": "88.0%"}])
+    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: pro)
+    flow = flow_factory()
 
     result = publish_data(flow,
         DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", "2024-01-12")
@@ -139,7 +138,13 @@ def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_fac
     assert result.identity is not None
     assert result.identity.source == "tushare"
     assert result.identity.metadata["available_at"].startswith("first SSE open day")
-    assert "Forecast" not in result.dataframe.columns
+    assert set(result.dataframe.columns) == {"Date", "ReleaseAt", "YoYPercent", "AvailableDate"}
+    assert result.dataframe.YoYPercent.tolist() == [3.4]
+    assert len(pro.eco_calls) == 1
+    assert pro.eco_calls[0]["start_date"] == "20240112"
+    assert pro.eco_calls[0]["end_date"] == "20240112"
+    assert pro.eco_calls[0]["country"] == "美国"
+    assert pro.eco_calls[0]["fields"] == "date,time,country,event,value"
 
 
 def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider(flow_factory, publish_data) -> None:

@@ -635,11 +635,31 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
 
-def test_report_renders_sensitivity_rows_and_behavior_members(completed):
+def test_report_renders_sensitivity_rows_and_behavior_members(tmp_path):
     from czsc_trader.application.delivery_service import _report
 
-    context, _, _, _, _ = completed
-    definition, value = prepare(completed)
+    candidate = m.AssessmentCandidate("S900-C0001", "a" * 64)
+    evidence = m.AssessmentEvidence(
+        candidate, "20261001_S900_EX01", "1" * 32, "2" * 64,
+        "3" * 64, "4" * 64, "5" * 64, "full", "standard", "test-v1",
+        m.EvaluationScenarioContext(0.001, "FORMAL", "BuyHold", "BUYHOLD", "6" * 64),
+        1000.0, 1000.0, 0, 60,
+        (m.AccountPoint("2026-01-05", 1000.0, 0, 1.0, 1000.0),
+         m.AccountPoint("2026-01-06", 1000.0, 0, 1.0, 1000.0)),
+        (), (), (1000.0, 1000.0), None, None, "7" * 64, None,
+    )
+    assessment = assessment_request((evidence,))
+    panel = assess_candidates(assessment)
+    comparison = comparison_request(panel)
+    owner = d.ExperimentOwner("S900", "20261001_S900_EX01")
+    definition = d.DeliveryDefinition(owner, d.DeliveryStage.ASSESSMENT, 1)
+    value = content(d.CandidateAssessmentDelivery(
+        d.DeliveryReference(owner, d.DeliveryStage.CANDIDATES, 1, "a" * 64),
+        d.DeliveryReference(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, 1, "b" * 64),
+        assessment, panel, comparison, compare_candidates(comparison),
+        (d.TargetMandateBinding("net_annual_return", "return"),),
+        None, "benchmark", "展示合成自检结果", (), ("待用户决定",),
+    ))
     result = value.payload.comparison
     result = replace(
         result,
@@ -647,7 +667,7 @@ def test_report_renders_sensitivity_rows_and_behavior_members(completed):
         behavior_groups=(m.BehaviorGroup("f" * 64, (result.rows[0].candidate,)),),
     )
     rendered = _report(
-        definition, replace(value, payload=replace(value.payload, comparison=result)), context.root
+        definition, replace(value, payload=replace(value.payload, comparison=result)), tmp_path
     ).decode()
     assert "coarse-bins" in rendered and "f" * 64 in rendered
     assert "S900-C0001" in rendered and "逐项目标检查" in rendered

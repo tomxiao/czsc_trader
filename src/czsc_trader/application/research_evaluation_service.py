@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from datetime import date
+from contextlib import nullcontext
 from hashlib import sha256
 import json
 from pathlib import Path, PurePosixPath
 import shutil
-from typing import Any, Mapping
+from typing import Any, BinaryIO, Iterator, Mapping
 
 import pandas as pd
 from strategy_runtime import StrategyCandidate
@@ -39,6 +40,19 @@ def _exact(value: Mapping[str, object], expected: set[str], name: str) -> None:
     missing = sorted(expected - set(value))
     if unknown or missing:
         raise ValueError(f"{name} fields differ: missing={missing}, unknown={unknown}")
+
+
+def _json_number(value: object, name: str, *, integer: bool = False) -> int | float:
+    accepted = (int,) if integer else (int, float)
+    if type(value) not in accepted:
+        raise TypeError(f"{name} must be a JSON {'integer' if integer else 'number'}")
+    return value if integer else float(value)
+
+
+def _json_string(value: object, name: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{name} must be a JSON string")
+    return value
 
 
 def _safe_child(root: Path, value: object, field: str) -> Path:
@@ -81,7 +95,7 @@ def _evaluation_request(
         },
         "evaluation request",
     )
-    if raw["schema_version"] != 2 or raw["experiment_id"] != experiment.name:
+    if type(raw["schema_version"]) is not int or raw["schema_version"] != 2 or raw["experiment_id"] != experiment.name:
         raise ValueError("evaluation request schema or experiment identity is invalid")
 
     strategy_raw = raw["strategy"]
@@ -103,8 +117,8 @@ def _evaluation_request(
     )
     binding = _read_object(binding_path)
     candidate = StrategyCandidate(
-        str(strategy_raw["strategy_id"]),
-        str(strategy_raw["candidate_id"]),
+        _json_string(strategy_raw["strategy_id"], "strategy_id"),
+        _json_string(strategy_raw["candidate_id"], "candidate_id"),
         strategy_raw["strategy_payload"],
         runtime_root,
     )
@@ -113,7 +127,7 @@ def _evaluation_request(
     if not isinstance(market, dict):
         raise ValueError("evaluation market must be an object")
     _exact(market, {"symbol", "asset_type", "data_cutoff"}, "evaluation market")
-    cutoff = date.fromisoformat(str(market["data_cutoff"]))
+    cutoff = date.fromisoformat(_json_string(market["data_cutoff"], "data_cutoff"))
 
     raw_windows = raw["windows"]
     if not isinstance(raw_windows, list) or not raw_windows:
@@ -125,9 +139,9 @@ def _evaluation_request(
         _exact(item, {"window_id", "start", "end"}, "evaluation window")
         windows.append(
             EvaluationWindow(
-                str(item["window_id"]),
-                date.fromisoformat(str(item["start"])),
-                date.fromisoformat(str(item["end"])),
+                _json_string(item["window_id"], "window_id"),
+                date.fromisoformat(_json_string(item["start"], "start")),
+                date.fromisoformat(_json_string(item["end"], "end")),
             )
         )
 
@@ -150,9 +164,9 @@ def _evaluation_request(
         )
         costs.append(
             EvaluationCost(
-                str(item["scenario_id"]),
-                float(item["one_way_cost"]),
-                str(item["measurement_tier"]),
+                _json_string(item["scenario_id"], "scenario_id"),
+                _json_number(item["one_way_cost"], "one_way_cost"),
+                _json_string(item["measurement_tier"], "measurement_tier"),
             )
         )
 
@@ -175,16 +189,16 @@ def _evaluation_request(
         experiment_id=experiment.name,
         strategy=candidate,
         runtime_binding=binding,
-        symbol=str(market["symbol"]),
-        asset_type=str(market["asset_type"]),
+        symbol=_json_string(market["symbol"], "symbol"),
+        asset_type=_json_string(market["asset_type"], "asset_type"),
         windows=tuple(windows),
         data_cutoff=cutoff,
-        initial_cash=float(capital["initial_cash"]),
+        initial_cash=_json_number(capital["initial_cash"], "initial_cash"),
         costs=tuple(costs),
         benchmark=benchmark,
-        workers=int(execution["workers"]),
-        frequency_window_days=int(execution["frequency_window_days"]),
-        execution_mode=str(execution["mode"]),
+        workers=_json_number(execution["workers"], "workers", integer=True),
+        frequency_window_days=_json_number(execution["frequency_window_days"], "frequency_window_days", integer=True),
+        execution_mode=_json_string(execution["mode"], "mode"),
     )
 
 
@@ -205,9 +219,64 @@ def _write_json(path: Path, value: object) -> None:
     )
 
 
-def _write_frame(path: Path, frame: pd.DataFrame) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    frame.to_csv(path, index=False, encoding="utf-8", lineterminator="\n")
+def _evaluation_artifacts(result: EvaluationResult) -> Iterator[tuple[str, pd.DataFrame | dict]]:
+    """The complete output set, shared by publication and repeat verification."""
+    for run in result.runs:
+        if run.buyhold is None:
+            raise ValueError("research evaluation has no BuyHold evidence")
+        relative = PurePosixPath(run.window_id) / run.scenario_id
+        tables = {
+            "signals.csv": run.signals.decisions,
+            "decisions.csv": run.execution.decisions,
+            "orders.csv": run.execution.orders,
+            "fills.csv": run.execution.fills,
+            "account_daily.csv": run.execution.account_daily,
+            "trades.csv": run.execution.trades,
+            "buyhold_account_daily.csv": run.buyhold.account_daily,
+            "buyhold_orders.csv": run.buyhold.orders,
+        }
+        for name, frame in tables.items():
+            yield (relative / name).as_posix(), frame
+        for name, value in (
+            ("observation.json", run.observation.to_dict()),
+            ("buyhold_metrics.json", run.buyhold.metrics),
+        ):
+            yield (relative / name).as_posix(), value
+
+
+class _HashingTextWriter:
+    """Hash bounded serializer chunks, optionally writing the same UTF-8 bytes."""
+
+    def __init__(self, stream: BinaryIO | None):
+        self.stream = stream
+        self.digest = sha256()
+
+    def write(self, value: str) -> int:
+        encoded = value.encode("utf-8")
+        self.digest.update(encoded)
+        if self.stream is not None:
+            self.stream.write(encoded)
+        return len(value)
+
+
+def _artifact_hashes(result: EvaluationResult, destination: Path | None = None) -> dict[str, str]:
+    hashes = {}
+    for name, value in _evaluation_artifacts(result):
+        if destination is None:
+            output = nullcontext(None)
+        else:
+            path = _safe_child(destination, name, "evaluation artifact")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            output = path.open("wb")
+        with output as stream:
+            writer = _HashingTextWriter(stream)
+            if isinstance(value, pd.DataFrame):
+                value.to_csv(writer, index=False, lineterminator="\n", chunksize=10_000)
+            else:
+                json.dump(value, writer, ensure_ascii=False, indent=2, default=str)
+                writer.write("\n")
+            hashes[name] = writer.digest.hexdigest()
+    return hashes
 
 
 def _run_documents(result: EvaluationResult) -> list[dict[str, object]]:
@@ -264,6 +333,17 @@ def _publish_result(
         files = existing.get("files")
         if not isinstance(files, dict):
             raise ValueError("evaluation artifact manifest is missing")
+        expected_files = _artifact_hashes(result)
+        if set(files) != set(expected_files):
+            raise ValueError("evaluation artifact manifest has an incomplete or unexpected file set")
+        if files != expected_files:
+            raise ValueError("evaluation artifact hash differs from the repeated execution")
+        actual_files = {
+            path.relative_to(destination).as_posix()
+            for path in destination.rglob("*") if path.is_file()
+        }
+        if actual_files != set(expected_files) | {"evaluation_result.json"}:
+            raise ValueError("evaluation artifact directory has an incomplete or unexpected file set")
         for name, expected in files.items():
             target = _safe_child(destination, name, "evaluation artifact")
             if not target.is_file() or _file_hash(target) != expected:
@@ -278,37 +358,7 @@ def _publish_result(
     )
     try:
         run_documents = _run_documents(result)
-        files: dict[str, str] = {}
-        for run in result.runs:
-            relative = PurePosixPath(run.window_id) / run.scenario_id
-            run_dir = staging / Path(*relative.parts)
-            tables = {
-                "signals.csv": run.signals.decisions,
-                "decisions.csv": run.execution.decisions,
-                "orders.csv": run.execution.orders,
-                "fills.csv": run.execution.fills,
-                "account_daily.csv": run.execution.account_daily,
-                "trades.csv": run.execution.trades,
-            }
-            if run.buyhold is None:
-                raise ValueError("research evaluation has no BuyHold evidence")
-            tables.update(
-                {
-                    "buyhold_account_daily.csv": run.buyhold.account_daily,
-                    "buyhold_orders.csv": run.buyhold.orders,
-                }
-            )
-            for name, frame in tables.items():
-                target = run_dir / name
-                _write_frame(target, frame)
-                key = (relative / name).as_posix()
-                files[key] = _file_hash(target)
-            observation_path = run_dir / "observation.json"
-            _write_json(observation_path, run.observation.to_dict())
-            files[(relative / observation_path.name).as_posix()] = _file_hash(observation_path)
-            benchmark_path = run_dir / "buyhold_metrics.json"
-            _write_json(benchmark_path, run.buyhold.metrics)
-            files[(relative / benchmark_path.name).as_posix()] = _file_hash(benchmark_path)
+        files = _artifact_hashes(result, staging)
         document = {
             "schema_version": 2,
             "status": "PASS",

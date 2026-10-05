@@ -2593,7 +2593,7 @@ class PaperStore:
         self, channel_order_id: str, *, cumulative_quantity: int,
         average_price, occurred_at: str,
     ) -> dict[str, Any] | None:
-        """Apply the newly reported cumulative Futu fill exactly once."""
+        """Commit the new cumulative Futu fill, ledger and audit event atomically."""
         from decimal import Decimal
 
         if isinstance(cumulative_quantity, bool) or not isinstance(cumulative_quantity, int):
@@ -2728,6 +2728,19 @@ class PaperStore:
                     quantity, occurred_at,
                 ),
             )
+            self._insert_audit_event(self._new_audit_event(
+                "ORDER_FILLED" if cumulative_quantity >= int(intent["quantity"])
+                else "ORDER_PARTIALLY_FILLED",
+                source="futu_execution", account_id=order["account_id"],
+                strategy_id=account["strategy_id"], channel=intent["channel_id"],
+                decision_id=order["decision_id"], order_id=str(channel_order_id),
+                correlation_id=order["decision_id"],
+                details={
+                    "side": intent["side"], "quantity": increment,
+                    "cumulative_quantity": cumulative_quantity,
+                    "average_fill_price": float(avg),
+                },
+            ))
         return self.account_fill(fill_id)
 
     def account_fill(self, fill_id: str) -> dict[str, Any]:

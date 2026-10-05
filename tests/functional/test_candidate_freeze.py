@@ -38,8 +38,7 @@ def file_ref(root, path):
     )
 
 
-@pytest.fixture
-def inspection(completed):
+def _build_inspection(completed):
     context, old_execution, request, result, experiment = completed
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
         CandidateKey("S900", "C0001"), experiments_root=context.experiments_root
@@ -97,6 +96,57 @@ def inspection(completed):
         ("合成结果不代表收益证据",),
     )
     return context, inspection_request, source
+
+
+@pytest.fixture
+def inspection(request, tmp_path, frozen_seed_root, monkeypatch):
+    """Copy a real pre-inspection repository, retaining private contexts and frames."""
+    import pickle
+    from dataclasses import fields
+    import pandas as pd
+    from czsc_trader.application import load_candidate
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from test_candidate_runtime_execution import _install_candidate_dataflows
+
+    seed = frozen_seed_root / "inspection-input"
+    payload_path = frozen_seed_root / "inspection-input.pkl"
+    if not seed.exists():
+        context, original, source = _build_inspection(request.getfixturevalue("completed"))
+        payload = {
+            "root": context.root,
+            "definition": original.execution.definition,
+            "inspection": {field.name: getattr(original, field.name)
+                           for field in fields(original) if field.name != "execution"},
+            "source": source.relative_to(context.root),
+        }
+        shutil.copytree(context.root, seed)
+        payload_path.write_bytes(pack(payload))
+    payload = pickle.loads(payload_path.read_bytes())
+    root = tmp_path / "inspection-repo"
+    shutil.copytree(seed, root)
+    context = RepositoryContext.discover(root)
+    sessions = pd.bdate_range("2026-09-14", periods=6)
+    daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
+    flow = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
+    _install_candidate_dataflows(monkeypatch, flow, daily, base_dir=root)
+    execution = create_formal_experiment_context(
+        payload["definition"], data_space=DataSpace(Path("data/research")),
+        repository_root=root, resources=ExperimentResources(1, 1),
+        workspace=ExperimentWorkspace(root / ".tmp/inspection", root),
+    )
+    values = payload["inspection"]
+    replays = []
+    for replay in values["replays"]:
+        reproduction = replay.reproduction_request
+        data = reproduction.execution_data
+        reproduction = replace(
+            reproduction, repository_root=root,
+            strategy=load_candidate(context, values["candidate"]),
+            execution_data=replace(data, root=root / data.root.relative_to(payload["root"])),
+        )
+        replays.append(replace(replay, reproduction_request=reproduction))
+    values["replays"] = tuple(replays)
+    return context, CandidateInspectionRequest(**values, execution=execution), root / payload["source"]
 
 
 @pytest.fixture
@@ -498,6 +548,38 @@ def test_release_signal_divergence_blocks_freeze(inspection, monkeypatch):
     operation = approve(context, report, source)
     with pytest.raises(ValueError, match="complete passing"):
         freeze_candidate(context, operation)
+
+
+@pytest.mark.parametrize("check", [f.InspectionCheck.LEDGER_AUDIT, f.InspectionCheck.LEDGER_EQUIVALENCE])
+def test_failed_ledger_gate_blocks_freeze(inspection, monkeypatch, check):
+    from czsc_trader.application import inspection_service
+    from strategy_evaluator import AuditStatus, LedgerComparisonStatus
+
+    context, request, source = inspection
+    name = "audit_replay" if check is f.InspectionCheck.LEDGER_AUDIT else "compare_ledgers"
+    original = getattr(inspection_service, name)
+    calls = []
+    def failed(*args, **kwargs):
+        value = original(*args, **kwargs)
+        calls.append(value)
+        if check is f.InspectionCheck.LEDGER_AUDIT:
+            assert value.status is AuditStatus.PASS
+            return replace(value, status=AuditStatus.FAIL, reason_codes=("INJECTED_LEDGER_FAILURE",))
+        assert value.status is LedgerComparisonStatus.EQUIVALENT
+        return replace(value, status=LedgerComparisonStatus.DIFFERENT)
+    monkeypatch.setattr(inspection_service, name, failed)
+    report = inspect_candidate(context, request)
+    assert len(calls) == 2  # archived/current and candidate/frozen checks both ran
+    checks = {item.check: item.status for item in report.checks}
+    assert checks[check] is f.InspectionStatus.FAIL
+    assert checks[f.InspectionCheck.REPRODUCTION] is f.InspectionStatus.PASS
+    assert checks[f.InspectionCheck.SIGNAL_EQUIVALENCE] is f.InspectionStatus.PASS
+    assert report.status is f.InspectionStatus.FAIL
+    operation = approve(context, report, source)
+    with pytest.raises(ValueError, match="complete passing"):
+        freeze_candidate(context, operation)
+    assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
+    assert not context.strategy_root.exists()
 
 
 def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_candidate):
