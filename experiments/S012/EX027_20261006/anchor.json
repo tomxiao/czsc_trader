@@ -1,0 +1,147 @@
+{
+  "selector": "maximum net CAGR among complete freq>=5 and drawdown-strictly-better rows",
+  "proposal_id": "OPTUNA_0098",
+  "parameters": {
+    "allocation": 1.0,
+    "confirm_o01": false,
+    "cooldown": 0,
+    "entry_premium": 0.01,
+    "hold_days": 5,
+    "opportunity": "union",
+    "risk_exit": false,
+    "risk_gate": "none",
+    "trailing_stop": 0.0
+  },
+  "metrics": {
+    "benchmark": {
+      "cagr": 0.14286695282439799,
+      "calmar": 0.4716539362753617,
+      "closed_trades": 0,
+      "max_drawdown": -0.30290630870721535,
+      "return": 1.2544321200000002,
+      "sharpe": 0.8687575596978847,
+      "win_loss_ratio": null,
+      "win_loss_ratio_status": "NO_CLOSED_TRADES",
+      "win_rate": null
+    },
+    "closed_trades": 132,
+    "evaluation_sessions": 1534,
+    "exposure": 0.42894393741851367,
+    "fills": 268,
+    "final_equity": 181502.90819999977,
+    "final_quantity": 20400,
+    "frequency": 5.159609120521172,
+    "frequency_denominator": 1535,
+    "goals": [
+      false,
+      true,
+      true
+    ],
+    "max_drawdown": -0.20930664842761193,
+    "mode": "RESEARCH_SCREENING_EQUIVALENT_SUBSET_NOT_FULL",
+    "net_cagr": 0.10288051582702451,
+    "orders": 274,
+    "passed_all": false,
+    "total_fees": 31842.4918
+  },
+  "behavior_sha256": "93e1de8ce27fc99bd784ec3f344c7cf9b29edb8646f229c20e2ad9db246d3b84",
+  "formal_parent_execution": "FAILED_AFTER_ALL_COMPUTATION",
+  "complete_parent_rex_receipt": false,
+  "parent_manifest_sha256": "06265f829d062568714de0c0b34a2102e22e400784ede600380b2f93b7123a08",
+  "search_sha256": "96503ecd015263506439c5c1e90131655682101b762c8e098c605b7cf1a48292",
+  "failure_sha256": "ceacb4aeefacac6c561a400ae91116da0db05f13f946f955bff1c11975e154b0",
+  "post_compute_failure_sha256": "003b068a1675f4b5e89dbc0efb736bd69d1fdbff84c9076833f200d7914f4034",
+  "bundle_sha256": "828780c983d26dff9ee2d7898049900ef43e3e11013fa8a15c3ad392dc43dc87",
+  "parent_domains": {
+    "allocation": {
+      "choices": [
+        0.5,
+        1.0
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "confirm_o01": {
+      "choices": [
+        false,
+        true
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "cooldown": {
+      "high": 10,
+      "kind": "INT",
+      "low": 0,
+      "step": 1
+    },
+    "entry_premium": {
+      "choices": [
+        -0.05,
+        -0.03,
+        -0.02,
+        -0.01,
+        -0.005,
+        -0.002,
+        0.0,
+        0.002,
+        0.005,
+        0.01,
+        0.03,
+        0.05
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "hold_days": {
+      "high": 60,
+      "kind": "INT",
+      "low": 1,
+      "step": 1
+    },
+    "opportunity": {
+      "choices": [
+        "n09",
+        "union",
+        "always"
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "risk_exit": {
+      "choices": [
+        false,
+        true
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "risk_gate": {
+      "choices": [
+        "none",
+        "mom",
+        "vol",
+        "kurt"
+      ],
+      "kind": "CATEGORICAL"
+    },
+    "trailing_stop": {
+      "choices": [
+        0.0,
+        0.005,
+        0.01,
+        0.02,
+        0.05,
+        0.1,
+        0.2
+      ],
+      "kind": "CATEGORICAL"
+    }
+  },
+  "parent_budget": 2512,
+  "parent_budget_details": {
+    "adaptive_proposal_cap": 2000,
+    "adaptive_successful_unique": 64,
+    "boundary": 131,
+    "fixed": 381
+  },
+  "parent_stop_reason": "Planned fixed execution/risk/confirmation controls, adaptive search and broad-domain boundary counterevidence executed. This is search evidence, not an adequacy declaration. Interpret frontier changes, boundary contact and target gaps; extend promising boundaries and confirm all qualifiers or 2–4 strongest nonqualifying frontiers through actual successor FULL.",
+  "parent_search_id": "EX026_20261006_SCREENING_TPE",
+  "parent_method": "Optuna multiobjective TPE",
+  "parent_method_version": "4.9.0"
+}

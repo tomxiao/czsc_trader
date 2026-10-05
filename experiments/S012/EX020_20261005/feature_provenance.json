@@ -1,0 +1,32 @@
+{
+  "inputs": {
+    "EX017_20261005/signals.parquet": "c37233d617d81c9ef05b18eefe1a91b63fd364ef88d4304a6df7f32e56e508fa",
+    "EX017_20261005/valids.parquet": "ea9df5bfed68abe7a9c091765fbc8ee4483d87d124c065ce1a16699a9a2a5cc8",
+    "EX019_20261005/gates.parquet": "9b61a10d4759462fa82f6910e5f83fa0fff6c63a4aa11a9d16e28bb8b745ce0b",
+    "EX018_20261005/risk_high.parquet": "112367332c6c762b529883a19113d25f5520aab1d39ecf78300fdece5d2a7836",
+    "EX018_20261005/risk_valids.parquet": "45b00cb92b3b2b9d241ff7ecffb30f1a1efa16d14e0dbe2d70c88ec85afce0a7"
+  },
+  "feature_sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049",
+  "columns": [
+    "o01",
+    "n09",
+    "o01_valid",
+    "n09_valid",
+    "own_positive",
+    "vol_high",
+    "vol_valid",
+    "mom_high",
+    "mom_valid",
+    "kurt_high",
+    "kurt_valid"
+  ],
+  "date_start": "2020-06-05 00:00:00",
+  "date_end": "2026-09-30 00:00:00",
+  "sessions": 1535,
+  "excludes": "不含未来收益标签和事后质量剔除",
+  "risk_mapping": {
+    "vol": "volatility20",
+    "mom": "momentum20",
+    "kurt": "kurtosis60"
+  }
+}

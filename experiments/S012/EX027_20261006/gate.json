@@ -1,0 +1,106 @@
+{
+  "activation_requirements": [
+    "Gate/input/source SHA identities must be verified inside the next formal REX experiment before screening.",
+    "Any changed execution rule/data/source bytes invalidates this gate until a successor equivalence test.",
+    "All selected frontier/claimed-qualified configurations must receive independent real FULL account evaluation before delivery/handoff.",
+    "EX023 remains incomplete as an eleven-config witness and must be incorporated after completion; remaining risk/trailing controls receive final equivalence checks."
+  ],
+  "allowed_execution_contract": {
+    "capital_target_scope": "entry_cycle",
+    "decision_output": "binary target_position",
+    "entry": "LIMIT with source-defined Decimal tick/lot/cycle sizing; repriced daily while target remains1",
+    "exit": "MARKET next open, full exit",
+    "initial_cash": 100000.0,
+    "lot_size": 100,
+    "one_way_fee_rate": 0.001,
+    "policy_type": "FROZEN_RULE",
+    "price_limit_ratio": 0.1,
+    "price_tick": 0.001,
+    "scope_restrictions": [
+      "exact same hash-bound StrategyImplementation.calculate_window_history",
+      "exact same source feature columns and data identity",
+      "long only and no leverage",
+      "static allocation, no daily fractional targets",
+      "public TXE OrderSpec/resolve_fill only",
+      "no future-return input or future quality exclusion masks",
+      "no partial fill, intraday stop, slippage, or production behavior"
+    ],
+    "timing": "prior session information to next-session daily DAY orders"
+  },
+  "comparison": {
+    "atol": 1e-08,
+    "economic_ledgers": "all daily cash/quantity/equity, each order quantity/price/status, each fill time/price/fees/trigger, each closed/open trade",
+    "identity_strings": "excluded only; date representations normalized to ns",
+    "rtol": 1e-12,
+    "signals": "each signal date and binary target"
+  },
+  "conclusions": {
+    "ex023_all_eleven_approval": false,
+    "execution_equivalence_within_bound": true,
+    "files_sha_checked": 183,
+    "formal_canonical_receipts_checked": 18,
+    "independent_witness_accounts_pass": true,
+    "stage_three_economic_target_achieved": false,
+    "witness_candidates_meet_economic_goals": false
+  },
+  "formal_witness_receipt": {
+    "canonical_receipt_sha256": "0f8339cf906c69b605c3c67559a343edb9297fd5b970d768e9da8fadadc39157",
+    "file_sha256": "272f88c4f2a51a1ce315a5efd4c46fd0e3fa224da22c24f92c2ad6969b92f019",
+    "path": "experiments/S012/EX025_20261005/artifacts/rex/execution_receipt.json"
+  },
+  "historical_preflight_limitation": {
+    "EX001_20261004": "NO_SEPARATE_HISTORICAL_PREFLIGHT_FILE"
+  },
+  "host_gate_original_sha256": "258264aba1cc549717aa0a1cada1b7b966963ff10bb1a4809bda088437715a8d",
+  "independent_account_audit": {
+    "path": ".tmp/s012-stage3-20261005/audit_EX025.json",
+    "sha256": "0d080e47432094554037ca07405f31674aa434c55259e9886736b19a3fc6ca79"
+  },
+  "market_binding": {
+    "actual_execution_sessions": 1534,
+    "content_sha256": {
+      "adjusted_daily": "5125ea3bb9591fb699ffb31e8ab42e9c3b29fb26970dc842cc13267a99c809e7",
+      "execution_30m": "8569001e22c5e2f50013fa1cfa35c33edfe097afd9159af189e953173ffb5b5c",
+      "execution_daily": "67f785ed988c3e91047a72bc7718271c2f283beb848be5f469b25eba9a526a45",
+      "strategy:calendar": "8ec0c261e0cf5d38ce0a075b8d8d19ea64c6467c3d0c224261eb29b8965a89e2",
+      "strategy:execution": "11c5143dbfb358b05bc29b7fc966157781eaf871d5103bb13192c66e39393480",
+      "strategy:features": "c1025f5a247313a6d78aae04c9e743efbfcededa3ce2f58aa14f891f403cb2bc",
+      "strategy:market": "362eb66d3da3ad6201202ea80736f89ded7142e3436791f6467418e752db700f",
+      "trading_calendar": "8f79308fc2fbacca81e402a2a0306be44c2675f79aa1406c40b2d4876947b0db"
+    },
+    "execution_end": "2026-09-30",
+    "execution_start": "2020-06-08",
+    "frequency_denominator": 1535,
+    "instrument": "518850.SH",
+    "prepared_manifest_sha256": "bfc5f93500a7872a7a3b961edfcc23fe7d2438aae25e27b421c85c5d094daca3",
+    "signal_start": "2020-06-05"
+  },
+  "partial_additional_real_comparison": {
+    "path": ".tmp/s012-stage3-20261005/accelerator_comparison_EX023.json",
+    "sha256": "26de6dec771e0527aced69e33189d77596b933c9051487892f8e33e2266811bc"
+  },
+  "real_comparison": {
+    "path": "experiments/S012/EX027_20261006/proofs/real_comparison.json",
+    "sha256": "964243f119d882ced0b949e6023976041740e150d0ab6edbc61e7c251251d30e",
+    "host_original_path": "experiments/S012/EX026_20261006/proofs/real_comparison.json"
+  },
+  "schema_version": 1,
+  "scope": "Bounded S012 research screening acceleration; not formal account acceptance or production authorization",
+  "source_paths": {
+    "s012_accelerator.py": ".tmp/s012-stage3-20261005/accelerator.py",
+    "s012_bound_model.py": "experiments/S012/EX023_20261005/strategy_runtime/strategies/s012.py"
+  },
+  "source_sha256": {
+    "s012_accelerator.py": "95dd7fb438fd978f7bd0da0201ba9d69c121ab93794d70f4674daa319d434ffa",
+    "s012_bound_model.py": "b86f92d185c426f84dda900bc0421c96d930bc32dd305479001a83c96124c0cb"
+  },
+  "status": "PASS",
+  "synthetic_comparison": {
+    "path": "experiments/S012/EX027_20261006/proofs/synthetic_comparison.json",
+    "sha256": "9137d149e2f44da0624c22ccf5ae479246d569d0d5d1a51b0047c0ac59dece91",
+    "host_original_path": "experiments/S012/EX026_20261006/proofs/synthetic_comparison.json"
+  },
+  "verified_additional_partial_real_cases": 5,
+  "verified_completed_formal_real_cases": 4,
+  "verified_synthetic_cases": 8
+}

@@ -1,0 +1,2104 @@
+[
+  {
+    "candidate_id": "C0012",
+    "parameters": {
+      "opportunity": "o01",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "o01",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "542a28af0f3e4060a456f99a8f605499",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0012",
+      "content_sha256": "04d005621c87bde3161aafe27d4d68391e0bda2dd96d292144310e91a313b794",
+      "request_hash": "84d60aec96dd70255386981b69912ff43e0b5c423f97553342634b8177500010",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:42:53.965714+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T15:51:12.797112+00:00",
+      "elapsed_seconds": 498.8311172000249,
+      "evaluation_ids": [
+        "f543b0d46beb8b426ec4d8b2270c0413db75564579103176ed558a77ba7c5ed6"
+      ],
+      "result_hash": "af56aa4252821137eb314eb7d3d5f3e0daf0363c4b655e9f782e2b0e9a6857dc",
+      "result_artifact": {
+        "path": "evaluations/542a28af0f3e4060a456f99a8f605499/result.json",
+        "kind": "evaluation_result",
+        "sha256": "93680d2edd1baabfb8ed0fbf8835909fea98a7f179887c3b939cb04be0804b52"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.01060907835630509,
+      "max_drawdown": -0.078559098474409,
+      "closed_trades": 35,
+      "frequency": 1.3680781758957654,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 106634.88170000011,
+      "final_quantity": 12100,
+      "orders": 103,
+      "fills": 74,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.10104302477183832
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0013",
+    "parameters": {
+      "opportunity": "o01",
+      "confirm_o01": true,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "o01",
+        "confirm_o01": true,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "789e27f71f1f4a3e95191092150ecd22",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0013",
+      "content_sha256": "5fd4fef25c0758849fdfebd96c7016d430826ffb53c23a1f03b9b00820588479",
+      "request_hash": "a86fdd9607a9cd76d9936647996342195bced5f4ccd33f3bc2659e8a1bc7b7bd",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:53:14.416154+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:03:51.513924+00:00",
+      "elapsed_seconds": 637.0974125000066,
+      "evaluation_ids": [
+        "b0335cd3604bf333af82d9580ce32835a7affc5da50dba1a65c495faf091d865"
+      ],
+      "result_hash": "2b605c94787292225a23e06838b58ef6a3f3612810744ae7a36cfac0b4df1294",
+      "result_artifact": {
+        "path": "evaluations/789e27f71f1f4a3e95191092150ecd22/result.json",
+        "kind": "evaluation_result",
+        "sha256": "c9a93df73563dcd4da59d2ddaa41a1cb9efbf6fc4d78c45eeffe9b141a1e3da1"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.03518010707117525,
+      "max_drawdown": -0.06473015949781757,
+      "closed_trades": 23,
+      "frequency": 0.8990228013029316,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 123425.93310000007,
+      "final_quantity": 0,
+      "orders": 61,
+      "fills": 47,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.06649282920469361
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0014",
+    "parameters": {
+      "opportunity": "n09",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "n09",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "8cda0f4443b340bcbb2a78187f5a88da",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0014",
+      "content_sha256": "722385c5faf621207539ad4f33a90eb5a11e75e22c9fdc06568783279c19c09d",
+      "request_hash": "0213cd89cf1fd37d879e040d7b1f30c4c3dd105a1750a83b4ae357dac46ccde2",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:53:14.428841+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:04:14.571231+00:00",
+      "elapsed_seconds": 660.1427788999863,
+      "evaluation_ids": [
+        "fa6994398198427e6ae27f58ab7a93630e4d8bef816d2c06f9287d436db6992b"
+      ],
+      "result_hash": "3bba694bc7c98f761a8e200c271aac63c50cfeb4312303ce58da2c1227fd7b5d",
+      "result_artifact": {
+        "path": "evaluations/8cda0f4443b340bcbb2a78187f5a88da/result.json",
+        "kind": "evaluation_result",
+        "sha256": "3148418065abc34762c1df803cbe98296c442ae4fb581bf988ebbbe4a606d729"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.04344240390304632,
+      "max_drawdown": -0.20608096103123363,
+      "closed_trades": 115,
+      "frequency": 4.495114006514658,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 129545.7645999999,
+      "final_quantity": 0,
+      "orders": 331,
+      "fills": 242,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.3226857887874837
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0015",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "d6f6eeb25ce147e39d928f21f983494a",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0015",
+      "content_sha256": "fadc414b7308297a7a1312e215770e55a749cd35e529926a891a7ad18c6f914d",
+      "request_hash": "51681f305322ef64ff40f76b7b8cb6f9d2ae325bc3fb49c29db37877adc114e5",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:53:14.445517+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:04:19.974208+00:00",
+      "elapsed_seconds": 665.5282713000197,
+      "evaluation_ids": [
+        "49b2acde5c44bc2ef03a1394d0f63ac221efce5d8785e2f165f52f3d78d11262"
+      ],
+      "result_hash": "0bc71e77671fd3b094fc9f7de786564ab587e5d53a69a19543a045f2b1b7d433",
+      "result_artifact": {
+        "path": "evaluations/d6f6eeb25ce147e39d928f21f983494a/result.json",
+        "kind": "evaluation_result",
+        "sha256": "4a5d628bc9401ac542a594e597d20e23a67f95abad94e7985a34765dcafd4557"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.05985268794706533,
+      "max_drawdown": -0.17252911540877225,
+      "closed_trades": 131,
+      "frequency": 5.120521172638436,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 142454.7734000001,
+      "final_quantity": 16100,
+      "orders": 383,
+      "fills": 274,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.36766623207301175
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0016",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": true,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": true,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "a243872c78844043983e9af338fef816",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0016",
+      "content_sha256": "6232496b08e611af5b2de5c20f9470b7c4d3335422746bc2204076ee7bf55df8",
+      "request_hash": "898a11c42396401e24b2bc49593d78655a54a27dd580f8437cca6f1b6eb2212c",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:53:14.459535+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:04:25.357430+00:00",
+      "elapsed_seconds": 670.897172899975,
+      "evaluation_ids": [
+        "984ab0269a4900c1f08845a9e432d204670845895989d15a72002524f05e7759"
+      ],
+      "result_hash": "64c9623b2988c99563c551fd34de52f75d08d3e40bc71a05ec868edf39050e15",
+      "result_artifact": {
+        "path": "evaluations/a243872c78844043983e9af338fef816/result.json",
+        "kind": "evaluation_result",
+        "sha256": "ab09eb3b8af6741367f1862be7a883e8724683f45666c3b9a6aa27c1caba0820"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.07291137755795019,
+      "max_drawdown": -0.19550459942515153,
+      "closed_trades": 127,
+      "frequency": 4.964169381107492,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 153479.85390000005,
+      "final_quantity": 0,
+      "orders": 364,
+      "fills": 269,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.3578878748370274
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0017",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "vol",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "vol",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "e1314987513d46c09966a3363fc13ea1",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0017",
+      "content_sha256": "3b66fa8a8e464e41e0e84de5e996c67778b85183e9c63662f649e7101bf72555",
+      "request_hash": "255921c23f4a20db51b63d950a344e4f87d6630f42e544de709aec82a5f6c493",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:06:25.926718+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:16:39.137701+00:00",
+      "elapsed_seconds": 613.2102989000268,
+      "evaluation_ids": [
+        "d28a184e5e58875adb46be5d5f8802884f04bec5f69d98bf892a79872364e9ce"
+      ],
+      "result_hash": "8b56f3b566ebb0d48764982fbf259f569d1cfcd9927498dcea631dac4028cefd",
+      "result_artifact": {
+        "path": "evaluations/e1314987513d46c09966a3363fc13ea1/result.json",
+        "kind": "evaluation_result",
+        "sha256": "8b7a175a6fe5e3c72951e8b34a8e7038cfadef7d64d8e0f5280288ebc2607bf7"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.018183675967405444,
+      "max_drawdown": -0.09749478900747965,
+      "closed_trades": 74,
+      "frequency": 2.8925081433224755,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 111593.78630000018,
+      "final_quantity": 0,
+      "orders": 212,
+      "fills": 155,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.20990873533246415
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0018",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "kurt",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "kurt",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "2c7651316d9d40599624375854ce964c",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0018",
+      "content_sha256": "9faf9215e9a6c3e52c5510326be87db55b5e64b7c27556548cd04d16b3378c64",
+      "request_hash": "73dc460d4fd4205c581f832dbd94bc832929a3034e0908ec0707eefe67aa87d5",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:06:25.950480+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:16:45.718763+00:00",
+      "elapsed_seconds": 619.7682778000017,
+      "evaluation_ids": [
+        "88528e2421825c2e909d40c71b9c2fe61194c6a5a15655eb2a67323195ea9611"
+      ],
+      "result_hash": "48e8dc3f1415ad88fb56e48d30cd3344e6c99c5a4fd83ed5b268b539585d41c3",
+      "result_artifact": {
+        "path": "evaluations/2c7651316d9d40599624375854ce964c/result.json",
+        "kind": "evaluation_result",
+        "sha256": "81641a67a9a1cbe01b9668f1ca1c00a0d62af7427dd29db74291b8290a830525"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.0565920850419217,
+      "max_drawdown": -0.09368855929225006,
+      "closed_trades": 52,
+      "frequency": 2.03257328990228,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 139807.75699999995,
+      "final_quantity": 15800,
+      "orders": 146,
+      "fills": 112,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.15189048239895697
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0019",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "mom",
+      "risk_exit": true,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "mom",
+        "risk_exit": true,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "c13bdbeeaa2840d29346bd639741abfe",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0019",
+      "content_sha256": "d8c366d45380e5c6f7a65b388e87a2a4ce658213fa75616a7c6933010a6e0898",
+      "request_hash": "e6dfa1776e52bdc85b54974d83891ba454cf07b3eeb5ff70d8dd9b957607c0fd",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:06:25.978574+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:16:52.334051+00:00",
+      "elapsed_seconds": 626.3557145000086,
+      "evaluation_ids": [
+        "f3f9a1fb818635222f20aa917c13e5aeb04491b2a94e8bb8eb4fbf665dfc86f4"
+      ],
+      "result_hash": "f765accc4ddbffaff4c5f55a307c07e65afb683197608eefcefb462be33783c8",
+      "result_artifact": {
+        "path": "evaluations/c13bdbeeaa2840d29346bd639741abfe/result.json",
+        "kind": "evaluation_result",
+        "sha256": "e8872645e24339d1cb98f9b81c328d7b20d7f339a183a1f7ed319ed7584e6a89"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.012028916138537182,
+      "max_drawdown": -0.20959231019963698,
+      "closed_trades": 105,
+      "frequency": 4.1042345276872965,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 107550.11510000011,
+      "final_quantity": 0,
+      "orders": 290,
+      "fills": 214,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.24315514993481094
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0020",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.02,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.02,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "2f2b948439304300b4c43b1539afb6c7",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0020",
+      "content_sha256": "bf2440961a578401fe82ede4341e4742f6666d5f3e440922f4a181c110d3ecd0",
+      "request_hash": "b4a3a7835769dac26216f602b152a088c3b577600d4c591bf31e384f0e588fd3",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:06:26.006096+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:16:58.515858+00:00",
+      "elapsed_seconds": 632.510238799965,
+      "evaluation_ids": [
+        "96b63b5e72d6c6b6aee5972771e66340fd5d9b66d67c92c1f12801aabec2331c"
+      ],
+      "result_hash": "7978be2b70bbe1f76ef6425e27ddcd364328467fbcc12d7e8450e7ba871edc3a",
+      "result_artifact": {
+        "path": "evaluations/2f2b948439304300b4c43b1539afb6c7/result.json",
+        "kind": "evaluation_result",
+        "sha256": "f3519725cfbaaebff3b3b436dc67ec39d146ad2b49ca786ded575d01fc2cf517"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.04591785157448558,
+      "max_drawdown": -0.235437974145271,
+      "closed_trades": 133,
+      "frequency": 5.198697068403908,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 131427.91629999995,
+      "final_quantity": 14900,
+      "orders": 387,
+      "fills": 281,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.3468057366362451
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0021",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 0.5
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 0.5,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "f4ac14f4dd9943fcaa6caa4470729b6b",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0021",
+      "content_sha256": "1fb89990819ea21e1ad0e40ec40f10a3ab686cb7652cfb6b9ecbee7bd7ad57f0",
+      "request_hash": "92dffefe14dd6a51efac1d73abd0b0cd1fece5c4c3e14c58f596d720e8d2c31e",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:18:08.454610+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:27:40.609537+00:00",
+      "elapsed_seconds": 572.155077500036,
+      "evaluation_ids": [
+        "3099b5c122c26f5a9eab89ae22849cc54f516583ccc9129fe4beeded4c226889"
+      ],
+      "result_hash": "78a2c9bef5e1b73e441629291624f50ad9a0b2e676efc8f33b93daf14b3c01ef",
+      "result_artifact": {
+        "path": "evaluations/f4ac14f4dd9943fcaa6caa4470729b6b/result.json",
+        "kind": "evaluation_result",
+        "sha256": "7ac432eb62f5d934ab209679247452c294742c843914da2d8c114f0ce1cb6650"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.03096117499676665,
+      "max_drawdown": -0.0877834952381974,
+      "closed_trades": 131,
+      "frequency": 5.120521172638436,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 120395.41209999993,
+      "final_quantity": 6800,
+      "orders": 409,
+      "fills": 293,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.36766623207301175
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0022",
+    "parameters": {
+      "opportunity": "always",
+      "confirm_o01": false,
+      "hold_days": 5,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.0,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "阶段二机会、确认与风险职责组合能否在真实账户中共同满足收益、回撤和频率目标？",
+    "record": {
+      "attempt_id": "b4ef707a3096412dbca72b5cbb222f7b",
+      "experiment_id": "EX023_20261005",
+      "candidate_id": "S012-C0022",
+      "content_sha256": "44a9adf53c250eb62df3bc4d8b5101ecb473cf9ace587e27f834a8cec0e17f6e",
+      "request_hash": "e1499bc9f2a870164df591fa9e89cef236afc08c379739866886c73e732b4632",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:18:08.479912+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:28:03.931042+00:00",
+      "elapsed_seconds": 595.4513138000038,
+      "evaluation_ids": [
+        "64b1738d87d2c74497816c0f32670f3d6814166e3987095543506ebd214a7ba6"
+      ],
+      "result_hash": "1b8d34615766dd4554ae294f527988ef25b3b5a03a68a96999a6234b0c219fd4",
+      "result_artifact": {
+        "path": "evaluations/b4ef707a3096412dbca72b5cbb222f7b/result.json",
+        "kind": "evaluation_result",
+        "sha256": "a2e85acbecce1288f4ccb7cc91309012506216570d199e4d831c0ddd6f7e11b3"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.05037769031176953,
+      "max_drawdown": -0.4072810106442437,
+      "closed_trades": 255,
+      "frequency": 9.96742671009772,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false,
+      "evaluation_sessions": 1534,
+      "final_equity": 73003.82459999985,
+      "final_quantity": 8300,
+      "orders": 701,
+      "fills": 527,
+      "equity_columns": [
+        "date",
+        "signal_date",
+        "target_position",
+        "cash_before",
+        "quantity_before",
+        "cash",
+        "quantity",
+        "close",
+        "equity"
+      ],
+      "trade_columns": [
+        "cycle_id",
+        "status",
+        "entry_date",
+        "exit_date",
+        "quantity",
+        "entry_price",
+        "exit_price",
+        "net_return"
+      ],
+      "exposure": 0.7301173402868318
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX023_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0100",
+    "parameters": {
+      "opportunity": "always",
+      "confirm_o01": false,
+      "hold_days": 1,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": -0.005,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 1,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": -0.005,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "878e2dcc544e4a7a918d1776c6b7b084",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0100",
+      "content_sha256": "6b51e42d8ef52d311b4b8101224ae7db39c34efd0e57146c807777d9a87e9310",
+      "request_hash": "e550092f0496850110fdf5c2a89b17eac129a428188fa4384e37f54cb04414e4",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.484926+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:50.503068+00:00",
+      "elapsed_seconds": 257.0186682000058,
+      "evaluation_ids": [
+        "9f6f4780a065ae15a6179096cb5e23b65b0d6dc55df5422b88bd195683c8e9ec"
+      ],
+      "result_hash": "18ae33a61a65efc2a7af0bf056b2a554fd5017e89f779e2058f8dd990d14c856",
+      "result_artifact": {
+        "path": "evaluations/878e2dcc544e4a7a918d1776c6b7b084/result.json",
+        "kind": "evaluation_result",
+        "sha256": "04febf1101098139d9635462cbd4a083b8a54ca38042c937590b282d3d2fd5fc"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.12040732994579273,
+      "max_drawdown": -0.5453459570000008,
+      "closed_trades": 227,
+      "frequency": 8.872964169381108,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0101",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 1,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.005,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 1,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.005,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "afe3bb70d1f94b229e8c64a1b1b8fcfa",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0101",
+      "content_sha256": "6a6da273c22efddf78163974e0b017ecb25e6cdafb609a26d1c5c54490c72f3d",
+      "request_hash": "2748c0bef2b4127f689f3d86de73a6999b35071af991b6881ab5b4248f070a9e",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.516677+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:53.353096+00:00",
+      "elapsed_seconds": 259.83627349999733,
+      "evaluation_ids": [
+        "3a874e88429ef76e53a49aecf9b7bf58d387523318e33011a0449323086868fb"
+      ],
+      "result_hash": "49795208dfc8522f47026c38de17837db470973c2934f70b18271734d0c19583",
+      "result_artifact": {
+        "path": "evaluations/afe3bb70d1f94b229e8c64a1b1b8fcfa/result.json",
+        "kind": "evaluation_result",
+        "sha256": "4d8a3bb4bf999b2035e2db894b6411be4ca540adcef16f9a3626fa2e6616a1d1"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.05195848120987767,
+      "max_drawdown": -0.3025957899999978,
+      "closed_trades": 223,
+      "frequency": 8.716612377850163,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0102",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 2,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.01,
+      "allocation": 0.5
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 2,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.01,
+        "allocation": 0.5,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "4805ee5a7beb48d1b0db423856d565c9",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0102",
+      "content_sha256": "9d09870d8c2a9a0ff843513d224fb44a90149bab34e9b39571eecee8e704b82c",
+      "request_hash": "8abfa11b7bce1489e5e208ea8b8fe5db5234a0350f79301679e98de1c9e14a65",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.548915+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:56.138791+00:00",
+      "elapsed_seconds": 262.5887195999967,
+      "evaluation_ids": [
+        "2c736f73d39c38635b28257597af21a839ce2468ae11575f16fa08384354a101"
+      ],
+      "result_hash": "280da7c1a98cb62ecd557e22074e83839e7d158f81d108a0d0cf82261d882b34",
+      "result_artifact": {
+        "path": "evaluations/4805ee5a7beb48d1b0db423856d565c9/result.json",
+        "kind": "evaluation_result",
+        "sha256": "e6a1c84520030e9abcd84ab29eb8b7c5490eb64fbeaad96543dfd9ca33c45d3a"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.005664369550750559,
+      "max_drawdown": -0.1257567009337084,
+      "closed_trades": 204,
+      "frequency": 7.973941368078176,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0103",
+    "parameters": {
+      "opportunity": "always",
+      "confirm_o01": false,
+      "hold_days": 3,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": -0.02,
+      "allocation": 0.5
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 3,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": -0.02,
+        "allocation": 0.5,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "a36bb98fc2f843ccbae2d8f523312386",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0103",
+      "content_sha256": "df4626189931a2343aad40a4b5cd5714c766f0e304a8964636a422f48647f7df",
+      "request_hash": "ce983beb49b8c422a7068dc3ffbeb23f19ad64ca4fc9ff73a87c3b307fc08e8b",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.587038+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:58.937621+00:00",
+      "elapsed_seconds": 265.3502202000236,
+      "evaluation_ids": [
+        "a2fee44a1e5a5a0a63bbbc252a1bd284180fe78cde7641b1be02045b1b89b9b1"
+      ],
+      "result_hash": "465907e2afbddf14e49d921c778fe4ef14812a0132a1b44ffc85d5c9dd373fbc",
+      "result_artifact": {
+        "path": "evaluations/a36bb98fc2f843ccbae2d8f523312386/result.json",
+        "kind": "evaluation_result",
+        "sha256": "f3172f7204eb6c0d4c0dcea44880e62ed6e398709ea7258f862adea89da17589"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.007350836422931106,
+      "max_drawdown": -0.13462396163008494,
+      "closed_trades": 42,
+      "frequency": 1.6416938110749186,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3000",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.01,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.01,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "011cd73946474eecb80675947dac30c1",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3000",
+      "content_sha256": "0ed31e28c6e4fd1950710de6ee6103e06f9937141119bd9827537a5d4fa5e2ad",
+      "request_hash": "bd4d089d3a956b28727d4fc7f6ed086d3da0957acce5a8e396b0656b5bf71d36",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.614103+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:28.007064+00:00",
+      "elapsed_seconds": 229.39262900000904,
+      "evaluation_ids": [
+        "036783cbcfd6f5a364e3a0f3dc10686626a507249b2558578323b21b5b7d63f9"
+      ],
+      "result_hash": "fd272f901f7e8cb9233a576e5cf74ae0977a76e79955b12ed75ad3b8ffe86e9f",
+      "result_artifact": {
+        "path": "evaluations/011cd73946474eecb80675947dac30c1/result.json",
+        "kind": "evaluation_result",
+        "sha256": "ae6c8b694dcc121d8c52d60caadc14282e4f4b15525f55703d90f7901eb174f5"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.10288051582702451,
+      "max_drawdown": -0.20930664842761193,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3001",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.03,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.03,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "9a4951af150542c9866158e1994b5de5",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3001",
+      "content_sha256": "d559a992c047a40d41e3e29ea2e6357588d926df35472e8aab2534244e732772",
+      "request_hash": "668bebd44fb53e13870d6ee31c0eb3aac415eca09369407c04b122d423afc346",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.640033+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:30.602013+00:00",
+      "elapsed_seconds": 231.96186670003226,
+      "evaluation_ids": [
+        "780c4dc364dfaa8d40e1fdb3a7a2e9a70a39827bcce9afe5ec9f42bfa883a309"
+      ],
+      "result_hash": "9c0bb7d30211946092132347324fd4ff738d74100c7429dd3eca8c47192cdfb6",
+      "result_artifact": {
+        "path": "evaluations/9a4951af150542c9866158e1994b5de5/result.json",
+        "kind": "evaluation_result",
+        "sha256": "01fb843d00ae6e9903912e0092c4e2040359002b04efa24f5a2a6695b17c24c1"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.1004714037210861,
+      "max_drawdown": -0.2107883679608651,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3002",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.015,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.015,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "3d45fcb0ace24546a4f5b7308f569b74",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3002",
+      "content_sha256": "253b6b1abdfb6cf8e86f329ee434ed50995fdcae7eb980756ce36d244c983ae7",
+      "request_hash": "821f4bf2da08c63f76d3cedd918cec94b614a4b86c8e65f8056677e7d9ec4770",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.653920+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:33.092182+00:00",
+      "elapsed_seconds": 234.4380863000406,
+      "evaluation_ids": [
+        "783c65123f400aa0cb0ddfc17ddc4245d983ca24dcd071d8358306e477f0283f"
+      ],
+      "result_hash": "d2795564a0616f1ef25a467c78051173f509c6dc56ee3d6942ae1438867bbe5d",
+      "result_artifact": {
+        "path": "evaluations/3d45fcb0ace24546a4f5b7308f569b74/result.json",
+        "kind": "evaluation_result",
+        "sha256": "4c730720ae6133376ee21ba9ea8740468dd0602649c9027163913ffb7cdc58a4"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.10248057982940106,
+      "max_drawdown": -0.2120491621064191,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3003",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": true,
+      "cooldown": 4,
+      "entry_premium": 0.002,
+      "hold_days": 29,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "vol",
+      "trailing_stop": 0.05
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": true,
+        "cooldown": 4,
+        "entry_premium": 0.002,
+        "hold_days": 29,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "vol",
+        "trailing_stop": 0.05,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "93cef143ab8943718c9c6aa5ddac3eec",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3003",
+      "content_sha256": "20f519208a49b15d791a6b77dc909f7491b5968efa6e0f80e8d22ce40b631587",
+      "request_hash": "e5fc0a044a70713a8193e2f232e9a7b71bf65feab4e31c3f8ed15a0de9e4316b",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.668641+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:35.474804+00:00",
+      "elapsed_seconds": 236.80624460004037,
+      "evaluation_ids": [
+        "fc949fbe32b4201eca236c97d902e161da0328f004873b09d0f7c39a3283e312"
+      ],
+      "result_hash": "51cbdc5081ca92e2c28a1c056857daad9bebd0446429c5646a055c0c5a9d821c",
+      "result_artifact": {
+        "path": "evaluations/93cef143ab8943718c9c6aa5ddac3eec/result.json",
+        "kind": "evaluation_result",
+        "sha256": "45b85a5c347119f06e68a1800e42925483e36ae61bb9813ca91545157662d675"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.15093378498576349,
+      "max_drawdown": -0.07484899396246958,
+      "closed_trades": 19,
+      "frequency": 0.742671009771987,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  }
+]

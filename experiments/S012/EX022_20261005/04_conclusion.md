@@ -1,0 +1,3 @@
+# 技术失败与中断
+
+首个正式尝试C0001失败：观察声明target_position，但平台将目标仓位置于计划强类型字段，从evidence中排除。明确观察使用额外planned_target字段。已停止同源后续无效账户，部分attempt原件留在artifacts/partial_execution；REX回执未完成，不伪造闭合回执，不形成经济结论。EX023后继修正研究员源码，平台保持原样。
