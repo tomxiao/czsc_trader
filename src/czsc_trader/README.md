@@ -17,6 +17,7 @@
 | 回测底层契约 | [backtesting](backtesting/__init__.py) | 请求、策略快照、执行数据及回放类型；业务执行使用`application.run_backtest` |
 | 研究身份 | `create_research_batch`、`update_research_intent` | 写入研究登记及交接资料，调用前取得授权 |
 | 目录与模板 | `validate_catalog/list_catalog/show_catalog`、`validate_templates/list_templates/show_template/instantiate_template` | 完整模板操作包含跨FSC绑定校验 |
+| 项目因子计算 | [FSC计算模块](../../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py) | 由FSC提供纯计算函数；研究员提供输入数据并核对因果时点 |
 | 档案校验 | `validate_archives` | 只读验证；不重签原件 |
 | 版本查询与部署 | `list_installed_strategies`、`strategy_info`、`deploy_strategy` | 部署单独授权；不操作PTE账户 |
 

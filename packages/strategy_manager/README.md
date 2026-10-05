@@ -97,7 +97,9 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 `research/registrations/`；运行注册表在首次冻结发布时登记策略族。研究认证不进入运行发布合同。
 新冻结版本初始为`RESEARCH`；获准后平台可用`approve_paper_trading(PaperTradingApproval)`
 绑定准确发布哈希授予`PAPER_READY`，部署和PTE账户创建仍需各自授权。
-登记PTE导出时，`StrategyRegistry.record_evidence`校验`PerformanceEvidence`、发布身份及源文件哈希。
+`StrategyRegistry.record_evidence`校验`PerformanceEvidence`及其绑定的发布身份。首次登记PTE
+导出证据时，显式提供`source_file`才能校验并保存来源文件；校验对象是文件中`source`的规范
+内容哈希，传入参数省略时不核验来源文件。
 `calmar_ratio`和`sharpe_ratio`允许`None`，表示指标未定义；数值、空值均按原事实保存。
 PTE导出的观察数和年化状态位于`source.statistics`，随整个`source`参与哈希。
 SM不计算绩效、不执行回测、不操作PTE账户；技术检验通过不代表平台认证研究结论。

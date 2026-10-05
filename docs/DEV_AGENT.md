@@ -54,7 +54,7 @@ DEV对接口语义、数据与执行正确性、运行可靠性及维护成本�
 | --- | --- |
 | TDR | [研究执行、评价、回测及跨模块业务入口](../src/czsc_trader/README.md) |
 | DFLS | [数据获取、规范化、校验与发布](../packages/dataflows/README.md) |
-| FSC | [信息族、因子及信号语义目录](../packages/factor_signal_catalog/README.md) |
+| FSC | [信息族、因子及信号定义，以及项目复用因子的纯计算](../packages/factor_signal_catalog/README.md) |
 | STC | [策略函数模板、输入角色及参数边界](../packages/strategy_template_catalog/README.md) |
 | REX | [可执行实验声明、上下文与执行回执](../packages/research_experiment/README.md) |
 | SM | [研究登记、发布身份及生命周期](../packages/strategy_manager/README.md) |
@@ -66,6 +66,8 @@ DEV对接口语义、数据与执行正确性、运行可靠性及维护成本�
 依赖方向为`TDR → REX/FSC/STC/SM/SE/TXE/SRT/DFLS`、`REX → SRT`、`TXE → SRT`、
 `SRT → DFLS`、`PTE → SRT`、`WDG → PTE进程`。模块通过明确契约协作。
 API参数、schema和文件布局在所属模块说明维护，本文不复制版本清单。
+
+项目复用因子的计算内聚于FSC，通过`factor_signal_catalog.calculations`公开；输入由调用方按授权准备。目录实现不得依赖`research/`或`experiments/`。实验自定义组件保存在所属研究实验中，纳入平台能力须经DEV评审并取得平台修改授权。
 
 ### 4.2 数据、执行与账户
 
@@ -94,6 +96,8 @@ API参数、schema和文件布局在所属模块说明维护，本文不复制�
 验证所改公开契约及受影响调用链的实际结果。合成夹具验证软件行为，真实研究复验验证特定证据，
 生产检查验证实际环境；三类结果分别说明，不能相互替代。正式研究证据按相应合同归档，
 交付不得依赖未声明的临时文件。测试命令、验收标记和治理规则统一见[测试治理](TEST_GOVERNANCE.md)。
+
+长期用例围绕公开业务API、强类型构造器及明确文档化的模块入口，验证可观察结果和失败语义。模块测试负责自身计算与数值边界，跨模块测试负责身份传播、调度、发布与失败状态；目标调用链实际运行，外部边界替身与明确故障注入按风险使用。合并或删除用例前，先证明后继场景承接同一风险；等价参数收敛保留关键边界和独立诊断节点。详细规则由测试治理维护，本文不保存用例数量与耗时快照。
 
 获准更新文档时，角色原则写入本文，公共能力写入模块说明，
 测试规则写入测试治理，生产操作写入[PTE运维手册](PTE_OPERATIONS.md)。

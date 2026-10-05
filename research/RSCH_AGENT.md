@@ -159,7 +159,7 @@
 #### 自主使用的资源
 
 - 市场数据：DFLS提供已授权数据，正式实验通过受管上下文的数据接口访问；见[DFLS公共入口](../packages/dataflows/src/dataflows/__init__.py)。
-- 信息定义：FSC提供信息族、因子与信号定义参考，支持研究员构造自定义信息组件；见[FSC公共入口](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)。
+- 信息定义与计算：FSC提供信息族、因子与信号定义，以及项目复用因子的纯计算；研究员可在实验中构造自定义信息组件。见[FSC定义入口](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)和[FSC计算入口](../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py)。
 - 第三方库：`tsfresh`用于时序特征提取，`expr_codegen`用于表达式生成，pandas／NumPy用于数据计算。使用约定见第4.3节。
 - 公开信息：可自主检索互联网公开资料，用于提出和解释研究机制。
 
@@ -338,7 +338,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 ### 4.1 数据与知识资源
 
 - 正式计算优先使用既有授权数据、Tushare权限和DFLS；新增外部数据源及依赖先获授权。公开学术和行业资料可用于形成问题，不等同于获准接入其数据。
-- FSC提供信息族、因子与信号定义；STC提供结构模板。两者提供研究起点，不限定新机制或自定义策略表达。
+- FSC提供信息族、因子与信号定义及项目复用因子的纯计算；STC提供结构模板。两者提供研究起点，不限定新机制或自定义策略表达。FSC计算消费调用方准备的输入，不获取数据或读取研究档案；研究员核对输入在决策时点的可得性。
 - 历史研究按授权范围读取，记录已见信息与复用身份；其他批次结论不自动移植为本研究证据。
 
 研究任务开始时明确DFLS数据空间，使用相对仓库根目录的`DataSpace`，默认按任务设为
@@ -362,14 +362,14 @@ DFLS管理空间内的数据资产及复用，研究输入清单、证据归档�
 | 模块 | 当前职责 | 入口 |
 | --- | --- | --- |
 | DFLS | 宿主指定数据空间，统一数据资产管理及两阶段准备、读取接口 | [公共导出](../packages/dataflows/src/dataflows/__init__.py)、[使用说明](../packages/dataflows/README.md) |
-| FSC / STC | 信息定义与策略结构参考 | [FSC公共导出](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)、[STC公共导出](../packages/strategy_template_catalog/src/strategy_template_catalog/__init__.py)；[FSC说明](../packages/factor_signal_catalog/README.md)、[STC说明](../packages/strategy_template_catalog/README.md) |
+| FSC / STC | 信息定义、项目复用因子纯计算与策略结构参考 | [FSC定义导出](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)、[FSC计算入口](../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py)、[STC公共导出](../packages/strategy_template_catalog/src/strategy_template_catalog/__init__.py)；[FSC说明](../packages/factor_signal_catalog/README.md)、[STC说明](../packages/strategy_template_catalog/README.md) |
 | REX | 实验定义、数据范围、强类型受管端口、预检及实际执行回执 | [公共导出](../packages/research_experiment/src/research_experiment/__init__.py)、[使用说明](../packages/research_experiment/README.md)、[档案契约](../experiments/README.md) |
 | SRT / TXE | 策略输入、决策与计划；成交及完整账户 | [SRT公共导出](../packages/strategy_runtime/src/strategy_runtime/__init__.py)、[TXE公共导出](../packages/trading_execution_engine/src/trading_execution_engine/__init__.py)；[SRT说明](../packages/strategy_runtime/README.md)、[TXE说明](../packages/trading_execution_engine/README.md) |
 | SE | 纯数值计算、自检、比较、统计及账本审计；不获取数据或写治理状态 | [公共导出](../packages/strategy_evaluator/src/strategy_evaluator/__init__.py)、[使用说明](../packages/strategy_evaluator/README.md) |
 | SM | 候选身份、用户决定、冻结及查询、当前治理和生命周期 | [公共导出](../packages/strategy_manager/src/strategy_manager/__init__.py)、[使用说明](../packages/strategy_manager/README.md) |
 | TDR | 受管评价、候选登记、五阶段交付、证据适配、技术检验及获批冻结 | [业务公共导出](../src/czsc_trader/application/__init__.py)、[研究工具公共导出](../src/czsc_trader/research_tools/__init__.py)、[使用说明](../src/czsc_trader/README.md) |
 
-研究员可导入各模块公开契约、FSC/STC查询及定义能力、SE纯计算API和独立第三方研究库。
+研究员可导入各模块公开契约、FSC/STC查询及定义能力、FSC公开纯计算、SE纯计算API和独立第三方研究库。实验自定义组件不通过TDR注册为平台实现；纳入FSC须经DEV评审和平台修改授权，目录实现不得依赖研究或实验目录。
 策略实现使用SRT公共编写契约；正式数据访问、策略运行和账户评价统一经TDR/REX受管入口，
 候选登记、交付和治理写入经TDR业务API。SM底层写入接口供平台实现使用，RSCH不直接调用。
 PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及生产安全规则另行授权。
