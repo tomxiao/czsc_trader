@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import fields
+
+import pandas as pd
 import pytest
 
 from strategy_runtime import (
@@ -14,19 +17,64 @@ from strategy_runtime import (
     RequiredCapabilities,
     RuntimeDefinition, ObservationDefinition,
     RuntimeContractError,
+    StrategyDefinition,
     StrategyImplementation,
+    next_session_calculation_scope,
+    next_session_calendar_window,
 )
 
 
 RELEASE_HASH = "a" * 64
 
 
-def test_strategy_implementation_requires_every_strategy_owned_method() -> None:
-    class IncompleteStrategy(StrategyImplementation):
-        pass
+def _author_type(*, missing_method=None):
+    def initialize(self, parameters):
+        self._parameters = parameters
 
-    with pytest.raises(TypeError, match="abstract methods.*calculate_history"):
-        IncompleteStrategy()
+    def from_parameters(cls, parameters):
+        return cls(parameters)
+
+    def definition(self):
+        runtime = _definition()
+        return StrategyDefinition(**{
+            field.name: self._parameters if field.name == "parameters" else getattr(runtime, field.name)
+            for field in fields(StrategyDefinition)
+        })
+
+    def calendar_window(self, window):
+        return next_session_calendar_window(self.definition, window)
+
+    def derive_calculation_scope(self, window, calendar_dates):
+        return next_session_calculation_scope(self.definition, window, calendar_dates)
+
+    def calculate_history(self, inputs, sessions):
+        return pd.DataFrame({"target_position": 0.0}, index=sessions)
+
+    methods = {
+        "__init__": initialize,
+        "from_parameters": classmethod(from_parameters),
+        "definition": property(definition),
+        "calendar_window": calendar_window,
+        "derive_calculation_scope": derive_calculation_scope,
+        "calculate_history": calculate_history,
+    }
+    if missing_method is not None:
+        del methods[missing_method]
+    return type("ContractAuthor", (StrategyImplementation,), methods)
+
+
+@pytest.mark.parametrize("missing_method", [
+    "from_parameters", "definition", "calendar_window", "derive_calculation_scope", "calculate_history",
+])
+def test_strategy_implementation_requires_every_strategy_owned_method(missing_method) -> None:
+    parameters = ParameterSet({"entry_threshold": 0.1})
+    complete = _author_type().from_parameters(parameters)
+    assert isinstance(complete, StrategyImplementation)
+    assert complete.definition.parameters == parameters
+
+    incomplete = _author_type(missing_method=missing_method)
+    with pytest.raises(TypeError, match=missing_method):
+        incomplete(parameters)
 
 
 def _requirement() -> InputRequirement:

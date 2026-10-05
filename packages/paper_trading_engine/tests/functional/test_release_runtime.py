@@ -4,7 +4,6 @@ import os
 import shutil
 import subprocess
 import sys
-from types import SimpleNamespace
 from zipfile import ZipFile
 
 import pytest
@@ -199,44 +198,92 @@ def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tmp_path):
         _verify_strategy_runtime_wheel_boundary(tmp_path)
 
 
-@pytest.mark.parametrize("account_count", [0, 1])
-def test_release_verifies_configuration_and_bindings_without_preparing_data(
-    tmp_path, monkeypatch, account_count,
-):
+@pytest.fixture
+def release_verification_runtime(pte_frozen, new_store, tmp_path):
+    from paper_trading_engine.runtime_config import PteRuntimeConfig
+    from test_watchdog_service import create_release
+
+    context, version = pte_frozen
     runtime = tmp_path / "runtime"
-    release_root = runtime / "releases" / "v0.6.0"
-    python = release_root / ".venv" / "Scripts" / "python.exe"
-    python.parent.mkdir(parents=True)
-    python.write_bytes(b"python")
-    release = SimpleNamespace(
-        runtime_root=runtime,
-        release_root=release_root,
-    )
-    monkeypatch.setattr(
-        "paper_trading_engine.release_cli.load_release",
-        lambda _runtime, _release_id: release,
-    )
-    monkeypatch.setattr(
-        "paper_trading_engine.release_cli._require_database_compatibility",
-        lambda _release, _database: 9,
-    )
-    calls = []
+    create_release(context.strategy_root, runtime, "v0.6.0", "a")
+    shared = runtime / "shared"
+    data = shared / "data"
+    data.mkdir(parents=True)
+    (data / "existing-input.json").write_text('{"identity":"unchanged"}', encoding="utf-8")
+    config = shared / "config"
+    PteRuntimeConfig(data_space=Path("market")).save(config / "pte.json")
+    (config / ".env").write_text("TUSHARE_TOKEN=synthetic-offline-token\n", encoding="utf-8")
+    store = new_store(shared / "state/runtime.db")
+    yield runtime, version, store
+    store.close()
 
-    def runner(command, **_kwargs):
-        calls.append(list(command))
-        output = {"accounts": account_count, "releases": ["S003-v1"] if account_count else []}
-        return subprocess.CompletedProcess(
-            command, 0, stdout=json.dumps(output), stderr="",
+
+@pytest.mark.parametrize("binding", ["empty", "valid", "wrong_hash", "wrong_cutoff", "invalid_config"])
+def test_release_verifies_configuration_and_bindings_without_preparing_data(
+    release_verification_runtime, binding,
+):
+    runtime, version, store = release_verification_runtime
+    if binding != "empty":
+        store.create_virtual_account(
+            "verified", "Verified account", version.release_id, version.release_hash, 100000,
+            strategy_id=version.strategy_id, strategy_version=version.version,
+            release_hash="0" * 64 if binding == "wrong_hash" else version.release_hash,
+            strategy_name_snapshot="Synthetic", qualification_snapshot="PAPER_READY",
+            selection_data_cutoff="2020-01-01" if binding == "wrong_cutoff" else version.selection_data_cutoff,
         )
+    if binding == "invalid_config":
+        (runtime / "shared/config/pte.json").write_text('{"schema_version":999}', encoding="utf-8")
+    store.close()
+    database = runtime / "shared/state/runtime.db"
+    database_before = database.read_bytes()
+    data = runtime / "shared/data"
+    data_before = {path.relative_to(data).as_posix(): path.read_bytes()
+                   for path in data.rglob("*") if path.is_file()}
+    results = []
+    # Execute the product's verification script unchanged after installing only
+    # forbidden-side-effect guards. Authentication, runtime description and the
+    # account hash/cutoff checks all run against the real frozen package and DB.
+    guard = (
+        "from dataflows import Dataflows\n"
+        "from paper_trading_engine.srt_advice_client import SrtAdviceClient\n"
+        "def forbidden_preparation(*args,**kwargs):\n"
+        "    raise AssertionError('release verification must not prepare data')\n"
+        "Dataflows.prepare=forbidden_preparation\n"
+        "SrtAdviceClient.prepare_account_data=forbidden_preparation\n"
+    )
 
-    verified = verify_release_configuration(runtime, "v0.6.0", runner=runner)
+    def runner(command, **kwargs):
+        # The isolated release has stub launchers; use the repository interpreter
+        # solely as the process transport, while keeping the selected release's
+        # script, working directory and all verification inputs intact.
+        assert command[1] == "-c"
+        completed = subprocess.run(
+            [sys.executable, "-B", "-c", guard + command[2], *command[3:]], **kwargs,
+        )
+        results.append(completed)
+        return completed
 
-    assert verified == {"accounts": account_count, "releases": ["S003-v1"] if account_count else []}
-    assert "validate_account_binding" in calls[0][2]
-    assert "prepare_account_data" not in calls[0][2]
-    assert "current.json" not in calls[0][2]
-    assert "PteRuntimeConfig.load(config/'pte.json')" in calls[0][2]
-    assert calls[0][-1] == str(runtime / "shared" / "config")
+    if binding in {"wrong_hash", "wrong_cutoff", "invalid_config"}:
+        message = {
+            "wrong_hash": "account release hash differs",
+            "wrong_cutoff": "selection cutoff differs",
+            "invalid_config": "unsupported PTE runtime config schema",
+        }[binding]
+        with pytest.raises(RuntimeError, match=message):
+            verify_release_configuration(runtime, "v0.6.0", runner=runner)
+        assert results[0].returncode != 0
+    else:
+        verified = verify_release_configuration(runtime, "v0.6.0", runner=runner)
+        expected = {"accounts": 0, "releases": []} if binding == "empty" else {
+            "accounts": 1, "releases": [version.release_id],
+        }
+        assert verified == expected
+        assert results[0].returncode == 0
+        assert json.loads(results[0].stdout) == expected
+    assert len(results) == 1
+    assert database.read_bytes() == database_before
+    assert {path.relative_to(data).as_posix(): path.read_bytes()
+            for path in data.rglob("*") if path.is_file()} == data_before
 
 
 @pytest.fixture(scope="module")

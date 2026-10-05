@@ -204,7 +204,10 @@ def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, runtime_ca
         strategy.inspect_signals()
 
 
-def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(tmp_path, runtime_candidate) -> None:
+@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates"])
+def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
+    tmp_path, runtime_candidate, corruption,
+) -> None:
     flows = _flows(tmp_path)
     strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
         runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path))
@@ -221,10 +224,21 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(tmp_pat
     batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
     assert batch.ready
     binding = StrategyInputBinding(plan, batch.reference)
-    corrupted = StrategyInputBinding(replace(plan, calendar_sha256="0" * 64), batch.reference)
-    with pytest.raises(RuntimeContractError, match="bound calendar"):
+    if corruption == "calendar_sha256":
+        changed = replace(plan, calendar_sha256="0" * 64)
+    elif corruption == "signal_dates":
+        changed = replace(plan, signal_dates={date(2026, 9, 3): date(2026, 9, 1)})
+    else:
+        changed = replace(plan, calculation_dates=(date(2026, 9, 1), *plan.calculation_dates))
+    if corruption != "calendar_sha256":
+        assert changed.calendar_sha256 == plan.calendar_sha256
+        assert changed.requests == plan.requests
+    corrupted = StrategyInputBinding(changed, batch.reference)
+    with pytest.raises(RuntimeContractError, match="bound calendar or calculation plan differs"):
         strategy.prepare_data(binding=corrupted)
     assert not (tmp_path / "input-bindings").exists()
+    with pytest.raises(RuntimeContractError, match="call prepare_data"):
+        strategy.inspect_signals()
     strategy.prepare_data(binding=binding)
     assert strategy.input_binding == binding
 

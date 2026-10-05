@@ -81,19 +81,30 @@ def test_c03_same_day_value_is_forbidden_even_when_present() -> None:
     assert result["Value"] == 5.0
 
 
-def test_c03_exact_and_latest_available_have_distinct_same_day_semantics() -> None:
+def test_c03_exact_and_latest_available_distinguish_missing_exact_matches() -> None:
     source = pd.DataFrame({"Date": ["2026-10-07", "2026-10-08"], "Value": [5.0, 6.0]})
     exact = InputAlignment(AlignmentRule.EXACT, "Date", "FXCM_24X5", "SSE", 0, True)
     latest = InputAlignment(
         AlignmentRule.LATEST_AVAILABLE, "Date", "FXCM_24X5", "SSE", 1, True
     )
 
-    exact_row = align_input_history(source, ["2026-10-08"], exact).dataframe.iloc[0]
-    latest_row = align_input_history(source, ["2026-10-08"], latest).dataframe.iloc[0]
+    decisions = ["2026-10-08", "2026-10-09"]
+    exact_rows = align_input_history(source, decisions, exact).dataframe
+    latest_rows = align_input_history(source, decisions, latest).dataframe
 
-    assert exact_row["source_time"] == pd.Timestamp("2026-10-08")
-    assert latest_row["source_time"] == pd.Timestamp("2026-10-08")
-    assert exact_row["staleness_days"] == latest_row["staleness_days"] == 0
+    # Both modes accept a same-day observation when the timestamp matches.
+    for result in (exact_rows, latest_rows):
+        assert result.iloc[0]["source_time"] == pd.Timestamp("2026-10-08")
+        assert result.iloc[0]["Value"] == 6.0
+        assert result.iloc[0]["staleness_days"] == 0
+
+    # EXACT preserves missing history; LATEST_AVAILABLE uses the prior value.
+    assert pd.isna(exact_rows.iloc[1]["source_time"])
+    assert pd.isna(exact_rows.iloc[1]["Value"])
+    assert pd.isna(exact_rows.iloc[1]["staleness_days"])
+    assert latest_rows.iloc[1]["source_time"] == pd.Timestamp("2026-10-08")
+    assert latest_rows.iloc[1]["Value"] == 6.0
+    assert latest_rows.iloc[1]["staleness_days"] == 1
 
 
 def test_c03_foreign_gap_over_staleness_limit_is_blocked() -> None:
