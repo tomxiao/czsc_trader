@@ -40,8 +40,10 @@ def request(frequency="5m"):
 
 
 def test_raw_intraday_routes_validates_and_preserves_market_timing(flow_factory, publish_data, monkeypatch):
-    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
-    result = publish_data(flow_factory(), request())
+    pro = FakePro()
+    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: pro)
+    flows = flow_factory()
+    result = publish_data(flows, request())
     assert result.status is DataStatus.READY, result.error
     assert len(result.dataframe) == 48
     assert result.dataframe.Close.eq(4.).all()
@@ -54,11 +56,9 @@ def test_raw_intraday_routes_validates_and_preserves_market_timing(flow_factory,
     assert meta["live_feed_latency_verified"] is False
     assert meta["adjustment"] == "none"
     assert len(meta["reference_daily_sha256"]) == 64
-
-
-def test_raw_intraday_subday_window_reconciles_whole_day_before_slicing(flow_factory, publish_data, monkeypatch):
-    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
-    result = publish_data(flow_factory(), DataRequest(
+    original = result
+    # A subday refresh still reconciles the full source session before slicing.
+    result = publish_data(flows, DataRequest(
         Dataset.ETF_UNADJUSTED_INTRADAY, "518850.SH",
         "2026-09-29 10:00:00", "2026-09-29 10:15:00", None, frequency="5m",
     ))
@@ -66,14 +66,13 @@ def test_raw_intraday_subday_window_reconciles_whole_day_before_slicing(flow_fac
     assert result.dataframe.Date.tolist() == [
         f"2026-09-29 10:{minute:02d}:00" for minute in (0, 5, 10, 15)
     ]
-
-
-def test_raw_intraday_preserves_cross_frequency_failure(flow_factory, publish_data, monkeypatch):
-    monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro(mismatch=True))
-    result = publish_data(flow_factory(), request())
+    pro.mismatch = True
+    result = publish_data(flows, request())
     assert result.status is DataStatus.FAILED
     assert result.dataframe.empty
     assert result.error.code == "DATA_REPAIR_FAILED"
+    old = flows.fetch(request(), prepared=original.prepared)
+    assert old.ready and old.identity.content_sha256 == original.identity.content_sha256
 
 
 def test_raw_intraday_rejects_a_day_missing_from_both_sources(flow_factory, publish_data, monkeypatch):
@@ -110,22 +109,30 @@ def test_raw_intraday_rejects_nonintraday_frequency_before_fetch(monkeypatch, fr
         request(frequency)
 
 
-@pytest.mark.parametrize("mutation", ["early", "missing", "hfq", "verified", "basis"])
-def test_raw_intraday_facade_rejects_false_timing_or_price_claims(flow_factory, publish_data, monkeypatch, mutation):
+def test_raw_intraday_facade_rejects_false_timing_or_price_claims(flow_factory, publish_data, monkeypatch):
     monkeypatch.setattr(tushare_etf, "get_tushare_pro", lambda _: FakePro())
     frame, meta = tushare_etf.fetch_etf_unadjusted_intraday(
         "518850.SH", "2026-09-29", "2026-09-29", "5m")
-    if mutation == "early":
-        frame.AvailableDate -= pd.Timedelta(minutes=5)
-    elif mutation == "missing":
-        frame = frame.drop(columns="AvailableDate")
-    elif mutation == "hfq":
-        meta["adjustment"] = "hfq"
-    elif mutation == "verified":
-        meta["source_publication_timestamp_verified"] = True
-    else:
-        meta["availability_basis"] = "VERIFIED_LIVE_FEED"
-    flows = flow_factory({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (frame, meta)})
-    result = publish_data(flows, request())
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    supplied_frame, supplied_meta = frame, meta
+    flows = flow_factory({Dataset.ETF_UNADJUSTED_INTRADAY.value: lambda _: (supplied_frame, supplied_meta)})
+    ready = publish_data(flows, request())
+    assert ready.ready, ready.error
+    # Reuse the reconciled vendor frame and data space; mutate fresh copies so
+    # every rejected claim exercises its own boundary against a valid baseline.
+    for mutation in ("early", "missing", "hfq", "verified", "basis"):
+        supplied_frame, supplied_meta = frame.copy(deep=True), meta.copy()
+        if mutation == "early":
+            supplied_frame.AvailableDate -= pd.Timedelta(minutes=5)
+        elif mutation == "missing":
+            supplied_frame = supplied_frame.drop(columns="AvailableDate")
+        elif mutation == "hfq":
+            supplied_meta["adjustment"] = "hfq"
+        elif mutation == "verified":
+            supplied_meta["source_publication_timestamp_verified"] = True
+        else:
+            supplied_meta["availability_basis"] = "VERIFIED_LIVE_FEED"
+        result = publish_data(flows, request())
+        assert result.status is DataStatus.FAILED, mutation
+        assert result.error.code == "DATA_CONTRACT_MISMATCH", mutation
+    old = flows.fetch(request(), prepared=ready.prepared)
+    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256

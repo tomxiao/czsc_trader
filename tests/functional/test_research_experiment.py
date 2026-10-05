@@ -282,17 +282,6 @@ def test_executor_preserves_partial_publication_and_records_failure(tmp_path, mo
     assert envelope_path.read_bytes() == envelope
 
 
-def test_completed_evidence_rejects_conflicting_failure_terminal(tmp_path):
-    loaded, context = _execution_boundary_fixture(tmp_path)
-    result = execute_experiment(loaded, context)
-    assert load_experiment_input(
-        context.workspace.root, expected_receipt_sha256=result.receipt.sha256,
-    ).experiment_id == loaded.definition.experiment_id
-    context.workspace.path("execution_failure.json").write_text('{"error_code":"old_failure"}')
-    with pytest.raises(ValueError, match="failed experiment execution"):
-        load_experiment_input(context.workspace.root, expected_receipt_sha256=result.receipt.sha256)
-
-
 def test_execution_document_publication_never_replaces_existing_evidence(tmp_path):
     from czsc_trader.research_tools.experiment import _atomic_execution_document
 
@@ -585,6 +574,11 @@ def test_s008_fixture_loads_and_executes_through_public_context(
     assert restored.artifacts == result.artifacts
     with pytest.raises(TypeError):
         result.receipt.artifact_sha256["changed"] = "0" * 64
+    with pytest.raises(ValueError, match="differs from expected identity"):
+        load_experiment_input(context.workspace.root, expected_receipt_sha256="0" * 64)
+    context.workspace.path("execution_failure.json").write_text('{"error_code":"old_failure"}')
+    with pytest.raises(ValueError, match="failed experiment execution"):
+        load_experiment_input(context.workspace.root, expected_receipt_sha256=result.receipt.sha256)
 
 
 def test_execution_envelope_rejects_result_and_artifact_tampering(
@@ -611,18 +605,6 @@ def test_execution_envelope_rejects_result_and_artifact_tampering(
         load_experiment_input(
             context.workspace.root,
             expected_receipt_sha256=result.receipt.sha256,
-        )
-
-
-def test_execution_envelope_requires_expected_receipt_identity(
-    tmp_path: Path,
-) -> None:
-    _, context, _ = _execute_fixture(tmp_path, "unexpected-receipt")
-
-    with pytest.raises(ValueError, match="differs from expected identity"):
-        load_experiment_input(
-            context.workspace.root,
-            expected_receipt_sha256="0" * 64,
         )
 
 

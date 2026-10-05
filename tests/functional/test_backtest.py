@@ -1,4 +1,4 @@
-"""Backtest acceptance against a freshly frozen current-contract fixture."""
+"""Backtest acceptance against an isolated current-contract frozen fixture."""
 from datetime import date
 from dataclasses import replace
 import json
@@ -58,8 +58,8 @@ def test_tdr_allocates_one_human_readable_reusable_srt_space(current_frozen):
     assert srt_data_directory(context.tdr_srt_root, snapshot, "588080.SH") == created
 
 
-def test_current_frozen_backtest_publishes_account_and_evidence(freshly_frozen, monkeypatch):
-    context, version = freshly_frozen
+def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
+    context, version = current_frozen
     monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root))
     registered = resolve_registered_strategy(context, version.strategy_id, version.version)
     assert registered.identity.kind == "REGISTERED"

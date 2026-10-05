@@ -56,8 +56,19 @@ class Process:
     ({"runtime": "RUNNING", "watchdog_healthy": "true"}, False),
     ([], False),
 ])
-def test_runtime_health_requires_explicit_healthy_scheduler(payload, expected):
+def test_watchdog_and_deployment_require_explicit_healthy_scheduler(monkeypatch, payload, expected):
+    from contextlib import nullcontext
+    from paper_trading_engine import release_cli
+
     assert health_payload_is_healthy(payload) is expected
+    body = {**payload, "release": {"release_id": "v0.6.6"}} if isinstance(payload, dict) else payload
+    response = SimpleNamespace(status=200, read=lambda: json.dumps(body).encode())
+    monkeypatch.setattr(release_cli, "urlopen", lambda *_a, **_k: nullcontext(response))
+    if expected:
+        assert release_cli._running_release("127.0.0.1", 8080) == "v0.6.6"
+    else:
+        with pytest.raises(RuntimeError, match="health check failed"):
+            release_cli._running_release("127.0.0.1", 8080)
 
 
 @pytest.mark.parametrize("becomes_healthy", [False, True])
@@ -100,23 +111,6 @@ def test_restart_waits_for_new_healthy_runtime(new_store, tmp_path, monkeypatch,
             cli._restart_running_pte(args)
 
 
-@pytest.mark.parametrize("healthy", [False, True])
-def test_deployment_health_checks_scheduler_before_accepting_release(monkeypatch, healthy):
-    from contextlib import nullcontext
-    from paper_trading_engine import release_cli
-
-    response = SimpleNamespace(status=200, read=lambda: json.dumps({
-        "runtime": "RUNNING", "watchdog_healthy": healthy,
-        "release": {"release_id": "v0.6.6"},
-    }).encode())
-    monkeypatch.setattr(release_cli, "urlopen", lambda *_a, **_k: nullcontext(response))
-    if healthy:
-        assert release_cli._running_release("127.0.0.1", 8080) == "v0.6.6"
-    else:
-        with pytest.raises(RuntimeError, match="health check failed"):
-            release_cli._running_release("127.0.0.1", 8080)
-
-
 def create_release(strategy_root, runtime_root, release_id, marker):
     release = runtime_root / "releases" / release_id
     strategies = release / "strategies"
@@ -150,23 +144,7 @@ def create_release(strategy_root, runtime_root, release_id, marker):
     return release
 
 
-def test_load_release_accepts_pre_deployment_inventory_snapshot(pte_frozen, tmp_path):
-    runtime_root = (tmp_path / "runtime").resolve()
-    release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
-    strategies = release / "strategies"
-    shutil.rmtree(strategies / "deployments")
-    manifest_path = release / "release-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    manifest.pop("strategy_releases")
-    manifest["strategy_snapshot_sha256"] = tree_sha256(strategies)
-    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
-
-    loaded = load_release(runtime_root, "v0.4.1")
-
-    assert loaded.release_id == "v0.4.1"
-
-
-def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_path):
+def test_load_release_requires_declared_inventory_and_accepts_legacy_snapshot(pte_frozen, tmp_path):
     runtime_root = (tmp_path / "runtime").resolve()
     release = create_release(pte_frozen[0].strategy_root, runtime_root, "v0.4.1", "a")
     strategies = release / "strategies"
@@ -178,6 +156,12 @@ def test_load_release_requires_declared_deployment_inventory(pte_frozen, tmp_pat
 
     with pytest.raises(RuntimeCompatibilityError, match="deployment directory"):
         load_release(runtime_root, "v0.4.1")
+
+    # Only snapshots predating the inventory contract may omit deployments.
+    manifest.pop("strategy_releases")
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert load_release(runtime_root, "v0.4.1").release_id == "v0.4.1"
+
 
 
 def test_backup_runtime_database_retains_latest_by_default(new_store, tmp_path):
@@ -293,9 +277,9 @@ def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_froze
         occupied.close()
 
 
-def test_runtime_database_rejects_invalid_schema_identity(tmp_path):
+def test_runtime_database_rejects_invalid_schema_identity(new_store, tmp_path):
     database = tmp_path / "invalid-schema.db"
-    store = PaperStore(database)
+    store = new_store(database)
     store.close()
     connection = sqlite3.connect(database)
     connection.execute(

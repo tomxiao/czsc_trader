@@ -43,7 +43,7 @@ def test_account_cli_writes_require_runtime_ownership(tmp_path, action):
     assert not database.exists()
 
 
-def test_offline_account_pause_and_resume_are_audited(new_store, tmp_path):
+def test_offline_account_pause_and_resume_are_atomic_and_audited(new_store, tmp_path, monkeypatch):
     database = tmp_path / "pause.db"
     store = new_store(database)
     create_account(store, "one", "v1", "a")
@@ -55,14 +55,6 @@ def test_offline_account_pause_and_resume_are_audited(new_store, tmp_path):
         ))
         assert bool(result["paused"]) is paused
         assert len(store.query_audit_events(event_type=event_type, account_id="one")) == 1
-    store.close()
-
-
-def test_offline_account_pause_rolls_back_if_audit_cannot_be_saved(new_store, tmp_path, monkeypatch):
-    database = tmp_path / "pause-rollback.db"
-    store = new_store(database)
-    create_account(store, "one", "v1", "a")
-
     def reject(*args, **kwargs):
         raise RuntimeError("audit unavailable")
 

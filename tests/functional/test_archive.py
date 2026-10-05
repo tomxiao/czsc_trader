@@ -15,10 +15,10 @@ from czsc_trader.application import RepositoryContext, validate_archives, Valida
 
 
 def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
-    functional_repo: Path, capsys
+    minimal_repo: Path,
 ) -> None:
-    archive = functional_repo / "experiments" / "0904_ARCHIVE"
-    archive.mkdir()
+    archive = minimal_repo / "experiments" / "0904_ARCHIVE"
+    archive.mkdir(parents=True)
     for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
         (archive / name).write_text("document\n", encoding="utf-8")
     runner = archive / "run_experiment.py"
@@ -34,7 +34,7 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
     )
     runner.write_bytes(b"print('research')\r\n")
     chart.write_bytes(b"<svg>\r\n<text>research</text>\r\n</svg>\r\n")
-    context = RepositoryContext.discover(functional_repo)
+    context = RepositoryContext.discover(minimal_repo)
     first = asdict(validate_archives(context, archive))
     assert first["result"] == {
         "validated_count": 1,
@@ -52,7 +52,7 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
         validate_archives(context, archive)
     assert failure.value.code == "experiment_archive_invalid"
 
-    experiment_root = functional_repo / "new-experiments"
+    experiment_root = minimal_repo / "new-experiments"
     first = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
     second = create_experiment_dir(experiment_root, date(2026, 9, 9), "S002")
     assert first.parent == experiment_root / "S002"
@@ -74,9 +74,9 @@ def test_ft_t07_archive_validation_is_portable_and_detects_tampering(
 
 
 def test_ft_t07_archive_all_discovers_strategy_owned_directories(
-    functional_repo: Path, capsys
+    minimal_repo: Path,
 ) -> None:
-    experiments = functional_repo / "experiments"
+    experiments = minimal_repo / "experiments"
     created: list[str] = []
     for strategy_id in ("S001", "S002"):
         archive = create_experiment_dir(experiments, date(2026, 9, 11), strategy_id)
@@ -95,7 +95,7 @@ def test_ft_t07_archive_all_discovers_strategy_owned_directories(
         )
 
     result = asdict(
-        validate_archives(RepositoryContext.discover(functional_repo), all_archives=True)
+        validate_archives(RepositoryContext.discover(minimal_repo), all_archives=True)
     )
     assert result["result"] == {
         "validated_count": 2,

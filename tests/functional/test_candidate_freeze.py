@@ -145,16 +145,33 @@ def approve(context, report, source, decision_id="freeze1", request_id="request1
     )
 
 
-def test_managed_inspection_freeze_and_idempotent_query(inspection):
+def test_managed_inspection_freeze_and_idempotent_query(inspection, monkeypatch):
+    from czsc_trader.application import delivery_service
+
     context, request, source = inspection
+    assert not context.strategy_root.exists()
+
+    def forbidden(_):
+        pytest.fail("stage five must not recompute stage four statistics")
+
+    monkeypatch.setattr(delivery_service, "assess_candidates", forbidden)
+    monkeypatch.setattr(delivery_service, "compare_candidates", forbidden)
     report = inspect_candidate(context, request)
     assert report.status is f.InspectionStatus.PASS, "\n".join(
         x.detail for x in report.checks if x.status is not f.InspectionStatus.PASS
     )
     assert len(request.execution.trace.evaluations) == 1
-    report.reference.resolve(context.root)
+    assert not context.strategy_root.exists()
+    assert report.reference.resolve(context.root).is_relative_to(
+        context.experiments_root / "S900" / request.execution.definition.experiment_id
+    )
     assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
     operation = approve(context, report, source)
+    assert operation.approval.evidence.resolve(context.root).is_relative_to(
+        context.research_root / "S900/decisions"
+    )
+    assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
+    assert not context.strategy_root.exists()
     receipt = freeze_candidate(context, operation)
     assert receipt.status is f.FreezeStatus.COMMITTED, receipt
     assert (
@@ -169,8 +186,12 @@ def test_managed_inspection_freeze_and_idempotent_query(inspection):
     assert StrategyVersion.from_dict(version.to_dict()) == version
     assert StrategyRelease.from_mapping(version.to_dict()).release_hash == version.release_hash
     assert not hasattr(registry, "validate_version_governance")
+    assert not hasattr(registry, "record_research_decision")
     assert registry.validate_all()["versions"] == 1
     assert not (context.strategy_root / "deployments").exists()
+    assert not (context.strategy_root / "research_objects").exists()
+    assert not (context.strategy_root / "research_decisions").exists()
+    assert not (context.strategy_root / "freeze_requests").exists()
     with pytest.raises(ValueError, match="different content"):
         freeze_candidate(context, replace(operation, inspection=report.plan.payload))
 
@@ -479,20 +500,19 @@ def test_release_signal_divergence_blocks_freeze(inspection, monkeypatch):
         freeze_candidate(context, operation)
 
 
-def test_invalid_package_reports_failure_and_decisions_are_immutable(inspection):
+def test_invalid_package_reports_failure_and_decisions_are_immutable(inspected_candidate):
     from strategy_manager import ValidationError
     from czsc_trader.application.research_evidence import read_decision
 
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+    context, report, source = inspected_candidate
     operation = approve(context, report, source)
     binding_path = report.plan.runtime_binding.resolve(context.root)
     binding_path.write_bytes(binding_path.read_bytes() + b" ")
     with pytest.raises(ValidationError, match="hash"):
         freeze_candidate(context, operation)
-    selection = read_decision(context.root, request.selection)
+    selection = read_decision(context.root, report.selection)
     repeated = replace(selection, confirmation_source=file_ref(context.root, source))
-    assert record_research_decision(context, repeated) == request.selection
+    assert record_research_decision(context, repeated) == report.selection
     with pytest.raises(ValidationError, match="hash differs"):
         record_research_decision(context, replace(repeated, reason="changed decision content"))
 
@@ -656,36 +676,6 @@ def test_archived_signal_restoration_preserves_precision_units_and_nulls():
     pd.testing.assert_frame_equal(signals, _reference_signals(persisted), check_exact=True)
 
 
-def test_selection_inspection_and_pending_freeze_do_not_write_runtime_registry(inspection, monkeypatch):
-    from czsc_trader.application import delivery_service
-
-    context, request, source = inspection
-    assert not context.strategy_root.exists()
-
-    def forbidden(_):
-        pytest.fail("stage five must not recompute stage four statistics")
-
-    monkeypatch.setattr(delivery_service, "assess_candidates", forbidden)
-    monkeypatch.setattr(delivery_service, "compare_candidates", forbidden)
-    report = inspect_candidate(context, request)
-    assert report.status is f.InspectionStatus.PASS
-    assert not context.strategy_root.exists()
-    assert report.reference.resolve(context.root).is_relative_to(
-        context.experiments_root / "S900" / request.execution.definition.experiment_id
-    )
-    operation = approve(context, report, source)
-    assert operation.approval.evidence.resolve(context.root).is_relative_to(
-        context.research_root / "S900/decisions"
-    )
-    assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
-    assert not context.strategy_root.exists()
-    assert freeze_candidate(context, operation).status is f.FreezeStatus.COMMITTED
-    assert not (context.strategy_root / "research_objects").exists()
-    assert not (context.strategy_root / "research_decisions").exists()
-    assert not (context.strategy_root / "freeze_requests").exists()
-    assert not hasattr(StrategyRegistry(context.strategy_root), "record_research_decision")
-
-
 def test_static_runtime_failure_stops_account_reproduction(inspection, monkeypatch):
     from strategy_runtime import StrategyRuntime, RuntimeCompatibilityError
 
@@ -713,11 +703,18 @@ def test_static_runtime_failure_stops_account_reproduction(inspection, monkeypat
     assert not context.strategy_root.exists()
 
 
-def test_research_evidence_requires_owner_relative_paths_and_repository_root(inspection):
+def test_research_evidence_requires_owner_relative_paths_and_repository_root(minimal_repo):
     from strategy_manager import ValidationError
 
-    context, request, _ = inspection
-    reference = request.selection.evidence
+    context = RepositoryContext.discover(minimal_repo)
+    evidence = context.research_root / "S900/decisions/selection.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text('{"decision":"synthetic"}', encoding="utf-8")
+    reference = f.ResearchEvidenceRef(
+        f.ResearchEvidenceOwner("S900"), "decisions/selection.json",
+        sha256(evidence.read_bytes()).hexdigest(),
+    )
+    assert reference.resolve(context.root) == evidence
     assert f.ResearchEvidenceRef.from_dict(reference.to_dict()) == reference
     with pytest.raises(ValidationError):
         reference.resolve(context.strategy_root)

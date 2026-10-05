@@ -70,6 +70,12 @@ def test_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
     flows = _flows(tmp_path, provider)
     first = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
     assert first.ready
+    with sqlite3.connect(_database(tmp_path).as_uri() + "?mode=ro", uri=True) as conn:
+        acquired = conn.execute("SELECT acquired_at FROM assets").fetchone()[0]
+        prepared_at = conn.execute("SELECT prepared_at FROM preparations").fetchone()[0]
+    assert datetime.fromisoformat(acquired).utcoffset() == timedelta(0)
+    assert datetime.fromisoformat(prepared_at).utcoffset() == timedelta(0)
+    assert acquired <= prepared_at
     old = flows.fetch(_request(), prepared=first.reference)
     source = _frame(10)
     refreshed = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
@@ -77,30 +83,17 @@ def test_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
     assert len(calls) == 2
     assert_frame_equal(flows.fetch(_request(), prepared=first.reference).dataframe, old.dataframe)
     assert flows.fetch(_request(), prepared=refreshed.reference).dataframe["Close"].iloc[0] == 11.1
+    with sqlite3.connect(_database(tmp_path).as_uri() + "?mode=ro", uri=True) as conn:
+        acquisition_times = conn.execute("SELECT acquired_at FROM assets ORDER BY acquired_at").fetchall()
     same = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
-    assert same.ready and _counts(tmp_path) == (2, 3)
+    assert same.ready and same.reference != refreshed.reference and _counts(tmp_path) == (2, 3)
+    with sqlite3.connect(_database(tmp_path).as_uri() + "?mode=ro", uri=True) as conn:
+        assert conn.execute("SELECT acquired_at FROM assets ORDER BY acquired_at").fetchall() == acquisition_times
     reopened = _flows(tmp_path, _must_not_fetch)
     reused = reopened.prepare((_request(),), policy=PreparePolicy.REUSE)
     assert reused.ready and _counts(tmp_path) == (2, 4)
     assert_frame_equal(reopened.fetch(_request(), prepared=reused.reference).dataframe,
                        flows.fetch(_request(), prepared=refreshed.reference).dataframe)
-
-
-def test_asset_acquisition_and_preparation_times_are_utc_without_affecting_dedup(tmp_path):
-    flows = _flows(tmp_path, lambda request: (_frame(), {"vendor": "synthetic"}))
-    first = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
-    assert first.ready
-    with sqlite3.connect(_database(tmp_path).as_uri() + "?mode=ro", uri=True) as conn:
-        acquired = conn.execute("SELECT acquired_at FROM assets").fetchone()[0]
-        prepared = conn.execute("SELECT prepared_at FROM preparations").fetchone()[0]
-    assert datetime.fromisoformat(acquired).utcoffset() == timedelta(0)
-    assert datetime.fromisoformat(prepared).utcoffset() == timedelta(0)
-    assert acquired <= prepared
-    second = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
-    assert second.ready and second.reference != first.reference
-    with sqlite3.connect(_database(tmp_path).as_uri() + "?mode=ro", uri=True) as conn:
-        assert conn.execute("SELECT acquired_at FROM assets").fetchall() == [(acquired,)]
-        assert conn.execute("SELECT COUNT(*) FROM preparations").fetchone()[0] == 2
 
 
 def test_partial_prepare_preserves_success_for_retry_without_batch_reference(tmp_path):

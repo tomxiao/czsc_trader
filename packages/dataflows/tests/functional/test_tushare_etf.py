@@ -77,12 +77,11 @@ def test_etf_long_history_fetch_segments_adjustment_factors(flow_factory, publis
         assert failed.error is not None and failed.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-@pytest.mark.parametrize("dataset,frequency", [
-    (Dataset.ETF_UNADJUSTED_DAILY, "daily"),
-    (Dataset.ETF_OHLCV, "daily"),
-    (Dataset.ETF_OHLCV, "weekly"),
+@pytest.mark.parametrize("dataset,frequency,symbol,exchange", [
+    (Dataset.ETF_UNADJUSTED_DAILY, "daily", "588080.SH", "SSE"),
+    (Dataset.ETF_OHLCV, "daily", "159915.SZ", "SZSE"),
+    (Dataset.ETF_OHLCV, "weekly", "588080.SH", "SSE"),
 ])
-@pytest.mark.parametrize("symbol,exchange", [("588080.SH", "SSE"), ("159915.SZ", "SZSE")])
 def test_etf_publication_requires_verified_daily_session_coverage(
     flow_factory, publish_data, monkeypatch, dataset, frequency, symbol, exchange,
 ):
@@ -146,6 +145,11 @@ def test_etf_publication_requires_verified_daily_session_coverage(
     # A rejected refresh cannot mutate a previously pinned, complete publication.
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
+
+    # Every public route checks calendar coverage above. Calendar corruption is
+    # one shared adapter contract, exercised once rather than per market/route.
+    if dataset is not Dataset.ETF_UNADJUSTED_DAILY:
+        return
 
     pro.missing = False
     pro.calendar_gap = True

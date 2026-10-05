@@ -8,10 +8,10 @@ import pytest
 from research_experiment import ExperimentBinding
 from strategy_manager import StrategyRegistry, StrategyVersion, ValidationError, PaperTradingApproval
 from strategy_runtime import StrategyRelease, RuntimeContractError
-from czsc_trader.application import RepositoryContext, inspect_candidate, freeze_candidate, deploy_strategy
+from czsc_trader.application import RepositoryContext, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
 from test_candidate_freeze import (
-    inspection as inspection, approve,
+    inspection as inspection, inspected_candidate as inspected_candidate, approve,
     completed as completed, managed_evaluation as managed_evaluation,
 )
 
@@ -35,9 +35,10 @@ def test_real_installed_versions_report_execution_contract_fees(registered_relea
 
 
 @pytest.fixture
-def freshly_frozen(inspection):
-    context, request, source = inspection
-    report = inspect_candidate(context, request)
+def freshly_frozen(inspected_candidate):
+    # Exercise real freeze/deployment once from the same verified inspection seed
+    # used by persistence tests; consumers still receive private repository copies.
+    context, report, source = inspected_candidate
     receipt = freeze_candidate(context, approve(context, report, source))
     assert receipt.status.value == "COMMITTED", receipt
     deploy_strategy(context, "S900-v1")

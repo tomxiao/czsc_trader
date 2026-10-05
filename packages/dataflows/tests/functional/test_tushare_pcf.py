@@ -177,40 +177,32 @@ def test_basket_row_limit_and_invalid_request_do_not_report_ready(monkeypatch) -
         )
 
 
-def test_facade_rejects_basket_available_on_source_day(flow_factory, publish_data) -> None:
+def test_facade_rejects_false_basket_availability_and_verification(flow_factory, publish_data) -> None:
     pro = FakePro([_row("20250303")], ("20250303", "20250304"))
     frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
         "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
     )
-    frame.loc[:, "AvailableDate"] = "2025-03-03 09:30:00"
+    supplied_frame, supplied_metadata = frame, metadata
     facade = flow_factory({
-        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda request: (frame, metadata)
+        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda request: (supplied_frame, supplied_metadata)
     })
-
-    result = publish_data(facade, DataRequest(
+    request = DataRequest(
         Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
         "2025-03-03", "2025-03-03", None,
-    ))
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
-
-
-def test_facade_rejects_basket_falsely_claiming_verified_source_time(flow_factory, publish_data) -> None:
-    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
-    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
-        "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
     )
-    metadata["source_publication_timestamp_verified"] = True
-    result = publish_data(flow_factory({
-        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda ignored: (frame, metadata)
-    }), DataRequest(
-        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
-        "2025-03-03", "2025-03-03", None,
-    ))
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+    ready = publish_data(facade, request)
+    assert ready.ready, ready.error
+    for claim in ("same_day", "source_publication_timestamp_verified", "official_pcf_code_quantity_verified"):
+        supplied_frame, supplied_metadata = frame.copy(deep=True), metadata.copy()
+        if claim == "same_day":
+            supplied_frame.loc[:, "AvailableDate"] = "2025-03-03 09:30:00"
+        else:
+            supplied_metadata[claim] = True
+        result = publish_data(facade, request)
+        assert result.status is DataStatus.FAILED, claim
+        assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH", claim
+    old = facade.fetch(request, prepared=ready.prepared)
+    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
 def _official_xml(quantity: int = 100, day: str = "20250303") -> bytes:
@@ -228,6 +220,7 @@ def test_optional_official_pcf_check_verifies_content_without_claiming_vintage(f
     pro = FakePro([_row("20250303")], ("20250303", "20250304"))
     monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
     calls = []
+    payload = _official_xml()
 
     def fake_post(path, data):
         calls.append((path, data))
@@ -237,14 +230,16 @@ def test_optional_official_pcf_check_verifies_content_without_claiming_vintage(f
                     "fileName": "pcf_159326_20250303.xml", "year": None,
                 },
             })
-        return SimpleNamespace(content=_official_xml())
+        return SimpleNamespace(content=payload)
 
     monkeypatch.setattr(chinaamc_pcf, "_post", fake_post)
-    result = publish_data(flow_factory(), DataRequest(
+    flows = flow_factory()
+    request = DataRequest(
         Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
         "2025-03-03", "2025-03-03", None, "daily",
         PcfParameters(verify_official_pcf_components=True),
-    ))
+    )
+    result = publish_data(flows, request)
 
     assert result.status is DataStatus.READY
     assert result.identity is not None
@@ -257,28 +252,16 @@ def test_optional_official_pcf_check_verifies_content_without_claiming_vintage(f
     assert metadata["historical_revision_history_verified"] is False
     assert [path for path, _ in calls] == ["tradeList", "query/etfDownload"]
     assert calls[1][1]["fileName"] == "pcf_159326_20250303.xml"
-
-
-@pytest.mark.parametrize("payload", [_official_xml(quantity=99), _official_xml(day="20250304"), b"bad xml"])
-def test_official_pcf_check_fails_closed_on_mismatch(flow_factory, publish_data, monkeypatch, payload) -> None:
-    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
-    monkeypatch.setattr(tushare_pcf, "get_tushare_pro", lambda _env: pro)
-
-    def fake_post(path, _data):
-        if path == "tradeList":
-            return SimpleNamespace(json=lambda: {
-                "status": 1, "data": {"fileName": "pcf_159326_20250303.xml"},
-            })
-        return SimpleNamespace(content=payload)
-
-    monkeypatch.setattr(chinaamc_pcf, "_post", fake_post)
-    result = publish_data(flow_factory(), DataRequest(
-        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
-        "2025-03-03", "2025-03-03", None, "daily",
-        PcfParameters(verify_official_pcf_components=True),
-    ))
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"
+    for defect, payload in (
+        ("quantity mismatch", _official_xml(quantity=99)),
+        ("date mismatch", _official_xml(day="20250304")),
+        ("malformed XML", b"bad xml"),
+    ):
+        failed = publish_data(flows, request)
+        assert failed.status is DataStatus.FAILED, defect
+        assert failed.error is not None and failed.error.code == "DATA_CONTRACT_MISMATCH", defect
+    old = flows.fetch(request, prepared=result.prepared)
+    assert old.ready and old.identity.content_sha256 == result.identity.content_sha256
 
 
 @pytest.mark.parametrize("option", [1, "true", None])
@@ -308,19 +291,3 @@ def test_official_pcf_check_rejects_wrong_file_identity(monkeypatch) -> None:
     ))
     with pytest.raises(DataContractError, match="file date differs"):
         chinaamc_pcf.verify_chinaamc_pcf_components("159326.SZ", "2025-03-03", basket)
-
-
-def test_facade_rejects_forged_official_pcf_verification(flow_factory, publish_data) -> None:
-    pro = FakePro([_row("20250303")], ("20250303", "20250304"))
-    frame, metadata = tushare_pcf.fetch_etf_creation_redemption_basket(
-        "159326.SZ", "2025-03-03", "2025-03-03", pro=pro,
-    )
-    metadata["official_pcf_code_quantity_verified"] = True
-    result = publish_data(flow_factory({
-        Dataset.ETF_CREATION_REDEMPTION_BASKET.value: lambda ignored: (frame, metadata)
-    }), DataRequest(
-        Dataset.ETF_CREATION_REDEMPTION_BASKET, "159326.SZ",
-        "2025-03-03", "2025-03-03", None,
-    ))
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None and result.error.code == "DATA_CONTRACT_MISMATCH"

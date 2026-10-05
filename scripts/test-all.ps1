@@ -47,6 +47,14 @@ try {
             $env:CZSC_PYTEST_RUN_ID = "$RunId-$LaneName"
 
             $Steps = [System.Collections.Generic.List[object]]::new()
+            # These independent runtime callers fill the package lane's spare
+            # capacity without splitting the shared freeze/delivery fixtures.
+            $RuntimeTests = @(
+                'tests/functional/test_candidate_runtime_execution.py',
+                'tests/functional/test_srt_backtest_bridge.py',
+                'tests/functional/test_evaluation_batch.py',
+                'tests/functional/test_input_binding_integrity.py'
+            )
             if ($LaneName -in @('TDR_FREEZE', 'TDR')) {
                 # Keep the shared research fixtures together. The other lane
                 # discovers all remaining tests, including newly added files.
@@ -58,7 +66,9 @@ try {
                     $FreezeTests
                 }
                 else {
-                    @('tests') + @($FreezeTests | ForEach-Object { "--ignore=$_" })
+                    @('tests') + @(
+                        ($FreezeTests + $RuntimeTests) | ForEach-Object { "--ignore=$_" }
+                    )
                 }
                 $Steps.Add([pscustomobject]@{
                     Label = $LaneName
@@ -106,6 +116,14 @@ try {
                         )
                     })
                 }
+                $Steps.Add([pscustomobject]@{
+                    Label = 'TDR_RUNTIME'
+                    Executable = $Python
+                    Arguments = @(
+                        '-m', 'pytest', '-c', 'pyproject.toml', '-q',
+                        '--durations=5', '--release-acceptance'
+                    ) + $RuntimeTests
+                })
             }
             else {
                 throw "Unknown test lane: $LaneName"
@@ -119,7 +137,16 @@ try {
                 )
                 $StepTimer = [System.Diagnostics.Stopwatch]::StartNew()
                 try {
-                    $Output = & $Step.Executable @($Step.Arguments) 2>&1
+                    $StepArguments = @($Step.Arguments)
+                    if ($Step.Executable -eq $Python) {
+                        # Retain per-case timings for subsequent governance;
+                        # the full suite still runs with unchanged assertions.
+                        $ReportPath = Join-Path (Split-Path -Parent $LogPath) (
+                            "$($Step.Label.ToLowerInvariant()).xml"
+                        )
+                        $StepArguments += "--junitxml=$ReportPath"
+                    }
+                    $Output = & $Step.Executable @StepArguments 2>&1
                     $ExitCode = $LASTEXITCODE
                 }
                 catch {

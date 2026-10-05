@@ -163,11 +163,16 @@ def test_fxcm_available_timestamp_blocks_next_morning_and_allows_declared_bounda
 def test_fxcm_facade_rejects_missing_or_early_availability(flow_factory, publish_data, dataset, symbol) -> None:
     frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
     request = DataRequest(dataset, symbol, "2026-09-15", "2026-09-15", None)
-    def publish(f): return publish_data(flow_factory({dataset.value: lambda _: (f, metadata)}), request)
-    assert publish(frame).status is DataStatus.READY
-    assert publish(frame.drop(columns="AvailableDate")).status is DataStatus.FAILED
-    early = frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
-    assert publish(early).status is DataStatus.FAILED
+    supplied_frame = frame
+    flows = flow_factory({dataset.value: lambda _: (supplied_frame, metadata)})
+    ready = publish_data(flows, request)
+    assert ready.status is DataStatus.READY
+    supplied_frame = frame.drop(columns="AvailableDate")
+    assert publish_data(flows, request).status is DataStatus.FAILED
+    supplied_frame = frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
+    assert publish_data(flows, request).status is DataStatus.FAILED
+    old = flows.fetch(request, prepared=ready.prepared)
+    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
 def test_monthly_inputs_use_reference_month_end_and_conservative_availability() -> None:

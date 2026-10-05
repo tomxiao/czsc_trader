@@ -279,6 +279,22 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
     )
     assert wheelhouse[wheelhouse.index("--only-binary") + 1] == ":all:"
 
+    artifact = next((build_root / "releases" / "v0.4.1" / "artifacts").glob("*.whl"))
+    original = artifact.read_bytes()
+    artifact.write_bytes(b"tampered")
+    with pytest.raises(RuntimeError, match="artifact differs"):
+        publish_release(
+            build_root=build_root,
+            runtime_root=runtime,
+            release_id="v0.4.1",
+            source_python=Path("C:/Python/python.exe"),
+            uv_executable=Path("C:/uv/uv.exe"),
+            runner=runner,
+        )
+    artifact.write_bytes(original)
+
+    assert not runtime.exists()
+
     published = publish_release(
         build_root=build_root,
         runtime_root=runtime,
@@ -320,35 +336,7 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, pte_frozen)
     assert all("vectorbt" not in " ".join(command).lower() for command in installs)
 
 
-def test_publish_rejects_tampered_build_and_ignores_existing_service_host(tmp_path, pte_frozen):
-    repo = (tmp_path / "repo").resolve()
-    build_root = (repo / ".build" / "pte").resolve()
-    runtime = (tmp_path / "pte-runtime").resolve()
-    _create_tagged_release_repo(repo, pte_frozen[0].strategy_root)
-    runner = FakeReleaseRunner()
-    fetch_sdist, pinned_runner = _source_build_fakes(runner)
-    build_release(
-        repo_root=repo,
-        build_root=build_root,
-        release_id="v0.4.1",
-        source_python=Path("C:/Python/python.exe"),
-        uv_executable=Path("C:/uv/uv.exe"),
-        source_distribution_fetcher=fetch_sdist,
-        runner=pinned_runner,
-    )
-    artifact = next((build_root / "releases" / "v0.4.1" / "artifacts").glob("*.whl"))
-    original = artifact.read_bytes()
-    artifact.write_bytes(b"tampered")
-    with pytest.raises(RuntimeError, match="artifact differs"):
-        publish_release(
-            build_root=build_root,
-            runtime_root=runtime,
-            release_id="v0.4.1",
-            source_python=Path("C:/Python/python.exe"),
-            uv_executable=Path("C:/uv/uv.exe"),
-            runner=runner,
-        )
-    artifact.write_bytes(original)
+    runtime = (tmp_path / "existing-host-runtime").resolve()
     existing_host = runtime / "host" / "releases" / "v0.4.1"
     existing_host.mkdir(parents=True)
     marker = existing_host / "untouched.txt"

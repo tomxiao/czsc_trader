@@ -15,6 +15,7 @@ from test_current_contracts import (  # noqa: E402
     current_frozen as current_frozen,
     freshly_frozen as freshly_frozen,
     inspection as inspection,
+    inspected_candidate as inspected_candidate,
     completed as completed,
     managed_evaluation as managed_evaluation,
 )

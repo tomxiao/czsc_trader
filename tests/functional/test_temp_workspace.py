@@ -40,30 +40,32 @@ def test_directory_publish_retries_transient_windows_lock(tmp_path, monkeypatch)
 
 
 def test_temporary_workspace_routes_and_rejects_unsafe_paths(
-    functional_repo: Path, tmp_path: Path
+    minimal_repo: Path, tmp_path: Path
 ) -> None:
+    (minimal_repo / "outputs").mkdir()
+    (minimal_repo / "data" / "raw").mkdir(parents=True)
     first = create_temporary_directory(
-        functional_repo / "outputs", "backtest", prefix="run-"
+        minimal_repo / "outputs", "backtest", prefix="run-"
     )
     second = create_temporary_directory(
-        functional_repo / "data" / "raw", "market-data", prefix="588080-"
+        minimal_repo / "data" / "raw", "market-data", prefix="588080-"
     )
     external = create_temporary_directory(
         tmp_path / "external-output",
         "evaluation",
-        repository_root=functional_repo,
+        repository_root=minimal_repo,
     )
 
-    assert first.parent == functional_repo / ".tmp" / "backtest"
-    assert second.parent == functional_repo / ".tmp" / "market-data"
+    assert first.parent == minimal_repo / ".tmp" / "backtest"
+    assert second.parent == minimal_repo / ".tmp" / "market-data"
     assert first != second
-    assert external.parent == functional_repo / ".tmp" / "evaluation"
-    assert temporary_root(functional_repo) == functional_repo / ".tmp"
+    assert external.parent == minimal_repo / ".tmp" / "evaluation"
+    assert temporary_root(minimal_repo) == minimal_repo / ".tmp"
 
     with pytest.raises(ValueError, match="temporary namespace"):
-        create_temporary_directory(functional_repo, "../outside")
+        create_temporary_directory(minimal_repo, "../outside")
     with pytest.raises(ValueError, match="temporary prefix"):
-        create_temporary_directory(functional_repo, "backtest", prefix="../outside")
+        create_temporary_directory(minimal_repo, "backtest", prefix="../outside")
 
     shutil.rmtree(first)
     shutil.rmtree(second)
