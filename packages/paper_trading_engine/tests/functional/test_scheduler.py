@@ -222,15 +222,19 @@ def test_scheduler_prepares_then_decides_each_account_after_2030():
     scheduler.tick_daily(datetime(2026, 9, 18, 20, 29, 59))
     assert advice.calls == []
     scheduler.tick_daily(datetime(2026, 9, 18, 20, 30))
-    _wait_until(lambda: len(engine.calls) == 2)
-    assert [item["account_id"] for item in advice.calls] == ["s007-v1", "s003-v1"]
-    assert engine.calls == [
-        ("decision", "s007-v1"),
+    _wait_until(lambda: all(
+        store.values.get(f"last_account_decision_date:{account}") == "2026-09-18"
+        for account in ("s007-v1", "s003-v1")
+    ))
+    # Account workers are independent; every account must complete exactly once.
+    assert sorted(item["account_id"] for item in advice.calls) == ["s003-v1", "s007-v1"]
+    assert sorted(engine.calls) == [
         ("decision", "s003-v1"),
+        ("decision", "s007-v1"),
     ]
     assert store.values["last_account_decision_date:s007-v1"] == "2026-09-18"
     assert store.values["last_account_decision_date:s003-v1"] == "2026-09-18"
-    assert [e["account_id"] for e in store.audit_events] == ["s007-v1", "s003-v1"]
+    assert sorted(e["account_id"] for e in store.audit_events) == ["s003-v1", "s007-v1"]
 
 
 def test_scheduler_account_failure_does_not_block_other_account_and_retries():
@@ -281,9 +285,9 @@ def test_scheduler_revalidates_prepared_data_before_retrying_decision():
     scheduler.tick_daily(datetime(2026, 9, 18, 20, 30, 5))
     _wait_until(lambda: len(engine.calls) == 3)
     assert len(advice.calls) == 3
-    assert engine.calls == [
-        ("decision", "s007-v1"),
+    assert sorted(engine.calls) == [
         ("decision", "s003-v1"),
+        ("decision", "s007-v1"),
         ("decision", "s007-v1"),
     ]
 
