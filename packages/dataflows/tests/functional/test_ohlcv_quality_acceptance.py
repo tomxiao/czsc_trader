@@ -6,7 +6,8 @@ from dataclasses import replace
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataset, PreparePolicy
+from dataflows import Dataflows, DataRequest, DataSpace, DataStatus, Dataset, PreparePolicy, ProviderConfig
+from dataflows import facade
 from dataflows.history_repair import frame_content_sha256
 from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence
 
@@ -157,22 +158,75 @@ def test_prepare_and_fetch_use_post_correction_source_evidence(flow_factory):
     assert sum(row["minute_accurate"] for row in sessions.values()) == 95
 
 
-def test_reuse_is_offline_and_fetch_rechecks_subwindow_accuracy(flow_factory):
+def test_reuse_is_offline_and_fetch_reads_certified_window_quality(flow_factory, monkeypatch):
     daily, _ = _source(bad_daily=[49])
     metadata, calls = _metadata(daily), []
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, metadata, calls)})
     request = _request()
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
+
+    def must_not_revalidate(*args, **kwargs):
+        raise AssertionError("published assets must reuse validated quality facts")
+
+    monkeypatch.setattr(facade, "_validate_provider_output", must_not_revalidate)
     reused = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert reused.ready and len(calls) == 1
+    assert reused.ready and reused.reference == prepared.reference and len(calls) == 1
     good = replace(request, start=SESSIONS[0], end=SESSIONS[48])
-    assert flows.fetch(good, prepared=reused.reference).ready
+    fetched = flows.fetch(good, prepared=reused.reference)
+    assert fetched.ready
+    fetched.identity.metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[49]]["daily_accurate"] = True
     bad = replace(request, start=SESSIONS[49], end=SESSIONS[49])
-    rejected = flows.fetch(bad, prepared=reused.reference)
-    assert rejected.status is DataStatus.FAILED
-    assert "accuracy" in rejected.error.message.lower()
+    selected = flows.fetch(bad, prepared=reused.reference)
+    assert selected.ready and len(selected.dataframe) == 1
+    assert selected.identity.metadata["ohlcv_quality"]["daily"]["accuracy"] == .99
+    assert not selected.identity.metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[49]]["daily_accurate"]
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize("revision", [None, "0" * 64], ids=["unvalidated", "stale"])
+def test_fetch_requires_current_publication_validation(flow_factory, revision):
+    daily, _ = _source()
+    calls = []
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily), calls)})
+    request = _request()
+    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    assert prepared.ready
+    entries = flows._store.load_preparation(prepared.reference)
+    for entry in entries:
+        if revision is None:
+            del entry["validated_revision"]
+        else:
+            entry["validated_revision"] = revision
+    # Simulate an older immutable publication; do not alter the original manifest.
+    with flows._store.transaction() as connection:
+        older = flows._store.publish(connection, entries)
+    rejected = flows.fetch(request, prepared=older)
+    assert rejected.status is DataStatus.FAILED
+    assert rejected.error.code == "PREPARATION_VALIDATION_REQUIRED"
+    assert len(calls) == 1
+    assert flows.fetch(request, prepared=prepared.reference).ready
+
+
+def test_changed_revision_requires_prepare_before_fetch(flow_factory, monkeypatch):
+    daily, _ = _source()
+    calls = []
+    providers = {Dataset.ETF_OHLCV: _provider(daily, _metadata(daily), calls)}
+    flows = flow_factory(providers)
+    request = _request()
+    original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
+    monkeypatch.setattr(facade, "_implementation_revision", lambda: "0" * 64)
+    upgraded = Dataflows(
+        base_dir=flows._store.base_dir,
+        space=DataSpace(flows._store.root.relative_to(flows._store.base_dir)),
+        providers=ProviderConfig(bindings={Dataset(key): value for key, value in flows._providers.items()}),
+    )
+    rejected = upgraded.fetch(request, prepared=original.reference)
+    assert rejected.error.code == "PREPARATION_VALIDATION_REQUIRED" and len(calls) == 1
+    current = upgraded.prepare((request,), policy=PreparePolicy.REUSE)
+    assert current.ready and upgraded.fetch(request, prepared=current.reference).ready
+    assert len(calls) == 2
+    assert flows.fetch(request, prepared=original.reference).ready
 
 
 def test_partial_minute_fetch_retains_full_session_quality(flow_factory):
@@ -182,10 +236,11 @@ def test_partial_minute_fetch_retains_full_session_quality(flow_factory):
     request = _request("30m")
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready, prepared.items
-    # The mismatch is in the morning; afternoon slicing must not conceal it.
+    # Reading a slice retains original window facts without a new acceptance gate.
     bad = replace(request, start=f"{SESSIONS[49]} 13:30", end=f"{SESSIONS[49]} 15:00")
-    rejected = flows.fetch(bad, prepared=prepared.reference)
-    assert rejected.status is DataStatus.FAILED
+    selected = flows.fetch(bad, prepared=prepared.reference)
+    assert selected.ready and len(selected.dataframe) == 4
+    assert not selected.identity.metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[49]]["minute_accurate"]
     good = replace(request, start=f"{SESSIONS[48]} 13:30", end=f"{SESSIONS[48]} 15:00")
     fetched = flows.fetch(good, prepared=prepared.reference)
     assert fetched.ready and len(fetched.dataframe) == 4

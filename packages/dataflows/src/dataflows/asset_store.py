@@ -166,6 +166,15 @@ class AssetStore:
             "CREATE TABLE preparations (preparation_id TEXT PRIMARY KEY, "
             "manifest_sha256 TEXT NOT NULL, manifest TEXT NOT NULL, prepared_at TEXT NOT NULL)"
         )
+        self._preparation_index(connection)
+
+    @staticmethod
+    def _preparation_index(connection: sqlite3.Connection) -> None:
+        # Add a disposable lookup index without rewriting immutable assets/manifests.
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS preparation_lookup (request_key TEXT PRIMARY KEY, "
+            "preparation_id TEXT NOT NULL REFERENCES preparations(preparation_id))"
+        )
 
     def _metadata(self, connection: sqlite3.Connection) -> UUID:
         expected_columns = {
@@ -178,6 +187,9 @@ class AssetStore:
             actual = tuple(row[1] for row in connection.execute(f"PRAGMA table_info({table})"))
             if actual != expected:
                 raise StoreError("SPACE_CORRUPT", "data space database schema differs")
+        lookup_columns = tuple(row[1] for row in connection.execute("PRAGMA table_info(preparation_lookup)"))
+        if lookup_columns and lookup_columns != ("request_key", "preparation_id"):
+            raise StoreError("SPACE_CORRUPT", "preparation lookup schema differs")
         row = connection.execute(
             "SELECT schema_version, space_id FROM space_metadata WHERE id=1"
         ).fetchone()
@@ -204,6 +216,7 @@ class AssetStore:
                 connection.execute("PRAGMA foreign_keys=ON")
                 connection.execute("BEGIN IMMEDIATE")
                 self._metadata(connection)
+                self._preparation_index(connection)
                 yield connection
                 connection.commit()
             except BaseException:
@@ -267,6 +280,30 @@ class AssetStore:
                 "SELECT asset_id FROM asset_lookup WHERE request_key=?", (key,)
             ).fetchone()
             return row[0] if row is not None else None
+
+    def lookup_preparation(self, connection: sqlite3.Connection, key: str) -> PreparedDataRef | None:
+        row = connection.execute(
+            "SELECT p.preparation_id, p.manifest_sha256 FROM preparation_lookup AS l "
+            "LEFT JOIN preparations AS p ON p.preparation_id=l.preparation_id WHERE l.request_key=?",
+            (key,),
+        ).fetchone()
+        if row is None:
+            return None
+        if row[0] is None:
+            raise StoreError("PREPARATION_CORRUPT", "cached preparation is missing")
+        try:
+            return PreparedDataRef(self.space_id, UUID(row[0]), row[1])
+        except (TypeError, ValueError) as exc:
+            raise StoreError("PREPARATION_CORRUPT", "cached preparation identity is invalid") from exc
+
+    def cache_preparation(self, connection: sqlite3.Connection, key: str, reference: PreparedDataRef) -> None:
+        if reference.space_id != self.space_id:
+            raise StoreError("SPACE_MISMATCH", "cached preparation belongs to another space")
+        connection.execute(
+            "INSERT INTO preparation_lookup VALUES (?, ?) ON CONFLICT(request_key) "
+            "DO UPDATE SET preparation_id=excluded.preparation_id",
+            (key, str(reference.preparation_id)),
+        )
 
     def read_asset(self, connection: sqlite3.Connection, asset_id: str) -> DataResult:
         with _storage_errors():

@@ -87,19 +87,20 @@ def _verify_frame_values(evidence: Mapping[str, Any], frame: pd.DataFrame, *, co
         for _, row in source.iterrows():
             _same_values(expected.loc[row._day], row, adjustment=False)
     elif frequency == "daily":
-        for _, row in source.iterrows():
-            _same_values(_values(sessions[row._day]["daily_values"]), row, adjustment=adjusted)
+        for day, *values in source.loc[:, ["_day", *VALUE_COLUMNS]].itertuples(index=False, name=None):
+            _same_values(_values(sessions[day]["daily_values"]), dict(zip(VALUE_COLUMNS, values)), adjustment=adjusted)
     else:
         aggregate = source.groupby("_day").agg(
             Open=("Open", "first"), High=("High", "max"), Low=("Low", "min"),
             Close=("Close", "last"), Volume=("Volume", "sum"), Amount=("Amount", "sum"))
-        for day, group in source.groupby("_day"):
+        counts = source.groupby("_day").size()
+        for day, *values in aggregate.itertuples(index=True, name=None):
             row = sessions[day]
-            if len(group) != row["minute_bar_count"]:
+            if counts[day] != row["minute_bar_count"]:
                 if complete_source:
                     raise DataContractError("quality binding requires the full source minute session")
                 continue
-            _same_values(_values(row["minute_values"]), aggregate.loc[day], adjustment=adjusted)
+            _same_values(_values(row["minute_values"]), dict(zip(VALUE_COLUMNS, values)), adjustment=adjusted)
 
 
 def bind_quality_frame(
@@ -168,12 +169,12 @@ def validate_quality_metadata(metadata: Mapping[str, Any], request: DataRequest,
     derived = canonical.loc[canonical.is_open.eq(1) & days.ge(pd.Timestamp(calendar["listing_date"])), "Date"].tolist()
     if derived != list(expected) or calendar.get("verified_sessions") != len(derived):
         raise DataContractError("OHLCV denominator differs from exchange calendar")
-    for day in expected:
-        parsed = pd.to_datetime(day, format="%Y-%m-%d", errors="coerce")
-        if (pd.isna(parsed) or parsed.strftime("%Y-%m-%d") != day
-                or parsed < pd.Timestamp(calendar["listing_date"]).normalize()
-                or not pd.Timestamp(calendar["start_date"]).normalize() <= parsed <= pd.Timestamp(calendar["end_date"]).normalize()):
-            raise DataContractError("OHLCV expected trading date is invalid")
+    parsed = pd.to_datetime(pd.Series(expected, dtype="object"), format="%Y-%m-%d", errors="coerce")
+    if (parsed.isna().any() or parsed.dt.strftime("%Y-%m-%d").tolist() != list(expected)
+            or parsed.lt(pd.Timestamp(calendar["listing_date"]).normalize()).any()
+            or not parsed.between(pd.Timestamp(calendar["start_date"]).normalize(),
+                                  pd.Timestamp(calendar["end_date"]).normalize()).all()):
+        raise DataContractError("OHLCV expected trading date is invalid")
     first, last = pd.Timestamp(request.start).date().isoformat(), pd.Timestamp(request.end).date().isoformat()
     selected = {day for day in expected if first <= day <= last}
     if request.frequency == "weekly":
@@ -347,8 +348,8 @@ def evaluate_quality(evidence: Mapping[str, Any], request: DataRequest) -> dict[
     selected = {day: row for day, row in sessions.items() if first <= day <= last}
     if not selected:
         raise IncompleteDataError("OHLCV quality denominator contains no trading sessions")
-    metrics: dict[str, Any] = {"version": QUALITY_VERSION, "total_sessions": len(selected)}
     kinds = ["daily"] + (["minute"] if request.frequency in {"1m", "5m", "15m", "30m"} else [])
+    expected_clocks = sorted(intraday_close_times(request.frequency, evidence.get("market", "a_share"))) if "minute" in kinds else []
     for kind in kinds:
         for row in selected.values():
             if not isinstance(row, Mapping) or any(type(row.get(kind + "_" + field)) is not bool for field in ("complete", "accurate")):
@@ -367,13 +368,24 @@ def evaluate_quality(evidence: Mapping[str, Any], request: DataRequest) -> dict[
             else:
                 clocks = row.get("minute_clocks")
                 count = row.get("minute_bar_count")
-                expected_clocks = sorted(intraday_close_times(request.frequency, evidence.get("market", "a_share")))
                 present = clocks == expected_clocks and type(count) is int and count == len(expected_clocks)
                 matched = present and row.get("comparison_daily_values") is not None
                 computed = _minute_fields(_values(row["minute_values"]), _values(row["comparison_daily_values"])) if matched else []
                 accurate = matched and not computed
             if (row[kind + "_complete"] != present or row[kind + "_accurate"] != accurate or fields != computed):
                 raise DataContractError("OHLCV quality flags differ from numeric evidence")
+    return _summarize_quality(evidence, request)
+
+
+def _summarize_quality(evidence: Mapping[str, Any], request: DataRequest) -> dict[str, Any]:
+    """Accept a request using session facts authenticated before asset publication."""
+    first, last = pd.Timestamp(request.start).date().isoformat(), pd.Timestamp(request.end).date().isoformat()
+    selected = {day: row for day, row in evidence["sessions"].items() if first <= day <= last}
+    if not selected:
+        raise IncompleteDataError("OHLCV quality denominator contains no trading sessions")
+    metrics: dict[str, Any] = {"version": QUALITY_VERSION, "total_sessions": len(selected)}
+    kinds = ["daily"] + (["minute"] if request.frequency in {"1m", "5m", "15m", "30m"} else [])
+    for kind in kinds:
         complete = sum(row[kind + "_complete"] for row in selected.values())
         accurate = sum(row[kind + "_accurate"] for row in selected.values())
         threshold = 99 if kind == "daily" else 95

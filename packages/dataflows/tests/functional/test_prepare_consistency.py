@@ -57,6 +57,11 @@ def test_refresh_deduplicates_acquisition_but_checks_each_coverage(flow_factory)
     second = replace(_request(), coverage=DataCoverageRequirement(minimum_observations=3))
     prepared = flows.prepare((first, second), policy=PreparePolicy.REFRESH)
     assert prepared.ready and len(calls) == 1
+    reused = flows.prepare((first, second), policy=PreparePolicy.REUSE)
+    assert reused.ready and reused.reference == prepared.reference
+    reordered = flows.prepare((second, first), policy=PreparePolicy.REUSE)
+    assert reordered.ready and reordered.reference != prepared.reference
+    assert tuple(item.request for item in reordered.items) == (second, first) and len(calls) == 1
     assert flows.fetch(first, prepared=prepared.reference).ready
     assert flows.fetch(second, prepared=prepared.reference).ready
 
@@ -257,10 +262,12 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
     morning = replace(request, coverage=DataCoverageRequirement(
         minimum_observations=5, observations_through="2026-09-14 11:30",
     ))
-    assert flows.fetch(morning, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    assert flows.fetch(morning, prepared=prepared.reference).ready
     sessions = replace(whole_day, coverage=replace(whole_day.coverage, minimum_sessions=2))
-    assert flows.fetch(sessions, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    assert flows.fetch(sessions, prepared=prepared.reference).ready
     assert len(calls) == 1
+    assert flows.prepare((morning,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
+    assert flows.prepare((sessions,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
 
 
 @pytest.mark.parametrize("missing_bar", [False, True])

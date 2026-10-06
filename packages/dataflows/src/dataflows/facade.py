@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from copy import deepcopy
 from dataclasses import fields, is_dataclass, replace
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -38,7 +39,7 @@ from .errors import (
     SourceNotReadyError,
 )
 from .history_validation import inspect_ohlcv_frame
-from .ohlcv_quality import validate_quality_metadata
+from .ohlcv_quality import _summarize_quality, validate_quality_metadata
 from .market_resolver import MARKET_A_SHARE, detect_market
 
 Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
@@ -1041,6 +1042,15 @@ class Dataflows:
         entries = []
         reference = None
         acquired: dict[str, tuple[str | None, DataResult]] = {}
+
+        def check(result: DataResult, request: DataRequest) -> DataResult:
+            if not result.ready:
+                return result
+            # This revision can only publish an asset after full source validation.
+            return self._checked_result(
+                result, request, validated=result.identity.metadata.get("dfls_revision") == self._revision,
+            )
+
         planned = []
         requirements: dict[str, list[DataRequest]] = {}
         for request in requests:
@@ -1056,8 +1066,31 @@ class Dataflows:
             }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
             planned.append((request, binding, record, key))
             requirements.setdefault(key, []).append(request)
+        prepare_key = hashlib.sha256(json.dumps({
+            "dfls_revision": self._revision,
+            "requests": [{"request": record, "asset_key": key} for _, _, record, key in planned],
+        }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         try:
             with self._store.transaction() as connection:
+                if policy is PreparePolicy.REUSE:
+                    cached = self._store.lookup_preparation(connection, prepare_key)
+                    if cached is not None:
+                        cached_entries = self._store.load_preparation(cached)
+                        if ([entry["request"] for entry in cached_entries] != [row[2] for row in planned]
+                                or any(entry.get("validated_revision") != self._revision
+                                       or entry.get("prepare_key") != prepare_key for entry in cached_entries)):
+                            raise StoreError("PREPARATION_CORRUPT", "cached preparation differs from complete request")
+                        assets = {}
+                        for request, entry in zip(requests, cached_entries):
+                            asset_id = entry["asset_id"]
+                            if asset_id not in assets:
+                                assets[asset_id] = self._store.read_asset(connection, asset_id)
+                            result = check(assets[asset_id], request)
+                            items.append(ItemPrepareResult(request=request, status=result.status,
+                                                           identity=result.identity, error=result.error))
+                        if all(item.ready for item in items):
+                            return PrepareResult(PrepareStatus.READY, tuple(items), cached)
+                        raise StoreError("PREPARATION_CORRUPT", "cached preparation no longer satisfies its request")
                 for request, binding, record, key in planned:
                     asset_id = None
                     if binding is None:
@@ -1066,51 +1099,50 @@ class Dataflows:
                     else:
                         if key in acquired:
                             asset_id, previous = acquired[key]
-                            result = self._checked_result(previous, request) if previous.ready else previous
+                            result = check(previous, request)
                         elif policy is PreparePolicy.REUSE:
                             asset_id = self._store.lookup_asset(connection, key)
                         if key not in acquired and asset_id is None:
                             # Fetch one asset independently of the consumer's acceptance thresholds.
                             result = self._fetch_source(replace(request, required_cutoff=None, coverage=None))
-                            if result.ready and any(self._checked_result(result, requirement).ready
+                            if result.ready and any(check(result, requirement).ready
                                                     for requirement in requirements[key]):
                                 asset_id = self._store.put_asset(
                                     connection, key=key, dataframe=result.dataframe,
                                     identity=result.identity, warnings=result.warnings,
                                 )
                             acquired[key] = (asset_id, result)
-                            result = self._checked_result(result, request) if result.ready else result
+                            result = check(result, request)
                         elif key not in acquired:
                             stored_result = self._store.read_asset(connection, asset_id)
-                            result = self._checked_result(
-                                stored_result, request,
-                            )
+                            result = check(stored_result, request)
                             # A previously complete but now insufficient source may have advanced.
-                            if any(self._checked_result(stored_result, requirement).status
+                            if any(check(stored_result, requirement).status
                                    is DataStatus.INCOMPLETE for requirement in requirements[key]):
                                 stored_result = self._fetch_source(
                                     replace(request, required_cutoff=None, coverage=None)
                                 )
                                 if stored_result.ready and any(
-                                    self._checked_result(stored_result, requirement).ready
+                                    check(stored_result, requirement).ready
                                     for requirement in requirements[key]
                                 ):
                                     asset_id = self._store.put_asset(
                                         connection, key=key, dataframe=stored_result.dataframe,
                                         identity=stored_result.identity, warnings=stored_result.warnings,
                                     )
-                                result = (self._checked_result(stored_result, request)
-                                          if stored_result.ready else stored_result)
+                                result = check(stored_result, request)
                             acquired[key] = (asset_id, stored_result)
                     items.append(ItemPrepareResult(
                         request=request, status=result.status,
                         identity=result.identity, error=result.error,
                     ))
                     if result.ready:
-                        entries.append({"request": record, "asset_id": asset_id})
+                        entries.append({"request": record, "asset_id": asset_id,
+                                        "validated_revision": self._revision, "prepare_key": prepare_key})
                 if all(item.status is DataStatus.READY for item in items):
                     self._assert_consistent(connection, entries)
                     reference = self._store.publish(connection, entries)
+                    self._store.cache_preparation(connection, prepare_key, reference)
         except StoreError as exc:
             items = [ItemPrepareResult(
                 request=request, status=DataStatus.FAILED, identity=None,
@@ -1173,23 +1205,30 @@ class Dataflows:
             if not matching:
                 return self._failure(DataStatus.FAILED, "REQUEST_NOT_PREPARED",
                                      "request is outside this preparation", request)
+            if any(entry.get("validated_revision") != self._revision for entry in matching):
+                return self._failure(DataStatus.FAILED, "PREPARATION_VALIDATION_REQUIRED",
+                                     "preparation requires validation by the current DFLS revision", request)
             results = []
             for asset_id in sorted({entry["asset_id"] for entry in matching}):
                 stored = self._store.read(asset_id)
-                dates = pd.to_datetime(stored.dataframe["Date"], errors="raise")
+                numerical = pd.DataFrame(stored.dataframe, copy=False)
+                dates = pd.to_datetime(numerical["Date"], errors="raise")
                 selected = dates.between(pd.Timestamp(request.start), _end_timestamp(request.end))
                 if isinstance(request.parameters, MoneyflowParameters):
                     selected &= dates.dt.strftime("%Y-%m-%d").isin(request.parameters.trading_dates)
-                frame = stored.dataframe.loc[selected].copy().reset_index(drop=True)
+                frame = numerical.loc[selected].copy().reset_index(drop=True)
+                frame.attrs = deepcopy(stored.dataframe.attrs)
                 if frame.empty:
                     return self._failure(DataStatus.EMPTY, "EMPTY_DATA",
                                          "prepared asset has no observations in this range", request)
-                identity = replace(stored.identity, content_sha256=canonical_frame_sha256(frame))
-                result = self._checked_result(
-                    DataResult(DataStatus.READY, frame, identity, warnings=stored.warnings), request,
-                )
-                if not result.ready:
-                    return result
+                if stored.identity.dataset != str(request.dataset) or stored.identity.symbol != request.symbol:
+                    return self._failure(DataStatus.FAILED, "PREPARED_DATA_INVALID",
+                                         "prepared asset identity differs from request", request)
+                selected_dates = dates.loc[selected]
+                identity = replace(stored.identity, content_sha256=canonical_frame_sha256(frame),
+                                   data_start=selected_dates.iloc[0].isoformat(),
+                                   data_cutoff=selected_dates.iloc[-1].isoformat())
+                result = DataResult(DataStatus.READY, frame, identity, warnings=stored.warnings)
                 results.append(result)
             if len({result.identity.content_sha256 for result in results}) != 1:
                 return self._failure(DataStatus.FAILED, "AMBIGUOUS_PREPARED_DATA",
@@ -1201,16 +1240,21 @@ class Dataflows:
         except (TypeError, ValueError, KeyError) as exc:
             return self._failure(DataStatus.FAILED, "PREPARED_DATA_INVALID", str(exc), request)
 
-    def _checked_result(self, result: DataResult, request: DataRequest, *, complete_sessions: bool = True) -> DataResult:
+    def _checked_result(self, result: DataResult, request: DataRequest, *, complete_sessions: bool = True,
+                        validated: bool = False) -> DataResult:
         try:
             if result.identity.dataset != str(request.dataset) or result.identity.symbol != request.symbol:
                 raise DataContractError("prepared asset identity differs from request")
-            if canonical_frame_sha256(result.dataframe) != result.identity.content_sha256:
+            numerical = pd.DataFrame(result.dataframe, copy=False)
+            if not validated and canonical_frame_sha256(numerical) != result.identity.content_sha256:
                 raise DataContractError("prepared asset content hash differs")
-            _validate_coverage(result.dataframe, request)
-            quality = _validate_provider_output(result.dataframe, request, result.identity.metadata,
-                                                complete_sessions=complete_sessions)
-            start, end = _date_bounds(result.dataframe, request, result.identity.metadata)
+            _validate_coverage(numerical, request)
+            if validated:
+                quality = self._cached_quality(result.identity.metadata, numerical, request) if str(request.dataset) in _OHLCV_DATASETS else None
+            else:
+                quality = _validate_provider_output(numerical, request, result.identity.metadata,
+                                                    complete_sessions=complete_sessions)
+            start, end = _date_bounds(numerical, request, result.identity.metadata)
             metadata = dict(result.identity.metadata)
             if str(request.dataset) in _OHLCV_DATASETS:
                 metadata["ohlcv_quality"] = quality
@@ -1222,6 +1266,23 @@ class Dataflows:
 
         except (TypeError, ValueError, KeyError) as exc:
             return self._failure(DataStatus.FAILED, "DATA_CONTRACT_INVALID", str(exc), request)
+
+    @staticmethod
+    def _cached_quality(metadata: Mapping[str, Any], dataframe: pd.DataFrame,
+                        request: DataRequest) -> dict[str, Any]:
+        """Check the selected window, without rebuilding authenticated quality facts."""
+        evidence = metadata["ohlcv_quality_evidence"]
+        first, last = pd.Timestamp(request.start).date().isoformat(), pd.Timestamp(request.end).date().isoformat()
+        selected = {day for day in evidence["sessions"] if first <= day <= last}
+        if request.frequency == "weekly":
+            dates = pd.Series(pd.to_datetime(sorted(selected)))
+            selected = set(dates.groupby(dates.dt.to_period("W-FRI")).max().dt.strftime("%Y-%m-%d"))
+        actual = set(pd.to_datetime(dataframe.Date).dt.strftime("%Y-%m-%d"))
+        if actual.difference(selected):
+            raise DataContractError("OHLCV observations lie outside expected trading sessions")
+        if selected.difference(actual):
+            raise IncompleteDataError("OHLCV observations omit expected trading sessions", missing_dates=sorted(selected.difference(actual)))
+        return _summarize_quality(evidence, request)
 
     def _fetch_source(self, request: DataRequest) -> DataResult:
         provider = self._providers.get(str(request.dataset))

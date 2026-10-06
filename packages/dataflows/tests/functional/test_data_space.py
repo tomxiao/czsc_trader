@@ -99,7 +99,7 @@ def test_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
         assert conn.execute("SELECT acquired_at FROM assets ORDER BY acquired_at").fetchall() == acquisition_times
     reopened = _flows(tmp_path, _must_not_fetch)
     reused = reopened.prepare((_request(),), policy=PreparePolicy.REUSE)
-    assert reused.ready and _counts(tmp_path) == (2, 4)
+    assert reused.ready and reused.reference == same.reference and _counts(tmp_path) == (2, 3)
     assert_frame_equal(reopened.fetch(_request(), prepared=reused.reference).dataframe,
                        flows.fetch(_request(), prepared=refreshed.reference).dataframe)
 
@@ -136,7 +136,7 @@ def test_failed_refresh_leaves_previous_lookup_and_reference_usable(tmp_path):
     assert failed.reference is None and _counts(tmp_path) == (1, 1)
     assert broken.fetch(_request(), prepared=original.reference).ready
     reused = broken.prepare((_request(),), policy=PreparePolicy.REUSE)
-    assert reused.ready and _counts(tmp_path) == (1, 2)
+    assert reused.ready and reused.reference == original.reference and _counts(tmp_path) == (1, 1)
 
 
 def test_cross_space_unknown_and_tampered_references_fail(tmp_path):
@@ -177,6 +177,9 @@ def test_corrupt_or_missing_assets_never_trigger_supplier_fallback(tmp_path, tar
     result = flows.fetch(_request(), prepared=prepared.reference)
     assert result.status is DataStatus.FAILED and result.error.code == expected
     assert result.dataframe.empty and result.identity is None and len(calls) == 1
+    cached = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    assert cached.status is PrepareStatus.FAILED and cached.items[0].error.code == expected
+    assert len(calls) == 1
 
 
 def test_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_path):
@@ -199,8 +202,30 @@ def test_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_
     outside = replace(_request(), start="2026-09-13")
     assert flows.fetch(outside, prepared=prepared.reference).error.code == "REQUEST_NOT_PREPARED"
     insufficient = replace(_request(), coverage=DataCoverageRequirement(minimum_observations=4))
-    assert flows.fetch(insufficient, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    assert flows.fetch(insufficient, prepared=prepared.reference).ready
     assert _database(tmp_path).stat().st_mtime_ns == before and len(calls) == 1
+    assert flows.prepare((insufficient,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
+
+
+def test_cached_batch_cannot_point_at_a_different_complete_request(tmp_path):
+    calls = []
+
+    def provider(request):
+        calls.append(request)
+        return _frame(), {"vendor": "synthetic"}
+
+    flows = _flows(tmp_path, provider)
+    original = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    stronger = replace(_request(), coverage=DataCoverageRequirement(minimum_observations=3))
+    other = flows.prepare((stronger,), policy=PreparePolicy.REUSE)
+    assert original.ready and other.ready and original.reference != other.reference
+    with sqlite3.connect(_database(tmp_path)) as connection:
+        connection.execute("UPDATE preparation_lookup SET preparation_id=? WHERE preparation_id=?",
+                           (str(other.reference.preparation_id), str(original.reference.preparation_id)))
+    rejected = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
+    assert rejected.status is PrepareStatus.FAILED
+    assert rejected.items[0].error.code == "PREPARATION_CORRUPT" and len(calls) == 1
+    assert flows.fetch(_request(), prepared=original.reference).ready
 
 
 def test_pandas_schema_precision_and_detached_frames_survive_reopen(tmp_path):
@@ -250,7 +275,7 @@ def test_threads_create_same_space_concurrently_and_prepare_once(tmp_path):
         results = list(executor.map(lambda index: worker(), range(4)))
     assert len(set(results)) == 1
     assert (tmp_path / "supplier-calls.txt").read_text().splitlines() == ["call"]
-    assert _counts(tmp_path) == (1, 4)
+    assert _counts(tmp_path) == (1, 1)
     assert not list((tmp_path / "space").glob("*.initializing.sqlite3*"))
 
 
@@ -259,7 +284,7 @@ def test_spawn_processes_share_first_space_and_prepare_once(tmp_path):
         results = list(executor.map(_process_prepare, [str(tmp_path)] * 3))
     assert len(set(results)) == 1
     assert (tmp_path / "supplier-calls.txt").read_text().splitlines() == ["call"]
-    assert _counts(tmp_path) == (1, 3)
+    assert _counts(tmp_path) == (1, 1)
 
 
 @pytest.mark.parametrize("path", [Path("."), Path("../escape"), Path("a/../../escape")])
