@@ -56,12 +56,12 @@ class _CallEvidence:
 
     def result(self, result, request) -> ExperimentArtifact:
         from dataclasses import replace
-        from .assessment import build_assessment_evidence
+        from .assessment import _assessment_with_replays
         from .evaluation import _request_identity_payload
-        from ..backtesting.audit_adapter import build_replay_evidence
-        from ..backtesting.metrics import calculate_metrics
 
-        assessment = build_assessment_evidence(request, replace(result, attempt_id=self.attempt_id))
+        evaluated = _assessment_with_replays(
+            request, replace(result, attempt_id=self.attempt_id),
+        )
 
         def frame(value):
             return json.loads(
@@ -75,16 +75,12 @@ class _CallEvidence:
             )
 
         runs = []
-        for run in result.runs:
+        assessment = []
+        for run, (evidence, replay) in zip(result.runs, evaluated, strict=True):
+            assessment.append(evidence)
             item = {
                 "identity": run.identity.to_dict(),
-                "replay_evidence": build_replay_evidence(
-                    run.signals,
-                    request.execution_data,
-                    run.execution,
-                    request.initial_cash,
-                    calculate_metrics(run.execution, request.initial_cash),
-                ).to_dict(),
+                "replay_evidence": replay.to_dict(),
                 "window_id": run.window_id,
                 "scenario_id": run.scenario_id,
                 "candidate_id": run.candidate_id,

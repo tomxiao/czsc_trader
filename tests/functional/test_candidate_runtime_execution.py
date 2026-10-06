@@ -21,6 +21,10 @@ from trading_execution_engine import HistoricalExecutor
 
 
 def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None):
+    from dataflows.ohlcv_quality import (
+        bind_quality_frame, build_quality_evidence, verify_daily_sessions,
+    )
+
     market = daily.rename(
         columns={
             "dt": "Date",
@@ -36,10 +40,23 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
         ("High", market[["Open", "Close"]].max(axis=1)),
         ("Low", market[["Open", "Close"]].min(axis=1)),
         ("Volume", 1000.0),
-        ("Amount", 1000.0),
     ):
         if column not in market:
             market[column] = value
+    if "Amount" not in market:
+        market["Amount"] = market["Volume"] * (market["High"] + market["Low"]) / 2
+
+    class SyntheticCalendar:
+        """Declared weekday calendar and lifecycle for this synthetic provider."""
+
+        def fund_basic(self, *, ts_code, fields):
+            listed = pd.to_datetime(market["Date"]).min().strftime("%Y%m%d")
+            return pd.DataFrame({"ts_code": [ts_code], "list_date": [listed]})
+
+        def trade_cal(self, *, exchange, start_date, end_date):
+            dates = pd.date_range(start_date, end_date)
+            return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
+                                 "is_open": (dates.weekday < 5).astype(int)})
 
     def fetch(request):
         dataset = str(request.dataset)
@@ -87,6 +104,27 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
                 source_publication_timestamp_verified=False,
                 historical_revision_history_verified=False, live_feed_latency_verified=False,
             )
+        if dataset in {Dataset.ETF_OHLCV.value, Dataset.ETF_UNADJUSTED_DAILY.value,
+                       Dataset.ETF_UNADJUSTED_INTRADAY.value}:
+            start_day = pd.Timestamp(request.start).normalize()
+            end_day = pd.Timestamp(request.end).normalize()
+            anchor_dates = pd.to_datetime(market["Date"]).dt.normalize()
+            anchor = market.loc[anchor_dates.between(start_day, end_day)].reset_index(drop=True)
+            calendar = verify_daily_sessions(
+                SyntheticCalendar(), request.symbol, anchor,
+                start=start_day.date().isoformat(), end=end_day.date().isoformat(),
+            )
+            evidence = build_quality_evidence(
+                anchor, intraday=frame if request.frequency == "30m" else None,
+                frequency=request.frequency, expected_dates=calendar["expected_dates"],
+            )
+            metadata.update(
+                daily_session_coverage=calendar,
+                ohlcv_quality_evidence=bind_quality_frame(evidence, frame),
+            )
+            frame.attrs.update({key: deepcopy(metadata[key]) for key in (
+                "daily_session_coverage", "ohlcv_quality_evidence",
+            )})
         return frame, metadata
 
     from czsc_trader.temp_workspace import create_temporary_directory
@@ -127,6 +165,7 @@ def _execution_data(flows, root, sessions):
 def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser(candidate_payload, tmp_path, monkeypatch):
     from czsc_trader.application import BacktestRequest, RepositoryContext, run_backtest
     from czsc_trader.application.errors import ExecutionError
+    from dataflows import canonical_frame_sha256
 
     payload, package = candidate_payload
     payload["rule"] = {"entry_threshold": 0.5, "exit_threshold": 0.5}
@@ -136,6 +175,15 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1., "high": 1., "low": 1., "vol": 1000., "amount": 1000.})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path)
     execution_data = _execution_data(flows, tmp_path, sessions)
+    execution_frames = (
+        ("execution_daily", execution_data.execution_daily),
+        ("execution_30m", execution_data.execution_intraday),
+    )
+    originals = []
+    for _, frame in execution_frames:
+        assert frame.attrs["daily_session_coverage"]["expected_dates"]
+        assert frame.attrs["ohlcv_quality_evidence"]["sessions"]
+        originals.append((deepcopy(frame.attrs), canonical_frame_sha256(frame)))
     (tmp_path / "pyproject.toml").write_text("[project]\nname='test-replay'\n", encoding="utf-8")
     (tmp_path / "src/czsc_trader").mkdir(parents=True)
     context = RepositoryContext.discover(tmp_path)
@@ -154,6 +202,9 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     assert "S001-C0001" in (output / "chart.html").read_text(encoding="utf-8")
     import json
     assert json.loads((output / "audit.json").read_text(encoding="utf-8"))["status"] == "PASS"
+    for (_, frame), (attrs, digest) in zip(execution_frames, originals):
+        assert frame.attrs == attrs
+        assert canonical_frame_sha256(frame) == digest
     assert not context.strategy_root.exists()
     # Refuse a real stale procurement result at the public business boundary.
     with pytest.raises(ExecutionError, match="exceeds the published cutoff"):

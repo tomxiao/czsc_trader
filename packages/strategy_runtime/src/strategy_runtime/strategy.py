@@ -216,9 +216,13 @@ class StrategyInstance:
         data: PreparedStrategyData,
         mode: SignalHistoryMode,
     ) -> tuple[pd.DataFrame, pd.DatetimeIndex]:
-        frames = {name: result.dataframe for name, result in data._inputs.results.items()}
         if not isinstance(mode, SignalHistoryMode):
             raise RuntimeContractError("history_mode must be SignalHistoryMode")
+        cache_key = (data.dataset_identity, mode)
+        cached = self._history_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        frames = {name: result.dataframe for name, result in data._inputs.results.items()}
         if mode is SignalHistoryMode.CONTINUOUS:
             dates = data.calculation_dates()
         elif mode is SignalHistoryMode.WINDOW:
@@ -228,45 +232,42 @@ class StrategyInstance:
         sessions = pd.DatetimeIndex(
             pd.to_datetime(dates, errors="raise"), name="dt"
         ).normalize()
-        cache_key = (data.dataset_identity, mode)
-        cached = self._history_cache.get(cache_key)
-        if cached is None:
-            history = (
-                self._algorithm.calculate_window_history(frames, sessions)
-                if mode is SignalHistoryMode.WINDOW
-                else self._algorithm.calculate_history(frames, sessions)
+        history = (
+            self._algorithm.calculate_window_history(frames, sessions)
+            if mode is SignalHistoryMode.WINDOW
+            else self._algorithm.calculate_history(frames, sessions)
+        )
+        if not isinstance(history, pd.DataFrame) or not isinstance(
+            history.index, pd.DatetimeIndex
+        ):
+            raise RuntimeContractError(
+                "strategy history must use a DatetimeIndex"
             )
-            if not isinstance(history, pd.DataFrame) or not isinstance(
-                history.index, pd.DatetimeIndex
-            ):
-                raise RuntimeContractError(
-                    "strategy history must use a DatetimeIndex"
-                )
-            actual_sessions = pd.DatetimeIndex(history.index).tz_localize(None).normalize()
-            if actual_sessions.has_duplicates or not actual_sessions.is_monotonic_increasing:
-                raise RuntimeContractError(
-                    "strategy history sessions must be unique and ordered"
-                )
-            if mode is SignalHistoryMode.WINDOW and not actual_sessions.equals(sessions):
-                raise RuntimeContractError(
-                    "strategy window history differs from requested evaluation sessions"
-                )
-            if mode is SignalHistoryMode.CONTINUOUS and not sessions.difference(actual_sessions).empty:
-                raise RuntimeContractError(
-                    "strategy point history omits required calculation sessions"
-                )
-            history = history.copy()
-            history.index = actual_sessions
-            if "target_position" not in history:
-                raise RuntimeContractError("strategy history requires target_position")
-            targets = pd.to_numeric(history["target_position"], errors="coerce")
-            if targets.isna().any() or not targets.between(
-                self.definition.decision.minimum_target,
-                self.definition.decision.maximum_target,
-            ).all():
-                raise RuntimeContractError("strategy history contains invalid target positions")
-            cached = (history, sessions)
-            self._history_cache[cache_key] = cached
+        actual_sessions = pd.DatetimeIndex(history.index).tz_localize(None).normalize()
+        if actual_sessions.has_duplicates or not actual_sessions.is_monotonic_increasing:
+            raise RuntimeContractError(
+                "strategy history sessions must be unique and ordered"
+            )
+        if mode is SignalHistoryMode.WINDOW and not actual_sessions.equals(sessions):
+            raise RuntimeContractError(
+                "strategy window history differs from requested evaluation sessions"
+            )
+        if mode is SignalHistoryMode.CONTINUOUS and not sessions.difference(actual_sessions).empty:
+            raise RuntimeContractError(
+                "strategy point history omits required calculation sessions"
+            )
+        history = history.copy()
+        history.index = actual_sessions
+        if "target_position" not in history:
+            raise RuntimeContractError("strategy history requires target_position")
+        targets = pd.to_numeric(history["target_position"], errors="coerce")
+        if targets.isna().any() or not targets.between(
+            self.definition.decision.minimum_target,
+            self.definition.decision.maximum_target,
+        ).all():
+            raise RuntimeContractError("strategy history contains invalid target positions")
+        cached = (history, sessions)
+        self._history_cache[cache_key] = cached
         return cached
 
     def _calculate_signal(

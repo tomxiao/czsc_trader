@@ -199,6 +199,18 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     assert any("ohlcv_quality_evidence" in attrs for _, attrs, _ in admitted)
     assert all(frame.attrs == attrs and canonical_frame_sha256(frame) == identity
                for frame, attrs, identity in admitted)
+    # An exported price history is defensive; cached plan prices keep their exact identity.
+    exported_prices = strategy.inspect_price_history()
+    assert plan.references.signal_price == Decimal(str(
+        exported_prices.loc[exported_prices.dt.eq(pd.Timestamp(plan.signal_date)), "close"].iloc[0]
+    ))
+    exported_prices.loc[:, "close"] = 99.0
+    repeated = strategy.plan_at(
+        point=TradingPoint(trading_date, calculated_at),
+        portfolio=PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at),
+        state=ExecutionState(3, calculated_at, 5900),
+    )
+    assert repeated == plan
 
     before_close = datetime(2026, 9, 2, 14, 59, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="precedes the signal-session close"):

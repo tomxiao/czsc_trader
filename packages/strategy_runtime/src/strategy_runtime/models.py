@@ -576,7 +576,8 @@ class StrategyRelease:
 def _daily_prices(frame: pd.DataFrame, field_name: str) -> pd.DataFrame:
     if not isinstance(frame, pd.DataFrame):
         raise RuntimeContractError(f"{field_name} must be a dataframe")
-    normalized = frame.rename(
+    # Original admitted inputs retain the quality evidence.
+    normalized = pd.DataFrame(frame, copy=False).rename(
         columns={
             "Date": "dt",
             "Open": "open",

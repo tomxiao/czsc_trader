@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from copy import deepcopy
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -93,7 +94,8 @@ def _require_ready(result, name, evaluation_sessions=None, requested_cutoff=None
 
 
 def _prices(frame: pd.DataFrame) -> pd.DataFrame:
-    value = frame.rename(
+    # Transform numerical columns without copying quality evidence at each step.
+    value = pd.DataFrame(frame, copy=False).rename(
         columns={
             "Date": "dt",
             "Open": "open",
@@ -105,7 +107,9 @@ def _prices(frame: pd.DataFrame) -> pd.DataFrame:
         }
     ).copy()
     value["dt"] = pd.to_datetime(value["dt"], errors="raise")
-    return value[["dt", "open", "high", "low", "close", "vol", "amount"]]
+    value = value[["dt", "open", "high", "low", "close", "vol", "amount"]]
+    value.attrs = deepcopy(frame.attrs)
+    return value
 
 
 def _empty_prices() -> pd.DataFrame:

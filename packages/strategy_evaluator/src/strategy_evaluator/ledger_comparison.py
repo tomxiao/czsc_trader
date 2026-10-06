@@ -148,15 +148,34 @@ def compare_ledgers(request: LedgerComparisonRequest) -> LedgerComparisonResult:
     """
     if not isinstance(request, LedgerComparisonRequest):
         raise TypeError("request must be LedgerComparisonRequest")
+    same_evidence = request.left is request.right
+    sides = (("left", request.left),) if same_evidence else (
+        ("left", request.left), ("right", request.right)
+    )
     hashes = []
     invalid = []
-    for side, evidence in (("left", request.left), ("right", request.right)):
+    shared_payload = None
+    for side, evidence in sides:
         try:
-            json.dumps(evidence.to_dict(), allow_nan=False)
-            hashes.append(hash_replay_evidence(evidence))
+            payload = evidence.to_dict()
+            json.dumps(payload, allow_nan=False)
+            if same_evidence:
+                shared_payload = payload
+                hash_payload = dict(payload)
+                hash_payload.pop("content_hash")
+                encoded = json.dumps(
+                    hash_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ).encode("utf-8")
+                hashes.append(sha256(encoded).hexdigest())
+            else:
+                hashes.append(hash_replay_evidence(evidence))
         except (TypeError, ValueError):
             hashes.append(None)
             invalid.append(LedgerDifference(side, "NON_JSON_OR_NONFINITE_EVIDENCE"))
+    if same_evidence:
+        hashes *= 2
+        if invalid:
+            invalid.append(LedgerDifference("right", invalid[0].reason))
 
     def result(status, differences):
         return LedgerComparisonResult(status, request.mode, *hashes, tuple(differences))
@@ -164,10 +183,10 @@ def compare_ledgers(request: LedgerComparisonRequest) -> LedgerComparisonResult:
     if invalid:
         return result(LedgerComparisonStatus.INVALID, invalid)
 
-    payloads = [request.left.to_dict(), request.right.to_dict()]
-    for side, evidence, digest, payload in zip(
-        ("left", "right"), (request.left, request.right), hashes, payloads
-    ):
+    payloads = [shared_payload] if same_evidence else [
+        request.left.to_dict(), request.right.to_dict()
+    ]
+    for (side, evidence), digest, payload in zip(sides, hashes, payloads):
         if evidence.content_hash and evidence.content_hash != digest:
             return result(
                 LedgerComparisonStatus.INVALID, [LedgerDifference(side, "CONTENT_HASH_MISMATCH")]
@@ -186,15 +205,17 @@ def compare_ledgers(request: LedgerComparisonRequest) -> LedgerComparisonResult:
         "execution_intraday",
     )
     mismatches = []
-    for field in context:
-        _differences(payloads[0][field], payloads[1][field], field, 0, mismatches)
+    if not same_evidence:
+        for field in context:
+            _differences(payloads[0][field], payloads[1][field], field, 0, mismatches)
     if mismatches:
         return result(LedgerComparisonStatus.INCOMPARABLE, mismatches)
     if request.mode is LedgerComparisonMode.ECONOMIC:
         for payload in payloads:
             _normalize(payload)
     differences = []
-    _differences(*payloads, "replay", request.tolerance, differences)
+    if not same_evidence:
+        _differences(*payloads, "replay", request.tolerance, differences)
     compared = result(
         LedgerComparisonStatus.DIFFERENT if differences else LedgerComparisonStatus.EQUIVALENT,
         differences,

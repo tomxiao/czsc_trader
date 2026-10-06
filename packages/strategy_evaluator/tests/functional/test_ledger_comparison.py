@@ -56,7 +56,14 @@ def _evidence(prefix="a"):
 def test_strict_and_economic_comparison_preserve_original_evidence():
     left, right = _evidence(), _evidence("b")
     originals = deepcopy((left.to_dict(), right.to_dict()))
-    assert compare_ledgers(LedgerComparisonRequest(left, left)).status is Status.EQUIVALENT
+    for mode, tolerance in ((Mode.STRICT, 0), (Mode.ECONOMIC, 0), (Mode.ECONOMIC, .001)):
+        same = compare_ledgers(LedgerComparisonRequest(left, left, mode, tolerance))
+        separate = compare_ledgers(
+            LedgerComparisonRequest(left, deepcopy(left), mode, tolerance)
+        )
+        assert same == separate
+        assert same.status is Status.EQUIVALENT
+        assert same.left_hash == same.right_hash == hash_replay_evidence(left)
     assert compare_ledgers(LedgerComparisonRequest(left, right)).status is Status.DIFFERENT
     result = compare_ledgers(LedgerComparisonRequest(left, right, Mode.ECONOMIC))
     assert result.status is Status.EQUIVALENT
@@ -118,10 +125,24 @@ def test_invalid_evidence_cannot_compare_equal_to_itself(kind):
         value = replace(value, account_daily=value.account_daily[:1])
     else:
         value = replace(value, content_hash="0" * 64)
-    assert (
-        compare_ledgers(LedgerComparisonRequest(value, value, Mode.ECONOMIC)).status
-        is Status.INVALID
+    same = compare_ledgers(LedgerComparisonRequest(value, value, Mode.ECONOMIC))
+    assert same.status is Status.INVALID
+    assert same == compare_ledgers(
+        LedgerComparisonRequest(value, deepcopy(value), Mode.ECONOMIC)
     )
+
+
+def test_repeated_comparison_validates_current_evidence_contents():
+    evidence = _evidence()
+    first = compare_ledgers(LedgerComparisonRequest(evidence, evidence, Mode.ECONOMIC))
+    evidence.metrics["return"] = .2
+    changed = compare_ledgers(LedgerComparisonRequest(evidence, evidence, Mode.ECONOMIC))
+    assert changed.status is Status.EQUIVALENT
+    assert changed.left_hash == changed.right_hash == hash_replay_evidence(evidence)
+    assert changed.left_hash != first.left_hash
+    assert changed.economic_sha256 != first.economic_sha256
+    evidence.fills[0]["order_id"] = "missing"
+    assert compare_ledgers(LedgerComparisonRequest(evidence, evidence)).status is Status.INVALID
 
 
 def test_explicit_tolerance_and_business_field_differences():
@@ -160,3 +181,7 @@ def test_nonfinite_or_unserializable_evidence_is_invalid(value):
     result = compare_ledgers(LedgerComparisonRequest(evidence, evidence))
     assert result.status is Status.INVALID
     assert result.left_hash is None
+    assert result.right_hash is None
+    assert [(item.path, item.reason) for item in result.differences] == [
+        (side, "NON_JSON_OR_NONFINITE_EVIDENCE") for side in ("left", "right")
+    ]

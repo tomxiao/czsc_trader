@@ -13,7 +13,7 @@ from .benchmarks import BenchmarkReplay
 
 
 def _records(frame: pd.DataFrame, date_columns: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
-    value = frame.copy()
+    value = pd.DataFrame(frame, copy=False).copy()
     for column in date_columns:
         if column in value:
             value[column] = value[column].map(
@@ -30,11 +30,12 @@ def build_replay_evidence(
     initial_cash: float,
     metrics: dict[str, object],
 ) -> ReplayEvidence:
+    daily_prices = pd.DataFrame(data.execution_daily, copy=False)
     support = signals.support_data or {}
     evaluation_sessions = tuple(
         pd.to_datetime(
-            data.execution_daily.loc[
-                data.execution_daily["dt"].between(
+            daily_prices.loc[
+                daily_prices["dt"].between(
                     signals.evaluation_start, signals.evaluation_end
                 ),
                 "dt",
@@ -59,11 +60,12 @@ def build_replay_evidence(
     if overlay_settings is not None:
         if data.execution_five_minute is None:
             raise ValueError("intraday overlay audit requires 5m execution data")
-        daily = data.execution_daily.loc[
-            data.execution_daily["dt"].le(signals.evaluation_end)
+        daily = daily_prices.loc[
+            daily_prices["dt"].le(signals.evaluation_end)
         ].rename(columns={"dt": "date"})
-        intraday = data.execution_five_minute.loc[
-            data.execution_five_minute["dt"].between(
+        minute_prices = pd.DataFrame(data.execution_five_minute, copy=False)
+        intraday = minute_prices.loc[
+            minute_prices["dt"].between(
                 signals.evaluation_start,
                 signals.evaluation_end + pd.Timedelta(days=1),
             )
@@ -134,11 +136,12 @@ def build_replay_evidence(
         }
     start = signals.calculation_start
     end = signals.evaluation_end
-    daily = data.execution_daily.loc[data.execution_daily["dt"].between(start, end)].rename(
+    daily = daily_prices.loc[daily_prices["dt"].between(start, end)].rename(
         columns={"dt": "date"}
     )
-    intraday = data.execution_intraday.loc[
-        data.execution_intraday["dt"].between(start, end + pd.Timedelta(days=1))
+    minute_prices = pd.DataFrame(data.execution_intraday, copy=False)
+    intraday = minute_prices.loc[
+        minute_prices["dt"].between(start, end + pd.Timedelta(days=1))
     ].rename(columns={"dt": "time"})
     return ReplayEvidence(
         strategy_hash=signals.snapshot.content_hash,

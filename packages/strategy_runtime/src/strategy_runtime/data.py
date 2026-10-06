@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from types import MappingProxyType
@@ -31,6 +31,8 @@ class PreparedStrategyData:
     _calculation_dates: tuple[date, ...]
     _inputs: PreparedInputs
     _pricing: ExecutionPricingData
+    _adjusted_closes: Mapping[pd.Timestamp, Decimal] = field(init=False, repr=False, compare=False)
+    _execution_closes: Mapping[pd.Timestamp, Decimal] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.strategy != self._inputs.strategy:
@@ -81,6 +83,12 @@ class PreparedStrategyData:
         )
         if self.dataset_identity != expected:
             raise RuntimeContractError("prepared dataset identity differs from admitted data")
+        for name, frame in (("_adjusted_closes", self._pricing.adjusted_daily),
+                            ("_execution_closes", self._pricing.execution_daily)):
+            object.__setattr__(self, name, MappingProxyType({
+                session: Decimal(str(close))
+                for session, close in zip(frame["dt"], frame["close"])
+            }))
 
     @classmethod
     def from_inputs(
@@ -165,19 +173,18 @@ class PreparedStrategyData:
         """Return the channel-neutral prices used to size one execution plan."""
 
         signal = pd.Timestamp(signal_date).normalize()
-        adjusted = self._pricing.adjusted_daily.loc[self._pricing.adjusted_daily["dt"].eq(signal)]
-        execution = self._pricing.execution_daily.loc[
-            self._pricing.execution_daily["dt"].eq(signal)
-        ]
-        if len(adjusted) != 1 or len(execution) != 1:
+        try:
+            adjusted = self._adjusted_closes[signal]
+            execution = self._execution_closes[signal]
+        except KeyError as exc:
             raise RuntimeContractError(
                 "prepared pricing has no unique reference row for the signal session"
-            )
+            ) from exc
         if trading_date <= signal_date:
             raise RuntimeContractError("execution session must follow the signal session")
         return PriceReference(
-            Decimal(str(adjusted.iloc[0]["close"])),
-            Decimal(str(execution.iloc[0]["close"])),
+            adjusted,
+            execution,
             "ADJUSTED_CLOSE",
             "UNADJUSTED_CLOSE",
         )

@@ -295,16 +295,16 @@ def _validate_execution_binding(flows, execution_data, prepared):
     })
     if execution_data.fingerprint != fingerprint:
         raise RuntimeContractError("execution data fingerprint differs from bound inputs")
-    adjusted = _prices(results["adjusted_daily"].dataframe)
+    adjusted = _prices(pd.DataFrame(results["adjusted_daily"].dataframe, copy=False))
     adjusted.insert(1, "symbol", execution_data.symbol)
-    daily = _prices(results["execution_daily"].dataframe)
+    daily = _prices(pd.DataFrame(results["execution_daily"].dataframe, copy=False))
     frames = {
         "adjusted_daily": adjusted,
         "execution_daily": daily,
-        "execution_intraday": _prices(results["execution_30m"].dataframe) if "execution_30m" in results else _empty_prices(),
+        "execution_intraday": _prices(pd.DataFrame(results["execution_30m"].dataframe, copy=False)) if "execution_30m" in results else _empty_prices(),
     }
     if "execution_5m" in results:
-        frames["execution_five_minute"] = _prices(results["execution_5m"].dataframe)
+        frames["execution_five_minute"] = _prices(pd.DataFrame(results["execution_5m"].dataframe, copy=False))
     for name, frame in frames.items():
         actual = getattr(execution_data, name)
         if not isinstance(actual, pd.DataFrame) or canonical_frame_sha256(actual) != canonical_frame_sha256(frame):

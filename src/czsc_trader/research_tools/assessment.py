@@ -1,6 +1,7 @@
 """Convert authenticated evaluation facts into SE-owned research input contracts."""
 
 from dataclasses import replace
+from collections.abc import Iterator
 
 import pandas as pd
 from strategy_evaluator import (
@@ -16,6 +17,7 @@ from strategy_evaluator import (
     LedgerComparisonStatus,
     compare_ledgers,
     AssessmentDerivationKind,
+    ReplayEvidence,
 )
 from strategy_runtime import canonical_sha256
 
@@ -34,6 +36,13 @@ def build_assessment_evidence(
     request: EvaluationRequest,
     result: EvaluationResult,
 ) -> tuple[AssessmentEvidence, ...]:
+    return tuple(evidence for evidence, _ in _assessment_with_replays(request, result))
+
+
+def _assessment_with_replays(
+    request: EvaluationRequest,
+    result: EvaluationResult,
+) -> Iterator[tuple[AssessmentEvidence, ReplayEvidence]]:
     if type(request) is not EvaluationRequest or type(result) is not EvaluationResult:
         raise TypeError("assessment adaptation requires EvaluationRequest and EvaluationResult")
     if not result.runs or any(x.identity is None for x in result.runs) or result.attempt_id is None:
@@ -75,7 +84,6 @@ def build_assessment_evidence(
             lineage.parent_content_sha256,
         )
     )
-    records = []
     for run in result.runs:
         identity = run.identity
         if (
@@ -146,7 +154,7 @@ def build_assessment_evidence(
         )
         opening = run.execution.account_daily.iloc[0]
         cost = next(x for x in request.costs if x.scenario_id == run.scenario_id)
-        records.append(
+        yield (
             AssessmentEvidence(
                 candidate,
                 request.experiment_id,
@@ -177,6 +185,5 @@ def build_assessment_evidence(
                 None if lineage is None else canonical_sha256(lineage.to_dict()),
                 comparison.economic_sha256,
                 None if lineage is None else AssessmentDerivationKind(lineage.kind.value),
-            )
+            ), replay,
         )
-    return tuple(records)
