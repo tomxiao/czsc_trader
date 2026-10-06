@@ -280,7 +280,9 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
     assert daily.attrs == intraday.attrs == evidence
 
 
-def _overlay_setup(fee_rate, *, missing_checkpoint=None):
+def _overlay_setup(
+    fee_rate, *, missing_checkpoint=None, duplicate_checkpoint=None, mutate_five_after_preparation=False
+):
     daily = pd.DataFrame(
         [
             {"dt": pd.Timestamp("2026-09-16"), "open": 10.0, "close": 10.0},
@@ -340,6 +342,11 @@ def _overlay_setup(fee_rate, *, missing_checkpoint=None):
     if missing_checkpoint is not None:
         missing = five["dt"].eq(pd.Timestamp(f"2026-09-18 {missing_checkpoint}"))
         five = five.loc[~missing].copy()
+    if duplicate_checkpoint is not None:
+        repeated = five.loc[five["dt"].eq(pd.Timestamp(f"2026-09-18 {duplicate_checkpoint}"))].copy()
+        repeated["dt"] += pd.Timedelta(seconds=1)
+        five = pd.concat([five, repeated], ignore_index=True)
+    five.attrs = {"source": "synthetic-five-minute"}
     channel = HistoricalExecutor(
         strategy_reference="S003-v1",
         symbol="510500.SH",
@@ -353,6 +360,9 @@ def _overlay_setup(fee_rate, *, missing_checkpoint=None):
         order_types=("LIMIT", "MARKET"),
         checkpoints=("OPEN", "11:30_CLOSE"),
     )
+    assert five.attrs == {"source": "synthetic-five-minute"}
+    if mutate_five_after_preparation:
+        five.loc[:, ["open", "close"]] = 0.0
     zone = ZoneInfo("Asia/Shanghai")
     generated_at = datetime.fromisoformat("2026-09-16T20:30:00").replace(tzinfo=zone)
     point = TradingPoint(pd.Timestamp("2026-09-17").date(), generated_at)
@@ -417,7 +427,7 @@ def _rotation_plan(channel, fee_rate, *, buy_limit=Decimal("10.0")):
 
 @pytest.mark.parametrize("fee_rate", [0.00012, 0.002])
 def test_txe_historical_executor_executes_intraday_overlay_plan(fee_rate) -> None:
-    channel, core_plan, point, policy = _overlay_setup(fee_rate)
+    channel, core_plan, point, policy = _overlay_setup(fee_rate, mutate_five_after_preparation=True)
     with pytest.raises(RuntimeContractError, match="fee rate differs"):
         channel.execute(replace(core_plan, fee_rate=Decimal("0.003")))
     assert channel.snapshot(point)[0].revision == 0
@@ -613,9 +623,14 @@ def test_intraday_rotation_does_not_sell_core_when_dependency_buy_is_unfilled():
 
 
 @pytest.mark.parametrize("checkpoint", ["09:35", "11:30"], ids=["opening", "midday"])
-def test_intraday_rotation_rejects_missing_checkpoint_without_changing_core(checkpoint):
+@pytest.mark.parametrize("fault", ["missing", "duplicate"])
+def test_intraday_rotation_rejects_invalid_checkpoint_without_changing_core(checkpoint, fault):
     fee_rate = 0.001
-    channel, core_plan, _, _ = _overlay_setup(fee_rate, missing_checkpoint=checkpoint)
+    channel, core_plan, _, _ = _overlay_setup(
+        fee_rate,
+        missing_checkpoint=checkpoint if fault == "missing" else None,
+        duplicate_checkpoint=checkpoint if fault == "duplicate" else None,
+    )
     channel.execute(core_plan)
     plan, point = _rotation_plan(channel, fee_rate)
     before = channel.snapshot(point)

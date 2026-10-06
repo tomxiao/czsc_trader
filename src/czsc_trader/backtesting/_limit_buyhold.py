@@ -55,32 +55,32 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
         execution_policy=policy,
         order_types=("LIMIT",),
     )
-    adjusted = data.adjusted_daily.set_index(
-        pd.to_datetime(data.adjusted_daily["dt"]).dt.normalize()
-    )
-    prices = data.execution_daily.set_index(
-        pd.to_datetime(data.execution_daily["dt"]).dt.normalize()
-    )
+    adjusted = pd.DataFrame(data.adjusted_daily, copy=False)
+    adjusted = adjusted.set_index(pd.to_datetime(adjusted["dt"]).dt.normalize())
+    prices = pd.DataFrame(data.execution_daily, copy=False)
+    prices = prices.set_index(pd.to_datetime(prices["dt"]).dt.normalize())
     if adjusted.index.has_duplicates or prices.index.has_duplicates:
         raise ValueError("BuyHold prices require unique sessions")
     sessions = prices.index.sort_values()
     trading = sessions[
         (sessions >= signals.evaluation_start) & (sessions <= signals.evaluation_end)
     ]
+    adjusted_close = dict(zip(adjusted.index, adjusted["close"].to_numpy(), strict=True))
+    execution_close = dict(zip(prices.index, prices["close"].to_numpy(), strict=True))
+    trading_locations = sessions.get_indexer(trading)
     identities = {"execution_data": data.fingerprint}
-    for day in trading:
-        prior = sessions[sessions < day]
-        if prior.empty or prior[-1] not in adjusted.index:
+    for day, location in zip(trading, trading_locations, strict=True):
+        if location == 0 or sessions[location - 1] not in adjusted_close:
             raise ValueError("BuyHold has no prior signal reference")
-        signal_day = prior[-1]
+        signal_day = sessions[location - 1]
         point = TradingPoint(
             day.date(),
             datetime.combine(signal_day.date(), time(20, 31), tzinfo=ZoneInfo("Asia/Shanghai")),
         )
         portfolio, state = channel.snapshot(point)
         references = PriceReference(
-            Decimal(str(adjusted.loc[signal_day, "close"])),
-            Decimal(str(prices.loc[signal_day, "close"])),
+            Decimal(str(adjusted_close[signal_day])),
+            Decimal(str(execution_close[signal_day])),
             "ADJUSTED_CLOSE",
             "UNADJUSTED_CLOSE",
         )

@@ -56,6 +56,23 @@ def _prices(frame: pd.DataFrame, name: str, columns: tuple[str, ...]) -> pd.Data
     return indexed
 
 
+def _overlay_checkpoints(
+    frame: pd.DataFrame,
+) -> dict[pd.Timestamp, tuple[tuple[float, ...], tuple[float, ...]]]:
+    """Index prices once, retaining duplicate checkpoints for execution-time validation."""
+    clocks = frame["dt"].dt.strftime("%H:%M")
+    selected = frame.loc[clocks.isin(("09:35", "11:30"))].copy()
+    selected["session"] = selected["dt"].dt.normalize()
+    selected["clock"] = clocks.loc[selected.index]
+    return {
+        session: (
+            tuple(float(value) for value in day.loc[day["clock"].eq("09:35"), "open"]),
+            tuple(float(value) for value in day.loc[day["clock"].eq("11:30"), "close"]),
+        )
+        for session, day in selected.groupby("session")
+    }
+
+
 class HistoricalExecutor:
     """Execute SRT plans for search, replay and review without host dependencies.
 
@@ -112,10 +129,12 @@ class HistoricalExecutor:
         self._initial_cash = float(initial_cash)
         self._daily = _prices(execution_daily, "execution daily", ("open", "close"))
         self._intraday = _prices(execution_intraday, "execution intraday", ("high", "low"))
-        self._five_minute = (
+        self._overlay_checkpoints = (
             None
             if execution_five_minute is None
-            else _prices(execution_five_minute, "execution 5m", ("open", "close")).reset_index()
+            else _overlay_checkpoints(
+                _prices(execution_five_minute, "execution 5m", ("open", "close")).reset_index()
+            )
         )
         start = pd.Timestamp(evaluation_start).normalize()
         end = pd.Timestamp(evaluation_end).normalize()
@@ -512,15 +531,10 @@ class HistoricalExecutor:
             raise RuntimeContractError("historical overlay core setup requires an empty account")
         if not core_setup and self._cycle_target is None:
             raise RuntimeContractError("historical overlay rotation requires a sellable core")
-        five = self._five_minute
-        if five is None:
+        checkpoints = self._overlay_checkpoints
+        if checkpoints is None:
             raise RuntimeContractError("intraday overlay requires 5m execution data")
-        bars = five.copy()
-        bars["date"] = pd.to_datetime(bars["dt"]).dt.normalize()
-        bars["clock"] = pd.to_datetime(bars["dt"]).dt.strftime("%H:%M")
-        day = bars.loc[bars["date"].eq(execution_date)]
-        opening = day.loc[day["clock"].eq("09:35"), "open"]
-        closing = day.loc[day["clock"].eq("11:30"), "close"]
+        opening, closing = checkpoints.get(execution_date, ((), ()))
         if len(opening) != 1 or len(closing) != 1:
             raise RuntimeContractError("intraday overlay has incomplete execution checkpoints")
         cash_before = self._cash
@@ -543,7 +557,7 @@ class HistoricalExecutor:
             quantity = order.quantity
             order_type = order.order_type.value
             checkpoint = leg.checkpoint
-            reference = float(opening.iloc[0] if checkpoint == "OPEN" else closing.iloc[0])
+            reference = opening[0] if checkpoint == "OPEN" else closing[0]
             limit_price = (
                 None if order.limit_price is None else float(order.limit_price)
             )

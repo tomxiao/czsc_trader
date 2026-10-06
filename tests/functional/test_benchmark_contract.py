@@ -13,13 +13,17 @@ from czsc_trader.research_tools import delivery as d
 
 
 def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence(candidate_payload, tmp_path, monkeypatch):
+    from copy import deepcopy
+    from dataflows import canonical_frame_sha256
+
     sessions = pd.bdate_range("2025-02-05", periods=3)
     daily = pd.DataFrame({"dt": sessions, "open": [1.062] * 3, "close": [1.062, 1.062, 1.555]})
     _, request, _ = request_for_prices(
         candidate_payload, tmp_path, monkeypatch, daily, initial_cash=1e6,
         benchmark=EvaluationBenchmark(LimitBuyHold(100, 0.003, 0.001, 0.1, 1000000)),
     )
-    result = evaluate_strategy(request).runs[0].buyhold
+    evaluated = evaluate_strategy(request)
+    result = evaluated.runs[0].buyhold
     assert result.execution.fills.iloc[0].quantity == 938000
     assert result.execution.orders.iloc[0].limit_price == 1.065
     assert result.account_daily.iloc[-1].cash == pytest.approx(2847.844)
@@ -27,6 +31,15 @@ def test_limit_reservation_differs_from_next_open_and_keeps_account_evidence(can
     assert len(result.execution.fills) == 1
     assert result.execution.decisions.action.tolist() == ["BUY", "HOLD"]
     assert (result.execution.decisions.reason == "BUY_AND_HOLD").all()
+    inputs = (evaluated.execution_data.adjusted_daily, evaluated.execution_data.execution_daily)
+    originals = [(deepcopy(frame.attrs), canonical_frame_sha256(frame)) for frame in inputs]
+    repeated = evaluate_strategy(replace(request, execution_data=evaluated.execution_data)).runs[0].buyhold
+    assert repeated.metrics == result.metrics
+    for name in ("decisions", "orders", "fills", "account_daily", "trades"):
+        pd.testing.assert_frame_equal(getattr(result.execution, name), getattr(repeated.execution, name))
+    for frame, (attrs, digest) in zip(inputs, originals, strict=True):
+        assert frame.attrs == attrs
+        assert canonical_frame_sha256(frame) == digest
     next_open = evaluate_strategy(replace(
         request, benchmark=EvaluationBenchmark(NextOpenBuyHold(100)),
     )).runs[0].buyhold
