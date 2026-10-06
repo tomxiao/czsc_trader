@@ -1,0 +1,144 @@
+{
+  "status": "PASS",
+  "command": "research.intent.update",
+  "result": {
+    "family": {
+      "schema_version": 2,
+      "strategy_id": "S012",
+      "name": "华夏黄金ETF研究",
+      "scope": [
+        "518850.SH"
+      ],
+      "research_intent": {
+        "confirmation_sources": [
+          "research/S012/materials/user_confirmation_20261004_01.json",
+          "research/S012/materials/user_confirmation_20261004_02.json",
+          "research/S012/materials/user_confirmation_20261004_03.json",
+          "research/S012/materials/stage2_authorization_20261004.json",
+          "research/S012/materials/opportunity_authorization_20261004.json",
+          "research/S012/materials/intraday_authorization_20261004.json",
+          "research/S012/materials/intraday_scope_confirmation_20261004.json",
+          "research/S012/materials/independent_data_authorization_20261004.json",
+          "research/S012/materials/pause_authorization_20261004.json",
+          "research/S012/materials/resume_authorization_20261005.json",
+          "research/S012/materials/dev_performance_authorization_20261005.json",
+          "research/S012/materials/autonomous_stage2_authorization_20261005.json",
+          "research/S012/materials/confirmation_stage2_authorization_20261005.json",
+          "research/S012/materials/stage3_authorization_20261005.json",
+          "research/S012/materials/first_principles_stage2_authorization_20261006.json",
+          "research/S012/materials/dev_gvz_usdollar_acceptance_20261006.json",
+          "research/S012/materials/gvz_usdollar_preliminary_authorization_20261006.json"
+        ],
+        "confirmed_capital_and_benchmark": {
+          "benchmark": {
+            "lot_size": 100,
+            "type": "NextOpenBuyHold"
+          },
+          "buy_fee_rate": 0.001,
+          "cash_remainder": "保留",
+          "initial_capital_cny": 100000,
+          "strategy_lot_size": 100,
+          "terminal_valuation": "持仓按市值评价"
+        },
+        "confirmed_data_and_resources": "已授权既有S012资源及FRED/CBOE GVZ完整2020-01-01至2026-09-30窗口、Tushare USDOLLAR有限2020-01-01至2023-06-01窗口；新增付费/来源另确认。",
+        "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+        "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+        "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+        "confirmed_targets": {
+          "drawdown_magnitude": "< BuyHold",
+          "full_sample_frequency": ">= 5 closed cycles per 60 trading days",
+          "net_annual_return": ">= BuyHold * 1.5"
+        },
+        "delivery": {
+          "type": "DeliveryReference",
+          "owner": {
+            "type": "ExperimentOwner",
+            "strategy_id": "S012",
+            "experiment_id": "EX031_20261006"
+          },
+          "stage": "COMPONENTS",
+          "revision": 1,
+          "content_sha256": "b929e542c9ccfaa1538671f9aca24903f4a514cccec35d923e9f128db2806055"
+        },
+        "experiments": [
+          "EX001_20261004",
+          "EX002_20261004",
+          "EX003_20261004",
+          "EX004_20261004",
+          "EX005_20261004",
+          "EX006_20261004",
+          "EX007_20261004",
+          "EX008_20261004",
+          "EX009_20261004",
+          "EX010_20261004",
+          "EX011_20261004",
+          "EX012_20261004",
+          "EX013_20261005",
+          "EX014_20261005",
+          "EX015_20261005",
+          "EX016_20261005",
+          "EX017_20261005",
+          "EX018_20261005",
+          "EX019_20261005",
+          "EX020_20261005",
+          "EX021_20261005",
+          "EX022_20261005",
+          "EX023_20261005",
+          "EX025_20261005",
+          "EX026_20261006",
+          "EX027_20261006",
+          "EX028_20261006",
+          "EX029_20261006",
+          "EX030_20261006",
+          "EX031_20261006"
+        ],
+        "next_stage": "初步验证完成；建议后继拆分低VIX/GVZ信息来源、检验年度及延迟反证；整体阶段二继续。",
+        "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+        "observed_daily_coverage": {
+          "end": "2026-09-30",
+          "sessions": 1535,
+          "start": "2020-06-05"
+        },
+        "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
+        "pending": [
+          "新增成熟有效收益组件0；低比值与美元趋势仅为后继线索，阶段三未批准。",
+          "USDOLLAR止于2023-06-01，不外推2023年6月后；新增美元资源须另获批准。",
+          "原账户三项目标未复验，真实历史发布时间未逐条核实；保留全部反证和已见选择历史。"
+        ],
+        "prior_candidate_delivery": {
+          "content_sha256": "f3547d436382c506e29ae5a275bc2ad53c12e919d2ec9b4c8dc8b5acc9bbc922",
+          "owner": {
+            "experiment_id": "EX028_20261006",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "CANDIDATES",
+          "type": "DeliveryReference"
+        },
+        "prior_component_delivery": {
+          "content_sha256": "d5ed294ec2f3e585c5cd0a56f2dd6b5c08b4531c6e18689d2d59c793c9a65c57",
+          "owner": {
+            "experiment_id": "EX019_20261005",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "COMPONENTS",
+          "type": "DeliveryReference"
+        },
+        "research_summary": "EX030原排序局限保留，EX031九假设260路径1820年度初步验证完成。高VIX/GVZ避险5日净-0.1333%、低比值0.5500%，后者延迟匹配增量转负；美元走弱趋势10日净0.2572%、匹配+0.2019pp，但潜在成交接近零。九项增量区间均跨零，新增成熟有效收益组件0。独立233009字段、FULL及档案PASS，整体阶段二IN_PROGRESS。",
+        "resume_authorization": "research/S012/materials/resume_authorization_20261005.json",
+        "stage": "COMPONENTS",
+        "status": "IN_PROGRESS",
+        "symbol": "518850.SH"
+      },
+      "research_state": "RESEARCHING",
+      "created_at": "2026-10-04T03:56:59+08:00",
+      "created_by": "RSCH",
+      "updated_at": "2026-10-06T11:38:28+08:00"
+    }
+  },
+  "artifacts": {},
+  "warnings": []
+}

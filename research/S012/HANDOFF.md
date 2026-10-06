@@ -1,3 +1,21 @@
+# S012｜GVZ与有限美元篮子初步验证交接
+
+## 当前状态：初步验证完成，整体阶段二研究进行中（2026-10-06）
+
+用户最新授权“切换RSCH。先用完整GVZ和有限美元篮子数据做初步验证”。当前身份RSCH，分支codex/s012-research-resume。DEV接入已在9ece96ad本地提交；研究保持原518850.SH全部上市历史开发池、原三个经济目标及成本约束，未进入阶段三。
+
+- [初步研究报告](../../experiments/S012/EX031_20261006/04_conclusion.md)、[结果机器摘要](../../experiments/S012/EX031_20261006/preliminary_result_summary.json)、[授权](materials/gvz_usdollar_preliminary_authorization_20261006.json)。
+- 正式GVZ初版1694条覆盖2020-01-02—2026-09-30；USDOLLAR四币代理976条仅至2023-06-01，其中90条周末观测标签。美元检验决策日截止2023-06-01，不补齐后期、不作为ICE DXY。源五期为五个原生观察数，不称五个交易日。
+- EX031完成九固定主假设、四对照、260路径、1820年度及九项主诊断，增量面板九条记录、105事实，新成熟有效收益组件0。高VIX/GVZ避险5日净均值−0.1333%、低比值0.5500%；低比值匹配+0.2394个百分点但额外延迟两日转−0.0780个百分点，2022/2024负。美元走弱趋势10日净0.2572%、匹配+0.2019个百分点，仅有限历史，潜在触价净接近零。
+- 九项匹配增量区间均跨零；研究判断不以诊断新增经济硬门。低比值及美元趋势只保留后继线索，原三个完整账户经济目标未复验。
+- EX030保留原同可得时点排序局限；EX031双键选取最新观测，七特征单元修正而全部信号、260路径点估计未变。EX030结果已经见，EX031为同源修正，不是样本外。
+- [独立复算](../../experiments/S012/EX031_20261006/artifacts/verification/independent.json)PASS，核验233009字段及源SHA、可得政策、信号/标签、路径、年度、BH9；不复现随机抽样，不证明真实发布时间或账户绩效。
+- [正式增量组件报告](../../experiments/S012/EX031_20261006/deliveries/COMPONENTS/1/report.md)、[FULL核验](materials/gvz_preliminary_components_validation_20261006.json)、[EX031档案](materials/gvz_preliminary_archive_validation_20261006.json)、[EX030局限档案](materials/gvz_preliminary_original_archive_20261006.json)。准确交付身份以[引用](materials/gvz_preliminary_components_reference_20261006.json)为准。
+
+初步验证目标已达成，整体阶段二IN_PROGRESS。建议后继拆分低比值的VIX/GVZ分子分母作用、年度集中与延迟损失；保持同有效窗口父对照，不直接反转为买入策略。新增美元来源、其他资源、平台修改、阶段三和生产／合并／tag／推送须另获授权。本轮仅本地提交，真实机器制品及DFLS资产按本机档案保存，跨机器复验须同步完整前驱闭包。
+
+# 历史第一性原理首轮交接
+
 # S012｜518850.SH 阶段二第一性原理交接
 
 ## 当前状态：重建及首轮普查完成，阶段二研究进行中（2026-10-06）
