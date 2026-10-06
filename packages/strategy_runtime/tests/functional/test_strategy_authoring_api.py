@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from datetime import date
-import json
-from pathlib import Path
 
 import pytest
 from dataflows import DataRequest, Dataset
@@ -27,14 +25,6 @@ from strategy_runtime import (
     implementation_sha256,
     next_session_calculation_scope,
     next_session_calendar_window,
-)
-
-
-ROOT = Path(__file__).resolve().parents[4]
-CASES = json.loads(
-    (ROOT / "tests/fixtures/s008_research_cases/public_contract_cases.json").read_text(
-        encoding="utf-8"
-    )
 )
 
 
@@ -66,25 +56,23 @@ def test_strategy_authoring_contracts_are_public() -> None:
     assert not hasattr(strategy_runtime, "StrategyLoader")
 
 
-def test_c01_unknown_dataset_fixture_preserves_the_supported_contract() -> None:
-    case = CASES["c01_unknown_dataset"]
+def test_unknown_dataset_preserves_the_supported_contract() -> None:
     with pytest.raises(ValueError):
-        DataRequest(dataset=case["invalid_dataset"], symbol="SSE", start="2026-09-01",
+        DataRequest(dataset="market.trading_calendar", symbol="SSE", start="2026-09-01",
                     end="2026-09-02", required_cutoff=None)
-    assert case["valid_dataset"] == Dataset.TRADING_CALENDAR.value
+    assert Dataset.TRADING_CALENDAR.value == "calendar.trading_sessions"
 
 
 
-def test_c02_preparation_result_fixture_pins_the_public_field_name() -> None:
-    case = CASES["c02_preparation_result_field"]
+def test_preparation_result_exposes_the_public_field_name() -> None:
     window = TradableWindow(date(2026, 9, 2), date(2026, 9, 3))
     result = DataPreparationResult(
-        StrategyIdentity("S008", "S008-C0001", "a" * 64, "b" * 64, "518880.SH"),
+        StrategyIdentity("S900", "S900-C0001", "a" * 64, "b" * 64, "518880.SH"),
         window,
         date(2026, 9, 2),
         "c" * 64,
     )
 
-    assert getattr(result, case["valid_field"]) == "c" * 64
+    assert result.data_identity == "c" * 64
     with pytest.raises(AttributeError):
-        getattr(result, case["invalid_field"])
+        getattr(result, "dataset_identity")
