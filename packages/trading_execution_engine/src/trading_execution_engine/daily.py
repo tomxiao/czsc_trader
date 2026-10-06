@@ -29,6 +29,8 @@ def execute_target_positions(
     """
 
     frame = prices.copy()
+    # Source evidence is retained by the caller, outside the numerical replay.
+    frame.attrs = {}
     if "dt" in frame.columns:
         frame = frame.set_index("dt")
     frame.index = pd.DatetimeIndex(pd.to_datetime(frame.index), name="dt")

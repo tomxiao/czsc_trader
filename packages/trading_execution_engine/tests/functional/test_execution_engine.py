@@ -43,6 +43,8 @@ def test_ft_txe02_daily_ledger_preserves_cash_and_costs() -> None:
     prices = pd.DataFrame(
         {"open": [10.0, 10.0, 11.0], "close": [10.0, 10.5, 11.0]}, index=index
     )
+    prices.attrs = {"ohlcv_quality_evidence": {"daily": [{"date": "2026-09-18", "valid": True}]}}
+    original = prices.copy()
     target = pd.Series([0.0, 1.0, 0.0], index=index)
     result = execute_target_positions(
         prices, target, fee_rate=0.001, initial_cash=100_000.0
@@ -50,6 +52,8 @@ def test_ft_txe02_daily_ledger_preserves_cash_and_costs() -> None:
     assert list(result.orders["side"]) == ["BUY", "SELL"]
     assert result.equity.iloc[-1] == pytest.approx(109_780.21978021978)
     assert result.state.iloc[-1]["quantity"] == pytest.approx(0.0)
+    pd.testing.assert_frame_equal(prices, original)
+    assert prices.attrs == original.attrs
 
 
 @pytest.mark.parametrize("column", ["open", "close"])

@@ -37,6 +37,8 @@ def _prices(frame: pd.DataFrame, name: str, columns: tuple[str, ...]) -> pd.Data
     if not isinstance(frame, pd.DataFrame) or not {"dt", *columns}.issubset(frame.columns):
         raise RuntimeContractError(f"{name} price columns are incomplete")
     value = frame.copy()
+    # Preserve source evidence without copying it through every price lookup.
+    value.attrs = {}
     try:
         value["dt"] = pd.to_datetime(value["dt"], errors="raise")
         indexed = value.set_index("dt").sort_index()

@@ -587,6 +587,8 @@ def _daily_prices(frame: pd.DataFrame, field_name: str) -> pd.DataFrame:
             "Amount": "amount",
         }
     ).copy()
+    # Quality evidence remains on the admitted inputs, outside per-session pricing.
+    normalized.attrs = {}
     if not {"dt", "close"} <= set(normalized.columns):
         raise RuntimeContractError(f"{field_name} must contain dt and close")
     try:

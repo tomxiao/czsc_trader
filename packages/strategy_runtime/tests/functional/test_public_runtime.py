@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from datetime import date, datetime
 from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy
+from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy, canonical_frame_sha256
+from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 from strategy_runtime import (
     ExecutionState,
     PortfolioSnapshot,
@@ -60,17 +63,36 @@ def _flows(tmp_path, *, flow_value=0.8) -> Dataflows:
                 [9.417734788764953] * len(dates), dtype="Float64"
             ),
             "Volume": pd.array([1000] * len(dates), dtype="Int64"),
-            "Amount": pd.array([6000.0] * len(dates), dtype="Float64"),
+            "Amount": pd.array([9400.0] * len(dates), dtype="Float64"),
         }
     )
 
     def market(request):
         frame = bars.loc[pd.to_datetime(bars["Date"]).between(request.start, request.end)].copy()
-        return frame, {
+        metadata = {
             "vendor": "test",
             "adjustment": "none" if "unadjusted" in request.dataset else "hfq",
             "primary_key": ["Date"],
         }
+        if request.dataset in {Dataset.ETF_OHLCV, Dataset.ETF_UNADJUSTED_DAILY}:
+            pro = SimpleNamespace(
+                fund_basic=lambda **kwargs: pd.DataFrame({
+                    "ts_code": [request.symbol], "list_date": [dates[0].strftime("%Y%m%d")],
+                }),
+                trade_cal=lambda **kwargs: pd.DataFrame({
+                    "cal_date": pd.date_range(kwargs["start_date"], kwargs["end_date"]).strftime("%Y%m%d"),
+                    "is_open": (pd.date_range(kwargs["start_date"], kwargs["end_date"]).dayofweek < 5).astype(int),
+                }),
+            )
+            coverage = verify_daily_sessions(pro, request.symbol, frame,
+                start=request.start, end=request.end)
+            quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
+            metadata.update(daily_session_coverage=coverage,
+                ohlcv_quality_evidence=bind_quality_frame(quality, frame,
+                    adjustment=metadata["adjustment"]))
+            frame.attrs = {name: metadata[name] for name in
+                           ("daily_session_coverage", "ohlcv_quality_evidence")}
+        return frame, metadata
 
     def calendar(request):
         days = pd.date_range(request.start, request.end)
@@ -91,6 +113,16 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     tmp_path, monkeypatch, runtime_candidate
 ) -> None:
     flows = _flows(tmp_path)
+    admitted = []
+    fetch = flows.fetch
+
+    def observe_fetch(*args, **kwargs):
+        result = fetch(*args, **kwargs)
+        admitted.append((result.dataframe, deepcopy(result.dataframe.attrs),
+                         canonical_frame_sha256(result.dataframe)))
+        return result
+
+    monkeypatch.setattr(flows, "fetch", observe_fetch)
     trading_date = date(2026, 9, 3)
     strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(
         StrategyInit(
@@ -161,6 +193,12 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     assert plan.trading_date == trading_date
     assert {order.order_type.value for order in plan.orders} <= {"LIMIT", "MARKET"}
     assert {leg.order.order_type.value for leg in plan.legs} <= {"LIMIT", "MARKET"}
+    # Pricing copies exclude DFLS evidence; admitted inputs retain their evidence and identity.
+    pricing = strategy._prepared_data._pricing
+    assert pricing.adjusted_daily.attrs == pricing.execution_daily.attrs == {}
+    assert any("ohlcv_quality_evidence" in attrs for _, attrs, _ in admitted)
+    assert all(frame.attrs == attrs and canonical_frame_sha256(frame) == identity
+               for frame, attrs, identity in admitted)
 
     before_close = datetime(2026, 9, 2, 14, 59, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="precedes the signal-session close"):

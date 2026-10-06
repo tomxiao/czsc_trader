@@ -185,6 +185,10 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
         execution_intraday=intraday,
         adjusted=SimpleNamespace(daily=daily),
     )
+    evidence = {"ohlcv_quality_evidence": {"daily": [{"date": "2026-09-17", "valid": True}]}}
+    daily.attrs = evidence
+    intraday.attrs = evidence
+    original_daily, original_intraday = daily.copy(), intraday.copy()
     policy = ExecutionPolicy(
         "FROZEN_RULE",
         {
@@ -215,6 +219,8 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
         execution_policy=policy,
         order_types=("LIMIT",),
     )
+    # The admitted computation copies must not propagate evidence through each price lookup.
+    assert channel._daily.attrs == channel._intraday.attrs == {}
     zone = ZoneInfo("Asia/Shanghai")
     outcomes = []
     for revision, (signal_date, valid_date, target, target_quantity, order) in enumerate(
@@ -269,6 +275,9 @@ def test_txe_historical_executor_executes_requests_against_its_confirmed_ledger(
     assert result.account_daily["cash"].tolist() == pytest.approx([0.1, 109_780.21])
     assert result.trades["status"].tolist() == ["CLOSED"]
     assert result.trades.iloc[0]["net_return"] == pytest.approx(109_780.11 / 99_999.9 - 1)
+    pd.testing.assert_frame_equal(daily, original_daily)
+    pd.testing.assert_frame_equal(intraday, original_intraday)
+    assert daily.attrs == intraday.attrs == evidence
 
 
 def _overlay_setup(fee_rate, *, missing_checkpoint=None):
