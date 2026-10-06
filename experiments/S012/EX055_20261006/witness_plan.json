@@ -1,0 +1,126 @@
+[
+  {
+    "candidate_id": "C5000",
+    "kind": "SOURCE_EXTENSION_H60_BEHAVIOR_CONTROL",
+    "label": "ALL_UNION_H60",
+    "delta": {},
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 60,
+      "opportunity": "all_union",
+      "momentum_lookback": 3,
+      "entry_premium": -0.005
+    },
+    "parameter_sha256": "973099d1b4f621ac6e7b3059be517964dc68f66de2e80b241730320d557f7ce1",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX049_20261006",
+        "reference_id": "OPTUNA_1011",
+        "original_row_sha256": "c1a277870deff422981d7a04a311acf6276142d3462d7bcdfae028f182b1e090",
+        "original_parameter_sha256": "973099d1b4f621ac6e7b3059be517964dc68f66de2e80b241730320d557f7ce1"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C5001",
+    "kind": "PROSPECTIVE_H80_BOUNDARY_CONTROL",
+    "label": "ALL_UNION_H80",
+    "delta": {
+      "hold_days": 80
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 80,
+      "opportunity": "all_union",
+      "momentum_lookback": 3,
+      "entry_premium": -0.005
+    },
+    "parameter_sha256": "8b3f05c88eea30d75260d1c21fbbe0d5e6164bc3dc35622d9b766969a48e569b",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX049_20261006",
+        "reference_id": "OPTUNA_1011",
+        "original_row_sha256": "c1a277870deff422981d7a04a311acf6276142d3462d7bcdfae028f182b1e090",
+        "original_parameter_sha256": "973099d1b4f621ac6e7b3059be517964dc68f66de2e80b241730320d557f7ce1"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C5002",
+    "kind": "SOURCE_EXTENSION_H60_BEHAVIOR_CONTROL",
+    "label": "MOMENTUM_UNION5_H60",
+    "delta": {},
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 60,
+      "opportunity": "momentum_union",
+      "momentum_lookback": 5,
+      "entry_premium": 0.005
+    },
+    "parameter_sha256": "1e4217fd845404ee0fbfc62580a6dd0d7cc93b88ea99472a735657dc8ab7419a",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX049_20261006",
+        "reference_id": "OPTUNA_0607",
+        "original_row_sha256": "868b1da544c53b15135fa802a820233500189f982c8242285e185ce2d44b56f4",
+        "original_parameter_sha256": "1e4217fd845404ee0fbfc62580a6dd0d7cc93b88ea99472a735657dc8ab7419a"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C5003",
+    "kind": "PROSPECTIVE_H80_BOUNDARY_CONTROL",
+    "label": "MOMENTUM_UNION5_H80",
+    "delta": {
+      "hold_days": 80
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 80,
+      "opportunity": "momentum_union",
+      "momentum_lookback": 5,
+      "entry_premium": 0.005
+    },
+    "parameter_sha256": "7ac6101b3fe1aad46d23f844773c5c051a000862328637d98c61cbc2e7539e55",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX049_20261006",
+        "reference_id": "OPTUNA_0607",
+        "original_row_sha256": "868b1da544c53b15135fa802a820233500189f982c8242285e185ce2d44b56f4",
+        "original_parameter_sha256": "1e4217fd845404ee0fbfc62580a6dd0d7cc93b88ea99472a735657dc8ab7419a"
+      }
+    ]
+  }
+]

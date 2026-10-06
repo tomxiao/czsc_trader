@@ -1,0 +1,11 @@
+--- original_a190_s012.py
++++ extended_s012.py
+@@ -113,7 +113,7 @@
+         # Research search domain, not a performance acceptance gate.
+         self.momentum_lookback = _integer({"momentum_lookback": values.get("momentum_lookback", 3)},
+                                           "momentum_lookback", 3, 120)
+-        self.hold_days = _integer(values, "hold_days", 1, 60)
++        self.hold_days = _integer(values, "hold_days", 1, 120)
+         self.exit_policy = values.get("exit_policy", "fixed")
+         if type(self.exit_policy) is not str:
+             raise TypeError("exit_policy must be str")

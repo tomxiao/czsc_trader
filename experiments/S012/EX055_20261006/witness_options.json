@@ -1,0 +1,613 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EX055_20261006",
+  "candidate_start": 5000,
+  "seed": 12055,
+  "root_frozen_controls": true,
+  "approval_reason": "收益优先保留三门：真实all_union/momentum_union组内h60最高且相对h40改善3.5691/7.1349个百分点，不能仅因低频预删。先直接FULL验证同参h60及h80，只有一处后继源码上限放宽至120；不借旧等价gate，不预判增长持续或OPEN已实现。54已完整并独立PASS，kurt退出改善但未超过强前沿；其结果不作为长持有参数优化信号。",
+  "source_change": {
+    "old_model_sha256": "a19077a4e490ff000ee1db1567e01e8b5dfa8847be914d6ea45310f0448cadf7",
+    "new_model_sha256": "5ce40cf173a06d069ea1672e25732c3b0db7e94b5fe7eb1ee552a6e5322cd700",
+    "guard_replacements": 1,
+    "legal_hold_min": 1,
+    "legal_hold_max": 120
+  },
+  "predecessor_receipts": {
+    "EX049_20261006": "94b883bb90c383e5a5bb2136c88d8340cd9b4f649bef2587b71f796d4608656e",
+    "EX053_20261006": "ab8ee58871eb8d8ecaf89fe9b49605a18c8c1262dfba92b58a277dffc66f1aa0",
+    "EX054_20261006": "167ccdd50bea6c3bbffe9dd11b1eddadb0fe44f71d652921da6216b4c6ff4130"
+  },
+  "controls": [
+    {
+      "candidate_id": "C5000",
+      "label": "ALL_UNION_H60",
+      "origin": "all_union49",
+      "delta": {},
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 60,
+        "entry_premium": -0.005,
+        "opportunity": "all_union",
+        "momentum_lookback": 3
+      }
+    },
+    {
+      "candidate_id": "C5001",
+      "label": "ALL_UNION_H80",
+      "origin": "all_union49",
+      "delta": {
+        "hold_days": 80
+      },
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 80,
+        "entry_premium": -0.005,
+        "opportunity": "all_union",
+        "momentum_lookback": 3
+      }
+    },
+    {
+      "candidate_id": "C5002",
+      "label": "MOMENTUM_UNION5_H60",
+      "origin": "momentum_union49",
+      "delta": {},
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 60,
+        "entry_premium": 0.005,
+        "opportunity": "momentum_union",
+        "momentum_lookback": 5
+      }
+    },
+    {
+      "candidate_id": "C5003",
+      "label": "MOMENTUM_UNION5_H80",
+      "origin": "momentum_union49",
+      "delta": {
+        "hold_days": 80
+      },
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 80,
+        "entry_premium": 0.005,
+        "opportunity": "momentum_union",
+        "momentum_lookback": 5
+      }
+    }
+  ],
+  "all_union49": {
+    "proposal_id": "OPTUNA_1011",
+    "row": {
+      "proposal_id": "OPTUNA_1011",
+      "trial_number": 1011,
+      "phase": "FIXED",
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 60,
+        "entry_premium": -0.005,
+        "opportunity": "all_union",
+        "momentum_lookback": 3
+      },
+      "parameter_sha256": "973099d1b4f621ac6e7b3059be517964dc68f66de2e80b241730320d557f7ce1",
+      "scope": {
+        "implementation_sha256": "2b78b80fd4f7a62ccb5766f67ff44ee63e215c51f8c4dabf3c15cca4bbdca1b0",
+        "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+        "execution_data_fingerprint": "7f7f63a78959bc37564f6c6a79d1322346f1f69fe0bec3112894e7d706828c38",
+        "economic_protocol_sha256": "1972b18684aed25f84a8fae2964ffc8fefb6443c5cd109dc999ecbdb223090e9",
+        "execution_policy_sha256": "e9ba915bca536e5b2a9ad44f9a6d56f0556e7d1a449a4c37756b88753cd62f71",
+        "gate_sha256": "cc60c76b87d031add6b9fbc5fbcc9b7df0d8193c58f2f8724f5086e52dbd292d"
+      },
+      "conditional_block": "OTHER_COMPONENTS",
+      "status": "COMPLETE",
+      "candidate": null,
+      "passed_all": false,
+      "reason": "New scoped equivalence-gated research account; successor FULL required",
+      "behavior_sha256": "8ff5d9da32e6674f1faff3561527eeeac8f9342ae5092e35c1b450b1028b695b",
+      "signal_policy_sha256": "bc016d94e8b20f88a66d7ed4886edfa68e710c9b78d2e949a6fa44ff43c8ce9f",
+      "metrics": {
+        "net_cagr": 0.17222364453133499,
+        "max_drawdown": -0.2509960202533017,
+        "closed_trades": 19,
+        "frequency": 0.742671009771987,
+        "benchmark": {
+          "max_drawdown": -0.30290630870721535,
+          "calmar": 0.4716539362753617,
+          "win_loss_ratio": null,
+          "win_loss_ratio_status": "NO_CLOSED_TRADES",
+          "win_rate": null,
+          "return": 1.2544321200000002,
+          "sharpe": 0.8687575596978847,
+          "closed_trades": 0,
+          "cagr": 0.14286695282439799
+        },
+        "goals": [
+          false,
+          true,
+          false
+        ],
+        "passed_all": false,
+        "evaluation_sessions": 1534,
+        "frequency_denominator": 1535,
+        "final_equity": 263079.85089999996,
+        "final_quantity": 30000,
+        "total_fees": 6589.6491000000005,
+        "exposure": 0.7353324641460235,
+        "orders": 73,
+        "fills": 42,
+        "mode": "RESEARCH_SCREENING_EQUIVALENT_SUBSET_NOT_FULL"
+      },
+      "raw_ledgers": {
+        "signals": {
+          "path": "screening_ledgers/OPTUNA_1011/signals.json.gz",
+          "sha256": "9a823ab22fdc6a2d1dddfe08f2c7737abc6043122f7f9af3953da08fcbd0135c",
+          "uncompressed_sha256": "7c7ece9d833500c010f4e1923df9c9ffc240bbef351ee8a430bb7511449afae4",
+          "rows": 1534,
+          "columns": [
+            "target_position",
+            "planned_target",
+            "planned_age",
+            "planned_cycle_id",
+            "opportunity_active",
+            "o01_active",
+            "n09_active",
+            "risk_available",
+            "risk_ok",
+            "planned_peak_close",
+            "signal_drawdown",
+            "decision_reason"
+          ],
+          "bytes": 21646
+        },
+        "decisions": {
+          "path": "screening_ledgers/OPTUNA_1011/decisions.json.gz",
+          "sha256": "dd7dd9b47732d8d4d365524a53291ccb4ecde7fcfb3be25ccfbb566011637787",
+          "uncompressed_sha256": "2c14f069ad7ecf7d8ec34d78e7e3fbdb8426c6871fab555ebcb7405c33439931",
+          "rows": 1534,
+          "columns": [
+            "signal_date",
+            "execution_date",
+            "target_position",
+            "target_quantity",
+            "cycle_target_quantity"
+          ],
+          "bytes": 13888
+        },
+        "account_daily": {
+          "path": "screening_ledgers/OPTUNA_1011/account_daily.json.gz",
+          "sha256": "3cd30b53381336e96a4bf51ed17f0561f940075c6b5dc8a19a46a75bc955ea05",
+          "uncompressed_sha256": "0a30e1ebe302822511eb4f3ac33d4b7cd5b46925443c8a37933fe81f58cda170",
+          "rows": 1534,
+          "columns": [
+            "date",
+            "signal_date",
+            "target_position",
+            "cash_before",
+            "quantity_before",
+            "cash",
+            "quantity",
+            "close",
+            "equity"
+          ],
+          "bytes": 27456
+        },
+        "orders": {
+          "path": "screening_ledgers/OPTUNA_1011/orders.json.gz",
+          "sha256": "bc0d767c3e96918234eb2782510d11fab354e1db528e7e48c5a836a4a1e367fe",
+          "uncompressed_sha256": "dbf37c4bfe23f4d2d60c76d067e45e59a97bea415b6d5f1e8e1e69f45bcfb8af",
+          "rows": 73,
+          "columns": [
+            "cycle_id",
+            "signal_date",
+            "execution_date",
+            "side",
+            "quantity",
+            "order_type",
+            "limit_price",
+            "status"
+          ],
+          "bytes": 1641
+        },
+        "fills": {
+          "path": "screening_ledgers/OPTUNA_1011/fills.json.gz",
+          "sha256": "60508cdc91a80e95906a671dbf3e73db02173e639d50dec8ad4b9b32739e673e",
+          "uncompressed_sha256": "e3628ac946330faca56c03b29c0756b1dc964c6ca26619934f6e32dd6f4ee2ff",
+          "rows": 42,
+          "columns": [
+            "cycle_id",
+            "signal_date",
+            "fill_time",
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "trigger"
+          ],
+          "bytes": 1489
+        },
+        "trades": {
+          "path": "screening_ledgers/OPTUNA_1011/trades.json.gz",
+          "sha256": "b1de14ea4ba8f48f1871dd647f379cb7b29136729fa78a64a873d465a87463fc",
+          "uncompressed_sha256": "0648aa24e68c736c4e660cd70c595a50ebb020e2b1fa4b35e85da8169b8154f9",
+          "rows": 20,
+          "columns": [
+            "cycle_id",
+            "status",
+            "entry_date",
+            "exit_date",
+            "quantity",
+            "entry_price",
+            "exit_price",
+            "net_return"
+          ],
+          "bytes": 1064
+        }
+      },
+      "mode": "RESEARCH_SCREENING_EQUIVALENT_SUBSET_NOT_FULL",
+      "raw_summary": {
+        "path": "screening_ledgers/OPTUNA_1011/summary.json",
+        "sha256": "a7f966c26e9b80113a77c6d4b43eea615500fa704781bd98d83e5da627b98f86"
+      }
+    },
+    "search": {
+      "path": "experiments/S012/EX049_20261006/artifacts/rex/search.json",
+      "sha256": "3becebf7c73ac108f96eb43dc3e9584b57446ed9ecb8eae3940298e3c95662aa"
+    }
+  },
+  "momentum_union49": {
+    "proposal_id": "OPTUNA_0607",
+    "row": {
+      "proposal_id": "OPTUNA_0607",
+      "trial_number": 607,
+      "phase": "FIXED",
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block",
+        "hold_days": 60,
+        "entry_premium": 0.005,
+        "opportunity": "momentum_union",
+        "momentum_lookback": 5
+      },
+      "parameter_sha256": "1e4217fd845404ee0fbfc62580a6dd0d7cc93b88ea99472a735657dc8ab7419a",
+      "scope": {
+        "implementation_sha256": "2b78b80fd4f7a62ccb5766f67ff44ee63e215c51f8c4dabf3c15cca4bbdca1b0",
+        "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+        "execution_data_fingerprint": "7f7f63a78959bc37564f6c6a79d1322346f1f69fe0bec3112894e7d706828c38",
+        "economic_protocol_sha256": "1972b18684aed25f84a8fae2964ffc8fefb6443c5cd109dc999ecbdb223090e9",
+        "execution_policy_sha256": "d2dc5a275015a426d32f0b9403cd8909d429b6ac36ba4664aa5125c17bb8d06d",
+        "gate_sha256": "cc60c76b87d031add6b9fbc5fbcc9b7df0d8193c58f2f8724f5086e52dbd292d"
+      },
+      "conditional_block": "MOMENTUM_TREND",
+      "status": "COMPLETE",
+      "candidate": null,
+      "passed_all": false,
+      "reason": "New scoped equivalence-gated research account; successor FULL required",
+      "behavior_sha256": "952a5c61ed105c5107d6eb4f3abbe137d870281634f57745a2ee872eae934ce0",
+      "signal_policy_sha256": "e7e284436f01ee710f6b222377072f4ae2501d27df5b7f8bf3bce2d7bc36f50a",
+      "metrics": {
+        "net_cagr": 0.16658403985639536,
+        "max_drawdown": -0.2694631555761653,
+        "closed_trades": 24,
+        "frequency": 0.9381107491856677,
+        "benchmark": {
+          "max_drawdown": -0.30290630870721535,
+          "calmar": 0.4716539362753617,
+          "win_loss_ratio": null,
+          "win_loss_ratio_status": "NO_CLOSED_TRADES",
+          "win_rate": null,
+          "return": 1.2544321200000002,
+          "sharpe": 0.8687575596978847,
+          "closed_trades": 0,
+          "cagr": 0.14286695282439799
+        },
+        "goals": [
+          false,
+          true,
+          false
+        ],
+        "passed_all": false,
+        "evaluation_sessions": 1534,
+        "frequency_denominator": 1535,
+        "final_equity": 255468.91219999985,
+        "final_quantity": 29200,
+        "total_fees": 6924.4878,
+        "exposure": 0.9634941329856584,
+        "orders": 51,
+        "fills": 50,
+        "mode": "RESEARCH_SCREENING_EQUIVALENT_SUBSET_NOT_FULL"
+      },
+      "raw_ledgers": {
+        "signals": {
+          "path": "screening_ledgers/OPTUNA_0607/signals.json.gz",
+          "sha256": "7f244a0cf2747dec960f41581d4a497d01b3e06eecb5721ce99de21943ce9837",
+          "uncompressed_sha256": "c89c60dedb9bf4c625f6092880fe13b58e5c2903f9219fc504ec7b427f04dfc8",
+          "rows": 1534,
+          "columns": [
+            "target_position",
+            "planned_target",
+            "planned_age",
+            "planned_cycle_id",
+            "opportunity_active",
+            "o01_active",
+            "n09_active",
+            "risk_available",
+            "risk_ok",
+            "planned_peak_close",
+            "signal_drawdown",
+            "decision_reason"
+          ],
+          "bytes": 25305
+        },
+        "decisions": {
+          "path": "screening_ledgers/OPTUNA_0607/decisions.json.gz",
+          "sha256": "0e275657be8ec6e59a5eb91c7d43d809c5f6ad21bff97ff7ca50c88c41d763c9",
+          "uncompressed_sha256": "3618547990be13a88e784c4edde7b324785ded90f5c0ae24697b004c0264aea7",
+          "rows": 1534,
+          "columns": [
+            "signal_date",
+            "execution_date",
+            "target_position",
+            "target_quantity",
+            "cycle_target_quantity"
+          ],
+          "bytes": 13706
+        },
+        "account_daily": {
+          "path": "screening_ledgers/OPTUNA_0607/account_daily.json.gz",
+          "sha256": "25c129e865719e2e9a45a6925d0278f3ccecf96a33a2c88092c0b2aaedec0cd5",
+          "uncompressed_sha256": "7f18b0324e71265a2d2d1bbeaba7de7f3e05261faf091a931d1b6144c363e285",
+          "rows": 1534,
+          "columns": [
+            "date",
+            "signal_date",
+            "target_position",
+            "cash_before",
+            "quantity_before",
+            "cash",
+            "quantity",
+            "close",
+            "equity"
+          ],
+          "bytes": 29070
+        },
+        "orders": {
+          "path": "screening_ledgers/OPTUNA_0607/orders.json.gz",
+          "sha256": "7ff0dace4f300cc57c40ee9f54432f359ae949e34dc2aba9673faddec25246f4",
+          "uncompressed_sha256": "17a1c35941bc1d94f3e8df39b44bc5f901e07328540d3f2f725510265c6760cf",
+          "rows": 51,
+          "columns": [
+            "cycle_id",
+            "signal_date",
+            "execution_date",
+            "side",
+            "quantity",
+            "order_type",
+            "limit_price",
+            "status"
+          ],
+          "bytes": 1308
+        },
+        "fills": {
+          "path": "screening_ledgers/OPTUNA_0607/fills.json.gz",
+          "sha256": "1d227a38ec6592966ba689d894478b427d8d19c90009878bf6daf72a67f610e2",
+          "uncompressed_sha256": "87cf00c3c8cdd8f14c99bc2ab64b8d4b7af2c4e1f17f5db2e5bd70947c38d537",
+          "rows": 50,
+          "columns": [
+            "cycle_id",
+            "signal_date",
+            "fill_time",
+            "side",
+            "quantity",
+            "price",
+            "fees",
+            "trigger"
+          ],
+          "bytes": 1641
+        },
+        "trades": {
+          "path": "screening_ledgers/OPTUNA_0607/trades.json.gz",
+          "sha256": "0e6aaaf5bfb7410172706e4634fc963de66f7d31621efc3b719a490ea3651c29",
+          "uncompressed_sha256": "ad122ce0a417fa142868e959ce9c7152a567ae91e88a9a57fce4e7afb54647b1",
+          "rows": 25,
+          "columns": [
+            "cycle_id",
+            "status",
+            "entry_date",
+            "exit_date",
+            "quantity",
+            "entry_price",
+            "exit_price",
+            "net_return"
+          ],
+          "bytes": 1211
+        }
+      },
+      "mode": "RESEARCH_SCREENING_EQUIVALENT_SUBSET_NOT_FULL",
+      "raw_summary": {
+        "path": "screening_ledgers/OPTUNA_0607/summary.json",
+        "sha256": "eb37109d996d0fc90d2d0bffdfd92a9b7215502c7a7558a5b5672b5d2a840d97"
+      }
+    },
+    "search": {
+      "path": "experiments/S012/EX049_20261006/artifacts/rex/search.json",
+      "sha256": "3becebf7c73ac108f96eb43dc3e9584b57446ed9ecb8eae3940298e3c95662aa"
+    }
+  },
+  "pair54": {
+    "candidate_id": "C4900",
+    "row": {
+      "candidate_id": "C4900",
+      "parameters": {
+        "confirm_o01": false,
+        "cooldown": 0,
+        "risk_gate": "kurt",
+        "risk_exit": true,
+        "trailing_stop": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "known_only",
+        "hold_days": 6,
+        "entry_premium": 0.02,
+        "opportunity": "momentum",
+        "momentum_lookback": 10
+      },
+      "payload": {
+        "runtime": {
+          "module": "strategy_runtime.strategies.s012",
+          "qualname": "S012PlannedCycle",
+          "contract_version": 1,
+          "source_sha256": "2b78b80fd4f7a62ccb5766f67ff44ee63e215c51f8c4dabf3c15cca4bbdca1b0",
+          "source_files": [
+            "strategies/s012.py",
+            "resources/features.csv"
+          ]
+        },
+        "parameters": {
+          "confirm_o01": false,
+          "cooldown": 0,
+          "risk_gate": "kurt",
+          "risk_exit": true,
+          "trailing_stop": 0.0,
+          "allocation": 1.0,
+          "exit_policy": "fixed",
+          "min_hold": 1,
+          "risk_unknown_policy": "known_only",
+          "hold_days": 6,
+          "entry_premium": 0.02,
+          "opportunity": "momentum",
+          "momentum_lookback": 10,
+          "rule": {
+            "data_source": {
+              "package": "strategy_runtime",
+              "path": "resources/features.csv",
+              "sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192"
+            }
+          }
+        }
+      },
+      "source_root": "experiments/S012/EX054_20261006/strategy_runtime",
+      "hypothesis": "既有kurt入场控制持仓后转高峰度，增加因果风险退出能否改善净年化？",
+      "implementation_sha256": "2b78b80fd4f7a62ccb5766f67ff44ee63e215c51f8c4dabf3c15cca4bbdca1b0",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "control_kind": "PROSPECTIVE_SINGLE_MECHANISM_CONTROL",
+      "control_label": "KURT_ENTRY_EXIT_KNOWN_ONLY",
+      "prospective_delta": {
+        "risk_exit": true
+      },
+      "source_selection_ids": [
+        {
+          "experiment_id": "EX053_20261006",
+          "reference_id": "C4801",
+          "original_row_sha256": "0cc9a4f4bba277e9456b82cc0a145a23297de7218c060168451e297245c62de2",
+          "original_parameter_sha256": "86b06a5ff63276a43cd7ca2df7a91e3f2cec938f2ba05121161102c30706337a"
+        }
+      ],
+      "record": {
+        "attempt_id": "431fafd3853c444e90935208ad63b321",
+        "experiment_id": "EX054_20261006",
+        "candidate_id": "S012-C4900",
+        "content_sha256": "af82f67e4643fed6740d8a258bdaefef39a7fee51eada7bb55d60d71f18c3c3b",
+        "request_hash": "51f67d8bdd56b3a47fc8487e3bbafe4148f81a29fb37a302e9aacf25fc43b0f4",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T08:56:11.629857+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T09:03:50.301879+00:00",
+        "elapsed_seconds": 458.6725825999747,
+        "evaluation_ids": [
+          "9fb57198417cafbabed728b526d7879eb8c07c2c9a761b7ab5563eb7415efa13"
+        ],
+        "result_hash": "6e432255f24dbe839ef82b6a773a3c5c81835d6e8dea7bc3af933e2fda8fea8b",
+        "result_artifact": {
+          "path": "evaluations/431fafd3853c444e90935208ad63b321/result.json",
+          "kind": "evaluation_result",
+          "sha256": "586bb2db8824e74b374ab5ecfcc47f7b4d1fcb6929232052695b3bda6056603b"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "metrics": {
+        "net_cagr": 0.08776847736728577,
+        "max_drawdown": -0.1288370223856652,
+        "closed_trades": 88,
+        "frequency": 3.439739413680782,
+        "frequency_denominator": 1535,
+        "benchmark": {
+          "cagr": 0.14286695282439799,
+          "max_drawdown": -0.30290630870721535
+        },
+        "goals": [
+          false,
+          true,
+          false
+        ],
+        "passed_all": false,
+        "evaluation_sessions": 1534,
+        "final_equity": 166881.61989999982,
+        "final_quantity": 0,
+        "orders": 176,
+        "fills": 176,
+        "total_fees": 20192.4801,
+        "exposure": 0.3116036505867014
+      },
+      "passed_all": false,
+      "preflight_path": "experiments/S012/EX054_20261006/artifacts/preflight.json",
+      "gate_credit": "NONE; actual FULL six-field scope/compatible sidecar must be separately derived"
+    },
+    "trials": {
+      "path": "experiments/S012/EX054_20261006/artifacts/rex/trials.json",
+      "sha256": "b5434eda2e0f1c274d3a02d942a76e012c472814004fd086d88642715db9b133"
+    }
+  },
+  "audit54": {
+    "path": "experiments/S012/EX054_20261006/artifacts/independent_account_audit.json",
+    "sha256": "5824973abd92688bda1066ed030e4e7e7bc7d3931369d8524c87c79afc701cb3"
+  }
+}
