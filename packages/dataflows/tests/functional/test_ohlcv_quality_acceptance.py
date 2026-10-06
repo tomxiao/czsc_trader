@@ -66,13 +66,18 @@ def _provider(frame, metadata, calls):
 def test_daily_accuracy_accepts_99_percent_including_equality(flow_factory, inaccurate, ready):
     daily, _ = _source(bad_daily=range(inaccurate))
     metadata, calls = _metadata(daily), []
+    daily.attrs = deepcopy(metadata)
+    source = daily.copy()
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, metadata, calls)})
     prepared = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
     assert prepared.ready is ready, prepared.items
     assert len(calls) == 1
+    pd.testing.assert_frame_equal(daily, source, check_exact=True)
+    assert daily.attrs == source.attrs
     if ready:
         fetched = flows.fetch(_request(), prepared=prepared.reference)
         assert fetched.ready and len(fetched.dataframe) == 100
+        assert fetched.dataframe.attrs == source.attrs
         assert not fetched.identity.metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[0]]["daily_accurate"]
     else:
         assert prepared.reference is None and prepared.items[0].status is DataStatus.FAILED
@@ -83,14 +88,20 @@ def test_daily_accuracy_accepts_99_percent_including_equality(flow_factory, inac
 def test_minute_acceptance_requires_both_99_and_95_percent(flow_factory, bad_daily, bad_minute, ready):
     # A daily amount error also causes one minute mismatch, counted once per day.
     daily, minute = _source(bad_daily=range(bad_daily), bad_minute=range(bad_minute))
+    metadata = _metadata(daily, minute)
+    minute.attrs = deepcopy(metadata)
+    source = minute.copy()
     calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, _metadata(daily, minute), calls)})
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, metadata, calls)})
     request = _request("30m")
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready is ready, prepared.items
+    pd.testing.assert_frame_equal(minute, source, check_exact=True)
+    assert minute.attrs == source.attrs
     if ready:
         fetched = flows.fetch(request, prepared=prepared.reference)
         assert fetched.ready and len(fetched.dataframe) == 800
+        assert fetched.dataframe.attrs == source.attrs
         evidence = fetched.identity.metadata["ohlcv_quality_evidence"]["sessions"]
         assert sum(row["minute_accurate"] for row in evidence.values()) == 95
         assert sum(row["daily_accurate"] for row in evidence.values()) == 99

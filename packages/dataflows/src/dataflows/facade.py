@@ -353,7 +353,9 @@ def canonical_frame_sha256(dataframe: pd.DataFrame) -> str:
                   else [dtype_schema(dataframe.index.dtype)]},
     }
     digest.update(json.dumps(schema, separators=(",", ":")).encode("utf-8"))
-    digest.update(pd.util.hash_pandas_object(dataframe, index=True).values.tobytes())
+    # Hash only frame content; source attrs retain their quality evidence.
+    numerical = pd.DataFrame(dataframe, copy=False)
+    digest.update(pd.util.hash_pandas_object(numerical, index=True).values.tobytes())
     return digest.hexdigest()
 
 
@@ -365,6 +367,8 @@ def _validate_provider_output(
 ) -> dict[str, Any] | None:
     """Apply the final DFLS-owned contract before READY can cross the facade."""
 
+    # Validation consumes explicit metadata, without propagating attrs through slices.
+    dataframe = pd.DataFrame(dataframe, copy=False)
     dataset = str(request.dataset)
     vendor_symbol = metadata.get("vendor_symbol")
     if vendor_symbol is not None and request.symbol is not None:
