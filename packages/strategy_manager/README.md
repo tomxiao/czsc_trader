@@ -8,7 +8,7 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 
 | 工作 | 强类型契约 | 平台存储API |
 | --- | --- | --- |
-| 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate` |
+| 候选身份与来源 | `CandidateKey`、`CandidateRegistrationOrigin`、`CandidateRegistration`、`CandidateDerivation` | `StrategyRegistry.register_candidate/get_candidate_registration/get_candidate` |
 | 用户决定 | `ResearchDecision`、`DecisionReference`、`DecisionAction`及三类subject | TDR `record_research_decision`核验并写入研究目录 |
 | 技术检验记录 | `InspectionProtocol`、`InspectionCheckResult`、`CandidateInspectionReport`、`FreezePlan` | TDR `inspect_candidate`执行计算并保存实验内证据 |
 | 冻结提交 | `FreezeCandidateRequest`、`FreezeVersionRequest`、`FreezeReceipt` | `StrategyRegistry.freeze_version/get_freeze_result` |
@@ -43,6 +43,9 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 
 示例中的`record`为调用方构造的`CandidateRegistration`。SM核验载荷、支撑及派生证据的文件哈希，
 并从`source_root`核对源码清单和完整源码内容哈希；相对路径越界、链接及缺失文件均拒绝。
+`get_candidate_registration(key)`只读取并认证登记记录、键及记录哈希，供平台在候选材料缺失时
+仍能确定检验对象；返回登记记录不表示载荷、源码或依赖可用。
+`get_candidate(key, *, evidence_root=...)`继续核验登记引用的全部文件，研究员通过TDR加载候选。
 序列化记录须包含上述两个版本字段，旧schema 1/2登记明确拒绝，不自动迁移。
 研究员通过TDR的`register_candidate/load_candidate`使用上述能力。TDR将载荷和源码快照保存到
 `research/<策略ID>/experiments/<来源实验ID>/evidence/`，登记引用显式发布的账户评价证据。
@@ -63,7 +66,11 @@ record = registry.get_candidate(record.key, evidence_root=evidence_root)
 
 ## 原子冻结与查询状态
 
-TDR先检验候选、复算及发布文件，生成`FreezePlan`和检验报告；用户随后批准该确切计划。
+TDR检验候选、复算及发布文件，保存`CandidateInspectionReport`；报告的`origin`独立绑定候选
+登记身份，`plan`为`FreezePlan | None`。技术失败仍保存检查状态和原因，已完成检查保留，
+未执行项标为`INCOMPLETE`；计划尚未形成时可保存`plan=None`的失败报告并交付。
+请求参数、声明引用身份或授权错误仍明确拒绝；候选材料损坏及运行不一致按技术检查结果留证。
+执行冻结必须具备完整计划、检验通过及用户对该确切计划的明确批准。
 `FreezePlan.origin`使用`CandidateOrigin`绑定登记键、内容指纹、登记记录及其哈希；TDR验证
 检验闭包、实际选型和精确冻结批准，并在发布前再次核验候选及依赖。
 平台存储请求`FreezeVersionRequest(request_id, request_sha256, version, family, staged_package,
