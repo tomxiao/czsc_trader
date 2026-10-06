@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import replace
 from datetime import date
 import json
@@ -412,7 +413,9 @@ def test_preflight_successful_explicit_data_probe(tmp_path, real_data, end):
             "Amount": 1.0,
         }
     )
-    flows = _configured_flows(tmp_path, lambda request: (frame, {"vendor": "synthetic"}))
+    flows = _configured_flows(
+        tmp_path, lambda request: _quality_provider_result(request, frame, {"vendor": "synthetic"})
+    )
     report = preflight_experiment(
         loaded,
         resources=ExperimentResources(1, 99),
@@ -503,17 +506,51 @@ def _configured_flows(tmp_path, provider):
         providers=ProviderConfig(bindings={Dataset.ETF_OHLCV: ProviderBinding("fixture", "v1", provider)}))
 
 
+def _quality_provider_result(request: DataRequest, frame: pd.DataFrame, metadata: dict):
+    from dataflows.ohlcv_quality import (
+        bind_quality_frame, build_quality_evidence, verify_daily_sessions,
+    )
+
+    class SyntheticCalendar:
+        """This fixture declares weekday sessions and a synthetic listing date."""
+
+        def fund_basic(self, *, ts_code, fields):
+            return pd.DataFrame({
+                "ts_code": [ts_code],
+                "list_date": ["20260101"],
+            })
+
+        def trade_cal(self, *, exchange, start_date, end_date):
+            dates = pd.date_range(start_date, end_date)
+            return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
+                                 "is_open": (dates.weekday < 5).astype(int)})
+
+    coverage = verify_daily_sessions(
+        SyntheticCalendar(), request.symbol, frame, start=request.start, end=request.end,
+    )
+    evidence = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
+    metadata = {**metadata, "daily_session_coverage": coverage,
+                "ohlcv_quality_evidence": bind_quality_frame(
+                    evidence, frame, adjustment=metadata.get("adjustment", "none"),
+                )}
+    frame = frame.copy()
+    frame.attrs.update({key: deepcopy(metadata[key]) for key in (
+        "daily_session_coverage", "ohlcv_quality_evidence",
+    )})
+    return frame, metadata
+
+
 def _flows(tmp_path: Path, calls: list[DataRequest] | None = None) -> Dataflows:
     def provider(request: DataRequest):
         if calls is not None:
             calls.append(request)
-        return _frame(), {
+        return _quality_provider_result(request, _frame(), {
             "vendor": "synthetic-test",
             "vendor_symbol": request.symbol,
             "asset_type": "etf",
             "period": "daily",
             "adjustment": "hfq",
-        }
+        })
 
     return _configured_flows(tmp_path, provider)
 
@@ -756,8 +793,10 @@ def test_data_access_records_operations_without_interpreting_research_declaratio
     def provider(request):
         calls.append(request)
         frame = _frame()
-        frame.loc[1, "Date"] = pd.Timestamp(end)
-        return frame, {"vendor": "synthetic"}
+        # Keep every declared weekday when the request extends beyond the cutoff.
+        frame = frame.set_index("Date").reindex(pd.bdate_range(request.start, end)).ffill()
+        frame = frame.rename_axis("Date").reset_index()
+        return _quality_provider_result(request, frame, {"vendor": "synthetic"})
     definition = replace(_definition(), allowed_datasets=declared_datasets)
     context = create_experiment_context(
         definition, repository_root=tmp_path,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from threading import Event
+from types import SimpleNamespace
 import json
 from zoneinfo import ZoneInfo
 
@@ -9,6 +10,7 @@ import pandas as pd
 import pytest
 from pathlib import Path
 from dataflows import Dataflows, Dataset, DataSpace, ProviderBinding, ProviderConfig
+from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 from strategy_runtime import canonical_sha256
 
 from paper_trading_engine.account_data_preparer import AccountDataPreparer
@@ -44,10 +46,28 @@ def _flows(tmp_path, *, publication=None) -> Dataflows:
                 frame = (frame.iloc[:0] if publication.get("empty")
                          else frame.iloc[[0, -1]]).copy()
             publication.setdefault("sessions", []).append(frame["Date"].nunique())
-        return frame, {
+        metadata = {
             "vendor": "test",
             "adjustment": "none" if "unadjusted" in request.dataset else "hfq",
         }
+        pro = SimpleNamespace(
+            fund_basic=lambda **kwargs: pd.DataFrame({
+                "ts_code": [request.symbol], "list_date": [dates[0].strftime("%Y%m%d")],
+            }),
+            trade_cal=lambda **kwargs: pd.DataFrame({
+                "cal_date": pd.date_range(kwargs["start_date"], kwargs["end_date"]).strftime("%Y%m%d"),
+                "is_open": (pd.date_range(kwargs["start_date"], kwargs["end_date"]).dayofweek < 5).astype(int),
+            }),
+        )
+        coverage = verify_daily_sessions(pro, request.symbol, frame,
+            start=request.start, end=request.end)
+        quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
+        metadata.update(daily_session_coverage=coverage,
+            ohlcv_quality_evidence=bind_quality_frame(quality, frame,
+                adjustment=metadata["adjustment"]))
+        frame.attrs = {name: metadata[name] for name in
+                       ("daily_session_coverage", "ohlcv_quality_evidence")}
+        return frame, metadata
 
     def calendar(request):
         days = pd.date_range(request.start, request.end)
@@ -407,7 +427,7 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
     return context, version
 
 
-def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
+def test_missing_input_sessions_recovers_then_restart_keeps_successful_binding(
     minimum_depth_frozen, tmp_path,
 ):
     from paper_trading_engine.srt_advice_client import AdviceClientError
@@ -423,8 +443,9 @@ def test_failed_input_depth_recovers_then_restart_keeps_successful_binding(
         now=lambda: next(moments),
         session_resolver=lambda _: date(2026, 9, 3),
     )
-    with pytest.raises(AdviceClientError, match="fewer observations than required"):
+    with pytest.raises(AdviceClientError, match="omit expected trading sessions") as failed:
         _prepare(client, "s900-v1", date(2026, 9, 2))
+    assert "'missing_dates': ['2026-09-01']" in str(failed.value)
     assert publication["calls"] == 1
     assert publication["sessions"] == [2]
     with pytest.raises(AdviceClientError, match="cannot read prepared-data index"):

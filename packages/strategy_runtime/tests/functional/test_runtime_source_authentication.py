@@ -5,6 +5,7 @@ from datetime import date
 from hashlib import sha256
 import json
 from pathlib import Path
+from types import SimpleNamespace
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
 from dataflows import Dataflows, DataSpace, Dataset, ProviderBinding, ProviderConfig, PreparePolicy
+from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 from strategy_runtime import (
     RuntimeBinding, RuntimeBindingSpec, RuntimeCompatibilityError, RuntimeContractError,
     StrategyCandidate, StrategyInit, StrategyRelease, StrategyRuntime, TradableWindow,
@@ -44,11 +46,27 @@ def flows(root):
         frame = pd.DataFrame({"Date": sessions, "Open": 1., "Close": 1., "High": 1., "Low": 1.,
             "Volume": 1000., "Amount": 1000., "Flow": [.1, .8, .2, .9, 0.], "TotalShare": [.1, .8, .2, .9, 0.]})
         metadata = {"vendor": "synthetic"}
-        if str(request.dataset) == Dataset.ETF_UNADJUSTED_DAILY.value:
-            metadata["adjustment"] = "none"
         if str(request.dataset) == Dataset.ETF_SHARE_SIZE.value:
             metadata["vendor_symbol"] = request.symbol
-        return frame.loc[frame.Date.between(pd.Timestamp(request.start), pd.Timestamp(request.end))], metadata
+        frame = frame.loc[frame.Date.between(pd.Timestamp(request.start), pd.Timestamp(request.end))].copy()
+        if request.dataset in {Dataset.ETF_OHLCV, Dataset.ETF_UNADJUSTED_DAILY}:
+            metadata["adjustment"] = "none" if request.dataset == Dataset.ETF_UNADJUSTED_DAILY else "hfq"
+            pro = SimpleNamespace(
+                fund_basic=lambda **kwargs: pd.DataFrame({
+                    "ts_code": [request.symbol], "list_date": [sessions[0].strftime("%Y%m%d")],
+                }),
+                trade_cal=lambda **kwargs: pd.DataFrame({
+                    "cal_date": pd.date_range(kwargs["start_date"], kwargs["end_date"]).strftime("%Y%m%d"),
+                    "is_open": (pd.date_range(kwargs["start_date"], kwargs["end_date"]).weekday < 5).astype(int),
+                }),
+            )
+            coverage = verify_daily_sessions(pro, request.symbol, frame, start=request.start, end=request.end)
+            quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
+            metadata.update(daily_session_coverage=coverage,
+                ohlcv_quality_evidence=bind_quality_frame(quality, frame,
+                    adjustment=metadata["adjustment"]))
+            frame.attrs = {key: metadata[key] for key in ("daily_session_coverage", "ohlcv_quality_evidence")}
+        return frame, metadata
     return Dataflows(base_dir=root, space=DataSpace(Path("data")), providers=ProviderConfig({
         dataset: ProviderBinding("synthetic", "1", provider) for dataset in (
             Dataset.TRADING_CALENDAR, Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV, Dataset.ETF_UNADJUSTED_DAILY)

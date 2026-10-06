@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 from dataflows import Dataflows, DataSpace, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
+from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 
 from paper_trading_engine.chart_market_data import AccountChartMarketData
 from paper_trading_engine.trading_window import SHANGHAI
@@ -27,11 +29,31 @@ def test_chart_market_data_refreshes_completed_sessions_and_preserves_bound_asse
         price_requests.append(request)
         dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), source["published"]))
         dates = dates[dates != holiday]
-        return pd.DataFrame({
+        frame = pd.DataFrame({
             "Date": dates, "Open": source["price"], "High": source["price"] + 0.1,
             "Low": source["price"] - 0.1, "Close": source["price"],
             "Volume": 100.0, "Amount": source["price"] * 100.0,
-        }), {"vendor": "synthetic"}
+        })
+        def trade_cal(**kwargs):
+            sessions = pd.date_range(kwargs["start_date"], kwargs["end_date"])
+            return pd.DataFrame({
+                "cal_date": sessions.strftime("%Y%m%d"),
+                "is_open": ((sessions.dayofweek < 5) & (sessions != holiday)).astype(int),
+            })
+        pro = SimpleNamespace(
+            fund_basic=lambda **kwargs: pd.DataFrame({
+                "ts_code": [request.symbol], "list_date": ["20200101"],
+            }),
+            trade_cal=trade_cal,
+        )
+        coverage = verify_daily_sessions(pro, request.symbol, frame,
+            start=request.start, end=request.end)
+        quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
+        metadata = {"vendor": "synthetic", "daily_session_coverage": coverage,
+            "ohlcv_quality_evidence": bind_quality_frame(quality, frame)}
+        frame.attrs = {name: metadata[name] for name in
+                       ("daily_session_coverage", "ohlcv_quality_evidence")}
+        return frame, metadata
 
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig(bindings={
         Dataset.TRADING_CALENDAR: ProviderBinding("synthetic", "v1", calendar),

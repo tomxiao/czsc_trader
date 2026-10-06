@@ -1,5 +1,6 @@
 """Backtest acceptance against an isolated current-contract frozen fixture."""
 from datetime import date
+from copy import deepcopy
 import json
 import re
 import pandas as pd
@@ -16,6 +17,19 @@ from test_current_contracts import (
 
 
 def execution_flows(root, *, adjusted_price=1., procurement=None):
+    from dataflows.ohlcv_quality import (
+        bind_quality_frame, build_quality_evidence, verify_daily_sessions,
+    )
+
+    class SyntheticCalendar:
+        def fund_basic(self, *, ts_code, fields):
+            return pd.DataFrame({"ts_code": [ts_code], "list_date": ["20200101"]})
+
+        def trade_cal(self, *, exchange, start_date, end_date):
+            dates = pd.date_range(start_date, end_date)
+            return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
+                                 "is_open": (dates.weekday < 5).astype(int)})
+
     def fetch(request):
         if procurement is not None:
             if not procurement["allowed"]:
@@ -25,6 +39,7 @@ def execution_flows(root, *, adjusted_price=1., procurement=None):
             dates = pd.date_range(request.start, request.end)
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {"vendor": "test"}
         dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), pd.Timestamp("2026-09-21")))
+        daily_dates = dates
         volume = 8000
         if request.frequency == "30m":
             dates = pd.DatetimeIndex([day + pd.Timedelta(hours=h, minutes=m) for day in dates for h, m in ((10, 0), (10, 30), (11, 0), (11, 30), (13, 30), (14, 0), (14, 30), (15, 0))])
@@ -42,6 +57,27 @@ def execution_flows(root, *, adjusted_price=1., procurement=None):
                 source_publication_timestamp_verified=False,
                 historical_revision_history_verified=False, live_feed_latency_verified=False,
             )
+        if request.dataset in {
+            Dataset.ETF_OHLCV, Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
+        }:
+            anchor = pd.DataFrame({"Date": daily_dates, "Open": price, "Close": price,
+                                   "High": price, "Low": price, "Volume": 8000,
+                                   "Amount": 8000 * price})
+            calendar = verify_daily_sessions(
+                SyntheticCalendar(), request.symbol, anchor,
+                start=request.start, end=request.end,
+            )
+            evidence = build_quality_evidence(
+                anchor, intraday=frame if request.frequency == "30m" else None,
+                frequency=request.frequency, expected_dates=calendar["expected_dates"],
+            )
+            metadata.update(daily_session_coverage=calendar,
+                            ohlcv_quality_evidence=bind_quality_frame(
+                                evidence, frame, adjustment=metadata["adjustment"],
+                            ))
+            frame.attrs.update({key: deepcopy(metadata[key]) for key in (
+                "daily_session_coverage", "ohlcv_quality_evidence",
+            )})
         return frame, metadata
     return Dataflows(base_dir=root, space=DataSpace(Path("data/backtest")),
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
