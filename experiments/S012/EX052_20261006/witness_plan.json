@@ -1,0 +1,163 @@
+[
+  {
+    "candidate_id": "C4700",
+    "kind": "PROSPECTIVE_SINGLE_MECHANISM_CONTROL",
+    "label": "H5_C1",
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 1,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "opportunity": "momentum",
+      "momentum_lookback": 10,
+      "hold_days": 5,
+      "entry_premium": 0.02
+    },
+    "parameter_sha256": "7c1a4764b3c4a2a3c0cce82c32ba86ddc2cd4c5e9ded0433cbf399cf6d82c674",
+    "delta": {
+      "hold_days": 5,
+      "cooldown": 1
+    },
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX051_20261006",
+        "reference_id": "OPTUNA_0081",
+        "original_row_sha256": "b41c692de397c7991c1b2aaef488e4cc7218c1dad2185f90e8abc458ab0b37f6",
+        "original_parameter_sha256": "e33841bf9f713c46d8ec4bdd1966abc174ee9144dc9b2f6531c4103bd9a132c9"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4701",
+    "kind": "PROSPECTIVE_SINGLE_MECHANISM_CONTROL",
+    "label": "H6_C2",
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 2,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "opportunity": "momentum",
+      "momentum_lookback": 10,
+      "hold_days": 6,
+      "entry_premium": 0.02
+    },
+    "parameter_sha256": "810ad4200c9140b8a2014a9c1e4b1db568093890832251717f9d40504f65b19b",
+    "delta": {
+      "cooldown": 2
+    },
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX051_20261006",
+        "reference_id": "OPTUNA_0081",
+        "original_row_sha256": "b41c692de397c7991c1b2aaef488e4cc7218c1dad2185f90e8abc458ab0b37f6",
+        "original_parameter_sha256": "e33841bf9f713c46d8ec4bdd1966abc174ee9144dc9b2f6531c4103bd9a132c9"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4702",
+    "kind": "PROSPECTIVE_SINGLE_MECHANISM_CONTROL",
+    "label": "H6_C1",
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 1,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "opportunity": "momentum",
+      "momentum_lookback": 10,
+      "hold_days": 6,
+      "entry_premium": 0.02
+    },
+    "parameter_sha256": "06fa0ca12f7dd75c7a394f3892fcc45ddba77aee537a518f22448f87ac18b61c",
+    "delta": {
+      "cooldown": 1
+    },
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX051_20261006",
+        "reference_id": "OPTUNA_0081",
+        "original_row_sha256": "b41c692de397c7991c1b2aaef488e4cc7218c1dad2185f90e8abc458ab0b37f6",
+        "original_parameter_sha256": "e33841bf9f713c46d8ec4bdd1966abc174ee9144dc9b2f6531c4103bd9a132c9"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4703",
+    "kind": "PROSPECTIVE_SINGLE_MECHANISM_CONTROL",
+    "label": "MOM_UNKNOWN_KNOWN_ONLY",
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "mom",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "known_only",
+      "hold_days": 6,
+      "entry_premium": 0.01,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "a01b8bc49b5e41c6ec0f154e77cf7aed7e59a3f2d19ee4901917b12a599ac962",
+    "delta": {
+      "risk_unknown_policy": "known_only"
+    },
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX050_20261006",
+        "reference_id": "C4605",
+        "original_row_sha256": "0ada2a02f08a8941f6bfcd07c4b188ed471d062b7e19fc88efef8e1da76dd027",
+        "original_parameter_sha256": "32254994bc01af6710ad6d77d6ab9ddaf361217d97cbc14c94020937b6044af8"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4704",
+    "kind": "PROSPECTIVE_PREDECLARED_INTERACTION_CONTROL",
+    "label": "TRAIL050_PREMIUM020",
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.05,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 6,
+      "entry_premium": 0.02,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "c654c75edd37a45c4255120ba541996646e28ae8b7c984e7def91f75a12eba25",
+    "delta": {
+      "entry_premium": 0.02
+    },
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX050_20261006",
+        "reference_id": "C4607",
+        "original_row_sha256": "66c8ad990ac4f971b6e2d218feba75b3068f2cf3661f6ca512bbbf57cc4552a3",
+        "original_parameter_sha256": "0841b51438c7a3a9d647044865b2d2b7a35183e32a4a8194dd699b000fa3d03c"
+      }
+    ]
+  }
+]
