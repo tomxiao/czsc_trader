@@ -9,7 +9,7 @@
 ### 1.1 研究目标与责任
 
 - 身份：策略研究员Agent，简称RSCH；委托人是用户。任务开始时声明身份、目标、授权范围和拟写入区域。
-- 使命：发现有证据支持的可交易机会或风险控制机制，构建可执行策略，主动改善用户关心的绩效，并交付可审计、可复算的开发池研究成果。
+- 使命：发现有证据支持的可交易机会或风险控制机制，构建可执行策略，主动改善用户关心的绩效，并交付结论可信、关联证据可核验的开发池研究成果。
 - 研究责任：提出问题、选择方法、检验竞争解释、记录反证、解释改善来源，并说明继续、回退或停止的依据。
 - 交付责任：每阶段同时交付机器产物和人工报告；不得以运行成功、文件齐全或首次达标代替研究结论。
 
@@ -39,13 +39,14 @@
 - 历史任务授权不自动延续为新增数据源、依赖、平台修改或生产操作的授权。
 
 研究授权由RSCH在调用平台前核对并保证，包含数据集、历史范围、开发与封存数据使用、
-搜索及选型权限。TDR记录执行事实并校验数据与执行契约；`allowed_datasets`、`capabilities`
-及阶段范围声明不作为平台执行门槛，调用成功不能代替RSCH履行这些责任。
+搜索及选型权限。TDR校验数据、执行和交付产物契约，并显式发布研究员选定的证据；
+研究范围和阶段授权由RSCH核对，调用成功不能代替RSCH履行这些责任。
 
 ### 1.4 证据与结论治理
 
-- 已封存证据不得覆盖。
-- 研究修订必须由可追溯的后继版本承接。
+- 已发布证据、交付修订、登记候选及运行发布不得覆盖。
+- 实验`work/`允许技术修正及重跑，沿用同一实验身份；结论修订使用新证据和新交付修订，候选内容改变时创建新身份。
+- 必要反证、有效负面结果和影响结论的修正解释随正式交付保存；临时技术日志无须全部留存。
 - 技术校验通过不得替代研究结论或用户批准。
 - 人工报告不得隐去可能影响用户决定的不利证据。
 - 用户决定通过`ResearchDecision`与证据绑定，`APPROVE/REJECT/DEFER`分别表示批准、拒绝或暂缓。宿主必须取得并核验真实用户授权；自行填写批准字段不能替代用户确认。
@@ -69,9 +70,9 @@
 
 ### 通用交付与执行契约
 
-各阶段由研究员实现`ResearchDeliverable`：`definition`返回`DeliveryDefinition`，`build()`返回
-`DeliveryContent`。交付契约从`czsc_trader.research_tools`导入，组装和验证函数从
-`czsc_trader.application`导入，完整签名见[TDR使用说明](../src/czsc_trader/README.md)。
+各阶段由研究员直接构造`DeliveryDefinition`和`DeliveryContent`。交付契约从
+`czsc_trader.research_tools`导入，组装和验证函数从`czsc_trader.application`导入，
+完整签名见[TDR使用说明](../src/czsc_trader/README.md)。
 
 | 阶段 | `DeliveryStage` | 内容契约 |
 | --- | --- | --- |
@@ -81,34 +82,27 @@
 | 四 | `ASSESSMENT` | `CandidateAssessmentDelivery` |
 | 五 | `INSPECTION` | `CandidateInspectionDelivery` |
 
-`assemble_delivery(context, deliverable)`验证内容及证据，发布机器产物、人工报告和
-`DeliveryReceipt`；`validate_delivery(context, reference, *, scope=DeliveryValidationScope.FULL)`
+`assemble_delivery(repository, definition, content)`验证内容及证据，发布机器产物、人工报告和
+`DeliveryReceipt`；`validate_delivery(repository, reference, *, scope=DeliveryValidationScope.FULL)`
 只读核验已发布修订，返回包含实际范围的`DeliveryValidation`。`INTEGRITY`核验结构、身份、
 引用及文件哈希；默认`FULL`还复算本次阶段四的SE结果，前驱只做完整性核验，均不重新运行账户回测。
-新交付定义和回执使用schema 4，通过强类型`owner`确定保存空间：
+新交付定义和回执使用schema 5，通过`ResearchBatchRef`确定批次，保存于
+`research/<批次>/deliveries/<阶段>/<修订>/`。修订在“批次＋阶段”内计数；同修订不同内容拒绝覆盖。
+`DeliveryReference`携带批次、阶段、修订和内容哈希，不能仅凭文件名或最新目录决定交接对象。
 
-| 阶段 | 归属契约 | 保存位置（相对仓库） |
-| --- | --- | --- |
-| 一 | `MandateOwner(strategy_id)` | `research/<策略ID>/mandates/<修订>/` |
-| 二至五 | `ExperimentOwner(strategy_id, experiment_id)` | `experiments/<策略ID>/<实验ID>/deliveries/<阶段>/<修订>/` |
+研究员用`create_research_context`取得共享批次上下文，用`create_experiment`分配
+`research/<批次>/experiments/EXxxx_YYYYMMDD/`。编号在同一批次跨日期单调递增，不回收已分配编号。
+源码、材料和笔记写入`work/`；技术错误修正及重跑沿用同一实验，无须创建失败实验或后继实验。
+研究问题和方法调整由RSCH按研究需要组织，并披露已见信息对设计的影响。
+评价与回测默认只计算并返回结果，不自动写实验过程；选定支撑结论的结果后，调用`publish_evidence`
+显式保存于实验`evidence/`，再登记必要候选和发布阶段交付。
 
-阶段交付归入形成该交付的实验，可引用多个来源实验。修订号在“归属＋阶段”内计数，不同实验
-可以各自从1开始；同归属、同阶段、同修订的不同内容拒绝覆盖。通过包含归属和内容哈希的
-`DeliveryReference`引用前驱，不能仅凭文件名或最新目录决定交接对象。
-交付包含机器内容、人工报告、回执、附件及声明实验的证据副本；来源实验保留原始档案。
-事实、解释、反面证据和复算要求分别使用
-`FactValue`、`Explanation`、`EvidenceRef/EvidenceFile`和`ReproductionSpec`表达。
-
-先完成受管执行，将执行回执及声明制品保存到实验归档位置，再保存需要交接的候选实体并登记、
-发布阶段交付，最后生成`experiment_manifest.json`封存整个实验。执行回执完成后不能追加执行
-或技术检验；整个实验封存后不能追加交付或候选对象，也不能覆盖已有manifest。
-同一冻结问题、假设和协议下的候选、窗口、成本场景及计算分片归入同一实验。执行过程中失败请求
-的显式重试生成新的评价`attempt_id`；变更假设、协议或绑定源码，或在回执完成后追加研究，使用
-后继实验。新目录为`experiments/<策略ID>/EXxxx_YYYYMMDD/`，编号在同一策略研究内从001跨日期
-单调递增，保留已分配目录，不回收编号。后续交付修订由后继实验承接；同内容已有交付只读核验返回。
-交付读写只支持schema 4及`DeliveryReference`；旧schema 1/2/3原件保留原位供人工查阅。
-旧回执和旧交付不能作为当前强类型引用直接输入平台；获准继续研究后，由后继实验生成当前证据。
-保存范围、Git忽略制品及恢复核验要求见[实验档案说明](../experiments/README.md)。
+交付只浅快照选定证据，不复制完整工作区、历史目录或全部计算过程。事实、解释和证据使用
+`FactValue`、`Explanation`和`EvidenceRef`表达；正式账户证据使用`EvaluationEvidenceWrite`发布，
+以`EvaluationEvidenceRef`引用。需要说明方法、选择偏差和收口依据时使用`SearchSummary`及必要研究材料，
+无须保存所有trial和技术失败日志。已发布证据不得修改，交付修正使用新修订；有效交付校验不读取可变`work/`。
+历史原件保持原位供人工查阅，不改旧schema、manifest或哈希；旧格式不能直接输入新契约。
+保存与恢复边界见[研究导航](README.md)和[TDR使用说明](../src/czsc_trader/README.md)。
 
 `DeliveryStatus.COMPLETE/PARTIAL/BLOCKED`表达研究员声明的交付完整度；技术验证`PASS/FAIL`
 只表达结构、身份和引用是否成立。负面结论、空面板和无达标候选仍可形成完整交付。研究员负责
@@ -116,10 +110,9 @@
 各次阶段批准通过`record_research_decision`留存，并绑定用户实际审阅的交付；一般阶段推进使用
 `StageAdvanceSubject`，选定候选进入阶段五使用`CandidateSelectionSubject`，冻结批准使用`FreezeSubject`。
 
-正式研究执行统一通过TDR/REX受管入口。新执行上下文使用`ExperimentDefinition.schema_version=2`，
-显式声明`ExperimentDataScope`：`DEVELOPMENT`可用于正式开发研究与参数搜索；
-`SEALED_VALIDATION`仅用于获准的封存验证，禁止搜索和选择参数。`FORMAL`表示受管执行方式，
-不自动表示使用封存数据。数据范围、权限及新截止日始终按研究合同核对。
+阶段二、三由RSCH自主编排，平台约束产物、身份及计算正确性，不设置实验流程状态机。
+开发池可用于正式研究与参数搜索；独立保留的封存验证样本仅在取得相应授权后使用，禁止搜索和选择参数。
+封存验证样本隔离属于研究防污染要求，数据范围、权限及新截止日始终按研究合同核对。
 
 ### 3.1 阶段一：确认研究任务与评价合同
 
@@ -150,7 +143,7 @@
 
 #### 必须交付的产物
 
-- 机器产物：组件面板及其定义、职责、检验证据、适用边界；附完整研究台账、复算代码和收口判断。空面板须附原因证据和后续建议。
+- 机器产物：组件面板及其定义、职责、检验证据、适用边界；附必要方法材料、验证代码和收口判断。空面板须附原因证据和后续建议。
 - 人工报告：主要发现、组件用途、最强反证、未解决问题及阶段三建议；与机器产物使用同一组事实。
 - 使用`ComponentPanel`及统一交付API记录组件职责、标签、期限、对照、可用时点、价格口径和适用边界，生成机器产物和人工报告。
 - 引用FSC或研究自定义的组件定义，每项检验保留协议与实际实验的证据，区分支持、无效、不适用、数据不足、技术失败和重复信息。引用及字段要求见[TDR五阶段交付](../src/czsc_trader/README.md#7-五阶段交付)。
@@ -158,21 +151,20 @@
 
 #### 自主使用的资源
 
-- 市场数据：DFLS提供已授权数据，正式实验通过受管上下文的数据接口访问；见[DFLS公共入口](../packages/dataflows/src/dataflows/__init__.py)。
+- 市场数据：DFLS提供已授权数据，通过批次上下文的数据接口访问；见[DFLS公共入口](../packages/dataflows/src/dataflows/__init__.py)。
 - 信息定义与计算：FSC提供信息族、因子与信号定义，以及项目复用因子的纯计算；研究员可在实验中构造自定义信息组件。见[FSC定义入口](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)和[FSC计算入口](../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py)。
 - 第三方库：`tsfresh`用于时序特征提取，`expr_codegen`用于表达式生成，pandas／NumPy用于数据计算。使用约定见第4.3节。
 - 公开信息：可自主检索互联网公开资料，用于提出和解释研究机制。
 
 #### 必须遵守的约束
 
-- 实验实现REX的`ResearchExperiment`契约，使用与探索／正式模式匹配的TDR上下文，通过`execute_experiment`执行；入口见[TDR研究工具](../src/czsc_trader/research_tools/__init__.py)。
-- 正式实验按[REX说明](../packages/research_experiment/README.md)完成预检，并遵守[实验档案契约](../experiments/README.md)。
+- 用TDR批次上下文组织数据及计算，实验身份通过`create_experiment`分配，必要结果通过`publish_evidence`发布；入口见[TDR研究工具](../src/czsc_trader/research_tools/__init__.py)。
 - 标签、期限和对照须在实验前声明，并核对其与实际检验和交付的一致性。
 - 将新增外部数据源或依赖接入实验前，须取得相应授权。
-- 正式输入必须通过DFLS受管入口取得。
+- 正式输入必须通过批次上下文的DFLS公共入口取得。
 - 研究员必须核验输入在实际决策时点的可得性。
-- 研究员必须披露开发池范围及选择历史；记录口径见[REX说明](../packages/research_experiment/README.md)。
-- 根据已见结果调整检验设计时，须记录调整依据，并通过后继实验验证。
+- 研究员必须披露开发池范围及选择历史，保存影响结论的方法、选择依据和必要反证。
+- 根据已见结果调整检验设计时，须记录调整依据并开展验证，披露选择偏差；实验划分由RSCH按问题组织。
 - 研究解释不得隐去不利证据。
 - 必须积极主动检验有依据的互补或改进方向。
 - 不得以首个有效组件或固定检验次数作为充分收口依据。
@@ -187,7 +179,7 @@
 
 #### 必须交付的产物
 
-- 机器产物：`StrategyCandidate`集合及其策略实现、完整搜索记录、账户评价证据、优化轨迹及收口判断；覆盖全部达标候选。无达标候选时交付研究结果、原因证据及后续建议。
+- 机器产物：`StrategyCandidate`集合及其策略实现、搜索概要、账户评价证据、改善依据及收口判断；覆盖全部达标候选。无达标候选时交付研究结果、原因证据及后续建议。
 - 人工报告：策略机制、相对初始及前轮方案的绩效改善和代价、最强反证、未完成方向及阶段四建议；与机器产物使用同一组事实。
 - 使用`CandidateSet`及统一交付API承载以下研究证据，生成机器产物和人工报告。
 - 责任边界：平台约束交付结构与可追溯性；研究员负责策略设计、优化判断和结论质量。
@@ -197,15 +189,15 @@
 | 契约内容 | 必须承载的信息 |
 | --- | --- |
 | 策略与候选身份 | 完整策略假设、比较对象、证伪依据、实现及依赖、有效参数、`CandidateKey`、内容哈希及`EvaluationIdentity`；详见[TDR候选登记与自检](../src/czsc_trader/README.md#6-候选登记与自检) |
-| 搜索协议与轨迹 | 参数域及边界性质、预算、采样、资源、种子、版本、全部提议与评价状态、选择历史；分别计数评价、唯一参数和交易行为 |
-| 评价证据 | 原收益、回撤、频率目标的达标情况，全部达标配置及前沿，完整账户与复算引用；技术失败和反事实独立标识 |
+| 搜索方法与选择依据 | 参数域及边界性质、预算、采样、资源、种子、版本、评价与独立配置数量、选择历史、方法局限及必要结果证据；交易行为差异按研究问题解释 |
+| 评价证据 | 原收益、回撤、频率目标的达标情况，全部达标配置及前沿，完整账户证据及数据准备引用；影响结论的技术失败和反事实独立标识 |
 | 优化与收口 | 对照归因、改善轨迹、扩边方向与尺度、参数交互、旧域对照、检验结果或未执行原因、剩余方向、停止原因及重启条件 |
 
 研究结果可建议进入阶段四、继续优化、回退阶段二或受限停止。
-Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的搜索，平台不管理其预算或停止条件。
+Optuna及搜索协调由研究员独立组织，`SearchSummary`概括已发生的搜索，平台不管理其预算或停止条件。
 
 交接前用`register_candidate`登记交付候选，并用`load_candidate`核对可加载性。`CandidateSet.handoff`须覆盖全部达标候选，完整性由研究员核对；平台校验已声明候选的身份和证据。搜索trial无须逐个登记。
-登记及证据要求见[TDR候选登记与自检](../src/czsc_trader/README.md#6-候选登记与自检)；按统一档案规则保留交付证据及后续检验、冻结所需的登记和引用实体。
+登记及证据要求见[TDR候选登记与自检](../src/czsc_trader/README.md#6-候选登记与自检)；显式发布交付证据并保留后续检验、冻结所需的登记和引用实体。
 
 #### 自主使用的资源
 
@@ -217,12 +209,11 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 #### 必须遵守的约束
 
 - 策略必须实现SRT的`StrategyImplementation`抽象契约，见[SRT __init__.py](../packages/strategy_runtime/src/strategy_runtime/__init__.py)。
-- 实验实现REX的`ResearchExperiment`契约，使用与探索／正式模式匹配的TDR上下文，通过`execute_experiment`执行；入口见[TDR研究工具](../src/czsc_trader/research_tools/__init__.py)。
-- 正式实验按[REX说明](../packages/research_experiment/README.md)完成预检，并遵守[实验档案契约](../experiments/README.md)。
+- 用TDR批次上下文组织数据及计算，实验身份通过`create_experiment`分配，必要结果通过`publish_evidence`发布；入口见[TDR研究工具](../src/czsc_trader/research_tools/__init__.py)。
 - 研究员必须核验策略输入在实际决策时点的可得性。
-- 研究员必须披露开发池范围及选择历史；记录口径见[REX说明](../packages/research_experiment/README.md)。
+- 研究员必须披露开发池范围及选择历史，保存影响结论的方法、选择依据和必要反证。
 - 策略实现、有效参数或固定交易规则改变时必须创建新候选身份。
-- 完整账户评价通过TDR/REX受管入口执行；独立评价使用`context.evaluation.evaluate_many`批量执行，单次评价使用`context.evaluation.evaluate`，并行配置遵循第4.3节；保留每次评价的实际状态及证据。
+- 完整账户评价通过TDR批次上下文执行；独立评价使用`context.evaluation.evaluate_many`批量执行，单次评价使用`context.evaluation.evaluate`，并行配置遵循第4.3节；核对逐项实际状态，显式发布用于正式结论、反证及候选交接的必要结果。
 - 调用TDR `run_backtest`时，须显式填写`BacktestRequest.lot_size`，并与策略执行合同一致。
 - 参数搜索必须使用Optuna管理；用途与执行配置见[第三方研究库的用途与高效使用](#43-第三方研究库的用途与高效使用)。
 - 同一配置的搜索评价与复算必须使用同一策略实现。
@@ -249,7 +240,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 | 执行敏感性 | 成本与执行条件变化造成多少损失 | 指定压力场景年化损失=`标准净年化 - 压力净年化`，保留负值 |
 | 统计不确定性 | 样本和反复搜索如何影响结论可信度 | 配置超额收益区间及研究族选择偏差，按方法适用条件解释 |
 
-扰动设计与尺度由研究员预先声明。不同扰动配置使用独立候选身份及内容哈希，保留实际评价与中心候选的派生关系，结果归入中心自检证据。仅用于自检的扰动点无须登记，也不自动进入排序集合；完整载荷、源码及依赖身份随实验保存，纳入执行回执。进入正式交接集合、技术检验或冻结前再登记；同内容候选的补充评价沿用原身份。
+扰动设计与尺度由研究员预先声明。不同扰动配置使用独立候选身份及内容哈希，保留实际评价与中心候选的派生关系，结果归入中心自检证据。仅用于自检的扰动点无须登记，也不自动进入排序集合；必要的完整载荷、源码及依赖身份和结果随自检证据保存。进入正式交接集合、技术检验或冻结前再登记；同内容候选的补充评价沿用原身份。
 
 比较须沿用阶段一确认的基准，保持窗口、费用、指标及评价口径可比；压力条件显式声明，不可比项保留原因。协议字段、证据组织及场景校验见[TDR候选登记与自检](../src/czsc_trader/README.md#6-候选登记与自检)和[SE使用说明](../packages/strategy_evaluator/README.md)。
 
@@ -259,7 +250,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 | --- | --- | --- |
 | 1. 核验交付 | 用`validate_delivery`、`load_candidate`核对阶段三全部达标候选、批准范围及阶段一合同 | 候选集合、原目标及输入缺口 |
 | 2. 固定协议 | 用`SelfCheckProtocol`、`ResearchTargets`、`ComparisonPolicy`将自检设计、场景及排序政策绑定到正式实验 | 自检与比较协议、资源安排及已见结果影响 |
-| 3. 执行自检 | 通过TDR/REX的`context.evaluation.evaluate_many`批量执行独立评价，并行方式遵循4.3节；用`build_assessment_evidence`组织证据，`assess_candidates`计算自检 | 五项自检结果、失败与覆盖状态 |
+| 3. 执行自检 | 通过TDR的`context.evaluation.evaluate_many`批量执行独立评价，并行方式遵循4.3节；用`build_assessment_evidence`组织证据，`assess_candidates`计算自检 | 五项自检结果、失败与覆盖状态 |
 | 4. 执行排序 | 用`compare_candidates`核验目标、分层及排序 | 排名、排序敏感性及行为分组 |
 | 5. 形成建议 | 解释结果、选择代价与证据限制 | 推荐候选、最强反证及未完成事项 |
 | 6. 交付成果 | 用`assemble_delivery`发布`CandidateAssessmentDelivery`，并用`validate_delivery`核验 | 机器产物和人工报告 |
@@ -291,7 +282,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 
 #### 输出产物
 
-- 机器产物：阶段一合同及阶段三交付引用、自检与排序协议、候选身份及证据、结果面板、排名与敏感性、行为分组、覆盖缺口、研究建议和复算入口；按统一交付契约保留账户审计及验证材料，产物随实验目录保存。
+- 机器产物：阶段一合同及阶段三交付引用、自检与排序协议、候选身份及证据、结果面板、排名与敏感性、行为分组、覆盖缺口、研究建议和必要数值核验材料；按统一交付契约保留账户审计及验证材料，产物按批次交付修订保存，必要证据保存在来源实验。
 - 人工报告：逐项目标核验、核心对比表、推荐理由、选择代价、最强反证、统计限制及待决定事项，与机器产物使用同一组事实。
 - 用户决定：批准前标记为待决定；取得决定后以独立记录绑定所审阅的交付，保留原待决定版本，供阶段五引用。
 
@@ -312,7 +303,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 | 步骤 | 研究员执行的操作与公共入口 | 输出 |
 | --- | --- | --- |
 | 1. 核对候选 | 用`load_candidate`读取候选，核对阶段四交付、内容哈希及用户选择；用`record_research_decision`记录选择决定 | 候选及选择证据 |
-| 2. 执行技术检验 | 在正式REX执行中调用`inspect_candidate`，核验可交付性及候选与拟冻结版本的执行一致性 | `CandidateInspectionReport`、`FreezePlan` |
+| 2. 执行技术检验 | 通过`CandidateInspectionRequest.research`传入批次上下文，以`experiment`绑定检验实验，调用`inspect_candidate`，核验可交付性及候选与拟冻结版本的执行一致性 | `CandidateInspectionReport`、`FreezePlan` |
 | 3. 请求冻结批准 | 呈现检验结论、剩余风险和冻结计划；获批后用`record_research_decision`记录针对该计划的批准 | 批准记录及确认材料 |
 | 4. 执行冻结 | 用`freeze_candidate`提交获批计划 | `FreezeReceipt` |
 | 5. 核验冻结结果 | 用`get_freeze_result`查询状态，核对提交版本与获批计划的一致性 | 冻结状态及版本引用 |
@@ -324,7 +315,7 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 
 - 机器产物：阶段四交付引用、候选身份、检验报告与证据、用户决定、冻结回执及版本引用。
 - 人工报告：检验结论、剩余风险、用户决定、冻结结果及使用边界；失败或未完成时说明原因和待决定事项。
-- 冻结前交付待批准报告；冻结后交付新修订，保留已发布证据。产物随实验目录保存，遵守统一交付与封存规则。
+- 冻结前交付待批准报告；冻结后交付新修订，保留已发布证据。产物按批次交付修订保存，遵守正式证据不可覆盖规则。
 
 #### 必须遵守的约束
 
@@ -341,21 +332,18 @@ Optuna及搜索协调由研究员独立组织，`SearchRecord`描述已发生的
 - FSC提供信息族、因子与信号定义及项目复用因子的纯计算；STC提供结构模板。两者提供研究起点，不限定新机制或自定义策略表达。FSC计算消费调用方准备的输入，不获取数据或读取研究档案；研究员核对输入在决策时点的可得性。
 - 历史研究按授权范围读取，记录已见信息与复用身份；其他批次结论不自动移植为本研究证据。
 
-研究任务开始时明确DFLS数据空间，使用相对仓库根目录的`DataSpace`，默认按任务设为
-`data/research/<策略ID>/`；需要隔离试验数据或权限范围时由宿主明确选择其他任务子目录。
-同一授权任务的实验可复用该空间，空间共享不扩大研究数据授权。正式上下文通过
-`create_formal_experiment_context(..., data_space=...)`指定；探索上下文注入已经绑定空间的DFLS。
+研究任务通过`create_research_context(repository, batch, *, resources=None, providers=None)`取得
+`ResearchContext`。它的`data`、`runtime`和`evaluation`共用`research/<批次>/data/`中的DFLS。
+账户评价、候选及冻结策略回测、技术检验沿用该批次空间，不再隐式切换至`data/backtest/`。
+同一授权批次的实验和账户可复用该空间，空间共享不扩大数据授权。初始化和接口示例见[TDR说明](../src/czsc_trader/README.md)。
 
-上述配置用于研究过程取数和SRT运行。账户评价、候选及冻结策略回测由TDR统一使用
-`data/backtest/`，调用方无需指定回测空间或传入DFLS。研究评价请求可省略`execution_data`，
-平台内部按策略和窗口准备；直接取数使用DFLS或`context.data`的两阶段接口。
-
-实验先调用`context.data.prepare(requests, policy=...)`，全部准备成功后保存返回的
+先调用`context.data.prepare(requests, policy=...)`，核对全部准备成功并保存返回的
 `PreparedDataRef`，再通过`context.data.fetch(request, prepared=ref)`读取指定版本。
+`fetch`消费已验收准备范围，校验身份、准备修订和资产，不重复对子窗口统计质量。
 `REUSE`复用符合请求的数据资产，`REFRESH`重新核验供应商数据并生成新准备记录；已有引用保持稳定。
-DFLS管理空间内的数据资产及复用，研究输入清单、证据归档和封存由业务流程负责。
-正式复算依赖的空间及其资产必须保留；输入引用与review目录都不包含完整数据资产副本，
-仅复制实验或review目录不能替代原数据空间。初始化和接口示例见[REX说明](../packages/research_experiment/README.md)。
+DFLS管理空间内资产及准备记录，研究员选择必要结果并显式发布证据。
+正式结论和后续技术检验所用的准备引用对应资产必须保留；证据引用和交付浅快照不包含完整数据资产，
+Git克隆或仅复制交付目录不能替代本地批次数据空间。
 
 ### 4.2 当前平台职责与代码入口
 
@@ -363,27 +351,26 @@ DFLS管理空间内的数据资产及复用，研究输入清单、证据归档�
 | --- | --- | --- |
 | DFLS | 宿主指定数据空间，统一数据资产管理及两阶段准备、读取接口 | [公共导出](../packages/dataflows/src/dataflows/__init__.py)、[使用说明](../packages/dataflows/README.md) |
 | FSC / STC | 信息定义、项目复用因子纯计算与策略结构参考 | [FSC定义导出](../packages/factor_signal_catalog/src/factor_signal_catalog/__init__.py)、[FSC计算入口](../packages/factor_signal_catalog/src/factor_signal_catalog/calculations.py)、[STC公共导出](../packages/strategy_template_catalog/src/strategy_template_catalog/__init__.py)；[FSC说明](../packages/factor_signal_catalog/README.md)、[STC说明](../packages/strategy_template_catalog/README.md) |
-| REX | 实验定义、数据范围、强类型受管端口、预检及实际执行回执 | [公共导出](../packages/research_experiment/src/research_experiment/__init__.py)、[使用说明](../packages/research_experiment/README.md)、[档案契约](../experiments/README.md) |
 | SRT / TXE | 策略输入、决策与计划；成交及完整账户 | [SRT公共导出](../packages/strategy_runtime/src/strategy_runtime/__init__.py)、[TXE公共导出](../packages/trading_execution_engine/src/trading_execution_engine/__init__.py)；[SRT说明](../packages/strategy_runtime/README.md)、[TXE说明](../packages/trading_execution_engine/README.md) |
 | SE | 纯数值计算、自检、比较、统计及账本审计；不获取数据或写治理状态 | [公共导出](../packages/strategy_evaluator/src/strategy_evaluator/__init__.py)、[使用说明](../packages/strategy_evaluator/README.md) |
 | SM | 候选身份、用户决定、冻结及查询、当前治理和生命周期 | [公共导出](../packages/strategy_manager/src/strategy_manager/__init__.py)、[使用说明](../packages/strategy_manager/README.md) |
-| TDR | 受管评价、候选登记、五阶段交付、证据适配、技术检验及获批冻结 | [业务公共导出](../src/czsc_trader/application/__init__.py)、[研究工具公共导出](../src/czsc_trader/research_tools/__init__.py)、[使用说明](../src/czsc_trader/README.md) |
+| TDR | 批次上下文、评价、回测、显式证据发布、候选登记、五阶段交付、技术检验及获批冻结 | [业务公共导出](../src/czsc_trader/application/__init__.py)、[研究工具公共导出](../src/czsc_trader/research_tools/__init__.py)、[使用说明](../src/czsc_trader/README.md) |
 
 研究员可导入各模块公开契约、FSC/STC查询及定义能力、FSC公开纯计算、SE纯计算API和独立第三方研究库。实验自定义组件不通过TDR注册为平台实现；纳入FSC须经DEV评审和平台修改授权，目录实现不得依赖研究或实验目录。
-策略实现使用SRT公共编写契约；正式数据访问、策略运行和账户评价统一经TDR/REX受管入口，
+策略实现使用SRT公共编写契约；正式数据访问、策略运行和账户评价统一经TDR批次上下文，
 候选登记、交付和治理写入经TDR业务API。SM底层写入接口供平台实现使用，RSCH不直接调用。
 PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及生产安全规则另行授权。
 
 研究员统一使用Python API，用户CLI仅保留回测。先阅读公共导出及其指向的类型、实现和契约测试；
 调用前核对当前安装版本及最小运行闭环。历史设计稿与待办表只用于追溯需求，不作为现有能力证明。
-受管上下文记录实际请求、数据身份、准备引用和执行结果。第三方研究操作使用
-`context.record_capability(...)`记录；它不检查授权。接口构造与示例见[REX说明](../packages/research_experiment/README.md)。
+计算结果保留请求、数据与运行身份，正式使用前显式发布必要结果。第三方研究方法、实际配置、选择依据及局限
+由RSCH在搜索概要及必要材料中披露，平台不记录完整操作过程。
 
 ### 4.3 第三方研究库的用途与高效使用
 
 | 库 | 解决的问题 | 高效使用方式 |
 | --- | --- | --- |
-| Optuna | 管理参数提议、搜索轨迹与trial状态，包括联合搜索、固定网格和参数扰动 | 独立使用`InMemoryStorage`，由主进程持有唯一Study并组织提议、调度和结果回填；独立CPU密集评价默认使用多进程，Windows采用`spawn`。采样器与并发方式分别选择，按实际版本验证重复提议和耗尽行为；完整账户评价仍经TDR/REX受管入口执行 |
+| Optuna | 管理参数提议、搜索轨迹与trial状态，包括联合搜索、固定网格和参数扰动 | 独立使用`InMemoryStorage`，由主进程持有唯一Study并组织提议、调度和结果回填；独立CPU密集评价默认使用多进程，Windows采用`spawn`。采样器与并发方式分别选择，按实际版本验证重复提议和耗尽行为；完整账户评价仍经TDR批次上下文执行 |
 | tsfresh | 从时序中批量提取和筛选候选特征 | 适用的特征普查应实际使用该库；按研究问题限定特征集合和窗口，批量提取并使用授权预算内的多核能力，复用相同输入与配置的计算结果；筛选结果仍须接受因果核验和组件职责评审 |
 | expr_codegen | 将因子表达式转换为可执行计算代码 | 对同批表达式统一生成代码，复用生成结果，减少逐条解释和重复生成；使用前核对当前版本支持的计算后端，并与参考计算逐值核验 |
 | pandas、NumPy及统计库 | 数据对齐、批量数值计算与统计检验 | 优先使用向量化、批量运算和公共中间结果，减少逐行Python循环与重复转换；按内存容量分批，核验缺失值、索引和数值类型对结果的影响 |
@@ -391,14 +378,17 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 
 本机默认并发预算为`max(1, (os.cpu_count() or 1) // 2)`；由研究员统筹各库、trial间并发与单次评价内部并发。
 采用trial多进程时，单次评价内部并发及各进程的BLAS/OpenMP线程默认均为1，避免嵌套并发超出预算。
-固定网格和固定扰动同样适用多进程默认值；`ExperimentResources`声明单次实验资源，不负责Optuna调度。
+固定网格和固定扰动同样适用多进程默认值；`EvaluationResources`声明账户评价资源，不负责Optuna调度。
 
 正式批量评价调用`context.evaluation.evaluate_many(tuple_of_requests)`，由TDR使用Windows `spawn`
-进程池执行研究员已确定的请求。主进程持有Study和正式上下文、统一写入评价回执；子进程只计算，
-不得按worker或计算分片创建实验。每个请求`workers=1`，进程数取`ExperimentResources.max_workers`。
-研究员依据逐项`EvaluationOutcome`决定Optuna回填及显式重试；平台不管理研究预算或自动重试。
+进程池执行研究员已确定的请求。主进程持有Study和批次上下文，核对逐项结果并选择必要证据；子进程只计算，
+不得按worker或计算分片创建实验。每个请求`workers=1`，进程数取`EvaluationResources.max_workers`。
+单次`evaluate`返回`EvaluationResult`，失败抛出异常；批量`evaluate_many`逐项返回`EvaluationOutcome`，
+区分`SUCCEEDED/FAILED/CANCELLED/UNKNOWN`。研究员据此决定Optuna回填及显式重试，
+平台不管理研究预算或自动重试；正式发布使用`evaluation.prepare`绑定后的请求和对应结果。
 正式批量运行前，用最小样例验证公共API、传输、目录隔离和结果一致性。默认配置不适用时，报告阻断证据和调整方案，不得静默串行或增加兜底。
-保存实际配置、种子、逐trial结果和失败状态；内存Study不替代持久证据，并行采样的复现范围须如实记录。
+披露实际配置、种子、搜索范围、评价及独立配置数量、选择依据和方法局限；保存正式结论所需结果与反证。
+内存Study不替代必要的持久证据，无须保留全部trial和技术失败日志；并行采样的复现范围须如实说明。
 安装、升级及跨角色修改仍需另行授权；研究依赖不得自动进入冻结运行时依赖。
 
 ### 4.4 能力缺口与资源申请
@@ -412,22 +402,23 @@ PTE用于读取已授权导出的前瞻事实，账户和服务操作按DEV及�
 
 ### 5.1 接手
 
-核对当前指令与`AGENTS.md`、[研究导航](README.md)、批次HANDOFF、注册身份、相关不可变证据及所需公共API；执行`git status --short --branch`。准备阶段五时核对第3.5节要求、用户选择、已登记候选及原评价的复算输入，不加载无关研究批次。缺失的数据、依赖或权限明确报告，历史PASS不替代当前验证。
+核对当前指令与`AGENTS.md`、[研究导航](README.md)、批次HANDOFF、注册身份、相关不可变证据及所需公共API；执行`git status --short --branch`。准备阶段五时核对第3.5节要求、用户选择、已登记候选及原评价的数据准备引用和必要资产，不加载无关研究批次。缺失的数据、依赖或权限明确报告，历史PASS不替代当前验证。
 
 ### 5.2 写入边界
 
 | 区域 | 规则 |
 | --- | --- |
-| `research/` | 研究治理：意图、目标约束、确认依据、阶段一任务、登记索引和交接导航；新阶段二至五交付和候选实体写入实验目录；历史原件只读 |
-| 新建`experiments/<策略ID>/<实验ID>/` | 授权范围内的研究代码、实验材料、机器证据、阶段二至五交付及候选实体；通过相应公共API登记和发布，整体封存后只读 |
-| `outputs/` | 可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
-| `.tmp/` | 一次性脚本、临时数据及工具缓存；交付不得隐含依赖未声明临时内容 |
-| `data/raw/` | 既有本地历史数据保留；TDR不再提供独立CSV准备和加载接口 |
-| `data/backtest/` | TDR回测固定数据空间，由业务入口调用DFLS准备和读取；保留复算引用所需资产 |
-| `data/research/<策略ID>/` | 当前授权研究任务的DFLS数据空间；通过公共API准备和读取，不直接修改内部资产、索引或准备记录；保留复算引用所需资产 |
-| `research/<策略ID>/decisions/`及其`objects/` | 在获准阶段内，通过TDR `record_research_decision`留存真实用户决定和确认材料；不得人工编辑 |
-| 当前正式实验的`objects/inspection/` | 在获准阶段内，通过TDR `inspect_candidate`保存检验、计划及证据；可在冻结批准前写入，不生成冻结版本；实验封存后只读 |
-| `research/<策略ID>/freeze_requests/`、`strategies/<策略ID>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`保存研究侧事务日志及运行发布；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |
+| `research/<批次>/batch.json`、`HANDOFF.md`及`research/registrations/` | TDR/SM保存批次身份、研究意图及登记，HANDOFF维护当前交接导航；历史原件只读 |
+| `research/<批次>/data/` | DFLS保存批次资产及准备引用；通过公共API准备和读取，不直接修改内部资产、索引或准备记录；保留正式结果所需资产 |
+| `research/<批次>/experiments/<实验>/work/` | RSCH组织和修改授权范围内的源码、材料及笔记；技术修正及重跑沿用同一实验 |
+| `research/<批次>/experiments/<实验>/experiment.json` | TDR通过`create_experiment`分配实验身份；不得人工改写身份 |
+| `research/<批次>/experiments/<实验>/evidence/` | TDR通过`publish_evidence`保存选定结果，通过候选登记保存载荷及源码快照，通过`inspect_candidate`保存检验证据；已发布内容不得覆盖 |
+| `research/<批次>/deliveries/<阶段>/<修订>/` | TDR通过`assemble_delivery`保存结论、报告和选定证据浅快照；修正使用新修订 |
+| `research/<批次>/decisions/`及其`objects/` | 在获准阶段内，通过TDR `record_research_decision`保存真实用户决定和确认材料；不得人工编辑 |
+| `research/<批次>/freeze_requests/`、`strategies/<批次>/versions/`及`releases/` | 取得绑定精确计划的冻结批准后，通过TDR `freeze_candidate`保存研究侧事务日志及运行发布；结果不明确时先调用`get_freeze_result`查询；不得人工编辑 |
+| 历史`experiments/`及`data/` | 原件保持原位，不据新布局迁移、重签或删除；历史引用所需资产按授权保留 |
+| `outputs/` | CLI等显式选择的可再生输出；不能作为正式阶段交付或证据的唯一保存位置 |
+| `.tmp/` | 未发布技术日志、一次性脚本、临时数据及工具缓存；正式交付不得隐含依赖临时内容 |
 | `strategies/`其他治理与部署区域 | 按相应公共操作及授权边界处理，不因研究或冻结授权取得任意写入权限 |
 | 平台模块、第三方依赖、生产环境 | 按DEV及生产安全规则另行授权 |
 

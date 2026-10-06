@@ -19,7 +19,7 @@ DEV对接口语义、数据与执行正确性、运行可靠性及维护成本�
 
 - 根据已确认的新需求设计直接、高效、易维护的方案，综合考虑实现成本、运行效率和维护成本。
 - 在获准的重构范围内，自主同步改造调用方，并删除被新方案替代的旧接口和旧实现。
-- 研究授权、数据使用范围和阶段约束由RSCH保证；TDR记录研究操作及结果，不以研究声明
+- 研究授权、数据使用范围和阶段约束由RSCH保证；TDR提供批次上下文、计算及显式证据发布，不以研究声明
   设置权限门槛。平台保留请求类型、数据身份、时间一致性、资源限制和证据完整性校验。
 - 默认采用清晰的新契约，不主动增加旧接口、旧格式、双路径或兼容兜底。
 - 判断历史兼容确有必要时，先说明必要性、兼容范围、额外成本及迁移方案，取得用户明确批准后再实现。
@@ -35,8 +35,8 @@ DEV对接口语义、数据与执行正确性、运行可靠性及维护成本�
 ### 2.3 识别语义影响
 
 修改成交价格、费用、时间对齐、数据可用性或统计口径时，明确说明对研究与运行结果的影响。
-需要调整研究方案或复验时，明确交接给相应研究任务。原实验、交付及冻结发布保持不可变；
-需要新证据或新发布时，通过获准的当前流程生成后继产物。
+需要调整研究方案或复验时，明确交接给相应研究任务。实验的`work/`允许在同一实验内修正技术错误和重跑；
+已发布证据、阶段交付、登记候选及冻结发布保持不可变。新结论使用新的证据引用或交付修订，候选内容改变则创建新身份。
 
 ## 3. 定位问题与影响
 
@@ -52,18 +52,17 @@ DEV对接口语义、数据与执行正确性、运行可靠性及维护成本�
 
 | 模块 | 职责与资料入口 |
 | --- | --- |
-| TDR | [研究执行、评价、回测及跨模块业务入口](../src/czsc_trader/README.md) |
+| TDR | [批次上下文、评价、回测、显式证据发布及跨模块业务入口](../src/czsc_trader/README.md) |
 | DFLS | [数据获取、规范化、校验与发布](../packages/dataflows/README.md) |
 | FSC | [信息族、因子及信号定义，以及项目复用因子的纯计算](../packages/factor_signal_catalog/README.md) |
 | STC | [策略函数模板、输入角色及参数边界](../packages/strategy_template_catalog/README.md) |
-| REX | [可执行实验声明、上下文与执行回执](../packages/research_experiment/README.md) |
 | SM | [研究登记、发布身份及生命周期](../packages/strategy_manager/README.md) |
 | SE | [结构化事实的确定性数值评价](../packages/strategy_evaluator/README.md) |
 | SRT | [策略定义、数据准备、决策及执行计划](../packages/strategy_runtime/README.md) |
 | TXE | [历史成交、费用、现金、持仓及净值计算](../packages/trading_execution_engine/README.md) |
 | PTE / WDG | [模拟交易、账户审计及进程托管](../packages/paper_trading_engine/README.md) |
 
-依赖方向为`TDR → REX/FSC/STC/SM/SE/TXE/SRT/DFLS`、`REX → SRT`、`TXE → SRT`、
+依赖方向为`TDR → FSC/STC/SM/SE/TXE/SRT/DFLS`、`TXE → SRT`、
 `SRT → DFLS`、`PTE → SRT`、`WDG → PTE进程`。模块通过明确契约协作。
 API参数、schema和文件布局在所属模块说明维护，本文不复制版本清单。
 
@@ -83,6 +82,16 @@ API参数、schema和文件布局在所属模块说明维护，本文不复制�
 
 ### 4.3 研究证据与运行发布
 
+新研究统一保存于`research/<批次>/`。TDR创建批次上下文和实验身份，向数据准备、评价、回测及技术检验
+注入同一批次`data/`中的DFLS；DFLS管理资产和准备引用。RSCH在`experiments/<实验>/work/`组织可修改的代码、材料和笔记。
+评价与回测API默认只返回结果；RSCH选择支撑结论的必要证据，通过`publish_evidence`保存于实验`evidence/`。
+阶段交付保存于批次`deliveries/<阶段>/<修订>/`，只浅快照选定证据，不复制工作区或完整研究过程。
+
+阶段二、三由RSCH自编排，平台校验交付产物、因果与数据身份及数值正确性。研究方法、搜索预算、收口和反证解释
+由RSCH负责，平台不要求完整trial轨迹、失败回执、过程回放或整个实验封存。
+正式交付校验不依赖可变`work/`；阶段四重算SE，阶段五核验真实用户决定、技术检验和冻结事务。
+历史研究、旧数据空间和运行发布保持原位，不改旧schema或哈希。保留原件不承诺旧格式机器读取或旧流程继续执行。
+
 研究证据、用户决定与冻结事务日志独立于运行发布保存，运行加载核验自身版本、发布包及部署身份。
 冻结先完成发布包和研究提交日志，再原子写入版本文件作为运行可见性边界；
 仅查询确认`COMMITTED`时声明冻结完成。平台校验一致性和可追溯性，用户授权须有真实依据。
@@ -94,7 +103,7 @@ API参数、schema和文件布局在所属模块说明维护，本文不复制�
 ## 5. 项目验证与资料归属
 
 验证所改公开契约及受影响调用链的实际结果。合成夹具验证软件行为，真实研究复验验证特定证据，
-生产检查验证实际环境；三类结果分别说明，不能相互替代。正式研究证据按相应合同归档，
+生产检查验证实际环境；三类结果分别说明，不能相互替代。正式研究证据按公开契约显式发布，
 交付不得依赖未声明的临时文件。测试命令、验收标记和治理规则统一见[测试治理](TEST_GOVERNANCE.md)。
 
 长期用例围绕公开业务API、强类型构造器及明确文档化的模块入口，验证可观察结果和失败语义。模块测试负责自身计算与数值边界，跨模块测试负责身份传播、调度、发布与失败状态；目标调用链实际运行，外部边界替身与明确故障注入按风险使用。合并或删除用例前，先证明后继场景承接同一风险；等价参数收敛保留关键边界和独立诊断节点。详细规则由测试治理维护，本文不保存用例数量与耗时快照。
@@ -107,7 +116,7 @@ API参数、schema和文件布局在所属模块说明维护，本文不复制�
 
 - 项目介绍与导航：[根README](../README.md)。
 - 研究职责与交付：[RSCH Agent](../research/RSCH_AGENT.md)、[研究导航](../research/README.md)、
-  [实验档案](../experiments/README.md)；具体批次资料按当前授权范围读取。
+  [历史实验说明](../experiments/README.md)；具体批次资料按当前授权范围读取。
 - 生产发布、账户、服务及恢复：[PTE运维手册](PTE_OPERATIONS.md)。
 - 已批准设计与实施计划：`docs/superpowers/specs/`、`docs/superpowers/plans/`；事故资料：[复盘索引](incidents/README.md)。
 
@@ -124,7 +133,6 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_manager[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_evaluator[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\strategy_runtime[test]"
-.\.venv\Scripts\python.exe -m pip install -e ".\packages\research_experiment[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\trading_execution_engine[test]"
 .\.venv\Scripts\python.exe -m pip install -e ".[research,test]"
 .\.venv\Scripts\python.exe -m pip install -e ".\packages\paper_trading_engine[test]"
@@ -139,7 +147,8 @@ python -m venv .venv
 | 本地内容 | 恢复原则 |
 | --- | --- |
 | `.venv/`、`.env` | 重建开发环境，单独恢复获授权凭据 |
-| `data/raw/`、`data/backtest/`、`data/review/`及实验制品 | 按任务恢复所需受控输入及证据；Git克隆不保证历史重放或部署可用 |
+| `research/<批次>/data/`、已发布证据及交付 | 保留所用准备引用对应的数据资产与选定证据；Git克隆不保证恢复本地数据 |
+| 历史`data/`、`experiments/`及运行发布 | 按授权恢复所需原件，不迁移或重签历史哈希 |
 | `.tmp/`、`.build/pte/`、`outputs/` | 按需要重新生成，不能代替正式证据 |
 | `state/paper_trading/` | 开发态PTE本地状态；生产PTE不读取此目录 |
 | 生产`shared/`、Windows服务及Futu会话 | 按独立授权和PTE运维手册处理；恢复开发环境不自动延续生产观察序列 |

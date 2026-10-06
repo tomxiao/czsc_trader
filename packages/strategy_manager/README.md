@@ -19,23 +19,34 @@ SM提供研究登记、冻结发布及生命周期所需的强类型契约和存
 内容哈希不符。候选登记存于`research/registrations/`；同键同记录幂等，不同内容拒绝覆盖。
 `CandidateKey`由策略ID和`C`加四位数字的候选编号组成，例如`S900`与`C0001`。
 派生类型明确区分`PARAMETERS`、`IMPLEMENTATION`和`EXECUTION`，绑定双方内容及变更证据。
-仅登记需要正式交接、技术检验或冻结的候选。搜索trial和邻域对象可直接通过TDR受管评价，
-其`EvaluationLineage`归入实验评价证据；不因补充派生关系重复登记同内容候选。
-来源实验ID接受新目录`EXxxx_YYYYMMDD`及保留原位的已封存目录名，定位始终使用策略ID和实验ID。
+仅登记需要正式交接、技术检验或冻结的候选。搜索中的临时配置可通过TDR评价接口直接计算；
+研究员选择必要结果，显式发布后作为支撑证据，不因补充派生关系重复登记同内容候选。
+新实验使用`EXxxx_YYYYMMDD`身份，实验工作区允许修正和重跑；已发布证据和登记候选保持不可变。
 
-`CandidateRegistration`读写只接受schema 2，内容身份使用`identity_schema_version=2`，其载荷、源码、预检及派生证据路径相对来源实验根目录
-`experiments/<key.strategy_id>/<origin.experiment_id>/`。候选内容身份不因保存位置改变。
-平台存储调用必须显式提供实验根目录：
+`CandidateRegistration`读写只接受schema 3，内容身份继续使用`identity_schema_version=2`。
+`CandidateRegistrationOrigin(experiment_id, evidence)`绑定来源实验和非空、唯一的支撑证据；
+不再要求实验定义、执行绑定或预检回执。`source_root`记录登记时保存的源码快照根目录。
+候选载荷、`source_files`、来源及派生证据中的全部`CandidateEvidence.path`，以及`source_root`，
+均相对调用方提供的批次证据根目录。TDR使用`research/<key.strategy_id>/`作为该根目录。
+候选内容身份不因保存位置改变。平台存储调用必须显式提供证据根目录：
 
 ```python
-registry.register_candidate(record, experiments_root=context.experiments_root)
-record = registry.get_candidate(key, experiments_root=context.experiments_root)
+from pathlib import Path
+from strategy_manager import StrategyRegistry
+
+root = Path.cwd()
+registry = StrategyRegistry(root / "research/registrations")
+evidence_root = root / "research" / record.key.strategy_id
+registry.register_candidate(record, evidence_root=evidence_root)
+record = registry.get_candidate(record.key, evidence_root=evidence_root)
 ```
 
-SM据登记中的策略和来源实验定位实体并校验哈希；序列化记录须显式提供两个版本字段，
-旧schema 1登记明确拒绝。研究员通过TDR
-`register_candidate/load_candidate`使用上述能力；TDR负责将实体保存到来源实验的`objects/`，
-拒绝在已封存实验中补写对象。登记记录和来源实验实体须一起保留，才能继续加载、检验及冻结。
+示例中的`record`为调用方构造的`CandidateRegistration`。SM核验载荷、支撑及派生证据的文件哈希，
+并从`source_root`核对源码清单和完整源码内容哈希；相对路径越界、链接及缺失文件均拒绝。
+序列化记录须包含上述两个版本字段，旧schema 1/2登记明确拒绝，不自动迁移。
+研究员通过TDR的`register_candidate/load_candidate`使用上述能力。TDR将载荷和源码快照保存到
+`research/<策略ID>/experiments/<来源实验ID>/evidence/`，登记引用显式发布的账户评价证据。
+批次根、登记记录及其所引用的不可变实体须一起保留，才能继续加载、检验及冻结。
 
 `ResearchDecision`将`APPROVE/REJECT/DEFER`与以下对象之一绑定：
 
@@ -46,6 +57,8 @@ SM据登记中的策略和来源实验定位实体并校验哈希；序列化记
 决定必须留存`confirmation_source`和原因；同一决定ID内容冲突拒绝写入。宿主负责核验真实用户
 授权，TDR验证决定及引用并保存到`research/<策略ID>/decisions/`。确认材料及检验证据使用
 `ResearchEvidenceRef(owner, path, sha256)`，路径相对`ResearchEvidenceOwner`，以仓库根目录解析。
+批次owner对应`research/<策略ID>/`；实验owner对应
+`research/<策略ID>/experiments/<实验ID>/`。
 决定留痕不自动驱动研究阶段或参数搜索。
 
 ## 原子冻结与查询状态
@@ -84,13 +97,14 @@ SM底层`get_freeze_result(request_id, *, journal_root)`必须显式提供日志
 | 路径（相对仓库） | 内容 |
 | --- | --- |
 | `research/registrations/<策略ID>/candidates/` | 候选登记记录 |
-| `experiments/<策略ID>/<来源实验ID>/objects/` | 新候选载荷、源码及来源材料；schema 2登记引用这些实体 |
-| `experiments/<策略ID>/<检验实验ID>/objects/inspection/` | 检验、计划引用的内容寻址证据 |
-| `research/<策略ID>/decisions/`及其`objects/` | 用户决定及确认材料 |
+| `research/<策略ID>/experiments/<来源实验ID>/evidence/payload/`、`evidence/source/` | 登记候选载荷及源码快照；schema 3登记引用这些实体 |
+| `research/<策略ID>/experiments/<检验实验ID>/evidence/inspection/` | 检验、计划引用的内容寻址证据 |
+| `research/<策略ID>/decisions/` | 用户决定；确认材料由决定中的证据引用定位 |
 | `research/<策略ID>/freeze_requests/<请求ID>/` | 冻结请求及提交／失败事实 |
 | `strategies/<策略ID>/versions/`、`releases/` | 不可变版本和发布文件闭包 |
 | `strategies/deployments/` | 单独授权产生的SRT部署凭据 |
 
+历史`experiments/`中的研究原件及其原有引用保留原位；新路径规则不修改或重签历史证据。
 历史`credentials/`、`freeze_approvals.jsonl`、`lifecycle.jsonl`及`evidence.jsonl`保留原件和哈希。
 旧候选包、CIO类型及历史解码分支已删除。原件供人工查阅，平台不承诺历史机器复验。
 当前研究立项仍使用`StrategyGovernanceSeal/StrategyGovernanceCredential`，登记位于
