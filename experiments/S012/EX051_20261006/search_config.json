@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EX051_20261006",
+  "seed": 12051,
+  "grid": {},
+  "blocks": [
+    {
+      "name": "MOMENTUM_LOCAL",
+      "grid": {
+        "opportunity": [
+          "momentum"
+        ],
+        "momentum_lookback": [
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "hold_days": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "entry_premium": [
+          0.005,
+          0.01,
+          0.015,
+          0.02,
+          0.03,
+          0.05
+        ]
+      }
+    },
+    {
+      "name": "N09_M05_LOCAL",
+      "grid": {
+        "opportunity": [
+          "n09_m05"
+        ],
+        "momentum_lookback": [
+          3
+        ],
+        "hold_days": [
+          30,
+          35,
+          40,
+          45,
+          50
+        ],
+        "entry_premium": [
+          0.0,
+          0.005,
+          0.01
+        ]
+      }
+    }
+  ],
+  "fixed": {
+    "confirm_o01": false,
+    "cooldown": 0,
+    "risk_gate": "none",
+    "risk_exit": false,
+    "trailing_stop": 0.0,
+    "allocation": 1.0,
+    "exit_policy": "fixed",
+    "min_hold": 1,
+    "risk_unknown_policy": "block"
+  },
+  "proposal_budget": 195,
+  "worker_cap": 1,
+  "adaptive_budget": 0,
+  "parameter_family": {
+    "fixed_route": "195 prospective conditional local proposals: momentum5 lookbacks x6 holds x6 premiums=180; n09_m05 five holds x3 premiums=15. Same original fixed/no-risk/no-stop/full-allocation source.",
+    "priority": "Single net CAGR maximization; CAGR descending, absolute MDD ascending, actual closed frequency descending. Three original gates simultaneous.",
+    "evidence_basis": {
+      "path": "experiments/S012/EX049_20261006/artifacts/rex/search.json",
+      "sha256": "3becebf7c73ac108f96eb43dc3e9584b57446ed9ecb8eae3940298e3c95662aa"
+    },
+    "known_sensitivity": "0278 shows an internal hold/lookback spike, premium upper contact; 0999 is internal h40/premium.005 peak. Investigate density, execution and phase effects without stability veto.",
+    "overlap_controls": "Retain literal old-domain controls with their own raw results; original source/receipt/history never overwritten.",
+    "early_exit_successor": "This search is fixed-policy only. EX050 separately tests actual FULL early exit/risk controls; no new risk parameter domain claimed here."
+  },
+  "stop_policy": "Dense local grid complete is a checkpoint; assess source of the spike, economic gaps, new boundary contacts and required FULL. No count-based stage-three closure.",
+  "publication_policy": "All screening qualifiers and justified strongest frontiers require complete successor FULL. Screening rows have no Candidate identity.",
+  "witness_contract": {
+    "experiment_id": "EX048_20261006",
+    "expected_configs": 8,
+    "candidate_ids": [
+      "C4500",
+      "C4501",
+      "C4502",
+      "C4503",
+      "C4504",
+      "C4505",
+      "C4506",
+      "C4507"
+    ]
+  },
+  "excluded_partial_witnesses": [
+    {
+      "experiment_id": "EX047_20261006",
+      "use": "REFERENCE_ONLY_PARTIAL_TECHNICAL_FAILURE",
+      "successful_FULL_attempts": 8,
+      "complete_REX_receipt": false,
+      "error_code": "ValueError",
+      "error_message": "evaluate_many requires a non-empty tuple of requests",
+      "trials": {
+        "path": "experiments/S012/EX047_20261006/artifacts/rex/trials.json",
+        "sha256": "fa7ce5c746bc153bde98ad1cbfb97dc871ad5a84c439c86ce54eccd06a96fce1"
+      },
+      "execution_failure": {
+        "path": "experiments/S012/EX047_20261006/artifacts/rex/execution_failure.json",
+        "sha256": "1d1f73992e297c837f97785a3e64433d6b821277bf50f2f0a911064afc27d149"
+      }
+    }
+  ],
+  "prepared_witness_data_space": "data/backtest",
+  "source_analysis": {
+    "path": "experiments/S012/EX049_20261006/artifacts/checkpoint_analysis.json",
+    "sha256": "75d3e1ee4ab8427a479aa70ddd4ad5ba6966763177bbccac603a632626202236"
+  }
+}
