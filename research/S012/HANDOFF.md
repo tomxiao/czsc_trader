@@ -1,3 +1,19 @@
+# S012｜当前阶段二收益组件完整交付（EX041）
+
+用户本次授权自主主导阶段二收益组件挖掘；沿用codex/s012-research-resume、既有资源、完整GVZ及有限USDOLLAR，未运行阶段三账户、接入新源或修改平台。
+
+[期限竞争补充](materials/stage2_native_horizon_review_20261006.md)汇总已封存1/3/5/10日对照：10日亦有正收益证据，但动量并集只有74次潜在触价，不能以5日负证据概括全部期限，也不能将潜在次数当闭合频率。
+
+- [本轮人工报告](../../experiments/S012/EX041_20261006/stage2_report.md)、[147条完整台账](../../experiments/S012/EX041_20261006/full_research_ledger.json)、[当前角色](../../experiments/S012/EX041_20261006/role_coverage.json)。前轮142条历史判据保持；本轮新增5条用途/反证记录，无新增独立支持收益机制。当前推荐5组件：O01/M05两机会、C01/C02/C03三风险状态；Q07调整为O01内可选确认候选，N09仍候选，不覆盖历史SUPPORTED。
+- 原生M05保留163信号，共同域160；纯动量全域836信号，共同域646，差额不能称因子增量。190额外成熟动量事件收益负，全域主5日128潜在触价净−0.0062%；动量加O01/M05134潜在触价净0.1206%，双费转负。潜在触价不等于真实成交、账户收益或闭合频率。
+- 直接O01/M05互补同域六相位基础边际+0.04285个百分点，去2025后−0.00328个百分点。Q07主5日所有费用/延迟六相位加权贡献负；保留高事件收益和原稀疏时间表正证据，作为可选候选对照。
+- 正式REX INCONCLUSIVE，216路径、1512年度、6624相位/去单年；独立复算49728字段PASS。限价为收盘向下取整到0.001价格档（通常等于收盘），没有再减0.001；发布前报告澄清不改变执行源码或制品。
+- [精确交付引用](materials/stage2_native_components_reference_20261006.json)、[FULL](materials/stage2_native_components_validation_20261006.json)、[档案核验](materials/stage2_native_archive_validation_20261006.json)、[封存完整性](materials/stage2_native_sealed_integrity_20261006.json)。owner=EX041_20261006、COMPONENTS修订1、content_sha256=42f663cfa2299b78792ea3eb73a32ee478215de164356da0b56947d305471bf4。
+
+阶段二目标已达成；原三个完整账户目标未复验，全部开发池已见，历史发布时间、代理资源、分钟异常及年度/费用敏感保留。下一步建议获批后做机会独立/联合、有无Q07、纯动量及其加机会完整账户对照。阶段三、新源/依赖、DEV、prod、合并tag推送需各自授权。EX040未执行空目录保留编号，先前阶段三启动记录保留追溯，本轮当前范围以stage2_native_scope_authorization及登记COMPONENTS COMPLETE为准。
+
+# 历史交付交接记录
+
 # S012｜阶段二完整交付交接
 
 ## 当前状态：COMPONENTS COMPLETE，等待阶段三新批准（2026-10-06）

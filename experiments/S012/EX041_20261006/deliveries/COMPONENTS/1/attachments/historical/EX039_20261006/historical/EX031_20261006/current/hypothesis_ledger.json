@@ -1,0 +1,72 @@
+{
+  "scope": "正式执行前冻结于源码及绑定；本表按已冻结机器定义导出，不修改参数。",
+  "definitions": [
+    {
+      "id": "U01",
+      "primary_horizon": 10,
+      "parent": "C_GOLD",
+      "role": "机会环境",
+      "hypothesis": "美元篮子五观察期走弱，黄金上升需求可能延续"
+    },
+    {
+      "id": "U02",
+      "primary_horizon": 5,
+      "parent": "C_SAFE",
+      "role": "机会",
+      "hypothesis": "美元走弱可能增强已有风险上升且黄金上涨的避险传导"
+    },
+    {
+      "id": "U03",
+      "primary_horizon": 5,
+      "parent": "C_SAFE",
+      "role": "竞争反证",
+      "hypothesis": "美元走强可能削弱避险传导；与走弱状态直接竞争"
+    },
+    {
+      "id": "U04",
+      "primary_horizon": 5,
+      "parent": "C_SAFE",
+      "role": "确认",
+      "hypothesis": "美元走弱且股票相对黄金预期波动偏高可能确认避险传导"
+    },
+    {
+      "id": "V01",
+      "primary_horizon": 5,
+      "parent": "C_SAFE",
+      "role": "确认",
+      "hypothesis": "VIX/GVZ高于自身历史中位数可能增强避险传导"
+    },
+    {
+      "id": "V02",
+      "primary_horizon": 5,
+      "parent": "C_SAFE",
+      "role": "竞争反证",
+      "hypothesis": "VIX/GVZ较低时黄金风险可能已提前反映，避险增量较弱"
+    },
+    {
+      "id": "V03",
+      "primary_horizon": 10,
+      "parent": "C_GOLD",
+      "role": "机会环境",
+      "hypothesis": "黄金上升而GVZ五观察期下降可能表明趋势风险缓和"
+    },
+    {
+      "id": "V04",
+      "primary_horizon": 10,
+      "parent": "C_GOLD",
+      "role": "竞争反证",
+      "hypothesis": "黄金上升且GVZ五观察期上升可能反映趋势末期风险"
+    },
+    {
+      "id": "V05",
+      "primary_horizon": 5,
+      "parent": "C_M05",
+      "role": "确认",
+      "hypothesis": "相对波动状态可能改善前轮黄金随风险上涨的M05确认线索"
+    }
+  ],
+  "primary_cost_per_side": 0.001,
+  "primary_delay": 0,
+  "diagnostic_family": 9,
+  "all_prior_history_seen": true
+}

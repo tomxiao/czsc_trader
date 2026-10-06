@@ -1,0 +1,109 @@
+{
+  "recommended_distinct_components": 5,
+  "opportunity_count": 2,
+  "risk_state_count": 3,
+  "confirmation_count": 0,
+  "roles": [
+    {
+      "id": "O01",
+      "role": "机会",
+      "status": "SUPPORTED",
+      "definition": "原逐年前缀强USDCNH变化阈值且ETF三日回调；精确信号见EX019/EX038 L01",
+      "decision_use": "低频回调机会环境，限价买入需账户验证",
+      "evidence": [
+        "EX010_20261004",
+        "EX038_20261006/L01"
+      ],
+      "limits": "79事件；21去重潜在成交仅0.82085/60，双费用触价净负、固定去2026负，不称稳定可实现收益",
+      "panel_record_mapping": [
+        {
+          "origin_panel": "EX019_20261005",
+          "record_id": "O01_FX_DIP"
+        },
+        {
+          "origin_panel": "EX038_20261006",
+          "record_id": "L01"
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "role": "机会",
+      "status": "SUPPORTED",
+      "definition": "T17已知vix5>0且xau5>0且gold_vix_corr60>0，固定60期",
+      "decision_use": "风险与黄金正共振的做多机会环境",
+      "evidence": [
+        "EX036_20261006/R01",
+        "EX039_20261006"
+      ],
+      "limits": "163事件；34去重潜在成交1.329/60，年份亏损、区间跨0、延迟OLS负，不能默认强制确认N09",
+      "panel_record_mapping": [
+        {
+          "origin_panel": "EX036_20261006",
+          "record_id": "RETURN_EX036_20261006_R01"
+        }
+      ]
+    },
+    {
+      "id": "C01",
+      "role": "风险/尺度",
+      "status": "SUPPORTED",
+      "definition": "原20日收益波动；FSC原定义及EX004原绑定",
+      "decision_use": "中期下行风险尺度及仓位讨论输入",
+      "evidence": [
+        "EX004_20261004",
+        "EX017_20261005"
+      ],
+      "limits": "未来5日下行风险关联；不能称各机会的短期硬门",
+      "panel_record_mapping": [
+        {
+          "origin_panel": "EX019_20261005",
+          "record_id": "C01_VOL20"
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "role": "风险/状态",
+      "status": "SUPPORTED",
+      "definition": "原20日动量；FSC原定义及EX004原绑定",
+      "decision_use": "趋势与风险共存状态，用于仓位/退出构型讨论",
+      "evidence": [
+        "EX004_20261004",
+        "EX017_20261005"
+      ],
+      "limits": "20日风险关联，趋势同时可能产生收益，不能直接反向卖出",
+      "panel_record_mapping": [
+        {
+          "origin_panel": "EX019_20261005",
+          "record_id": "C02_MOM20"
+        }
+      ]
+    },
+    {
+      "id": "C03",
+      "role": "风险/状态",
+      "status": "SUPPORTED",
+      "definition": "原60日峰度；FSC原定义及EX004原绑定",
+      "decision_use": "冲击集中及非正态风险状态",
+      "evidence": [
+        "EX004_20261004",
+        "EX017_20261005"
+      ],
+      "limits": "未来20日收益负关联；没有验证为M05共同短期过滤",
+      "panel_record_mapping": [
+        {
+          "origin_panel": "EX019_20261005",
+          "record_id": "C03_KURT60"
+        }
+      ]
+    }
+  ],
+  "optional_confirmation_candidate": "Q07：事件收益强，日历贡献负；历史原判不覆盖",
+  "other_candidates": [
+    "N09：费用下节费价值，不作默认门",
+    "纯动量加O01/M05：潜在容量与成本权衡，未做账户"
+  ],
+  "previous_recommended_count": 6,
+  "role_change_reason": "EX041全日历固定相位对O01可选确认提供新反证，不新增经济硬门"
+}
