@@ -1,0 +1,149 @@
+{
+  "status": "PASS",
+  "command": "research.intent.update",
+  "result": {
+    "family": {
+      "schema_version": 2,
+      "strategy_id": "S012",
+      "name": "华夏黄金ETF研究",
+      "scope": [
+        "518850.SH"
+      ],
+      "research_intent": {
+        "confirmation_sources": [
+          "research/S012/materials/user_confirmation_20261004_01.json",
+          "research/S012/materials/user_confirmation_20261004_02.json",
+          "research/S012/materials/user_confirmation_20261004_03.json",
+          "research/S012/materials/stage2_authorization_20261004.json",
+          "research/S012/materials/opportunity_authorization_20261004.json",
+          "research/S012/materials/intraday_authorization_20261004.json",
+          "research/S012/materials/intraday_scope_confirmation_20261004.json",
+          "research/S012/materials/independent_data_authorization_20261004.json",
+          "research/S012/materials/pause_authorization_20261004.json",
+          "research/S012/materials/resume_authorization_20261005.json",
+          "research/S012/materials/dev_performance_authorization_20261005.json",
+          "research/S012/materials/autonomous_stage2_authorization_20261005.json",
+          "research/S012/materials/confirmation_stage2_authorization_20261005.json",
+          "research/S012/materials/stage3_authorization_20261005.json",
+          "research/S012/materials/first_principles_stage2_authorization_20261006.json",
+          "research/S012/materials/dev_gvz_usdollar_acceptance_20261006.json",
+          "research/S012/materials/gvz_usdollar_preliminary_authorization_20261006.json",
+          "research/S012/materials/stage2_return_discovery_authorization_20261006.json"
+        ],
+        "confirmed_capital_and_benchmark": {
+          "benchmark": {
+            "lot_size": 100,
+            "type": "NextOpenBuyHold"
+          },
+          "buy_fee_rate": 0.001,
+          "cash_remainder": "保留",
+          "initial_capital_cny": 100000,
+          "strategy_lot_size": 100,
+          "terminal_valuation": "持仓按市值评价"
+        },
+        "confirmed_data_and_resources": "已授权既有S012资源及FRED/CBOE GVZ完整2020-01-01至2026-09-30窗口、Tushare USDOLLAR有限2020-01-01至2023-06-01窗口；新增付费/来源另确认。",
+        "confirmed_execution_authority": "决策周期、限价公式、订单有效期及仓位规则由RSCH在后续获批阶段研究，每次实验前明确记录。",
+        "confirmed_history_policy": "2020-06-05至2026-09-30全部上市历史；披露预热损失的起始区间，策略与基准使用相同实际评价区间",
+        "confirmed_rules": "单标的、只做多、不加杠杆、每侧0.1%成本、限价买入、市价卖出；BuyHold首个可成交日开盘买入持有。",
+        "confirmed_targets": {
+          "drawdown_magnitude": "< BuyHold",
+          "full_sample_frequency": ">= 5 closed cycles per 60 trading days",
+          "net_annual_return": ">= BuyHold * 1.5"
+        },
+        "delivery": {
+          "type": "DeliveryReference",
+          "owner": {
+            "type": "ExperimentOwner",
+            "strategy_id": "S012",
+            "experiment_id": "EX035_20261006"
+          },
+          "stage": "COMPONENTS",
+          "revision": 1,
+          "content_sha256": "c3b0861536c621f69a3153f2c053a8ac3560a756700e4c4a76c54afe48bbdd79"
+        },
+        "experiments": [
+          "EX001_20261004",
+          "EX002_20261004",
+          "EX003_20261004",
+          "EX004_20261004",
+          "EX005_20261004",
+          "EX006_20261004",
+          "EX007_20261004",
+          "EX008_20261004",
+          "EX009_20261004",
+          "EX010_20261004",
+          "EX011_20261004",
+          "EX012_20261004",
+          "EX013_20261005",
+          "EX014_20261005",
+          "EX015_20261005",
+          "EX016_20261005",
+          "EX017_20261005",
+          "EX018_20261005",
+          "EX019_20261005",
+          "EX020_20261005",
+          "EX021_20261005",
+          "EX022_20261005",
+          "EX023_20261005",
+          "EX025_20261005",
+          "EX026_20261006",
+          "EX027_20261006",
+          "EX028_20261006",
+          "EX029_20261006",
+          "EX030_20261006",
+          "EX031_20261006",
+          "EX032_20261006",
+          "EX033_20261006",
+          "EX034_20261006",
+          "EX035_20261006"
+        ],
+        "next_stage": "继续在已授权日线/分钟线中研究收益形成与限价兼容机会；原资源新假设先固定后执行，阶段三另获批准。",
+        "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+        "observed_daily_coverage": {
+          "end": "2026-09-30",
+          "sessions": 1535,
+          "start": "2020-06-05"
+        },
+        "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
+        "pending": [
+          "新增成熟收益组件0；低VIX高GVZ及人民币环境仅有边界候选，年度/延迟/端点反证保留。",
+          "原账户三个经济目标未复验；分钟内收益形成与限价兼容机会尚待深化。",
+          "全部历史已见，逐条实际发布时刻未验证；新来源/依赖、DEV、阶段三、生产与合并tag推送另授权。"
+        ],
+        "prior_candidate_delivery": {
+          "content_sha256": "f3547d436382c506e29ae5a275bc2ad53c12e919d2ec9b4c8dc8b5acc9bbc922",
+          "owner": {
+            "experiment_id": "EX028_20261006",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "CANDIDATES",
+          "type": "DeliveryReference"
+        },
+        "prior_component_delivery": {
+          "content_sha256": "d5ed294ec2f3e585c5cd0a56f2dd6b5c08b4531c6e18689d2d59c793c9a65c57",
+          "owner": {
+            "experiment_id": "EX019_20261005",
+            "strategy_id": "S012",
+            "type": "ExperimentOwner"
+          },
+          "revision": 1,
+          "stage": "COMPONENTS",
+          "type": "DeliveryReference"
+        },
+        "research_summary": "EX032—35四轮正式收益深化完成，43主检验记录1116路径7812年度；包含继承与对齐子域，不等于独立机制数。GVZ纯价格消融、固定父成交贡献、汇率分解及严格双端点/去单年反证已完成。新增成熟收益组件0；人民币筛选全池增量+0.1507pp但严格子域延迟负、去2026优势消失。四项独立复算939136字段、统一交付FULL及档案PASS，阶段二IN_PROGRESS。",
+        "resume_authorization": "research/S012/materials/resume_authorization_20261005.json",
+        "stage": "COMPONENTS",
+        "status": "IN_PROGRESS",
+        "symbol": "518850.SH"
+      },
+      "research_state": "RESEARCHING",
+      "created_at": "2026-10-04T03:56:59+08:00",
+      "created_by": "RSCH",
+      "updated_at": "2026-10-06T12:02:10+08:00"
+    }
+  },
+  "artifacts": {},
+  "warnings": []
+}
