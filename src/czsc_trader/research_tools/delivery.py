@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Generic, TypeVar
 
@@ -69,14 +69,14 @@ class DeliveryDefinition(_Record):
     stage: DeliveryStage
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
-    schema_version: int = 5
+    schema_version: int = 6
 
     @property
     def strategy_id(self):
         return self.batch.strategy_id
 
     def _validate(self):
-        if self.revision < 1 or self.schema_version != 5:
+        if self.revision < 1 or self.schema_version != 6:
             raise ValueError("invalid delivery revision/schema")
         _unique(((x.stage,x.revision) for x in self.predecessors), "predecessor")
         for ref in self.predecessors:
@@ -458,7 +458,7 @@ class CandidateInspectionDelivery(_Record):
     def _validate(self):
         if self.source_assessment.stage is not DeliveryStage.ASSESSMENT:
             raise ValueError("inspection delivery requires assessment predecessor")
-        if self.source_assessment.strategy_id != self.inspection.plan.origin.candidate.strategy_id:
+        if self.source_assessment.strategy_id != self.inspection.origin.candidate.strategy_id:
             raise ValueError("inspection delivery candidate family differs")
         _unique((x.decision_id for x in self.decisions), "decision ID")
         if self.freeze is None and not self.pending_decisions:
@@ -484,8 +484,12 @@ class DeliveryContent(_Record, Generic[T]):
     facts: tuple[FactValue, ...]
     explanations: tuple[Explanation, ...]
     incomplete_items: tuple[str, ...] = ()
+    report: str = field(kw_only=True)
+    evidence: tuple[EvidenceRef, ...] = field(default=(), kw_only=True)
 
     def _validate(self):
+        _text(self.report, "research report")
+        _unique(self.evidence, "report evidence")
         _unique((x.fact_id for x in self.facts), "fact_id")
         if self.status is DeliveryStatus.COMPLETE and self.incomplete_items:
             raise ValueError("complete delivery cannot declare incomplete items")
@@ -538,10 +542,10 @@ class PublicationFile(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[PublicationFile, ...]
-    schema_version: int = 5
+    schema_version: int = 6
 
     def _validate(self):
-        if self.schema_version != 5:
+        if self.schema_version != 6:
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

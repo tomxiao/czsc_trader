@@ -348,7 +348,8 @@ class InspectionCheckResult(Record):
 
 @dataclass(frozen=True, slots=True)
 class CandidateInspectionReport(Record):
-    plan: FreezePlan
+    origin: CandidateOrigin
+    plan: FreezePlan | None
     selection: DecisionReference
     protocol: InspectionProtocol
     request_sha256: str
@@ -358,8 +359,10 @@ class CandidateInspectionReport(Record):
 
     def _validate(self):
         _hash(self.request_sha256)
-        if self.owner.experiment_id is None or self.owner.strategy_id != self.plan.origin.candidate.strategy_id:
+        if self.owner.experiment_id is None or self.owner.strategy_id != self.origin.candidate.strategy_id:
             raise ValueError("inspection must belong to its candidate research experiment")
+        if self.plan is not None and self.plan.origin != self.origin:
+            raise ValueError("inspection plan origin differs from report")
         if len({x.check for x in self.checks}) != len(self.checks):
             raise ValueError("duplicate inspection check")
         if any(not x.strip() for x in self.remaining_risks):
@@ -369,7 +372,7 @@ class CandidateInspectionReport(Record):
     def status(self):
         if any(x.status is InspectionStatus.FAIL for x in self.checks):
             return InspectionStatus.FAIL
-        if {x.check for x in self.checks} != set(InspectionCheck) or any(
+        if self.plan is None or {x.check for x in self.checks} != set(InspectionCheck) or any(
             x.status is InspectionStatus.INCOMPLETE for x in self.checks
         ):
             return InspectionStatus.INCOMPLETE

@@ -121,9 +121,10 @@ class StrategyRegistry:
         )
         return record
 
-    def get_candidate(self, key: CandidateKey, *, evidence_root: Path) -> CandidateRegistration:
+    def get_candidate_registration(self, key: CandidateKey) -> CandidateRegistration:
+        """Read authenticated registration metadata without checking retained files."""
         if not isinstance(key, CandidateKey):
-            raise TypeError("get_candidate requires CandidateKey")
+            raise TypeError("get_candidate_registration requires CandidateKey")
         path = self._strategy_dir(key.strategy_id) / "candidates" / f"{key.candidate_id}.json"
         if not path.resolve().is_relative_to(self.root.resolve()):
             raise RegistryError("candidate record escapes registry")
@@ -133,6 +134,11 @@ class StrategyRegistry:
         record = CandidateRegistration.from_dict(value["record"])
         if record.key != key or record.record_sha256 != value["record_sha256"]:
             raise RegistryError("candidate registration identity differs")
+        return record
+
+    def get_candidate(self, key: CandidateKey, *, evidence_root: Path) -> CandidateRegistration:
+        """Read a registration and verify its complete retained candidate files."""
+        record = self.get_candidate_registration(key)
         validate_registration_files(
             record, _registration_evidence_root(evidence_root)
         )

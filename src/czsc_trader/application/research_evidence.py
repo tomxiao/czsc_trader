@@ -62,6 +62,29 @@ def validate_inspection(root, reference):
     if report.reference != reference:
         raise ValueError("inspection reference differs from report owner")
     plan = report.plan
+    origin = report.origin
+    if origin.registration.owner != report.owner:
+        raise ValueError("inspection evidence owner differs")
+    registration = CandidateRegistration.from_dict(_read(origin.registration.resolve(root)))
+    if (registration.key != origin.candidate
+        or registration.content_sha256 != origin.content_sha256
+        or registration.record_sha256 != origin.registration_sha256):
+        raise ValueError("inspection registration origin differs")
+    selection = read_decision(root, report.selection)
+    if (selection.action is not f.DecisionAction.APPROVE
+        or type(selection.subject) is not f.CandidateSelectionSubject
+        or selection.subject.candidate != origin.candidate
+        or selection.subject.content_sha256 != origin.content_sha256):
+        raise ValueError("inspection selection differs")
+    for check in report.checks:
+        for ref in check.evidence:
+            if type(ref) is not f.ResearchEvidenceRef or ref.owner != report.owner:
+                raise ValueError("inspection evidence owner differs")
+            ref.resolve(root)
+    if plan is None:
+        if report.status is not f.InspectionStatus.FAIL:
+            raise ValueError("inspection without a plan requires failed checks")
+        return report
     for ref in (
         plan.origin.registration,
         plan.payload,
@@ -86,14 +109,6 @@ def validate_inspection(root, reference):
         required.add(registration.derivation.evidence.sha256)
     if {ref.sha256 for ref in plan.registration_evidence} != required:
         raise ValueError("inspection registration evidence closure differs")
-    selection = read_decision(root, report.selection)
-    if (
-        selection.action is not f.DecisionAction.APPROVE
-        or type(selection.subject) is not f.CandidateSelectionSubject
-        or selection.subject.candidate != plan.origin.candidate
-        or selection.subject.content_sha256 != plan.origin.content_sha256
-    ):
-        raise ValueError("inspection selection differs")
     for ref in (
         plan.payload,
         plan.runtime_binding,
@@ -111,6 +126,8 @@ def validate_approval(root, request):
     report = validate_inspection(root, request.inspection)
     approval = read_decision(root, request.approval)
     plan = report.plan
+    if plan is None:
+        raise ValueError("freeze requires a complete passing inspection with a plan")
     expected = f.FreezeSubject(
         plan.origin.candidate,
         plan.origin.content_sha256,

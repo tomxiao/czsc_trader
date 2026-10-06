@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 import shutil
 
-from factor_signal_catalog import CatalogRegistry, CatalogValidationError, FactorDefinition, SignalDefinition
+from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates, ResearchMetric
 
 from .context import RepositoryContext
@@ -119,12 +119,7 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
             if (identifier, catalog.version, catalog.definition_sha256) != (
                 value.catalog_id, value.version, value.definition_sha256,
             ):
-                _fail("COMPONENT_DEFINITION", value.catalog_id, "catalog definition identity differs")
-        elif isinstance(value, d.ComponentTestResult):
-            if value.protocol.experiment.experiment_id != value.experiment_id or not any(
-                ref.experiment.experiment_id == value.experiment_id for ref in value.evidence
-            ):
-                _fail("COMPONENT_TEST", value.test_id, "test must cite its own protocol and result")
+                _fail("COMPONENT_DEFINITION", value.catalog_id, "selected definition identity differs")
         elif isinstance(value, d.CandidateIdentityRef):
             if value.key.strategy_id != definition.strategy_id:
                 _fail("CANDIDATE_FAMILY", value.key.candidate_id, "candidate family differs")
@@ -223,8 +218,8 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document.get("schema_version") != 5:
-            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 5 handoffs")
+        if document.get("schema_version") != 6:
+            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 6 handoffs")
         return d.DeliveryContent.from_dict(document["content"]).payload
 
     candidates = source(payload.source_candidates)
@@ -290,118 +285,6 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
         _fail("COMPARISON_RESULT", "comparison", "comparison differs from numeric recomputation")
 
 
-def _report(definition, content, root) -> bytes:
-    def safe(value):
-        return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", " ")
-    lines = [f"# {definition.strategy_id} · {definition.stage.value} · {definition.revision}", "",
-             f"研究员声明状态：{content.status.value}", "", "[完整机器契约](delivery.json)", ""]
-    payload = content.payload
-    if isinstance(payload, d.ResearchMandate):
-        for item in payload.items:
-            lines.append(f"- {safe(item.item_id)}（{item.kind.value}，{item.confirmation.status.value}）：{safe(item.statement)}")
-            if item.requirement is not None:
-                lines.append("  - 约定：" + safe(json.dumps(item.requirement.to_dict(), ensure_ascii=False, sort_keys=True)))
-    elif isinstance(payload, d.ComponentPanel):
-        lines.append(safe(payload.conclusion))
-        for component in payload.components:
-            lines.extend(["", f"## {safe(component.component_id)}", f"职责：{safe(component.role)}",
-                          f"研究判断：{safe(component.judgment)}",
-                          f"适用边界：{safe(component.applicability)}",
-                          f"标签／期限／对照：{safe(component.label)} / {safe(component.horizon)} / {safe(component.control)}",
-                          f"可用时点／价格口径：{safe(component.availability)} / {safe(component.price_basis)}"])
-            lines.extend(f"- {safe(test.test_id)}：{test.status.value}；{safe(test.explanation)}" for test in component.tests)
-    elif isinstance(payload, d.CandidateSet):
-        lines.append(safe(payload.conclusion))
-        for candidate in payload.candidates:
-            lines.extend(["", f"## {candidate.identity.key.candidate_id}",
-                          f"内容指纹：{candidate.identity.content_sha256}",
-                          f"收益假设：{safe(candidate.hypothesis)}", f"研究判断：{safe(candidate.judgment)}"])
-        lines.append("交接候选：" + ", ".join(x.candidate_id for x in payload.handoff))
-        for search in payload.searches:
-            lines.append(f"- {safe(search.search_id)}：{safe(search.method)}；评价 {search.evaluations} 次；"
-                         f"独立配置 {search.unique_configurations}；{safe(search.selection)}")
-            lines.append(f"  - 搜索范围：{safe(search.scope)}")
-            lines.extend(f"  - 局限：{safe(item)}" for item in search.limitations)
-    elif isinstance(payload, d.CandidateAssessmentDelivery):
-        lines.extend([safe(payload.recommendation), "", "| 候选 | 状态 | 绩效层 | 层内名次 | 原因 |",
-                      "| --- | --- | --- | --- | --- |"])
-        for row in payload.comparison.rows:
-            lines.append("| " + " | ".join(safe(x) for x in (
-                row.candidate.candidate_id, row.status.value, row.pareto_layer,
-                f"{row.rank_in_layer} [{row.rank_min}, {row.rank_max}]", "; ".join(row.reasons))) + " |")
-        lines.extend(["", "### 成对关系", ""])
-        lines.extend(f"- {safe(pair.candidate_a.candidate_id)} / {safe(pair.candidate_b.candidate_id)}："
-                     f"{pair.relation.value}；指标 {pair.decisive_metric}；{safe(pair.reason or '—')}"
-                     for pair in payload.comparison.pairs)
-        lines.extend(["", "### 逐项目标检查", ""])
-        for row in payload.comparison.rows:
-            for check in row.target_checks:
-                lines.append(f"- {safe(row.candidate.candidate_id)} / {check.target.metric.value}："
-                    f"目标 {safe(check.target.target_id)}；观测值 {check.observed}；"
-                    f"下界 {check.target.lower}；上界 {check.target.upper}；状态 {check.status.value}；"
-                    f"实际边界 {check.resolved_lower} / {check.resolved_upper}；"
-                    f"条件观测 {check.condition_observed}；原因 {safe(check.reason or '—')}")
-        lines.extend(["", "### 排序敏感性", ""])
-        if not payload.comparison.sensitivities:
-            lines.append("未提供敏感性方案。")
-        for variant in payload.comparison.sensitivities:
-            lines.append(f"- 方案：{safe(variant.name)}")
-            lines.extend(f"  - {safe(pair.candidate_a.candidate_id)} / {safe(pair.candidate_b.candidate_id)}："
-                         f"{pair.relation.value}；{pair.decisive_metric}；{safe(pair.reason or '—')}"
-                         for pair in variant.pairs)
-            lines.extend(f"  - {safe(row.candidate.candidate_id)}：{row.status.value}；"
-                         f"绩效层 {row.pareto_layer}；层内名次 {row.rank_in_layer}；"
-                         f"区间 {row.rank_min}—{row.rank_max}；原因 {safe('; '.join(row.reasons) or '—')}"
-                         for row in variant.rows)
-        lines.extend(["", "### 行为分组", ""])
-        lines.extend(f"- {group.behavior_sha256}：" + "、".join(safe(x.candidate_id) for x in group.candidates)
-                     for group in payload.comparison.behavior_groups)
-        for row in payload.assessment.rows:
-            lines.extend(["", f"### {safe(row.candidate.candidate_id)} 自检", "",
-                          "| 指标 | 值 | 单位 | 状态 | 原因 |", "| --- | --- | --- | --- | --- |"])
-            for label, metric in (*(('STRATEGY', x) for x in row.diagnostics),
-                                  *(('BENCHMARK', x) for x in row.benchmark.diagnostics)):
-                lines.append("| " + " | ".join(safe(x) for x in (
-                    label + ":" + metric.metric.value, metric.value, metric.unit.value,
-                    metric.status.value, metric.reason or "—")) + " |")
-            lines.extend(["", f"超额年化95%区间：{row.uncertainty.lower_95} 至 {row.uncertainty.upper_95}；"
-                          f"{row.uncertainty.status.value}；{row.uncertainty.reason or '—'}", ""])
-            lines.extend(f"- 覆盖缺口：{safe(x)}" for x in row.coverage_gaps)
-        lines.extend(["", "统计限制与研究族诊断：", ""])
-        lines.extend(f"- {safe(x.name)}：{x.status.value}；{x.value}；{safe(x.reason or '—')}"
-                     for x in payload.assessment.family_diagnostics)
-        lines.extend(f"- {safe(x)}" for x in payload.assessment.family_limitations)
-        lines.extend(["", "待用户决定：", ""])
-        lines.extend(f"- {safe(x)}" for x in payload.pending_decisions)
-    elif isinstance(payload, d.CandidateInspectionDelivery):
-        plan = payload.inspection.plan
-        lines.append(f"候选：{plan.origin.candidate.strategy_id}-{plan.origin.candidate.candidate_id}")
-        lines.append(f"内容指纹：{plan.origin.content_sha256}；拟冻结版本：{plan.version}；计划摘要：{plan.sha256}")
-        lines.append(f"技术检验：{payload.inspection.status.value}")
-        lines.extend(f"- {check.check.value}：{check.status.value}；{safe(check.detail)}"
-                     for check in payload.inspection.checks)
-        lines.extend(f"- 剩余风险：{safe(item)}" for item in payload.inspection.remaining_risks)
-        lines.append("冻结：" + ("待批准" if payload.freeze is None else payload.freeze.status.value))
-        if payload.freeze is not None and payload.freeze.version is not None:
-            lines.append(f"已冻结版本：{payload.freeze.version.strategy_id}-{payload.freeze.version.version}；"
-                         f"发布哈希：{payload.freeze.version.release_hash}")
-    if content.facts:
-        lines.extend(["", "## 事实", ""])
-        lines.extend(f"- {safe(fact.fact_id)}：{safe(fact.value)} {safe(fact.unit)}（{fact.status.value}）" for fact in content.facts)
-    if content.explanations:
-        lines.extend(["", "## 解释", ""])
-        lines.extend(f"- {item.kind.value}：{safe(item.text)}" for item in content.explanations)
-    references = _references(content)
-    if references:
-        lines.extend(["", "## 关联证据", ""])
-        lines.extend(f"- [{reference.evidence_id}](<{reference.path}>)" for reference in references)
-    pending = getattr(payload, "pending_decisions", ())
-    if pending or content.incomplete_items:
-        lines.extend(["", "## 待处理事项", ""])
-        lines.extend(f"- {safe(item)}" for item in (*pending, *content.incomplete_items))
-    return ("\n".join(lines) + "\n").encode("utf-8")
-
-
 def _manifest(root) -> tuple[d.PublicationFile, ...]:
     result = []
     for path in sorted(root.rglob("*")):
@@ -420,7 +303,7 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     visited = visited | {identity}
     document = _read_json(_resolve(root, "delivery.json"))
     if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
-        or type(document["schema_version"]) is not int or document["schema_version"] != 5):
+        or type(document["schema_version"]) is not int or document["schema_version"] != 6):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
@@ -434,8 +317,8 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     for predecessor in definition.predecessors:
         _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited)
     _validate_content(definition, content, root, context, scope)
-    if _resolve(root, "report.md").read_bytes() != _report(definition, content, root):
-        _fail("REPORT_FACTS", "report.md", "report differs from machine content")
+    if _resolve(root, "report.md").read_bytes() != content.report.encode("utf-8"):
+        _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
     return receipt
 
 
@@ -454,22 +337,6 @@ def validate_delivery(context: RepositoryContext, reference: d.DeliveryReference
     except (OSError, ValueError, TypeError, KeyError) as exc:
         return d.DeliveryValidation(d.ValidationStatus.FAIL, scope,
             (d.DeliveryIssue("INVALID_DELIVERY", "delivery", str(exc)),))
-
-
-def _validate_new_catalog_references(content, context):
-    references = [x for x in _walk(content) if isinstance(x, d.CatalogDefinitionRef)]
-    if not references:
-        return
-    try:
-        registry = CatalogRegistry(context.root / "catalog")
-    except CatalogValidationError as exc:
-        _fail("COMPONENT_DEFINITION", "catalog", f"cannot verify catalog definition: {exc}")
-    definitions = {(d.CatalogDefinitionKind.FACTOR, x.factor_id): x for x in registry.factors}
-    definitions.update({(d.CatalogDefinitionKind.SIGNAL, x.signal_id): x for x in registry.signals})
-    for ref in references:
-        registered = definitions.get((ref.kind, ref.catalog_id))
-        if registered is None or (registered.version, registered.definition_sha256) != (ref.version, ref.definition_sha256):
-            _fail("COMPONENT_DEFINITION", ref.catalog_id, "catalog kind, version and hash must match FSC")
 
 
 def _validate_handoff(context, content):
@@ -501,14 +368,13 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
     try:
         definition = d.DeliveryDefinition.from_dict(definition.to_dict())
         content = d.DeliveryContent.from_dict(content.to_dict())
-        document = {"schema_version": 5, "definition": definition.to_dict(), "content": content.to_dict()}
+        document = {"schema_version": 6, "definition": definition.to_dict(), "content": content.to_dict()}
         destination = _delivery_path(context, definition)
         if destination.exists():
             if _read_json(_resolve(destination, "delivery.json")) != document:
                 raise d.DeliveryConflictError("delivery revision contains different content")
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
             return _read_delivery(context, receipt.reference, destination, set())
-        _validate_new_catalog_references(content, context)
         _validate_handoff(context, content)
         for predecessor in definition.predecessors:
             _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
@@ -535,7 +401,7 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
             copy(reference.resolve(context.root).read_bytes(), f"support/{reference.sha256}", reference.sha256)
         _validate_content(definition, content, staging, context)
         (staging / "delivery.json").write_bytes(d._canonical(document))
-        (staging / "report.md").write_bytes(_report(definition, content, staging))
+        (staging / "report.md").write_bytes(content.report.encode("utf-8"))
         files = _manifest(staging)
         reference = d.DeliveryReference(definition.batch, definition.stage, definition.revision, d._digest(files))
         receipt = d.DeliveryReceipt(reference, files)

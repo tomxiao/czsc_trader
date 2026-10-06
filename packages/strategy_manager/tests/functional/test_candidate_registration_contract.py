@@ -12,6 +12,7 @@ from strategy_manager import (
     ValidationError,
     canonical_sha256,
     CandidateIdentityConflict,
+    RegistryError,
     StrategyRegistry,
     StrategyFamily,
 )
@@ -136,3 +137,25 @@ def test_registry_rejects_tampered_candidate_artifacts(persisted_candidate, arti
     (root / reference.path).write_bytes(b"tampered")
     with pytest.raises(ValidationError, match="hash differs"):
         registry.get_candidate(record.key, evidence_root=root)
+
+
+def test_registration_metadata_remains_queryable_when_source_is_missing(persisted_candidate):
+    registry, root, record = persisted_candidate
+    registry.register_candidate(record, evidence_root=root)
+    record.source_files[0].resolve(root).unlink()
+    assert registry.get_candidate_registration(record.key) == record
+    with pytest.raises(ValidationError, match="missing"):
+        registry.get_candidate(record.key, evidence_root=root)
+    with pytest.raises(TypeError, match="CandidateKey"):
+        registry.get_candidate_registration(record.key.to_dict())
+
+
+def test_registration_metadata_query_authenticates_the_envelope(persisted_candidate):
+    registry, root, record = persisted_candidate
+    registry.register_candidate(record, evidence_root=root)
+    path = registry.root / "S900/candidates/C0001.json"
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw["record_sha256"] = "f" * 64
+    path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(RegistryError, match="identity differs"):
+        registry.get_candidate_registration(record.key)

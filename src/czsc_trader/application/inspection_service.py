@@ -1,6 +1,7 @@
 """Called technical inspection and freeze operations; research owns all scheduling."""
 
 from dataclasses import dataclass, replace
+from datetime import date
 from hashlib import sha256
 from importlib import metadata
 import json
@@ -35,7 +36,6 @@ from strategy_runtime import (
     StrategyInputBinding,
 )
 from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
-from strategy_runtime.errors import StrategyRuntimeError
 
 from .context import RepositoryContext
 from .candidate_service import load_candidate, _registered_root
@@ -126,6 +126,8 @@ def record_research_decision(
     else:
         report = validate_inspection(context.root, subject.inspection)
         plan = report.plan
+        if plan is None:
+            raise ValueError("freeze decision requires an inspected plan")
         if subject != f.FreezeSubject(
             plan.origin.candidate,
             plan.origin.content_sha256,
@@ -191,9 +193,15 @@ class CandidateInspectionRequest:
         f._version(self.version)
         if self.parent_version is not None:
             f._version(self.parent_version)
+            if int(self.parent_version[1:]) >= int(self.version[1:]):
+                raise ValueError("parent must precede target version")
+        if not self.change_summary.strip():
+            raise ValueError("inspection change summary is required")
+        if date.fromisoformat(self.forward_start) <= date.fromisoformat(self.selection_data_cutoff):
+            raise ValueError("forward_start must follow selection cutoff")
 
 
-def _copy_plan(context, request, registration, store):
+def _copy_plan(context, request, registration, store, origin):
     evidence_root = _registered_root(context, registration)
 
     def copy(ref, root):
@@ -215,11 +223,7 @@ def _copy_plan(context, request, registration, store):
         tuple(item.path for item in files), definition.observation.sha256,
     )
     return f.FreezePlan(
-        f.CandidateOrigin(
-            registration.key,
-            registration.content_sha256,
-            store.put_json(registration.to_dict()),
-        ),
+        origin,
         request.version,
         request.parent_version,
         request.change_summary,
@@ -280,17 +284,21 @@ def _authenticate(context, request, result, store):
     return projection, store.put_json(value)
 
 
+class _InvalidInspectionReference(ValueError):
+    """A declared reference does not identify the requested evaluation."""
+
+
 def _load_reference(context, reference, store):
     value = _read(reference.evidence.resolve(context.root))
     if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 5:
         raise ValueError("inspection requires platform account evaluation evidence")
     validate_evaluation_evidence(value)
     if value["request_identity"]["experiment_id"] != reference.evidence.experiment.experiment_id:
-        raise ValueError("reference evaluation origin differs")
+        raise _InvalidInspectionReference("reference evaluation origin differs")
     projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
     selected = set(reference.evaluation_ids)
     if selected and not selected.issubset({x.evaluation_id for x in projection}):
-        raise ValueError("reference assessment identity differs")
+        raise _InvalidInspectionReference("reference assessment identity differs")
     source = store.put_json(value)
     if selected:
         projection = tuple(x for x in projection if x.evaluation_id in selected)
@@ -473,10 +481,7 @@ def inspect_candidate(
     if not experiment_root.is_dir():
         raise ValueError("inspection experiment does not exist")
     store = _EvidenceStore(context, owner)
-    registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        request.candidate, evidence_root=context.research_root / request.candidate.strategy_id
-    )
-    candidate = load_candidate(context, request.candidate)
+    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
     selection = read_decision(context.root, request.selection)
     if (
         selection.action is not f.DecisionAction.APPROVE
@@ -487,25 +492,59 @@ def inspect_candidate(
         raise ValueError("inspection requires matching candidate selection")
     _, assessment = _delivery(context, selection.subject.delivery)
     selected_evidence = assessment.payload.assessment_request.evidence
-    plan = _copy_plan(context, request, registration, store)
-    evidence = store.put_json(plan.to_dict())
-    checks = []
+    origin = f.CandidateOrigin(registration.key, registration.content_sha256,
+                              store.put_json(registration.to_dict()))
+    plan = None
+    completed_checks = {}
 
-    def check(kind, status, detail, refs=(evidence,)):
-        checks.append(f.InspectionCheckResult(kind, status, refs, detail))
+    def failed_preparation(kind, exc):
+        error_detail = f"{type(exc).__name__}: {exc}"
+        detail = store.put_json({"check": kind.value, "error_type": type(exc).__name__,
+                                 "error": str(exc), "candidate": request.candidate.to_dict(),
+                                 "registration_sha256": registration.record_sha256,
+                                 "requested_plan": {"version": request.version,
+                                     "parent_version": request.parent_version,
+                                     "change_summary": request.change_summary,
+                                     "selection_data_cutoff": request.selection_data_cutoff,
+                                     "forward_start": request.forward_start,
+                                     "additional_files": [item.to_dict() for item in request.additional_files]}})
+        checks = tuple(completed_checks[item] if item in completed_checks and item is not kind
+            else f.InspectionCheckResult(
+                item, f.InspectionStatus.FAIL if item is kind else f.InspectionStatus.INCOMPLETE,
+                (origin.registration, detail), error_detail if item is kind else
+                "not started because inspection preparation failed") for item in f.InspectionCheck)
+        report = f.CandidateInspectionReport(
+            origin, plan, request.selection, request.protocol,
+            canonical_sha256({"origin": origin.sha256, "selection": request.selection.sha256,
+                              "protocol": request.protocol.sha256, "failure": detail.sha256,
+                              "risks": request.remaining_risks}), checks, request.remaining_risks, owner)
+        store.put_json(report.to_dict())
+        return report
 
     try:
         for name, version in registration.dependencies:
             if metadata.version(name) != version:
                 raise ValueError(f"installed dependency version differs: {name}")
-        check(
-            f.InspectionCheck.CONTENT,
-            f.InspectionStatus.PASS,
-            "registered candidate source, payload and installed dependencies verified",
-        )
-    except (metadata.PackageNotFoundError, ValueError) as exc:
-        check(f.InspectionCheck.CONTENT, f.InspectionStatus.FAIL, str(exc))
-    stage = _materialize(context, plan)
+        candidate = load_candidate(context, request.candidate)
+    except Exception as exc:
+        return failed_preparation(f.InspectionCheck.CONTENT, exc)
+    completed_checks[f.InspectionCheck.CONTENT] = f.InspectionCheckResult(
+        f.InspectionCheck.CONTENT, f.InspectionStatus.PASS, (origin.registration,),
+        "registered candidate source, payload and installed dependencies verified")
+    try:
+        plan = _copy_plan(context, request, registration, store, origin)
+    except Exception as exc:
+        return failed_preparation(f.InspectionCheck.PACKAGE, exc)
+    evidence = store.put_json(plan.to_dict())
+    checks = list(completed_checks.values())
+
+    def check(kind, status, detail, refs=(evidence,)):
+        checks.append(f.InspectionCheckResult(kind, status, refs, detail))
+
+    try:
+        stage = _materialize(context, plan)
+    except Exception as exc:
+        return failed_preparation(f.InspectionCheck.PACKAGE, exc)
     try:
         _binding(context, plan)
         check(
@@ -513,8 +552,8 @@ def inspect_candidate(
             f.InspectionStatus.PASS,
             "source, observation and install closure verified",
         )
-    except (ValueError, TypeError, OSError, StrategyRuntimeError) as exc:
-        check(f.InspectionCheck.PACKAGE, f.InspectionStatus.FAIL, str(exc))
+    except Exception as exc:
+        check(f.InspectionCheck.PACKAGE, f.InspectionStatus.FAIL, f"{type(exc).__name__}: {exc}")
     release = None
     binding = None
     try:
@@ -537,11 +576,12 @@ def inspect_candidate(
             f.InspectionStatus.PASS,
             "candidate and prospective release runtime contracts match",
         )
-    except (ValueError, TypeError, OSError, StrategyRuntimeError) as exc:
-        check(f.InspectionCheck.RUNTIME, f.InspectionStatus.FAIL, str(exc))
+    except Exception as exc:
+        check(f.InspectionCheck.RUNTIME, f.InspectionStatus.FAIL, f"{type(exc).__name__}: {exc}")
     covered = []
     comparisons, audits, signals, sources, release_replays = [], [], [], [], []
     errors = []
+    unavailable_references = []
     signal_errors = []
     static_ready = all(x.status is f.InspectionStatus.PASS for x in checks)
     for replay in request.replays if static_ready else ():
@@ -551,7 +591,14 @@ def inspect_candidate(
             request.candidate.candidate_id,
         ) or Path(new_request.repository_root).resolve() != context.root.resolve():
             raise ValueError("inspection replay candidate/repository differs")
-        baseline, projection, ref = _load_reference(context, replay.reference, store)
+        try:
+            baseline, projection, ref = _load_reference(context, replay.reference, store)
+        except _InvalidInspectionReference:
+            raise
+        except Exception as exc:
+            errors.append(f"reference {replay.reference.evidence.path}: {type(exc).__name__}: {exc}")
+            unavailable_references.append(replay.reference.to_dict())
+            continue
         if (
             baseline["request_identity"]["data_cutoff"] > plan.selection_data_cutoff
             or new_request.data_cutoff.isoformat() > plan.selection_data_cutoff
@@ -632,13 +679,7 @@ def inspect_candidate(
                 audits.append(release_replay["audit"])
                 signals.append(release_replay["signal_equivalence"])
                 covered.append(f.InspectionCoordinate(run.window_id, run.scenario_id))
-        except (
-            RuntimeError,
-            ValueError,
-            TypeError,
-            OSError,
-            StrategyRuntimeError,
-        ) as exc:
+        except Exception as exc:
             errors.append(f"{type(exc).__name__}: {exc}")
     detail = store.put_json(
         {
@@ -648,6 +689,7 @@ def inspect_candidate(
             "signal_equivalence": signals,
             "signal_errors": signal_errors,
             "errors": errors,
+            "unavailable_references": unavailable_references,
             "release_replays": release_replays,
             "sources": [x.to_dict() for x in sources],
         },
@@ -700,6 +742,7 @@ def inspect_candidate(
         }
     )
     report = f.CandidateInspectionReport(
+        origin,
         plan,
         request.selection,
         request.protocol,

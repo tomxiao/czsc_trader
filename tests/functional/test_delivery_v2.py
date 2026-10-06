@@ -12,6 +12,18 @@ def test_revision_requires_positive_integer(value):
         d.DeliveryDefinition(ResearchBatchRef("S900"), d.DeliveryStage.COMPONENTS, value)
 
 
+@pytest.mark.parametrize("report", ["", " \n\t", None, b"report"])
+def test_delivery_requires_nonempty_researcher_report(report):
+    with pytest.raises((TypeError, ValueError)):
+        d.DeliveryContent(d.ComponentPanel((), "negative finding"), d.DeliveryStatus.COMPLETE,
+                          (), (), report=report)
+
+
+def test_old_delivery_schema_is_not_reinterpreted():
+    with pytest.raises(ValueError, match="schema"):
+        d.DeliveryDefinition(ResearchBatchRef("S900"), d.DeliveryStage.COMPONENTS, 1, schema_version=5)
+
+
 def test_evidence_references_and_search_summary_are_content_contracts():
     owner = ExperimentRef("S900", "EX001_20261007")
     reference = EvidenceRef(owner, "a" * 64 + ".json", "a" * 64, "application/json", "measurement")

@@ -145,14 +145,7 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     receipt = assemble_delivery(context, definition, value)
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     report = (published(context, receipt) / "report.md").read_text(encoding="utf-8")
-    assert (
-        "INCOMPARABLE" in report
-        and "待用户决定" in report
-        and "MISSING_OR_INCOMPARABLE_STRESS" in report
-    )
-    assert "逐项目标检查" in report and "观测值" in report
-    assert "排序敏感性" in report and "行为分组" in report
-    assert "coarse-bins" in report and "S900-C0001" in report
+    assert report == value.report
     document = json.loads(
         (published(context, receipt) / "delivery.json").read_text(encoding="utf-8")
     )

@@ -4,7 +4,7 @@ import json
 import shutil
 
 import pytest
-from strategy_manager import CandidateEvidence, CandidateKey, StrategyRegistry, StrategyVersion, ValidationError
+from strategy_manager import CandidateEvidence, CandidateKey, StrategyRegistry, StrategyVersion
 from strategy_manager import freeze_contracts as f
 from strategy_runtime import StrategyRelease
 from czsc_trader.application import (
@@ -209,7 +209,8 @@ def test_stage_five_delivery_publishes_report_and_approval(inspection):
     payload = d.CandidateInspectionDelivery(assessment, report, reference, (), None, ("是否批准冻结",))
     definition = d.DeliveryDefinition(ResearchBatchRef("S900"), d.DeliveryStage.INSPECTION, 1,
                                       predecessors=(assessment,))
-    content = d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), ())
+    content = d.DeliveryContent(payload, d.DeliveryStatus.COMPLETE, (), (),
+                                report="合成技术检验报告：检验通过，等待用户冻结决定。")
     first = assemble_delivery(context, definition, content)
     assert validate_delivery(context, first.reference).status is d.ValidationStatus.PASS
     old = (context.research_root / "S900/deliveries/INSPECTION/1/report.md").read_bytes()
@@ -220,6 +221,73 @@ def test_stage_five_delivery_publishes_report_and_approval(inspection):
         payload=replace(payload, decisions=(operation.approval,), freeze=frozen, pending_decisions=())))
     assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
     assert (context.research_root / "S900/deliveries/INSPECTION/1/report.md").read_bytes() == old
+
+
+@pytest.mark.parametrize("failure", ["source", "payload", "runtime", "environment", "empty", "plan", "materialize"])
+def test_inspection_preparation_failures_publish_failed_reports(inspection, monkeypatch, failure):
+    from czsc_trader.application import inspection_service, publish_evidence, validate_delivery
+    from czsc_trader.application.research_evidence import validate_inspection
+    from czsc_trader.research_tools.context import ResearchBatchRef
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+    from czsc_trader.research_tools import delivery as d
+    from strategy_runtime import StrategyRuntime
+    from strategy_runtime.errors import RuntimeCompatibilityError
+
+    context, request, source = inspection
+    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
+    root = context.research_root / request.candidate.strategy_id
+    if failure in {"source", "payload"}:
+        reference = registration.source_files[0] if failure == "source" else registration.payload
+        reference.resolve(root).unlink()
+    elif failure in {"runtime", "environment", "empty"}:
+        def unavailable(*args, **kwargs):
+            if failure == "empty":
+                raise RuntimeError()
+            if failure == "environment":
+                raise KeyError("SYNTHETIC_STRATEGY_ENVIRONMENT")
+            raise RuntimeCompatibilityError("synthetic imported dependency is unavailable")
+        monkeypatch.setattr(StrategyRuntime, "describe", unavailable)
+    else:
+        def unavailable(*args, **kwargs):
+            raise OSError(f"synthetic {failure} failure")
+        monkeypatch.setattr(inspection_service, "_copy_plan" if failure == "plan" else "_materialize", unavailable)
+    report = inspect_candidate(context, request)
+    assert report.status is f.InspectionStatus.FAIL
+    assert report.origin.candidate == request.candidate
+    assert report.origin.registration_sha256 == registration.record_sha256
+    assert (report.plan is not None) == (failure == "materialize")
+    checks = {item.check: item.status for item in report.checks}
+    failed = f.InspectionCheck.CONTENT if failure in {"source", "payload", "runtime", "environment", "empty"} else f.InspectionCheck.PACKAGE
+    assert checks[failed] is f.InspectionStatus.FAIL
+    if failure in {"plan", "materialize"}:
+        assert checks[f.InspectionCheck.CONTENT] is f.InspectionStatus.PASS
+    assert all(status is f.InspectionStatus.INCOMPLETE for kind, status in checks.items()
+               if kind is not failed and kind is not f.InspectionCheck.CONTENT)
+    assert validate_inspection(context.root, report.reference) == report
+    assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
+    operation = f.FreezeCandidateRequest(f.FreezeRequestId("S900", "failed-inspection"), report.reference, report.selection)
+    with pytest.raises(ValueError, match="complete passing|matching approval"):
+        freeze_candidate(context, operation)
+    assert not context.strategy_root.exists()
+    if report.plan is None:
+        with pytest.raises(ValueError, match="requires an inspected plan"):
+            record_research_decision(context, f.ResearchDecision(
+                "invalid-freeze", "S900", f.DecisionAction.APPROVE,
+                f.FreezeSubject(report.origin.candidate, report.origin.content_sha256,
+                                report.reference, "f" * 64, "v1"),
+                file_ref(context.root, source), "不能批准缺失计划"))
+    selected = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
+    assessment = d.DeliveryReceipt.from_dict(json.loads(selected.subject.delivery.resolve(context.root).read_text(encoding="utf-8"))).reference
+    evidence = publish_evidence(request.research, MaterialEvidenceWrite(request.experiment,
+        "failed_inspection", json.dumps(report.to_dict(), ensure_ascii=False, sort_keys=True,
+        separators=(",", ":")).encode(), "application/json", "json"))
+    payload = d.CandidateInspectionDelivery(assessment, report, evidence, (), None, ("修复检验环境后重试",))
+    definition = d.DeliveryDefinition(ResearchBatchRef("S900"), d.DeliveryStage.INSPECTION, 1,
+                                      predecessors=(assessment,))
+    content = d.DeliveryContent(payload, d.DeliveryStatus.BLOCKED, (), (),
+                               ("技术检验失败",), report=f"检验失败：{failure}；等待补齐环境或材料。")
+    receipt = assemble_delivery(context, definition, content)
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
 
 
 def test_runtime_deployment_is_independent_of_research_commit_marker(inspected_candidate):
@@ -348,16 +416,59 @@ def test_inspection_rejects_reference_identity_mismatch(inspection, field):
         ref = replace(ref, evaluation_ids=("f" * 64,))
     else:
         ref = replace(ref, evidence=replace(ref.evidence, sha256="f" * 64, evidence_id=f"{'f' * 64}.json"))
-    with pytest.raises((ValueError, FileNotFoundError)):
-        inspect_candidate(context, replace(request, replays=(replace(replay, reference=ref),)))
+    altered = replace(request, replays=(replace(replay, reference=ref),))
+    if field == "evaluation":
+        with pytest.raises(ValueError, match="reference assessment identity differs"):
+            inspect_candidate(context, altered)
+    else:
+        report = inspect_candidate(context, altered)
+        assert report.status is f.InspectionStatus.FAIL
+        assert next(x for x in report.checks if x.check is f.InspectionCheck.REPRODUCTION).status is f.InspectionStatus.FAIL
 
 
 def test_inspection_rejects_tampered_result_evidence(inspection):
     context, request, _ = inspection
     path = request.replays[0].reference.evidence.resolve(context.root)
     path.write_bytes(path.read_bytes() + b" ")
-    with pytest.raises((ValueError, ValidationError)):
-        inspect_candidate(context, request)
+    report = inspect_candidate(context, request)
+    assert report.status is f.InspectionStatus.FAIL
+    assert next(x for x in report.checks if x.check is f.InspectionCheck.CONTENT).status is f.InspectionStatus.FAIL
+
+
+@pytest.mark.parametrize("damage", ["missing", "corrupt"])
+def test_unavailable_independent_replay_reference_reports_failure(inspection, damage):
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.application.research_evidence import validate_inspection
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+    from czsc_trader.research_tools.delivery import EvaluationEvidenceRef
+
+    context, request, _ = inspection
+    replay = request.replays[0]
+    # Retain the same authenticated account JSON with different whitespace, so
+    # content-addressed publication does not reuse the registered support file.
+    original = replay.reference.evidence.resolve(context.root).read_bytes()
+    evidence = publish_evidence(request.research, MaterialEvidenceWrite(
+        request.experiment, "independent_inspection_reference", original + b"\n",
+        "application/json", "json"))
+    evidence = replace(evidence, schema="account_evaluation", schema_version=5)
+    assert evidence.repository_path != replay.reference.evidence.repository_path
+    reference = EvaluationEvidenceRef(evidence, replay.reference.evaluation_ids)
+    path = evidence.resolve(context.root)
+    if damage == "missing":
+        path.unlink()
+    else:
+        path.write_bytes(path.read_bytes() + b" ")
+    report = inspect_candidate(context, replace(request, replays=(replace(replay, reference=reference),)))
+    checks = {item.check: item.status for item in report.checks}
+    assert checks[f.InspectionCheck.CONTENT] is f.InspectionStatus.PASS
+    assert checks[f.InspectionCheck.REPRODUCTION] is f.InspectionStatus.FAIL
+    assert report.status is f.InspectionStatus.FAIL
+    assert validate_inspection(context.root, report.reference) == report
+    operation = f.FreezeCandidateRequest(f.FreezeRequestId("S900", "unavailable-baseline"),
+                                       report.reference, report.selection)
+    with pytest.raises(ValueError, match="complete passing"):
+        freeze_candidate(context, operation)
+    assert not context.strategy_root.exists()
 
 
 def test_inspection_rejects_untyped_reference(inspection):
