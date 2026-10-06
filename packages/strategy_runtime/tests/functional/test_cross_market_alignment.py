@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import pandas as pd
 import pytest
 
@@ -24,42 +21,34 @@ from strategy_runtime import (
 )
 
 
-_FIXTURE = (
-    Path(__file__).resolve().parents[4]
-    / "tests/fixtures/s008_research_cases/c03_cross_market_alignment.json"
-)
-
-
-def _case() -> dict[str, object]:
-    return json.loads(_FIXTURE.read_text(encoding="utf-8"))
-
-
 def _strict_prior(maximum_staleness_days: int = 7) -> InputAlignment:
-    case = _case()
     return InputAlignment(
         AlignmentRule.STRICT_PRIOR,
         "Date",
-        str(case["source_calendar"]),
-        str(case["decision_calendar"]),
+        "FXCM_24X5",
+        "SSE",
         maximum_staleness_days,
         False,
     )
 
 
 def test_c03_strict_prior_preserves_foreign_holiday_observations_and_lineage() -> None:
-    case = _case()
     result = align_input_history(
-        pd.DataFrame(case["source"]),
-        case["decision_times"],
+        pd.DataFrame({
+            "Date": ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02",
+                     "2026-10-07", "2026-10-08"],
+            "Value": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        }),
+        ["2026-09-30", "2026-10-06", "2026-10-08"],
         _strict_prior(),
         value_columns=("Value",),
     ).dataframe
 
-    assert result["source_time"].dt.strftime("%Y-%m-%d").tolist() == case[
-        "expected_source_times"
+    assert result["source_time"].dt.strftime("%Y-%m-%d").tolist() == [
+        "2026-09-29", "2026-10-02", "2026-10-07",
     ]
-    assert result["Value"].tolist() == case["expected_values"]
-    assert result["staleness_days"].tolist() == case["expected_staleness_days"]
+    assert result["Value"].tolist() == [1.0, 4.0, 5.0]
+    assert result["staleness_days"].tolist() == [1, 4, 1]
     assert (result["source_time"] < result["decision_time"]).all()
 
 
@@ -138,9 +127,9 @@ def test_c03_alignment_contract_participates_in_input_identity() -> None:
     common = {
         "schema_version": 3,
         "observation": ObservationDefinition((),()),
-        "strategy_family_id": "S008",
+        "strategy_family_id": "S900",
         "version": None,
-        "release_id": "S008-C0064",
+        "release_id": "S900-C0064",
         "release_hash": "a" * 64,
         "implementation": ImplementationRef("runtime", "Strategy", 1, "b" * 64),
         "parameters": ParameterSet({"prototype": "P04"}),
