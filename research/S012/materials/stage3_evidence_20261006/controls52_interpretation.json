@@ -1,0 +1,97 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_fetches": 0,
+  "same_planned_entry_tests": [
+    {
+      "control": "C4700 h5/c1",
+      "base": "C4603 h6/c0",
+      "same_signal_entry_dates": true,
+      "planned_entries": 164,
+      "control_cagr": 0.1264442578043654,
+      "base_cagr": 0.15036649641329958,
+      "difference_percentage_points": -2.3922238608934165,
+      "evidence": [
+        {
+          "path": "experiments/S012/EX050_20261006/artifacts/rex/evaluations/7206a565dc1743dc8f79a03bfa018be2/result.json",
+          "sha256": "e67815b23b116e9f0e8bff8eca9861540dca5e6112d572602273f6914e2f62a4"
+        },
+        {
+          "path": "experiments/S012/EX052_20261006/artifacts/rex/evaluations/b1237c9e8fd642e68cb7800482a4f693/result.json",
+          "sha256": "70bb245f14f7b735dbf6f8efa1cfe25703d617e6fa0669a96959c4974a5e1cc7"
+        }
+      ]
+    },
+    {
+      "control": "C4701 h6/c2",
+      "base": "EX051 OPTUNA_0093 h8/c0",
+      "same_signal_entry_dates": true,
+      "planned_entries": 132,
+      "control_cagr": 0.060451735417686114,
+      "base_cagr": 0.037443519662613056,
+      "difference_percentage_points": 2.300821575507306,
+      "base_mode": "ORIGINAL_SCOPED_SCREENING_NOT_FULL",
+      "evidence": [
+        {
+          "path": "experiments/S012/EX051_20261006/artifacts/rex/screening_ledgers/OPTUNA_0093/signals.json.gz",
+          "sha256": "a4f443f5824d3ed2d35f574240cad3b9ad54f705c6842719362dfdca5f5027af"
+        },
+        {
+          "path": "experiments/S012/EX052_20261006/artifacts/rex/evaluations/090af7d7a0304d3dabfbff69cc7b6501/result.json",
+          "sha256": "5963bc8a125df5ed00edacd5e81848440dc94ca28ab9b1bdf9aa8bd06a9afa95"
+        }
+      ]
+    }
+  ],
+  "unknown_policy": {
+    "base": "C4605 BLOCK",
+    "control": "C4703 KNOWN_ONLY",
+    "base_cagr": 0.0739774317721773,
+    "control_cagr": 0.09604139596929695,
+    "difference_percentage_points": 2.2063964197119645,
+    "closed_before": 110,
+    "closed_after": 147,
+    "interpretation": "385 unknown sessions in 2020/21 regain participation. Account and planned state propagate continuously later; no stronger forecasting claim or cash reset.",
+    "evidence": [
+      {
+        "path": "experiments/S012/EX050_20261006/artifacts/rex/evaluations/c1cee7b06f1e4c83944a5e3256ca7a5d/result.json",
+        "sha256": "8c198c5951d86e8ee35ac4118db77fd7f2fce7dc610ba60d94210f3e8da77209"
+      },
+      {
+        "path": "experiments/S012/EX052_20261006/artifacts/rex/evaluations/74f1b280b8d543049b7bc07238280de0/result.json",
+        "sha256": "29d71fa7bd145339c2a6b368084da53a294a3c4be750d256d109abbd183cce59"
+      }
+    ]
+  },
+  "joint_control": {
+    "candidate_id": "C4704",
+    "cagr": 0.1522764216804835,
+    "vs_premium020_percentage_points": 0.19099252671839206,
+    "vs_trail050_percentage_points": 0.11599716594730136,
+    "remaining_cagr_gap_percentage_points": 6.2024007556113485,
+    "evidence": [
+      {
+        "path": "experiments/S012/EX052_20261006/artifacts/rex/evaluations/df127f57fbba484686226e03c1a54936/result.json",
+        "sha256": "6fcc49ac550b87bf056d02cafcf922297ba8411b080624bd89dc362ee272f71c"
+      },
+      {
+        "path": "experiments/S012/EX050_20261006/artifacts/rex/evaluations/7206a565dc1743dc8f79a03bfa018be2/result.json",
+        "sha256": "e67815b23b116e9f0e8bff8eca9861540dca5e6112d572602273f6914e2f62a4"
+      },
+      {
+        "path": "experiments/S012/EX050_20261006/artifacts/rex/evaluations/ea5fc14ba4414490905c28011732931a/result.json",
+        "sha256": "14e2cb0e1ba7a0e69e7a5531e5de50bec6753d2cf5ca8d8e508bdc5a20995ada"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": ".tmp/s012-stage3-native-20261006/audit_EX052.json",
+      "sha256": "8e2f40ce89fda4b801ff7c070fba6252ba119a95a28ecd80c8b5f7dc31f641d0"
+    },
+    {
+      "path": ".tmp/s012-stage3-native-20261006/delivery-prep/EX052_20261006_full_diagnosis.json",
+      "sha256": "7708b37150bf9aa373203273a4ec19de565b0809f6d608db40caba341b084c05"
+    }
+  ]
+}
