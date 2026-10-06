@@ -1,0 +1,132 @@
+[
+  {
+    "candidate_id": "C4800",
+    "kind": "PROSPECTIVE_PAIRED_MECHANISM_CONTROL",
+    "label": "VOL_ENTRY_KNOWN_ONLY",
+    "delta": {
+      "risk_gate": "vol",
+      "risk_unknown_policy": "known_only"
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "vol",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "known_only",
+      "hold_days": 6,
+      "entry_premium": 0.02,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "2fdd4051e5c4d7a2f2a7cf691eee366eb1a5602e71ea6ea478bb835744247c52",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX050_20261006",
+        "reference_id": "C4603",
+        "original_row_sha256": "50dce375ecdf5c808b3962a29bda25d384d08831f0e9d58705f23f729d341620",
+        "original_parameter_sha256": "e33841bf9f713c46d8ec4bdd1966abc174ee9144dc9b2f6531c4103bd9a132c9"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4801",
+    "kind": "PROSPECTIVE_PAIRED_MECHANISM_CONTROL",
+    "label": "KURT_ENTRY_KNOWN_ONLY",
+    "delta": {
+      "risk_gate": "kurt",
+      "risk_unknown_policy": "known_only"
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "kurt",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "known_only",
+      "hold_days": 6,
+      "entry_premium": 0.02,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "86b06a5ff63276a43cd7ca2df7a91e3f2cec938f2ba05121161102c30706337a",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX050_20261006",
+        "reference_id": "C4603",
+        "original_row_sha256": "50dce375ecdf5c808b3962a29bda25d384d08831f0e9d58705f23f729d341620",
+        "original_parameter_sha256": "e33841bf9f713c46d8ec4bdd1966abc174ee9144dc9b2f6531c4103bd9a132c9"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4802",
+    "kind": "PROSPECTIVE_PAIRED_MECHANISM_CONTROL",
+    "label": "TRAIL030",
+    "delta": {
+      "trailing_stop": 0.03
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.03,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 6,
+      "entry_premium": 0.02,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "2d6f9f7b3c8666feb03bea1153adba1df94de8a44239b03f1ee2ae4de1a9ff5c",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX052_20261006",
+        "reference_id": "C4704",
+        "original_row_sha256": "bab19a001254c244018c4976dd1c8a76ccbb18b9d6a98a8333d2941fcdf62995",
+        "original_parameter_sha256": "c654c75edd37a45c4255120ba541996646e28ae8b7c984e7def91f75a12eba25"
+      }
+    ]
+  },
+  {
+    "candidate_id": "C4803",
+    "kind": "PROSPECTIVE_PAIRED_MECHANISM_CONTROL",
+    "label": "TRAIL100",
+    "delta": {
+      "trailing_stop": 0.1
+    },
+    "parameters": {
+      "confirm_o01": false,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.1,
+      "allocation": 1.0,
+      "exit_policy": "fixed",
+      "min_hold": 1,
+      "risk_unknown_policy": "block",
+      "hold_days": 6,
+      "entry_premium": 0.02,
+      "opportunity": "momentum",
+      "momentum_lookback": 10
+    },
+    "parameter_sha256": "826402da575b9665f3237887b627d74b2ec0522ea1dd2c997ca05f7b40c33e84",
+    "source_selection_ids": [
+      {
+        "experiment_id": "EX052_20261006",
+        "reference_id": "C4704",
+        "original_row_sha256": "bab19a001254c244018c4976dd1c8a76ccbb18b9d6a98a8333d2941fcdf62995",
+        "original_parameter_sha256": "c654c75edd37a45c4255120ba541996646e28ae8b7c984e7def91f75a12eba25"
+      }
+    ]
+  }
+]
