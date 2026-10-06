@@ -1,0 +1,279 @@
+{
+  "scope": "synthetic DataFrames and synthetic attrs only",
+  "pandas": "3.0.5",
+  "minimal_change": "_indexed: insert value.attrs = {} immediately after value = frame.copy()",
+  "performance": [
+    {
+      "rows": 256,
+      "synthetic_attr_records_per_input": 0,
+      "synthetic_attrs_json_bytes_per_input": 2,
+      "original": {
+        "median_seconds": 0.02689119998831302,
+        "samples_seconds": [
+          0.02689119998831302,
+          0.024104600015562028,
+          0.028963199991267174
+        ]
+      },
+      "clear_local_attrs": {
+        "median_seconds": 0.025287299999035895,
+        "samples_seconds": [
+          0.02848410001024604,
+          0.02468090003821999,
+          0.025287299999035895
+        ]
+      },
+      "speedup": 1.0634270953932716,
+      "frame_copy": {
+        "median_seconds": 0.00013559998478740454,
+        "samples_seconds": [
+          0.0001514999894425273,
+          0.00013559998478740454,
+          0.00012989999959245324
+        ]
+      },
+      "indexed_original": {
+        "median_seconds": 0.0009843000443652272,
+        "samples_seconds": [
+          0.000977999996393919,
+          0.0010021000052802265,
+          0.0009843000443652272
+        ]
+      },
+      "indexed_clear": {
+        "median_seconds": 0.0009973999694921076,
+        "samples_seconds": [
+          0.0009973999694921076,
+          0.0009865000029094517,
+          0.0014626000192947686
+        ]
+      },
+      "loc_100_original": {
+        "median_seconds": 0.003189600014593452,
+        "samples_seconds": [
+          0.004795100016053766,
+          0.003189600014593452,
+          0.0030950000509619713
+        ]
+      },
+      "loc_100_clear": {
+        "median_seconds": 0.0031900000176392496,
+        "samples_seconds": [
+          0.003168199968058616,
+          0.003911100036930293,
+          0.0031900000176392496
+        ]
+      }
+    },
+    {
+      "rows": 256,
+      "synthetic_attr_records_per_input": 250,
+      "synthetic_attrs_json_bytes_per_input": 52988,
+      "original": {
+        "median_seconds": 0.5747876999666914,
+        "samples_seconds": [
+          0.6484009000123478,
+          0.5708988000405952,
+          0.5747876999666914
+        ]
+      },
+      "clear_local_attrs": {
+        "median_seconds": 0.03095380001468584,
+        "samples_seconds": [
+          0.034380000026430935,
+          0.03095380001468584,
+          0.025424999999813735
+        ]
+      },
+      "speedup": 18.56921281697197,
+      "frame_copy": {
+        "median_seconds": 0.0021588000236079097,
+        "samples_seconds": [
+          0.0016014999710023403,
+          0.002392199996393174,
+          0.0021588000236079097
+        ]
+      },
+      "indexed_original": {
+        "median_seconds": 0.008639100007712841,
+        "samples_seconds": [
+          0.008440500008873641,
+          0.009686299948953092,
+          0.008639100007712841
+        ]
+      },
+      "indexed_clear": {
+        "median_seconds": 0.004813999985344708,
+        "samples_seconds": [
+          0.005561300029512495,
+          0.004813999985344708,
+          0.003006500017363578
+        ]
+      },
+      "loc_100_original": {
+        "median_seconds": 0.1955417999997735,
+        "samples_seconds": [
+          0.19691599998623133,
+          0.1955417999997735,
+          0.18376149999676272
+        ]
+      },
+      "loc_100_clear": {
+        "median_seconds": 0.003352199972141534,
+        "samples_seconds": [
+          0.003352199972141534,
+          0.0034097000025212765,
+          0.0030599000165238976
+        ]
+      }
+    },
+    {
+      "rows": 256,
+      "synthetic_attr_records_per_input": 1000,
+      "synthetic_attrs_json_bytes_per_input": 212758,
+      "original": {
+        "median_seconds": 2.4175426000147127,
+        "samples_seconds": [
+          2.316486099967733,
+          2.627996900002472,
+          2.4175426000147127
+        ]
+      },
+      "clear_local_attrs": {
+        "median_seconds": 0.03852029994595796,
+        "samples_seconds": [
+          0.036449600011110306,
+          0.03852029994595796,
+          0.05550550000043586
+        ]
+      },
+      "speedup": 62.76022262044697,
+      "frame_copy": {
+        "median_seconds": 0.00697379995835945,
+        "samples_seconds": [
+          0.007445399998687208,
+          0.00697379995835945,
+          0.006736300012562424
+        ]
+      },
+      "indexed_original": {
+        "median_seconds": 0.03830339998239651,
+        "samples_seconds": [
+          0.037080699985381216,
+          0.0390315999975428,
+          0.03830339998239651
+        ]
+      },
+      "indexed_clear": {
+        "median_seconds": 0.008444899984169751,
+        "samples_seconds": [
+          0.008444899984169751,
+          0.007990900019649416,
+          0.008513099979609251
+        ]
+      },
+      "loc_100_original": {
+        "median_seconds": 0.789564699982293,
+        "samples_seconds": [
+          0.8801333999726921,
+          0.789564699982293,
+          0.7694885000237264
+        ]
+      },
+      "loc_100_clear": {
+        "median_seconds": 0.0032599999685771763,
+        "samples_seconds": [
+          0.003225599997676909,
+          0.0035034000175073743,
+          0.0032599999685771763
+        ]
+      }
+    }
+  ],
+  "metadata_deepcopy_calls": [
+    {
+      "rows": 5,
+      "original": 80,
+      "clear_local_attrs": 2
+    },
+    {
+      "rows": 50,
+      "original": 125,
+      "clear_local_attrs": 2
+    },
+    {
+      "rows": 256,
+      "original": 331,
+      "clear_local_attrs": 2
+    }
+  ],
+  "semantics": {
+    "parameter_cases": 40,
+    "exact_frame_comparisons": 80,
+    "prefix_comparisons": 120,
+    "exception_comparisons": 7,
+    "definition_equal": true,
+    "input_values_and_attrs_unchanged": true
+  },
+  "original_selfcheck": {
+    "status": "PASS",
+    "prefix_checks": 18,
+    "boundaries": [
+      "hold_age",
+      "flat_exit",
+      "cooldown",
+      "trailing_close",
+      "risk_exit",
+      "window_reset",
+      "missing_validity"
+    ],
+    "history_columns": [
+      "target_position",
+      "planned_target",
+      "planned_age",
+      "planned_cycle_id",
+      "opportunity_active",
+      "o01_active",
+      "n09_active",
+      "risk_available",
+      "risk_ok",
+      "planned_peak_close",
+      "signal_drawdown",
+      "decision_reason"
+    ]
+  },
+  "patched_selfcheck": {
+    "status": "PASS",
+    "prefix_checks": 18,
+    "boundaries": [
+      "hold_age",
+      "flat_exit",
+      "cooldown",
+      "trailing_close",
+      "risk_exit",
+      "window_reset",
+      "missing_validity"
+    ],
+    "history_columns": [
+      "target_position",
+      "planned_target",
+      "planned_age",
+      "planned_cycle_id",
+      "opportunity_active",
+      "o01_active",
+      "n09_active",
+      "risk_available",
+      "risk_ok",
+      "planned_peak_close",
+      "signal_drawdown",
+      "decision_reason"
+    ]
+  },
+  "limits": [
+    "Synthetic attrs size/structure does not establish real EX043 attrs size.",
+    "No real market/returns, live process, experimental artifact or platform code modified.",
+    "Signal/calculation equality and unchanged execution definition verified; no actual account fills replayed.",
+    "Local frame.attrs is intentionally discarded; original input attrs remain unchanged.",
+    "Initial frame.copy still deep-copies attrs once per input; repeated pandas propagation is removed."
+  ]
+}

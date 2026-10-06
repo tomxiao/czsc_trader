@@ -24,7 +24,9 @@
       "research/S012/materials/stage2_return_discovery_authorization_20261006.json",
       "research/S012/materials/return_discovery_scope_note_20261006.md",
       "research/S012/materials/stage3_current_authorization_20261006.json",
-      "research/S012/materials/stage2_native_scope_authorization_20261006.json"
+      "research/S012/materials/stage2_native_scope_authorization_20261006.json",
+      "research/S012/materials/stage3_resume_after_native_review_20261006.json",
+      "research/S012/materials/stage3_objective_priority_20261006.json"
     ],
     "confirmed_capital_and_benchmark": {
       "benchmark": {
@@ -46,17 +48,7 @@
       "full_sample_frequency": ">= 5 closed cycles per 60 trading days",
       "net_annual_return": ">= BuyHold * 1.5"
     },
-    "delivery": {
-      "content_sha256": "42f663cfa2299b78792ea3eb73a32ee478215de164356da0b56947d305471bf4",
-      "owner": {
-        "experiment_id": "EX041_20261006",
-        "strategy_id": "S012",
-        "type": "ExperimentOwner"
-      },
-      "revision": 1,
-      "stage": "COMPONENTS",
-      "type": "DeliveryReference"
-    },
+    "delivery": null,
     "experiments": [
       "EX001_20261004",
       "EX002_20261004",
@@ -98,8 +90,13 @@
       "EX039_20261006",
       "EX041_20261006"
     ],
-    "next_stage": "建议获批后做O01有无Q07、M05独立/联合、纯动量及其加机会的完整账户对照；阶段三须用户决定",
+    "next_stage": "初始完整账户→新等价校验→Optuna优化与有依据扩边→全部达标候选及完整交付；阶段四另批准",
     "objective": "研究能同时改善黄金ETF收益、回撤并满足交易频率的可执行机制。",
+    "objective_priority": [
+      "net_annual_return",
+      "drawdown_magnitude",
+      "closed_trade_frequency"
+    ],
     "observed_daily_coverage": {
       "end": "2026-09-30",
       "sessions": 1535,
@@ -107,9 +104,8 @@
     },
     "pause_authorization": "research/S012/materials/pause_authorization_20261004.json",
     "pending": [
-      "全部已见开发池、真实历史发布时点及源代理限制保持",
-      "原三个完整账户目标未复验",
-      "新源/依赖、平台、生产及远端操作另批准"
+      "新源/平台/生产/远端及阶段四另批准",
+      "原三个经济目标由完整账户验证，保留全部已见开发池历史"
     ],
     "prior_candidate_delivery": {
       "content_sha256": "f3547d436382c506e29ae5a275bc2ad53c12e919d2ec9b4c8dc8b5acc9bbc922",
@@ -133,10 +129,11 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "research_summary": "阶段二147条完整记录；5推荐职责：O01/M05两机会、C01/C02/C03三风险。原生与共同域归因完成，Q07降为可选确认候选，纯动量潜在净负，互补去2025/费用反证保持；216路径1512年度6624相位、独立49728字段PASS；完整账户目标未复验。",
+    "priority_scope": "搜索/排序；原三个数值门槛不变",
+    "research_summary": "阶段三按用户确认年化收益>最大回撤>交易频率主导；优先收益前沿和可解释改进，完整保留原三目标达标情况、全部负面与技术失败。",
     "resume_authorization": "research/S012/materials/resume_authorization_20261005.json",
-    "stage": "COMPONENTS",
-    "status": "COMPLETE",
+    "stage": "CANDIDATES",
+    "status": "IN_PROGRESS",
     "symbol": "518850.SH"
   },
   "research_state": "RESEARCHING",
@@ -145,5 +142,5 @@
     "518850.SH"
   ],
   "strategy_id": "S012",
-  "updated_at": "2026-10-06T13:12:07+08:00"
+  "updated_at": "2026-10-06T14:00:30+08:00"
 }

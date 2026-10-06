@@ -1,0 +1,1569 @@
+{
+  "schema_version": 1,
+  "experiment_id": "EX046_20261006",
+  "accounts_requested": 11,
+  "accounts_succeeded": 11,
+  "accounts_missing": 0,
+  "ledger_readback_checks": "PASS",
+  "independent_managed_input_audit": "PASS",
+  "complete_rex": true,
+  "rex_receipt_sha256": "635e2b5ef7ca8137e5ae0e7e2c492c829e4dc1c1428ad1162add32ba0d7dd42a",
+  "technical_failure": null,
+  "economic_all_three_qualified": 0,
+  "pass_counts": {
+    "return": 0,
+    "drawdown": 5,
+    "frequency": 8
+  },
+  "bound_source_sha256": "bf86c7d8111da20bb6c5bf0a39fa7087a9755c3a19075a891333d4226cbd53b8",
+  "equivalence": null,
+  "ranked": [
+    {
+      "candidate_id": "C4309",
+      "parameters": {
+        "opportunity": "momentum_union",
+        "confirm_o01": false,
+        "hold_days": 60,
+        "cooldown": 0,
+        "risk_gate": "mom",
+        "risk_exit": true,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 3,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "32b85eff92fa45bcb66d5a64cefbf102",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4309",
+        "content_sha256": "5c6071087a9a4d8059e4f1a64149993cebfd959b9829cc4c76f3d4520ee9fffb",
+        "request_hash": "5e287250eb6425ad0f09cd86a2947d200c804d36438956a48b1d118d41986c2e",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:37:21.813804+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:47:13.376646+00:00",
+        "elapsed_seconds": 590.0079648999963,
+        "evaluation_ids": [
+          "5c1138430cb62e14e62ae0317d3785df213d53822da169e85c1f7e78d0027ffa"
+        ],
+        "result_hash": "57208e5c3873b20e0855e7a9d1b9603a3b9981e5452be94e68e7daaf59ad9d33",
+        "result_artifact": {
+          "path": "evaluations/32b85eff92fa45bcb66d5a64cefbf102/result.json",
+          "kind": "evaluation_result",
+          "sha256": "1c9c975f1067043d6ca21c524414fa4886f0296d2c9b5e3e3054305fbb2366d1"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": 0.05701464586897953,
+        "max_drawdown": -0.19983972484496682,
+        "closed_trades": 130,
+        "frequency": 5.0814332247557,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 140148.46299999996,
+        "final_quantity": 0,
+        "time_in_market": 0.3246414602346806,
+        "total_fees": 25890.137,
+        "gross_fill_amount": 25890137.0,
+        "fills": 264,
+        "orders": 322,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 94952.09929999994,
+            "period_net_return": -0.05047900700000052,
+            "period_net_profit_currency": -5047.9007000000565,
+            "time_in_market": 0.4834710743801653
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 94952.09929999994,
+            "ending_equity": 94072.79739999997,
+            "period_net_return": -0.009260478772795011,
+            "period_net_profit_currency": -879.3018999999767,
+            "time_in_market": 0.4834710743801653
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 94072.79739999997,
+            "ending_equity": 90250.26549999998,
+            "period_net_return": -0.04063376454881518,
+            "period_net_profit_currency": -3822.531899999987,
+            "time_in_market": 0.4090909090909091
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 90250.26549999998,
+            "ending_equity": 113745.32689999991,
+            "period_net_return": 0.26033232445172083,
+            "period_net_profit_currency": 23495.061399999933,
+            "time_in_market": 0.48148148148148145
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 113745.32689999991,
+            "ending_equity": 140148.46299999996,
+            "period_net_return": 0.2321250184037238,
+            "period_net_profit_currency": 26403.136100000047,
+            "time_in_market": 0.26519337016574585
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4302",
+      "parameters": {
+        "opportunity": "m05",
+        "confirm_o01": false,
+        "hold_days": 10,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "23a362f8c6814e5aa1c6ea9c5f51692e",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4302",
+        "content_sha256": "f9052dd62ada8a959a23a82cb2ddbd9286d7f82291ad24baa6cf48974951c4f9",
+        "request_hash": "259839d6a5b1d46ee966ff3b56e64bafbc7237fafedb399dc5a631e0ab14af0f",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:09:50.561356+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:20:35.475805+00:00",
+        "elapsed_seconds": 644.9147326000384,
+        "evaluation_ids": [
+          "d1dd9f2e25fa41e42a651f641c1a433bf9353416817bb2453a6ec099c1e62689"
+        ],
+        "result_hash": "0506ae301e67636bfa64a0f442c97a205fed682aa2d3d4ac8f64d7400806a8f5",
+        "result_artifact": {
+          "path": "evaluations/23a362f8c6814e5aa1c6ea9c5f51692e/result.json",
+          "kind": "evaluation_result",
+          "sha256": "05ea0881ac480fad686cd7692b83ac52b6215251eeb3d3852d6fa036baa0a47e"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": 0.014637139761373152,
+        "max_drawdown": -0.09491726401945433,
+        "closed_trades": 49,
+        "frequency": 1.9153094462540716,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 109248.49679999995,
+        "final_quantity": 0,
+        "time_in_market": 0.08083441981747067,
+        "total_fees": 10016.3032,
+        "gross_fill_amount": 10016303.2,
+        "fills": 100,
+        "orders": 142,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 98139.7992,
+            "period_net_return": -0.018602008000000114,
+            "period_net_profit_currency": -1860.200800000006,
+            "time_in_market": 0.012345679012345678
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 98139.7992,
+            "ending_equity": 98911.6311,
+            "period_net_return": 0.007864616662064616,
+            "period_net_profit_currency": 771.8319000000047,
+            "time_in_market": 0.128099173553719
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 98911.6311,
+            "ending_equity": 103566.66930000001,
+            "period_net_return": 0.047062596665641276,
+            "period_net_profit_currency": 4655.03820000001,
+            "time_in_market": 0.06611570247933884
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 103566.66930000001,
+            "ending_equity": 97036.46479999999,
+            "period_net_return": -0.06305314773698167,
+            "period_net_profit_currency": -6530.204500000022,
+            "time_in_market": 0.09504132231404959
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 97036.46479999999,
+            "ending_equity": 108207.60619999998,
+            "period_net_return": 0.11512312843449757,
+            "period_net_profit_currency": 11171.141399999993,
+            "time_in_market": 0.15637860082304528
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 108207.60619999998,
+            "ending_equity": 109248.49679999995,
+            "period_net_return": 0.009619384778516427,
+            "period_net_profit_currency": 1040.8905999999697,
+            "time_in_market": 0.0718232044198895
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4308",
+      "parameters": {
+        "opportunity": "o01_m05",
+        "confirm_o01": false,
+        "hold_days": 20,
+        "cooldown": 0,
+        "risk_gate": "kurt",
+        "risk_exit": true,
+        "trailing_stop": 0.03,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 3,
+        "risk_unknown_policy": "known_only"
+      },
+      "record": {
+        "attempt_id": "e8a6255331a9460babd7c8f2446333ad",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4308",
+        "content_sha256": "a82538b8d4a8ef29e6fb46ec2d6b51246b36f8b8ba3cabbe19d693e2f38e40b1",
+        "request_hash": "d76a47ba86d873ecebffa9437936b4c85c8aa521d1a09c22b5b6ab565623a59f",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:23:05.171091+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:36:21.254039+00:00",
+        "elapsed_seconds": 796.0829052999616,
+        "evaluation_ids": [
+          "fe327cedc456fb79b332f6fe549da4dd88767fefa54322b1bc3efe197d9ddac3"
+        ],
+        "result_hash": "caf32f1aee3f66994c7277ea69ea3d6d9238c505f0c42096c9eddc2c9ebdde01",
+        "result_artifact": {
+          "path": "evaluations/e8a6255331a9460babd7c8f2446333ad/result.json",
+          "kind": "evaluation_result",
+          "sha256": "a34cb7c597e6b82074523259bf68beeb020ed983666cbf53d9f806cf45ae31a3"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": 0.0100739784104662,
+        "max_drawdown": -0.08938897888836539,
+        "closed_trades": 32,
+        "frequency": 1.250814332247557,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 106291.64719999995,
+        "final_quantity": 12000,
+        "time_in_market": 0.07561929595827901,
+        "total_fees": 6511.7528,
+        "gross_fill_amount": 6511752.8,
+        "fills": 68,
+        "orders": 97,
+        "open_cycles": 1,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 98593.74479999999,
+            "period_net_return": -0.014062552000000172,
+            "period_net_profit_currency": -1406.2552000000142,
+            "time_in_market": 0.024691358024691357
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 98593.74479999999,
+            "ending_equity": 96674.31589999996,
+            "period_net_return": -0.019468059600471044,
+            "period_net_profit_currency": -1919.428900000028,
+            "time_in_market": 0.18181818181818182
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 96674.31589999996,
+            "ending_equity": 96932.17219999994,
+            "period_net_return": 0.0026672679046078063,
+            "period_net_profit_currency": 257.8562999999849,
+            "time_in_market": 0.04132231404958678
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 96932.17219999994,
+            "ending_equity": 97517.07179999993,
+            "period_net_return": 0.006034112170654415,
+            "period_net_profit_currency": 584.8995999999897,
+            "time_in_market": 0.07024793388429752
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 97517.07179999993,
+            "ending_equity": 102786.84669999992,
+            "period_net_return": 0.054039511264323936,
+            "period_net_profit_currency": 5269.774899999989,
+            "time_in_market": 0.07818930041152264
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 102786.84669999992,
+            "ending_equity": 106291.64719999995,
+            "period_net_return": 0.0340977528985722,
+            "period_net_profit_currency": 3504.8005000000267,
+            "time_in_market": 0.11049723756906077
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4307",
+      "parameters": {
+        "opportunity": "n09",
+        "confirm_o01": false,
+        "hold_days": 3,
+        "cooldown": 1,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": -0.005,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "aac4a77ff9294d4e8e413e4c49139b18",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4307",
+        "content_sha256": "2cf6e5ffe27b8add1eb8eaa55c9c2031c2770b7a61bdc2ef1d77af823840be21",
+        "request_hash": "a2b675af6ccea157706e1633398bcab1abeddb6842628953f534b83962c2c0b2",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:23:05.153090+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:36:15.782912+00:00",
+        "elapsed_seconds": 790.6299149999977,
+        "evaluation_ids": [
+          "f66fe2dc1577b26192b4c12f9d1a4fbede5e37e92966a853954769a14ae72d45"
+        ],
+        "result_hash": "c18c1269b50afa933c62a2b3a23c17ff6800d457cd4854cacb9d204f5a292d51",
+        "result_artifact": {
+          "path": "evaluations/aac4a77ff9294d4e8e413e4c49139b18/result.json",
+          "kind": "evaluation_result",
+          "sha256": "8b7139631e4aab1f611c7a0f4925c6232aaa21fec22aa79dea34bc0ed611945d"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.007800917215240677,
+        "max_drawdown": -0.21404221491985587,
+        "closed_trades": 76,
+        "frequency": 2.970684039087948,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 95344.57760000002,
+        "final_quantity": 0,
+        "time_in_market": 0.11147327249022164,
+        "total_fees": 15522.2224,
+        "gross_fill_amount": 15522222.4,
+        "fills": 152,
+        "orders": 368,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 105347.70750000002,
+            "period_net_return": 0.05347707500000021,
+            "period_net_profit_currency": 5347.707500000019,
+            "time_in_market": 0.17768595041322313
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 105347.70750000002,
+            "ending_equity": 105712.9294,
+            "period_net_return": 0.003466823423755816,
+            "period_net_profit_currency": 365.221899999975,
+            "time_in_market": 0.1487603305785124
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 105712.9294,
+            "ending_equity": 102115.80140000003,
+            "period_net_return": -0.03402732305704104,
+            "period_net_profit_currency": -3597.127999999968,
+            "time_in_market": 0.11983471074380166
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 102115.80140000003,
+            "ending_equity": 97380.16760000003,
+            "period_net_return": -0.04637513230151269,
+            "period_net_profit_currency": -4735.633799999996,
+            "time_in_market": 0.16872427983539096
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 97380.16760000003,
+            "ending_equity": 95344.57760000002,
+            "period_net_return": -0.020903537652157578,
+            "period_net_profit_currency": -2035.590000000011,
+            "time_in_market": 0.12154696132596685
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4303",
+      "parameters": {
+        "opportunity": "all_union",
+        "confirm_o01": false,
+        "hold_days": 20,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "4b140bf4e69b4525a6361f7ce643bed2",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4303",
+        "content_sha256": "556a4d0ec94db22779664f2c32da96b3c77e71dbee73694b16790b414c1d5681",
+        "request_hash": "0a84f977d32fea095baa6087a2215a670475bcf622b4f4bc46485b421bedc056",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:09:50.587872+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:20:41.296333+00:00",
+        "elapsed_seconds": 650.7088471999741,
+        "evaluation_ids": [
+          "c301218e3ca408e5f53550ac03ecb1c77b6e581d8eee3e4d89ce346890fdb89a"
+        ],
+        "result_hash": "280a8af5ee2117248dd4e9cd44124dd5956edbf6e9d2ca71f759b3d739c48d9f",
+        "result_artifact": {
+          "path": "evaluations/4b140bf4e69b4525a6361f7ce643bed2/result.json",
+          "kind": "evaluation_result",
+          "sha256": "323ca41866fc09e7ff85d27396b334325532dc51c0a4e1ae90c350b4eb2dc786"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.008580035122721985,
+        "max_drawdown": -0.23917829897635245,
+        "closed_trades": 171,
+        "frequency": 6.684039087947883,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 94889.73849999999,
+        "final_quantity": 0,
+        "time_in_market": 0.2196870925684485,
+        "total_fees": 32831.3615,
+        "gross_fill_amount": 32831361.5,
+        "fills": 346,
+        "orders": 463,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 100000.0,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 98139.7992,
+            "period_net_return": -0.018602008000000114,
+            "period_net_profit_currency": -1860.200800000006,
+            "time_in_market": 0.012345679012345678
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 98139.7992,
+            "ending_equity": 94433.62529999996,
+            "period_net_return": -0.037764229499259394,
+            "period_net_profit_currency": -3706.173900000038,
+            "time_in_market": 0.39669421487603307
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 94433.62529999996,
+            "ending_equity": 97375.3967,
+            "period_net_return": 0.03115173637202351,
+            "period_net_profit_currency": 2941.7714000000415,
+            "time_in_market": 0.30165289256198347
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 97375.3967,
+            "ending_equity": 88343.61799999997,
+            "period_net_return": -0.09275216333983904,
+            "period_net_profit_currency": -9031.778700000024,
+            "time_in_market": 0.256198347107438
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 88343.61799999997,
+            "ending_equity": 102274.16809999995,
+            "period_net_return": 0.15768598134615663,
+            "period_net_profit_currency": 13930.550099999979,
+            "time_in_market": 0.26337448559670784
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 102274.16809999995,
+            "ending_equity": 94889.73849999999,
+            "period_net_return": -0.07220229445210191,
+            "period_net_profit_currency": -7384.4295999999595,
+            "time_in_market": 0.2154696132596685
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4306",
+      "parameters": {
+        "opportunity": "momentum",
+        "confirm_o01": false,
+        "hold_days": 3,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.05,
+        "entry_premium": 0.01,
+        "allocation": 0.75,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "425477c33d3b45de98f5e1586801a942",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4306",
+        "content_sha256": "79d571c7ebb0206c61ecd6fd66548c1ba5584595ab286a8eed43cd3b9c192059",
+        "request_hash": "b19b023c0b26d400732b1def0ea9b84c7ad19873b55a7c6ab6a9a7d84cd662d1",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:23:05.138569+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:36:10.388750+00:00",
+        "elapsed_seconds": 785.2503879999858,
+        "evaluation_ids": [
+          "3f6ccbcd33ad7f9411bb5aa77a1ab3e5a2fe05ea83d57b12cdde9f1e003570c3"
+        ],
+        "result_hash": "2806aa7a8800b991bd04012740c848fdc780f7ba8fe98de7818a337ce90ef420",
+        "result_artifact": {
+          "path": "evaluations/425477c33d3b45de98f5e1586801a942/result.json",
+          "kind": "evaluation_result",
+          "sha256": "c159455d844075e0f672f035f3c7d3ba8a538a3bf457a14dfc4ba44e4304adb0"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.011195586433421556,
+        "max_drawdown": -0.3101337832890293,
+        "closed_trades": 282,
+        "frequency": 11.022801302931596,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 93376.05190000002,
+        "final_quantity": 0,
+        "time_in_market": 0.5410691003911343,
+        "total_fees": 33907.8481,
+        "gross_fill_amount": 33907848.1,
+        "fills": 571,
+        "orders": 587,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 92350.68499999997,
+            "period_net_return": -0.07649315000000034,
+            "period_net_profit_currency": -7649.315000000031,
+            "time_in_market": 0.5390070921985816
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 92350.68499999997,
+            "ending_equity": 75206.38370000005,
+            "period_net_return": -0.18564346653194752,
+            "period_net_profit_currency": -17144.30129999992,
+            "time_in_market": 0.5185185185185185
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 75206.38370000005,
+            "ending_equity": 73953.62310000001,
+            "period_net_return": -0.01665763647135765,
+            "period_net_profit_currency": -1252.7606000000378,
+            "time_in_market": 0.5413223140495868
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 73953.62310000001,
+            "ending_equity": 71957.53319999998,
+            "period_net_return": -0.026991103563660745,
+            "period_net_profit_currency": -1996.0899000000354,
+            "time_in_market": 0.5743801652892562
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 71957.53319999998,
+            "ending_equity": 79523.37329999995,
+            "period_net_return": 0.1051431276690844,
+            "period_net_profit_currency": 7565.840099999972,
+            "time_in_market": 0.5909090909090909
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 79523.37329999995,
+            "ending_equity": 89711.09389999996,
+            "period_net_return": 0.12810976417671682,
+            "period_net_profit_currency": 10187.720600000015,
+            "time_in_market": 0.5349794238683128
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 89711.09389999996,
+            "ending_equity": 93376.05190000002,
+            "period_net_return": 0.040852896121023274,
+            "period_net_profit_currency": 3664.958000000057,
+            "time_in_market": 0.4696132596685083
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4304",
+      "parameters": {
+        "opportunity": "momentum_union",
+        "confirm_o01": false,
+        "hold_days": 5,
+        "cooldown": 0,
+        "risk_gate": "vol",
+        "risk_exit": true,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "known_only"
+      },
+      "record": {
+        "attempt_id": "7af92aef9df24ecdb20e5c5bd1940b16",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4304",
+        "content_sha256": "1eba123649bfa65599fa7477e6cd5c31156fdd04eb9ddb16eb99d7cafc115f90",
+        "request_hash": "7cebe83add6d6c75d1d24da4f36f2623ab54e0478dbbbe618e64890b5cde8887",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:09:50.612873+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:20:46.952452+00:00",
+        "elapsed_seconds": 656.3393344000215,
+        "evaluation_ids": [
+          "3c0f2d04fd72476726b222432850b08b6d9ef85e3a974524d5c8078b80e12fc8"
+        ],
+        "result_hash": "f2af9d675ecf0a6ced56c8ef15f1c6d14e1ee5ee45a8bb0cd0f3b9e0963178a1",
+        "result_artifact": {
+          "path": "evaluations/7af92aef9df24ecdb20e5c5bd1940b16/result.json",
+          "kind": "evaluation_result",
+          "sha256": "19de98391bba65a3be55f7f67b491d414b585a4efea8b71a2a97ac3bf94f82da"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.029047254737585404,
+        "max_drawdown": -0.3497257377133455,
+        "closed_trades": 136,
+        "frequency": 5.315960912052117,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 83573.95159999991,
+        "final_quantity": 0,
+        "time_in_market": 0.3728813559322034,
+        "total_fees": 20175.648400000002,
+        "gross_fill_amount": 20175648.4,
+        "fills": 280,
+        "orders": 378,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 86475.82519999998,
+            "period_net_return": -0.13524174800000022,
+            "period_net_profit_currency": -13524.174800000023,
+            "time_in_market": 0.5460992907801419
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 86475.82519999998,
+            "ending_equity": 68782.5235999999,
+            "period_net_return": -0.20460402151791302,
+            "period_net_profit_currency": -17693.30160000008,
+            "time_in_market": 0.5925925925925926
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 68782.5235999999,
+            "ending_equity": 66872.43989999992,
+            "period_net_return": -0.02776989851532541,
+            "period_net_profit_currency": -1910.0836999999738,
+            "time_in_market": 0.5
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 66872.43989999992,
+            "ending_equity": 69458.09459999984,
+            "period_net_return": 0.038665475700699226,
+            "period_net_profit_currency": 2585.654699999912,
+            "time_in_market": 0.49586776859504134
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 69458.09459999984,
+            "ending_equity": 72545.99119999987,
+            "period_net_return": 0.0444569724779067,
+            "period_net_profit_currency": 3087.8966000000364,
+            "time_in_market": 0.24380165289256198
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 72545.99119999987,
+            "ending_equity": 83573.95159999991,
+            "period_net_return": 0.15201336721139258,
+            "period_net_profit_currency": 11027.96040000004,
+            "time_in_market": 0.20987654320987653
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 83573.95159999991,
+            "ending_equity": 83573.95159999991,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4300",
+      "parameters": {
+        "opportunity": "momentum_union",
+        "confirm_o01": false,
+        "hold_days": 10,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "12635f726bfa42ca85cdc7fa43106a06",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4300",
+        "content_sha256": "5e8d102deae9b8a8770a200d747edc44f5822eb656a9c64f5b2aaa185869bec3",
+        "request_hash": "25cda143e7b9c09d38f9a0f42fa86bf7c8d29ca6361fde0b74541b9b87e079d5",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T05:58:19.381220+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:07:41.133763+00:00",
+        "elapsed_seconds": 561.7520848999848,
+        "evaluation_ids": [
+          "171b22bf3ce9d249814c5e7408724952f3cdd9926b5ceb6d15fad9a7e08d9934"
+        ],
+        "result_hash": "0a1a27e62aa637a5ab4fed85c244b16cce529cc428e6d984da873681785a4c72",
+        "result_artifact": {
+          "path": "evaluations/12635f726bfa42ca85cdc7fa43106a06/result.json",
+          "kind": "evaluation_result",
+          "sha256": "6f8aab67e50777ad241f219b6c5acfec080327050484049ee727c74430b81b55"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.04238498921602063,
+        "max_drawdown": -0.4505777111651821,
+        "closed_trades": 240,
+        "frequency": 9.381107491856678,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 76825.18419999989,
+        "final_quantity": 0,
+        "time_in_market": 0.4810951760104302,
+        "total_fees": 31434.8158,
+        "gross_fill_amount": 31434815.8,
+        "fills": 492,
+        "orders": 655,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 84015.22979999993,
+            "period_net_return": -0.15984770200000076,
+            "period_net_profit_currency": -15984.770200000072,
+            "time_in_market": 0.41843971631205673
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 84015.22979999993,
+            "ending_equity": 59564.35879999994,
+            "period_net_return": -0.29102903197677155,
+            "period_net_profit_currency": -24450.870999999985,
+            "time_in_market": 0.35802469135802467
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 59564.35879999994,
+            "ending_equity": 58211.152699999926,
+            "period_net_return": -0.02271838608292076,
+            "period_net_profit_currency": -1353.2061000000176,
+            "time_in_market": 0.512396694214876
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 58211.152699999926,
+            "ending_equity": 57036.57189999989,
+            "period_net_return": -0.020177934047336477,
+            "period_net_profit_currency": -1174.5808000000325,
+            "time_in_market": 0.5165289256198347
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 57036.57189999989,
+            "ending_equity": 56952.31779999993,
+            "period_net_return": -0.001477194319246311,
+            "period_net_profit_currency": -84.25409999996191,
+            "time_in_market": 0.5082644628099173
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 56952.31779999993,
+            "ending_equity": 69438.1932999999,
+            "period_net_return": 0.21923384301665738,
+            "period_net_profit_currency": 12485.875499999966,
+            "time_in_market": 0.5308641975308642
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 69438.1932999999,
+            "ending_equity": 76825.18419999989,
+            "period_net_return": 0.10638224511523986,
+            "period_net_profit_currency": 7386.99089999999,
+            "time_in_market": 0.5027624309392266
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4301",
+      "parameters": {
+        "opportunity": "momentum",
+        "confirm_o01": false,
+        "hold_days": 10,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "c24385ca97454191b13a5cf3277b1320",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4301",
+        "content_sha256": "29ce0b22350f839a4d103f82c89fed1f3d6dc91cb4e20744f261d5c19c81c3e2",
+        "request_hash": "047dc94ee18ad517cc3282ccdd8aa54f78583a6ba517fc0b2905da0004352165",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:09:50.535851+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:20:29.719312+00:00",
+        "elapsed_seconds": 639.1829309000168,
+        "evaluation_ids": [
+          "70dc3aac08aed0639b73075e41950dba63e784377415ff346cc1daf9d2688acf"
+        ],
+        "result_hash": "4b1ae6c80cb1ad445e6c711deee554abb066cb02c604df229615b27b4fa22c09",
+        "result_artifact": {
+          "path": "evaluations/c24385ca97454191b13a5cf3277b1320/result.json",
+          "kind": "evaluation_result",
+          "sha256": "d680fbe1210eca5cf573780707006c6f230aeded7ab90b2ad340e3a0a9eec83a"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.047955412821441,
+        "max_drawdown": -0.4552204377738236,
+        "closed_trades": 214,
+        "frequency": 8.364820846905538,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 74144.76219999991,
+        "final_quantity": 0,
+        "time_in_market": 0.44328552803129073,
+        "total_fees": 27596.8378,
+        "gross_fill_amount": 27596837.8,
+        "fills": 441,
+        "orders": 593,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 84015.22979999993,
+            "period_net_return": -0.15984770200000076,
+            "period_net_profit_currency": -15984.770200000072,
+            "time_in_market": 0.41843971631205673
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 84015.22979999993,
+            "ending_equity": 60505.52899999991,
+            "period_net_return": -0.27982665590471356,
+            "period_net_profit_currency": -23509.70080000002,
+            "time_in_market": 0.35390946502057613
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 60505.52899999991,
+            "ending_equity": 57704.65349999992,
+            "period_net_return": -0.04629123232688359,
+            "period_net_profit_currency": -2800.8754999999874,
+            "time_in_market": 0.44214876033057854
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 57704.65349999992,
+            "ending_equity": 56258.31519999997,
+            "period_net_return": -0.02506450021400708,
+            "period_net_profit_currency": -1446.3382999999521,
+            "time_in_market": 0.5
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 56258.31519999997,
+            "ending_equity": 56621.45389999994,
+            "period_net_return": 0.0064548449186401236,
+            "period_net_profit_currency": 363.13869999997405,
+            "time_in_market": 0.4462809917355372
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 56621.45389999994,
+            "ending_equity": 61613.26469999996,
+            "period_net_return": 0.08816112014389699,
+            "period_net_profit_currency": 4991.810800000021,
+            "time_in_market": 0.48559670781893005
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 61613.26469999996,
+            "ending_equity": 74144.76219999991,
+            "period_net_return": 0.2033896038623637,
+            "period_net_profit_currency": 12531.497499999947,
+            "time_in_market": 0.44751381215469616
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4305",
+      "parameters": {
+        "opportunity": "momentum_union",
+        "confirm_o01": false,
+        "hold_days": 10,
+        "cooldown": 0,
+        "risk_gate": "vol",
+        "risk_exit": true,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "opportunity_loss",
+        "min_hold": 1,
+        "risk_unknown_policy": "known_only"
+      },
+      "record": {
+        "attempt_id": "dfa1cfc3b1fd4328895d696d7aed77c5",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4305",
+        "content_sha256": "6f8138e0984b4e2c37276eb3115f3faa4b5a2fd0d0df07a5a5d3f42c7e795ad8",
+        "request_hash": "de92a794ac36568661794212c3de7507928e9ecf2c73133dc95265b502c2ebf2",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:23:05.125565+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:36:03.810288+00:00",
+        "elapsed_seconds": 778.6852308999514,
+        "evaluation_ids": [
+          "3db5e507a965c09012cf17d12e660092815558d1b29564ca5d9da090b3504dac"
+        ],
+        "result_hash": "010bd2215ba5fd57d287b11bef68e014163c3bbb998fd7ff5480ed02611ecf25",
+        "result_artifact": {
+          "path": "evaluations/dfa1cfc3b1fd4328895d696d7aed77c5/result.json",
+          "kind": "evaluation_result",
+          "sha256": "aec6266be5ea5b719eaa588d6d8187717f7f498c545bf385893d7d9fcbec4c07"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.07064513222663771,
+        "max_drawdown": -0.43596964905812663,
+        "closed_trades": 149,
+        "frequency": 5.824104234527687,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 64019.41029999997,
+        "final_quantity": 0,
+        "time_in_market": 0.28292046936114734,
+        "total_fees": 19546.489700000002,
+        "gross_fill_amount": 19546489.7,
+        "fills": 304,
+        "orders": 414,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 84015.22979999993,
+            "period_net_return": -0.15984770200000076,
+            "period_net_profit_currency": -15984.770200000072,
+            "time_in_market": 0.41843971631205673
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 84015.22979999993,
+            "ending_equity": 59564.35879999994,
+            "period_net_return": -0.29102903197677155,
+            "period_net_profit_currency": -24450.870999999985,
+            "time_in_market": 0.35802469135802467
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 59564.35879999994,
+            "ending_equity": 57917.82559999994,
+            "period_net_return": -0.027642926628801523,
+            "period_net_profit_currency": -1646.5332000000053,
+            "time_in_market": 0.4132231404958678
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 57917.82559999994,
+            "ending_equity": 58779.61999999991,
+            "period_net_return": 0.014879605563092424,
+            "period_net_profit_currency": 861.7943999999698,
+            "time_in_market": 0.4214876033057851
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 58779.61999999991,
+            "ending_equity": 61324.00599999994,
+            "period_net_return": 0.04328687391990682,
+            "period_net_profit_currency": 2544.386000000035,
+            "time_in_market": 0.16942148760330578
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 61324.00599999994,
+            "ending_equity": 64019.41029999997,
+            "period_net_return": 0.04395349351443256,
+            "period_net_profit_currency": 2695.404300000024,
+            "time_in_market": 0.18518518518518517
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 64019.41029999997,
+            "ending_equity": 64019.41029999997,
+            "period_net_return": 0.0,
+            "period_net_profit_currency": 0.0,
+            "time_in_market": 0.0
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    {
+      "candidate_id": "C4310",
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 1,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.0,
+        "allocation": 1.0,
+        "exit_policy": "fixed",
+        "min_hold": 1,
+        "risk_unknown_policy": "block"
+      },
+      "record": {
+        "attempt_id": "3408c97e46054178876c9a77a28072fa",
+        "experiment_id": "EX046_20261006",
+        "candidate_id": "S012-C4310",
+        "content_sha256": "5c9bceaf060e5f710ed18b882de62ecbc31bdd0229a10d3b7396adb0e7bd3061",
+        "request_hash": "472fcc9f7409b23b624765a22413aa1fd395924575314b74ea225fcb4cced111",
+        "status": "SUCCEEDED",
+        "started_at": "2026-10-06T06:37:21.835807+00:00",
+        "requested_count": 1,
+        "completed_count": 1,
+        "finished_at": "2026-10-06T06:47:58.166142+00:00",
+        "elapsed_seconds": 634.7755526000401,
+        "evaluation_ids": [
+          "7aa458de446d3aaf2bb754bd9cd6bba43b4f820fded850819486f1fed12210d2"
+        ],
+        "result_hash": "b63a8ed1d948d1792722aab3cf8988a05a52f354aff1babede46e589ec674601",
+        "result_artifact": {
+          "path": "evaluations/3408c97e46054178876c9a77a28072fa/result.json",
+          "kind": "evaluation_result",
+          "sha256": "90b26ec343fb72022a4493722be50e31e26f7f47607936833c6eb3427031c814"
+        },
+        "error_code": null,
+        "error_message": null
+      },
+      "source_root": "experiments/S012/EX046_20261006/strategy_runtime",
+      "implementation_sha256": "9049ddbfd05967a1251d2c290e7a82dfcbe0491c458f161c773d36cf0f780943",
+      "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+      "metrics": {
+        "net_cagr": -0.2029750511773355,
+        "max_drawdown": -0.7498756670000022,
+        "closed_trades": 467,
+        "frequency": 18.254071661237784,
+        "frequency_denominator": 1535,
+        "formal_sessions": 1534,
+        "final_equity": 25132.16129999978,
+        "final_quantity": 0,
+        "time_in_market": 0.3044328552803129,
+        "total_fees": 45836.3387,
+        "gross_fill_amount": 45836338.7,
+        "fills": 934,
+        "orders": 1234,
+        "open_cycles": 0,
+        "annual": [
+          {
+            "year": 2020,
+            "sessions": 141,
+            "opening_equity_previous_close": 100000.0,
+            "ending_equity": 79376.38459999998,
+            "period_net_return": -0.20623615400000028,
+            "period_net_profit_currency": -20623.615400000024,
+            "time_in_market": 0.3120567375886525
+          },
+          {
+            "year": 2021,
+            "sessions": 243,
+            "opening_equity_previous_close": 79376.38459999998,
+            "ending_equity": 61594.70429999989,
+            "period_net_return": -0.22401726142614076,
+            "period_net_profit_currency": -17781.680300000087,
+            "time_in_market": 0.2962962962962963
+          },
+          {
+            "year": 2022,
+            "sessions": 242,
+            "opening_equity_previous_close": 61594.70429999989,
+            "ending_equity": 49370.71749999984,
+            "period_net_return": -0.19845840545743265,
+            "period_net_profit_currency": -12223.98680000005,
+            "time_in_market": 0.28512396694214875
+          },
+          {
+            "year": 2023,
+            "sessions": 242,
+            "opening_equity_previous_close": 49370.71749999984,
+            "ending_equity": 41232.36229999976,
+            "period_net_return": -0.16484174450168976,
+            "period_net_profit_currency": -8138.355200000078,
+            "time_in_market": 0.3140495867768595
+          },
+          {
+            "year": 2024,
+            "sessions": 242,
+            "opening_equity_previous_close": 41232.36229999976,
+            "ending_equity": 36666.04529999975,
+            "period_net_return": -0.11074594675842853,
+            "period_net_profit_currency": -4566.31700000001,
+            "time_in_market": 0.30578512396694213
+          },
+          {
+            "year": 2025,
+            "sessions": 243,
+            "opening_equity_previous_close": 36666.04529999975,
+            "ending_equity": 32539.193499999787,
+            "period_net_return": -0.11255241099044822,
+            "period_net_profit_currency": -4126.851799999964,
+            "time_in_market": 0.2880658436213992
+          },
+          {
+            "year": 2026,
+            "sessions": 181,
+            "opening_equity_previous_close": 32539.193499999787,
+            "ending_equity": 25132.16129999978,
+            "period_net_return": -0.22763416677798276,
+            "period_net_profit_currency": -7407.032200000005,
+            "time_in_market": 0.3425414364640884
+          }
+        ]
+      },
+      "benchmark_cagr": 0.14286695282439799,
+      "benchmark_mdd": -0.30290630870721535,
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    }
+  ],
+  "evidence": [
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/trials.json",
+      "sha256": "53645da4f522a854d3c013ee4cee20cce156fa5cdcafeaa41a8a7cb1f99a3f23"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/experiment_binding.json",
+      "sha256": "3c8b629aeb4b9bd367fdebb439133a4d9e64bd5340368d4c3f2cd32f2ac18b15"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/experiment.py",
+      "sha256": "d16ccebb89b2b39aa8d94f8206bb623aa47b7b24cadbf234b317269c3cf3f747"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/strategy_runtime/strategies/s012.py",
+      "sha256": "eac34981e432dd9e16ba2db5ca9cf60b34bf457c0d4465bc194785f84481cb6d"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/strategy_runtime/resources/features.csv",
+      "sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/feature_provenance.json",
+      "sha256": "4c33418cb0da1e21e0bea973dcd24698d545b0e3925e6476ece7159fdd028858"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/execution_receipt.json",
+      "sha256": "a61b75647df085b8298106152b358a3e0fcb7baeb101eddadd10030b2cac6bcf"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/12635f726bfa42ca85cdc7fa43106a06/result.json",
+      "sha256": "6f8aab67e50777ad241f219b6c5acfec080327050484049ee727c74430b81b55"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/c24385ca97454191b13a5cf3277b1320/result.json",
+      "sha256": "d680fbe1210eca5cf573780707006c6f230aeded7ab90b2ad340e3a0a9eec83a"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/23a362f8c6814e5aa1c6ea9c5f51692e/result.json",
+      "sha256": "05ea0881ac480fad686cd7692b83ac52b6215251eeb3d3852d6fa036baa0a47e"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/4b140bf4e69b4525a6361f7ce643bed2/result.json",
+      "sha256": "323ca41866fc09e7ff85d27396b334325532dc51c0a4e1ae90c350b4eb2dc786"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/7af92aef9df24ecdb20e5c5bd1940b16/result.json",
+      "sha256": "19de98391bba65a3be55f7f67b491d414b585a4efea8b71a2a97ac3bf94f82da"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/dfa1cfc3b1fd4328895d696d7aed77c5/result.json",
+      "sha256": "aec6266be5ea5b719eaa588d6d8187717f7f498c545bf385893d7d9fcbec4c07"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/425477c33d3b45de98f5e1586801a942/result.json",
+      "sha256": "c159455d844075e0f672f035f3c7d3ba8a538a3bf457a14dfc4ba44e4304adb0"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/aac4a77ff9294d4e8e413e4c49139b18/result.json",
+      "sha256": "8b7139631e4aab1f611c7a0f4925c6232aaa21fec22aa79dea34bc0ed611945d"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/e8a6255331a9460babd7c8f2446333ad/result.json",
+      "sha256": "a34cb7c597e6b82074523259bf68beeb020ed983666cbf53d9f806cf45ae31a3"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/32b85eff92fa45bcb66d5a64cefbf102/result.json",
+      "sha256": "1c9c975f1067043d6ca21c524414fa4886f0296d2c9b5e3e3054305fbb2366d1"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/artifacts/rex/evaluations/3408c97e46054178876c9a77a28072fa/result.json",
+      "sha256": "90b26ec343fb72022a4493722be50e31e26f7f47607936833c6eb3427031c814"
+    },
+    {
+      "path": "experiments/S012/EX046_20261006/supplementary/independent_account_audit.json",
+      "sha256": "2648a25fc1f61ed3cba4317cbdf3412f0da9a964bc20dd3dc89a52e34bb87dbc"
+    }
+  ],
+  "stage_three_closure": false,
+  "limits": [
+    "Readback accounting is not a replacement for DFLS bound-input independent audit.",
+    "No new account backtest or account replay was executed.",
+    "All research history is observed development data; no independent holdout."
+  ]
+}

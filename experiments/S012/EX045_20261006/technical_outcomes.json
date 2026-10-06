@@ -1,0 +1,55 @@
+{
+  "predecessor": "EX045_20261006",
+  "receipt_sha256": "6fd7a134d95e73cd74600b0bf4838746ecf6c052f4de79ad2f98ff8844014fc4",
+  "successful_baseline": {
+    "attempt_id": "575e83c2f1294eeabce28c5f899e2b62",
+    "experiment_id": "EX045_20261006",
+    "candidate_id": "S012-C4200",
+    "content_sha256": "a8fed6c8c6fbe6fa43f05e7a689f788f814b4508ccb1bf769e9d3b9b5d5ec5e1",
+    "request_hash": "27a34be17922b2bf231224db4ad11342272f71862a621677d24cad76ff1cfe10",
+    "status": "SUCCEEDED",
+    "started_at": "2026-10-06T05:39:42.703494+00:00",
+    "requested_count": 1,
+    "completed_count": 1,
+    "finished_at": "2026-10-06T05:50:00.269320+00:00",
+    "elapsed_seconds": 617.5659026000067,
+    "evaluation_ids": [
+      "3562b594d444c0c2081cfd9a8c7dcf820c7cc4a843e785fa1cb51eee15570d7d"
+    ],
+    "result_hash": "0ed5f72a234220c9edb37bdb6cdfc1a72737515874613cf644b7b4ffacc93285",
+    "result_artifact": {
+      "path": "evaluations/575e83c2f1294eeabce28c5f899e2b62/result.json",
+      "kind": "evaluation_result",
+      "sha256": "a5480982ed78a4cbff1db941705c02cb41a4d812ac3cdc81074ed00a3858c674"
+    },
+    "error_code": null,
+    "error_message": null
+  },
+  "technical_failures": 11,
+  "reason": "显式策略输入联合binding与传入shared execution_data不一致，被平台严格拒绝；不是经济失败。",
+  "successor": "EX046_20261006",
+  "new_full_configs": 11,
+  "candidate_ids": [
+    "C4300",
+    "C4301",
+    "C4302",
+    "C4303",
+    "C4304",
+    "C4305",
+    "C4306",
+    "C4307",
+    "C4308",
+    "C4309",
+    "C4310"
+  ],
+  "policy_change": "协调协议明确移除显式input_binding，恢复公共evaluate_many自动准备本策略输入，继续使用真实execution_data复用市场；不作为静默fallback。",
+  "strategy_source_unchanged": true,
+  "feature_source_unchanged": true,
+  "baseline_not_repeated": true,
+  "priority": [
+    "net_annual_return",
+    "drawdown_magnitude",
+    "closed_trade_frequency"
+  ],
+  "original_thresholds_unchanged": true
+}

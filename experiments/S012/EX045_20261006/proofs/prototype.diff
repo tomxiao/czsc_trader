@@ -1,0 +1,232 @@
+--- EX044/strategy_runtime/strategies/s012.py
++++ exit-design/s012_exit_prototype.py
+@@ -42,6 +42,17 @@
+ )
+ 
+ 
++# Only these research modes have a declared branch-loss exit interpretation.
++EXIT_BRANCHES = {
++    "momentum": ("momentum",),
++    "momentum_union": ("momentum", "o01", "m05"),
++    "m05": ("m05",),
++    "o01_m05": ("o01", "m05"),
++    "n09": ("n09",),
++    "all_union": ("o01", "n09", "m05"),
++}
++
++
+ def _integer(values: Mapping, name: str, low: int, high: int) -> int:
+     value = values[name]
+     if type(value) is not int or not low <= value <= high:
+@@ -88,10 +99,24 @@
+             raise ValueError("unsupported opportunity")
+         self.confirm_o01 = _boolean(values, "confirm_o01")
+         self.hold_days = _integer(values, "hold_days", 1, 60)
++        self.exit_policy = values.get("exit_policy", "fixed")
++        if type(self.exit_policy) is not str:
++            raise TypeError("exit_policy must be str")
++        if self.exit_policy not in {"fixed", "opportunity_loss"}:
++            raise ValueError("exit_policy must be fixed or opportunity_loss")
++        self.min_hold = _integer({"min_hold": values.get("min_hold", 1)},
++                                 "min_hold", 1, self.hold_days)
++        if self.exit_policy == "opportunity_loss" and self.opportunity not in EXIT_BRANCHES:
++            raise ValueError("opportunity_loss requires a declared supported opportunity")
+         self.cooldown = _integer(values, "cooldown", 0, 10)
+         self.risk_gate = values["risk_gate"]
+         if self.risk_gate not in {"none", "vol", "kurt", "mom"}:
+             raise ValueError("unsupported risk_gate")
++        self.risk_unknown_policy = values.get("risk_unknown_policy", "block")
++        if type(self.risk_unknown_policy) is not str:
++            raise TypeError("risk_unknown_policy must be str")
++        if self.risk_unknown_policy not in {"block", "known_only"}:
++            raise ValueError("risk_unknown_policy must be block or known_only")
+         self.risk_exit = _boolean(values, "risk_exit")
+         self.trailing_stop = _number(values, "trailing_stop", 0.0, 0.2)
+         premium = _number(values, "entry_premium", -0.05, 0.05)
+@@ -200,6 +225,7 @@
+         peak = 0.0
+         earliest_entry = 0
+         cycle_id = 0
++        entry_branches: tuple[str, ...] = ()
+         rows = []
+         for index, session in enumerate(sessions):
+             facts = features.loc[session]
+@@ -216,6 +242,16 @@
+                 "all_union": o01 or n09 or m05, "momentum": momentum,
+                 "momentum_union": momentum or o01 or m05,
+             }[self.opportunity]
++            branch_truth = {}
++            if self.exit_policy == "opportunity_loss":
++                # Unknown validity is distinct from a known-false signal. The
++                # o01 truth includes the same confirmation used at entry.
++                branch_truth = {
++                    "o01": o01 if bool(facts["o01_valid"]) else None,
++                    "n09": n09 if bool(facts["n09_valid"]) else None,
++                    "m05": m05 if bool(facts["m05_valid"]) else None,
++                    "momentum": momentum if bool(facts["mom3_valid"]) else None,
++                }
+             risk_available = (
+                 True if self.risk_gate == "none" else bool(facts[f"{self.risk_gate}_valid"])
+             )
+@@ -224,6 +260,10 @@
+                 bool(facts["mom_high"]) if self.risk_gate == "mom" else
+                 not bool(facts[f"{self.risk_gate}_high"])
+             )
++            # An explicit research hypothesis: unknown is not a known risk event.
++            # The default block policy above retains the original conservative rule.
++            if self.risk_unknown_policy == "known_only" and not risk_available:
++                risk_ok = True
+             reason = "IDLE"
+             age = 0
+             drawdown = 0.0
+@@ -238,6 +278,10 @@
+                     reason = "EXIT_RISK"
+                 elif self.trailing_stop > 0 and drawdown >= self.trailing_stop:
+                     reason = "EXIT_TRAILING"
++                elif (self.exit_policy == "opportunity_loss" and age >= self.min_hold
++                      and entry_branches
++                      and all(branch_truth[branch] is False for branch in entry_branches)):
++                    reason = "EXIT_OPPORTUNITY_LOSS"
+                 if reason.startswith("EXIT_"):
+                     active = False
+                     # Exit signal itself is always flat; cooldown adds further
+@@ -250,6 +294,11 @@
+                 entry_index = index
+                 peak = close
+                 cycle_id += 1
++                if self.exit_policy == "opportunity_loss":
++                    # Capture only the actual entry-day triggers. Later signals
++                    # cannot replace this tuple or restart the entry clock.
++                    entry_branches = tuple(branch for branch in EXIT_BRANCHES[self.opportunity]
++                                           if branch_truth[branch] is True)
+                 reason = "ENTRY"
+             elif opportunity:
+                 reason = "RISK_BLOCK"
+@@ -267,6 +316,8 @@
+                 "signal_drawdown": drawdown,
+                 "decision_reason": reason,
+             })
++            if self.exit_policy == "opportunity_loss":
++                rows[-1]["planned_entry_branches"] = "|".join(entry_branches)
+         return pd.DataFrame(rows, index=sessions)
+ 
+ 
+@@ -339,3 +390,118 @@
+                        "risk_exit", "window_reset", "missing_validity"],
+         "history_columns": list(full.columns),
+     }
++
++
++def synthetic_policy_selfcheck() -> dict[str, object]:
++    """Hand-built policy witnesses only; no files, market or account operations."""
++    base = {
++        "opportunity": "momentum", "confirm_o01": True, "hold_days": 6,
++        "cooldown": 0, "risk_gate": "none", "risk_exit": False,
++        "trailing_stop": 0.0, "entry_premium": 0.0, "allocation": 1.0,
++        "exit_policy": "opportunity_loss", "min_hold": 1,
++        "risk_unknown_policy": "block",
++        "rule": {"data_source": {"path": "synthetic.csv", "sha256": "a" * 64}},
++    }
++    checks = 0
++    prefix_checks = 0
++
++    def require(condition: bool, label: str) -> None:
++        nonlocal checks
++        if not condition:
++            raise AssertionError(label)
++        checks += 1
++
++    def inputs(count: int = 6):
++        dates = pd.bdate_range("2020-06-05", periods=count, name="dt")
++        facts = pd.DataFrame({"Date": dates})
++        for field in BOOLEAN_COLUMNS:
++            facts[field] = field.endswith("_valid") or field in {"own_positive", "mom_high"}
++        return {"features": facts, "execution": pd.DataFrame({"Date": dates, "Close": 10.0})}, dates
++
++    def calculate(frames, dates, **changes):
++        return S012PlannedCycle(ParameterSet({**base, **changes})).calculate_history(frames, dates)
++
++    frames, dates = inputs()
++    frames["features"].loc[0, "mom3_positive"] = True
++    result = calculate(frames, dates, min_hold=2)
++    require(result.decision_reason.iloc[:3].tolist() == ["ENTRY", "HOLD", "EXIT_OPPORTUNITY_LOSS"],
++            "loss must wait for min_hold")
++    require(result.planned_age.iloc[:3].tolist() == [0, 1, 2], "entry age must advance")
++    frames["features"].loc[1, "mom3_valid"] = False
++    result = calculate(frames, dates)
++    require(result.decision_reason.iloc[:3].tolist() == ["ENTRY", "HOLD", "EXIT_OPPORTUNITY_LOSS"],
++            "unknown trigger cannot imply opportunity loss")
++    frames["features"].loc[1:, "mom3_valid"] = False
++    result = calculate(frames, dates, hold_days=3, min_hold=3)
++    require(result.decision_reason.iloc[3] == "EXIT_AGE", "maximum hold overrides unknown")
++
++    frames, dates = inputs()
++    frames["features"].loc[:1, "mom3_positive"] = True
++    frames["features"].loc[1:, "m05"] = True
++    frames["features"].loc[2, "o01"] = True
++    result = calculate(frames, dates, opportunity="momentum_union", min_hold=2, cooldown=1)
++    require(result.planned_entry_branches.iloc[:3].tolist() == ["momentum"] * 3,
++            "new branches must not replace actual entry triggers")
++    require(result.planned_age.iloc[:3].tolist() == [0, 1, 2], "new branches must not reset age")
++    require(result.decision_reason.iloc[2:5].tolist() == ["EXIT_OPPORTUNITY_LOSS", "COOLDOWN", "ENTRY"],
++            "branch loss exit must retain cooldown")
++    require(result.planned_entry_branches.iloc[4] == "m05" and result.planned_cycle_id.iloc[4] == 2,
++            "next entry must capture a fresh branch set")
++
++    frames, dates = inputs()
++    frames["features"].loc[0, ["o01", "m05"]] = True
++    frames["features"].loc[1, "m05"] = True
++    frames["features"].loc[2, "m05_valid"] = False
++    result = calculate(frames, dates, opportunity="o01_m05")
++    require(result.decision_reason.iloc[:4].tolist() == ["ENTRY", "HOLD", "HOLD", "EXIT_OPPORTUNITY_LOSS"],
++            "all recorded union triggers must be known false")
++    frames["features"].loc[0, "own_positive"] = False
++    result = calculate(frames, dates, opportunity="o01_m05")
++    require(result.planned_entry_branches.iloc[0] == "m05", "o01 entry truth includes confirmation")
++
++    for policy in ("block", "known_only"):
++        frames, dates = inputs()
++        frames["features"]["mom3_positive"] = True
++        frames["features"].loc[0, "vol_valid"] = False
++        result = calculate(frames, dates, risk_gate="vol", risk_unknown_policy=policy)
++        require(result.decision_reason.iloc[0] == ("RISK_BLOCK" if policy == "block" else "ENTRY"),
++                "unknown-entry policy must be explicit")
++        frames["features"].loc[0, "vol_valid"] = True
++        frames["features"].loc[1, "vol_valid"] = False
++        result = calculate(frames, dates, risk_gate="vol", risk_exit=True, risk_unknown_policy=policy)
++        require(result.decision_reason.iloc[1] == ("EXIT_RISK" if policy == "block" else "HOLD"),
++                "unknown-holding policy must be explicit")
++        require(not bool(result.risk_available.iloc[1]), "unknown must remain visible")
++        frames["features"].loc[1, "vol_valid"] = True
++        frames["features"].loc[1, "vol_high"] = True
++        result = calculate(frames, dates, risk_gate="vol", risk_exit=True, risk_unknown_policy=policy)
++        require(result.decision_reason.iloc[1] == "EXIT_RISK", "known high risk must still exit")
++        result = calculate(frames, dates, risk_gate="none", risk_exit=True, risk_unknown_policy=policy)
++        require(result.decision_reason.iloc[1] == "HOLD", "none risk gate must stay unchanged")
++
++    # Prefix comparisons also exercise both exit policies with future rows present.
++    frames, dates = inputs(12)
++    frames["features"]["mom3_positive"] = [i % 4 < 2 for i in range(12)]
++    frames["features"]["mom3_valid"] = [i % 5 != 1 for i in range(12)]
++    frames["features"]["vol_valid"] = [i % 4 != 0 for i in range(12)]
++    frames["features"]["vol_high"] = [i % 7 == 3 for i in range(12)]
++    for exit_policy in ("fixed", "opportunity_loss"):
++        for risk_policy in ("block", "known_only"):
++            impl = S012PlannedCycle(ParameterSet({**base, "exit_policy": exit_policy,
++                "risk_gate": "vol", "risk_exit": True, "risk_unknown_policy": risk_policy}))
++            full = impl.calculate_history(frames, dates)
++            for end in range(1, len(dates) + 1):
++                pd.testing.assert_frame_equal(impl.calculate_history(frames, dates[:end]), full.iloc[:end],
++                                              check_exact=True)
++                prefix_checks += 1
++            pd.testing.assert_frame_equal(impl.calculate_window_history(frames, dates[3:]),
++                                          impl.calculate_history(frames, dates[3:]), check_exact=True)
++            checks += 1
++    return {
++        "status": "PASS", "checks": checks, "prefix_checks": prefix_checks,
++        "boundaries": ["min_hold", "unknown_trigger", "max_hold", "entry_branch_lock",
++                       "entry_age_lock", "union", "o01_confirmation", "cooldown",
++                       "fresh_cycle", "risk_unknown_entry", "risk_unknown_holding",
++                       "known_risk_exit", "none_risk", "window_reset"],
++        "evidence_scope": "SYNTHETIC_ONLY",
++    }

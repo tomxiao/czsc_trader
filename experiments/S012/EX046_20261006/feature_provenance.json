@@ -1,0 +1,42 @@
+{
+  "inputs": {
+    "EX017_20261005/signals.parquet": "c37233d617d81c9ef05b18eefe1a91b63fd364ef88d4304a6df7f32e56e508fa",
+    "EX017_20261005/valids.parquet": "ea9df5bfed68abe7a9c091765fbc8ee4483d87d124c065ce1a16699a9a2a5cc8",
+    "EX019_20261005/gates.parquet": "9b61a10d4759462fa82f6910e5f83fa0fff6c63a4aa11a9d16e28bb8b745ce0b",
+    "EX018_20261005/risk_high.parquet": "112367332c6c762b529883a19113d25f5520aab1d39ecf78300fdece5d2a7836",
+    "EX018_20261005/risk_valids.parquet": "45b00cb92b3b2b9d241ff7ecffb30f1a1efa16d14e0dbe2d70c88ec85afce0a7",
+    "EX041_20261006/signals.parquet": "fa3ddd1e6f301a9a52621b8202715c8d507b2de15dfbb487ad3a81992a64aef9",
+    "EX041_20261006/valids.parquet": "432b648758dea54246ffe62f00052e5e901a2241aa036c549760976e62fab95f"
+  },
+  "feature_sha256": "8ed38c5eb10fd15d112500b90b8871403554b41a77a9f1d71c9e897b24864192",
+  "columns": [
+    "o01",
+    "n09",
+    "o01_valid",
+    "n09_valid",
+    "own_positive",
+    "vol_high",
+    "vol_valid",
+    "mom_high",
+    "mom_valid",
+    "kurt_high",
+    "kurt_valid",
+    "m05",
+    "m05_valid",
+    "mom3_positive",
+    "mom3_valid"
+  ],
+  "risk_mapping": {
+    "vol": "volatility20",
+    "mom": "momentum20",
+    "kurt": "kurtosis60"
+  },
+  "sessions": 1535,
+  "excludes": "无未来标签/成熟尾部筛选/事后质量筛选；原生M05与全域etf3保留已知信号",
+  "availability": "继承原T17与原可得政策；缺失分支以valid独立判定，不阻断其他已知机会",
+  "counts": {
+    "o01": 80,
+    "m05": 163,
+    "mom3_positive": 836
+  }
+}

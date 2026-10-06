@@ -1,0 +1,94 @@
+{
+  "status": "PASS",
+  "prototype_sha256": "a19077a4e490ff000ee1db1567e01e8b5dfa8847be914d6ea45310f0448cadf7",
+  "pytest": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "255",
+    "time": "18.667",
+    "timestamp": "2026-10-06T14:03:10.924354+08:00",
+    "hostname": "P00002"
+  },
+  "selfcontained": {
+    "legacy": {
+      "status": "PASS",
+      "prefix_checks": 18,
+      "boundaries": [
+        "hold_age",
+        "flat_exit",
+        "cooldown",
+        "trailing_close",
+        "risk_exit",
+        "window_reset",
+        "missing_validity"
+      ],
+      "history_columns": [
+        "target_position",
+        "planned_target",
+        "planned_age",
+        "planned_cycle_id",
+        "opportunity_active",
+        "o01_active",
+        "n09_active",
+        "risk_available",
+        "risk_ok",
+        "planned_peak_close",
+        "signal_drawdown",
+        "decision_reason"
+      ]
+    },
+    "policy": {
+      "status": "PASS",
+      "checks": 24,
+      "prefix_checks": 48,
+      "boundaries": [
+        "min_hold",
+        "unknown_trigger",
+        "max_hold",
+        "entry_branch_lock",
+        "entry_age_lock",
+        "union",
+        "o01_confirmation",
+        "cooldown",
+        "fresh_cycle",
+        "risk_unknown_entry",
+        "risk_unknown_holding",
+        "known_risk_exit",
+        "none_risk",
+        "window_reset"
+      ],
+      "evidence_scope": "SYNTHETIC_ONLY"
+    },
+    "trend": {
+      "status": "PASS",
+      "checks": 60,
+      "prefix_checks": 30,
+      "lookbacks": [
+        5,
+        10,
+        20,
+        60,
+        120
+      ],
+      "boundaries": [
+        "warmup_unknown",
+        "full_available_history",
+        "strict_positive_direction",
+        "prefix",
+        "future_price_isolation",
+        "union_independent_known",
+        "entry_branch_lock",
+        "unknown_retention",
+        "entry_age_lock",
+        "legacy_three",
+        "integer_search_domain"
+      ],
+      "evidence_scope": "SYNTHETIC_ONLY"
+    }
+  },
+  "ruff": "PASS",
+  "baseline_unchanged": true,
+  "scope": "Only synthetic frames/prices; no experiment/platform edits, no real account/market data calls"
+}

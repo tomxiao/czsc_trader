@@ -1,0 +1,58 @@
+{
+  "status": "UNBOUND_SYNTHETIC_PROTOTYPE",
+  "baseline_source": "experiments/S012/EX046_20261006/strategy_runtime/strategies/s012.py",
+  "baseline_sha256": "eac34981e432dd9e16ba2db5ca9cf60b34bf457c0d4465bc194785f84481cb6d",
+  "prototype_sha256": "a19077a4e490ff000ee1db1567e01e8b5dfa8847be914d6ea45310f0448cadf7",
+  "parameter": {
+    "name": "momentum_lookback",
+    "type": "exact int, bool rejected",
+    "default": 3,
+    "range": [
+      3,
+      120
+    ],
+    "meaning": "n observed available daily raw Close intervals",
+    "domain_status": "Provisional research search domain; no performance acceptance threshold; extend the domain if boundary performance improves"
+  },
+  "legacy_three": "Always use features.mom3_positive and mom3_valid, including existing unknown semantics; never substitute raw-price direction at n=3",
+  "extended_momentum": {
+    "scope": [
+      "momentum",
+      "momentum_union"
+    ],
+    "source": "existing execution input, ETF_UNADJUSTED_DAILY, Close",
+    "calculation": "complete available indexed history clipped to Date <= sessions[-1], pct_change(periods=n, fill_method=None), then reindex derived masks to sessions",
+    "known": "first n observations unknown; only finite computed change is known; available historical prices must be numeric, finite and strictly positive or fail explicitly",
+    "active": "known and computed change > 0; zero and negative changes are known false",
+    "future": "future Close values are not parsed or used for the calculation",
+    "union": "o01/m05 retain independent validity; unknown momentum cannot enter or become a recorded trigger",
+    "loss": "entry-branch snapshot uses derived momentum validity; every recorded branch must be known false before opportunity-loss exit",
+    "age": "later momentum or other branch cannot replace entry snapshot or reset age"
+  },
+  "unchanged": [
+    "Other opportunity modes",
+    "risk gates and risk_unknown_policy",
+    "exit_policy and min_hold",
+    "maximum hold/cooldown/trailing rules",
+    "Inputs contract",
+    "ExecutionPolicy",
+    "history result columns"
+  ],
+  "public_dependencies_added": [],
+  "selfcontained_functions": [
+    "synthetic_selfcheck",
+    "synthetic_policy_selfcheck",
+    "synthetic_trend_selfcheck"
+  ],
+  "next_required": [
+    "new bound source for a successor experiment",
+    "new FULL witness",
+    "new gate before any search"
+  ],
+  "real_market_or_account_runs": false,
+  "limitations": [
+    "Synthetic tests do not establish profitability",
+    "Only history actually provided by existing inputs is used; insufficient warmup remains unknown",
+    "No EX046 gate reuse for changed source"
+  ]
+}

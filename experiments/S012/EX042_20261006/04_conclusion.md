@@ -1,0 +1,3 @@
+# 技术失败，未得到账户结果
+
+沙箱multiprocessing Pipe CreateFile出现WinError5；失败在评价进程池创建前，没有正式账户attempt或收益结果，不作为经济失败。原始预检、绑定和受管工作区保留，technical_failure.json明确边界。EX043继承相同策略与特征字节，仅以所需进程通信权限执行同一12个对照。

@@ -1,0 +1,176 @@
+--- EX046/strategy_runtime/strategies/s012.py
++++ trend-design/s012_trend_prototype.py
+@@ -87,6 +87,18 @@
+     return value.set_index("Date")
+ 
+ 
++def _price_momentum(
++    execution: pd.DataFrame, sessions: pd.DatetimeIndex, lookback: int,
++) -> tuple[pd.Series, pd.Series]:
++    """Known/positive masks from observed raw closes, before window slicing."""
++    prices = pd.to_numeric(execution.loc[execution.index <= sessions[-1], "Close"], errors="raise")
++    if not prices.map(lambda value: isfinite(value) and value > 0).all():
++        raise ValueError("momentum execution history Close must be positive and finite")
++    changes = prices.pct_change(periods=lookback, fill_method=None)
++    known = changes.map(lambda value: bool(pd.notna(value) and isfinite(value)))
++    return known.reindex(sessions, fill_value=False), changes.gt(0).reindex(sessions, fill_value=False)
++
++
+ class S012PlannedCycle(StrategyImplementation):
+     """Opportunity/confirmation/risk composition with explicit signal cycles."""
+ 
+@@ -98,6 +110,9 @@
+         if self.opportunity not in {"o01", "n09", "union", "always", "m05", "o01_m05", "n09_m05", "all_union", "momentum", "momentum_union"}:
+             raise ValueError("unsupported opportunity")
+         self.confirm_o01 = _boolean(values, "confirm_o01")
++        # Research search domain, not a performance acceptance gate.
++        self.momentum_lookback = _integer({"momentum_lookback": values.get("momentum_lookback", 3)},
++                                          "momentum_lookback", 3, 120)
+         self.hold_days = _integer(values, "hold_days", 1, 60)
+         self.exit_policy = values.get("exit_policy", "fixed")
+         if type(self.exit_policy) is not str:
+@@ -208,7 +223,8 @@
+                 or not sessions.equals(sessions.normalize()) or not sessions.is_monotonic_increasing):
+             raise ValueError("sessions must be unique ascending naive session dates")
+         features = _indexed(inputs["features"], "features").reindex(sessions)
+-        execution = _indexed(inputs["execution"], "execution").reindex(sessions)
++        execution_history = _indexed(inputs["execution"], "execution")
++        execution = execution_history.reindex(sessions)
+         if not set(BOOLEAN_COLUMNS) <= set(features.columns):
+             raise ValueError("features are missing declared component fields")
+         for name in BOOLEAN_COLUMNS:
+@@ -219,6 +235,10 @@
+         closes = pd.to_numeric(execution["Close"], errors="raise")
+         if not closes.map(lambda value: isfinite(value) and value > 0).all():
+             raise ValueError("execution Close must be positive and finite at every session")
++
++        derived_momentum = None
++        if self.momentum_lookback > 3 and self.opportunity in {"momentum", "momentum_union"}:
++            derived_momentum = _price_momentum(execution_history, sessions, self.momentum_lookback)
+ 
+         active = False
+         entry_index = -1
+@@ -235,7 +255,12 @@
+                 o01 = o01 and bool(facts["own_positive"])
+             n09 = bool(facts["n09_valid"]) and bool(facts["n09"])
+             m05 = bool(facts["m05_valid"]) and bool(facts["m05"])
+-            momentum = bool(facts["mom3_valid"]) and bool(facts["mom3_positive"])
++            momentum_known = bool(facts["mom3_valid"])
++            momentum = momentum_known and bool(facts["mom3_positive"])
++            if derived_momentum is not None:
++                known, positive = derived_momentum
++                momentum_known = bool(known.loc[session])
++                momentum = momentum_known and bool(positive.loc[session])
+             opportunity = {
+                 "o01": o01, "n09": n09, "union": o01 or n09, "always": True,
+                 "m05": m05, "o01_m05": o01 or m05, "n09_m05": n09 or m05,
+@@ -250,7 +275,7 @@
+                     "o01": o01 if bool(facts["o01_valid"]) else None,
+                     "n09": n09 if bool(facts["n09_valid"]) else None,
+                     "m05": m05 if bool(facts["m05_valid"]) else None,
+-                    "momentum": momentum if bool(facts["mom3_valid"]) else None,
++                    "momentum": momentum if momentum_known else None,
+                 }
+             risk_available = (
+                 True if self.risk_gate == "none" else bool(facts[f"{self.risk_gate}_valid"])
+@@ -505,3 +530,100 @@
+                        "known_risk_exit", "none_risk", "window_reset"],
+         "evidence_scope": "SYNTHETIC_ONLY",
+     }
++
++
++def synthetic_trend_selfcheck() -> dict[str, object]:
++    """Synthetic trend witnesses; no files, pytest, real prices or account calls."""
++    base = {
++        "opportunity": "momentum", "confirm_o01": True, "hold_days": 6,
++        "cooldown": 0, "risk_gate": "none", "risk_exit": False,
++        "trailing_stop": 0.0, "entry_premium": 0.0, "allocation": 1.0,
++        "exit_policy": "opportunity_loss", "min_hold": 1, "risk_unknown_policy": "block",
++        "rule": {"data_source": {"path": "synthetic.csv", "sha256": "a" * 64}},
++    }
++    checks = 0
++    prefix_checks = 0
++    lookbacks = (5, 10, 20, 60, 120)
++
++    def require(condition: bool, label: str) -> None:
++        nonlocal checks
++        if not condition:
++            raise AssertionError(label)
++        checks += 1
++
++    def inputs(prices):
++        dates = pd.bdate_range("2020-06-05", periods=len(prices), name="dt")
++        facts = pd.DataFrame({"Date": dates})
++        for field in BOOLEAN_COLUMNS:
++            facts[field] = field.endswith("_valid") or field in {"own_positive", "mom_high"}
++        facts["mom3_positive"] = True
++        return {"features": facts, "execution": pd.DataFrame({"Date": dates, "Close": prices})}, dates
++
++    for lookback in lookbacks:
++        frames, dates = inputs([10.0] * lookback + [11.0, 10.0, 9.0, 10.0, 11.0, 10.0])
++        impl = S012PlannedCycle(ParameterSet({**base, "momentum_lookback": lookback}))
++        known, positive = _price_momentum(_indexed(frames["execution"], "execution"), dates, lookback)
++        require(not known.iloc[:lookback].any(), "first n observed rows must remain unknown")
++        require(known.iloc[lookback:].all(), "complete observed references must be known")
++        require(positive.iloc[lookback:lookback + 3].tolist() == [True, False, False],
++                "only strictly positive known change activates momentum")
++        full = impl.calculate_history(frames, dates)
++        require(not full.opportunity_active.iloc[:lookback].any(), "unknown warmup cannot enter")
++        window = impl.calculate_window_history(frames, dates[lookback:])
++        require(window.decision_reason.iloc[:2].tolist() == ["ENTRY", "EXIT_OPPORTUNITY_LOSS"],
++                "pre-window history must remain available for the first window signal")
++        for end in (1, lookback - 1, lookback, lookback + 1, lookback + 3, len(dates)):
++            pd.testing.assert_frame_equal(impl.calculate_history(frames, dates[:end]), full.iloc[:end],
++                                          check_exact=True)
++            prefix_checks += 1
++        altered = {key: value.copy(deep=True) for key, value in frames.items()}
++        altered["execution"]["Close"] = altered["execution"]["Close"].astype(object)
++        altered["execution"].loc[lookback + 3:, "Close"] = "future-unavailable"
++        pd.testing.assert_frame_equal(impl.calculate_history(altered, dates[:lookback + 3]),
++                                      full.iloc[:lookback + 3], check_exact=True)
++        checks += 1
++
++        union = S012PlannedCycle(ParameterSet({**base, "momentum_lookback": lookback,
++                                               "opportunity": "momentum_union"}))
++        frames["features"].loc[0, "m05"] = True
++        early = union.calculate_history(frames, dates[:3])
++        require(early.decision_reason.iloc[:2].tolist() == ["ENTRY", "EXIT_OPPORTUNITY_LOSS"],
++                "known union branch remains independent of unknown momentum")
++        require(early.planned_entry_branches.iloc[:2].tolist() == ["m05", "m05"],
++                "unknown momentum must not become an entry branch")
++        frames["features"].loc[0, "m05"] = False
++        frames["features"].loc[lookback, "m05"] = True
++        frames["features"].loc[lookback + 1, "m05_valid"] = False
++        frames["features"].loc[lookback + 1:, "o01"] = True
++        window = union.calculate_window_history(frames, dates[lookback:])
++        require(window.decision_reason.iloc[:3].tolist() == ["ENTRY", "HOLD", "EXIT_OPPORTUNITY_LOSS"],
++                "unknown recorded branch must prevent early opportunity-loss exit")
++        require(window.planned_entry_branches.iloc[:3].tolist() == ["momentum|m05"] * 3,
++                "later branches cannot replace recorded entry branches")
++        require(window.planned_age.iloc[:3].tolist() == [0, 1, 2], "new branches cannot reset age")
++
++    frames, dates = inputs([12.0, 11.0, 10.0, 9.0])
++    frames["features"]["mom3_positive"] = [True, False, True, False]
++    frames["features"]["mom3_valid"] = [False, True, True, True]
++    default = S012PlannedCycle(ParameterSet(base))
++    explicit = S012PlannedCycle(ParameterSet({**base, "momentum_lookback": 3}))
++    first = default.calculate_history(frames, dates)
++    pd.testing.assert_frame_equal(first, explicit.calculate_history(frames, dates), check_exact=True)
++    require(first.opportunity_active.tolist() == [False, False, True, False],
++            "default three must use declared feature bits, not raw price direction")
++    for invalid in (2, 121, True, 3.0):
++        try:
++            S012PlannedCycle(ParameterSet({**base, "momentum_lookback": invalid}))
++        except ValueError as error:
++            require("momentum_lookback" in str(error), "invalid lookback must be rejected explicitly")
++        else:
++            raise AssertionError("invalid lookback was accepted")
++    return {
++        "status": "PASS", "checks": checks, "prefix_checks": prefix_checks,
++        "lookbacks": list(lookbacks),
++        "boundaries": ["warmup_unknown", "full_available_history", "strict_positive_direction",
++                       "prefix", "future_price_isolation", "union_independent_known",
++                       "entry_branch_lock", "unknown_retention", "entry_age_lock",
++                       "legacy_three", "integer_search_domain"],
++        "evidence_scope": "SYNTHETIC_ONLY",
++    }

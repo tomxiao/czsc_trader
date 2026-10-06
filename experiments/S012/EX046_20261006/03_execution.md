@@ -1,0 +1,3 @@
+# 公共默认输入协调
+
+合成预检、新绑定和正式预检后，11个TDR/REX FULL见证。evaluate_many使用公共自动策略输入准备，后批仅传入首个成功FULL返回的真实execution_data；不传入手工input_bindings、不调用已失败的联合binding helper。worker上限4/native1，统筹全局半CPU=8。所有失败与后继事实见technical_predecessor_note.json。
