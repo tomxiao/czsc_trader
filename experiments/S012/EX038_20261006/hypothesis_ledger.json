@@ -1,0 +1,68 @@
+[
+  {
+    "id": "L01",
+    "primary_horizon": 5,
+    "parent": "C_ALL",
+    "role": "机会复验",
+    "hypothesis": "继承O01强汇率变化与ETF三日回调的原固定信号",
+    "definition_frozen_before_execution": true,
+    "status": "SUPPORTED",
+    "judgment": "有边界O01机会证据：79事件净0.7786%、父匹配正，潜在触价0.1581%且低频；双费用触价负、延迟/去2026贡献反证保留，只交接低频机会环境。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "L02",
+    "primary_horizon": 5,
+    "parent": "C_MOMPOS",
+    "role": "机会复验",
+    "hypothesis": "继承N09实际VWAP正常中段且三日动量正的原固定信号",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "保留N09候选及旧支持历史：298事件净0.4956%，父匹配/OLS正；基础对纯动量父贡献−0.08355pp，双费用绝对贡献负，当前不推荐默认VWAP门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "L03",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "确认复验",
+    "hypothesis": "继承Q07目标当日阳线，仅在原O01父内",
+    "definition_frozen_before_execution": true,
+    "status": "SUPPORTED",
+    "judgment": "Q07仅O01内的有边界确认信息：30事件净1.6977%、固定父限价+0.1619pp；延迟1/2和去2026负、容量少，不作通用强制门。父符号匹配不可识别，不以残差零否定。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "L04",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "竞争反证",
+    "hypothesis": "原O01当日非阳线竞争组",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "O01非阳线原竞争固定父基础贡献负，与Q07同父对照；费用敏感且不作为相反门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "L05",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "互补机会",
+    "hypothesis": "原M05在O01与N09机会集合之外的增量",
+    "definition_frozen_before_execution": true,
+    "status": "REDUNDANT",
+    "judgment": "M05新覆盖诊断，105事件、父内增量基础负，单一起点并集增量负；不增算独立机制。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "L06",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "重叠竞争",
+    "hypothesis": "原M05与O01或N09重叠的竞争组",
+    "definition_frozen_before_execution": true,
+    "status": "REDUNDANT",
+    "judgment": "M05与旧机会重叠55事件，属于覆盖分解；高均值不等于确认增量，不增算组件。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  }
+]

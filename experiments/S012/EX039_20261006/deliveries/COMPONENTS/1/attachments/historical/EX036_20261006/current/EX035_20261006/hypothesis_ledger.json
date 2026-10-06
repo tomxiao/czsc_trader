@@ -1,0 +1,50 @@
+[
+  {
+    "id": "Q01",
+    "primary_horizon": 5,
+    "parent": "C_FXUP",
+    "role": "机会环境",
+    "hypothesis": "人民币汇率上涨时，人民币黄金参考价上涨可能提供有边界的机会筛选",
+    "definition_frozen_before_execution": true,
+    "selection_history": "EX001—EX034已见",
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "原汇率推动筛选在全窗口保持基础/一日/两日延迟贡献正，但2026为关键贡献年，去该年基础增量约−0.0009pp，五个年度贡献负；暂不成为成熟机会。",
+    "repeated_or_inherited_definition": true
+  },
+  {
+    "id": "Q02",
+    "primary_horizon": 5,
+    "parent": "C_FXUP",
+    "role": "竞争反证",
+    "hypothesis": "人民币汇率上涨但黄金参考价未上涨的相反状态",
+    "definition_frozen_before_execution": true,
+    "selection_history": "EX001—EX034已见",
+    "status": "INEFFECTIVE",
+    "judgment": "相反组触价净均值与固定父限价增量负，未提供可用做多收益线索。",
+    "repeated_or_inherited_definition": true
+  },
+  {
+    "id": "Q03",
+    "primary_horizon": 5,
+    "parent": "C_STRICT",
+    "role": "同日端点反证",
+    "hypothesis": "两外部源端点恰为ETF交易日时复验相同人民币金价上涨筛选",
+    "definition_frozen_before_execution": true,
+    "selection_history": "EX001—EX034已见",
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "严格同日双端点239事件，潜在触价基础净均值−0.1998%；固定父增量+0.0914pp但延迟2日−0.0523pp，端点与执行反证仍未解决。",
+    "repeated_or_inherited_definition": true
+  },
+  {
+    "id": "Q04",
+    "primary_horizon": 5,
+    "parent": "C_STRICT",
+    "role": "同日端点反证",
+    "hypothesis": "严格同日端点时复验相反状态",
+    "definition_frozen_before_execution": true,
+    "selection_history": "EX001—EX034已见",
+    "status": "INEFFECTIVE",
+    "judgment": "严格子域的相反定义未改善固定父贡献，不推荐机会用途。",
+    "repeated_or_inherited_definition": true
+  }
+]

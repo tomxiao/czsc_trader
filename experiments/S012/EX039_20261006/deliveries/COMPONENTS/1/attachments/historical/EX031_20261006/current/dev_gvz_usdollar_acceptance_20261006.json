@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-06",
+  "role": "DEV",
+  "branch": "codex/s012-research-resume",
+  "user_instruction": "同意。成功接入后可自行切换回RSCH继续完成阶段二",
+  "approved_sources": [
+    "Tushare USDOLLAR.FXCM 四币美元篮子代理（非ICE DXY）",
+    "FRED/CBOE GVZCLS"
+  ],
+  "scope": "新增一个固定序列DFLS契约及提供器；复用现有Tushare、FRED凭据和依赖；仅S012开发数据技术验收。",
+  "implementation_sha256": {
+    "packages/dataflows/src/dataflows/contract.py": "6d18596e198ec1d1c223bc3d2c6fd7b78420c33ccd17f25cd3b34eaee4102fca",
+    "packages/dataflows/src/dataflows/facade.py": "b172ae51ec06f0f2a225442d6a360bc01386989b2f60e445ee4ac50a93b86c66",
+    "packages/dataflows/src/dataflows/fred_gold_volatility.py": "1b04834a69fdd4e46e368b7a513669eb4706ca77225ca0ad5538d3614aaff690",
+    "packages/dataflows/tests/functional/test_gold_volatility.py": "c749c34cd1bd5b2acfb16813c901bc56ec60bd3ec369b8ecbd6c63cc444a0650",
+    "packages/dataflows/tests/functional/test_prepare_consistency.py": "099ab0070eb9e0c488ed1ef93b2845fd5b02bbb0645eed506cafdaedcfe45e94"
+  },
+  "public_joint_prepare": {
+    "status": "PARTIAL",
+    "items": [
+      {
+        "request": {
+          "dataset": "fx.fxcm_daily",
+          "symbol": "USDOLLAR.FXCM",
+          "start": "2020-01-01",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "status": "INCOMPLETE",
+        "identity": null,
+        "error": {
+          "code": "INCOMPLETE_DATA",
+          "message": "published dataframe does not reach the required cutoff",
+          "retryable": true,
+          "context": {
+            "dataset": "fx.fxcm_daily",
+            "symbol": "USDOLLAR.FXCM",
+            "start": "2020-01-01",
+            "end": "2026-09-30",
+            "required_cutoff": "2026-09-30 00:00:00",
+            "actual_cutoff": "2023-06-01 00:00:00"
+          }
+        }
+      },
+      {
+        "request": {
+          "dataset": "index.gold_volatility_daily",
+          "symbol": null,
+          "start": "2020-01-01",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "status": "READY",
+        "identity": {
+          "dataset": "index.gold_volatility_daily",
+          "source": "FRED",
+          "symbol": null,
+          "data_start": "2020-01-02T00:00:00",
+          "data_cutoff": "2026-09-30T00:00:00",
+          "content_sha256": "c5fb98f41b58748d672c1890d910ee03316e584794523a0c3d7cd8e67aa7319c",
+          "metadata": {
+            "vendor": "FRED",
+            "original_source": "CBOE",
+            "vendor_interface": "fred/series/observations",
+            "series_id": "GVZCLS",
+            "vintage_mode": "INITIAL_RELEASE_ONLY",
+            "fred_output_type": 4,
+            "primary_key": [
+              "Date"
+            ],
+            "frequency": "daily",
+            "unit": "implied_volatility_index_percent",
+            "source_time_field": "Date",
+            "availability_time_field": "AvailableDate",
+            "availability_timezone": "Asia/Shanghai",
+            "source_calendar": "US_MARKET",
+            "available_at": "day after max(observation date, ALFRED initial release date) at 16:00 Asia/Shanghai; conservative publication-day policy, intraday vendor timestamp unverified",
+            "request_range_policy": "EXACT",
+            "historical_intraday_publication_verified": false,
+            "release_before_observation_dates": [
+              "2021-12-24"
+            ],
+            "maximum_start_lag_days": 7,
+            "source_responses": [
+              {
+                "realtime_start": "2020-01-01",
+                "realtime_end": "2025-12-31",
+                "count": 1566,
+                "payload_sha256": "cd04b3442ba1065cc049c3f5d0f746addaf6232a917f144e3db97585cdf30652"
+              },
+              {
+                "realtime_start": "2026-01-01",
+                "realtime_end": "2026-09-30",
+                "count": 195,
+                "payload_sha256": "14927f345fa651a15028cf142c59e1e2e202ceeb085997c43f87dec658b54bef"
+              }
+            ],
+            "missing_value_dates": [
+              "2020-01-01",
+              "2020-01-20",
+              "2020-02-17",
+              "2020-04-10",
+              "2020-05-25",
+              "2020-07-03",
+              "2020-09-07",
+              "2020-11-26",
+              "2020-12-25",
+              "2021-01-01",
+              "2021-01-18",
+              "2021-02-15",
+              "2021-04-02",
+              "2021-04-16",
+              "2021-05-31",
+              "2021-07-05",
+              "2021-09-06",
+              "2021-11-25",
+              "2022-01-17",
+              "2022-02-21",
+              "2022-04-15",
+              "2022-05-30",
+              "2022-06-20",
+              "2022-07-04",
+              "2022-09-05",
+              "2022-11-24",
+              "2022-12-26",
+              "2023-01-02",
+              "2023-01-16",
+              "2023-02-20",
+              "2023-02-24",
+              "2023-04-07",
+              "2023-05-29",
+              "2023-06-19",
+              "2023-07-04",
+              "2023-09-04",
+              "2023-11-23",
+              "2023-12-25",
+              "2024-01-01",
+              "2024-01-15",
+              "2024-02-19",
+              "2024-03-29",
+              "2024-05-27",
+              "2024-06-19",
+              "2024-07-04",
+              "2024-09-02",
+              "2024-11-28",
+              "2024-12-25",
+              "2025-01-01",
+              "2025-01-09",
+              "2025-01-20",
+              "2025-02-17",
+              "2025-04-18",
+              "2025-05-26",
+              "2025-06-19",
+              "2025-07-04",
+              "2025-09-01",
+              "2025-11-27",
+              "2025-12-25",
+              "2026-01-01",
+              "2026-01-19",
+              "2026-02-16",
+              "2026-04-03",
+              "2026-05-25",
+              "2026-06-19",
+              "2026-07-03",
+              "2026-09-07"
+            ],
+            "provider_binding": "index.gold_volatility_daily",
+            "provider_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963",
+            "dfls_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963"
+          }
+        },
+        "error": null
+      }
+    ],
+    "reference": null
+  },
+  "gvz_public_fetch": {
+    "status": "PASS",
+    "scope": "DEV real-source public DFLS acceptance, not research inference",
+    "inputs": [
+      {
+        "dataset": "index.gold_volatility_daily",
+        "symbol": null,
+        "rows": 1694,
+        "start": "2020-01-02 00:00:00",
+        "end": "2026-09-30 00:00:00",
+        "source": "FRED",
+        "content_sha256": "c5fb98f41b58748d672c1890d910ee03316e584794523a0c3d7cd8e67aa7319c",
+        "temporal_contract": {
+          "source_time_field": "Date",
+          "availability_time_field": "AvailableDate",
+          "source_calendar": "US_MARKET",
+          "available_at": "day after max(observation date, ALFRED initial release date) at 16:00 Asia/Shanghai; conservative publication-day policy, intraday vendor timestamp unverified",
+          "request_range_policy": "EXACT"
+        },
+        "release_before_observation_dates": [
+          "2021-12-24"
+        ],
+        "availability_first": "2020-01-03 16:00:00",
+        "availability_last": "2026-10-01 16:00:00"
+      }
+    ]
+  },
+  "usdollar_vendor_probe": [
+    {
+      "symbol": "USDOLLAR.FXCM",
+      "start": "20230525",
+      "end": "20230610",
+      "rows": 7,
+      "first": "20230525",
+      "last": "20230601"
+    },
+    {
+      "symbol": "USDOLLAR.FXCM",
+      "start": "20230602",
+      "end": "20260930",
+      "rows": 0,
+      "first": null,
+      "last": null
+    },
+    {
+      "symbol": "USDOLLAR.FXCM",
+      "start": "20260901",
+      "end": "20260930",
+      "rows": 0,
+      "first": null,
+      "last": null
+    },
+    {
+      "symbol": "XAUUSD.FXCM",
+      "start": "20260901",
+      "end": "20260930",
+      "rows": 26,
+      "first": "20260901",
+      "last": "20260930"
+    }
+  ],
+  "focused_verification": {
+    "pytest_command": ".\\.venv\\Scripts\\python.exe -m pytest packages/dataflows/tests/functional/test_gold_volatility.py packages/dataflows/tests/functional/test_fred_policy_uncertainty.py packages/dataflows/tests/functional/test_prepare_consistency.py -k \"gvz or fixed_series or fred or default_provider\" -q",
+    "passed": 28,
+    "deselected": 29,
+    "seconds": 3.46,
+    "ruff": "PASS",
+    "scope": "公开prepare/fetch、固定序列强类型、首次版本日期、延迟和日期异常、离线复用、错误状态与已有FRED路径；未做仓库级回归。"
+  },
+  "findings": [
+    "GVZ READY：1694条，观测日2020-01-02至2026-09-30；该验收不声称美国交易日逐日完备率100%。",
+    "GVZ保留ALFRED初次版本日期；max(观测日,版本日)完整结束后的次日16:00中国时间为政策可用时点，未验证历史逐条发布时间。",
+    "2021-12-24版本日期2021-12-23，原值14.62保留并显式列出；可用时点取2021-12-25 16:00，避免提前使用。",
+    "2026-09-30 GVZ在2026-10-01 16:00政策可用，不能进入截止2026-09-30的决策特征。",
+    "USDOLLAR要求2026-09-30截止时INCOMPLETE，实际截止2023-06-01；直接查2023-06-02以后及2026年9月均0条，同接口XAUUSD在2026年9月26条。",
+    "两项完整窗口联合prepare=PARTIAL，未自动补值、改换美元序列或缩短研究窗口。"
+  ],
+  "next_step": {
+    "status": "WAITING_USER_SCOPE_DECISION",
+    "question": "是否回RSCH，GVZ研究完整开发窗口，美元篮子仅检验实际有数据区间，并显式披露覆盖限制？",
+    "stage_two": "本轮未新增真实收益研究，待范围选择后使用新S012受管后继实验承接；EX029等封存档案保持。"
+  },
+  "sources": [
+    "https://fred.stlouisfed.org/series/GVZCLS",
+    "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+    "https://tushare.pro/document/2?doc_id=179",
+    "https://www.fxcm.com/markets/insights/trade-weighted-us-dollar-index/"
+  ],
+  "raw_dev_probe_paths": [
+    ".tmp/s012-gvz-20261006/probe_2020-01-01.json",
+    ".tmp/s012-gvz-20261006/probe_2026-01-01.json",
+    ".tmp/s012-gvz-20261006/acceptance-data"
+  ],
+  "boundary": "DEV技术验收，不是正式研究收益证据；未操作生产、合并、tag或推送。"
+}
