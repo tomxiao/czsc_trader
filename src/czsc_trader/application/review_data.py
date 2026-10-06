@@ -16,7 +16,6 @@ from strategy_runtime import (
 )
 
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
-from czsc_trader.backtesting import _dataflows
 from czsc_trader.backtesting.srt_bridge import (
     build_srt_signal_replay,
     execution_intraday_frequencies,
@@ -119,12 +118,12 @@ def publish_review_dataset(
     directory: Path,
     *,
     candidate_runtime_roots: dict[str, Path] | None = None,
+    dataflows,
 ) -> dict:
     """Publish once; incomplete staging never becomes a usable review dataset."""
     from czsc_trader.research_tools.evaluation import (
         _CandidateEvaluationContext, _snapshot, _prepare_evaluation_workspace,
     )
-    dataflows = _dataflows.create_backtest_dataflows(context.root)
 
     recipe_hash = canonical_sha256({"manifest": manifest, "protocol": protocol.to_dict()})
     if directory.exists():
@@ -137,6 +136,7 @@ def publish_review_dataset(
         context, manifest["symbol"], manifest.get("asset_type", "etf"), periods,
         family_id=manifest["strategy_id"],
         candidate_runtime_roots=candidate_runtime_roots,
+        _dataflows=dataflows,
     )
     snapshots = [_snapshot(run, item) for item in manifest["candidates"]]
     strategies = [item[1] for item in snapshots]

@@ -8,6 +8,7 @@ from strategy_manager import StrategyRegistry
 from strategy_runtime import StrategyRelease
 from czsc_trader.application import RepositoryContext, freeze_candidate, deploy_strategy
 from czsc_trader.research_tools import delivery as d
+from czsc_trader.research_tools import ResearchBatchRef
 from test_candidate_freeze import (
     inspection as inspection, inspected_candidate as inspected_candidate, approve,
     completed as completed, managed_evaluation as managed_evaluation,
@@ -60,8 +61,8 @@ def current_frozen(request, tmp_path, frozen_seed_root):
 
 @pytest.mark.parametrize("schema", [1, True, "4"])
 def test_delivery_receipt_rejects_old_schema(schema):
-    reference = d.DeliveryReference(d.MandateOwner("S900"), d.DeliveryStage.MANDATE, 1, "a" * 64)
-    raw = d.DeliveryReceipt(reference, (d.EvidenceRef("report.md", "b" * 64, "text/markdown"),)).to_dict()
+    reference = d.DeliveryReference(ResearchBatchRef("S900"), d.DeliveryStage.MANDATE, 1, "a" * 64)
+    raw = d.DeliveryReceipt(reference, (d.PublicationFile("report.md", "b" * 64),)).to_dict()
     raw["schema_version"] = schema
     with pytest.raises((TypeError, ValueError)):
         d.DeliveryReceipt.from_dict(raw)

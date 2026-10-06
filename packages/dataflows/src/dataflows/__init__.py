@@ -2,6 +2,7 @@
 
 from .contract import (
     DataSpace,
+    DataSpaceBinding,
     PreparePolicy,
     PrepareStatus,
     PreparedDataRef,
@@ -39,6 +40,7 @@ from .temporal import TemporalAlignmentResult, align_temporal_frame
 
 __all__ = [
     "DataSpace",
+    "DataSpaceBinding",
     "PreparePolicy",
     "PrepareStatus",
     "PreparedDataRef",

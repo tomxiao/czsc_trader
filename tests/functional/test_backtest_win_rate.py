@@ -2,10 +2,9 @@
 import pandas as pd
 import pytest
 import json
-from pathlib import Path
 from strategy_runtime import implementation_sha256
 from czsc_trader.application import BacktestRequest, run_backtest
-from public_backtest_support import request_for_prices
+from public_backtest_support import request_for_prices, render_output
 
 
 def test_mixed_closed_trades_publish_win_rate_and_open_tail(candidate_payload, tmp_path, monkeypatch):
@@ -23,8 +22,8 @@ def test_mixed_closed_trades_publish_win_rate_and_open_tail(candidate_payload, t
     flow = [.1] * 19 + [.8, .1] * (len(returns) + 1)
     context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20, flow=flow, cost=0.)
     result = run_backtest(context, request.strategy, BacktestRequest("588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
-    assert result.status == "PASS"
-    output = Path(result.artifacts["output_dir"])
+    assert result.manifest["audit"]["status"] == "PASS"
+    output = render_output(result, context.repository.root)
     trades = pd.read_csv(output / "trades.csv")
     closed = trades.loc[trades.status.eq("CLOSED")]
     assert len(closed) == len(returns)
@@ -32,12 +31,12 @@ def test_mixed_closed_trades_publish_win_rate_and_open_tail(candidate_payload, t
     assert closed.net_return.tolist() == pytest.approx(returns)
     manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["strategy"]["kind"] == "CANDIDATE"
-    assert manifest["strategy"]["reference"] == result.result["strategy"] == request.strategy.reference_id
+    assert manifest["strategy"]["reference"] == result.snapshot.identity.reference == request.strategy.reference_id
     assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
-    assert manifest["audit"]["status"] == result.result["audit_status"] == "PASS"
-    assert result.result["metrics"]["strategy"]["metrics"]["win_rate"] == 1 / 3
+    assert manifest["audit"]["status"] == result.manifest["audit"]["status"] == "PASS"
+    assert result.metrics["strategy"]["metrics"]["win_rate"] == 1 / 3
     published = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
-    assert published["strategy"] == result.result["metrics"]["strategy"]
+    assert published["strategy"] == result.metrics["strategy"]
 
 
 def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_payload, tmp_path, monkeypatch):
@@ -51,8 +50,8 @@ def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_paylo
     prices = pd.DataFrame({"dt": days, "open": close, "close": close})
     context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices, start_index=20)
     result = run_backtest(context, request.strategy, BacktestRequest("588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
-    assert result.status == "PASS"
-    output = Path(result.artifacts["output_dir"])
+    assert result.manifest["audit"]["status"] == "PASS"
+    output = render_output(result, context.repository.root)
     orders = pd.read_csv(output / "ma_orders.csv")
     trades = pd.read_csv(output / "ma_trades.csv")
     assert len(trades) == 3 and len(orders) == 7
@@ -62,8 +61,8 @@ def test_benchmark_win_rate_uses_net_costs_and_ignores_open_tail(candidate_paylo
     net = (sells["size"] * sells.price - sells.fees) / (buys["size"] * buys.price + buys.fees) - 1
     assert net.lt(0).all()
     assert trades.net_return.tolist() == pytest.approx(net.tolist())
-    assert result.result["metrics"]["benchmarks"]["ma5_ma20"]["metrics"]["closed_trades"] == 3
-    assert result.result["metrics"]["benchmarks"]["ma5_ma20"]["metrics"]["win_rate"] == 0.
+    assert result.metrics["benchmarks"]["ma5_ma20"]["metrics"]["closed_trades"] == 3
+    assert result.metrics["benchmarks"]["ma5_ma20"]["metrics"]["win_rate"] == 0.
     manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["strategy"]["source_hash"] == request.strategy.runtime_identity_sha256
     assert manifest["audit"]["benchmarks"]["ma5_ma20"]["status"] == "PASS"

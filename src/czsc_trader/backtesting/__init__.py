@@ -3,7 +3,7 @@
 from .models import StrategyIdentity, StrategySnapshot
 from .result import BacktestResult
 from .signal_replay import SignalReplay
-from .service import BacktestRequest, BacktestRunSummary
+from .service import BacktestRequest, BacktestEvaluation
 from .execution_data import BacktestExecutionData
 from .strategy_source import resolve_candidate_snapshot, resolve_registered_strategy
 
@@ -14,7 +14,7 @@ __all__ = [
     "BacktestResult",
     "SignalReplay",
     "BacktestRequest",
-    "BacktestRunSummary",
+    "BacktestEvaluation",
     "resolve_candidate_snapshot",
     "resolve_registered_strategy",
 ]

@@ -282,7 +282,7 @@ def _prepare_backtest_execution_data(
         }
     )
     return BacktestExecutionData(
-        root=Path(repository_root).resolve() / "data" / "backtest",
+        root=Path(repository_root).resolve() / ".tmp" / "evaluation-contexts" / str(flows.binding.space_id),
         symbol=normalized_symbol,
         asset_type=normalized_asset,
         adjusted_daily=adjusted_daily,

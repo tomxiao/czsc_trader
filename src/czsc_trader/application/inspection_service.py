@@ -1,15 +1,12 @@
 """Called technical inspection and freeze operations; research owns all scheduling."""
 
-from dataclasses import dataclass, replace, fields, is_dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 from importlib import metadata
 import json
-import os
 from pathlib import Path
 
 import pandas as pd
-from research_experiment import ExperimentContext, EvaluationRecord, EvaluationAttemptStatus
-from research_experiment import load_experiment_input
 from strategy_evaluator import (
     audit_replay,
     AuditStatus,
@@ -20,9 +17,9 @@ from strategy_evaluator import (
     ReplayEvidence,
     AssessmentEvidence,
 )
-from strategy_manager import StrategyRegistry, CandidateEvidence, CandidateKey, canonical_sha256
+from strategy_manager import StrategyRegistry, CandidateKey, canonical_sha256
 from strategy_manager import freeze_contracts as f
-from strategy_manager.freeze_store import FreezeVersionRequest, _durable
+from strategy_manager.freeze_store import FreezeVersionRequest
 from strategy_manager.write_lock import RegistryWriteLock
 from .research_evidence import (
     record_decision,
@@ -45,9 +42,10 @@ from .candidate_service import load_candidate, _registered_root
 from .runtime_acceptance import runtime_readiness, require_same_runtime_content
 from .delivery_service import validate_delivery, _delivery_path, _resolve
 from ..research_tools import delivery as d
-from ..research_tools.evaluation import EvaluationRequest
-from ..research_tools.assessment import build_assessment_evidence
-from ..research_tools._evaluation_records import EvaluationExecutionError
+from ..research_tools.evaluation import (
+    EvaluationRequest, serialize_evaluation_evidence, validate_evaluation_evidence,
+)
+from ..research_tools.context import ResearchContext, ExperimentRef
 from ..backtesting.audit_adapter import build_replay_evidence
 from ..backtesting.metrics import calculate_metrics
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
@@ -79,25 +77,12 @@ class _EvidenceStore:
 
     def put(self, data):
         digest = sha256(data).hexdigest()
-        prefix = "objects/inspection" if self.owner.experiment_id else "decisions/objects"
+        prefix = "evidence/inspection" if self.owner.experiment_id else "decisions/objects"
         ref = f.ResearchEvidenceRef(self.owner, f"{prefix}/{digest}", digest)
         target = _resolve(self.context.root, ref.repository_path)
-        lock = RegistryWriteLock(self.context.root / ".tmp/research-locks" / self.owner.strategy_id)
-        with lock.hold():
-            if self.owner.experiment_id and (
-                self.context.root / self.owner.repository_path / "experiment_manifest.json"
-            ).exists():
-                raise ValueError("inspection cannot write into a sealed experiment")
-            if target.exists():
-                ref.resolve(self.context.root)
-            else:
-                stage = create_temporary_directory(self.context.root, "inspection-object") / "object"
-                with stage.open("xb") as stream:
-                    stream.write(data)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-                target.parent.mkdir(parents=True, exist_ok=True)
-                stage.replace(target)
+        from .evidence_service import _publish_bytes
+        _publish_bytes(self.context.root, target, data)
+        ref.resolve(self.context.root)
         return ref
 
     def put_json(self, value):
@@ -155,26 +140,13 @@ def record_research_decision(
 
 
 @dataclass(frozen=True, slots=True)
-class EvaluationEvidenceReference(d._Record):
-    experiment: d.ExperimentEvidenceRef
-    attempt_id: str
-    evaluation_ids: tuple[str, ...]
-    result: CandidateEvidence
-
-    def _validate(self):
-        d.EvaluationEvidenceRef(self.experiment.experiment_id, self.attempt_id, self.evaluation_ids)
-        if not self.evaluation_ids or len(set(self.evaluation_ids)) != len(self.evaluation_ids):
-            raise ValueError("reference requires unique evaluation IDs")
-
-
-@dataclass(frozen=True, slots=True)
 class InspectionReplay:
-    reference: EvaluationEvidenceReference
+    reference: d.EvaluationEvidenceRef
     reproduction_request: EvaluationRequest
 
     def __post_init__(self):
         if (
-            type(self.reference) is not EvaluationEvidenceReference
+            type(self.reference) is not d.EvaluationEvidenceRef
             or type(self.reproduction_request) is not EvaluationRequest
         ):
             raise TypeError("inspection replay requires typed evaluation inputs/results")
@@ -185,7 +157,8 @@ class CandidateInspectionRequest:
     candidate: CandidateKey
     selection: f.DecisionReference
     protocol: f.InspectionProtocol
-    execution: ExperimentContext
+    research: ResearchContext
+    experiment: ExperimentRef
     replays: tuple[InspectionReplay, ...]
     version: str
     parent_version: str | None
@@ -203,10 +176,10 @@ class CandidateInspectionRequest:
         ):
             if not isinstance(getattr(self, name), kind):
                 raise TypeError(f"inspection {name} requires {kind}")
-        from ..research_tools.experiment import _PlatformExperimentContext
-
-        if type(self.execution) is not _PlatformExperimentContext:
-            raise TypeError("inspection execution requires platform ExperimentContext")
+        if type(self.research) is not ResearchContext or type(self.experiment) is not ExperimentRef:
+            raise TypeError("inspection requires ResearchContext and ExperimentRef")
+        if self.research.batch.strategy_id != self.candidate.strategy_id or self.experiment.strategy_id != self.candidate.strategy_id:
+            raise ValueError("inspection research family differs")
         for name, kind in (
             ("replays", InspectionReplay),
             ("additional_files", f.FreezeFile),
@@ -226,7 +199,7 @@ def _copy_plan(context, request, registration, store):
     def copy(ref, root):
         return store.put(ref.resolve(root).read_bytes())
 
-    prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
+    prefix = f"{registration.source_root}/"
     files = tuple(
         f.FreezeFile(ref.path.removeprefix(prefix), copy(ref, evidence_root))
         for ref in registration.source_files
@@ -259,7 +232,7 @@ def _copy_plan(context, request, registration, store):
         tuple(
             copy(ref, evidence_root)
             for ref in (
-                registration.origin.preflight,
+                *registration.origin.evidence,
                 *((registration.derivation.evidence,) if registration.derivation else ()),
             )
         ),
@@ -301,73 +274,29 @@ def _binding(context, plan):
     return template
 
 
-def _authenticate(context, request, result, workspace, store):
-    projection = build_assessment_evidence(request, result)
-    root = workspace.resolve()
-    if not root.is_relative_to(context.root.resolve()) or result.record is None:
-        raise ValueError("inspection requires local managed evaluation evidence")
-    path = CandidateEvidence(result.record.path, result.record.sha256).resolve(root)
-    record = EvaluationRecord.from_dict(_read(path))
-    if (
-        record.status is not EvaluationAttemptStatus.SUCCEEDED
-        or record.attempt_id != result.attempt_id
-        or record.result_hash != result.result_hash
-        or record.request_hash != result.request_hash
-    ):
-        raise ValueError("inspection evaluation record differs")
-    artifact = record.result_artifact
-    value = _read(CandidateEvidence(artifact.path, artifact.sha256).resolve(root))
-    if value.get("schema_version") != 4 or value["assessment_evidence"] != [
-        x.to_dict() for x in projection
-    ]:
-        raise ValueError("inspection evaluation artifact differs")
-    return projection, store.put_json({"record": record.to_dict(), "result": value})
+def _authenticate(context, request, result, store):
+    value = serialize_evaluation_evidence(request, result)
+    projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
+    return projection, store.put_json(value)
 
 
 def _load_reference(context, reference, store):
-    root = _resolve(context.root, reference.experiment.workspace_path)
-    _resolve(root, "execution_receipt.json")
-    envelope = _read(_resolve(root, "execution_envelope.json"))
-    for path in envelope["receipt"]["artifact_sha256"]:
-        _resolve(root, path)
-    loaded = load_experiment_input(
-        root, expected_receipt_sha256=reference.experiment.receipt_sha256
-    )
-    if loaded.experiment_id != reference.experiment.experiment_id:
-        raise ValueError("reference experiment identity differs")
-    records = tuple(
-        EvaluationRecord.from_dict(x) for x in envelope["receipt"]["trace"]["evaluations"]
-    )
-    record = next((x for x in records if x.attempt_id == reference.attempt_id), None)
-    if (
-        record is None
-        or record.status is not EvaluationAttemptStatus.SUCCEEDED
-        or tuple(record.evaluation_ids) != reference.evaluation_ids
-        or record.result_artifact is None
-        or (record.result_artifact.path, record.result_artifact.sha256)
-        != (reference.result.path, reference.result.sha256)
-    ):
-        raise ValueError("reference differs from receipted evaluation")
-    value = _read(reference.result.resolve(root))
-    if value.get("schema_version") != 4:
-        raise ValueError("inspection requires evaluation evidence schema 4")
-    if (
-        value["request_hash"] != record.request_hash
-        or value["result_hash"] != record.result_hash
-        or canonical_sha256(value["request_identity"]) != record.request_hash
-    ):
-        raise ValueError("reference request/result identity differs")
+    value = _read(reference.evidence.resolve(context.root))
+    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 5:
+        raise ValueError("inspection requires platform account evaluation evidence")
+    validate_evaluation_evidence(value)
+    if value["request_identity"]["experiment_id"] != reference.evidence.experiment.experiment_id:
+        raise ValueError("reference evaluation origin differs")
     projection = tuple(AssessmentEvidence.from_dict(x) for x in value["assessment_evidence"])
-    if tuple(x.evaluation_id for x in projection) != reference.evaluation_ids or any(
-        x.attempt_id != record.attempt_id
-        or x.request_sha256 != record.request_hash
-        or x.result_sha256 != record.result_hash
-        or x.candidate.candidate_id != record.candidate_id
-        or x.candidate.content_sha256 != record.content_sha256
-        for x in projection
-    ):
+    selected = set(reference.evaluation_ids)
+    if selected and not selected.issubset({x.evaluation_id for x in projection}):
         raise ValueError("reference assessment identity differs")
-    return value, projection, store.put_json({"record": record.to_dict(), "result": value})
+    source = store.put_json(value)
+    if selected:
+        projection = tuple(x for x in projection if x.evaluation_id in selected)
+        value = {**value, "runs": [x for x in value["runs"]
+            if canonical_sha256(x["identity"]) in selected]}
+    return value, projection, source
 
 
 def _replay_evidence(request, run):
@@ -398,8 +327,8 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     """Exercise from_release through the managed runtime port, without deployment."""
     window = TradableWindow(run.signals.evaluation_start.date(), run.signals.evaluation_end.date())
     root = create_temporary_directory(context.root, "inspection-runtime")
-    candidate = execution._backtest_runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
-    frozen = execution._backtest_runtime.create(
+    candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
+    frozen = execution.runtime.create(
         StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding)
     )
     candidate_binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
@@ -423,7 +352,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
             if name == bound.plan.calendar_name:
                 result[name] = bound.plan.calendar_sha256
                 continue
-            data = execution._backtest_data.fetch(request, prepared=bound.prepared)
+            data = execution.data.fetch(request, prepared=bound.prepared)
             if not data.ready:
                 raise ValueError("inspection input reference cannot be read")
             result[name] = data.identity.content_sha256
@@ -444,7 +373,7 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     else:
         settings["one_way_cost"] = fee
     policy = ExecutionPolicy(policy.policy_type, settings)
-    frozen = execution._backtest_runtime.create(
+    frozen = execution.runtime.create(
         StrategyInit(
             release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding
         )
@@ -515,7 +444,6 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
         )
     )
     audit = audit_replay(evidence, tolerance=tolerance)
-    execution._recorder.record_operation("inspection.release_replay")
     return {
         "release_id": release.release_id,
         "release_hash": release.release_hash,
@@ -538,30 +466,15 @@ def inspect_candidate(
 ) -> f.CandidateInspectionReport:
     if type(request) is not CandidateInspectionRequest:
         raise TypeError("inspect_candidate requires CandidateInspectionRequest")
-    # Require the platform-created formal adapter, not a caller-supplied evaluator.
-    from ..research_tools.experiment import _ExperimentEvaluationAccess
-
-    if (
-        type(request.execution.evaluation) is not _ExperimentEvaluationAccess
-        or request.execution.definition.mode.value != "FORMAL"
-        or not request.execution._formal
-    ):
-        raise TypeError("inspection requires a TDR formal REX context")
-    if any(
-        request.execution.workspace.path(name).exists()
-        for name in ("execution_receipt.json", "execution_envelope.json", "execution_failure.json")
-    ):
-        raise ValueError("inspection cannot append to a sealed experiment workspace")
-    owner = f.ResearchEvidenceOwner(request.candidate.strategy_id, request.execution.definition.experiment_id)
-    if request.execution.definition.strategy_id != owner.strategy_id:
-        raise ValueError("inspection experiment family differs")
-    from .delivery_service import _load_scoped_experiment
-    loaded = _load_scoped_experiment(context, owner.strategy_id, owner.experiment_id)
-    if loaded.definition != request.execution.definition:
-        raise ValueError("inspection execution differs from bound experiment")
+    if type(request.research) is not ResearchContext or request.research.repository.root.resolve() != context.root.resolve():
+        raise TypeError("inspection requires the local ResearchContext")
+    owner = f.ResearchEvidenceOwner(request.candidate.strategy_id, request.experiment.experiment_id)
+    experiment_root = context.research_root / owner.strategy_id / "experiments" / owner.experiment_id
+    if not experiment_root.is_dir():
+        raise ValueError("inspection experiment does not exist")
     store = _EvidenceStore(context, owner)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        request.candidate, experiments_root=context.experiments_root
+        request.candidate, evidence_root=context.research_root / request.candidate.strategy_id
     )
     candidate = load_candidate(context, request.candidate)
     selection = read_decision(context.root, request.selection)
@@ -613,7 +526,7 @@ def inspect_candidate(
             payload=_read(plan.payload.resolve(context.root)),
         )
         binding = RuntimeBinding(release.release_id, release.release_hash, RuntimeBindingSpec.from_dict(_binding(context, plan)))
-        runtime = request.execution.runtime
+        runtime = request.research.runtime
         left = runtime_readiness(runtime.describe(candidate))
         right = runtime_readiness(
             runtime.describe(release, source_root=stage / "src/strategy_runtime", runtime_binding=binding)
@@ -655,10 +568,10 @@ def inspect_candidate(
         sources.append(ref)
         try:
             current_request = replace(new_request, strategy=candidate)
-            current_request = request.execution._prepare_evaluation(current_request)
-            current = request.execution.evaluation.evaluate(current_request)
+            current_request = request.research.evaluation.prepare(current_request)
+            current = request.research.evaluation.evaluate(current_request)
             _, current_ref = _authenticate(
-                context, current_request, current, request.execution.workspace.root, store
+                context, current_request, current, store
             )
             sources.append(current_ref)
             old = {(x["window_id"], x["scenario_id"]): x for x in baseline["runs"]}
@@ -706,7 +619,7 @@ def inspect_candidate(
                     raise ValueError("prospective release runtime unavailable")
                 release_replay = _inspect_release_replay(
                     context,
-                    request.execution,
+                    request.research,
                     current_request,
                     run,
                     release,
@@ -720,7 +633,7 @@ def inspect_candidate(
                 signals.append(release_replay["signal_equivalence"])
                 covered.append(f.InspectionCoordinate(run.window_id, run.scenario_id))
         except (
-            EvaluationExecutionError,
+            RuntimeError,
             ValueError,
             TypeError,
             OSError,
@@ -796,39 +709,7 @@ def inspect_candidate(
         owner,
     )
     store.put_json(report.to_dict())
-    _archive_inspection(context, request.execution, report)
     return report
-
-
-def _archive_inspection(context, execution, report):
-    """Make platform-produced inspection evidence part of the eventual REX receipt."""
-
-    def references(value):
-        if isinstance(value, f.ResearchEvidenceRef):
-            yield value
-        elif is_dataclass(value):
-            for field in fields(value):
-                yield from references(getattr(value, field.name))
-        elif isinstance(value, tuple):
-            for item in value:
-                yield from references(item)
-
-    selection = read_decision(context.root, report.selection)
-    refs = (report.reference, selection.confirmation_source, *references(report))
-    for ref in dict.fromkeys(refs):
-        relative = f"inspections/{report.sha256}/{ref.path}"
-        destination = execution.workspace.path(relative)
-        data = ref.resolve(context.root).read_bytes()
-        if destination.exists():
-            if destination.read_bytes() != data:
-                raise ValueError("inspection archive conflict")
-        else:
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            with destination.open("xb") as stream:
-                stream.write(data)
-        artifact = execution.workspace.register_artifact(relative, "candidate_inspection")
-        if artifact not in execution._artifacts:
-            execution._artifacts.append(artifact)
 
 
 def freeze_candidate(
@@ -848,7 +729,7 @@ def freeze_candidate(
     _delivery(context, selection.subject.delivery)
     load_candidate(context, report.plan.origin.candidate)
     registration = StrategyRegistry(context.research_registry_root).get_candidate(
-        report.plan.origin.candidate, experiments_root=context.experiments_root
+        report.plan.origin.candidate, evidence_root=context.research_root / report.plan.origin.candidate.strategy_id
     )
     plan = report.plan
     evidence_root = _registered_root(context, registration)
@@ -859,7 +740,7 @@ def freeze_candidate(
         raise ValueError("freeze payload differs from registered candidate")
     runtime_descriptor = _read(plan.payload.resolve(context.root))["runtime"]
     planned = {x.path: x.source.sha256 for x in plan.source_files}
-    prefix = f"objects/source/{registration.source_sha256}/strategy_runtime/"
+    prefix = f"{registration.source_root}/"
     if {x.path.removeprefix(prefix): x.sha256 for x in registration.source_files} != {
         name: planned.get(name) for name in runtime_descriptor["source_files"]
     }:
@@ -904,7 +785,7 @@ def freeze_candidate(
             if f.FreezeCandidateRequest.from_dict(_read(operation_path)) != request:
                 raise ValueError("freeze request ID already binds different content")
         else:
-            _durable(operation_path, request.to_dict(), temporary_root=context.root / ".tmp/freeze")
+            _write_request(context, operation_path, request.to_dict())
         return registry.freeze_version(FreezeVersionRequest(
             request.request_id, request.sha256, version,
             StrategyRegistry(context.research_registry_root).get_family(version.strategy_id),
@@ -931,3 +812,8 @@ def get_freeze_result(context: RepositoryContext, request_id: f.FreezeRequestId)
         return f.FreezeReceipt(request_id, f.FreezeStatus.UNKNOWN, receipt.request_sha256,
                                reason=f"research freeze request cannot be verified: {exc}")
     return receipt
+
+
+def _write_request(context, path, value):
+    from .evidence_service import _publish_bytes
+    _publish_bytes(context.root, path, _bytes(value))

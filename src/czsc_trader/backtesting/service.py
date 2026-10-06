@@ -2,25 +2,26 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import date
+from hashlib import sha256
 import json
+from math import isfinite
+import re
 from pathlib import Path
-import shutil
 
 import pandas as pd
+from dataflows import Dataflows
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
-from czsc_trader.reporting.publication import publish_run_directory
-from czsc_trader.temp_workspace import create_temporary_directory
-
-from .benchmarks import MA_BENCHMARK_SLOW_SESSIONS, replay_benchmarks
+from .benchmarks import MA_BENCHMARK_SLOW_SESSIONS, BenchmarkReplay, replay_benchmarks
 from .execution_data import BacktestExecutionData, _prepare_backtest_execution_data
-from . import _dataflows
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
 from .chart import render_backtest_chart_html
 from .chart_context import BacktestChartMetrics, build_backtest_chart_context, build_ma_chart_context
 from .evidence import build_manifest
 from .metrics import calculate_metrics
 from .models import StrategySnapshot
+from .result import BacktestResult
+from .signal_replay import SignalReplay
 from .report import render_report
 from .srt_bridge import (
     build_srt_signal_replay,
@@ -42,6 +43,14 @@ class BacktestRequest:
     lot_size: int
 
     def __post_init__(self) -> None:
+        if not isinstance(self.symbol, str) or re.fullmatch(r"[A-Z0-9]+\.[A-Z]+", self.symbol) is None:
+            raise ValueError("symbol must be a normalized instrument code")
+        if self.asset_type not in {"stock", "etf"}:
+            raise ValueError("asset_type must be stock or etf")
+        if type(self.start) is not date or type(self.end) is not date or self.start > self.end:
+            raise ValueError("backtest requires ordered date values")
+        if isinstance(self.initial_cash, bool) or not isinstance(self.initial_cash, (int, float)) or not isfinite(self.initial_cash) or self.initial_cash <= 0:
+            raise ValueError("initial_cash must be positive and finite")
         if type(self.lot_size) is not int:
             raise TypeError("lot_size must be an integer")
         if self.lot_size <= 0:
@@ -49,17 +58,17 @@ class BacktestRequest:
 
 
 @dataclass(frozen=True)
-class BacktestRunSummary:
-    output_dir: Path
+class BacktestEvaluation:
+    """Audited account calculation, with optional reports generated explicitly."""
+
+    snapshot: StrategySnapshot
+    request: BacktestRequest
+    signals: SignalReplay
+    execution_data: BacktestExecutionData
+    result: BacktestResult
+    benchmarks: BenchmarkReplay
     metrics: dict[str, object]
     manifest: dict[str, object]
-
-
-def _write_json(path: Path, value: object) -> None:
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
-        encoding="utf-8", newline="\n",
-    )
 
 
 def _validate_execution_window(
@@ -95,12 +104,11 @@ def _run_backtest(
     *,
     snapshot: StrategySnapshot,
     request: BacktestRequest,
-    outputs_root: Path,
-    run_date: date,
     repository_root: Path | None = None,
     execution_data: BacktestExecutionData | None = None,
-) -> BacktestRunSummary:
-    """Run, validate, and atomically publish one immutable replay."""
+    dataflows: Dataflows,
+) -> BacktestEvaluation:
+    """Calculate and audit accounts without retaining reports or process records."""
     request = replace(request, symbol=request.symbol.upper())
     if repository_root is None:
         raise ValueError("SRT backtest requires a repository root")
@@ -119,7 +127,9 @@ def _run_backtest(
         raise ValueError(f"unsupported execution policy: {policy_type}")
     if type(policy_lot_size) is not int or request.lot_size != policy_lot_size:
         raise ValueError("request lot_size differs from strategy execution contract")
-    flows = _dataflows.create_backtest_dataflows(repository_root)
+    if not isinstance(dataflows, Dataflows):
+        raise TypeError("backtest requires host-supplied Dataflows")
+    flows = dataflows
     if execution_data is None:
         execution_data = _prepare_backtest_execution_data(
             repository_root=repository_root,
@@ -142,7 +152,6 @@ def _run_backtest(
         start=execution_data.evaluation_start,
         end=execution_data.evaluation_end,
         repository_root=repository_root,
-        space_created_on=run_date,
         dataflows=flows,
     )
     reference_symbol = strategy_reference_symbol(strategy)
@@ -205,96 +214,52 @@ def _run_backtest(
         metrics=metrics,
         audit=audit,
         application=application,
-        run_date=run_date,
     )
-    root = Path(outputs_root)
-    root.mkdir(parents=True, exist_ok=True)
-    staging = create_temporary_directory(root, "backtest", prefix="run-")
-    try:
+    return BacktestEvaluation(snapshot, request, signals, execution_data, result, benchmarks, metrics, manifest)
+
+
+def _backtest_report_files(evaluation: BacktestEvaluation) -> dict[str, bytes]:
+    """Render requested report payloads; callers publish them via the evidence API."""
+    if not isinstance(evaluation, BacktestEvaluation):
+        raise TypeError("backtest reports require BacktestEvaluation")
+    snapshot, request, signals = evaluation.snapshot, evaluation.request, evaluation.signals
+    execution_data, result, benchmarks = evaluation.execution_data, evaluation.result, evaluation.benchmarks
+    metrics, manifest = evaluation.metrics, evaluation.manifest
+    application = manifest["application"]
+    strategy_metrics = metrics["strategy"]["metrics"]
+    def document(value):
+        return (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8")
+    files = {
+        name: frame.to_csv(index=False, lineterminator="\n").encode("utf-8-sig")
         for name, frame in (
-            ("decisions.csv", result.decisions),
-            ("orders.csv", result.orders),
-            ("fills.csv", result.fills),
-            ("account_daily.csv", result.account_daily),
-            ("trades.csv", result.trades),
-            ("buyhold_account_daily.csv", benchmarks.buyhold_account_daily),
-            ("ma_signals.csv", benchmarks.ma_signals),
-            ("ma_orders.csv", benchmarks.ma_orders),
-            ("ma_account_daily.csv", benchmarks.ma_account_daily),
-            ("ma_trades.csv", benchmarks.ma_trades),
-        ):
-            frame.to_csv(staging / name, index=False, encoding="utf-8-sig", lineterminator="\n")
-        _write_json(staging / "metrics.json", metrics)
-        _write_json(staging / "audit.json", audit)
-        _write_json(staging / "manifest.json", manifest)
-        (staging / "report.md").write_text(
-            render_report(
-                snapshot,
-                metrics,
-                strategy_reference_symbol=application["strategy_reference_symbol"],
-                backtest_symbol=application["backtest_symbol"],
-                application_mode=application["mode"],
-                research_start=snapshot.research_start,
-                research_end=snapshot.research_end,
-                calculation_start=signals.calculation_start.date(),
-                calculation_end=signals.calculation_end.date(),
-                evaluation_start=signals.evaluation_start.date(),
-                evaluation_end=signals.evaluation_end.date(),
-                trading_days=len(result.account_daily),
-                lot_size=request.lot_size,
-            ),
-            encoding="utf-8", newline="\n",
+            ("decisions.csv", result.decisions), ("orders.csv", result.orders),
+            ("fills.csv", result.fills), ("account_daily.csv", result.account_daily),
+            ("trades.csv", result.trades), ("buyhold_account_daily.csv", benchmarks.buyhold_account_daily),
+            ("ma_signals.csv", benchmarks.ma_signals), ("ma_orders.csv", benchmarks.ma_orders),
+            ("ma_account_daily.csv", benchmarks.ma_account_daily), ("ma_trades.csv", benchmarks.ma_trades),
         )
-        _write_json(staging / "observations.json", [item.to_dict() for item in result.observations])
-        chart_context = build_backtest_chart_context(
-                signals, execution_data, result, request.initial_cash,
-                metrics=BacktestChartMetrics(
-                    total_return=strategy_metrics["return"],
-                    max_drawdown=strategy_metrics["max_drawdown"],
-                    closed_trades=strategy_metrics["closed_trades"],
-                    calmar=strategy_metrics["calmar"],
-                    win_loss_ratio=strategy_metrics["win_loss_ratio"],
-                    win_rate=strategy_metrics["win_rate"],
-                ),
-                benchmark_accounts=(("BuyHold", benchmarks.buyhold_account_daily),
-                                    ("MA5/MA20", benchmarks.ma_account_daily)),
-        )
-        (staging / "chart.html").write_text(
-            render_backtest_chart_html(chart_context),
-            encoding="utf-8", newline="\n",
-        )
-        (staging / "ma_chart.html").write_text(
-            render_backtest_chart_html(build_ma_chart_context(chart_context, benchmarks)),
-            encoding="utf-8", newline="\n",
-        )
-        expected = {
-            "manifest.json",
-            "decisions.csv",
-            "observations.json",
-            "orders.csv",
-            "fills.csv",
-            "account_daily.csv",
-            "trades.csv",
-            "metrics.json",
-            "audit.json",
-            "report.md",
-            "chart.html",
-            "buyhold_account_daily.csv",
-            "ma_signals.csv",
-            "ma_orders.csv",
-            "ma_account_daily.csv",
-            "ma_trades.csv",
-            "ma_chart.html",
-        }
-        if {item.name for item in staging.iterdir()} != expected:
-            raise AssertionError("backtest publication is structurally incomplete")
-        output_dir = publish_run_directory(
-            staging,
-            root,
-            snapshot.identity.reference,
-            run_date,
-        )
-    except Exception:
-        shutil.rmtree(staging, ignore_errors=True)
-        raise
-    return BacktestRunSummary(output_dir, metrics, manifest)
+    }
+    files.update({"metrics.json": document(metrics), "audit.json": document(manifest["audit"]),
+                  "manifest.json": document(manifest),
+                  "observations.json": document([item.to_dict() for item in result.observations])})
+    chart_context = build_backtest_chart_context(
+        signals, execution_data, result, request.initial_cash,
+        metrics=BacktestChartMetrics(total_return=strategy_metrics["return"],
+            max_drawdown=strategy_metrics["max_drawdown"], closed_trades=strategy_metrics["closed_trades"],
+            calmar=strategy_metrics["calmar"], win_loss_ratio=strategy_metrics["win_loss_ratio"],
+            win_rate=strategy_metrics["win_rate"]),
+        benchmark_accounts=(("BuyHold", benchmarks.buyhold_account_daily), ("MA5/MA20", benchmarks.ma_account_daily)),
+    )
+    files["chart.html"] = render_backtest_chart_html(chart_context).encode("utf-8")
+    files["ma_chart.html"] = render_backtest_chart_html(build_ma_chart_context(chart_context, benchmarks)).encode("utf-8")
+    report = render_report(snapshot, metrics,
+        strategy_reference_symbol=application["strategy_reference_symbol"], backtest_symbol=application["backtest_symbol"],
+        application_mode=application["mode"], research_start=snapshot.research_start, research_end=snapshot.research_end,
+        calculation_start=signals.calculation_start.date(), calculation_end=signals.calculation_end.date(),
+        evaluation_start=signals.evaluation_start.date(), evaluation_end=signals.evaluation_end.date(),
+        trading_days=len(result.account_daily), lot_size=request.lot_size)
+    # Evidence filenames are content identities, so links remain valid after publication.
+    for name in ("chart.html", "ma_chart.html"):
+        report = report.replace(f"({name})", f"({sha256(files[name]).hexdigest()}.html)")
+    files["report.md"] = report.encode("utf-8")
+    return files

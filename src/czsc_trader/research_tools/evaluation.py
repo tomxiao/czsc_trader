@@ -11,6 +11,7 @@ from pathlib import Path, PureWindowsPath
 import platform
 from importlib import metadata
 import re
+import json
 from typing import Any, Mapping
 from types import MappingProxyType
 
@@ -23,7 +24,6 @@ from strategy_runtime import (
     canonical_sha256, ImplementationDependency,
 )
 from strategy_manager import CandidateKey, CandidateDerivation
-from research_experiment import ExperimentArtifact
 from strategy_runtime.implementation_identity import implementation_sha256
 from trading_execution_engine import ExecutionResult
 
@@ -32,7 +32,6 @@ from ..backtesting.execution_data import (
     _prepare_backtest_execution_data,
     _require_execution_frequencies,
 )
-from ..backtesting import _dataflows
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
 from ..backtesting.benchmark_contracts import EvaluationBenchmark, LimitBuyHold
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
@@ -59,12 +58,7 @@ class _CandidateEvaluationContext:
     review_data_root: Path | None = None
     review_data_hash: str | None = None
     candidate_runtime_roots: dict[str, Path] | None = None
-    _dataflows: Dataflows = field(init=False, repr=False, compare=False)
-
-    def __post_init__(self):
-        object.__setattr__(self, "_dataflows", _dataflows.create_backtest_dataflows(
-            Path(self.repository.root), read_only=True,
-        ))
+    _dataflows: Dataflows = field(kw_only=True, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -218,8 +212,6 @@ class EvaluationResult:
     data_identity: str = ""
     result_hash: str = ""
     execution_mode: str = "FULL"
-    attempt_id: str | None = None
-    record: ExperimentArtifact | None = None
     execution_data: BacktestExecutionData | None = field(default=None, repr=False, compare=False)
 
     @property
@@ -261,7 +253,7 @@ def _prepare_evaluation_workspace(
             start=first_start.date(),
             end=pd.Timestamp(protocol.development_cutoff).date(),
             intraday_frequencies=intraday_frequencies,
-            dataflows=_dataflows.create_backtest_dataflows(Path(context.repository.root)),
+            dataflows=context._dataflows,
         )
     cutoff = pd.Timestamp(protocol.development_cutoff).normalize()
     dates = pd.DatetimeIndex(pd.to_datetime(execution_data.adjusted_daily["dt"])).normalize()
@@ -331,7 +323,7 @@ def _prepare_candidate_replays(context, protocol, payloads, candidate_ids):
         intraday_frequencies=tuple(sorted({frequency for _, strategy in loaded.values()
                                           for frequency in execution_intraday_frequencies(strategy)})),
     )
-    flows = _dataflows.create_backtest_dataflows(Path(context.repository.root))
+    flows = context._dataflows
     replays = {}
     for key, (snapshot, _) in loaded.items():
         replays[key] = {
@@ -806,9 +798,9 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
     return canonical_sha256({"request_hash": request_hash, "runs": evidence})
 
 
-def _prepare_evaluation_inputs(request: EvaluationRequest) -> EvaluationRequest:
+def _prepare_evaluation_inputs(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationRequest:
     """Resolve all window inputs in the owning process before worker dispatch."""
-    return _bind_evaluation_inputs(request, dataflows=None)
+    return _bind_evaluation_inputs(request, dataflows=dataflows)
 
 
 def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> EvaluationRequest:
@@ -817,8 +809,8 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
         if request.execution_data is None:
             raise ValueError("bound evaluation requires its original execution data")
         return request
-    if dataflows is None:
-        dataflows = _dataflows.create_backtest_dataflows(Path(request.repository_root))
+    if not isinstance(dataflows, Dataflows):
+        raise TypeError("evaluation requires host-supplied Dataflows")
     if request.execution_data is None:
         definition = StrategyRuntime().describe(request.strategy)
         frequencies = set(execution_intraday_frequencies(definition))
@@ -848,10 +840,10 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
     return replace(request, input_bindings=bindings)
 
 
-def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
+def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> EvaluationResult:
     """Evaluate one strategy without candidate admission, ranking or governance writes."""
 
-    request = _prepare_evaluation_inputs(request)
+    request = _prepare_evaluation_inputs(request, dataflows=dataflows)
     contract, binding_hash = _request_contract(request)
     request_hash = canonical_sha256(contract)
     periods = tuple(
@@ -875,6 +867,7 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
         workers=request.workers,
         frequency_window_days=request.frequency_window_days,
         family_id=request.strategy.strategy_family_id,
+        _dataflows=dataflows,
     )
     snapshot = StrategySnapshot(
         StrategyIdentity("CANDIDATE", request.strategy.reference_id, "research_evaluation"),
@@ -972,3 +965,232 @@ def evaluate_strategy(request: EvaluationRequest) -> EvaluationResult:
 def _evaluate_candidate_payloads(context, protocol, candidates, candidate_ids, costs):
     """Produce candidate observations for internal review and audit workflows."""
     return _evaluate_runs(context, protocol, candidates, candidate_ids, costs).observations
+
+
+def _signal_table(value):
+    table = json.loads(
+        value.to_json(orient="table", date_format="iso", date_unit="ns", index=False)
+    )
+    # pandas JSON limits doubles to 15 digits. Keep Python float values so the
+    # enclosing JSON writer preserves the full binary64 round-trip precision.
+    for encoded, original in zip(table["data"], value.to_dict(orient="records")):
+        for name, cell in original.items():
+            if isinstance(cell, float) and isfinite(cell):
+                encoded[name] = cell
+    return table
+
+
+
+def serialize_evaluation_evidence(request: EvaluationRequest, result: EvaluationResult) -> dict:
+    """Project authenticated account facts only when their retention is requested."""
+    from .assessment import _assessment_with_replays
+
+    if type(request) is not EvaluationRequest or type(result) is not EvaluationResult:
+        raise TypeError("evidence requires EvaluationRequest and EvaluationResult")
+    if request.execution_data is None:
+        request = replace(request, execution_data=result.execution_data)
+    if not request.input_bindings:
+        bindings = {
+            run.window_id: StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
+            for run in result.runs
+        }
+        request = replace(request, input_bindings=bindings)
+    evaluated = _assessment_with_replays(
+        request, result,
+    )
+
+    def frame(value):
+        table = _signal_table(value)
+        table["dtypes"] = {name: str(dtype) for name, dtype in value.dtypes.items()}
+        return table
+
+    runs = []
+    assessment = []
+    for run, (evidence, replay) in zip(result.runs, evaluated, strict=True):
+        assessment.append(evidence)
+        item = {
+            "identity": run.identity.to_dict(),
+            "replay_evidence": replay.to_dict(),
+            "window_id": run.window_id,
+            "scenario_id": run.scenario_id,
+            "candidate_id": run.candidate_id,
+            "signals": _signal_table(run.signals.decisions),
+            "signal_dtypes": {
+                name: str(dtype) for name, dtype in run.signals.decisions.dtypes.items()
+            },
+            "signal_data_identity": run.signals.data_identity,
+            "signal_support": run.signals.support_data,
+            "signal_window": {
+                "calculation_start": run.signals.calculation_start.isoformat(),
+                "evaluation_start": run.signals.evaluation_start.isoformat(),
+                "evaluation_end": run.signals.evaluation_end.isoformat(),
+            },
+            "observation": run.observation.to_dict(),
+            "ledgers": {
+                name: frame(getattr(run.execution, name))
+                for name in ("decisions", "orders", "fills", "account_daily", "trades")
+            },
+            "buyhold": None
+            if run.buyhold is None
+            else {
+                "account_daily": frame(run.buyhold.account_daily),
+                "orders": frame(run.buyhold.orders),
+                "metrics": run.buyhold.metrics,
+                "benchmark": run.buyhold.benchmark.to_dict(),
+                "execution": None if run.buyhold.execution is None else {
+                    name: frame(getattr(run.buyhold.execution, name))
+                    for name in ("decisions", "orders", "fills", "account_daily", "trades")
+                },
+            },
+        }
+        runs.append(item)
+    return {
+            "schema_version": 5,
+            "source_kind": "published_result",
+            "request_identity": _request_identity_payload(
+                request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
+            ),
+            "request_hash": result.request_hash,
+            "strategy_identity": result.strategy_identity,
+            "runtime_binding_hash": result.runtime_binding_hash,
+            "data_identity": result.data_identity,
+            "execution_mode": result.execution_mode,
+            "input_bindings": {name: binding.to_dict() for name, binding in request.input_bindings.items()},
+            "result_hash": result.result_hash,
+            "runs": runs,
+            "assessment_evidence": [item.to_dict() for item in assessment],
+    }
+
+
+def _evidence_frame(value: dict, *, dtypes: dict | None = None) -> pd.DataFrame:
+    columns = [field["name"] for field in value["schema"]["fields"]]
+    types = value["dtypes"] if dtypes is None else dtypes
+    return pd.DataFrame({
+        name: pd.Series([row[name] for row in value["data"]], dtype=types[name])
+        for name in columns
+    })
+
+
+def validate_evaluation_evidence(value: dict) -> None:
+    """Authenticate a published result and its numeric projections without rerunning it."""
+    from types import SimpleNamespace
+    from strategy_evaluator import AssessmentEvidence, ReplayEvidence, audit_replay, AuditStatus
+    from ..backtesting.audit_adapter import _records
+
+    if not isinstance(value, dict) or value.get("schema_version") != 5 or value.get("source_kind") != "published_result":
+        raise ValueError("account evaluation evidence requires schema 5 published_result")
+    request = value["request_identity"]
+    if canonical_sha256(request) != value["request_hash"]:
+        raise ValueError("evaluation request identity differs")
+    if any(value[name] != request[name] for name in ("strategy_identity", "runtime_binding_hash", "data_identity", "execution_mode")):
+        raise ValueError("evaluation metadata differs from request")
+    projected = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+    if not projected or len(projected) != len(value["runs"]):
+        raise ValueError("evaluation assessment coordinates differ")
+    runs = []
+    coordinates = []
+    def record(payload):
+        return SimpleNamespace(to_dict=lambda: payload)
+    date_columns = {
+        "decisions": ("signal_date", "valid_session"),
+        "orders": ("signal_date", "execution_date"),
+        "fills": ("signal_date", "fill_time"),
+        "account_daily": ("date", "signal_date"),
+        "trades": ("entry_date", "exit_date"),
+    }
+    for item, assessment in zip(value["runs"], projected, strict=True):
+        identity = item["identity"]
+        if (assessment.request_sha256 != value["request_hash"]
+            or assessment.result_sha256 != value["result_hash"]
+            or assessment.attempt_id != value["result_hash"][:32]
+            or assessment.candidate.candidate_id != request["strategy_reference"]
+            or assessment.candidate.content_sha256 != request["content_sha256"]
+            or assessment.experiment_id != request["experiment_id"]
+            or assessment.evaluation_id != canonical_sha256(identity)
+            or (assessment.window_id, assessment.scenario_id) != (item["window_id"], item["scenario_id"])):
+            raise ValueError("evaluation assessment identity differs")
+        if identity["content_sha256"] != request["content_sha256"] or (
+            identity["candidate"]["strategy_id"] + "-" + identity["candidate"]["candidate_id"]
+        ) != request["strategy_reference"]:
+            raise ValueError("evaluation candidate identity differs")
+        ledgers = {name: _evidence_frame(table) for name, table in item["ledgers"].items()}
+        replay = ReplayEvidence.from_dict(item["replay_evidence"])
+        if audit_replay(replay).status is not AuditStatus.PASS:
+            raise ValueError("evaluation account audit failed")
+        for name, columns in date_columns.items():
+            # JSON numbers use the same binary64 values after table decoding.
+            expected = _records(ledgers[name], columns)
+            actual = getattr(replay, name)
+            if canonical_sha256(expected) != canonical_sha256(actual):
+                raise ValueError(f"evaluation replay {name} differs from account ledgers")
+        account = tuple((pd.Timestamp(row.date).date().isoformat(), float(row.cash),
+                         int(row.quantity), float(row.close), float(row.equity))
+                        for row in ledgers["account_daily"].itertuples())
+        if account != tuple((x.session, x.cash, x.quantity, x.close, x.equity) for x in assessment.account):
+            raise ValueError("evaluation assessment account differs")
+        fills = tuple((str(row.cycle_id), pd.Timestamp(row.fill_time).date().isoformat(),
+                       str(row.side), int(row.quantity), float(row.price), float(row.fees))
+                      for row in ledgers["fills"].itertuples())
+        if fills != tuple((x.cycle_id, x.session, x.side.value, x.quantity, x.price, x.fees) for x in assessment.fills):
+            raise ValueError("evaluation assessment fills differ")
+        closed = tuple((str(row.cycle_id), pd.Timestamp(row.exit_date).date().isoformat())
+                       for row in ledgers["trades"].itertuples() if row.status == "CLOSED")
+        if closed != tuple((x.cycle_id, x.exit_session) for x in assessment.closed_cycles):
+            raise ValueError("evaluation assessment closed cycles differ")
+        benchmark_contract = EvaluationBenchmark.from_dict(request["benchmark"])
+        common_context = canonical_sha256({
+            "data": request["data_identity"], "symbol": request["symbol"],
+            "sessions": [x[0] for x in account], "initial_cash": request["initial_cash"],
+            "benchmark": benchmark_contract.fingerprint, "execution_mode": request["execution_mode"],
+            "frequency_window_days": request["frequency_window_days"], "metric_version": METRIC_SEMANTICS_VERSION,
+        })
+        opening = ledgers["account_daily"].iloc[0]
+        cost = next(x for x in request["costs"] if x["scenario_id"] == item["scenario_id"])
+        if (assessment.context_sha256 != common_context
+            or assessment.initial_cash != request["initial_cash"]
+            or assessment.opening_cash != float(opening["cash_before"])
+            or assessment.opening_quantity != int(opening["quantity_before"])
+            or assessment.frequency_window_days != request["frequency_window_days"]
+            or assessment.metric_version != METRIC_SEMANTICS_VERSION
+            or assessment.scenario_context.one_way_cost != cost["one_way_cost"]
+            or assessment.scenario_context.measurement_tier != cost["measurement_tier"]
+            or assessment.scenario_context.benchmark_contract_sha256 != benchmark_contract.fingerprint):
+            raise ValueError("evaluation assessment protocol differs")
+        execution = SimpleNamespace(**ledgers, equity=pd.Series(
+            ledgers["account_daily"]["equity"].to_numpy(),
+            index=pd.DatetimeIndex(ledgers["account_daily"]["date"]),
+        ))
+        prices = pd.DataFrame(replay.execution_daily).rename(columns={"date": "dt"})
+        prices["dt"] = pd.to_datetime(prices["dt"])
+        observation = _observation(SimpleNamespace(init_cash=request["initial_cash"],
+            frequency_window_days=request["frequency_window_days"]), item["candidate_id"],
+            item["window_id"], cost["measurement_tier"], item["scenario_id"], execution,
+            SimpleNamespace(execution_daily=prices))
+        if canonical_sha256(observation.to_dict()) != canonical_sha256(item["observation"]):
+            raise ValueError("evaluation metrics differ from account ledgers")
+        signals = SimpleNamespace(
+            decisions=_evidence_frame(item["signals"], dtypes=item["signal_dtypes"]),
+            data_identity=item["signal_data_identity"], support_data=item["signal_support"],
+            **{key: pd.Timestamp(date) for key, date in item["signal_window"].items()},
+        )
+        benchmark = item["buyhold"]
+        buyhold = None if benchmark is None else SimpleNamespace(
+            account_daily=_evidence_frame(benchmark["account_daily"]),
+            orders=_evidence_frame(benchmark["orders"]), metrics=benchmark["metrics"],
+            benchmark=record(benchmark["benchmark"]),
+            execution=None if benchmark["execution"] is None else SimpleNamespace(
+                **{name: _evidence_frame(table) for name, table in benchmark["execution"].items()}),
+        )
+        if buyhold is None or benchmark_contract.to_dict() != benchmark["benchmark"] or (
+            assessment.benchmark_equity != tuple(float(x) for x in buyhold.account_daily["equity"])
+        ):
+            raise ValueError("evaluation assessment benchmark differs")
+        runs.append(SimpleNamespace(candidate_id=item["candidate_id"],window_id=item["window_id"],
+            scenario_id=item["scenario_id"], identity=record(identity), signals=signals,
+            execution=SimpleNamespace(**ledgers), observation=record(item["observation"]), buyhold=buyhold))
+        coordinates.append((item["window_id"], item["scenario_id"]))
+    expected = {(w["window_id"], c["scenario_id"]) for w in request["windows"] for c in request["costs"]}
+    if len(coordinates) != len(expected) or set(coordinates) != expected:
+        raise ValueError("evaluation coordinates differ")
+    if _evaluation_result_hash(value["request_hash"], tuple(runs)) != value["result_hash"]:
+        raise ValueError("evaluation result hash differs")

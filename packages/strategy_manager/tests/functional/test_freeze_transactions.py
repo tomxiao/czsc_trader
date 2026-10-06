@@ -141,3 +141,13 @@ def test_public_research_evidence_resolves_only_within_its_owner(tmp_path):
         replace(reference, owner=ResearchEvidenceOwner("S901")).resolve(tmp_path)
     with pytest.raises(TypeError):
         DecisionReference("selection", CandidateEvidence("arbitrary.json", "a" * 64))
+
+
+def test_experiment_evidence_resolves_from_batch_without_archive_manifest(tmp_path):
+    owner = ResearchEvidenceOwner("S900", "EX001_20261003")
+    assert owner.repository_path == "research/S900/experiments/EX001_20261003"
+    evidence = tmp_path / owner.repository_path / "evidence/result.json"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_bytes(b'{"result":"synthetic"}')
+    reference = ResearchEvidenceRef(owner, "evidence/result.json", sha256(evidence.read_bytes()).hexdigest())
+    assert reference.resolve(tmp_path) == evidence

@@ -11,7 +11,7 @@ import pytest
 from strategy_runtime import RuntimeContractError, StrategyCandidate
 
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
-from czsc_trader.research_tools import evaluate_strategy
+from czsc_trader.research_tools.evaluation_access import EvaluationAccess
 from public_backtest_support import request_for_prices
 from test_candidate_runtime_execution import _install_candidate_dataflows
 
@@ -37,7 +37,7 @@ def test_modified_execution_dataframe_is_rejected_before_strategy_computation(bo
     data = request.execution_data
     getattr(data, table).loc[0, "close"] += 1.0
     with pytest.raises(RuntimeContractError, match=f"dataframe differs.*{table}"):
-        evaluate_strategy(request)
+        EvaluationAccess(dataflows=flows).evaluate(request)
 
 
 @pytest.mark.parametrize("field, value", [("fingerprint", "0" * 64), ("symbol", "518880.SH"),
@@ -48,7 +48,7 @@ def test_execution_identity_must_match_the_prepared_selection(bound_inputs, fiel
         value = replace(request.execution_data.prepared, preparation_id=uuid4())
     request = replace(request, execution_data=replace(request.execution_data, **{field: value}))
     with pytest.raises((RuntimeContractError, ValueError)):
-        evaluate_strategy(request)
+        EvaluationAccess(dataflows=flows).evaluate(request)
 
 
 def test_unchanged_bound_execution_tables_remain_replayable(bound_inputs):
@@ -60,7 +60,7 @@ def test_unchanged_bound_execution_tables_remain_replayable(bound_inputs):
     assert minute.end == data.evaluation_end.date().isoformat()
     daily = data.requests["adjusted_daily"]
     assert daily.start == "2026-09-14"  # One prior signal session, no fixed calendar-day history.
-    result = evaluate_strategy(request)
+    result = EvaluationAccess(dataflows=flows).evaluate(request)
     assert len(result.runs) == 1
     assert result.execution_data.fingerprint == data.fingerprint
     assert not result.runs[0].signals.decisions.empty
@@ -91,8 +91,8 @@ def test_foreign_space_reference_is_rejected_without_repreparing(bound_inputs, m
         pytest.fail("foreign input bindings must fail before preparing replacement data")
 
     monkeypatch.setattr(flows, "prepare", forbidden)
-    with pytest.raises(RuntimeContractError, match="execution input differs"):
-        evaluate_strategy(request)
+    with pytest.raises(ValueError, match="another data space"):
+        EvaluationAccess(dataflows=flows).evaluate(request)
 
 
 @pytest.mark.parametrize("entry_order_type", ["MARKET", "LIMIT"])
@@ -100,10 +100,12 @@ def test_public_backtest_prepares_execution_and_benchmark_requirements(
     candidate_payload, tmp_path, monkeypatch, entry_order_type,
 ):
     from czsc_trader.application import RepositoryContext, run_backtest
+    from czsc_trader.research_tools.context import ResearchContext, ResearchBatchRef
+    from strategy_runtime import StrategyRuntime
     from czsc_trader.backtesting.service import BacktestRequest
     from czsc_trader.research_tools import (
         EvaluationRequest, EvaluationWindow, EvaluationCost, EvaluationBenchmark,
-        NextOpenBuyHold, evaluate_strategy,
+        NextOpenBuyHold,
     )
 
     payload, source = candidate_payload
@@ -130,14 +132,15 @@ def test_public_backtest_prepares_execution_and_benchmark_requirements(
     monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", record_execution)
     (tmp_path / "src" / "czsc_trader").mkdir(parents=True)
     (tmp_path / "pyproject.toml").write_text("[project]\nname='execution-requirements'\n", encoding="utf-8")
-    context = RepositoryContext.discover(tmp_path, explicit_root=tmp_path)
+    repository = RepositoryContext.discover(tmp_path, explicit_root=tmp_path)
+    context = ResearchContext(ResearchBatchRef("S900"), repository, flows, StrategyRuntime(dataflows=flows),
+                              EvaluationAccess(dataflows=flows, strategy_id="S900"))
     candidate = StrategyCandidate("S900", "C0001", payload, source)
     result = run_backtest(
         context, candidate,
         BacktestRequest("588080.SH", "etf", sessions[20].date(), sessions[-1].date(), 100_000, 100),
-        run_date=sessions[-1].date(),
     )
-    assert result.status == "PASS"
+    assert result.manifest["audit"]["status"] == "PASS"
     minutes = [item for item in calls if item.frequency in {"5m", "30m"}]
     if entry_order_type == "MARKET":
         assert not minutes
@@ -150,7 +153,7 @@ def test_public_backtest_prepares_execution_and_benchmark_requirements(
     # The same authenticated data may include longer benchmark than execution history.
     data = prepared_data[0]
     assert len(data.adjusted_daily) == 26 and len(data.execution_daily) == 7
-    evaluation = evaluate_strategy(EvaluationRequest(
+    evaluation = context.evaluation.evaluate(EvaluationRequest(
         tmp_path, "synthetic", candidate,
         {"candidate_id": candidate.reference_id,
          "source_files": payload["runtime"]["source_files"],
@@ -167,4 +170,4 @@ def test_limit_execution_rejects_missing_minute_prices(bound_inputs):
     data = request.execution_data
     request = replace(request, execution_data=replace(data, execution_intraday=data.execution_intraday.iloc[:0]))
     with pytest.raises(ValueError, match="no required 30m"):
-        evaluate_strategy(request)
+        EvaluationAccess(dataflows=flows).evaluate(request)

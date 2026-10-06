@@ -7,7 +7,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from czsc_trader.research_tools import EvaluationBenchmark, NextOpenBuyHold
 from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy
 
 from strategy_runtime import (
@@ -130,26 +129,14 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
     from czsc_trader.temp_workspace import create_temporary_directory
     root = base_dir if base_dir is not None else create_temporary_directory(Path.cwd(), "test-dataflows")
     flows = Dataflows(
-        base_dir=root, space=space if space is not None else DataSpace(Path("data/backtest")),
+        base_dir=root, space=space if space is not None else DataSpace(Path("research/S900/data")),
         providers=ProviderConfig(bindings={dataset: ProviderBinding("synthetic", "v1", fetch)
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
                             Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
                             Dataset.TRADING_CALENDAR)}),
     )
-    def create_flows(repository_root, *, read_only=False):
-        if Path(repository_root).resolve() == Path(root).resolve() and not read_only:
-            return flows
-        return Dataflows(
-            base_dir=repository_root, space=DataSpace(Path("data/backtest")),
-            providers=ProviderConfig(bindings={} if read_only else {
-                dataset: ProviderBinding("synthetic", "v1", fetch)
-                for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
-                                Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
-                                Dataset.TRADING_CALENDAR)
-            }),
-        )
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", create_flows)
     return flows
+
 
 
 
@@ -173,7 +160,8 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     sessions = pd.bdate_range("2026-09-14", periods=5)
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .2, .9, 0.]})
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1., "high": 1., "low": 1., "vol": 1000., "amount": 1000.})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path,
+        space=DataSpace(Path("research/S001/data")))
     execution_data = _execution_data(flows, tmp_path, sessions)
     execution_frames = (
         ("execution_daily", execution_data.execution_daily),
@@ -186,26 +174,27 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
         originals.append((deepcopy(frame.attrs), canonical_frame_sha256(frame)))
     (tmp_path / "pyproject.toml").write_text("[project]\nname='test-replay'\n", encoding="utf-8")
     (tmp_path / "src/czsc_trader").mkdir(parents=True)
-    context = RepositoryContext.discover(tmp_path)
+    repository = RepositoryContext.discover(tmp_path)
+    from czsc_trader.research_tools.context import ResearchContext, ResearchBatchRef
+    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
+    context = ResearchContext(ResearchBatchRef("S001"), repository, flows, StrategyRuntime(dataflows=flows), EvaluationAccess(dataflows=flows, strategy_id="S001"))
     # Only the external procurement boundary is replaced; the public API parses,
     # prepares, executes, audits and publishes the actual candidate replay.
     monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", lambda **kwargs: execution_data)
     request = BacktestRequest("588080.SH", "etf", sessions[1].date(), sessions[-1].date(), 100_000, 100)
-    result = run_backtest(context, candidate, request, run_date=sessions[-1].date())
-    assert result.status == "PASS" and result.command == "backtest.run"
-    assert result.result["audit_status"] == "PASS" and result.result["runtime_engine"] == "srt"
-    output = Path(result.artifacts["output_dir"])
+    result = run_backtest(context, candidate, request)
+    from czsc_trader.application import BacktestEvaluation
+    assert type(result) is BacktestEvaluation
+    assert result.manifest["audit"]["status"] == "PASS"
+    assert result.manifest["application"]["runtime_engine"] == "srt"
     _, direct = _execute(candidate, tmp_path / "direct", monkeypatch)
-    account = pd.read_csv(output / "account_daily.csv")
-    assert account["equity"].tolist() == pytest.approx(direct.account_daily["equity"].tolist())
+    assert result.result.account_daily["equity"].tolist() == pytest.approx(direct.account_daily["equity"].tolist())
     assert len(direct.fills) == 3
-    assert "S001-C0001" in (output / "chart.html").read_text(encoding="utf-8")
-    import json
-    assert json.loads((output / "audit.json").read_text(encoding="utf-8"))["status"] == "PASS"
+    assert not list((tmp_path / "research/S001").rglob("account_daily.csv"))
     for (_, frame), (attrs, digest) in zip(execution_frames, originals):
         assert frame.attrs == attrs
         assert canonical_frame_sha256(frame) == digest
-    assert not context.strategy_root.exists()
+    assert not repository.strategy_root.exists()
     # Refuse a real stale procurement result at the public business boundary.
     with pytest.raises(ExecutionError, match="exceeds the published cutoff"):
         run_backtest(context, candidate, replace(request, end=(sessions[-1] + pd.offsets.BDay()).date()))
@@ -226,7 +215,8 @@ def _execute(
     sessions = pd.bdate_range("2026-09-14", periods=5)
     inputs = {"flow": pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.2, 0.9, 0.0]})}
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
-    flows = _install_candidate_dataflows(monkeypatch, inputs["flow"], daily)
+    flows = _install_candidate_dataflows(monkeypatch, inputs["flow"], daily,
+        space=DataSpace(Path("research") / source.strategy_family_id / "data"))
     runtime = StrategyRuntime(dataflows=flows)
     strategy = runtime.create(
         StrategyInit(
@@ -261,8 +251,9 @@ def _execute(
 
 def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluation, monkeypatch):
     import shutil
-    from czsc_trader.research_tools import EvaluationCost, build_assessment_evidence, evaluate_strategy, create_formal_experiment_context
-    from research_experiment import ExperimentResources, ExperimentWorkspace
+    from czsc_trader.research_tools import EvaluationCost, build_assessment_evidence, ResearchContext, ResearchBatchRef
+    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
+    from czsc_trader.application import RepositoryContext
     from strategy_evaluator import assess_candidates, ResearchMetric
     from test_assessment_delivery import assessment_request
 
@@ -275,11 +266,13 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1.})
     daily.loc[2, "open"] = 1.1  # First LIMIT cannot fill; unchanged target must retry.
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .8, .1, 0., 0.]})
-    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root)
+    flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root,
+        space=DataSpace(Path("research/S900/data")))
     data = _execution_data(flows, root, sessions)
-    context = create_formal_experiment_context(previous.definition, repository_root=root,
-        resources=ExperimentResources(1, 1), workspace=ExperimentWorkspace(root / ".tmp/managed", root),
-        data_space=DataSpace(Path("data/research")))
+    (root / "src/czsc_trader").mkdir(parents=True)
+    (root / "pyproject.toml").write_text("")
+    context = ResearchContext(ResearchBatchRef("S900"), RepositoryContext.discover(root), flows,
+        StrategyRuntime(dataflows=flows), EvaluationAccess(dataflows=flows, strategy_id="S900"))
     request = replace(request, repository_root=root, strategy=candidate, execution_data=data,
         input_bindings={}, frequency_window_days=3)
     result = context.evaluation.evaluate(request)
@@ -303,7 +296,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
     for fact, actual in zip(evidence[0].account, run.execution.account_daily.itertuples()):
         assert fact.equity == pytest.approx(actual.equity)
         assert fact.cash == pytest.approx(actual.cash)
-    flexible = evaluate_strategy(replace(request, costs=(
+    flexible = context.evaluation.evaluate(replace(request, costs=(
         EvaluationCost("custom_high", .002, "FORMAL"), EvaluationCost("custom_low", .0005, "SCREENING"),
         EvaluationCost("standard", .001, "STRESS"))))
     assert [(item.scenario_id, item.observation.measurement_tier) for item in flexible.runs] == [
@@ -312,11 +305,11 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
     assert flexible.runs[0].observation.total_return < run.observation.total_return
     assert flexible.runs[2].observation.total_return == pytest.approx(run.observation.total_return)
     with pytest.raises(ValueError, match="only FULL execution"):
-        evaluate_strategy(replace(request, execution_mode="ACCELERATED"))
+        context.evaluation.evaluate(replace(request, execution_mode="ACCELERATED"))
     with pytest.raises(ValueError, match="binding belongs to another"):
-        evaluate_strategy(replace(request, runtime_binding={**request.runtime_binding, "candidate_id": "S900-C0999"}))
+        context.evaluation.evaluate(replace(request, runtime_binding={**request.runtime_binding, "candidate_id": "S900-C0999"}))
     with pytest.raises(ValueError, match="scenario identities must be unique"):
-        evaluate_strategy(replace(request, costs=(EvaluationCost("same", .001), EvaluationCost("same", .002))))
+        context.evaluation.evaluate(replace(request, costs=(EvaluationCost("same", .001), EvaluationCost("same", .002))))
     with pytest.raises(ValueError, match="finite"):
         EvaluationCost("fee_xnan", float("nan"))
     for name in ("", "../escape", "NUL", "trailing.", "bad\nname"):
@@ -327,205 +320,6 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
             EvaluationCost("valid", fee)
     with pytest.raises(ValueError, match="tier"):
         EvaluationCost("valid", .001, "UNKNOWN")
-
-
-@pytest.fixture
-def evaluation_json(candidate_payload, minimal_repo):
-    import json
-    import shutil
-
-    from czsc_trader.application import RepositoryContext
-
-    payload, source_root = candidate_payload
-    sessions = pd.bdate_range("2026-09-14", periods=6)
-
-    experiment = minimal_repo / "experiments" / "S900" / "EXPLICIT01"
-    runtime_root = experiment / "runtime" / "strategy_runtime"
-    shutil.copytree(source_root, runtime_root)
-    binding = {
-        "candidate_id": "S900-C0001",
-        "source_files": list(payload["runtime"]["source_files"]),
-        "implementation_sha256": payload["runtime"]["source_sha256"],
-    }
-    (experiment / "runtime_binding.json").write_text(
-        json.dumps(binding, indent=2) + "\n", encoding="utf-8"
-    )
-    request = {
-        "schema_version": 2,
-        "experiment_id": experiment.name,
-        "strategy": {
-            "strategy_id": "S900",
-            "candidate_id": "C0001",
-            "strategy_payload": payload,
-            "runtime_root": "runtime/strategy_runtime",
-            "runtime_binding": "runtime_binding.json",
-        },
-        "market": {
-            "symbol": "588080.SH",
-            "asset_type": "etf",
-            "data_cutoff": sessions[-1].date().isoformat(),
-        },
-        "windows": [
-            {
-                "window_id": "full",
-                "start": sessions[1].date().isoformat(),
-                "end": sessions[-1].date().isoformat(),
-            }
-        ],
-        "capital": {"initial_cash": 100_000},
-        "costs": [
-            {
-                "scenario_id": "research_case",
-                "one_way_cost": 0.001,
-                "measurement_tier": "FORMAL",
-            },
-        ],
-        "benchmark": EvaluationBenchmark(NextOpenBuyHold(100)).to_dict(),
-        "execution": {
-            "mode": "FULL",
-            "workers": 2,
-            "frequency_window_days": 3,
-        },
-    }
-    request_path = experiment / "evaluation_request.json"
-    request_path.write_text(json.dumps(request, indent=2) + "\n", encoding="utf-8")
-    context = RepositoryContext.discover(minimal_repo)
-    return context, request_path, request
-
-
-@pytest.mark.parametrize("section, field, invalid", [
-    ("execution", "workers", True),
-    ("execution", "workers", 1.5),
-    ("execution", "workers", "2"),
-    ("execution", "frequency_window_days", True),
-    ("execution", "frequency_window_days", 1.5),
-    ("capital", "initial_cash", True),
-    ("capital", "initial_cash", "100000"),
-    ("costs", "one_way_cost", False),
-    ("costs", "one_way_cost", "0.001"),
-    ("costs", "scenario_id", 123),
-    ("windows", "window_id", True),
-    (None, "schema_version", 2.0),
-])
-def test_evaluation_json_rejects_coercion_before_execution(evaluation_json, monkeypatch, section, field, invalid):
-    import json
-    from czsc_trader.application import evaluate_research_request, ValidationError
-
-    context, path, request = evaluation_json
-    target = request[section][0] if section in {"costs", "windows"} else request[section] if section else request
-    target[field] = invalid
-    path.write_text(json.dumps(request), encoding="utf-8")
-    def forbidden(*args, **kwargs):
-        pytest.fail("invalid JSON must be rejected before execution or data preparation")
-    monkeypatch.setattr("czsc_trader.application.research_evaluation_service.evaluate_strategy", forbidden)
-    with pytest.raises(ValidationError, match=field if section else "schema"):
-        evaluate_research_request(context, path)
-    assert not (path.parent / "artifacts").exists()
-
-
-def _publication_flows(monkeypatch, root):
-    sessions = pd.bdate_range("2026-09-14", periods=6)
-    daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
-    inputs = pd.DataFrame({"Date": sessions, "Flow": [0.1, 0.8, 0.8, 0.1, 0.0, 0.0]})
-    _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root)
-
-
-@pytest.fixture
-def published_evaluation(request, frozen_seed_root, monkeypatch):
-    import pickle
-    import json
-    from czsc_trader.application import evaluate_research_request
-    from czsc_trader.research_tools._evaluation_workers import pack
-    from czsc_trader.application import research_evaluation_service as service
-
-    seed = frozen_seed_root / "published-evaluation.pkl"
-    if not seed.exists():
-        context, request_path, _ = request.getfixturevalue("evaluation_json")
-        _publication_flows(monkeypatch, context.root)
-        evaluate = service.evaluate_strategy
-        captured = []
-        def record(request):
-            result = evaluate(request)
-            captured.append(result)
-            return result
-        with monkeypatch.context() as patch:
-            patch.setattr(service, "evaluate_strategy", record)
-            first = evaluate_research_request(context, request_path)
-        output = request_path.parent / "artifacts/evaluation"
-        document = json.loads((output / "evaluation_result.json").read_text(encoding="utf-8"))
-        seed.write_bytes(pack((context, request_path, first, captured[0], document)))
-    return pickle.loads(seed.read_bytes())
-
-
-def test_research_evaluate_api_publishes_complete_hashed_evidence(published_evaluation, tmp_path, monkeypatch):
-    import json
-    from dataclasses import asdict
-    from hashlib import sha256
-    from czsc_trader.application import evaluate_research_request
-
-    context, request_path, command, result, document = published_evaluation
-    _publication_flows(monkeypatch, context.root)
-    first = asdict(command)
-    assert first["status"] == "PASS"
-    assert first["command"] == "research.evaluate"
-    assert first["result"]["run_count"] == 1
-    assert first["result"]["execution_mode"] == "FULL"
-    assert first["artifacts"] == {"directory": "experiments/S900/EXPLICIT01/artifacts/evaluation"}
-    second = asdict(evaluate_research_request(context, request_path.relative_to(context.root)))
-    assert second["result"] == first["result"]
-
-    output = request_path.parent / "artifacts/evaluation"
-    assert document["request_hash"] == first["result"]["request_hash"]
-    assert document["result_hash"] == first["result"]["result_hash"]
-    assert len(document["files"]) == 10
-    assert {name: sha256((output / name).read_bytes()).hexdigest()
-            for name in document["files"]} == document["files"]
-    assert (output / "full" / "research_case" / "account_daily.csv").is_file()
-    assert (output / "full" / "research_case" / "buyhold_metrics.json").is_file()
-    legacy = tmp_path / "legacy.csv"
-    result.runs[0].execution.account_daily.to_csv(legacy, index=False, encoding="utf-8", lineterminator="\n")
-    assert (output / "full/research_case/account_daily.csv").read_bytes() == legacy.read_bytes()
-    expected_json = json.dumps(result.runs[0].buyhold.metrics, ensure_ascii=False, indent=2, default=str) + "\n"
-    assert (output / "full/research_case/buyhold_metrics.json").read_bytes() == expected_json.encode("utf-8")
-
-
-@pytest.mark.parametrize("mutation", ["missing_file", "missing_entry", "empty_manifest", "extra_file", "changed_hash", "forged_hash"])
-def test_repeated_publication_rejects_changed_evidence(published_evaluation, tmp_path, monkeypatch, mutation):
-    import json
-    import shutil
-    from hashlib import sha256
-    from czsc_trader.application import RepositoryContext, ValidationError, evaluate_research_request
-
-    context, request_path, _, result, current = published_evaluation
-    # Each fault owns its directory and unpickled result/manifest, while the
-    # real public-entry evaluation and immutable publication are created once.
-    owner = tmp_path / "publication"
-    shutil.copytree(context.root, owner)
-    copied_request = owner / request_path.relative_to(context.root)
-    copied = copied_request.parent / "artifacts/evaluation"
-    copied_context = RepositoryContext.discover(owner)
-    _publication_flows(monkeypatch, owner)
-    name = "full/research_case/account_daily.csv"
-    if mutation in {"missing_file", "missing_entry", "empty_manifest"}:
-        (copied / name).unlink()
-    if mutation == "missing_entry":
-        del current["files"][name]
-    elif mutation == "empty_manifest":
-        current["files"] = {}
-    elif mutation == "extra_file":
-        (copied / "unexpected.csv").write_text("unexpected")
-    elif mutation in {"changed_hash", "forged_hash"}:
-        (copied / name).write_bytes((copied / name).read_bytes() + b" ")
-        if mutation == "forged_hash":
-            current["files"][name] = sha256((copied / name).read_bytes()).hexdigest()
-    (copied / "evaluation_result.json").write_text(json.dumps(current), encoding="utf-8")
-    with pytest.raises(ValidationError, match="file set|hash differs") as refused:
-        evaluate_research_request(copied_context, copied_request.relative_to(owner))
-    assert refused.value.code == "research_evaluation_failed"
-
-
-
-
 
 
 @pytest.fixture

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import date
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,12 +19,10 @@ def build_manifest(
     metrics: dict[str, object],
     audit: dict[str, object],
     application: dict[str, str],
-    run_date: date,
 ) -> dict[str, object]:
     manifest = {
-        "schema_version": 4,
+        "schema_version": 5,
         "engine": "TDR_BACKTEST_V2",
-        "run_date": run_date.isoformat(),
         "strategy": {
             "kind": snapshot.identity.kind,
             "reference": snapshot.identity.reference,

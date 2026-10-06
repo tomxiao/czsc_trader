@@ -27,7 +27,7 @@ from .contract import (
     Dataset,
     DataStatus,
     RequestRangePolicy,
-    DataSpace, PreparePolicy, PrepareStatus, PreparedDataRef,
+    DataSpace, DataSpaceBinding, PreparePolicy, PrepareStatus, PreparedDataRef,
     PrepareResult, ItemPrepareResult, ProviderConfig, ProviderBinding,
     PcfParameters, MoneyflowParameters,
 )
@@ -1022,6 +1022,13 @@ class Dataflows:
             }
         else:
             self._providers = {str(dataset): binding for dataset, binding in providers.bindings.items()}
+
+    @property
+    def binding(self) -> DataSpaceBinding:
+        """Describe the host-selected location and immutable space identity."""
+        return DataSpaceBinding(self._store.base_dir,
+                                DataSpace(self._store.root.relative_to(self._store.base_dir)),
+                                self._store.space_id)
 
     @property
     def datasets(self) -> tuple[str, ...]:

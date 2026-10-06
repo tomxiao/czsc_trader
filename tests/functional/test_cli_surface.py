@@ -12,7 +12,7 @@ import sys
 import pytest
 from czsc_trader.cli.main import main
 from czsc_trader.application import (
-    RepositoryContext, ValidationError, evaluate_research_request, preflight_experiment_archive,
+    RepositoryContext, ValidationError,
     validate_catalog, list_catalog, show_catalog, validate_templates, list_templates,
     show_template, instantiate_template,
 )
@@ -20,14 +20,14 @@ from czsc_trader.application import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_API = {
-    "CandidateInspectionRequest", "InspectionReplay", "EvaluationEvidenceReference",
+    "CandidateInspectionRequest", "InspectionReplay",
     "inspect_candidate", "record_research_decision", "freeze_candidate", "get_freeze_result",
     "assemble_delivery", "validate_delivery", "CandidateRegistrationRequest", "register_candidate",
     "load_candidate", "RepositoryContext", "CommandResult", "CommandError", "ValidationError",
-    "create_research_batch", "update_research_intent", "evaluate_research_request", "PredecessorEvidence",
-    "preflight_experiment_archive", "validate_archives", "validate_catalog", "list_catalog",
+    "create_research_batch", "update_research_intent", "create_research_context", "create_experiment",
+    "ResearchBatchRequest", "ResearchIntentUpdate", "ExperimentRequest", "publish_evidence", "validate_catalog", "list_catalog",
     "show_catalog", "validate_templates", "list_templates", "show_template", "instantiate_template",
-    "BacktestRequest", "run_backtest", "list_installed_strategies", "strategy_info", "deploy_strategy",
+    "BacktestRequest", "BacktestEvaluation", "run_backtest", "list_installed_strategies", "strategy_info", "deploy_strategy",
     "validate_release_package",
 }
 
@@ -193,15 +193,3 @@ def test_template_instantiation_rejects_deprecated_source(catalog_context):
     with pytest.raises(ValidationError, match="deprecated FSC source") as error:
         instantiate_template(catalog_context, _prototype(catalog_context))
     assert error.value.code == "strategy_template_binding_invalid"
-
-
-def test_public_preflight_reports_archive_warnings():
-    context = RepositoryContext.discover(ROOT)
-    report = preflight_experiment_archive(context, ROOT / "tests/fixtures/s008_research_cases/20260924_S008_EX99")
-    assert report.status == "PASS" and report.warnings
-
-
-def test_public_evaluation_rejects_missing_request(minimal_repo):
-    with pytest.raises(ValidationError) as error:
-        evaluate_research_request(RepositoryContext.discover(minimal_repo), Path("missing.json"))
-    assert error.value.code == "research_evaluation_failed"

@@ -2,7 +2,6 @@
 import pandas as pd
 import pytest
 from strategy_runtime import RuntimeContractError, implementation_sha256
-from czsc_trader.research_tools import evaluate_strategy
 from public_backtest_support import request_for_prices
 
 
@@ -20,12 +19,12 @@ def _history_request(candidate_payload, tmp_path, monkeypatch, *, invalid_target
     )
     dates = pd.bdate_range("2026-09-14", periods=3)
     daily = pd.DataFrame({"dt": dates, "open": 1., "close": 1.})
-    return request_for_prices(candidate_payload, tmp_path, monkeypatch, daily)[1]
+    return request_for_prices(candidate_payload, tmp_path, monkeypatch, daily)[:2]
 
 
 def test_srt_history_allows_unavailable_diagnostics_during_warmup(candidate_payload, tmp_path, monkeypatch):
-    request = _history_request(candidate_payload, tmp_path, monkeypatch)
-    result = evaluate_strategy(request)
+    context, request = _history_request(candidate_payload, tmp_path, monkeypatch)
+    result = context.evaluation.evaluate(request)
     assert len(result.runs) == 1
     assert len(result.runs[0].signals.decisions) == 2
     assert result.runs[0].signals.decisions["factor_score"].isna().all()
@@ -33,6 +32,6 @@ def test_srt_history_allows_unavailable_diagnostics_during_warmup(candidate_payl
 
 
 def test_srt_history_rejects_unavailable_target_position(candidate_payload, tmp_path, monkeypatch):
-    request = _history_request(candidate_payload, tmp_path, monkeypatch, invalid_target=True)
+    context, request = _history_request(candidate_payload, tmp_path, monkeypatch, invalid_target=True)
     with pytest.raises(RuntimeContractError, match="target positions"):
-        evaluate_strategy(request)
+        context.evaluation.evaluate(request)

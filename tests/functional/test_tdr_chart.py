@@ -1,13 +1,11 @@
 """Public backtest HTML safety and observation-to-ledger identity."""
 from dataclasses import replace
-from pathlib import Path
 import re
 import pandas as pd
 import pytest
 from strategy_runtime import implementation_sha256
 from czsc_trader.application import BacktestRequest, run_backtest
-from czsc_trader.application.errors import ExecutionError
-from public_backtest_support import request_for_prices, assert_public_charts, chart_payload
+from public_backtest_support import request_for_prices, assert_public_charts, chart_payload, render_output
 
 
 def test_backtest_chart_escapes_permitted_observation_text(candidate_payload, tmp_path, monkeypatch):
@@ -27,8 +25,8 @@ def test_backtest_chart_escapes_permitted_observation_text(candidate_payload, tm
     result = run_backtest(context, request.strategy, BacktestRequest(
         "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100,
     ))
-    assert result.status == "PASS"
-    output = Path(result.artifacts["output_dir"])
+    assert result.manifest["audit"]["status"] == "PASS"
+    output = render_output(result, context.repository.root)
     html = (output / "chart.html").read_text(encoding="utf-8")
     assert untrusted not in html
     assert chart_payload(html)["observations"][0]["observation"]["series"][0]["label"] == untrusted
@@ -50,8 +48,8 @@ def test_backtest_rejects_observations_that_differ_from_audited_decisions(candid
             first = replace(first, target_position=1. - first.target_position)
         return replace(replay, observations=(first, *replay.observations[1:]))
     monkeypatch.setattr("czsc_trader.backtesting.service.replay_srt_account", altered)
-    with pytest.raises(ExecutionError, match="chart observation"):
-        run_backtest(context, request.strategy, BacktestRequest(
-            "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100,
-        ))
-    assert not list(context.outputs_root.glob("*/manifest.json"))
+    result = run_backtest(context, request.strategy, BacktestRequest(
+        "588080.SH", "etf", days[20].date(), days[-1].date(), 100000, 100))
+    with pytest.raises(ValueError, match="chart observation"):
+        render_output(result, context.repository.root)
+    assert not (context.repository.root / "outputs").exists()

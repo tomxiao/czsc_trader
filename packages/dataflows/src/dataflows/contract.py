@@ -421,6 +421,21 @@ class DataSpace:
         _relative_path(self.path, "DataSpace.path")
 
 
+@dataclass(frozen=True, slots=True)
+class DataSpaceBinding:
+    """Read-only host binding for the managed DFLS space, without store internals."""
+
+    base_dir: Path
+    space: DataSpace
+    space_id: UUID
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.base_dir, Path) or not self.base_dir.is_absolute():
+            raise TypeError("binding base_dir must be an absolute Path")
+        if not isinstance(self.space, DataSpace) or not isinstance(self.space_id, UUID):
+            raise TypeError("binding requires DataSpace and UUID")
+
+
 class PreparePolicy(StrEnum):
     REUSE = "REUSE"
     REFRESH = "REFRESH"

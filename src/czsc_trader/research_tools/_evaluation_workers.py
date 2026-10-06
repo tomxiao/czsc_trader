@@ -9,19 +9,23 @@ import shutil
 from types import MappingProxyType
 
 from threadpoolctl import threadpool_limits
+from dataflows import Dataflows, DataSpace, ProviderConfig
 
 
 @dataclass(frozen=True)
 class PlatformEvaluator:
     base_dir: Path
+    space: DataSpace
 
     def __call__(self, request):
-        from .evaluation import evaluate_strategy
+        from .evaluation import _evaluate_strategy
         if set(request.input_bindings) != {item.window_id for item in request.windows}:
             raise ValueError("evaluation worker requires parent-prepared input bindings")
         if Path(request.repository_root).resolve() != self.base_dir.resolve():
             raise ValueError("evaluation worker repository differs from request")
-        return evaluate_strategy(request)
+        return _evaluate_strategy(request, dataflows=Dataflows(
+            base_dir=self.base_dir, space=self.space, providers=ProviderConfig(bindings={}),
+        ))
 
 
 def _mapping(value):
@@ -50,11 +54,12 @@ def compute(payload):
     root = create_temporary_directory(request.repository_root, "evaluation-workers",
                                       repository_root=request.repository_root)
     request = replace(request, execution_data=replace(request.execution_data, root=root))
-    with threadpool_limits(limits=native_threads):
-        result = evaluator(request)
-    output = pack(result)
     expected_parent = (request.repository_root / ".tmp" / "evaluation-workers").resolve()
     if root.resolve().parent != expected_parent:
         raise ValueError("evaluation workspace escaped its managed temporary root")
-    shutil.rmtree(root)
-    return output
+    try:
+        with threadpool_limits(limits=native_threads):
+            result = evaluator(request)
+        return pack(result)
+    finally:
+        shutil.rmtree(root)

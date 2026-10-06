@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import date, datetime
-
 from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_runtime import StrategyCandidate
 
@@ -10,29 +8,29 @@ from czsc_trader.backtesting import (
     resolve_candidate_snapshot,
     resolve_registered_strategy,
 )
-from czsc_trader.backtesting.service import _run_backtest
+from czsc_trader.backtesting.service import _run_backtest, BacktestEvaluation
 from czsc_trader.backtesting.execution_data import (
     BacktestExecutionDataNotReadyError,
 )
 
-from .context import RepositoryContext
+from ..research_tools.context import ResearchContext
 from .errors import ExecutionError
-from .results import CommandResult
 from .runtime_acceptance import _plain
 
 
 def run_backtest(
-    context: RepositoryContext,
+    context: ResearchContext,
     strategy: StrategyCandidate | StrategyVersion,
     request: BacktestRequest,
-    *,
-    run_date: date | None = None,
-) -> CommandResult:
+) -> BacktestEvaluation:
     """Replay a candidate or an authenticated frozen version through one engine.
 
-    TDR renders candidate and frozen-version charts from audited replay facts.
+    Returns audited candidate or frozen-version accounts without storing reports.
     This operation does not register, freeze or deploy the supplied strategy.
     """
+    if not isinstance(context, ResearchContext):
+        raise TypeError("backtest requires ResearchContext")
+    repository = context.repository
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
         raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
     if not isinstance(request, BacktestRequest):
@@ -41,10 +39,13 @@ def run_backtest(
         strategy.reference_id if isinstance(strategy, StrategyCandidate) else strategy.release_id
     )
     try:
+        batch_id = strategy.strategy_family_id if isinstance(strategy, StrategyCandidate) else strategy.strategy_id
+        if batch_id != context.strategy_id:
+            raise ValueError("backtest strategy belongs to another research batch")
         if isinstance(strategy, StrategyCandidate):
             payload = _plain(strategy.payload)
             snapshot = resolve_candidate_snapshot(
-                context,
+                repository,
                 strategy.reference_id,
                 payload,
                 canonical_sha256(payload),
@@ -52,19 +53,18 @@ def run_backtest(
                 runtime_root=strategy.source_root,
             )
         else:
-            stored = StrategyRegistry(context.strategy_root).get_version(
+            stored = StrategyRegistry(repository.strategy_root).get_version(
                 strategy.strategy_id,
                 strategy.version,
             )
             if stored.to_dict() != strategy.to_dict():
                 raise ValueError("backtest version differs from the frozen registry record")
-            snapshot = resolve_registered_strategy(context, strategy.strategy_id, strategy.version)
+            snapshot = resolve_registered_strategy(repository, strategy.strategy_id, strategy.version)
         summary = _run_backtest(
             snapshot=snapshot,
             request=request,
-            outputs_root=context.outputs_root,
-            run_date=run_date or datetime.now().astimezone().date(),
-            repository_root=context.root,
+            repository_root=repository.root,
+            dataflows=context.data,
         )
     except BacktestExecutionDataNotReadyError as exc:
         raise ExecutionError(
@@ -87,14 +87,4 @@ def run_backtest(
                 "symbol": request.symbol,
             },
         ) from exc
-    return CommandResult(
-        status="PASS",
-        command="backtest.run",
-        result={
-            "strategy": snapshot.identity.reference,
-            "metrics": summary.metrics,
-            "audit_status": summary.manifest["audit"]["status"],
-            "runtime_engine": summary.manifest["application"]["runtime_engine"],
-        },
-        artifacts={"output_dir": str(summary.output_dir)},
-    )
+    return summary

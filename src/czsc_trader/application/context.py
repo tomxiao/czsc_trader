@@ -32,12 +32,7 @@ class RepositoryContext:
     root: Path
     research_root: Path
     research_registry_root: Path
-    raw_dir: Path
-    research_data_root: Path
-    tdr_srt_root: Path
     strategy_root: Path
-    experiments_root: Path
-    outputs_root: Path
 
     @classmethod
     def discover(
@@ -59,10 +54,5 @@ class RepositoryContext:
             root=root,
             research_root=root / "research",
             research_registry_root=root / "research" / "registrations",
-            raw_dir=root / "data" / "raw",
-            research_data_root=root / "data" / "raw",
-            tdr_srt_root=root / "data" / "backtest",
             strategy_root=root / "strategies",
-            experiments_root=root / "experiments",
-            outputs_root=root / "outputs",
         )

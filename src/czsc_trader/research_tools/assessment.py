@@ -45,8 +45,8 @@ def _assessment_with_replays(
 ) -> Iterator[tuple[AssessmentEvidence, ReplayEvidence]]:
     if type(request) is not EvaluationRequest or type(result) is not EvaluationResult:
         raise TypeError("assessment adaptation requires EvaluationRequest and EvaluationResult")
-    if not result.runs or any(x.identity is None for x in result.runs) or result.attempt_id is None:
-        raise ValueError("assessment requires identified, managed evaluation attempts")
+    if not result.runs or any(x.identity is None for x in result.runs):
+        raise ValueError("assessment requires identified evaluation results")
     if request.execution_data is None:
         if result.execution_data is None or result.execution_data.fingerprint != result.data_identity:
             raise ValueError("assessment requires the evaluated execution data")
@@ -158,7 +158,7 @@ def _assessment_with_replays(
             AssessmentEvidence(
                 candidate,
                 request.experiment_id,
-                result.attempt_id,
+                result.result_hash[:32],
                 identity.evaluation_id,
                 result.request_hash,
                 result.result_hash,

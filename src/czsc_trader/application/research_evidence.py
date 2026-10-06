@@ -2,12 +2,21 @@
 
 from dataclasses import replace
 from hashlib import sha256
+import json
 
 from strategy_manager import freeze_contracts as f
 from strategy_manager.candidates import CandidateRegistration
 from strategy_manager.models import StrategyVersion, canonical_sha256
 from strategy_manager.write_lock import RegistryWriteLock
-from strategy_manager.freeze_store import _bytes, _read, _durable
+from .evidence_service import _publish_bytes
+
+
+def _bytes(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+
+
+def _read(path):
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def read_decision(root, ref):
@@ -44,7 +53,7 @@ def record_decision(context, decision):
         if path.exists():
             ref.evidence.resolve(context.root)
         else:
-            _durable(path, decision.to_dict(), temporary_root=context.root / ".tmp/research")
+            _publish_bytes(context.root, path, _bytes(decision.to_dict()))
     return ref
 
 
@@ -72,7 +81,7 @@ def validate_inspection(root, reference):
         or registration.origin.experiment_id != plan.source_experiment
     ):
         raise ValueError("inspection registration origin differs")
-    required = {registration.origin.preflight.sha256}
+    required = {ref.sha256 for ref in registration.origin.evidence}
     if registration.derivation:
         required.add(registration.derivation.evidence.sha256)
     if {ref.sha256 for ref in plan.registration_evidence} != required:

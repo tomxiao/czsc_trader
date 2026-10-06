@@ -93,16 +93,3 @@ def test_effective_repository_attributes_disable_eol_conversion():
     ).decode("utf-8").split("\0")[:-1]
     for path, attribute, value in zip(attributes[::3], attributes[1::3], attributes[2::3]):
         assert value == "unset", (path, attribute, value)
-
-
-def test_archive_manifest_is_emitted_as_utf8_lf(tmp_path):
-    from czsc_trader.experiment_archive import build_experiment_manifest
-
-    archive = tmp_path / "20990101_EOL"
-    archive.mkdir()
-    for name in ("01_goal.md", "02_design.md", "03_execution.md", "04_conclusion.md"):
-        (archive / name).write_bytes("合成档案\n".encode())
-    build_experiment_manifest(archive, {"experiment_id": archive.name, "status": "COMPLETE"})
-    content = (archive / "experiment_manifest.json").read_bytes()
-    assert b"\n" in content and b"\r" not in content
-    assert content.decode("utf-8").endswith("\n")

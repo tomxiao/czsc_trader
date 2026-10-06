@@ -80,7 +80,6 @@ try {
                 'tests/functional/test_research_delivery.py',
                 'tests/functional/test_current_contracts.py',
                 'tests/functional/test_evaluation.py',
-                'tests/functional/test_archive.py',
                 'tests/functional/test_public_backtest_api.py',
                 'tests/functional/test_temp_workspace.py'
             )
@@ -136,7 +135,6 @@ try {
                     [pscustomobject]@{Label = 'FSC'; Path = 'packages\factor_signal_catalog\tests'},
                     [pscustomobject]@{Label = 'STC'; Path = 'packages\strategy_template_catalog\tests'},
                     [pscustomobject]@{Label = 'SM'; Path = 'packages\strategy_manager\tests'},
-                    [pscustomobject]@{Label = 'REX'; Path = 'packages\research_experiment\tests'},
                     [pscustomobject]@{Label = 'SE'; Path = 'packages\strategy_evaluator\tests'},
                     [pscustomobject]@{Label = 'SRT'; Path = 'packages\strategy_runtime\tests'},
                     [pscustomobject]@{Label = 'TXE'; Path = 'packages\trading_execution_engine\tests'}
@@ -266,7 +264,7 @@ Write-Host '===== RUFF ====='
 $RuffTimer = [System.Diagnostics.Stopwatch]::StartNew()
 & $Python -m ruff check `
     src tests packages\factor_signal_catalog packages\strategy_template_catalog `
-    packages\strategy_manager packages\research_experiment `
+    packages\strategy_manager `
     packages\strategy_evaluator packages\dataflows `
     packages\strategy_runtime packages\trading_execution_engine `
     packages\paper_trading_engine\src packages\paper_trading_engine\tests

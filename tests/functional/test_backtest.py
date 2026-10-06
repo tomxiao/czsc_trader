@@ -1,7 +1,7 @@
 """Backtest acceptance against an isolated current-contract frozen fixture."""
 from datetime import date
+from dataclasses import replace
 from copy import deepcopy
-import json
 import re
 import pandas as pd
 import pytest
@@ -9,7 +9,7 @@ from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
 from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset
 from pathlib import Path
-from public_backtest_support import assert_public_charts
+from public_backtest_support import assert_public_charts, research_context, render_output
 from test_current_contracts import (
     current_frozen as current_frozen, inspection as inspection,
     completed as completed, managed_evaluation as managed_evaluation,
@@ -79,104 +79,67 @@ def execution_flows(root, *, adjusted_price=1., procurement=None):
                 "daily_session_coverage", "ohlcv_quality_evidence",
             )})
         return frame, metadata
-    return Dataflows(base_dir=root, space=DataSpace(Path("data/backtest")),
+    return Dataflows(base_dir=root, space=DataSpace(Path("research/S900/data")),
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
                                      Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
                                      Dataset.ETF_SHARE_SIZE)}))
 
 
-def test_current_frozen_backtest_publishes_account_and_evidence(current_frozen, monkeypatch):
-    context, version = current_frozen
+def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(current_frozen):
+    repository, version = current_frozen
     procurement = {"allowed": True, "requests": []}
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root, adjusted_price=2., procurement=procurement))
-    result = run_backtest(context, version, BacktestRequest(
-        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
-    ))
-    assert result.status == "PASS"
-    assert (context.root / "data/backtest").is_dir()
-    assert not (context.root / "data/backtest/market").exists()
-    outputs = list(context.outputs_root.glob("*/manifest.json"))
-    assert len(outputs) == 1
-    output = Path(result.artifacts["output_dir"])
-    assert output == outputs[0].parent
-    assert {"orders.csv", "fills.csv", "account_daily.csv", "trades.csv", "metrics.json", "chart.html", "report.md"} <= {p.name for p in output.iterdir()}
-    from strategy_runtime import StrategyObservation
-    observations = [StrategyObservation.from_dict(item) for item in json.loads((output / 'observations.json').read_text(encoding='utf-8'))]
-    decisions = pd.read_csv(output / 'decisions.csv')
-    assert len(observations) == len(decisions)
-    assert {'DEC-' + item.plan_identity[:20].upper() for item in observations} == set(decisions['decision_id'])
-    assert all(item.strategy.release_hash == version.release_hash for item in observations)
-    account = pd.read_csv(output / "account_daily.csv")
-    assert account.iloc[0]["cash_before"] == 100000
-    orders = pd.read_csv(output / "orders.csv")
-    assert orders["quantity"].mod(100).eq(0).all()
-    manifest = json.loads(outputs[0].read_text())
-    assert manifest["audit"]["status"] == "PASS"
-    assert manifest["application"]["runtime_engine"] == "srt"
-    html = (output / "chart.html").read_text(encoding="utf-8")
-    assert 'tdr-backtest-chart' in html
-    assert 'data-range="all" aria-pressed="true"' in html
-    assert 'forward-svg' in html and 'Plotly.newPlot' not in html
-    report = (output / "report.md").read_text(encoding="utf-8")
-    assert '| 策略 | 收益率 | 最大回撤 | 闭合交易数 | 卡玛比率 | 盈亏比 | 交易胜率 |' in report
-    assert '夏普率' not in report
-    cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
-    row = next(line for line in report.splitlines() if line.startswith(f'| {version.release_id} |'))
-    assert [value for _, value in cards] == [x.strip() for x in row.split('|')[2:-1]]
-    ma_html = (output / "ma_chart.html").read_text(encoding="utf-8")
-    assert 'forward-svg' in ma_html and 'Plotly.newPlot' not in ma_html
-    ma_cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', ma_html)
-    ma_row = next(line for line in report.splitlines() if line.startswith('| MA5/MA20 |'))
-    assert [value for _, value in ma_cards] == [x.strip() for x in ma_row.split('|')[2:-1]]
+    context = research_context(repository, execution_flows(repository.root, adjusted_price=2., procurement=procurement))
+    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
+    result = run_backtest(context, version, request)
+    assert result.manifest["audit"]["status"] == "PASS"
+    assert not (repository.root / "outputs").exists()
+    assert not (repository.root / "data/backtest").exists()
+    assert not list((repository.root / "research").glob("*/experiments/*/evidence/*"))
+    assert result.result.account_daily.iloc[0]["cash_before"] == 100000
+    assert result.result.orders["quantity"].mod(100).eq(0).all()
+    assert len(result.result.observations) == len(result.result.decisions)
+    assert all(item.strategy.release_hash == version.release_hash for item in result.result.observations)
+    output = render_output(result, repository.root)
     payload = assert_public_charts(output)
     assert payload["market_data"]["bars"][0]["close"] == 2.
     assert payload["execution"]["fills"][0]["price"] == 1.
-
-    original_inputs = manifest["execution_data"]
+    report = (output / "report.md").read_text(encoding="utf-8")
+    html = (output / "chart.html").read_text(encoding="utf-8")
+    cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
+    row = next(line for line in report.splitlines() if line.startswith(f'| {version.release_id} |'))
+    assert [value for _, value in cards] == [x.strip() for x in row.split('|')[2:-1]]
     original_requests = tuple(procurement["requests"])
-    assert original_requests
     procurement["allowed"] = False
-    repeated = run_backtest(context, version, BacktestRequest(
-        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
-    ))
-    assert repeated.status == "PASS"
-    assert repeated.artifacts["output_dir"] != result.artifacts["output_dir"]
-    repeated_manifest = json.loads((Path(repeated.artifacts["output_dir"]) / "manifest.json").read_text())
-    assert repeated_manifest["execution_data"] == original_inputs
-    assert repeated_manifest["strategy"] == manifest["strategy"]
-    assert repeated.result["metrics"] == result.result["metrics"]
+    repeated = run_backtest(context, version, request)
+    assert repeated.metrics == result.metrics
+    assert repeated.manifest["execution_data"] == result.manifest["execution_data"]
     assert tuple(procurement["requests"]) == original_requests
     procurement["allowed"] = True
-    weekend = run_backtest(context, version, BacktestRequest(
-        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 20), 100000, 100,
-    ))
-    assert weekend.status == "PASS"
-    weekend_manifest = json.loads((Path(weekend.artifacts["output_dir"]) / "manifest.json").read_text())
-    assert weekend_manifest["request"]["end"] == "2026-09-20"
-    assert weekend_manifest["execution_data"]["cutoff"] == "2026-09-18"
+    weekend = run_backtest(context, version, replace(request, end=date(2026, 9, 20)))
+    assert weekend.manifest["request"]["end"] == "2026-09-20"
+    assert weekend.manifest["execution_data"]["cutoff"] == "2026-09-18"
 
 
-def test_chart_failure_prevents_backtest_publication(current_frozen, monkeypatch):
-    context, version = current_frozen
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root))
-
+def test_chart_generation_is_explicit_and_cannot_block_account_computation(current_frozen, monkeypatch):
+    from czsc_trader.backtesting.service import _backtest_report_files
+    repository, version = current_frozen
+    context = research_context(repository, execution_flows(repository.root))
     def invalid_chart(*args, **kwargs):
         raise ValueError("chart facts are inconsistent")
-
     monkeypatch.setattr("czsc_trader.backtesting.service.build_backtest_chart_context", invalid_chart)
-    with pytest.raises(ExecutionError, match="chart facts are inconsistent"):
-        run_backtest(context, version, BacktestRequest(
-            "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100,
-        ))
-    assert not list(context.outputs_root.glob("*/manifest.json"))
+    result = run_backtest(context, version, BacktestRequest(
+        "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100))
+    assert result.manifest["audit"]["status"] == "PASS"
+    with pytest.raises(ValueError, match="chart facts are inconsistent"):
+        _backtest_report_files(result)
+    assert not (repository.root / "outputs").exists()
 
 
-def test_backtest_rejects_unpublished_session_without_outputs(current_frozen, monkeypatch):
-    context, version = current_frozen
-    monkeypatch.setattr("czsc_trader.backtesting._dataflows.create_backtest_dataflows", lambda repository_root, **kwargs: execution_flows(repository_root))
+def test_backtest_rejects_unpublished_session_without_outputs(current_frozen):
+    repository, version = current_frozen
+    context = research_context(repository, execution_flows(repository.root))
     with pytest.raises(ExecutionError):
         run_backtest(context, version, BacktestRequest(
-            "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 30), 100000, 100,
-        ))
-    assert not list(context.outputs_root.glob("*/manifest.json"))
+            "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 30), 100000, 100))
+    assert not (repository.root / "outputs").exists()

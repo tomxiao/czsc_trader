@@ -1,203 +1,94 @@
-"""Real Windows/spawn computation, parent-owned evidence and failure boundaries."""
-
-from dataclasses import replace
-from datetime import date
+"""Parallel account evaluation exposes results and errors without process persistence."""
+from concurrent.futures import CancelledError
+from dataclasses import dataclass, replace
 from pathlib import Path
-import json
 import os
 import time
 
-import pandas as pd
 import pytest
-from dataflows import Dataset, DataSpace
-from research_experiment import EvaluationAttemptStatus, EvaluationOutcome, EvaluationRecord, ExperimentResources
-from czsc_trader.research_tools import EvaluationExecutionError
-from czsc_trader.research_tools.evaluation import evaluate_strategy
+from dataflows import Dataflows, DataSpace, ProviderConfig
+from czsc_trader.research_tools.evaluation import _evaluate_strategy
+from czsc_trader.research_tools.evaluation_access import (
+    EvaluationAccess, EvaluationResources, EvaluationOutcome, EvaluationStatus,
+)
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
-from test_research_contract_upgrade import unprepared_evaluation as unprepared_evaluation
-from test_assessment_delivery import completed as completed
-from czsc_trader.research_tools import create_formal_experiment_context
 
 
-def synthetic_provider(request):
-    dates = pd.bdate_range("2026-09-14", periods=6)
-    dataset = str(request.dataset)
-    metadata = {"vendor": "test"}
-    if dataset == Dataset.TRADING_CALENDAR.value:
-        dates = pd.date_range(request.start, request.end)
-        return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), metadata
-    if dataset == "etf.share":
-        frame = pd.DataFrame({"Date": dates, "Flow": [0.1, 0.8, 0.8, 0.1, 0., 0.]})
-    elif dataset == Dataset.ETF_SHARE_SIZE.value:
-        frame = pd.DataFrame({"Date": dates, "TotalShare": range(1, 7)})
-        metadata["vendor_symbol"] = request.symbol
-    else:
-        frame = pd.DataFrame({"Date": dates, "Open": 1., "Close": 1., "High": 1.,
-                              "Low": 1., "Volume": 1000., "Amount": 1000.})
-        if dataset == Dataset.ETF_UNADJUSTED_DAILY.value:
-            metadata["adjustment"] = "none"
-    return frame.loc[frame.Date.between(pd.Timestamp(request.start), pd.Timestamp(request.end))].reset_index(drop=True), metadata
+@dataclass(frozen=True)
+class SyntheticEvaluator:
+    base_dir: Path
+    space: DataSpace
 
-
-def synthetic_evaluator(request):
-    # Expose actual process participation independently of platform result fields.
-    (request.repository_root / ".tmp" / f"worker-{os.getpid()}").touch()
-    time.sleep(.2)
-    if request.initial_cash == 13:
-        raise RuntimeError("synthetic computation failure")
-    assert set(request.input_bindings) == {item.window_id for item in request.windows}
-    return evaluate_strategy(request)
+    def __call__(self, request):
+        (self.base_dir / ".tmp").mkdir(exist_ok=True)
+        (self.base_dir / ".tmp" / f"worker-{os.getpid()}").touch()
+        time.sleep(.1)
+        if request.initial_cash == 13:
+            raise RuntimeError("synthetic computation failure")
+        if request.initial_cash == 14:
+            raise CancelledError("caller cancelled")
+        return _evaluate_strategy(request, dataflows=Dataflows(
+            base_dir=self.base_dir, space=self.space, providers=ProviderConfig(bindings={})))
 
 
 def terminated_worker(request):
     os._exit(7)
 
 
-@pytest.fixture
-def batch(managed_evaluation):
-    return _batch_context(managed_evaluation)
-
-
-def _batch_context(evaluation):
-    previous, request = evaluation
-    context = create_formal_experiment_context(previous.definition, repository_root=request.repository_root,
-        resources=ExperimentResources(2, 1), workspace=previous.workspace, data_space=DataSpace(Path("data/research")))
-    # Fault injection wraps the real evaluator; default production wiring is checked separately.
-    context.evaluation._batch_evaluator = synthetic_evaluator
-    return context, request
-
-
-@pytest.fixture
-def batch_input(request):
-    return _batch_context(request.getfixturevalue(request.param))
-
-
-def test_batch_multicore_failure_retry_and_order(batch):
-    context, request = batch
-    requests = (request, replace(request, initial_cash=13), replace(request, initial_cash=200_000), request)
-    outcomes = context.evaluation.evaluate_many(requests)
-    assert [x.record.status for x in outcomes] == [EvaluationAttemptStatus.SUCCEEDED,
-        EvaluationAttemptStatus.FAILED, EvaluationAttemptStatus.SUCCEEDED, EvaluationAttemptStatus.SUCCEEDED]
+def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_evaluation):
+    context, request = managed_evaluation
+    access = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2, 1), strategy_id="S900")
+    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/data")))
+    outcomes = access.evaluate_many((request, replace(request, initial_cash=13),
+                                     replace(request, initial_cash=200_000), request))
+    assert [x.status for x in outcomes] == [EvaluationStatus.SUCCEEDED, EvaluationStatus.FAILED,
+                                           EvaluationStatus.SUCCEEDED, EvaluationStatus.SUCCEEDED]
+    assert outcomes[1].error.code == "RuntimeError"
     assert outcomes[1].result is None
-    assert outcomes[1].record.error_code == "RuntimeError"
-    assert len({x.record.attempt_id for x in outcomes}) == 4
-    assert len(list((request.repository_root / ".tmp").glob("worker-*"))) == 2
-    assert not (request.repository_root / "research/registrations").exists()
-    for item in outcomes:
-        saved = context.workspace.path(f"evaluations/{item.record.attempt_id}/record.json")
-        assert json.loads(saved.read_text())["status"] == item.record.status.value
-        if item.result is not None:
-            context.workspace.validate_artifact(item.record.result_artifact)
-            assert item.result.attempt_id == item.record.attempt_id
-    again = context.evaluation.evaluate_many((request,))[0]
-    assert again.record.attempt_id not in {x.record.attempt_id for x in outcomes}
-    assert again.result.result_hash == outcomes[0].result.result_hash
-    assert len(context.trace.evaluations) == 5
-    # Successful workers release calculation scratch; the failed attempt keeps
-    # one workspace for diagnosis, independently of the shared DFLS assets.
-    assert len(list((request.repository_root / ".tmp/evaluation-workers").iterdir())) == 1
+    assert outcomes[0].result.result_hash == outcomes[3].result.result_hash
+    assert len(list((context.repository.root / ".tmp").glob("worker-*"))) == 2
+    assert not list(context.repository.root.rglob("record.json"))
+    assert not list((context.repository.root / ".tmp/evaluation-workers").iterdir())
+    assert not (context.repository.root / "data/backtest").exists()
+
+
+def test_cancellation_and_worker_loss_return_truthful_status(managed_evaluation):
+    context, request = managed_evaluation
+    access = context.evaluation
+    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/data")))
+    cancelled = access.evaluate_many((replace(request, initial_cash=14),))[0]
+    assert cancelled.status is EvaluationStatus.CANCELLED and cancelled.result is None
+    broken = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2))
+    broken._batch_evaluator = terminated_worker
+    outcomes = broken.evaluate_many((request, request))
+    assert all(x.status is EvaluationStatus.UNKNOWN and x.result is None for x in outcomes)
+
+
+def test_invalid_outcome_and_nested_parallelism_are_rejected(managed_evaluation):
+    context, request = managed_evaluation
+    result = context.evaluation.evaluate(request)
     with pytest.raises(ValueError, match="successful outcome"):
-        EvaluationOutcome(outcomes[0].record, None)
-    with pytest.raises(ValueError, match="successful outcome"):
-        EvaluationOutcome(outcomes[1].record, outcomes[0].result)
+        EvaluationOutcome(EvaluationStatus.SUCCEEDED, result.request_hash)
+    with pytest.raises(ValueError, match="workers=1"):
+        context.evaluation.evaluate_many((replace(request, workers=2),))
+    with pytest.raises(ValueError, match="request identities differ"):
+        EvaluationOutcome(EvaluationStatus.SUCCEEDED, "f" * 64, result)
 
 
-@pytest.mark.parametrize("change,batch_input,message", [
-    pytest.param({"workers": 2}, "unprepared_evaluation", "workers=1", id="workers"),
-    pytest.param({"data_cutoff": date(2026, 9, 1)}, "managed_evaluation",
-                 "execution data identity", id="prepared-cutoff"),
-], indirect=["batch_input"])
-def test_batch_prevalidates_all_before_execution(batch_input, change, message, monkeypatch):
-    from multiprocessing.process import BaseProcess
-    from dataflows import Dataflows
-    from test_research_contract_upgrade import _data_files
-
-    context, request = batch_input
-    before = _data_files(request)
-    def forbidden(*_args, **_kwargs):
-        pytest.fail("invalid batch must not start a worker")
-    monkeypatch.setattr(BaseProcess, "start", forbidden)
-    if request.execution_data is None:
-        monkeypatch.setattr(Dataflows, "prepare", lambda *_a, **_k: pytest.fail(
-            "invalid worker count must fail before any procurement"))
-    with pytest.raises(ValueError, match=message):
-        context.evaluation.evaluate_many((request, replace(request, **change)))
-    assert not context.trace.evaluations
-    assert not list((request.repository_root / ".tmp").glob("worker-*"))
-    assert not (request.repository_root / ".tmp/evaluation-workers").exists()
-    if request.execution_data is None:
-        assert _data_files(request) == before
+@pytest.mark.parametrize("kwargs", [{"max_workers": 0}, {"native_threads_per_worker": True}, {"random_seed": -1}])
+def test_invalid_resources_reject_before_computation(kwargs):
+    with pytest.raises(ValueError):
+        EvaluationResources(**kwargs)
 
 
-def test_batch_transport_is_preflighted(batch):
-    context, request = batch
-    context.evaluation._batch_evaluator = lambda request: None
-    with pytest.raises((AttributeError, TypeError)):
-        context.evaluation.evaluate_many((request,))
-    assert not context.trace.evaluations
-
-
-def test_batch_evidence_write_failure_raises(batch, monkeypatch):
-    from czsc_trader.research_tools._evaluation_records import _CallEvidence
-    context, request = batch
-    def fail(*args):
-        raise OSError("synthetic disk failure")
-    monkeypatch.setattr(_CallEvidence, "result", fail)
-    with pytest.raises(EvaluationExecutionError) as error:
-        context.evaluation.evaluate_many((request, request))
-    assert error.value.error_code == "EVIDENCE_WRITE_FAILED"
-    assert len(context.trace.evaluations) == 2
-    assert len({x.attempt_id for x in context.trace.evaluations}) == 2
-    assert all(x.status is not EvaluationAttemptStatus.SUCCEEDED for x in context.trace.evaluations)
-    assert all(x.status is not EvaluationAttemptStatus.STARTED for x in context.trace.evaluations)
-    for record in context.trace.evaluations:
-        saved = context.workspace.path(f"evaluations/{record.attempt_id}/record.json")
-        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == record
-
-
-def test_batch_context_owner_and_completed_guards(batch, completed, monkeypatch):
-    context, request = batch
-    with monkeypatch.context() as process_fault:
-        # Simulate the process boundary without changing the stored owner field.
-        process_fault.setattr(os, "getpid", lambda: -1)
-        with pytest.raises(RuntimeError, match="another process"):
-            context.evaluation.evaluate_many((request,))
-    assert not context.trace.evaluations
-    _, sealed, sealed_request, _, _ = completed
-    with pytest.raises(RuntimeError, match="complete"):
-        sealed.evaluation.evaluate_many((sealed_request,))
-
-
-def test_default_formal_evaluator_transport_and_execution(managed_evaluation):
-    previous, request = managed_evaluation
-    context = create_formal_experiment_context(previous.definition, repository_root=request.repository_root,
-        resources=ExperimentResources(2, 1), workspace=previous.workspace, data_space=DataSpace(Path("data/research")))
-    requests = (request, replace(request, initial_cash=200_000))
-    outcomes = context.evaluation.evaluate_many(requests)
-    assert len(outcomes) == len(requests) == 2
-    assert len({item.record.attempt_id for item in outcomes}) == 2
-    assert [item.record for item in outcomes] == list(context.trace.evaluations)
-    for item, original in zip(outcomes, requests):
-        assert item.record.status is EvaluationAttemptStatus.SUCCEEDED
-        assert item.result is not None and len(item.result.runs) == 1
-        assert item.result.attempt_id == item.record.attempt_id
-        assert item.result.runs[0].execution.account_daily.iloc[0].cash_before == original.initial_cash
-        saved = context.workspace.path(f"evaluations/{item.record.attempt_id}/record.json")
-        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == item.record
-        context.workspace.validate_artifact(item.record.result_artifact)
-
-
-
-
-def test_dead_worker_is_unknown_and_never_success(batch):
-    context, request = batch
-    context.evaluation._batch_evaluator = terminated_worker
-    outcomes = context.evaluation.evaluate_many((request, request))
-    assert len(outcomes) == 2
-    assert len({x.record.attempt_id for x in outcomes}) == 2
-    assert [x.record for x in outcomes] == list(context.trace.evaluations)
-    assert all(x.record.status is EvaluationAttemptStatus.UNKNOWN for x in outcomes)
-    assert all(x.result is None and x.record.completed_count is None for x in outcomes)
-    for item in outcomes:
-        saved = context.workspace.path(f"evaluations/{item.record.attempt_id}/record.json")
-        assert EvaluationRecord.from_dict(json.loads(saved.read_text())) == item.record
+def test_batch_data_preparation_failure_is_returned_for_only_the_failed_item(managed_evaluation):
+    context, request = managed_evaluation
+    bound = context.evaluation.prepare(request)
+    read_only = Dataflows(base_dir=context.repository.root, space=context.data.binding.space,
+                         providers=ProviderConfig(bindings={}))
+    access = EvaluationAccess(dataflows=read_only, strategy_id="S900")
+    missing = replace(request, symbol="518850.SH", execution_data=None, input_bindings={})
+    outcomes = access.evaluate_many((bound, missing))
+    assert outcomes[0].status is EvaluationStatus.SUCCEEDED
+    assert outcomes[1].status is EvaluationStatus.FAILED and outcomes[1].result is None
+    assert outcomes[1].error.code

@@ -4,7 +4,10 @@ import json
 import re
 
 import pandas as pd
-from strategy_runtime import StrategyCandidate
+from strategy_runtime import StrategyCandidate, StrategyRuntime
+from dataflows import DataSpace
+from czsc_trader.research_tools.context import ResearchContext, ResearchBatchRef
+from czsc_trader.research_tools.evaluation_access import EvaluationAccess
 
 from czsc_trader.application import RepositoryContext
 from czsc_trader.research_tools import (
@@ -19,12 +22,14 @@ def request_for_prices(candidate_payload, root, monkeypatch, prices, *, start_in
     if flow is None:
         flow = [0.1] * len(prices)
     features = pd.DataFrame({"Date": prices["dt"], "Flow": flow})
-    flows = _install_candidate_dataflows(monkeypatch, features, prices, base_dir=root)
+    flows = _install_candidate_dataflows(monkeypatch, features, prices, base_dir=root, space=DataSpace(Path("research/S900/data")))
     marker = Path(root) / "pyproject.toml"
     if not marker.exists():
         (Path(root) / "src/czsc_trader").mkdir(parents=True, exist_ok=True)
         marker.write_text("[project]\nname='public-backtest-test'\n", encoding="utf-8")
-    context = RepositoryContext.discover(root, explicit_root=root)
+    repository = RepositoryContext.discover(root, explicit_root=root)
+    context = ResearchContext(ResearchBatchRef("S900"), repository, flows, StrategyRuntime(dataflows=flows),
+                              EvaluationAccess(dataflows=flows, strategy_id="S900"))
     candidate = StrategyCandidate("S900", "C0001", payload, source)
     request = EvaluationRequest(
         root, "synthetic", candidate,
@@ -84,3 +89,30 @@ def assert_public_charts(output):
             assert row["session"] == str(fact.get("fill_time", fact.get("time", fact.get("execution_date"))))[:10]
         assert all(row["signal_date"] < row["valid_session"] for row in payload["observations"])
     return chart_payload((output / "chart.html").read_text(encoding="utf-8"))
+
+
+def research_context(repository, flows, strategy_id="S900"):
+    return ResearchContext(ResearchBatchRef(strategy_id), repository, flows,
+                           StrategyRuntime(repository.strategy_root, dataflows=flows),
+                           EvaluationAccess(dataflows=flows, strategy_id=strategy_id))
+
+
+def render_output(evaluation, repository_root):
+    from czsc_trader.backtesting.service import _backtest_report_files
+    from czsc_trader.temp_workspace import create_temporary_directory
+    output = create_temporary_directory(repository_root, "backtest-report-tests")
+    for name, content in _backtest_report_files(evaluation).items():
+        (output / name).write_bytes(content)
+    return output
+
+
+def publish_reports(context, evaluation):
+    from czsc_trader.application import create_experiment, publish_evidence
+    from czsc_trader.application.research_governance_service import ExperimentRequest
+    from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
+    from czsc_trader.backtesting.service import _backtest_report_files
+    experiment = create_experiment(context, ExperimentRequest("Backtest", "Inspect account results", evaluation.request.end))
+    media = {"html": "text/html", "md": "text/markdown", "json": "application/json", "csv": "text/csv"}
+    return {name: publish_evidence(context, MaterialEvidenceWrite(experiment, name, content,
+                    media[name.rsplit(".", 1)[1]], name.rsplit(".", 1)[1]))
+            for name, content in _backtest_report_files(evaluation).items()}
