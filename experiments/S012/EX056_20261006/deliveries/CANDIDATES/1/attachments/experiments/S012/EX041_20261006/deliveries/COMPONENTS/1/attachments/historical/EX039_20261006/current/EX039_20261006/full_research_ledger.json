@@ -1,0 +1,2986 @@
+[
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C01_VOL20",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "风险尺度与仓位/退出输入",
+    "label": "未来3/5/10/20日最大不利价格幅度",
+    "judgment_at_that_time": "控制动量与年份后仍有风险信息；5日IC=0.182、延迟2日=0.160。不能直接推出最优减仓。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "SUPPORTED",
+        "explanation": "volatility_20：控制动量与年份后仍有风险信息；5日IC=0.182、延迟2日=0.160。不能直接推出最优减仓。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "SUPPORTED",
+        "explanation": "控制动量与年份后仍有风险信息；5日IC=0.182、延迟2日=0.160。不能直接推出最优减仓。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C02_MOM20",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "上涨后的回撤风险状态",
+    "label": "未来3/5/10/20日最大不利价格幅度",
+    "judgment_at_that_time": "控制波动与年份后仍有风险信息；20日IC=0.226、延迟2日=0.198。强趋势同时可能贡献收益，不机械反向交易。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "SUPPORTED",
+        "explanation": "momentum_20：控制波动与年份后仍有风险信息；20日IC=0.226、延迟2日=0.198。强趋势同时可能贡献收益，不机械反向交易。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "SUPPORTED",
+        "explanation": "控制波动与年份后仍有风险信息；20日IC=0.226、延迟2日=0.198。强趋势同时可能贡献收益，不机械反向交易。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C03_KURT60",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "冲击集中后的风险/收益状态过滤",
+    "label": "未来10/20日收益及不利价格幅度",
+    "judgment_at_that_time": "20日收益IC=-0.279、普查q=0.047；延迟2日=-0.282，非重叠及留一年方向稳定。较长标签用于状态判断，不限定实际持仓期限。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "SUPPORTED",
+        "explanation": "fresh60_return__kurtosis：20日收益IC=-0.279、普查q=0.047；延迟2日=-0.282，非重叠及留一年方向稳定。较长标签用于状态判断，不限定实际持仓期限。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "SUPPORTED",
+        "explanation": "20日收益IC=-0.279、普查q=0.047；延迟2日=-0.282，非重叠及留一年方向稳定。较长标签用于状态判断，不限定实际持仓期限。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C04_REV1",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "候选短期入场信息",
+    "label": "未来3/5/10日开盘到开盘收益",
+    "judgment_at_that_time": "5日IC=0.064，但普查多重调整q约0.331；可进入受控策略比较，不能宣称独立Alpha成立。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "reversal_1：5日IC=0.064，但普查多重调整q约0.331；可进入受控策略比较，不能宣称独立Alpha成立。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日IC=0.064，但普查多重调整q约0.331；可进入受控策略比较，不能宣称独立Alpha成立。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C05_MOM3",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "候选短期入场信息",
+    "label": "未来3/5/10日开盘到开盘收益",
+    "judgment_at_that_time": "5日IC=-0.089，延迟2日=-0.065；多重调整q约0.371，期限稳定性弱于状态组件。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "momentum_3反向：5日IC=-0.089，延迟2日=-0.065；多重调整q约0.371，期限稳定性弱于状态组件。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日IC=-0.089，延迟2日=-0.065；多重调整q约0.371，期限稳定性弱于状态组件。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C06_GAP",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "与反转比较的短期信息",
+    "label": "未来3/5/10日收益及3/5日下行风险",
+    "judgment_at_that_time": "与1日反转秩相关约-0.81；5日收益IC延迟2日从-0.061降至-0.007，下行风险方向反转，不叠加为独立核心组件。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "REDUNDANT",
+        "explanation": "opening_gap：与1日反转秩相关约-0.81；5日收益IC延迟2日从-0.061降至-0.007，下行风险方向反转，不叠加为独立核心组件。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "REDUNDANT",
+        "explanation": "与1日反转秩相关约-0.81；5日收益IC延迟2日从-0.061降至-0.007，下行风险方向反转，不叠加为独立核心组件。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C07_RANGE",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "替代风险尺度",
+    "label": "未来3/5/10日不利价格幅度",
+    "judgment_at_that_time": "与20日波动相关约0.68，控制后增量区间跨零，优先使用较简单的20日波动。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "REDUNDANT",
+        "explanation": "range_5：与20日波动相关约0.68，控制后增量区间跨零，优先使用较简单的20日波动。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "REDUNDANT",
+        "explanation": "与20日波动相关约0.68，控制后增量区间跨零，优先使用较简单的20日波动。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C08_AUTOCORR",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "收益自相关的正向延续解释",
+    "label": "未来10/20日收益",
+    "judgment_at_that_time": "预设正方向被反证；负方向相关的区间仍跨零，保留全部结果，当前不作为核心组件。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INEFFECTIVE",
+        "explanation": "fresh20_return__autocorrelation__lag_2：预设正方向被反证；负方向相关的区间仍跨零，保留全部结果，当前不作为核心组件。"
+      },
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "INEFFECTIVE",
+        "explanation": "预设正方向被反证；负方向相关的区间仍跨零，保留全部结果，当前不作为核心组件。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C09_MACRO",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "宏观方向与风险信息",
+    "label": "3/5/10/20日收益及下行风险",
+    "judgment_at_that_time": "当前日频滞后与控制口径下未见明确增量；不能从本轮结果推断经济机制不存在。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "real_yield/nominal_yield/fx/vix/shibor各水平与变化：当前日频滞后与控制口径下未见明确增量；不能从本轮结果推断经济机制不存在。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C10_RELATIVE",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "价格偏离和境内市场状态",
+    "label": "3/5/10/20日收益及下行风险",
+    "judgment_at_that_time": "未纳入核心面板。ETF/现货价格比不是ETF净值溢价，期货不使用换月拼接收益。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "ETF/SGE相对价格、SGE动量、期货基差与曲线：未纳入核心面板。ETF/现货价格比不是ETF净值溢价，期货不使用换月拼接收益。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C11_FLOWS",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "份额变化与资金流线索",
+    "label": "3/5/10/20日收益及下行风险",
+    "judgment_at_that_time": "年度事件均值存在差异，但控制趋势波动后证据不足；份额变化不等于可交易的即时资金冲击。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "shares_level/shares_change_5/shares_change_20：年度事件均值存在差异，但控制趋势波动后证据不足；份额变化不等于可交易的即时资金冲击。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "C12_REMAINDER",
+    "definition": {
+      "definition_sha256": "1cfc8c2d1022df91b88a0f5756a7720bead91a8ceef51acf80b575e91afec848",
+      "entrypoint": "analysis.build_features",
+      "experiment_id": "EX004_20261004",
+      "source_sha256": "cb1f444246794ea0cd0218bb4197ba53ff50b8ff68b4f19ae0db9997325171a9",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "广泛普查及去冗余对照",
+    "label": "3/5/10/20日收益及下行风险",
+    "judgment_at_that_time": "完整保留63个特征和504路径；标准差等与原有波动同义的特征不重复计为新证据，其余未形成足够独立增量。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX004_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "其余价量路径与tsfresh形态定义，完整列名见feature_definitions.json：完整保留63个特征和504路径；标准差等与原有波动同义的特征不重复计为新证据，其余未形成足够独立增量。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O01_FX_DIP",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "有条件的低频收益机会候选",
+    "label": "3/5日次开盘收益；1/10日为期限反证",
+    "judgment_at_that_time": "强汇率支持叠加ETF回调：保守可得边界后5日净0.779%、匹配毛增量0.722%；支持开发池机会线索。q=0.280，限价去重1.10次/60日，尚不能作为已确认独立Alpha。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "SUPPORTED",
+        "explanation": "强汇率支持叠加ETF回调：保守可得边界后5日净0.779%、匹配毛增量0.722%；支持开发池机会线索。q=0.280，限价去重1.10次/60日，尚不能作为已确认独立Alpha。"
+      },
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "年度有反例、平移多重q=0.280、限价机会容量不足；用户账户目标尚未验证。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O02_FX_CALENDAR",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "O01的时间尺度敏感性定义",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "改用5个ETF交易日计算汇率仍同向，属于O01同一信息来源，不重复算独立机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "REDUNDANT",
+        "explanation": "改用5个ETF交易日计算汇率仍同向，属于O01同一信息来源，不重复算独立机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O03_FX_ALONE",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "汇率支持的方向性候选",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "5日净0.577%、匹配扣费后增量0.191%；3日开盘事件密度5.65/60日但扣费后增量仅0.030%，年度与实际限价容量仍弱。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日净0.577%、匹配扣费后增量0.191%；3日开盘事件密度5.65/60日但扣费后增量仅0.030%，年度与实际限价容量仍弱。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O04_TURN",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "回调后转强的入场候选",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "5日净0.342%，但匹配扣费后增量仅0.007%，不能将市场本身上涨当作择时优势。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日净0.342%，但匹配扣费后增量仅0.007%，不能将市场本身上涨当作择时优势。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O05_SGE_RELATIVE",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "相对境内黄金价格修复候选",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "5日净0.363%，匹配扣费后增量仅0.004%；SGE比值不代表ETF净值折溢价。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日净0.363%，匹配扣费后增量仅0.004%；SGE比值不代表ETF净值折溢价。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O06_BROAD_FX",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "fx.masks",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "扩大机会密度的竞争条件",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "放宽后5日匹配扣费后增量-0.165%；前收盘限价去重事件净-0.467%，增加密度稀释质量。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INEFFECTIVE",
+        "explanation": "放宽后5日匹配扣费后增量-0.165%；前收盘限价去重事件净-0.467%，增加密度稀释质量。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O07_OVERSEAS_GOLD",
+    "definition": {
+      "definition_sha256": "e482f3be1c459cb0f9476efac585d0e4a5f52ad67aedc5deee1d037d907c1125",
+      "entrypoint": "gold.build",
+      "experiment_id": "EX010_20261004",
+      "source_sha256": "32ea1abe75629c09f49e3d8b8440ced02c42d0d49db1b8d806206e011bdf93df",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "境外黄金补涨与相对价格修复",
+    "label": "盘前决定后的1/3/5/10日开盘收益",
+    "judgment_at_that_time": "原强信号受时间语义污染；保守可用时间后大部分扣费增量转负，少量正事件不足以成为独立机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX010_20261004",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "原强信号受时间语义污染；保守可用时间后大部分扣费增量转负，少量正事件不足以成为独立机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O08_BREAKOUT",
+    "definition": {
+      "definition_sha256": "d1ea598fdbfcb6609e951efc075e87794c72a430b4fafd02fb6f2dd1ec223e1a",
+      "entrypoint": "analysis.analyze",
+      "experiment_id": "EX006_20261004",
+      "source_sha256": "f5baac55c9a09835a380561d8be1f1df75c51a39a0d7cdf2290794feab2d82a0",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "突破延续的竞争解释",
+    "label": "3/5日次开盘收益",
+    "judgment_at_that_time": "EX006固定价量条件在主要期限未提供足够费用后增量；相关检验不依赖受影响的FX字段。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX006_20261004",
+        "status": "INEFFECTIVE",
+        "explanation": "EX006固定价量条件在主要期限未提供足够费用后增量；相关检验不依赖受影响的FX字段。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "R01_AUXILIARY",
+    "definition": {
+      "definition_sha256": "e0226dcb9434f1d794bf474a0989679cab335d83156ca4be5d3ad375d54548d3",
+      "entrypoint": "experiment.analyze",
+      "experiment_id": "EX005_20261004",
+      "source_sha256": "7be4eac98fa42d7b86b246e1c7dd25ddf0aeb00cba871ca2058ca427dd1877d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "原波动、趋势后回撤、冲击集中度风险/状态辅助",
+    "label": "风险3/5/10/20日；收益状态10/20日",
+    "judgment_at_that_time": "继承EX005三项角色证据；原风险定义及证据不依赖FXCM数据，不作为本轮新机会数。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX005_20261004",
+        "status": "SUPPORTED",
+        "explanation": "继承EX005三项角色证据；原风险定义及证据不依赖FXCM数据，不作为本轮新机会数。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "O02_LAST_HOUR_RELATIVE_LAG",
+    "definition": {
+      "definition_sha256": "f8f665d9df6c4d0dedcff030ef96d694dac9ff8e9f59e1ef5e984271ded9bf82",
+      "entrypoint": "mechanism.features",
+      "experiment_id": "EX014_20261005",
+      "source_sha256": "207570ee076b924c0bf811b968b7e460f85926f8b18ddd8392935119e9cfce26",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会机制诊断",
+    "label": "T+1至T+4开盘净收益",
+    "judgment_at_that_time": "主路径费用后增量或异常敏感性未支持机制；保留负面证据。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX014_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "主路径费用后增量或异常敏感性未支持机制；保留负面证据。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N01_LATE_VOLUME",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "低尾盘成交占比的弱机会线索",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "5日匹配增量0.0619%、OLS0.0114%；延迟两日匹配转负，筛查48信号q=1，保留候选线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "5日匹配增量0.0619%、OLS0.0114%；延迟两日匹配转负，筛查48信号q=1，保留候选线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N02_DRY_PULLBACK",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "趋势内缩量回调的机会诊断",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "24事件，匹配增量0.1166%；排异常匹配转负、剔除最佳5次均值负，样本弱。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "24事件，匹配增量0.1166%；排异常匹配转负、剔除最佳5次均值负，样本弱。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N03_LONG_CLOSURE",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "假期持有补偿与后续修复的竞争解释",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "T+1休市前最后开市日入场，1/3日净收益负；5日正结果不能证明假期补偿，最佳5次剔除后负。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "T+1休市前最后开市日入场，1/3日净收益负；5日正结果不能证明假期补偿，最佳5次剔除后负。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N04_THIN_IMPACT",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "低量冲击结构的稀疏线索",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "9事件、4非重叠事件，2025/2026无事件；EX016四事件循环块区间退化，无有效区间证据。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "9事件、4非重叠事件，2025/2026无事件；EX016四事件循环块区间退化，无有效区间证据。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N05_PEER_ABSORPTION",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "同类价格落后后吸收的机制反证",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "5日匹配与OLS增量均负；成交子集净收益不能代替因果预测或相对真值。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "5日匹配与OLS增量均负；成交子集净收益不能代替因果预测或相对真值。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N06_INTRADAY_SHAPE_CENSUS",
+    "definition": {
+      "definition_sha256": "0869c639e61762be30c7773c0427dfd2e26efa2e77e0f820624616c9aa317d25",
+      "entrypoint": "analysis.make_signals",
+      "experiment_id": "EX015_20261005",
+      "source_sha256": "8fffa1c74ea1f838aac4387150c441391b016a71f76c1694b2a78efb6814f4ff",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "日内顺序、趋势效率与tsfresh形态的广泛对照",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "所有48信号完整台账；多数匹配增量负，tsfresh形态未支持独立收益；主方向q全1。代表时点统计仅为入口，完整族见协议及台账。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX015_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "所有48信号完整台账；多数匹配增量负，tsfresh形态未支持独立收益；主方向q全1。代表时点统计仅为入口，完整族见协议及台账。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N07_ACTUAL_VWAP_DISCOUNT",
+    "definition": {
+      "definition_sha256": "6f6b5d457874a5d6799083fd0c2bdbbbcedea1b3093d18f84d638cc79b3a2851",
+      "entrypoint": "mechanism.extend",
+      "experiment_id": "EX016_20261005",
+      "source_sha256": "df2801f5d45f4072e0501d3d334f7f04d35d3ea9eaa2b064862568af035f4796",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "收盘低于实际成交重心的修复假设",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "278事件，5日净均值-0.0033%、匹配增量-0.3588%；8实际VWAP方向已测，不能把低于均价自动视为便宜。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX016_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "278事件，5日净均值-0.0033%、匹配增量-0.3588%；8实际VWAP方向已测，不能把低于均价自动视为便宜。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N08_NORMAL_PRICING_STATE",
+    "definition": {
+      "definition_sha256": "15f5c23514eabff7ba3c0112c56f4e50cf8df2b5ac55bcd3782db0518d715c3e",
+      "entrypoint": "mechanism.make_states",
+      "experiment_id": "EX017_20261005",
+      "source_sha256": "42682d843e49952d7c30fe315abab128064a3976da1054a37e537e1e9cd51611",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "正常定价状态的候选用途",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "538事件绝对均值正，但匹配和OLS增量负；不能单独作为有收益增量的机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX017_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "538事件绝对均值正，但匹配和OLS增量负；不能单独作为有收益增量的机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N09_NORMAL_PRICING_MOMENTUM",
+    "definition": {
+      "definition_sha256": "15f5c23514eabff7ba3c0112c56f4e50cf8df2b5ac55bcd3782db0518d715c3e",
+      "entrypoint": "mechanism.make_states",
+      "experiment_id": "EX017_20261005",
+      "source_sha256": "42682d843e49952d7c30fe315abab128064a3976da1054a37e537e1e9cd51611",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "正常定价下短期上涨的条件性机会候选",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "298事件，5日净0.4956%、匹配增量0.1396%、OLS0.1705%；限价2.658次/60日。支持开发池条件线索；q=0.407、双倍费用/延迟转负，账户目标未验证。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX017_20261005",
+        "status": "SUPPORTED",
+        "explanation": "298事件，5日净0.4956%、匹配增量0.1396%、OLS0.1705%；限价2.658次/60日。支持开发池条件线索；q=0.407、双倍费用/延迟转负，账户目标未验证。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "N10_O01_MID_FILTER",
+    "definition": {
+      "definition_sha256": "15f5c23514eabff7ba3c0112c56f4e50cf8df2b5ac55bcd3782db0518d715c3e",
+      "entrypoint": "mechanism.make_states",
+      "experiment_id": "EX017_20261005",
+      "source_sha256": "42682d843e49952d7c30fe315abab128064a3976da1054a37e537e1e9cd51611",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "O01正常定价过滤的竞争解释",
+    "label": "T+1至T+6开盘净事件收益；1/3日及其他期限/成本为反证",
+    "judgment_at_that_time": "O01从79事件缩为35，5日净0.0086%、匹配增量-0.4275%；当前不建议将中段机械叠加于O01。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX017_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "O01从79事件缩为35，5日净0.0086%、匹配增量-0.4275%；当前不建议将中段机械叠加于O01。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q01_AFTERNOON_SUPPORT",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "下午转涨的确认反证",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "O01条件增量负；N09均值微升但固定父及限价贡献明显下降，不作为推荐确认门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "o01条件作用；O01条件增量负；N09均值微升但固定父及限价贡献明显下降，不作为推荐确认门。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "mid_momentum_positive条件作用；O01条件增量负；N09均值微升但固定父及限价贡献明显下降，不作为推荐确认门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q02_LAST_HOUR_SUPPORT",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "尾盘转涨的确认反证",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "两个机会主5日条件均值及固定父、限价贡献均下降，缺少确认支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "o01条件作用；两个机会主5日条件均值及固定父、限价贡献均下降，缺少确认支持。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "mid_momentum_positive条件作用；两个机会主5日条件均值及固定父、限价贡献均下降，缺少确认支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q03_UPPER_HALF_CLOSE",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "强收盘位置的条件确认诊断",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "O01条件均值上升但固定父与限价贡献下降；N09均值增量很小，区间及执行不足。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "o01条件作用；O01条件均值上升但固定父与限价贡献下降；N09均值增量很小，区间及执行不足。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "mid_momentum_positive条件作用；O01条件均值上升但固定父与限价贡献下降；N09均值增量很小，区间及执行不足。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q04_SHOCK_RECOVERY",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "最差分钟变动后恢复的条件诊断",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "O01条件均值略升但固定贡献及执行恶化；N09条件增量负。恢复不是最低价后反弹或主动买单。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "o01条件作用；O01条件均值略升但固定贡献及执行恶化；N09条件增量负。恢复不是最低价后反弹或主动买单。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INEFFECTIVE",
+        "explanation": "mid_momentum_positive条件作用；O01条件均值略升但固定贡献及执行恶化；N09条件增量负。恢复不是最低价后反弹或主动买单。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q05_PEER_PRICE_SUPPORT",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "同类日内方向的确认候选",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "同类正向有条件均值增量，但共同底层黄金资产及自身方向混淆；EX019不一致小子组/区间不足，不能登记为第二个独立确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "o01条件作用；同类正向有条件均值增量，但共同底层黄金资产及自身方向混淆；EX019不一致小子组/区间不足，不能登记为第二个独立确认。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "mid_momentum_positive条件作用；同类正向有条件均值增量，但共同底层黄金资产及自身方向混淆；EX019不一致小子组/区间不足，不能登记为第二个独立确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q06_VOLUME_PARTICIPATION",
+    "definition": {
+      "definition_sha256": "7eda86a31d87fd3e9cc20976dc052fdf2eb24273e7bf868cfe4cabac09abd765",
+      "entrypoint": "mechanism.make_gates",
+      "experiment_id": "EX018_20261005",
+      "source_sha256": "85d3fb1e6d5a7acf1e20cd775f28efb15a33d211941b7c7af78665ff80254af1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "成交量参与的确认诊断",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "O01主限价贡献提高但原事件贡献下降且去2025条件增量负；N09固定父及限价贡献下降，未形成可推荐门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "o01条件作用；O01主限价贡献提高但原事件贡献下降且去2025条件增量负；N09固定父及限价贡献下降，未形成可推荐门。"
+      },
+      {
+        "experiment_id": "EX018_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "mid_momentum_positive条件作用；O01主限价贡献提高但原事件贡献下降且去2025条件增量负；N09固定父及限价贡献下降，未形成可推荐门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX019_20261005",
+    "component_id": "Q07_OWN_INTRADAY_SUPPORT",
+    "definition": {
+      "definition_sha256": "77effbf555bbd25b7b356141ebe311173e20989761592dd449709f3d93fbaee7",
+      "entrypoint": "mechanism.make_inputs",
+      "experiment_id": "EX019_20261005",
+      "source_sha256": "087564ab185c445242860a0ca81e8a1cd2f8e8fb8f1ec9dd631f74664f71fa09",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "O01回调后的日内修复确认",
+    "label": "同父机会中通过/全部/未通过同费用净收益，固定父时间表贡献及5日不利移动",
+    "judgment_at_that_time": "仅O01主5日有条件支持：79至30事件，净1.6977%，条件提升0.9192pp，固定父贡献+0.2308pp、限价+0.1619pp。q=.24、贡献区间跨0、容量下降及延迟执行反证保留；N09无推荐强制门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX019_20261005",
+        "status": "SUPPORTED",
+        "explanation": "o01条件作用；仅O01主5日有条件支持：79至30事件，净1.6977%，条件提升0.9192pp，固定父贡献+0.2308pp、限价+0.1619pp。q=.24、贡献区间跨0、容量下降及延迟执行反证保留；N09无推荐强制门。"
+      },
+      {
+        "experiment_id": "EX019_20261005",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "mid_momentum_positive条件作用；仅O01主5日有条件支持：79至30事件，净1.6977%，条件提升0.9192pp，固定父贡献+0.2308pp、限价+0.1619pp。q=.24、贡献区间跨0、容量下降及延迟执行反证保留；N09无推荐强制门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G01",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "实际利率下降且黄金确认上涨，需求变化可能持续",
+    "judgment_at_that_time": "20日净均值为正，但相对黄金趋势父对照仅+0.0548pp，匹配+0.0117pp；未证明实际利率下降的独立机会，作为环境线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "20日净均值为正，但相对黄金趋势父对照仅+0.0548pp，匹配+0.0117pp；未证明实际利率下降的独立机会，作为环境线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G02",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "通胀补偿上升而实际利率未升，黄金上涨获得货币条件支持",
+    "judgment_at_that_time": "通胀补偿条件相对黄金趋势父对照-0.1190pp；未形成适合直接买入的新优势，补偿本身并非纯通胀预期。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "通胀补偿条件相对黄金趋势父对照-0.1190pp；未形成适合直接买入的新优势，补偿本身并非纯通胀预期。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G03",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "风险上升但黄金保持上涨，避险需求可能继续传导",
+    "judgment_at_that_time": "黄金确认避险的5日净均值正，但潜在限价触价均值负；避险方向与成交方式必须联合解释。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "黄金确认避险的5日净均值正，但潜在限价触价均值负；避险方向与成交方式必须联合解释。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G04",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "风险上升且黄金下跌，现金压力可能压过避险需求",
+    "judgment_at_that_time": "相对风险上升父对照下降0.1155pp，与现金压力竞争解释一致；匹配与区间仍不足以构成必然风险门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "相对风险上升父对照下降0.1155pp，与现金压力竞争解释一致；匹配与区间仍不足以构成必然风险门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G05",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "美元黄金上涨且人民币未贬值，收益更可能来自黄金自身",
+    "judgment_at_that_time": "黄金自身上涨、汇率不支持时净均值正，但低于黄金上涨父对照；不能据此证明黄金本体独立优势。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "黄金自身上涨、汇率不支持时净均值正，但低于黄金上涨父对照；不能据此证明黄金本体独立优势。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G06",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争解释",
+    "label": "仅人民币贬值而美元黄金不涨，换算贡献可能短暂",
+    "judgment_at_that_time": "只有汇率支持时相对父对照负、匹配略负、潜在限价净均值负；不支持作为独立做多机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "只有汇率支持时相对父对照负、匹配略负、潜在限价净均值负；不支持作为独立做多机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G07",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "美元金价与人民币贬值共同支持，人民币金价需求可能持续",
+    "judgment_at_that_time": "黄金与人民币双腿共同支持的10日净均值0.8214%，但匹配增量仅0.0393pp，延迟转负；保留低频环境线索，不作为成熟机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "黄金与人民币双腿共同支持的10日净均值0.8214%，但匹配增量仅0.0393pp，延迟转负；保留低频环境线索，不作为成熟机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_G08",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "美元黄金长趋势向上中的短回调可能是需求未破坏的买入时点",
+    "judgment_at_that_time": "宏观趋势中的黄金短回调净均值仅0.0955%，父对照-0.3720pp、匹配-0.0921pp；不支持简单回调买入。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "宏观趋势中的黄金短回调净均值仅0.0955%，父对照-0.3720pp、匹配-0.0921pp；不支持简单回调买入。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L01",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "共同黄金需求向上而目标落后同类ETF，价差可能修复",
+    "judgment_at_that_time": "同类落后修复3日净均值-0.0168%，父对照负，匹配略正；样本仅68且限价潜在净收益0.0650%，缺独立边际。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "同类落后修复3日净均值-0.0168%，父对照负，匹配略正；样本仅68且限价潜在净收益0.0650%，缺独立边际。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L02",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "黄金需求向上且目标相对同日境内现货便宜，传导可能尚未完成",
+    "judgment_at_that_time": "相对现货便宜匹配增量+0.1508pp，但父对照、限价潜在收益负；时间错配和真实净值缺口限制传导解释。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "相对现货便宜匹配增量+0.1508pp，但父对照、限价潜在收益负；时间错配和真实净值缺口限制传导解释。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L03",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "份额增长但ETF尚未涨、全球黄金趋势正，可能存在未充分定价的配置需求",
+    "judgment_at_that_time": "份额增长而ETF未涨、黄金趋势正时5日净均值-0.1980%，相对父对照-0.2985pp；数据不支持尚未定价的本地配置需求。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "份额增长而ETF未涨、黄金趋势正时5日净均值-0.1980%，相对父对照-0.2985pp；数据不支持尚未定价的本地配置需求。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L04",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争解释",
+    "label": "份额增长且ETF已经上涨，资金可能仅追随价格",
+    "judgment_at_that_time": "份额增长且已上涨时净均值0.3396%，但匹配增量负，与价格追随竞争解释相容；不能把本地份额增长当独立资金催化。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "份额增长且已上涨时净均值0.3396%，但匹配增量负，与价格追随竞争解释相容；不能把本地份额增长当独立资金催化。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L05",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "期货现货基差上升且全球黄金趋势正，可能反映需求增强",
+    "judgment_at_that_time": "排除换月的基差上涨线索净均值0.1283%，匹配仅0.0211pp；双倍费用净均值负，仍是弱环境线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "排除换月的基差上涨线索净均值0.1283%，匹配仅0.0211pp；双倍费用净均值负，仍是弱环境线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_L06",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "汇率支持、全球黄金趋势正且ETF短回调，可能存在人民币收益修复",
+    "judgment_at_that_time": "全球黄金及汇率支持而ETF回调的5日净均值-0.1539%，父对照/匹配/潜在限价均负；不支持境内回调修复。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "全球黄金及汇率支持而ETF回调的5日净均值-0.1539%，父对照/匹配/潜在限价均负；不支持境内回调修复。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_M01",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "趋势信噪比高且短期惯性正可能提高上涨持续性；采用明确自定义公式",
+    "judgment_at_that_time": "自定义趋势质量的10日净均值1.2651%、匹配+0.2388pp；107事件/13潜在触价，2025集中、2026为负，延迟匹配转负，保留待证伪线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "自定义趋势质量的10日净均值1.2651%、匹配+0.2388pp；107事件/13潜在触价，2025集中、2026为负，延迟匹配转负，保留待证伪线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_M02",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "上涨环境下低ATR状态可能提高成交后的上涨质量",
+    "judgment_at_that_time": "低ATR确认净均值正、父对照略改善，但限价潜在收益负，不能直接强制过滤。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "低ATR确认净均值正、父对照略改善，但限价潜在收益负，不能直接强制过滤。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_M03",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "上涨环境下高ATR状态可能伴随趋势衰竭",
+    "judgment_at_that_time": "高ATR条件相对父对照净收益下降，但匹配和限价潜在结果正，竞争解释不一致；不确认为趋势末期风险门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "高ATR条件相对父对照净收益下降，但匹配和限价潜在结果正，竞争解释不一致；不确认为趋势末期风险门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_M04",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "价格创新高但成交量低于历史均值可能削弱上涨持续性",
+    "judgment_at_that_time": "缩量新高匹配略负，但净均值和OLS为正，不能直接认定衰竭或转为做多信号。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "缩量新高匹配略负，但净均值和OLS为正，不能直接认定衰竭或转为做多信号。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "FP_M05",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "风险上升且黄金历史上随风险上涨时，避险传导可能更清楚",
+    "judgment_at_that_time": "时变避险确认5日净均值0.6345%、匹配+0.3674pp、34潜在触价；2024负、延迟匹配转负，主增量区间跨0且q约0.968，保留最优先后继线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "时变避险确认5日净均值0.6345%、匹配+0.3674pp、34潜在触价；2024负、延迟匹配转负，主增量区间跨0且q约0.968，保留最优先后继线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_DXY",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "美元篮子变化及DXY×VIX联合",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_GVZ",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "风险/确认",
+    "label": "VIX/GVZ相对预期波动",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_GLOBAL_FLOW",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "全球黄金ETF吨数/净流入变化",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_COT",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会/风险状态",
+    "label": "COMEX黄金净持仓与拥挤",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_CENTRAL_BANK",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "央行购金低频状态",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX029_20261006",
+    "component_id": "GAP_COMMODITY_RATIOS",
+    "definition": {
+      "definition_sha256": "6999c499b202e8c29a19c99d31404f0f979313304b3e334c386e9fc09c44d7aa",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX029_20261006",
+      "source_sha256": "62538a175ce90ceaeb4d080202d9cf56bfc078da1dd6994f71dfcf0138d2e7be",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争解释",
+    "label": "黄金/铜、黄金/油相对强度",
+    "judgment_at_that_time": "缺资源；不判断机制有效或无效。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX029_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "未纳入正式输入，数据权限及实现路线待确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_U01",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "美元篮子五观察期走弱，黄金上升需求可能延续",
+    "judgment_at_that_time": "有限历史中美元走弱有条件正增量；增量区间跨零，2021净收益负、潜在成交收益接近零，缺2023年6月后验证，保留线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "有限历史中美元走弱有条件正增量；增量区间跨零，2021净收益负、潜在成交收益接近零，缺2023年6月后验证，保留线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_U02",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "美元走弱可能增强已有风险上升且黄金上涨的避险传导",
+    "judgment_at_that_time": "有限窗口内美元走弱未增强避险父条件，净均值及父增量为负，触价更差；不推荐当前方向作为确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "有限窗口内美元走弱未增强避险父条件，净均值及父增量为负，触价更差；不推荐当前方向作为确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_U03",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "美元走强可能削弱避险传导；与走弱状态直接竞争",
+    "judgment_at_that_time": "美元未跌状态反而较走弱避险子组更好，构成竞争解释；年度样本稀疏、区间跨零及完整美元历史缺失，不能确认为机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "美元未跌状态反而较走弱避险子组更好，构成竞争解释；年度样本稀疏、区间跨零及完整美元历史缺失，不能确认为机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_U04",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "美元走弱且股票相对黄金预期波动偏高可能确认避险传导",
+    "judgment_at_that_time": "美元走弱与高相对波动联合净均值、父增量、匹配增量均负，额外延迟进一步变差；当前联合确认无支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "美元走弱与高相对波动联合净均值、父增量、匹配增量均负，额外延迟进一步变差；当前联合确认无支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_V01",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "VIX/GVZ高于自身历史中位数可能增强避险传导",
+    "judgment_at_that_time": "高VIX/GVZ未改善避险父条件，净均值及匹配增量负，2024/2026反证明显；不推荐作为增强避险的过滤。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "高VIX/GVZ未改善避险父条件，净均值及匹配增量负，2024/2026反证明显；不推荐作为增强避险的过滤。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_V02",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "VIX/GVZ较低时黄金风险可能已提前反映，避险增量较弱",
+    "judgment_at_that_time": "较低比值子组的净收益与增量较高，反驳原低比值较弱解释；2022/2024负、延迟增量转负、区间跨零，新低比值机会仅为后继线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "较低比值子组的净收益与增量较高，反驳原低比值较弱解释；2022/2024负、延迟增量转负、区间跨零，新低比值机会仅为后继线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_V03",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "黄金上升而GVZ五观察期下降可能表明趋势风险缓和",
+    "judgment_at_that_time": "GVZ下降没有改善黄金趋势父收益，匹配增量很小、潜在触价收益接近零；本轮未支持其增强趋势收益的用途。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "GVZ下降没有改善黄金趋势父收益，匹配增量很小、潜在触价收益接近零；本轮未支持其增强趋势收益的用途。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_V04",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金上升且GVZ五观察期上升可能反映趋势末期风险",
+    "judgment_at_that_time": "GVZ上升并未呈现宣称的趋势末期收益衰减，净均值高于下降组但匹配增量负；本轮净收益标签不能裁决真实风险控制职责。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "GVZ上升并未呈现宣称的趋势末期收益衰减，净均值高于下降组但匹配增量负；本轮净收益标签不能裁决真实风险控制职责。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX031_20261006",
+    "component_id": "PRELIM_V05",
+    "definition": {
+      "definition_sha256": "17ab3811548b79f0cba4795db5d01c6a63e872119061083bd9f7e375b1a7c20a",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX031_20261006",
+      "source_sha256": "b7d05509f76faa0f9e5d8e408fe09ac05a14a47bcc249183d7222c9f8d2da563",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "相对波动状态可能改善前轮黄金随风险上涨的M05确认线索",
+    "judgment_at_that_time": "高相对波动过滤将M05父净均值0.6345%降至0.2339%，非重叠及触价净收益负；不推荐该M05确认过滤。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX031_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "高相对波动过滤将M05父净均值0.6345%降至0.2339%，非重叠及触价净收益负；不推荐该M05确认过滤。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D01",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "低VIX/GVZ可能表示黄金风险已被定价，避险上涨继续",
+    "judgment_at_that_time": "低比值避险有正事件均值，但父条件残差小、2022/2024负；后继成交贡献与年度未稳定，不作普遍机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "低比值避险有正事件均值，但父条件残差小、2022/2024负；后继成交贡献与年度未稳定，不作普遍机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D02",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "低比值可能改善黄金随风险上涨且相关为正的机会",
+    "judgment_at_that_time": "筛选后均值和触价看似提高，EX033 P03固定父限价贡献降低，延迟亦降低，不推荐作为M05确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "筛选后均值和触价看似提高，EX033 P03固定父限价贡献降低，延迟亦降低，不推荐作为M05确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D03",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "低VIX低GVZ：相对平静环境中的避险需求延续",
+    "judgment_at_that_time": "低VIX低GVZ子组净均值、父增量与触价均负，未支持平静环境收益延续。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "低VIX低GVZ子组净均值、父增量与触价均负，未支持平静环境收益延续。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D04",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "低VIX高GVZ：黄金自身重定价主导收益",
+    "judgment_at_that_time": "低VIX高GVZ净均值较高，但触价优势薄、2025/26集中；EX033固定成交贡献有改善却多年度为负，保留状态线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "低VIX高GVZ净均值较高，但触价优势薄、2025/26集中；EX033固定成交贡献有改善却多年度为负，保留状态线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D05",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "高VIX低GVZ：股票压力尚未传至黄金的补涨",
+    "judgment_at_that_time": "高VIX低GVZ补涨预期未兑现，事件与触价净收益、父增量均负。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "高VIX低GVZ补涨预期未兑现，事件与触价净收益、父增量均负。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D06",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "高VIX高GVZ：共同风险重定价延续",
+    "judgment_at_that_time": "共同高波动固定父贡献改善，延迟后限价增量转负、年度反证明显，未确认为成熟机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "共同高波动固定父贡献改善，延迟后限价增量转负、年度反证明显，未确认为成熟机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D07",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "黄金中期上涨、GVZ上升且短期继续上涨的需求延续",
+    "judgment_at_that_time": "初始GVZ上涨趋势线索被纯价格父对照消融：EX033 P04父内增量负且固定限价贡献下降，GVZ必要性无支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "REDUNDANT",
+        "explanation": "初始GVZ上涨趋势线索被纯价格父对照消融：EX033 P04父内增量负且固定限价贡献下降，GVZ必要性无支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D08",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "黄金中期上涨、GVZ上升但短期回调的修复机会",
+    "judgment_at_that_time": "GVZ上升的中期趋势回调组事件收益和固定父贡献下降；触价子样本正数不足以证明改善。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "GVZ上升的中期趋势回调组事件收益和固定父贡献下降；触价子样本正数不足以证明改善。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D09",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "国际金价上涨、GVZ上升但本地ETF未涨的补涨机会",
+    "judgment_at_that_time": "简单国际金涨/ETF未涨有小增量，汇率与同期端点后继削弱补涨解释，保留为异步价格状态诊断。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "简单国际金涨/ETF未涨有小增量，汇率与同期端点后继削弱补涨解释，保留为异步价格状态诊断。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D10",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "国际金价上涨、GVZ上升且本地ETF已涨的延续竞争",
+    "judgment_at_that_time": "本地已涨竞争未改善同费用父对照及成交贡献。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "本地已涨竞争未改善同费用父对照及成交贡献。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D11",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "低比值避险状态下本地ETF三日回调后的补涨",
+    "judgment_at_that_time": "低比值ETF三日回调事件均值正而潜在限价负，样本稀疏，暂不能作为补涨入口。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "低比值ETF三日回调事件均值正而潜在限价负，样本稀疏，暂不能作为补涨入口。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D12",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "低比值避险状态下本地ETF三日已涨的延续竞争",
+    "judgment_at_that_time": "已涨子组有正事件均值，但延迟父残差转负；不支持共同强制确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "已涨子组有正事件均值，但延迟父残差转负；不支持共同强制确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D13",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "有限美元走弱黄金趋势叠加GVZ上升的重定价确认",
+    "judgment_at_that_time": "有限美元走弱趋势加GVZ上升降低父净均值且限价负，不推荐该联合确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "有限美元走弱趋势加GVZ上升降低父净均值且限价负，不推荐该联合确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX032_20261006_D14",
+    "definition": {
+      "definition_sha256": "5556ea52308b22f3ffbac19559c5a9356001c77d0b09cd4784f155a13aefa751",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX032_20261006",
+      "source_sha256": "fc6a2888d0ec2a85f80b04e35093245fcf5f2d1b8a3e2053d5753d83aec189d1",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "有限美元走弱黄金趋势叠加GVZ下降的风险缓和竞争",
+    "judgment_at_that_time": "GVZ下降有正事件均值但父残差及限价负；有限窗口中无成交后改进支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX032_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "GVZ下降有正事件均值但父残差及限价负；有限窗口中无成交后改进支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P01",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "低VIX高GVZ避险机会能否贡献成交后收益",
+    "judgment_at_that_time": "低VIX高GVZ筛选固定父限价增量正，但2022/23/24负、2025/26集中，重排后的潜在成交收益薄，保留条件状态线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "低VIX高GVZ筛选固定父限价增量正，但2022/23/24负、2025/26集中，重排后的潜在成交收益薄，保留条件状态线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P02",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "高VIX高GVZ避险机会能否贡献成交后收益",
+    "judgment_at_that_time": "高高风险固定贡献正，额外延迟2日转负；2025贡献负，不作稳定机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "高高风险固定贡献正，额外延迟2日转负；2025贡献负，不作稳定机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P03",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "低比值M05确认能否改善原父机会的限价贡献",
+    "judgment_at_that_time": "固定父限价贡献基础−0.0642pp、延迟−0.1441pp；均值较高没有转化为父机会改善。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "固定父限价贡献基础−0.0642pp、延迟−0.1441pp；均值较高没有转化为父机会改善。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P04",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "黄金短期与中期上涨时GVZ上升是否有必要增量",
+    "judgment_at_that_time": "纯价格上涨父机会内GVZ上升残差−0.0477pp，固定限价贡献−0.1651pp，不推荐GVZ追加门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "纯价格上涨父机会内GVZ上升残差−0.0477pp，固定限价贡献−0.1651pp，不推荐GVZ追加门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P05",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金短期与中期上涨时GVZ下降的无重定价竞争",
+    "judgment_at_that_time": "同一价格父机会内GVZ下降固定贡献亦下降，不能以两组正均值证明波动筛选必要。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "同一价格父机会内GVZ下降固定贡献亦下降，不能以两组正均值证明波动筛选必要。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P06",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "黄金中期上涨短期回调时GVZ上升的修复增量",
+    "judgment_at_that_time": "价格回调父机会加GVZ上升降低净均值和限价贡献，修复确认无支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "价格回调父机会加GVZ上升降低净均值和限价贡献，修复确认无支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P07",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金中期上涨短期回调时GVZ下降的修复竞争",
+    "judgment_at_that_time": "回调GVZ下降有小事件提升但基础固定贡献降低，延迟反向改善，用途不稳定。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "回调GVZ下降有小事件提升但基础固定贡献降低，延迟反向改善，用途不稳定。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P08",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "已知同期人民币黄金上涨且本地ETF相对落后的补涨",
+    "judgment_at_that_time": "人民币价格参照后本地落后事件均值低、父残差负；固定贡献薄且延迟转负，不支持一般补涨。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "人民币价格参照后本地落后事件均值低、父残差负；固定贡献薄且延迟转负，不支持一般补涨。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P09",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "同期人民币黄金上涨而本地ETF未落后的趋势竞争",
+    "judgment_at_that_time": "本地未落后事件较好而限价均值近零、固定贡献负，不推荐作为补涨竞争收益入口。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "本地未落后事件较好而限价均值近零、固定贡献负，不推荐作为补涨竞争收益入口。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P10",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "已知本地落后后当日阳线确认能否改善成交贡献",
+    "judgment_at_that_time": "本地落后加当日阳线降低固定限价贡献，触价净均值负，不推荐该确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "本地落后加当日阳线降低固定限价贡献，触价净均值负，不推荐该确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P11",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "已知本地落后后当日非阳线的直接低价机会竞争",
+    "judgment_at_that_time": "非阳线与限价更匹配但固定增量仅+0.0024pp、年度符号混杂，不提升为组件。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "非阳线与限价更匹配但固定增量仅+0.0024pp、年度符号混杂，不提升为组件。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P12",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "人民币黄金上涨且汇率五观察期上涨的汇率推动",
+    "judgment_at_that_time": "人民币黄金上涨且汇率上涨有正成交贡献，促成EX034/35必要性及同步子域复验；后继显示年度集中及同日延迟反证。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "人民币黄金上涨且汇率上涨有正成交贡献，促成EX034/35必要性及同步子域复验；后继显示年度集中及同日延迟反证。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX033_20261006_P13",
+    "definition": {
+      "definition_sha256": "401a0bd95762422637a6e77d4acaa525e2eda85a5fe7487e6a0350154790e4c2",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX033_20261006",
+      "source_sha256": "65c34bd593e7b24d565326ee1afbc996cc5ee87c66f8e450f8f29c28791a6a6d",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "来源竞争",
+    "label": "人民币黄金上涨且汇率未涨的黄金自身推动",
+    "judgment_at_that_time": "汇率未涨的人民币黄金上涨组事件及触价均值负，固定父贡献下降。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX033_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "汇率未涨的人民币黄金上涨组事件及触价均值负，固定父贡献下降。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A01",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "国际黄金与人民币汇率双向上涨的共同推动",
+    "judgment_at_that_time": "黄金汇率双涨事件均值正，固定贡献较薄且额外延迟转负，不支持强制双涨作为普遍入口。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "黄金汇率双涨事件均值正，固定贡献较薄且额外延迟转负，不支持强制双涨作为普遍入口。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A02",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金上涨但人民币汇率下降的单黄金推动",
+    "judgment_at_that_time": "黄金涨汇率未涨主要减少父亏损，事件均值与触价优势薄，延迟固定贡献转负。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "黄金涨汇率未涨主要减少父亏损，事件均值与触价优势薄，延迟固定贡献转负。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A03",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金未涨但人民币汇率上涨的单汇率推动",
+    "judgment_at_that_time": "只汇率上涨的潜在限价均值及基础固定贡献负，汇率单独推动无充分收益支持。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "只汇率上涨的潜在限价均值及基础固定贡献负，汇率单独推动无充分收益支持。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A04",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "黄金与人民币汇率均未涨的相反状态",
+    "judgment_at_that_time": "两者未涨事件及触价均值负，固定贡献正数来自跳过其他父槽损失，不构成做多机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "两者未涨事件及触价均值负，固定贡献正数来自跳过其他父槽损失，不构成做多机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A05",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "汇率上涨时人民币黄金上涨是否提供必要增量",
+    "judgment_at_that_time": "汇率上涨时人民币黄金再上涨的固定限价贡献在全池基础/延迟/双费用均正，但EX035严格子域延迟转负、去2026后优势消失，保留候选线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "汇率上涨时人民币黄金再上涨的固定限价贡献在全池基础/延迟/双费用均正，但EX035严格子域延迟转负、去2026后优势消失，保留候选线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A06",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "汇率上涨但人民币黄金未涨的机会竞争",
+    "judgment_at_that_time": "汇率上涨人民币黄金未涨的触价净均值负且固定贡献降低，不推荐相反组做多。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "汇率上涨人民币黄金未涨的触价净均值负且固定贡献降低，不推荐相反组做多。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A07",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "双推动时本地同期落后是否提高收益贡献",
+    "judgment_at_that_time": "双推动下ETF同期落后固定增量薄且延迟负，未支持补涨必要性。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "双推动下ETF同期落后固定增量薄且延迟负，未支持补涨必要性。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A08",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "双推动时本地未落后的延续竞争",
+    "judgment_at_that_time": "同期未落后组事件均值高但触价负、固定贡献负，无成交改善。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "同期未落后组事件均值高但触价负、固定贡献负，无成交改善。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A09",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "双推动后本地当日阳线是否提高成交贡献",
+    "judgment_at_that_time": "双推动后阳线确认父残差和固定贡献负，不推荐追涨确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "双推动后阳线确认父残差和固定贡献负，不推荐追涨确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A10",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "双推动后本地非阳线的低价机会竞争",
+    "judgment_at_that_time": "非阳线有正事件及触价均值，固定增量薄、延迟负，无法确认稳定低价入口。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "非阳线有正事件及触价均值，固定增量薄、延迟负，无法确认稳定低价入口。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A11",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "低VIX高GVZ避险机会叠加汇率上涨",
+    "judgment_at_that_time": "避险低VIX高GVZ加汇率上涨仅24事件、固定父保留4次触价；增量不稳定，不能由2.0342%事件均值推断机会成熟。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "避险低VIX高GVZ加汇率上涨仅24事件、固定父保留4次触价；增量不稳定，不能由2.0342%事件均值推断机会成熟。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX034_20261006_A12",
+    "definition": {
+      "definition_sha256": "d56c5a85a370caa4809c34207b98900612a8fb774775d381f679fb2f849ed353",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX034_20261006",
+      "source_sha256": "d7191f09052afbcc87a721d91fd6f484caf293c3227798d0bf6f2e0d017e8d0c",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "低VIX高GVZ避险机会叠加汇率未涨",
+    "judgment_at_that_time": "相反汇率状态仅31事件、固定贡献负；不足以支持汇率确认或相反收益机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX034_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "相反汇率状态仅31事件、固定贡献负；不足以支持汇率确认或相反收益机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX035_20261006_Q01",
+    "definition": {
+      "definition_sha256": "a775d4dc15f65062054c7c92c9ef4f0b8bec8d1a9f71a10d50a36ff897e2964d",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX035_20261006",
+      "source_sha256": "959e7cfb25ec1244371332a11b2664ecb96974c65d29c9addcb9f9feb1f6a292",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会环境",
+    "label": "人民币汇率上涨时，人民币黄金参考价上涨可能提供有边界的机会筛选",
+    "judgment_at_that_time": "原汇率推动筛选在全窗口保持基础/一日/两日延迟贡献正，但2026为关键贡献年，去该年基础增量约−0.0009pp，五个年度贡献负；暂不成为成熟机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX035_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "原汇率推动筛选在全窗口保持基础/一日/两日延迟贡献正，但2026为关键贡献年，去该年基础增量约−0.0009pp，五个年度贡献负；暂不成为成熟机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX035_20261006_Q02",
+    "definition": {
+      "definition_sha256": "a775d4dc15f65062054c7c92c9ef4f0b8bec8d1a9f71a10d50a36ff897e2964d",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX035_20261006",
+      "source_sha256": "959e7cfb25ec1244371332a11b2664ecb96974c65d29c9addcb9f9feb1f6a292",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "人民币汇率上涨但黄金参考价未上涨的相反状态",
+    "judgment_at_that_time": "相反组触价净均值与固定父限价增量负，未提供可用做多收益线索。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX035_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "相反组触价净均值与固定父限价增量负，未提供可用做多收益线索。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX035_20261006_Q03",
+    "definition": {
+      "definition_sha256": "a775d4dc15f65062054c7c92c9ef4f0b8bec8d1a9f71a10d50a36ff897e2964d",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX035_20261006",
+      "source_sha256": "959e7cfb25ec1244371332a11b2664ecb96974c65d29c9addcb9f9feb1f6a292",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "同日端点反证",
+    "label": "两外部源端点恰为ETF交易日时复验相同人民币金价上涨筛选",
+    "judgment_at_that_time": "严格同日双端点239事件，潜在触价基础净均值−0.1998%；固定父增量+0.0914pp但延迟2日−0.0523pp，端点与执行反证仍未解决。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX035_20261006",
+        "status": "INSUFFICIENT_DATA",
+        "explanation": "严格同日双端点239事件，潜在触价基础净均值−0.1998%；固定父增量+0.0914pp但延迟2日−0.0523pp，端点与执行反证仍未解决。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX035_20261006_Q04",
+    "definition": {
+      "definition_sha256": "a775d4dc15f65062054c7c92c9ef4f0b8bec8d1a9f71a10d50a36ff897e2964d",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX035_20261006",
+      "source_sha256": "959e7cfb25ec1244371332a11b2664ecb96974c65d29c9addcb9f9feb1f6a292",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "同日端点反证",
+    "label": "严格同日端点时复验相反状态",
+    "judgment_at_that_time": "严格子域的相反定义未改善固定父贡献，不推荐机会用途。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX035_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "严格子域的相反定义未改善固定父贡献，不推荐机会用途。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX036_20261006_R01",
+    "definition": {
+      "definition_sha256": "eb49971dc242a271b987f78acd2406ad5d1e7393d678121fe4862b9d8933d5e7",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX036_20261006",
+      "source_sha256": "5dc0d6c55690423a9619fc2585ed476c058c278e8988ab9af1cad5c798189ab0",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "机会",
+    "label": "风险上升且黄金上涨时，固定60期黄金/VIX正相关状态可能提供避险传导收益",
+    "judgment_at_that_time": "有边界机会环境：相同风险升/黄金涨父环境中正相关状态提供父内增量；固定限价贡献在0/1/2日延迟、双费用及去任一单年后仍正。2021/24事件亏损、2023/24/26贡献负、延迟2日OLS转负、区间跨零和低频均保留，不代表账户达标或独立样本外。 每侧0.2%无额外延迟时绝对固定贡献为负，正增量只代表相对改善。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX036_20261006",
+        "status": "SUPPORTED",
+        "explanation": "有边界机会环境：相同风险升/黄金涨父环境中正相关状态提供父内增量；固定限价贡献在0/1/2日延迟、双费用及去任一单年后仍正。2021/24事件亏损、2023/24/26贡献负、延迟2日OLS转负、区间跨零和低频均保留，不代表账户达标或独立样本外。 每侧0.2%无额外延迟时绝对固定贡献为负，正增量只代表相对改善。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX036_20261006_R02",
+    "definition": {
+      "definition_sha256": "eb49971dc242a271b987f78acd2406ad5d1e7393d678121fe4862b9d8933d5e7",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX036_20261006",
+      "source_sha256": "5dc0d6c55690423a9619fc2585ed476c058c278e8988ab9af1cad5c798189ab0",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "相同风险与黄金走势父环境下非正相关状态的竞争",
+    "judgment_at_that_time": "非正相关竞争组基础事件/潜在触价净均值负，固定父贡献降低，延迟后改善不足；不推荐相反状态作为收益机会。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX036_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "非正相关竞争组基础事件/潜在触价净均值负，固定父贡献降低，延迟后改善不足；不推荐相反状态作为收益机会。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX036_20261006_R03",
+    "definition": {
+      "definition_sha256": "eb49971dc242a271b987f78acd2406ad5d1e7393d678121fe4862b9d8933d5e7",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX036_20261006",
+      "source_sha256": "5dc0d6c55690423a9619fc2585ed476c058c278e8988ab9af1cad5c798189ab0",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "确认",
+    "label": "正相关避险父机会加ETF当日阳线是否改善成交贡献",
+    "judgment_at_that_time": "当日阳线确认降低同父事件均值、父内增量及固定限价贡献，延期及费用后仍负，不推荐强制阳线确认。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX036_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "当日阳线确认降低同父事件均值、父内增量及固定限价贡献，延期及费用后仍负，不推荐强制阳线确认。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX036_20261006",
+    "component_id": "RETURN_EX036_20261006_R04",
+    "definition": {
+      "definition_sha256": "eb49971dc242a271b987f78acd2406ad5d1e7393d678121fe4862b9d8933d5e7",
+      "entrypoint": "experiment:Experiment",
+      "experiment_id": "EX036_20261006",
+      "source_sha256": "5dc0d6c55690423a9619fc2585ed476c058c278e8988ab9af1cad5c798189ab0",
+      "type": "ExperimentDefinitionRef"
+    },
+    "role": "竞争反证",
+    "label": "正相关避险父机会加ETF当日非阳线的限价机会竞争",
+    "judgment_at_that_time": "非阳线组均值/触价较高但过滤后固定父贡献下降，延期与费用后仍负；不推荐据高均值追加共同门。",
+    "tests_at_that_time": [
+      {
+        "experiment_id": "EX036_20261006",
+        "status": "INEFFECTIVE",
+        "explanation": "非阳线组均值/触价较高但过滤后固定父贡献下降，延期与费用后仍负；不推荐据高均值追加共同门。"
+      }
+    ],
+    "current_decision_policy": "历史原判保留；当前推荐以role_coverage及最终报告为准，不自动累加有效组件"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I01",
+    "primary_horizon": 5,
+    "parent": "C_MDOWN",
+    "role": "机会",
+    "hypothesis": "上午下跌后午后修复可能积累次日后收益",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "午后修复父内匹配负、触价均值负、固定限价贡献下降，未支持修复收益。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I02",
+    "primary_horizon": 5,
+    "parent": "C_MDOWN",
+    "role": "竞争反证",
+    "hypothesis": "上午下跌后午后继续下跌的低价机会竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "候选证据不足：事件与父匹配正，但基础触价净均值负、双费用绝对贡献负、延迟2增量转负及年度亏损，不升级为新收益机会。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I03",
+    "primary_horizon": 5,
+    "parent": "C_MUP",
+    "role": "机会",
+    "hypothesis": "上午上涨后午后回调可能提供限价兼容机会",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "早涨午后回落事件净负，父内与固定限价均下降。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I04",
+    "primary_horizon": 5,
+    "parent": "C_MUP",
+    "role": "竞争反证",
+    "hypothesis": "上午上涨且午后持续上涨的趋势竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "早涨午后延续事件略正但固定限价下降，未确认有必要增量。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I05",
+    "primary_horizon": 5,
+    "parent": "C_DOWN",
+    "role": "机会",
+    "hypothesis": "全天未涨但尾盘反弹的修复机会",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "日跌尾盘反弹基础固定贡献正，但事件/父内/触价证据弱且成本、年度与时点敏感，未支持组件。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I06",
+    "primary_horizon": 5,
+    "parent": "C_DOWN",
+    "role": "竞争反证",
+    "hypothesis": "全天未涨且尾盘继续回调的低价机会竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "日跌尾盘下落触价净均值负且固定贡献下降，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I07",
+    "primary_horizon": 5,
+    "parent": "C_PULL",
+    "role": "机会",
+    "hypothesis": "已知人民币金价上涨、本地三日回调且尾盘回落",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "人民币黄金支撑回调中尾盘跌父匹配小正，但固定贡献负，不推荐此门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I08",
+    "primary_horizon": 5,
+    "parent": "C_PULL",
+    "role": "竞争反证",
+    "hypothesis": "相同黄金支撑本地回调父环境下尾盘不跌竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "相同父组尾盘不跌的固定贡献下降，未支持强制门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I09",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "确认",
+    "hypothesis": "M05正向共振环境下尾盘回调是否改善限价收益",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内尾盘回调均值较高但基础贡献仅+0.0287pp；延迟1/2、去2026及异常子窗贡献转负，不推荐追加确认。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I10",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "竞争反证",
+    "hypothesis": "M05环境下尾盘未跌的延续竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内尾盘不跌明显损失固定父贡献，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I11",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "确认",
+    "hypothesis": "M05环境上午后上涨是否确认机会",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内午后上涨高均值但基础贡献仅+0.0620pp；延迟1/2、去2026及异常子窗转负且容量下降，不推荐确认。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX037_20261006",
+    "id": "I12",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "竞争反证",
+    "hypothesis": "M05环境上午后未涨的低价竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05午后未涨的固定贡献负，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L01",
+    "primary_horizon": 5,
+    "parent": "C_ALL",
+    "role": "机会复验",
+    "hypothesis": "继承O01强汇率变化与ETF三日回调的原固定信号",
+    "definition_frozen_before_execution": true,
+    "status": "SUPPORTED",
+    "judgment": "有边界O01机会证据：79事件净0.7786%、父匹配正，潜在触价0.1581%且低频；双费用触价负、延迟/去2026贡献反证保留，只交接低频机会环境。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L02",
+    "primary_horizon": 5,
+    "parent": "C_MOMPOS",
+    "role": "机会复验",
+    "hypothesis": "继承N09实际VWAP正常中段且三日动量正的原固定信号",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "保留N09候选及旧支持历史：298事件净0.4956%，父匹配/OLS正；基础对纯动量父贡献−0.08355pp，双费用绝对贡献负，当前不推荐默认VWAP门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L03",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "确认复验",
+    "hypothesis": "继承Q07目标当日阳线，仅在原O01父内",
+    "definition_frozen_before_execution": true,
+    "status": "SUPPORTED",
+    "judgment": "Q07仅O01内的有边界确认信息：30事件净1.6977%、固定父限价+0.1619pp；延迟1/2和去2026负、容量少，不作通用强制门。父符号匹配不可识别，不以残差零否定。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L04",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "竞争反证",
+    "hypothesis": "原O01当日非阳线竞争组",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "O01非阳线原竞争固定父基础贡献负，与Q07同父对照；费用敏感且不作为相反门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L05",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "互补机会",
+    "hypothesis": "原M05在O01与N09机会集合之外的增量",
+    "definition_frozen_before_execution": true,
+    "status": "REDUNDANT",
+    "judgment": "M05新覆盖诊断，105事件、父内增量基础负，单一起点并集增量负；不增算独立机制。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX038_20261006",
+    "id": "L06",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "重叠竞争",
+    "hypothesis": "原M05与O01或N09重叠的竞争组",
+    "definition_frozen_before_execution": true,
+    "status": "REDUNDANT",
+    "judgment": "M05与旧机会重叠55事件，属于覆盖分解；高均值不等于确认增量，不增算组件。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX039_20261006",
+    "id": "U01",
+    "primary_horizon": 5,
+    "parent": "C_MOM",
+    "role": "机会必要性",
+    "hypothesis": "原N09正常定价正动量对纯正动量父组",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "N09正常定价门六相位加权基础限价增量−0.04314pp，范围跨正负；双费用改善主要节约交易，保留候选而不推荐默认过滤。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX039_20261006",
+    "id": "U02",
+    "primary_horizon": 5,
+    "parent": "C_N09",
+    "role": "确认",
+    "hypothesis": "原N09中原M05共振确认",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05在N09内事件均值高，但六相位加权限价贡献0/1/2延迟均下降，基础−0.11076pp，不推荐强制确认。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX039_20261006",
+    "id": "U03",
+    "primary_horizon": 5,
+    "parent": "C_N09",
+    "role": "竞争反证",
+    "hypothesis": "原N09中不满足M05的竞争组",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "N09内剔除M05基础六相位贡献也下降，不能反向强制排除M05。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "origin_panel": "EX039_20261006",
+    "id": "U04",
+    "primary_horizon": 5,
+    "parent": "C_MOM",
+    "role": "竞争反证",
+    "hypothesis": "同有效域正动量但不满足正常定价N09",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "纯动量非正常定价竞争均值低，六相位基础过滤贡献均负；不能据N09门失败反向采用补集。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  }
+]

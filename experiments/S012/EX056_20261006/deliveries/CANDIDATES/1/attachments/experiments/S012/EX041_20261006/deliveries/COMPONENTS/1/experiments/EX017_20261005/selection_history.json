@@ -1,0 +1,35 @@
+{
+  "experiment_id": "EX017_20261005",
+  "predecessor_receipts": {
+    "EX015_20261005": "17d9453c45bb67b9a517546c644d8071688b636aea2774b114739b8a7600071b",
+    "EX016_20261005": "c57c2bbba0dff33facf4ea2ecaa78b7b143ad127c76ed79dada446aa50526b00"
+  },
+  "source_hashes": {
+    "EX015_20261005/data/daily.parquet": "919783da28bc4e80c5512d7de277ef79a8097a848cd4c9c702f2bde0dbf08753",
+    "EX016_20261005/features.parquet": "33f13b58ae70db2bceb4907c193bcce0f713a1c8b7a03400c7370b2542ca9fee",
+    "EX016_20261005/signals.parquet": "fdc77b1733ae7afdbdff7ddece7b34354ca9339ffdaff5a5806bc9a409ec59f7",
+    "EX016_20261005/valids.parquet": "1e84fab4c1ed0a3354fdea47f3a2388315869572400d5168d0dd9289b7b0b39f",
+    "EX016_20261005/thresholds.parquet": "e7cdb970b04f82342fb959ecbefac82834f78dac0c1d66afaaebe5bf66865ec4",
+    "EX015_20261005/coverage.json": "2ab13f980b6b8a69074b1216b18e8f0f37e0fbfde7aba86c9f2e522791651921"
+  },
+  "new_signals": [
+    "actual_vwap_mid",
+    "mid_nonnegative",
+    "mid_negative",
+    "vwap_near_zero",
+    "mid_late_thin",
+    "mid_momentum_positive",
+    "o01_mid"
+  ],
+  "controls": [
+    "actual_vwap_low",
+    "actual_vwap_high",
+    "o01",
+    "unconditional"
+  ],
+  "paths": 264,
+  "role": "o01_mid为过滤诊断，其余为事件机会/状态诊断",
+  "trigger": "EX016实际VWAP上下四分位均弱，固定检验正常定价中段竞争解释。",
+  "selection_bias": "已见开发池后继；本轮未进行年度候选排序，不宣称独立验证。",
+  "units": "Amount元/Volume份形成VWAP元每份，gap=Close/VWAP-1为无量纲。"
+}

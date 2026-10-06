@@ -1,0 +1,44 @@
+[
+  {
+    "id": "L01",
+    "primary_horizon": 5,
+    "parent": "C_ALL",
+    "role": "机会复验",
+    "hypothesis": "继承O01强汇率变化与ETF三日回调的原固定信号"
+  },
+  {
+    "id": "L02",
+    "primary_horizon": 5,
+    "parent": "C_MOMPOS",
+    "role": "机会复验",
+    "hypothesis": "继承N09实际VWAP正常中段且三日动量正的原固定信号"
+  },
+  {
+    "id": "L03",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "确认复验",
+    "hypothesis": "继承Q07目标当日阳线，仅在原O01父内"
+  },
+  {
+    "id": "L04",
+    "primary_horizon": 5,
+    "parent": "C_O01",
+    "role": "竞争反证",
+    "hypothesis": "原O01当日非阳线竞争组"
+  },
+  {
+    "id": "L05",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "互补机会",
+    "hypothesis": "原M05在O01与N09机会集合之外的增量"
+  },
+  {
+    "id": "L06",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "重叠竞争",
+    "hypothesis": "原M05与O01或N09重叠的竞争组"
+  }
+]

@@ -1,0 +1,145 @@
+{
+  "recorded_at": "2026-10-03T20:00:08.791703+00:00",
+  "purpose": "阶段一数据可用性核验，不计算收益、信号或筛选参数。",
+  "listing_date": "2020-06-05",
+  "listing_source": "https://www.sse.com.cn/disclosure/fund/announcement/c/new/2024-10-17/518850_20241017_BKBE.pdf",
+  "listing_source_page": 38,
+  "cutoff_policy": "首次探查不预设行情截止日；以完整SSE日历核对实际覆盖，具体评价起止待用户确认。",
+  "datasets": {
+    "calendar.trading_sessions": {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2020-06-05",
+        "end": "2026-10-04",
+        "required_cutoff": null,
+        "frequency": "daily"
+      },
+      "status": "READY",
+      "warnings": [],
+      "identity": {
+        "dataset": "calendar.trading_sessions",
+        "source": "tushare",
+        "symbol": "SSE",
+        "data_start": "2020-06-05T00:00:00",
+        "data_cutoff": "2026-10-04T00:00:00",
+        "content_sha256": "0b378ab8cb7c9e9344185010f181a2b051219783e643dc46bb813ce2a7359a90",
+        "metadata": {
+          "vendor": "tushare",
+          "exchange": "SSE",
+          "frequency": "daily",
+          "primary_key": [
+            "Date"
+          ],
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "source_calendar": "SSE",
+          "available_at": "SOURCE_PERIOD_CLOSE",
+          "request_range_policy": "EXACT"
+        }
+      },
+      "rows": 2313,
+      "duplicate_dates": 0
+    },
+    "etf.unadjusted_daily": {
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "518850.SH",
+        "start": "2020-06-05",
+        "end": "2026-10-04",
+        "required_cutoff": null,
+        "frequency": "daily"
+      },
+      "status": "READY",
+      "warnings": [],
+      "identity": {
+        "dataset": "etf.unadjusted_daily",
+        "source": "tushare",
+        "symbol": "518850.SH",
+        "data_start": "2020-06-05T00:00:00",
+        "data_cutoff": "2026-09-30T00:00:00",
+        "content_sha256": "7d7026879684b145ed0111d7172cc216f47f7200552f5063c943b06893208aaa",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "518850.SH",
+          "period": "daily",
+          "asset_type": "etf",
+          "adjustment": "none",
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1535
+          },
+          "reference_daily_sha256": "7eb0e2898ec46020e3330388059e7e59355b9b31ac2495060143c59878e6711c",
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "available_at": "SOURCE_PERIOD_CLOSE",
+          "request_range_policy": "EXACT"
+        }
+      },
+      "rows": 1535,
+      "duplicate_dates": 0
+    },
+    "etf.ohlcv": {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "518850.SH",
+        "start": "2020-06-05",
+        "end": "2026-10-04",
+        "required_cutoff": null,
+        "frequency": "daily"
+      },
+      "status": "READY",
+      "warnings": [],
+      "identity": {
+        "dataset": "etf.ohlcv",
+        "source": "tushare",
+        "symbol": "518850.SH",
+        "data_start": "2020-06-05T00:00:00",
+        "data_cutoff": "2026-09-30T00:00:00",
+        "content_sha256": "bfa4cdc87149baf9ae8558eeabda1c72fa5216a8b505d09ece44216e258df9da",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "518850.SH",
+          "period": "daily",
+          "asset_type": "etf",
+          "adjustment": "hfq",
+          "adjustment_factor_source": "fund_adj",
+          "adjustment_factor_sha256": "07b84cdd917a9da63262f0a5165b3737a106209e25080fe8410b77aa90291202",
+          "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+          "adjustment_factor_publication_timestamp_verified": false,
+          "adjustment_factor_revision_history_verified": false,
+          "availability_time_field": "AvailableDate",
+          "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1535
+          },
+          "reference_daily_sha256": "7eb0e2898ec46020e3330388059e7e59355b9b31ac2495060143c59878e6711c",
+          "source_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "request_range_policy": "EXACT"
+        }
+      },
+      "rows": 1535,
+      "duplicate_dates": 0
+    }
+  },
+  "calendar_comparison": {
+    "expected_sessions": 1535,
+    "first_session": "2020-06-05",
+    "last_session": "2026-09-30",
+    "etf.unadjusted_daily": {
+      "missing_sessions": [],
+      "unexpected_sessions": []
+    },
+    "etf.ohlcv": {
+      "missing_sessions": [],
+      "unexpected_sessions": []
+    }
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "raw": {
+    "status": "READY",
+    "sha256": "7d7026879684b145ed0111d7172cc216f47f7200552f5063c943b06893208aaa",
+    "metadata": {
+      "vendor": "tushare",
+      "market": "a_share",
+      "vendor_symbol": "518850.SH",
+      "period": "daily",
+      "asset_type": "etf",
+      "adjustment": "none",
+      "validation": {
+        "status": "PASS",
+        "findings": [],
+        "row_count": 1535
+      },
+      "reference_daily_sha256": "7eb0e2898ec46020e3330388059e7e59355b9b31ac2495060143c59878e6711c",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "available_at": "SOURCE_PERIOD_CLOSE",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1535
+  },
+  "sge": {
+    "status": "READY",
+    "sha256": "3ab57c779b26593d5f6b17b5e46a59b2a9e1cd2ea8ed9d8d797553ab7e4bbf43",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "Au99.99",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "percent_change_unit": "decimal_return",
+      "session_rule": "prior night session plus current day session through 15:30",
+      "availability_rule": "use prior trading day until publication time is governed",
+      "price_validation_tolerance": "0.011 CNY per gram for one-tick vendor rounding",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SGE",
+      "available_at": "use prior trading day until publication time is governed",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1535
+  },
+  "futures": {
+    "status": "READY",
+    "sha256": "729d54e05c32ee31b0dd900b79fba6180be756aea70259a804d8aeb4301baf00",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "AU.SHFE",
+      "exchange": "SHFE",
+      "frequency": "daily",
+      "primary_key": [
+        "Date",
+        "Contract"
+      ],
+      "source_time_field": "Date",
+      "source_calendar": "SHFE",
+      "available_at": "source trade date T is usable from the next China trading session; an earlier timestamp requires a separately governed publication time",
+      "maximum_start_lag_days": 10,
+      "availability_time_field": "Date",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 12280
+  },
+  "real_yield": {
+    "status": "READY",
+    "sha256": "1e948800dcc5a9d09ecb4cc17d37f39a757ed6c48bbcef6a13dad651c9262b02",
+    "metadata": {
+      "vendor": "tushare",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "unit": "percent",
+      "availability_rule": "source date no later than prior China trading day",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "US_GOVERNMENT",
+      "available_at": "source date no later than prior China trading day",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1578
+  },
+  "nominal_yield": {
+    "status": "READY",
+    "sha256": "f60ce323676633b3ed3da148579b5cde2c054534b43b0209f6a0ad9eaf439fc6",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_interface": "us_tycr",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "unit": "percent",
+      "availability_rule": "source date strictly earlier than China decision session",
+      "maximum_start_lag_days": 10,
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "US_GOVERNMENT",
+      "available_at": "source date strictly earlier than China decision session",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1579
+  },
+  "fx": {
+    "status": "READY",
+    "sha256": "cc8e87505a0ec5f5eb1d9008fa6e99c68e3ea82a66b3091aaf043f794db17bfe",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "USDCNH.FXCM",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "vendor_timezone": "GMT",
+      "availability_rule": "use at least one completed China trading day lag",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "FXCM_24X5",
+      "available_at": "use at least one completed China trading day lag",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1975
+  },
+  "shares": {
+    "status": "READY",
+    "sha256": "0599da09bcedff4e1f7b6cdbf7b30ffbd35273f701b82dc0e75e412fac9e8597",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "518850.SH",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "availability_rule": "T+1 08:30 Asia/Shanghai",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "available_at": "T+1 08:30 Asia/Shanghai",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1535
+  },
+  "vix": {
+    "status": "READY",
+    "sha256": "d63025e51f9022dc212e433d8b8c3b0c5442bb6e11a0327f1ec52e6cd0e15ad3",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "VIX",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "percent_change_unit": "decimal_return",
+      "availability_rule": "US close date must be strictly earlier than China decision session",
+      "maximum_start_lag_days": 10,
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "US_MARKET",
+      "available_at": "US close date must be strictly earlier than China decision session",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1610
+  },
+  "shibor": {
+    "status": "READY",
+    "sha256": "ebe2ef7e4bec19d3663c666d230e3e04917eb2bb590456c74254e722ade9f9e9",
+    "metadata": {
+      "vendor": "tushare",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "maximum_start_lag_days": 10,
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "available_at": "SOURCE_PERIOD_CLOSE",
+      "request_range_policy": "EXACT"
+    },
+    "start": "2020-06-05T00:00:00",
+    "end": "2026-09-30T00:00:00",
+    "rows": 1565
+  }
+}

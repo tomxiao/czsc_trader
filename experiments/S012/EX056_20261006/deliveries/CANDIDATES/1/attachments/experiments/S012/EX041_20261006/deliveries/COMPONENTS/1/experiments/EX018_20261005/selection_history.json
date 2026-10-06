@@ -1,0 +1,40 @@
+{
+  "source_hashes": {
+    "EX015_20261005/data/daily.parquet": "919783da28bc4e80c5512d7de277ef79a8097a848cd4c9c702f2bde0dbf08753",
+    "EX015_20261005/data/peer.parquet": "5ddfd8e31893f827de48a4b2c190cc9fc1c8246157e0ecb45732c1aff8f7e64a",
+    "EX017_20261005/features.parquet": "33f13b58ae70db2bceb4907c193bcce0f713a1c8b7a03400c7370b2542ca9fee",
+    "EX017_20261005/signals.parquet": "c37233d617d81c9ef05b18eefe1a91b63fd364ef88d4304a6df7f32e56e508fa",
+    "EX017_20261005/valids.parquet": "ea9df5bfed68abe7a9c091765fbc8ee4483d87d124c065ce1a16699a9a2a5cc8",
+    "EX015_20261005/coverage.json": "2ab13f980b6b8a69074b1216b18e8f0f37e0fbfde7aba86c9f2e522791651921"
+  },
+  "predecessor_receipts": {
+    "EX015_20261005": "17d9453c45bb67b9a517546c644d8071688b636aea2774b114739b8a7600071b",
+    "EX017_20261005": "ee1c6e995c13e0c8e9970b66c0a8c7c354961f8821ce748184deb449b62e9beb"
+  },
+  "bases": [
+    "o01",
+    "mid_momentum_positive"
+  ],
+  "gates": [
+    "afternoon_positive",
+    "last_hour_positive",
+    "close_upper_half",
+    "recovered_after_shock",
+    "peer_positive",
+    "volume_participation"
+  ],
+  "paths": 288,
+  "main_gates": [
+    "afternoon_positive",
+    "last_hour_positive",
+    "close_upper_half"
+  ],
+  "secondary_gates": [
+    "recovered_after_shock",
+    "peer_positive",
+    "volume_participation"
+  ],
+  "trigger": "用户要求补足阶段二职责覆盖，确认组件原为0。",
+  "selection": "固定结构阈值，不基于本轮收益挑方向/阈值；已见开发池，不独立验证。",
+  "risk_context": "既有风险方向的当前原价视图；不替换历史定义与证据。"
+}

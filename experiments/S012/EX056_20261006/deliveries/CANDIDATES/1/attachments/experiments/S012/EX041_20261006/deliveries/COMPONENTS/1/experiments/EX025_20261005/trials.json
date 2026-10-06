@@ -1,0 +1,382 @@
+[
+  {
+    "candidate_id": "C0100",
+    "parameters": {
+      "opportunity": "always",
+      "confirm_o01": false,
+      "hold_days": 1,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": -0.005,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 1,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": -0.005,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "878e2dcc544e4a7a918d1776c6b7b084",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0100",
+      "content_sha256": "6b51e42d8ef52d311b4b8101224ae7db39c34efd0e57146c807777d9a87e9310",
+      "request_hash": "e550092f0496850110fdf5c2a89b17eac129a428188fa4384e37f54cb04414e4",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.484926+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:50.503068+00:00",
+      "elapsed_seconds": 257.0186682000058,
+      "evaluation_ids": [
+        "9f6f4780a065ae15a6179096cb5e23b65b0d6dc55df5422b88bd195683c8e9ec"
+      ],
+      "result_hash": "18ae33a61a65efc2a7af0bf056b2a554fd5017e89f779e2058f8dd990d14c856",
+      "result_artifact": {
+        "path": "evaluations/878e2dcc544e4a7a918d1776c6b7b084/result.json",
+        "kind": "evaluation_result",
+        "sha256": "04febf1101098139d9635462cbd4a083b8a54ca38042c937590b282d3d2fd5fc"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.12040732994579273,
+      "max_drawdown": -0.5453459570000008,
+      "closed_trades": 227,
+      "frequency": 8.872964169381108,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        false,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0101",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 1,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.005,
+      "allocation": 1.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 1,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.005,
+        "allocation": 1.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "afe3bb70d1f94b229e8c64a1b1b8fcfa",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0101",
+      "content_sha256": "6a6da273c22efddf78163974e0b017ecb25e6cdafb609a26d1c5c54490c72f3d",
+      "request_hash": "2748c0bef2b4127f689f3d86de73a6999b35071af991b6881ab5b4248f070a9e",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.516677+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:53.353096+00:00",
+      "elapsed_seconds": 259.83627349999733,
+      "evaluation_ids": [
+        "3a874e88429ef76e53a49aecf9b7bf58d387523318e33011a0449323086868fb"
+      ],
+      "result_hash": "49795208dfc8522f47026c38de17837db470973c2934f70b18271734d0c19583",
+      "result_artifact": {
+        "path": "evaluations/afe3bb70d1f94b229e8c64a1b1b8fcfa/result.json",
+        "kind": "evaluation_result",
+        "sha256": "4d8a3bb4bf999b2035e2db894b6411be4ca540adcef16f9a3626fa2e6616a1d1"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.05195848120987767,
+      "max_drawdown": -0.3025957899999978,
+      "closed_trades": 223,
+      "frequency": 8.716612377850163,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0102",
+    "parameters": {
+      "opportunity": "union",
+      "confirm_o01": false,
+      "hold_days": 2,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": 0.01,
+      "allocation": 0.5
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "union",
+        "confirm_o01": false,
+        "hold_days": 2,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": 0.01,
+        "allocation": 0.5,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "4805ee5a7beb48d1b0db423856d565c9",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0102",
+      "content_sha256": "9d09870d8c2a9a0ff843513d224fb44a90149bab34e9b39571eecee8e704b82c",
+      "request_hash": "8abfa11b7bce1489e5e208ea8b8fe5db5234a0350f79301679e98de1c9e14a65",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.548915+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:56.138791+00:00",
+      "elapsed_seconds": 262.5887195999967,
+      "evaluation_ids": [
+        "2c736f73d39c38635b28257597af21a839ce2468ae11575f16fa08384354a101"
+      ],
+      "result_hash": "280da7c1a98cb62ecd557e22074e83839e7d158f81d108a0d0cf82261d882b34",
+      "result_artifact": {
+        "path": "evaluations/4805ee5a7beb48d1b0db423856d565c9/result.json",
+        "kind": "evaluation_result",
+        "sha256": "e6a1c84520030e9abcd84ab29eb8b7c5490eb64fbeaad96543dfd9ca33c45d3a"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.005664369550750559,
+      "max_drawdown": -0.1257567009337084,
+      "closed_trades": 204,
+      "frequency": 7.973941368078176,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C0103",
+    "parameters": {
+      "opportunity": "always",
+      "confirm_o01": false,
+      "hold_days": 3,
+      "cooldown": 0,
+      "risk_gate": "none",
+      "risk_exit": false,
+      "trailing_stop": 0.0,
+      "entry_premium": -0.02,
+      "allocation": 0.5
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "opportunity": "always",
+        "confirm_o01": false,
+        "hold_days": 3,
+        "cooldown": 0,
+        "risk_gate": "none",
+        "risk_exit": false,
+        "trailing_stop": 0.0,
+        "entry_premium": -0.02,
+        "allocation": 0.5,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "密集短持有、溢价/折价与半仓策略的完整成交现金台账能否被研究加速器忠实复现？",
+    "record": {
+      "attempt_id": "a36bb98fc2f843ccbae2d8f523312386",
+      "experiment_id": "EX025_20261005",
+      "candidate_id": "S012-C0103",
+      "content_sha256": "df4626189931a2343aad40a4b5cd5714c766f0e304a8964636a422f48647f7df",
+      "request_hash": "ce983beb49b8c422a7068dc3ffbeb23f19ad64ca4fc9ff73a87c3b307fc08e8b",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T15:58:33.587038+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:02:58.937621+00:00",
+      "elapsed_seconds": 265.3502202000236,
+      "evaluation_ids": [
+        "a2fee44a1e5a5a0a63bbbc252a1bd284180fe78cde7641b1be02045b1b89b9b1"
+      ],
+      "result_hash": "465907e2afbddf14e49d921c778fe4ef14812a0132a1b44ffc85d5c9dd373fbc",
+      "result_artifact": {
+        "path": "evaluations/a36bb98fc2f843ccbae2d8f523312386/result.json",
+        "kind": "evaluation_result",
+        "sha256": "f3172f7204eb6c0d4c0dcea44880e62ed6e398709ea7258f862adea89da17589"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": -0.007350836422931106,
+      "max_drawdown": -0.13462396163008494,
+      "closed_trades": 42,
+      "frequency": 1.6416938110749186,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX025_20261005/artifacts/preflight.json"
+  }
+]

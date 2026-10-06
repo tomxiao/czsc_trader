@@ -1,0 +1,40 @@
+{
+  "source_hashes": {
+    "EX015_20261005/data/daily.parquet": "919783da28bc4e80c5512d7de277ef79a8097a848cd4c9c702f2bde0dbf08753",
+    "EX017_20261005/features.parquet": "33f13b58ae70db2bceb4907c193bcce0f713a1c8b7a03400c7370b2542ca9fee",
+    "EX017_20261005/signals.parquet": "c37233d617d81c9ef05b18eefe1a91b63fd364ef88d4304a6df7f32e56e508fa",
+    "EX017_20261005/valids.parquet": "ea9df5bfed68abe7a9c091765fbc8ee4483d87d124c065ce1a16699a9a2a5cc8",
+    "EX018_20261005/gates.parquet": "f8944587cbafaeceee23153f69c761fefae859686988e63a5dab1b97daeacb3c",
+    "EX018_20261005/gate_valids.parquet": "34ceb954b0882338b0f758290e9acc6521bd421b8d39a32b6aadfbd851fd02f5",
+    "EX015_20261005/coverage.json": "2ab13f980b6b8a69074b1216b18e8f0f37e0fbfde7aba86c9f2e522791651921"
+  },
+  "pairs": {
+    "o01": [
+      "own_intraday_positive",
+      "peer_positive"
+    ],
+    "mid_momentum_positive": [
+      "own_intraday_positive",
+      "peer_positive"
+    ],
+    "o01_own_positive": [
+      "peer_positive"
+    ],
+    "o01_own_nonpositive": [
+      "peer_positive"
+    ],
+    "mid_momentum_positive_own_positive": [
+      "peer_positive"
+    ],
+    "mid_momentum_positive_own_nonpositive": [
+      "peer_positive"
+    ]
+  },
+  "predecessor_receipts": {
+    "EX015_20261005": "17d9453c45bb67b9a517546c644d8071688b636aea2774b114739b8a7600071b",
+    "EX017_20261005": "ee1c6e995c13e0c8e9970b66c0a8c7c354961f8821ce748184deb449b62e9beb",
+    "EX018_20261005": "e23608ee1b69d58d11025cf4b9096078ff110b30ada27692d2f517f088442171"
+  },
+  "trigger": "EX018同类正向候选可能由自身当日上涨解释，固定符号分组排除竞争解释。",
+  "selection_bias": "已见开发池后继；无新阈值选择或独立样本外验证。"
+}

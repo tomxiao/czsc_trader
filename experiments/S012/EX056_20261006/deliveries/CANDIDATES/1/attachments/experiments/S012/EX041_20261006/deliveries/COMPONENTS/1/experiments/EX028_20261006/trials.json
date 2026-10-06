@@ -1,0 +1,382 @@
+[
+  {
+    "candidate_id": "C3000",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.01,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.01,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "011cd73946474eecb80675947dac30c1",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3000",
+      "content_sha256": "0ed31e28c6e4fd1950710de6ee6103e06f9937141119bd9827537a5d4fa5e2ad",
+      "request_hash": "bd4d089d3a956b28727d4fc7f6ed086d3da0957acce5a8e396b0656b5bf71d36",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.614103+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:28.007064+00:00",
+      "elapsed_seconds": 229.39262900000904,
+      "evaluation_ids": [
+        "036783cbcfd6f5a364e3a0f3dc10686626a507249b2558578323b21b5b7d63f9"
+      ],
+      "result_hash": "fd272f901f7e8cb9233a576e5cf74ae0977a76e79955b12ed75ad3b8ffe86e9f",
+      "result_artifact": {
+        "path": "evaluations/011cd73946474eecb80675947dac30c1/result.json",
+        "kind": "evaluation_result",
+        "sha256": "ae6c8b694dcc121d8c52d60caadc14282e4f4b15525f55703d90f7901eb174f5"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.10288051582702451,
+      "max_drawdown": -0.20930664842761193,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3001",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.03,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.03,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "9a4951af150542c9866158e1994b5de5",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3001",
+      "content_sha256": "d559a992c047a40d41e3e29ea2e6357588d926df35472e8aab2534244e732772",
+      "request_hash": "668bebd44fb53e13870d6ee31c0eb3aac415eca09369407c04b122d423afc346",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.640033+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:30.602013+00:00",
+      "elapsed_seconds": 231.96186670003226,
+      "evaluation_ids": [
+        "780c4dc364dfaa8d40e1fdb3a7a2e9a70a39827bcce9afe5ec9f42bfa883a309"
+      ],
+      "result_hash": "9c0bb7d30211946092132347324fd4ff738d74100c7429dd3eca8c47192cdfb6",
+      "result_artifact": {
+        "path": "evaluations/9a4951af150542c9866158e1994b5de5/result.json",
+        "kind": "evaluation_result",
+        "sha256": "01fb843d00ae6e9903912e0092c4e2040359002b04efa24f5a2a6695b17c24c1"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.1004714037210861,
+      "max_drawdown": -0.2107883679608651,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3002",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": false,
+      "cooldown": 0,
+      "entry_premium": 0.015,
+      "hold_days": 5,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "none",
+      "trailing_stop": 0.0
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": false,
+        "cooldown": 0,
+        "entry_premium": 0.015,
+        "hold_days": 5,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "none",
+        "trailing_stop": 0.0,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "3d45fcb0ace24546a4f5b7308f569b74",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3002",
+      "content_sha256": "253b6b1abdfb6cf8e86f329ee434ed50995fdcae7eb980756ce36d244c983ae7",
+      "request_hash": "821f4bf2da08c63f76d3cedd918cec94b614a4b86c8e65f8056677e7d9ec4770",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.653920+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:33.092182+00:00",
+      "elapsed_seconds": 234.4380863000406,
+      "evaluation_ids": [
+        "783c65123f400aa0cb0ddfc17ddc4245d983ca24dcd071d8358306e477f0283f"
+      ],
+      "result_hash": "d2795564a0616f1ef25a467c78051173f509c6dc56ee3d6942ae1438867bbe5d",
+      "result_artifact": {
+        "path": "evaluations/3d45fcb0ace24546a4f5b7308f569b74/result.json",
+        "kind": "evaluation_result",
+        "sha256": "4c730720ae6133376ee21ba9ea8740468dd0602649c9027163913ffb7cdc58a4"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.10248057982940106,
+      "max_drawdown": -0.2120491621064191,
+      "closed_trades": 132,
+      "frequency": 5.159609120521172,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        true
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  },
+  {
+    "candidate_id": "C3003",
+    "parameters": {
+      "allocation": 1.0,
+      "confirm_o01": true,
+      "cooldown": 4,
+      "entry_premium": 0.002,
+      "hold_days": 29,
+      "opportunity": "union",
+      "risk_exit": false,
+      "risk_gate": "vol",
+      "trailing_stop": 0.05
+    },
+    "payload": {
+      "runtime": {
+        "module": "strategy_runtime.strategies.s012",
+        "qualname": "S012PlannedCycle",
+        "contract_version": 1,
+        "source_sha256": "8be2b666e2a1e35f295cf34934a6212c9bc56e8d95652939721e7b55ac30cac5",
+        "source_files": [
+          "strategies/s012.py",
+          "resources/features.csv"
+        ]
+      },
+      "parameters": {
+        "allocation": 1.0,
+        "confirm_o01": true,
+        "cooldown": 4,
+        "entry_premium": 0.002,
+        "hold_days": 29,
+        "opportunity": "union",
+        "risk_exit": false,
+        "risk_gate": "vol",
+        "trailing_stop": 0.05,
+        "rule": {
+          "data_source": {
+            "package": "strategy_runtime",
+            "path": "resources/features.csv",
+            "sha256": "46868818cb4cd33a6fa9af6de029843738de7a5cd3cdb0464f4f4a9e69fb7049"
+          }
+        }
+      }
+    },
+    "source_root": "experiments/S012/EX023_20261005/strategy_runtime",
+    "hypothesis": "经过有界等价加速搜索选择的达标或最强前沿，能否在正式FULL账户中复现原三项目标与改善？",
+    "record": {
+      "attempt_id": "93cef143ab8943718c9c6aa5ddac3eec",
+      "experiment_id": "EX028_20261006",
+      "candidate_id": "S012-C3003",
+      "content_sha256": "20f519208a49b15d791a6b77dc909f7491b5968efa6e0f80e8d22ce40b631587",
+      "request_hash": "e5fc0a044a70713a8193e2f232e9a7b71bf65feab4e31c3f8ed15a0de9e4316b",
+      "status": "SUCCEEDED",
+      "started_at": "2026-10-05T16:25:38.668641+00:00",
+      "requested_count": 1,
+      "completed_count": 1,
+      "finished_at": "2026-10-05T16:29:35.474804+00:00",
+      "elapsed_seconds": 236.80624460004037,
+      "evaluation_ids": [
+        "fc949fbe32b4201eca236c97d902e161da0328f004873b09d0f7c39a3283e312"
+      ],
+      "result_hash": "51cbdc5081ca92e2c28a1c056857daad9bebd0446429c5646a055c0c5a9d821c",
+      "result_artifact": {
+        "path": "evaluations/93cef143ab8943718c9c6aa5ddac3eec/result.json",
+        "kind": "evaluation_result",
+        "sha256": "45b85a5c347119f06e68a1800e42925483e36ae61bb9813ca91545157662d675"
+      },
+      "error_code": null,
+      "error_message": null
+    },
+    "metrics": {
+      "net_cagr": 0.15093378498576349,
+      "max_drawdown": -0.07484899396246958,
+      "closed_trades": 19,
+      "frequency": 0.742671009771987,
+      "benchmark": {
+        "max_drawdown": -0.30290630870721535,
+        "calmar": 0.4716539362753617,
+        "win_loss_ratio": null,
+        "win_loss_ratio_status": "NO_CLOSED_TRADES",
+        "win_rate": null,
+        "return": 1.2544321200000002,
+        "sharpe": 0.8687575596978847,
+        "closed_trades": 0,
+        "cagr": 0.14286695282439799
+      },
+      "goals": [
+        false,
+        true,
+        false
+      ],
+      "passed_all": false
+    },
+    "passed_all": false,
+    "preflight_path": "experiments/S012/EX028_20261006/artifacts/preflight.json"
+  }
+]

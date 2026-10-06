@@ -1,0 +1,179 @@
+{
+  "prepared": {
+    "space_id": "de397b6f-b525-4589-b860-e7e72d99f739",
+    "preparation_id": "89a6c6c7-9b67-4115-958c-3c723392986b",
+    "manifest_sha256": "945f279bf720830606a6bfb854e2e3f470f2455b17f7e96b0eec8fea4c4722b0"
+  },
+  "inputs": {
+    "gvz": {
+      "request": {
+        "dataset": "index.gold_volatility_daily",
+        "symbol": null,
+        "start": "2020-01-01",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "identity": {
+        "dataset": "index.gold_volatility_daily",
+        "source": "FRED",
+        "symbol": null,
+        "data_start": "2020-01-02T00:00:00",
+        "data_cutoff": "2026-09-30T00:00:00",
+        "content_sha256": "c5fb98f41b58748d672c1890d910ee03316e584794523a0c3d7cd8e67aa7319c",
+        "metadata": {
+          "vendor": "FRED",
+          "original_source": "CBOE",
+          "vendor_interface": "fred/series/observations",
+          "series_id": "GVZCLS",
+          "vintage_mode": "INITIAL_RELEASE_ONLY",
+          "fred_output_type": 4,
+          "primary_key": [
+            "Date"
+          ],
+          "frequency": "daily",
+          "unit": "implied_volatility_index_percent",
+          "source_time_field": "Date",
+          "availability_time_field": "AvailableDate",
+          "availability_timezone": "Asia/Shanghai",
+          "source_calendar": "US_MARKET",
+          "available_at": "day after max(observation date, ALFRED initial release date) at 16:00 Asia/Shanghai; conservative publication-day policy, intraday vendor timestamp unverified",
+          "request_range_policy": "EXACT",
+          "historical_intraday_publication_verified": false,
+          "release_before_observation_dates": [
+            "2021-12-24"
+          ],
+          "maximum_start_lag_days": 7,
+          "source_responses": [
+            {
+              "realtime_start": "2020-01-01",
+              "realtime_end": "2025-12-31",
+              "count": 1566,
+              "payload_sha256": "cd04b3442ba1065cc049c3f5d0f746addaf6232a917f144e3db97585cdf30652"
+            },
+            {
+              "realtime_start": "2026-01-01",
+              "realtime_end": "2026-09-30",
+              "count": 195,
+              "payload_sha256": "14927f345fa651a15028cf142c59e1e2e202ceeb085997c43f87dec658b54bef"
+            }
+          ],
+          "missing_value_dates": [
+            "2020-01-01",
+            "2020-01-20",
+            "2020-02-17",
+            "2020-04-10",
+            "2020-05-25",
+            "2020-07-03",
+            "2020-09-07",
+            "2020-11-26",
+            "2020-12-25",
+            "2021-01-01",
+            "2021-01-18",
+            "2021-02-15",
+            "2021-04-02",
+            "2021-04-16",
+            "2021-05-31",
+            "2021-07-05",
+            "2021-09-06",
+            "2021-11-25",
+            "2022-01-17",
+            "2022-02-21",
+            "2022-04-15",
+            "2022-05-30",
+            "2022-06-20",
+            "2022-07-04",
+            "2022-09-05",
+            "2022-11-24",
+            "2022-12-26",
+            "2023-01-02",
+            "2023-01-16",
+            "2023-02-20",
+            "2023-02-24",
+            "2023-04-07",
+            "2023-05-29",
+            "2023-06-19",
+            "2023-07-04",
+            "2023-09-04",
+            "2023-11-23",
+            "2023-12-25",
+            "2024-01-01",
+            "2024-01-15",
+            "2024-02-19",
+            "2024-03-29",
+            "2024-05-27",
+            "2024-06-19",
+            "2024-07-04",
+            "2024-09-02",
+            "2024-11-28",
+            "2024-12-25",
+            "2025-01-01",
+            "2025-01-09",
+            "2025-01-20",
+            "2025-02-17",
+            "2025-04-18",
+            "2025-05-26",
+            "2025-06-19",
+            "2025-07-04",
+            "2025-09-01",
+            "2025-11-27",
+            "2025-12-25",
+            "2026-01-01",
+            "2026-01-19",
+            "2026-02-16",
+            "2026-04-03",
+            "2026-05-25",
+            "2026-06-19",
+            "2026-07-03",
+            "2026-09-07"
+          ],
+          "provider_binding": "index.gold_volatility_daily",
+          "provider_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963",
+          "dfls_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963"
+        }
+      }
+    },
+    "usdollar": {
+      "request": {
+        "dataset": "fx.fxcm_daily",
+        "symbol": "USDOLLAR.FXCM",
+        "start": "2020-01-01",
+        "end": "2023-06-01",
+        "required_cutoff": "2023-06-01",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "identity": {
+        "dataset": "fx.fxcm_daily",
+        "source": "tushare",
+        "symbol": "USDOLLAR.FXCM",
+        "data_start": "2020-01-02T00:00:00",
+        "data_cutoff": "2023-06-01T00:00:00",
+        "content_sha256": "7c89c822de38103c72219267e3c4f909e28a6a7abc48a895f924e67b222bd361",
+        "metadata": {
+          "vendor": "tushare",
+          "vendor_symbol": "USDOLLAR.FXCM",
+          "frequency": "daily",
+          "primary_key": [
+            "Date"
+          ],
+          "vendor_timezone": "GMT",
+          "availability_timezone": "Asia/Shanghai",
+          "availability_time_field": "AvailableDate",
+          "availability_rule": "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; vendor publication timestamp unverified",
+          "available_at": "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; vendor publication timestamp unverified",
+          "maximum_start_lag_days": 10,
+          "source_time_field": "Date",
+          "source_calendar": "FXCM_24X5",
+          "request_range_policy": "EXACT",
+          "provider_binding": "fx.fxcm_daily",
+          "provider_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963",
+          "dfls_revision": "65534d7ffda6096ca3eff3518377f4b9764dfaa3744ec8ef39b88d9f2ee3e963"
+        }
+      }
+    }
+  }
+}

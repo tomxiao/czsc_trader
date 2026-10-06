@@ -1,0 +1,134 @@
+[
+  {
+    "id": "I01",
+    "primary_horizon": 5,
+    "parent": "C_MDOWN",
+    "role": "机会",
+    "hypothesis": "上午下跌后午后修复可能积累次日后收益",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "午后修复父内匹配负、触价均值负、固定限价贡献下降，未支持修复收益。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I02",
+    "primary_horizon": 5,
+    "parent": "C_MDOWN",
+    "role": "竞争反证",
+    "hypothesis": "上午下跌后午后继续下跌的低价机会竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "候选证据不足：事件与父匹配正，但基础触价净均值负、双费用绝对贡献负、延迟2增量转负及年度亏损，不升级为新收益机会。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I03",
+    "primary_horizon": 5,
+    "parent": "C_MUP",
+    "role": "机会",
+    "hypothesis": "上午上涨后午后回调可能提供限价兼容机会",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "早涨午后回落事件净负，父内与固定限价均下降。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I04",
+    "primary_horizon": 5,
+    "parent": "C_MUP",
+    "role": "竞争反证",
+    "hypothesis": "上午上涨且午后持续上涨的趋势竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "早涨午后延续事件略正但固定限价下降，未确认有必要增量。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I05",
+    "primary_horizon": 5,
+    "parent": "C_DOWN",
+    "role": "机会",
+    "hypothesis": "全天未涨但尾盘反弹的修复机会",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "日跌尾盘反弹基础固定贡献正，但事件/父内/触价证据弱且成本、年度与时点敏感，未支持组件。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I06",
+    "primary_horizon": 5,
+    "parent": "C_DOWN",
+    "role": "竞争反证",
+    "hypothesis": "全天未涨且尾盘继续回调的低价机会竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "日跌尾盘下落触价净均值负且固定贡献下降，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I07",
+    "primary_horizon": 5,
+    "parent": "C_PULL",
+    "role": "机会",
+    "hypothesis": "已知人民币金价上涨、本地三日回调且尾盘回落",
+    "definition_frozen_before_execution": true,
+    "status": "INSUFFICIENT_DATA",
+    "judgment": "人民币黄金支撑回调中尾盘跌父匹配小正，但固定贡献负，不推荐此门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I08",
+    "primary_horizon": 5,
+    "parent": "C_PULL",
+    "role": "竞争反证",
+    "hypothesis": "相同黄金支撑本地回调父环境下尾盘不跌竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "相同父组尾盘不跌的固定贡献下降，未支持强制门。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I09",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "确认",
+    "hypothesis": "M05正向共振环境下尾盘回调是否改善限价收益",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内尾盘回调均值较高但基础贡献仅+0.0287pp；延迟1/2、去2026及异常子窗贡献转负，不推荐追加确认。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I10",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "竞争反证",
+    "hypothesis": "M05环境下尾盘未跌的延续竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内尾盘不跌明显损失固定父贡献，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I11",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "确认",
+    "hypothesis": "M05环境上午后上涨是否确认机会",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05内午后上涨高均值但基础贡献仅+0.0620pp；延迟1/2、去2026及异常子窗转负且容量下降，不推荐确认。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  },
+  {
+    "id": "I12",
+    "primary_horizon": 5,
+    "parent": "C_M05",
+    "role": "竞争反证",
+    "hypothesis": "M05环境上午后未涨的低价竞争",
+    "definition_frozen_before_execution": true,
+    "status": "INEFFECTIVE",
+    "judgment": "M05午后未涨的固定贡献负，不推荐。",
+    "selection_history": "全1535日及全部先前实验已见；后继不是独立验证"
+  }
+]

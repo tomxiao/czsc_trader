@@ -1,0 +1,43 @@
+{
+  "xau": {
+    "rows": 1792,
+    "content_sha256": "971c247d7359fce5f24778cdacfc6da68e7ba45884e414140f318dec16fe49fc",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "XAUUSD.FXCM",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "vendor_timezone": "GMT",
+      "availability_timezone": "Asia/Shanghai",
+      "availability_time_field": "AvailableDate",
+      "availability_rule": "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; vendor publication timestamp unverified",
+      "available_at": "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; vendor publication timestamp unverified",
+      "maximum_start_lag_days": 10,
+      "source_time_field": "Date",
+      "source_calendar": "FXCM_24X5",
+      "request_range_policy": "EXACT"
+    }
+  },
+  "fx": {
+    "rows": 1975,
+    "content_sha256": "976a73a849322df37384258fab6bc1aa606da8cbb3e5e37e5de04912054f0aa9",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "USDCNH.FXCM",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "vendor_timezone": "GMT",
+      "availability_timezone": "Asia/Shanghai",
+      "availability_time_field": "AvailableDate",
+      "availability_rule": "use at least one completed China trading day lag",
+      "available_at": "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; vendor publication timestamp unverified",
+      "source_time_field": "Date",
+      "source_calendar": "FXCM_24X5",
+      "request_range_policy": "EXACT"
+    }
+  }
+}

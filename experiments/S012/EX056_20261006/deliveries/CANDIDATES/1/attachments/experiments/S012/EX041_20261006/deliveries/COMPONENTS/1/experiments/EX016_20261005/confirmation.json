@@ -1,0 +1,397 @@
+{
+  "pairwise": [
+    {
+      "signal": "pre_long_closure",
+      "events": 28,
+      "o01_overlap": 1,
+      "overlap_fraction": 0.03571428571428571,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "dry_pullback",
+      "events": 24,
+      "o01_overlap": 0,
+      "overlap_fraction": 0.0,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "late_volume_low",
+      "events": 82,
+      "o01_overlap": 6,
+      "overlap_fraction": 0.07317073170731707,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "thin_impact_low",
+      "events": 9,
+      "o01_overlap": 1,
+      "overlap_fraction": 0.1111111111111111,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "peer_lag_absorbed",
+      "events": 63,
+      "o01_overlap": 5,
+      "overlap_fraction": 0.07936507936507936,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "o01",
+      "events": 79,
+      "o01_overlap": 79,
+      "overlap_fraction": 1.0,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "actual_vwap_low",
+      "events": 278,
+      "o01_overlap": 28,
+      "overlap_fraction": 0.10071942446043165,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "actual_vwap_high",
+      "events": 328,
+      "o01_overlap": 16,
+      "overlap_fraction": 0.04878048780487805,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_negative",
+      "events": 520,
+      "o01_overlap": 42,
+      "overlap_fraction": 0.08076923076923077,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_below_cost",
+      "events": 146,
+      "o01_overlap": 13,
+      "overlap_fraction": 0.08904109589041095,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_low_late_heavy",
+      "events": 84,
+      "o01_overlap": 7,
+      "overlap_fraction": 0.08333333333333333,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_low_late_thin",
+      "events": 19,
+      "o01_overlap": 1,
+      "overlap_fraction": 0.05263157894736842,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_low_recovered",
+      "events": 22,
+      "o01_overlap": 1,
+      "overlap_fraction": 0.045454545454545456,
+      "minute_proxy_correlation": 0.9935364434915
+    },
+    {
+      "signal": "vwap_low_down_day",
+      "events": 176,
+      "o01_overlap": 24,
+      "overlap_fraction": 0.13636363636363635,
+      "minute_proxy_correlation": 0.9935364434915
+    }
+  ],
+  "unions": [
+    {
+      "signals": [
+        "o01",
+        "pre_long_closure"
+      ],
+      "events": 106,
+      "nonoverlap_events": 57,
+      "open_net": 0.006009030732514902,
+      "limit_fills": 32,
+      "limit_per60": 1.250814332247557,
+      "limit_net": 0.0006024555446113612,
+      "denominator": 1535
+    },
+    {
+      "signals": [
+        "o01",
+        "late_volume_low"
+      ],
+      "events": 155,
+      "nonoverlap_events": 69,
+      "open_net": 0.004249668276281255,
+      "limit_fills": 48,
+      "limit_per60": 1.8762214983713354,
+      "limit_net": 0.00283184418118812,
+      "denominator": 1535
+    },
+    {
+      "signals": [
+        "o01",
+        "dry_pullback"
+      ],
+      "events": 103,
+      "nonoverlap_events": 53,
+      "open_net": 0.003643198917093055,
+      "limit_fills": 38,
+      "limit_per60": 1.485342019543974,
+      "limit_net": 0.0020152892299959307,
+      "denominator": 1535
+    },
+    {
+      "signals": [
+        "o01",
+        "actual_vwap_low"
+      ],
+      "events": 329,
+      "nonoverlap_events": 131,
+      "open_net": -0.0005544135804056447,
+      "limit_fills": 83,
+      "limit_per60": 3.244299674267101,
+      "limit_net": -0.002477626122572126,
+      "denominator": 1535
+    },
+    {
+      "signals": [
+        "o01",
+        "pre_long_closure",
+        "late_volume_low"
+      ],
+      "events": 181,
+      "nonoverlap_events": 88,
+      "open_net": 0.0049540646354997615,
+      "limit_fills": 56,
+      "limit_per60": 2.188925081433225,
+      "limit_net": 0.0018842397470275885,
+      "denominator": 1535
+    },
+    {
+      "signals": [
+        "o01",
+        "pre_long_closure",
+        "actual_vwap_low"
+      ],
+      "events": 345,
+      "nonoverlap_events": 133,
+      "open_net": -0.0004356503386320118,
+      "limit_fills": 81,
+      "limit_per60": 3.1661237785016287,
+      "limit_net": -0.0032916144713167903,
+      "denominator": 1535
+    }
+  ],
+  "walkforward": [
+    {
+      "year": 2023,
+      "selected": "dry_pullback",
+      "training_score": 0.004106423336387076,
+      "training_scores": {
+        "pre_long_closure": -3.600145753219359e-05,
+        "dry_pullback": 0.004106423336387076,
+        "late_volume_low": 0.001637291588935745,
+        "thin_impact_low": null,
+        "peer_lag_absorbed": -0.0031880180985253575,
+        "actual_vwap_low": -0.0020389310048575453,
+        "actual_vwap_high": -0.003345016416287696,
+        "vwap_negative": -0.0005406338131735462,
+        "vwap_below_cost": -0.0007629921962923279,
+        "vwap_low_late_heavy": -0.004022169730847243,
+        "vwap_low_late_thin": 0.002568162311683953,
+        "vwap_low_recovered": -0.026050976673328237,
+        "vwap_low_down_day": -0.0008758370726817007
+      },
+      "events": 10,
+      "net_mean": 0.0011840105093247177,
+      "unconditional_increment": 5.6594764319565626e-05,
+      "selection_history": "候选集合来自已见EX015；年度排序使用历史成熟标签，不是独立样本外证明。"
+    },
+    {
+      "year": 2024,
+      "selected": "vwap_low_late_thin",
+      "training_score": 0.0035761303499556325,
+      "training_scores": {
+        "pre_long_closure": -0.002468312602829189,
+        "dry_pullback": 0.0018303763169224053,
+        "late_volume_low": 0.0016563606905768882,
+        "thin_impact_low": null,
+        "peer_lag_absorbed": 0.0009840978989417094,
+        "actual_vwap_low": -0.0009524306011274965,
+        "actual_vwap_high": -0.002211181950964016,
+        "vwap_negative": -0.0003897265608190719,
+        "vwap_below_cost": 0.00038034827473434885,
+        "vwap_low_late_heavy": -0.0006874535776649411,
+        "vwap_low_late_thin": 0.0035761303499556325,
+        "vwap_low_recovered": -0.007503191000544542,
+        "vwap_low_down_day": 0.0002468481388229293
+      },
+      "events": 6,
+      "net_mean": -0.008224189353080114,
+      "unconditional_increment": -0.011718599865664845,
+      "selection_history": "候选集合来自已见EX015；年度排序使用历史成熟标签，不是独立样本外证明。"
+    },
+    {
+      "year": 2025,
+      "selected": "thin_impact_low",
+      "training_score": 0.007645516052661451,
+      "training_scores": {
+        "pre_long_closure": 0.0005674981702869395,
+        "dry_pullback": 0.0010634003808131058,
+        "late_volume_low": 0.0014763464937465965,
+        "thin_impact_low": 0.007645516052661451,
+        "peer_lag_absorbed": -0.001015278637396989,
+        "actual_vwap_low": -0.0015039897890764852,
+        "actual_vwap_high": -0.00046053264118742503,
+        "vwap_negative": -0.0006045757838735714,
+        "vwap_below_cost": -0.0001591846644567335,
+        "vwap_low_late_heavy": -0.0032696021441423195,
+        "vwap_low_late_thin": -0.0019699432354988327,
+        "vwap_low_recovered": -0.009312011381248183,
+        "vwap_low_down_day": -0.00023083903003998443
+      },
+      "events": 0,
+      "net_mean": null,
+      "unconditional_increment": null,
+      "selection_history": "候选集合来自已见EX015；年度排序使用历史成熟标签，不是独立样本外证明。"
+    },
+    {
+      "year": 2026,
+      "selected": "thin_impact_low",
+      "training_score": 0.0059756249405578015,
+      "training_scores": {
+        "pre_long_closure": 0.005322246607463302,
+        "dry_pullback": -0.00019976280166401471,
+        "late_volume_low": -8.177216500109474e-05,
+        "thin_impact_low": 0.0059756249405578015,
+        "peer_lag_absorbed": 0.0023993081685846117,
+        "actual_vwap_low": -0.0015912247725206098,
+        "actual_vwap_high": 0.00036693395487317907,
+        "vwap_negative": -0.0010152843480489364,
+        "vwap_below_cost": -0.0009427968194819212,
+        "vwap_low_late_heavy": -0.002992579209010143,
+        "vwap_low_late_thin": -0.002911123406560005,
+        "vwap_low_recovered": -0.003443603414079418,
+        "vwap_low_down_day": -0.000438138175870466
+      },
+      "events": 0,
+      "net_mean": null,
+      "unconditional_increment": null,
+      "selection_history": "候选集合来自已见EX015；年度排序使用历史成熟标签，不是独立样本外证明。"
+    }
+  ],
+  "bootstrap": [
+    {
+      "signal": "pre_long_closure",
+      "nonoverlap_events": 28,
+      "net_mean": 0.008363695071539442,
+      "ci_low": -0.0015063820332215567,
+      "ci_high": 0.020666542360581974,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "dry_pullback",
+      "nonoverlap_events": 22,
+      "net_mean": 0.002777738555759014,
+      "ci_low": -0.003052016285937347,
+      "ci_high": 0.009414616200695584,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "late_volume_low",
+      "nonoverlap_events": 49,
+      "net_mean": 0.0041708876286460335,
+      "ci_low": 0.00033481593405239763,
+      "ci_high": 0.008026537255551582,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "thin_impact_low",
+      "nonoverlap_events": 4,
+      "net_mean": 0.007798945325847573,
+      "ci_low": 0.007798945325847573,
+      "ci_high": 0.007798945325847573,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "peer_lag_absorbed",
+      "nonoverlap_events": 46,
+      "net_mean": 0.007825871762261863,
+      "ci_low": -0.0005435178188013662,
+      "ci_high": 0.020821749921654118,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "o01",
+      "nonoverlap_events": 36,
+      "net_mean": 0.003783235504586011,
+      "ci_low": -0.005472749811740345,
+      "ci_high": 0.014800779465298177,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "actual_vwap_low",
+      "nonoverlap_events": 124,
+      "net_mean": -0.001194594256624457,
+      "ci_low": -0.0047942923269533875,
+      "ci_high": 0.00250576260394659,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "actual_vwap_high",
+      "nonoverlap_events": 126,
+      "net_mean": 0.0029799131095451462,
+      "ci_low": -0.0018496951642602516,
+      "ci_high": 0.008085166070500461,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_negative",
+      "nonoverlap_events": 159,
+      "net_mean": -2.578380423991231e-05,
+      "ci_low": -0.003667859261751919,
+      "ci_high": 0.003630095364151059,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_below_cost",
+      "nonoverlap_events": 84,
+      "net_mean": -0.0023945964793694358,
+      "ci_low": -0.007722454514689798,
+      "ci_high": 0.0031010681566842856,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_low_late_heavy",
+      "nonoverlap_events": 58,
+      "net_mean": 0.0004992734944147862,
+      "ci_low": -0.004344031828591768,
+      "ci_high": 0.006590704219592864,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_low_late_thin",
+      "nonoverlap_events": 17,
+      "net_mean": 0.004623131875759095,
+      "ci_low": -0.0035420485826142527,
+      "ci_high": 0.013277735027513077,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_low_recovered",
+      "nonoverlap_events": 20,
+      "net_mean": 0.0043759928104274756,
+      "ci_low": -0.008020810445990687,
+      "ci_high": 0.016481024956293697,
+      "selection_adjusted": false
+    },
+    {
+      "signal": "vwap_low_down_day",
+      "nonoverlap_events": 92,
+      "net_mean": -0.0006709103124491853,
+      "ci_low": -0.004248333535056225,
+      "ci_high": 0.003174913776504821,
+      "selection_adjusted": false
+    }
+  ],
+  "minute_touch": []
+}
