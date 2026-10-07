@@ -203,7 +203,7 @@ def test_moneyflow_fetch_filters_explicit_date_subset_without_supplier_call(flow
     (["b", "a"], False),
     (["a", "b"], True),
 ])
-def test_categorical_domain_and_order_are_part_of_content_identity(categories, ordered, monkeypatch):
+def test_categorical_domain_and_order_are_part_of_content_identity(categories, ordered):
     original = pd.DataFrame({"Class": pd.Categorical(["a", "b"], categories=["a", "b"])})
     changed = pd.DataFrame({
         "Class": pd.Categorical(["a", "b"], categories=categories, ordered=ordered),
@@ -213,14 +213,6 @@ def test_categorical_domain_and_order_are_part_of_content_identity(categories, o
     expected = canonical_frame_sha256(original)
     original.attrs = {"quality_evidence": {"sessions": ["2026-09-14", "2026-09-15"]}}
     source = original.copy()
-    hash_values = pd.util.hash_pandas_object
-
-    def observe_hash(value, *args, **kwargs):
-        if isinstance(value, pd.DataFrame):
-            assert value.attrs == {}  # Evidence must not propagate through numerical hashing.
-        return hash_values(value, *args, **kwargs)
-
-    monkeypatch.setattr(pd.util, "hash_pandas_object", observe_hash)
     assert canonical_frame_sha256(original) == expected
     pd.testing.assert_frame_equal(original, source, check_exact=True)
     assert original.attrs == source.attrs

@@ -23,8 +23,8 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
 New-Item -ItemType Directory -Path $RunRoot -Force | Out-Null
 
 $LaneNames = @(
-    'TDR_FREEZE', 'TDR_1', 'TDR_2', 'PTE_1', 'PTE_2',
-    'TDR_RUNTIME', 'DFLS', 'PACKAGES'
+    'TDR_FREEZE', 'PTE_2', 'PTE_1', 'DFLS',
+    'TDR_2', 'TDR_1', 'TDR_RUNTIME', 'PACKAGES'
 )
 $Jobs = @()
 $Results = @()
@@ -131,23 +131,22 @@ try {
                 }
             }
             elseif ($LaneName -eq 'PACKAGES') {
-                foreach ($Suite in @(
-                    [pscustomobject]@{Label = 'FSC'; Path = 'packages\factor_signal_catalog\tests'},
-                    [pscustomobject]@{Label = 'STC'; Path = 'packages\strategy_template_catalog\tests'},
-                    [pscustomobject]@{Label = 'SM'; Path = 'packages\strategy_manager\tests'},
-                    [pscustomobject]@{Label = 'SE'; Path = 'packages\strategy_evaluator\tests'},
-                    [pscustomobject]@{Label = 'SRT'; Path = 'packages\strategy_runtime\tests'},
-                    [pscustomobject]@{Label = 'TXE'; Path = 'packages\trading_execution_engine\tests'}
-                )) {
-                    $Steps.Add([pscustomobject]@{
-                        Label = $Suite.Label
-                        Executable = $Python
-                        Arguments = @(
-                            '-m', 'pytest', '-c', 'pyproject.toml', $Suite.Path, '-q',
-                            '--durations=5', '--release-acceptance'
-                        )
-                    })
-                }
+                # These independent package directories can share interpreter
+                # imports; their conftests and mutable fixtures remain isolated.
+                $Steps.Add([pscustomobject]@{
+                    Label = 'PACKAGES'
+                    Executable = $Python
+                    Arguments = @(
+                        '-m', 'pytest', '-c', 'pyproject.toml', '-q',
+                        '--durations=5', '--release-acceptance',
+                        'packages\factor_signal_catalog\tests',
+                        'packages\strategy_template_catalog\tests',
+                        'packages\strategy_manager\tests',
+                        'packages\strategy_evaluator\tests',
+                        'packages\strategy_runtime\tests',
+                        'packages\trading_execution_engine\tests'
+                    )
+                })
             }
             else {
                 throw "Unknown test lane: $LaneName"

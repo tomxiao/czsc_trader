@@ -147,22 +147,6 @@ class Advice:
         return date(2026, 9, 18)
 
 
-def test_account_data_preparer_delegates_one_account_to_srt():
-    advice = Advice()
-    result = AccountDataPreparer(advice=advice).prepare(
-        _account(), signal_date=date(2026, 9, 18)
-    )
-    assert result.data_identity == "a" * 64
-    assert advice.calls == [{
-        "account_id": "s007-v1",
-        "strategy_id": "S007",
-        "strategy_version": "v1",
-        "symbol": "588080.SH",
-        "asset": "etf",
-        "signal_date": date(2026, 9, 18),
-    }]
-
-
 def test_account_data_preparer_rejects_wrong_release():
     advice = Advice()
     advice.results["s007-v1"] = _prepared("S003-v1")

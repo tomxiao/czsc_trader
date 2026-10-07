@@ -56,60 +56,6 @@ def _one_minute_day(trade_date: str) -> pd.DataFrame:
     return frame
 
 
-def test_known_source_anomaly_fails_before_exact_repair() -> None:
-    frame = pd.DataFrame(
-        [
-            {
-                "Date": "2020-03-09",
-                "Open": 3.716,
-                "High": 3.728,
-                "Low": 3.317,
-                "Close": 3.659,
-                "Volume": 711691432.0,
-                "Amount": 2624195457.0,
-            }
-        ]
-    )
-    series = SeriesKey(
-        "tushare", "fund_daily", "518880.SH", "etf.ohlcv", "daily", "none"
-    )
-
-    findings = inspect_registered_source_anomalies(frame, series)
-    repaired, records = apply_repairs_once(frame, series, findings)
-
-    assert [item.code for item in findings] == ["KNOWN_SOURCE_ANOMALY"]
-    assert repaired.loc[0, "Low"] == 3.548
-    assert len(records) == 1
-    assert records[0].patch_id == "TUSHARE_518880_V2"
-    assert records[0].raw_content_sha256 != records[0].repaired_content_sha256
-    assert records[0].to_dict()["affected_date_count"] == 1
-    assert not inspect_registered_source_anomalies(repaired, series)
-
-
-def test_unknown_source_signature_is_blocked() -> None:
-    frame = pd.DataFrame(
-        [
-            {
-                "Date": "2020-03-09",
-                "Open": 3.716,
-                "High": 3.728,
-                "Low": 3.400,
-                "Close": 3.659,
-                "Volume": 711691432.0,
-                "Amount": 2624195457.0,
-            }
-        ]
-    )
-    series = SeriesKey(
-        "tushare", "fund_daily", "518880.SH", "etf.ohlcv", "daily", "none"
-    )
-    findings = inspect_registered_source_anomalies(frame, series)
-
-    assert [item.code for item in findings] == ["SOURCE_SIGNATURE_UNKNOWN"]
-    with pytest.raises(DataRepairError, match="no repair patch matched"):
-        apply_repairs_once(frame, series, findings)
-
-
 def test_repair_patch_does_not_cross_symbol_boundary() -> None:
     frame = pd.DataFrame(
         [

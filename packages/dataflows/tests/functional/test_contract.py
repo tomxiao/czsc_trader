@@ -66,19 +66,20 @@ def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publis
 
 
 @pytest.mark.parametrize("field", ["source_time_field", "availability_time_field"])
-def test_ready_result_validates_declared_source_time_metadata(flow_factory, publish_data, field) -> None:
+def test_ready_result_validates_declared_source_time_metadata(clone_published_flow, publish_data, field) -> None:
     frame = pd.DataFrame({"Date": ["2026-09-15"], "OvernightRate": [1.0]})
     metadata = {"vendor": "test", "source_time_field": "Date", "availability_time_field": "Date"}
-    flows = flow_factory({Dataset.SHIBOR_DAILY: lambda _: (frame, metadata)})
     request = DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None)
-    baseline = publish_data(flows, request)
-    assert baseline.ready, baseline.error
+    flows, baseline = clone_published_flow("source-time", {
+        Dataset.SHIBOR_DAILY: lambda _: (frame, metadata),
+    }, request)
     metadata[field] = "Missing"
     result = publish_data(flows, request)
     assert result.status is DataStatus.FAILED
     assert result.error.code == "DATA_CONTRACT_MISMATCH"
     assert result.error.context[field] == "Missing"
     assert result.error.message == f"provider {'source' if field == 'source_time_field' else 'availability'} time field is unavailable"
+    assert flows.fetch(request, prepared=baseline.prepared).identity == baseline.identity
 
 
 def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:

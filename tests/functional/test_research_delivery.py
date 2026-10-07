@@ -1,5 +1,6 @@
 """Stage handoffs authenticate conclusions and selected evidence, independently of work."""
 from dataclasses import replace
+from datetime import date
 import json
 import shutil
 
@@ -9,7 +10,6 @@ from czsc_trader.application import assemble_delivery, validate_delivery, publis
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.context import ExperimentRef
 from czsc_trader.research_tools.evidence import MaterialEvidenceWrite
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
 
 
 def content(payload=None, **kwargs):
@@ -31,8 +31,14 @@ def published(context, receipt):
 
 
 @pytest.fixture
-def context(managed_evaluation):
-    return managed_evaluation[0]
+def context(minimal_repo):
+    """Material publication needs an allocated experiment, without market preparation."""
+    from evaluation_seed_support import restored_context
+    from czsc_trader.application import create_experiment, ExperimentRequest
+
+    research = restored_context(minimal_repo)
+    create_experiment(research, ExperimentRequest("Synthetic publication", "Evidence integrity", date(2026, 10, 7)))
+    return research
 
 
 def test_delivery_keeps_selected_evidence_and_excludes_work(context):
@@ -72,6 +78,12 @@ def test_researcher_report_and_declared_evidence_are_preserved(context):
     assert assemble_delivery(context.repository, definition, value) == receipt
     with pytest.raises(d.DeliveryConflictError):
         assemble_delivery(context.repository, definition, replace(value, report=report + "新结论"))
+    with pytest.raises(d.DeliveryConflictError):
+        assemble_delivery(context.repository, definition,
+                          replace(value, payload=d.ComponentPanel((), "changed")))
+    (publication / "report.md").write_bytes(report.encode("utf-8") + b"corrupt")
+    for scope in d.DeliveryValidationScope:
+        assert validate_delivery(context.repository, receipt.reference, scope=scope).status is d.ValidationStatus.FAIL
 
 
 def test_component_delivery_retains_claims_without_judging_the_research(context):

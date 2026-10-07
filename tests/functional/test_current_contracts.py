@@ -11,7 +11,8 @@ from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools import ResearchBatchRef
 from test_candidate_freeze import (
     inspection as inspection, inspected_candidate as inspected_candidate, approve,
-    completed as completed, managed_evaluation as managed_evaluation,
+    completed as completed, fresh_completed as fresh_completed,
+    fresh_inspection as fresh_inspection, managed_evaluation as managed_evaluation,
 )
 
 

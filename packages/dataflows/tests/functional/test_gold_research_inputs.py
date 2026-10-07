@@ -164,8 +164,11 @@ def fxcm_source():
     return fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
 
 
-@pytest.mark.parametrize("dataset,symbol", [(Dataset.FXCM_DAILY,"XAUUSD.FXCM"),(Dataset.USDCNH_DAILY,None)])
-@pytest.mark.parametrize("defect", ["missing", "early"])
+@pytest.mark.parametrize("dataset,symbol,defect", [
+    (Dataset.FXCM_DAILY, "XAUUSD.FXCM", "missing"),
+    (Dataset.FXCM_DAILY, "XAUUSD.FXCM", "early"),
+    (Dataset.USDCNH_DAILY, None, "early"),
+], ids=["fxcm-missing", "fxcm-early", "usdcnh-early"])
 def test_fxcm_facade_rejects_missing_or_early_availability(
     clone_published_flow, publish_data, fxcm_source, dataset, symbol, defect,
 ) -> None:

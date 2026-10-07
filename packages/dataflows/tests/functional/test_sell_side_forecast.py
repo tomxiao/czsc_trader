@@ -150,9 +150,10 @@ def test_default_facade_publishes_sell_side_forecast_with_identity(flow_factory,
         "dataflows.tushare_sell_side.get_tushare_pro", lambda ignored=None: pro
     )
 
-    result = publish_data(flow_factory(), _request())
+    flow = flow_factory()
+    result = publish_data(flow, _request())
 
-    assert Dataset.SELL_SIDE_FORECAST.value in flow_factory().datasets
+    assert Dataset.SELL_SIDE_FORECAST.value in flow.datasets
     assert result.status is DataStatus.READY
     assert result.identity is not None
     assert result.identity.dataset == Dataset.SELL_SIDE_FORECAST.value

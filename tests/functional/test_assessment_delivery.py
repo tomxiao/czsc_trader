@@ -1,6 +1,7 @@
 from dataclasses import replace
 import json
 import math
+import pickle
 import shutil
 
 import pytest
@@ -20,7 +21,7 @@ from test_research_delivery import content, attachment, published
 
 
 @pytest.fixture
-def completed(managed_evaluation):
+def fresh_completed(managed_evaluation):
     research, request = managed_evaluation
     context = research.repository
     family = StrategyFamily(2, "S900", "Freeze fixture", "ETF", {"hypothesis": "synthetic"},
@@ -33,6 +34,27 @@ def completed(managed_evaluation):
     register_candidate(context, CandidateRegistrationRequest(request.strategy, experiment, (reference,), ()))
     evidence = build_assessment_evidence(request, result)
     return context, research, request, result, d.EvaluationEvidenceRef(reference, tuple(x.evaluation_id for x in evidence))
+
+
+@pytest.fixture
+def completed(request, tmp_path, frozen_seed_root):
+    """Generate real supporting evidence once; isolate every consumer's files/frames."""
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, relocate_result, restored_context
+
+    seed = frozen_seed_root / "completed-evaluation"
+    data = frozen_seed_root / "completed-evaluation.pkl"
+    if not seed.exists():
+        context, _, evaluation, result, reference = request.getfixturevalue("fresh_completed")
+        data.write_bytes(pack((evaluation, result, reference)))
+        shutil.copytree(context.root, seed)
+    root = tmp_path / "completed-repo"
+    shutil.copytree(seed, root)
+    evaluation, result, reference = pickle.loads(data.read_bytes())
+    result = relocate_result(result, evaluation, root)
+    evaluation = relocate_request(evaluation, root)
+    research = restored_context(root)
+    return research.repository, research, evaluation, result, reference
 
 
 def assessment_request(evidence):
@@ -134,6 +156,11 @@ def test_adapter_authenticates_requests_and_does_not_reload_source(completed):
         build_assessment_evidence(replace(request, initial_cash=request.initial_cash + 1), result)
     with pytest.raises(ValueError, match="identity differs"):
         build_assessment_evidence(request, replace(result, result_hash="f" * 64))
+    original = result.runs[0]
+    changed = replace(result, runs=(replace(original, signals=replace(original.signals,
+        support_data={**original.signals.support_data, "available_through": "2099-01-01"})),))
+    with pytest.raises(ValueError, match="identity differs"):
+        build_assessment_evidence(request, changed)
 
 
 def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
@@ -317,17 +344,6 @@ def test_stage_four_rejects_forged_account_evidence(completed):
     with pytest.raises(d.DeliveryValidationError) as caught:
         assemble_delivery(context, definition, replace(value, payload=changed))
     assert caught.value.issues[0].code == "ASSESSMENT_EVIDENCE"
-
-def test_signal_support_changes_are_detected(completed):
-    _, _, request, result, _ = completed
-    original = result.runs[0]
-    support = {**original.signals.support_data, "available_through": "2099-01-01"}
-    changed = replace(
-        result, runs=(replace(original, signals=replace(original.signals, support_data=support)),)
-    )
-    with pytest.raises(ValueError, match="identity differs"):
-        build_assessment_evidence(request, changed)
-
 
 def test_frequency_targets_require_the_confirmed_window(completed):
     context, _, _, _, _ = completed

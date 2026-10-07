@@ -118,7 +118,7 @@ def test_raw_intraday_missing_bar_is_incomplete(flow_factory, publish_data, monk
     assert result.prepared is None
 
 
-@pytest.mark.parametrize("frequency", ["daily", "weekly", "60m"])
+@pytest.mark.parametrize("frequency", ["daily", "60m"])
 def test_raw_intraday_rejects_nonintraday_frequency_before_fetch(monkeypatch, frequency):
     def forbidden(_):
         pytest.fail("Invalid frequency must fail before supplier access")

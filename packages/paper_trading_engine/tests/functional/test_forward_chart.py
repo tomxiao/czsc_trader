@@ -59,7 +59,12 @@ def _context() -> dict[str, object]:
 
 
 def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
-    html = render_forward_chart_html(_context())
+    context = _context()
+    reason = '完整解释内容' * 100
+    context['observations'][0]['observation']['facts'] = [
+        dict(key='reason', label='理由', value_type='TEXT', format='TEXT', value=reason),
+    ]
+    html = render_forward_chart_html(context)
 
     assert html.startswith("<!doctype html>")
     assert "S007-v1 · 多源机会风险门控" in html
@@ -70,6 +75,8 @@ def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
     ).group(1))
     assert payload["strategy"]["release_id"] == "S007-v1"
     assert payload["observations"][0]["observation"]["series"][0]["label"] == "基础分"
+    assert reason in html
+    assert payload["observations"][0]["observation"]["facts"][0]["value"] == reason
 
 
 def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
@@ -87,10 +94,3 @@ def test_forward_chart_rejects_foreign_observation(field,value):
     expected = 'reference_id must identify' if field == 'reference_id' else 'differs'
     with pytest.raises(ValueError, match=expected):
         render_forward_chart_html(context)
-
-
-def test_forward_chart_preserves_full_typed_explanation():
-    context = _context()
-    reason = '完整解释内容'*100
-    context['observations'][0]['observation']['facts'] = [dict(key='reason',label='理由',value_type='TEXT',format='TEXT',value=reason)]
-    assert reason in render_forward_chart_html(context)

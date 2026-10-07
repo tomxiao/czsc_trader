@@ -184,9 +184,3 @@ def test_business_definition_excludes_identity_and_enforces_typed_contracts():
         replace(business, tradable_symbol="wrong")
     with pytest.raises(RuntimeContractError, match="input datasets"):
         replace(business, capabilities=RequiredCapabilities(("other",), ("LIMIT",)))
-
-
-def test_parameter_factory_is_an_explicit_abstract_requirement():
-    assert "from_parameters" in StrategyImplementation.__abstractmethods__
-    assert not hasattr(StrategyImplementation, "from_candidate")
-    assert not hasattr(StrategyImplementation, "from_release")

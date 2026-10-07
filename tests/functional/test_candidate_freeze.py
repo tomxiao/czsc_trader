@@ -1,6 +1,7 @@
-from dataclasses import replace
+from dataclasses import fields, replace
 from hashlib import sha256
 import json
+import pickle
 import shutil
 
 import pytest
@@ -12,7 +13,7 @@ from czsc_trader.application import (
     record_research_decision, freeze_candidate, get_freeze_result, RepositoryContext,
 )
 from test_research_contract_upgrade import managed_evaluation as managed_evaluation
-from test_assessment_delivery import completed as completed, prepare
+from test_assessment_delivery import completed as completed, fresh_completed as fresh_completed, prepare
 
 
 def file_ref(root, path):
@@ -45,8 +46,30 @@ def _build_inspection(completed):
 
 
 @pytest.fixture
-def inspection(completed):
-    return _build_inspection(completed)
+def fresh_inspection(fresh_completed):
+    return _build_inspection(fresh_completed)
+
+
+@pytest.fixture
+def inspection(request, tmp_path, frozen_seed_root):
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, restored_context
+
+    seed = frozen_seed_root / "inspection-input"
+    data = frozen_seed_root / "inspection-input.pkl"
+    if not seed.exists():
+        context, inspection_request, _ = request.getfixturevalue("fresh_inspection")
+        values = {field.name: getattr(inspection_request, field.name)
+                  for field in fields(inspection_request) if field.name != "research"}
+        data.write_bytes(pack(values))
+        shutil.copytree(context.root, seed)
+    root = tmp_path / "inspection-repo"
+    shutil.copytree(seed, root)
+    values = pickle.loads(data.read_bytes())
+    values["replays"] = tuple(replace(replay, reproduction_request=relocate_request(
+        replay.reproduction_request, root)) for replay in values["replays"])
+    research = restored_context(root)
+    return research.repository, CandidateInspectionRequest(research=research, **values), root / ".tmp/user-confirmation.json"
 
 
 @pytest.fixture
@@ -88,11 +111,16 @@ def approve(context, report, source, decision_id="freeze1", request_id="request1
     )
 
 
-def test_managed_inspection_freeze_and_idempotent_query(inspection, monkeypatch):
+def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection, monkeypatch):
     from czsc_trader.application import delivery_service
 
-    context, request, source = inspection
+    context, request, source = fresh_inspection
     assert not context.strategy_root.exists()
+    replay = request.replays[0]
+    with pytest.raises(TypeError):
+        InspectionReplay(replay.reference.to_dict(), replay.reproduction_request)
+    with pytest.raises(ValueError):
+        replace(replay.reference, evidence=replace(replay.reference.evidence, schema="other"))
 
     def forbidden(_):
         pytest.fail("stage five must not recompute stage four statistics")
@@ -269,13 +297,17 @@ def test_inspection_preparation_failures_publish_failed_reports(inspection, monk
     with pytest.raises(ValueError, match="complete passing|matching approval"):
         freeze_candidate(context, operation)
     assert not context.strategy_root.exists()
-    if report.plan is None:
+    if failure == "source":
         with pytest.raises(ValueError, match="requires an inspected plan"):
             record_research_decision(context, f.ResearchDecision(
                 "invalid-freeze", "S900", f.DecisionAction.APPROVE,
                 f.FreezeSubject(report.origin.candidate, report.origin.content_sha256,
                                 report.reference, "f" * 64, "v1"),
                 file_ref(context.root, source), "不能批准缺失计划"))
+    # Preserve every preparation failure as an independent node. The two report
+    # shapes (absent/present plan) own the full blocked-delivery roundtrip.
+    if failure not in {"source", "materialize"}:
+        return
     selected = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text(encoding="utf-8")))
     assessment = d.DeliveryReceipt.from_dict(json.loads(selected.subject.delivery.resolve(context.root).read_text(encoding="utf-8"))).reference
     evidence = publish_evidence(request.research, MaterialEvidenceWrite(request.experiment,
@@ -471,28 +503,31 @@ def test_unavailable_independent_replay_reference_reports_failure(inspection, da
     assert not context.strategy_root.exists()
 
 
-def test_inspection_rejects_untyped_reference(inspection):
-    _, request, _ = inspection
-    replay = request.replays[0]
-    with pytest.raises(TypeError):
-        InspectionReplay(replay.reference.to_dict(), replay.reproduction_request)
-    with pytest.raises(ValueError):
-        replace(replay.reference, evidence=replace(replay.reference.evidence, schema="other"))
-
-
-def test_published_signal_restoration_preserves_precision_units_and_nulls(managed_evaluation):
+def test_published_signal_restoration_preserves_precision_units_and_nulls(candidate_payload, tmp_path, monkeypatch):
     from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence
-    from czsc_trader.application.inspection_service import _reference_signals
-    execution, request = managed_evaluation
-    result = execution.evaluation.evaluate(request)
-    run = result.runs[0]
-    run.signals.decisions["factor_score"] = 0.12345678901234567
-    run.signals.decisions["regime"] = None
-    from czsc_trader.research_tools.evaluation import _evaluation_result_hash
-    result = replace(result, result_hash=_evaluation_result_hash(result.request_hash, result.runs))
-    value = serialize_evaluation_evidence(request, result)
-    import pandas as pd
-    pd.testing.assert_frame_equal(_reference_signals(value["runs"][0]), run.signals.decisions, check_exact=True)
+    from strategy_runtime import implementation_sha256
+    from test_research_contract_upgrade import _evaluation_fixture
+
+    payload, package = candidate_payload
+    source = package / payload["runtime"]["source_files"][0]
+    source.write_text(source.read_text(encoding="utf-8").replace(
+        '"fixture_signal": target}',
+        '"fixture_signal": target, "factor_score": 0.12345678901234567, "regime": None}'),
+        encoding="utf-8", newline="\n")
+    payload["runtime"]["source_sha256"] = implementation_sha256(
+        payload["runtime"]["source_files"], source_root=package)
+    execution, request = _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, prepared=True)
+    completed = fresh_completed.__wrapped__((execution, request))
+    context, request, _ = _build_inspection(completed)
+    request = replace(request, protocol=replace(request.protocol, tolerance=0.0))
+    result = completed[3]
+    value = serialize_evaluation_evidence(completed[2], result)
+    assert result.runs[0].signals.decisions["factor_score"].eq(0.12345678901234567).all()
+    assert all(row["factor_score"] == 0.12345678901234567 and row["regime"] is None
+               for row in value["runs"][0]["signals"]["data"])
+    report = inspect_candidate(context, request)
+    assert report.status is f.InspectionStatus.PASS, report.checks
+    assert next(item for item in report.checks if item.check is f.InspectionCheck.SIGNAL_EQUIVALENCE).status is f.InspectionStatus.PASS
 
 
 def test_static_runtime_failure_stops_account_reproduction(inspection, monkeypatch):

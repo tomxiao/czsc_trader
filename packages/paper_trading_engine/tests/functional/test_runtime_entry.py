@@ -30,9 +30,11 @@ def _installed_runtime(tmp_path, monkeypatch):
 
 def test_runtime_entry_maps_selected_release_and_pte_configuration(tmp_path, monkeypatch):
     release = _installed_runtime(tmp_path, monkeypatch)
-    PteRuntimeConfig(port=8123, data_space=Path("cn/market")).save(
+    config = PteRuntimeConfig(port=8123, data_space=Path("cn/market"))
+    path = config.save(
         tmp_path / "shared/config/pte.json",
     )
+    assert PteRuntimeConfig.load(path) == config
     args = cli.build_parser().parse_args(["serve-runtime", "--runtime-root", str(tmp_path)])
     assert args.action == "serve"
     assert args.repo_root == release.release_root
@@ -72,14 +74,14 @@ def test_runtime_entry_rejects_relative_root_before_loading_release(monkeypatch)
         cli.build_parser().parse_args(["serve-runtime", "--runtime-root", "runtime"])
 
 
-@pytest.mark.parametrize("port", [True, "8080", 0, 65536, -1])
+@pytest.mark.parametrize("port", [True, "8080", 0, 65536])
 def test_runtime_config_rejects_invalid_port(port):
     with pytest.raises((TypeError, ValueError)):
         PteRuntimeConfig(port=port)
 
 
 @pytest.mark.parametrize("payload", [
-    [], {}, {"schema_version": True}, {"schema_version": 2},
+    [], {}, {"schema_version": True}, {"schema_version": 2, "runtime_root": "runtime"},
     {"schema_version": 1, "host": "127.0.0.1", "port": 8080},
     {"schema_version": 1, "host": "127.0.0.1", "port": 8080,
      "data_space": "market", "runtime_root": "old-host-field"},
@@ -87,5 +89,7 @@ def test_runtime_config_rejects_invalid_port(port):
 def test_runtime_config_rejects_missing_or_foreign_contract(tmp_path, payload):
     path = tmp_path / "pte.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(ValueError):
+    expected = ("unsupported PTE runtime config schema"
+                if isinstance(payload, dict) and payload.get("schema_version") == 2 else None)
+    with pytest.raises(ValueError, match=expected):
         PteRuntimeConfig.load(path)

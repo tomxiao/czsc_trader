@@ -226,7 +226,7 @@ def test_backup_runtime_database_retains_latest_by_default(new_store, tmp_path):
         store.close()
 
 
-def test_ft_pte06_watchdog_service_config_port_and_recovery(new_store, pte_frozen, tmp_path, monkeypatch):
+def test_ft_pte06_watchdog_service_config_port_and_recovery(pte_frozen, tmp_path, monkeypatch):
     child_log = tmp_path / "pte.log"
     child_log.write_bytes(b"x" * 32)
     rotate_log(child_log, max_bytes=16, backups=2)

@@ -1,6 +1,7 @@
 from dataclasses import asdict, replace
 from datetime import date
 import json
+import shutil
 from types import SimpleNamespace
 
 import pytest
@@ -11,29 +12,22 @@ from paper_trading_engine import (
 )
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
-from paper_trading_engine.store import RUNTIME_DATABASE_SCHEMA_VERSION
+from paper_trading_engine.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from strategy_manager import Qualification
 from pte_support import decision, FakeAdvice, preparation
 
 
 @pytest.fixture
-def maintenance(new_store, tmp_path, monkeypatch):
+def maintenance(new_store, maintenance_database, tmp_path, monkeypatch):
     from paper_trading_engine import account_maintenance as module
 
     runtime = tmp_path / "runtime"
     database = runtime / "shared/state/runtime.db"
-    store = new_store(database)
+    store = new_store(database, seed=maintenance_database)
     binding = AccountStrategyBinding(
         "S001", "v1", "b" * 64, "current strategy", Qualification.PAPER_READY,
         date(2026, 9, 2), "588080.SH", 0.0005,
     )
-    for account_id in ("one", "two"):
-        store.create_virtual_account(
-            account_id, account_id, "S001-v1", "c" * 64, 100000,
-            strategy_id="S001", strategy_version="v1", release_hash="a" * 64,
-            strategy_name_snapshot="old strategy", qualification_snapshot="PAPER_READY",
-            selection_data_cutoff="2026-09-02",
-        )
     release = SimpleNamespace(
         runtime_root=runtime, release_root=runtime / "releases/v1.0.0",
         manifest={"database_schema": {"compatible": [RUNTIME_DATABASE_SCHEMA_VERSION]}}, manifest_sha256="d" * 64,
@@ -47,6 +41,23 @@ def maintenance(new_store, tmp_path, monkeypatch):
         updates=tuple(AccountBindingUpdate(x, "a" * 64, "b" * 64) for x in ("one", "two")),
     )
     store.close()
+
+
+@pytest.fixture(scope="module")
+def maintenance_database(empty_paper_database, frozen_seed_root):
+    """Reuse only preparation; every maintenance transaction gets private state."""
+    path = frozen_seed_root / "maintenance.db"
+    shutil.copyfile(empty_paper_database, path)
+    store = PaperStore(path)
+    for account_id in ("one", "two"):
+        store.create_virtual_account(
+            account_id, account_id, "S001-v1", "c" * 64, 100000,
+            strategy_id="S001", strategy_version="v1", release_hash="a" * 64,
+            strategy_name_snapshot="old strategy", qualification_snapshot="PAPER_READY",
+            selection_data_cutoff="2026-09-02",
+        )
+    store.close()
+    return path
 
 
 def test_update_preserves_account_economics_and_invalidates_old_execution(maintenance):

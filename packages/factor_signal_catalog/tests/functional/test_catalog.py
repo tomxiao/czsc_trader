@@ -116,11 +116,15 @@ def test_repository_catalog_preserves_definitions_mirrors_and_platform_implement
                 assert callable(getattr(modules[module], function))
 
 
-@pytest.mark.parametrize("kind", ["factor", "signal"])
-@pytest.mark.parametrize("implementation", [
-    "experiments/S005/run.py", "research/S007/features.py",
-    r"D:\CodeBase\czsc_trader\experiments\S005\run.py",
-    "research.S007.features.calculate", "Experiments/S005/run.py",
+@pytest.mark.parametrize("kind,implementation", [
+    ("factor", "experiments/S005/run.py"),
+    ("factor", "research/S007/features.py"),
+    ("factor", r"D:\CodeBase\czsc_trader\experiments\S005\run.py"),
+    ("factor", "research.S007.features.calculate"),
+    ("factor", "Experiments/S005/run.py"),
+    # Both registry branches call the same owner validator. Keep its path
+    # matrix once and a separate signal case to protect that branch's wiring.
+    ("signal", "research/S007/features.py"),
 ])
 def test_catalog_rejects_research_owned_implementations(minimal_catalog, kind, implementation):
     canonical = minimal_catalog / (kind + "s") / "definitions.json"

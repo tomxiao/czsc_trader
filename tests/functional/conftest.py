@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from current_contract_support import candidate_payload as candidate_payload
 from test_current_contracts import (
+    fresh_completed as fresh_completed,
+    fresh_inspection as fresh_inspection,
     freshly_frozen as freshly_frozen,
     inspected_candidate as inspected_candidate,
 )

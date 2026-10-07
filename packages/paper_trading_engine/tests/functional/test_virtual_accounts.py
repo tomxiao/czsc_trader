@@ -191,11 +191,13 @@ def test_control_token_lookup_does_not_migrate_database(new_store, tmp_path, mon
 
 @pytest.mark.parametrize("state", ["empty", "invalid_binding"])
 def test_startup_reads_existing_bindings_without_default_account_writes(
-    new_store, pte_frozen, tmp_path, monkeypatch, state,
+    new_store, request, tmp_path, monkeypatch, state,
 ):
-    context, _ = pte_frozen
+    repo_root = tmp_path / "repo"
     store = new_store(tmp_path / "runtime.db")
     if state == "invalid_binding":
+        context, _ = request.getfixturevalue("pte_frozen")
+        repo_root = context.strategy_root.parent
         binding = installed_binding(context)
         create_bound_account(store, "one", replace(binding, release_hash="e" * 64))
     before = store.virtual_accounts()
@@ -215,7 +217,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(
         return broker
 
     monkeypatch.setattr(pte_cli, "FutuGateway", gateway)
-    args = engine_arguments(context.strategy_root.parent, store.path)
+    args = engine_arguments(repo_root, store.path)
     try:
         if state == "invalid_binding":
             with pytest.raises(RuntimeError, match="account release hash differs"):
@@ -839,8 +841,7 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     store.close()
 
 
-@pytest.mark.parametrize("old_content", [False, True])
-def test_account_chart_uses_only_active_decisions(new_store, tmp_path, old_content):
+def test_account_chart_uses_only_active_decisions(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
     store = new_store(tmp_path / "chart-active-decisions.db")
@@ -881,11 +882,10 @@ def test_account_chart_uses_only_active_decisions(new_store, tmp_path, old_conte
     store.save_account_decision(
         "s001-v2", decision_payload("DEC-NEW", "2026-09-04", 0.2),
     )
-    if old_content:
-        historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-05", 0.5)
-        historical["strategy"]["release_hash"] = "a" * 64
-        historical["observation"] = {"contract_version": "strategy_observation.v1", "status": "READY"}
-        store.save_account_decision("s001-v2", historical)
+    historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-05", 0.5)
+    historical["strategy"]["release_hash"] = "a" * 64
+    historical["observation"] = {"contract_version": "strategy_observation.v1", "status": "READY"}
+    store.save_account_decision("s001-v2", historical)
     requests = []
 
     class ImmediateExecutor:
@@ -920,9 +920,9 @@ def test_account_chart_uses_only_active_decisions(new_store, tmp_path, old_conte
     assert status["status"] == "READY"
     assert [row["decision_id"] for row in requests[0]["observations"]] == ["DEC-NEW"]
     assert requests[0]["window"]["observation_start"] == "2026-09-04"
-    assert requests[0]["window"]["omitted_decision_count"] == 1 + int(old_content)
+    assert requests[0]["window"]["omitted_decision_count"] == 2
     assert status["message"] == (
-        f"观察事实自 2026-09-04 开始；其中 {1 + int(old_content)} 条决策"
+        "观察事实自 2026-09-04 开始；其中 2 条决策"
         "缺少可用的观察事实，未绘制策略解释"
     )
     service.close()

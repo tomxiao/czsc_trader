@@ -82,8 +82,8 @@ def release(candidate):
     return {**raw, "release_hash": canonical_sha256(raw)}
 
 
-def execute(candidate, root, *, source_root=None, runtime_binding=None):
-    dataflows, daily = flows(root)
+def execute(candidate, root, *, source_root=None, runtime_binding=None, market=None):
+    dataflows, daily = flows(root) if market is None else market
     strategy = StrategyRuntime(dataflows=dataflows).create(StrategyInit(candidate,
         TradableWindow(date(2026, 9, 15), date(2026, 9, 18)), root / "context",
         source_root=source_root, runtime_binding=runtime_binding))
@@ -105,14 +105,17 @@ def test_reference_symbols_do_not_change_tradable_identity(candidate, tmp_path):
 
 
 def test_candidate_release_parameters_and_executors_are_independent(candidate, tmp_path):
-    first, history, ledger = execute(candidate, tmp_path / "candidate")
+    # The same market facts are admitted once; every execution still constructs
+    # its own strategy, context, plan stream and historical ledger.
+    market = flows(tmp_path / "market")
+    first, history, ledger = execute(candidate, tmp_path / "candidate", market=market)
     payload = json.loads(json.dumps(candidate.payload, default=dict))
     payload["parameters"]["threshold"] = 1.
-    other, _, other_ledger = execute(replace(candidate, payload=payload), tmp_path / "other")
+    other, _, other_ledger = execute(replace(candidate, payload=payload), tmp_path / "other", market=market)
     assert first.definition.identity_kind == "CANDIDATE" and first.definition.version is None
     assert first.definition.runtime_sha256 != other.definition.runtime_sha256
     assert len(ledger.fills) == 3 and other_ledger.fills.empty
-    _, _, repeated = execute(candidate, tmp_path / "repeat")
+    _, _, repeated = execute(candidate, tmp_path / "repeat", market=market)
     assert_frame_equal(ledger.account_daily, repeated.account_daily, check_exact=True)
     frozen = StrategyRelease.from_mapping(release(candidate))
     descriptor = candidate.payload["runtime"]
@@ -120,7 +123,7 @@ def test_candidate_release_parameters_and_executors_are_independent(candidate, t
         tuple(descriptor["source_files"]), descriptor["source_sha256"], tuple(descriptor["source_files"]),
         first.definition.observation.sha256))
     instance, frozen_history, frozen_ledger = execute(frozen, tmp_path / "frozen",
-        source_root=candidate.source_root, runtime_binding=binding)
+        source_root=candidate.source_root, runtime_binding=binding, market=market)
     assert instance.definition.identity_kind == "RELEASE"
     assert instance.definition.implementation == first.definition.implementation
     assert instance.definition.parameters == first.definition.parameters

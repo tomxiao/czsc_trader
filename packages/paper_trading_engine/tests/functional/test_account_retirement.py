@@ -1,6 +1,7 @@
 from dataclasses import asdict, replace
 from decimal import Decimal
 import json
+import shutil
 from threading import Thread
 from types import SimpleNamespace
 from urllib.error import HTTPError
@@ -14,6 +15,7 @@ from paper_trading_engine.futu_execution import FutuExecution, ChannelReconcilia
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
+from paper_trading_engine.store import PaperStore
 from pte_support import FakeBroker, decision
 
 
@@ -27,15 +29,25 @@ def create(store, account_id="one", capital=100000):
 
 
 @pytest.fixture
-def setup(new_store, tmp_path):
-    store = new_store(tmp_path / "runtime.db")
-    create(store)
-    store.set_virtual_paused("one", True)
+def setup(new_store, retirement_database, tmp_path):
+    store = new_store(tmp_path / "runtime.db", seed=retirement_database)
     broker = FakeBroker()
     execution = FutuExecution(store, broker)
     request = AccountRetirementRequest("one", "a" * 64, "test", "stop this account")
     yield store, broker, execution, request
     store.close()
+
+
+@pytest.fixture(scope="module")
+def retirement_database(empty_paper_database, frozen_seed_root):
+    """Prepare a paused account once; retirement still runs on a private WAL DB."""
+    path = frozen_seed_root / "retirement.db"
+    shutil.copyfile(empty_paper_database, path)
+    store = PaperStore(path)
+    create(store)
+    store.set_virtual_paused("one", True)
+    store.close()
+    return path
 
 
 @pytest.mark.parametrize("pnl", [Decimal("0"), Decimal("1250.4321"), Decimal("-2100.5678"), Decimal("-100000")])
@@ -136,15 +148,10 @@ def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_u
     assert store.virtual_account("one")["status"] == "RUNNING"
     assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
     monkeypatch.setattr(store, "_insert_audit_event", original)
-    assert execution.retire_account(request).remaining_strategy_accounts == 1
-    assert store.virtual_account("two")["status"] == "RUNNING"
-
-
-def test_retirement_reconciliation_does_not_cancel_or_expire_orders(setup, monkeypatch):
-    store, broker, execution, request = setup
     for method in ("_cancel_expired_planned_orders", "_expire_unsubmitted_intents"):
         monkeypatch.setattr(execution, method, lambda *_: pytest.fail("retirement must only reconcile"))
-    execution.retire_account(request)
+    assert execution.retire_account(request).remaining_strategy_accounts == 1
+    assert store.virtual_account("two")["status"] == "RUNNING"
     assert broker.cancelled == broker.placed == []
 
 

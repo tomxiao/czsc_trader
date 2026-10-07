@@ -23,7 +23,10 @@ from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
 def _flows(tmp_path, *, publication=None) -> Dataflows:
-    dates = pd.bdate_range(end="2026-09-04", periods=700)
+    # Aug 31 / Sep 1 / Sep 2 satisfy the real depth-three input; the remaining
+    # sessions cover cross-date preparation. Listing predates the source window
+    # so a missing history session cannot be excused by an IPO boundary.
+    dates = pd.bdate_range(end="2026-09-04", periods=5)
     bars = pd.DataFrame(
         {
             "Date": dates,
@@ -52,7 +55,7 @@ def _flows(tmp_path, *, publication=None) -> Dataflows:
         }
         pro = SimpleNamespace(
             fund_basic=lambda **kwargs: pd.DataFrame({
-                "ts_code": [request.symbol], "list_date": [dates[0].strftime("%Y%m%d")],
+                "ts_code": [request.symbol], "list_date": ["20240101"],
             }),
             trade_cal=lambda **kwargs: pd.DataFrame({
                 "cal_date": pd.date_range(kwargs["start_date"], kwargs["end_date"]).strftime("%Y%m%d"),
@@ -167,6 +170,17 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     assert decision.observation["status"] == "READY"
     assert decision.observation["series"][0]["key"] == "fixture"
 
+    # Restart consumes exactly the same authenticated input binding offline.
+    flows = _flows(tmp_path)
+    monkeypatch.setattr(flows, "prepare", lambda *_a, **_k: pytest.fail(
+        "restart must read pinned data"))
+    reopened = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=flows)
+    restored = _prepare(reopened, "s900-v1", date(2026, 9, 2))
+    assert restored.data_identity == prepared.data_identity
+    assert restored.data_reference == prepared.data_reference
+    assert restored.input_binding == prepared.input_binding
+    assert _verify(reopened, "s900-v1") == prepared.result
+
 
 def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path):
     client = _client(pte_frozen[0].root, tmp_path, {
@@ -181,19 +195,11 @@ def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path):
     assert client.prepared_through("s900-v1-alt", "S900", "v1") == date(2026, 9, 2)
     assert client.tradable_date("s900-v1-alt", "S900", "v1") == date(2026, 9, 3)
     assert _verify(client, "s900-v1-alt") == second.result
-
-
-def test_account_reuses_its_strategy_space_across_trading_dates(pte_frozen, tmp_path):
-    client = _client(pte_frozen[0].root, tmp_path, {
-        date(2026, 9, 2): date(2026, 9, 3), date(2026, 9, 3): date(2026, 9, 4),
-    })
-    first = _prepare(client, "s900-v1", date(2026, 9, 2))
-    second = _prepare(client, "s900-v1", date(2026, 9, 3))
-    assert first.strategy == second.strategy
-    assert first.data_identity != second.data_identity
-    assert first.input_binding != second.input_binding
+    assert first.strategy == advanced.strategy
+    assert first.data_identity != advanced.data_identity
+    assert first.input_binding != advanced.input_binding
     assert first.instance.prepare_data(binding=first.input_binding) == first.result
-    assert _verify(client, "s900-v1") == second.result
+    assert _verify(client, "s900-v1") == advanced.result
     assert client.prepared_through("s900-v1", "S900", "v1") == date(2026, 9, 3)
     assert client.tradable_date("s900-v1", "S900", "v1") == date(2026, 9, 4)
 
@@ -320,6 +326,14 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
         dataflows=_flows(data_dir),
         now=lambda: datetime(2026, 9, 2, 20, 30, tzinfo=ZoneInfo("Asia/Shanghai")),
     )
+    preparation_calls = []
+    original_prepare = client.prepare_account_data
+
+    def record_preparation(**kwargs):
+        preparation_calls.append(kwargs)
+        return original_prepare(**kwargs)
+
+    monkeypatch.setattr(client, "prepare_account_data", record_preparation)
     accounts = AccountEngine(store, client)
 
     class Engine:
@@ -348,6 +362,10 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
     assert finished.wait(5), store.operation_failures()
     assert store.get_setting("last_data_prepare_date:s900-v1") == "2026-09-02"
     assert store.operation_failures() == []
+    assert preparation_calls == [{
+        "account_id": "s900-v1", "strategy_id": "S900", "strategy_version": "v1",
+        "symbol": "588080.SH", "asset": "etf", "signal_date": date(2026, 9, 2),
+    }]
     decisions = store.account_decisions("s900-v1")
     assert len(decisions) == 1
     assert decisions[0]["signal_date"] == "2026-09-02"
@@ -360,23 +378,6 @@ def test_scheduler_prepares_current_account_data_then_runs_decision(new_store, p
     store.close()
 
 
-def test_restart_restores_exact_input_binding_without_prepare(pte_frozen, tmp_path, monkeypatch):
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
-    kwargs = dict(account_id="s900-v1", strategy_id="S900", strategy_version="v1",
-                  symbol="588080.SH", asset="etf", signal_date=date(2026, 9, 2))
-    original = client.prepare_account_data(**kwargs)
-    flows = _flows(tmp_path)
-    monkeypatch.setattr(flows, "prepare", lambda *_a, **_k: pytest.fail("restart must read pinned data"))
-    reopened = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=flows)
-    restored = reopened.prepare_account_data(**kwargs)
-    assert restored.data_identity == original.data_identity
-    assert restored.data_reference == original.data_reference
-    assert reopened.verify_account_data(
-        account_id="s900-v1", strategy_id="S900", strategy_version="v1",
-        symbol="588080.SH", asset="etf",
-    ) == original.result
-
-
 @pytest.fixture
 def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
     """Author and actually inspect/freeze/deploy one independent depth-three seed."""
@@ -385,7 +386,7 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
     from strategy_runtime import implementation_sha256
     import test_candidate_runtime_execution as data_support
     from test_research_contract_upgrade import managed_evaluation
-    from test_assessment_delivery import completed
+    from test_assessment_delivery import fresh_completed
     from test_candidate_freeze import _build_inspection, approve
 
     payload, source_root = candidate_payload
@@ -413,7 +414,7 @@ def minimum_depth_frozen(candidate_payload, tmp_path, monkeypatch):
     monkeypatch.setattr(data_support, "_install_candidate_dataflows", with_warmup)
     monkeypatch.setattr("test_research_contract_upgrade._install_candidate_dataflows", with_warmup)
     evaluation = managed_evaluation.__wrapped__(candidate_payload, tmp_path, monkeypatch)
-    context, inspection, source = _build_inspection(completed.__wrapped__(evaluation))
+    context, inspection, source = _build_inspection(fresh_completed.__wrapped__(evaluation))
     report = inspect_candidate(context, inspection)
     assert report.status.value == "PASS", report
     receipt = freeze_candidate(context, approve(context, report, source))

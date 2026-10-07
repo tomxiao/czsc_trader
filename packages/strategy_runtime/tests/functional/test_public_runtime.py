@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from copy import deepcopy
 from datetime import date, datetime
 from dataclasses import replace
@@ -50,7 +51,9 @@ def test_prepare_cli_passes_explicit_space_and_credentials(tmp_path, monkeypatch
 
 
 def _flows(tmp_path, *, flow_value=0.8) -> Dataflows:
-    dates = pd.bdate_range(end="2026-09-02", periods=700)
+    # The fixture strategy needs one prior session; five dates also cover the
+    # latest-available cutoff scenario without unrelated multi-year history.
+    dates = pd.bdate_range(end="2026-09-02", periods=5)
     bars = pd.DataFrame(
         {
             "Date": dates,
@@ -254,13 +257,13 @@ def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, runtime_ca
         strategy.inspect_signals()
 
 
-@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates"])
-def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
-    tmp_path, runtime_candidate, corruption,
-) -> None:
-    flows = _flows(tmp_path)
+@pytest.fixture(scope="module")
+def plan_binding_seed(frozen_seed_root, runtime_candidate_seed):
+    """Publicly prepare valid immutable assets once for plan-tampering cases."""
+    root = frozen_seed_root / "srt-plan-binding"
+    flows = _flows(root)
     strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
-        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path))
+        runtime_candidate_seed, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), root / "context"))
     request = strategy.calendar_request()
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     plan = strategy.plan_inputs(flows.fetch(request, prepared=prepared.reference))
@@ -274,6 +277,22 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
     batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
     assert batch.ready
     binding = StrategyInputBinding(plan, batch.reference)
+    strategy.prepare_data(binding=binding)
+    return root / "assets", binding
+
+
+@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates"])
+def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
+    tmp_path, runtime_candidate, plan_binding_seed, corruption,
+) -> None:
+    assets, binding = plan_binding_seed
+    shutil.copytree(assets, tmp_path / "assets")
+    # Each case owns the database and context. No provider can repair or replace
+    # a copied preparation, and the actual derived-plan authentication runs.
+    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
+        runtime_candidate, binding.plan.tradable_window, tmp_path / "context"))
+    plan = binding.plan
     if corruption == "calendar_sha256":
         changed = replace(plan, calendar_sha256="0" * 64)
     elif corruption == "signal_dates":
@@ -283,10 +302,10 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
     if corruption != "calendar_sha256":
         assert changed.calendar_sha256 == plan.calendar_sha256
         assert changed.requests == plan.requests
-    corrupted = StrategyInputBinding(changed, batch.reference)
+    corrupted = StrategyInputBinding(changed, binding.prepared)
     with pytest.raises(RuntimeContractError, match="bound calendar or calculation plan differs"):
         strategy.prepare_data(binding=corrupted)
-    assert not (tmp_path / "input-bindings").exists()
+    assert not (tmp_path / "context/input-bindings").exists()
     with pytest.raises(RuntimeContractError, match="call prepare_data"):
         strategy.inspect_signals()
     strategy.prepare_data(binding=binding)

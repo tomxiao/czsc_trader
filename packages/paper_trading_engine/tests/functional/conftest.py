@@ -17,6 +17,8 @@ from test_current_contracts import (  # noqa: E402
     inspection as inspection,
     inspected_candidate as inspected_candidate,
     completed as completed,
+    fresh_completed as fresh_completed,
+    fresh_inspection as fresh_inspection,
     managed_evaluation as managed_evaluation,
 )
 from strategy_manager import PaperTradingApproval, StrategyRegistry  # noqa: E402
@@ -47,10 +49,11 @@ def new_store(empty_paper_database):
     """Create a private database; retain normal WAL, commits and reopen behavior."""
     from paper_trading_engine.store import PaperStore
 
-    def create(path):
+    def create(path, *, seed=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         # Refuse to overwrite a database: restart/migration tests open it directly.
-        with empty_paper_database.open("rb") as source, path.open("xb") as target:
+        source_path = empty_paper_database if seed is None else seed
+        with source_path.open("rb") as source, path.open("xb") as target:
             shutil.copyfileobj(source, target)
         return PaperStore(path)
 

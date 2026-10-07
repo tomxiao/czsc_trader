@@ -22,13 +22,18 @@ ROOT = Path(__file__).resolve().parents[4] / "strategies"
 pytestmark = pytest.mark.release_acceptance
 
 
-def test_real_package_behavior_is_independent_of_candidate_or_release_identity(registered_release):
-    release_id = registered_release.release_id
-    family, version = release_id.split("-")
-    record = StrategyRegistry(ROOT).get_version(family, version)
-    deployment = load_strategy_deployment(ROOT, release_id)
+@pytest.fixture(scope="module")
+def loaded_release(registered_release):
+    """Load each immutable installed package once, retaining independent checks."""
+    deployment = load_strategy_deployment(ROOT, registered_release.release_id)
     runtime = StrategyRuntime(strategy_root=ROOT)
-    release = runtime.describe(StrategyRelease.from_mapping(record.to_dict()))
+    actual = runtime.describe(StrategyRelease.from_mapping(registered_release.to_dict()))
+    return registered_release, deployment, actual, runtime
+
+
+def test_real_package_behavior_is_independent_of_candidate_or_release_identity(loaded_release):
+    record, deployment, release, runtime = loaded_release
+    family, _ = record.release_id.split("-")
     candidate = runtime.describe(
         StrategyCandidate(family, "C0001", record.strategy_payload, deployment.source_root)
     )
@@ -37,7 +42,7 @@ def test_real_package_behavior_is_independent_of_candidate_or_release_identity(r
     assert candidate.identity_kind == "CANDIDATE"
     assert candidate.release_id == f"{family}-C0001"
     assert release.identity_kind == "RELEASE"
-    assert release.release_id == release_id
+    assert release.release_id == record.release_id
 
 
 @pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2", "S002-v1"))
@@ -54,29 +59,18 @@ def test_real_rebindable_package_uses_parameter_factory(release_id):
     assert rebound.release_id == original.release_id
 
 
-def definition(release_id):
-    family, version = release_id.split("-")
-    record = StrategyRegistry(ROOT).get_version(family, version)
-    return StrategyRuntime(strategy_root=ROOT).describe(StrategyRelease.from_mapping(record.to_dict()))
-
-
-def test_current_packages_have_no_research_governance_or_chart_dependency(registered_release):
-    release_id = registered_release.release_id
-    family, version = release_id.split("-")
-    model = StrategyRegistry(ROOT).get_version(family, version)
+def test_current_packages_have_no_research_governance_or_chart_dependency(loaded_release):
+    model, deployed, actual, _ = loaded_release
     assert model.schema_version == 5
     assert not {"origin", "governance", "governance_hash"} & model.to_dict().keys()
-    deployed = load_strategy_deployment(ROOT, release_id)
     assert not any(name.startswith("charts/") for name in deployed.install_files)
-    actual = definition(release_id)
     assert actual.schema_version == 3
     assert actual.observation.sha256 == deployed.binding.spec.observation_sha256
 
 
 
-def test_current_observation_uses_declared_fields_and_current_identity(registered_release):
-    release_id = registered_release.release_id
-    actual = definition(release_id)
+def test_current_observation_uses_declared_fields_and_current_identity(loaded_release):
+    _, _, actual, _ = loaded_release
     _, template = observed_plan()
     strategy = StrategyIdentity(actual.strategy_family_id, actual.release_id, actual.release_hash,
                                 actual.runtime_sha256, actual.tradable_symbol)

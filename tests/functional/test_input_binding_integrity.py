@@ -2,6 +2,8 @@
 
 from dataclasses import replace
 from pathlib import Path
+import pickle
+import shutil
 from uuid import uuid4
 
 from dataflows import Dataflows, Dataset, DataSpace, PreparePolicy, ProviderBinding, ProviderConfig
@@ -17,7 +19,7 @@ from test_candidate_runtime_execution import _install_candidate_dataflows
 
 
 @pytest.fixture
-def bound_inputs(candidate_payload, tmp_path, monkeypatch):
+def fresh_bound_inputs(candidate_payload, tmp_path, monkeypatch):
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1.0, "close": 1.0})
     _, request, flows = request_for_prices(
@@ -28,7 +30,25 @@ def bound_inputs(candidate_payload, tmp_path, monkeypatch):
         start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows,
         intraday_frequencies=("30m",),
     )
-    return replace(request, execution_data=data), flows
+    return EvaluationAccess(dataflows=flows).prepare(replace(request, execution_data=data)), flows
+
+
+@pytest.fixture
+def bound_inputs(request, tmp_path, frozen_seed_root):
+    """Each tamper starts with its own copy of publicly prepared, authentic inputs."""
+    from czsc_trader.research_tools._evaluation_workers import pack
+    from evaluation_seed_support import relocate_request, restored_context
+
+    seed = frozen_seed_root / "bound-execution-inputs"
+    data = frozen_seed_root / "bound-execution-inputs.pkl"
+    if not seed.exists():
+        evaluation, _ = request.getfixturevalue("fresh_bound_inputs")
+        data.write_bytes(pack(evaluation))
+        shutil.copytree(evaluation.repository_root, seed)
+    root = tmp_path / "bound-repo"
+    shutil.copytree(seed, root)
+    evaluation = relocate_request(pickle.loads(data.read_bytes()), root)
+    return evaluation, restored_context(root).data
 
 
 @pytest.mark.parametrize("table", ["adjusted_daily", "execution_daily", "execution_intraday"])

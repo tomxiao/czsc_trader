@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from datetime import datetime
-import json
 
 import pytest
 
@@ -12,12 +11,6 @@ from paper_trading_engine.cli import build_parser
 from paper_trading_engine.runtime_config import PteRuntimeConfig
 from paper_trading_engine.errors import AdviceClientError
 from paper_trading_engine.srt_advice_client import SrtAdviceClient
-
-
-def test_runtime_data_space_round_trips_as_environment_relative_path(tmp_path):
-    config = PteRuntimeConfig(data_space=Path("markets/hk"))
-    path = config.save(tmp_path / "shared/config/pte.json")
-    assert PteRuntimeConfig.load(path) == config
 
 
 @pytest.mark.parametrize("value", [Path("."), Path("../other"), Path("C:/market")])
@@ -31,14 +24,6 @@ def test_cli_converts_environment_space_to_typed_contract(tmp_path):
         "serve", "--repo-root", str(tmp_path), "--data-space", "markets/cn",
     ])
     assert args.data_space == DataSpace(Path("markets/cn"))
-
-
-def test_old_service_config_cannot_be_used_as_pte_runtime_config(tmp_path):
-    path = tmp_path / "pte.json"
-    path.write_text(json.dumps({"schema_version": 2, "runtime_root": str(tmp_path)}),
-                    encoding="utf-8")
-    with pytest.raises(ValueError, match="unsupported PTE runtime config schema"):
-        PteRuntimeConfig.load(path)
 
 
 def test_advice_data_access_requires_host_injection(tmp_path):

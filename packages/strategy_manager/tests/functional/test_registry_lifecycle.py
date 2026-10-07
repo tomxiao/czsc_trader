@@ -12,7 +12,19 @@ from strategy_manager import (
 
 
 @pytest.fixture
-def frozen_record(tmp_path):
+def version_record():
+    """Model validation needs only authenticated input, without registry writes."""
+    raw = {
+        "schema_version": 5, "strategy_id": "S900", "version": "v1", "release_id": "S900-v1",
+        "parent_version": None, "change_summary": "SM content", "source_experiment": "20261001_S900_EX01",
+        "source_candidate": "C0001", "selection_data_cutoff": "2026-09-21",
+        "forward_start": "2026-09-22", "strategy_payload": {"test": "SM only"},
+    }
+    return StrategyVersion.from_dict({**raw, "release_hash": canonical_sha256(raw)})
+
+
+@pytest.fixture
+def frozen_record(tmp_path, version_record):
     registry = StrategyRegistry(tmp_path)
     family = StrategyFamily.from_dict({
         "schema_version": 2, "strategy_id": "S900", "name": "SM contract input",
@@ -21,13 +33,7 @@ def frozen_record(tmp_path):
         "created_by": "tester", "updated_at": "2026-10-01T10:00:00+08:00",
     })
     registry.create_family(family, actor="tester", reason="synthetic input")
-    raw = {
-        "schema_version": 5, "strategy_id": "S900", "version": "v1", "release_id": "S900-v1",
-        "parent_version": None, "change_summary": "SM content", "source_experiment": "20261001_S900_EX01",
-        "source_candidate": "C0001", "selection_data_cutoff": "2026-09-21",
-        "forward_start": "2026-09-22", "strategy_payload": {"test": "SM only"},
-    }
-    version = StrategyVersion.from_dict({**raw, "release_hash": canonical_sha256(raw)})
+    version = version_record
     path = tmp_path / "S900/versions/v1.json"
     path.parent.mkdir(parents=True)
     path.write_text(json.dumps(version.to_dict()), encoding="utf-8")
@@ -36,8 +42,8 @@ def frozen_record(tmp_path):
 
 @pytest.mark.parametrize("field,value", [("change_summary", "changed"),
                                          ("strategy_payload", {"changed": True})])
-def test_frozen_record_authenticates_metadata_and_payload(frozen_record, field, value):
-    _, version = frozen_record
+def test_frozen_record_authenticates_metadata_and_payload(version_record, field, value):
+    version = version_record
     assert StrategyVersion.from_dict(version.to_dict()) == version
     with pytest.raises(ValidationError, match="release_hash"):
         StrategyVersion.from_dict({**version.to_dict(), field: value})
@@ -45,8 +51,8 @@ def test_frozen_record_authenticates_metadata_and_payload(frozen_record, field, 
 
 @pytest.mark.parametrize("changes", [{"schema_version": 3}, {"governance": {}},
                                       {"origin": None}, {"release_hash": None}])
-def test_frozen_record_rejects_noncurrent_structure(frozen_record, changes):
-    _, version = frozen_record
+def test_frozen_record_rejects_noncurrent_structure(version_record, changes):
+    version = version_record
     with pytest.raises((TypeError, ValueError, ValidationError)):
         StrategyVersion.from_dict({**version.to_dict(), **changes})
 

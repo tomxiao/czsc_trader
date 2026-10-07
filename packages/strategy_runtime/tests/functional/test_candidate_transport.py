@@ -13,7 +13,9 @@ def _worker(candidate):
 
 
 def test_candidate_roundtrip_revalidates_and_preserves_immutable_identity(tmp_path, monkeypatch):
-    monkeypatch.setenv("PYTHONPYCACHEPREFIX", str(tmp_path / "pycache"))
+    # A real spawn proves serialization and child-process immutability. Avoid
+    # recompiling every imported dependency into a new cache for this one child.
+    monkeypatch.setenv("PYTHONDONTWRITEBYTECODE", "1")
     candidate = StrategyCandidate(
         "S900",
         "C0001",

@@ -14,20 +14,22 @@ from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence
 
 # A declared synthetic exchange calendar, independent of source response rows.
 SESSIONS = tuple(pd.bdate_range("2024-01-02", periods=100).strftime("%Y-%m-%d"))
+# Five sessions include an internal gap and the intervening closed weekend.
+FAULT_SESSIONS = SESSIONS[:5]
 CLOSES = ("10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00")
 
 
-def _request(frequency="daily"):
-    return DataRequest(Dataset.ETF_OHLCV, "510500.SH", SESSIONS[0], SESSIONS[-1],
+def _request(frequency="daily", *, sessions=SESSIONS):
+    return DataRequest(Dataset.ETF_OHLCV, "510500.SH", sessions[0], sessions[-1],
                        required_cutoff=None, frequency=frequency)
 
 
-def _source(*, bad_daily=(), bad_minute=()):
-    daily = pd.DataFrame({"Date": pd.to_datetime(SESSIONS), "Open": 10., "High": 10.,
+def _source(*, bad_daily=(), bad_minute=(), sessions=SESSIONS):
+    daily = pd.DataFrame({"Date": pd.to_datetime(sessions), "Open": 10., "High": 10.,
                           "Low": 10., "Close": 10., "Volume": 800., "Amount": 8000.})
     daily.loc[list(bad_daily), "Amount"] = 8800.
     minute = pd.DataFrame({
-        "Date": pd.to_datetime([f"{day} {clock}" for day in SESSIONS for clock in CLOSES]),
+        "Date": pd.to_datetime([f"{day} {clock}" for day in sessions for clock in CLOSES]),
         "Open": 10., "High": 10., "Low": 10., "Close": 10.,
         "Volume": 100., "Amount": 1000.,
     })
@@ -35,23 +37,23 @@ def _source(*, bad_daily=(), bad_minute=()):
     return daily, minute
 
 
-def _metadata(daily, minute=None):
+def _metadata(daily, minute=None, *, sessions=SESSIONS):
     frequency = "daily" if minute is None else "30m"
-    calendar = pd.DataFrame({"Date": pd.date_range(SESSIONS[0], SESSIONS[-1]).strftime("%Y-%m-%d")})
-    calendar["is_open"] = calendar.Date.isin(SESSIONS).astype(int)
+    calendar = pd.DataFrame({"Date": pd.date_range(sessions[0], sessions[-1]).strftime("%Y-%m-%d")})
+    calendar["is_open"] = calendar.Date.isin(sessions).astype(int)
     return {
         "vendor": "synthetic-calendar-fixture", "vendor_symbol": "510500.SH",
         "asset_type": "etf", "period": frequency, "adjustment": "none",
         "daily_session_coverage": {
             "source": "independent-test-calendar", "exchange": "SSE",
-            "start_date": SESSIONS[0], "end_date": SESSIONS[-1],
+            "start_date": sessions[0], "end_date": sessions[-1],
             "listing_date": "2013-03-15", "listing_source": "synthetic-lifecycle",
             "calendar": calendar.to_dict("records"),
             "calendar_sha256": frame_content_sha256(calendar),
-            "expected_dates": list(SESSIONS), "verified_sessions": len(SESSIONS),
+            "expected_dates": list(sessions), "verified_sessions": len(sessions),
         },
         "ohlcv_quality_evidence": build_quality_evidence(
-            daily, intraday=minute, frequency=frequency, expected_dates=SESSIONS,
+            daily, intraday=minute, frequency=frequency, expected_dates=sessions,
         ),
     }
 
@@ -110,32 +112,32 @@ def test_minute_acceptance_requires_both_99_and_95_percent(flow_factory, bad_dai
         assert prepared.reference is None and prepared.items[0].status is DataStatus.FAILED
 
 
-@pytest.mark.parametrize("missing", [0, 49, 99], ids=["first", "internal", "last"])
+@pytest.mark.parametrize("missing", [0, 2, 4], ids=["first", "internal", "last"])
 def test_independent_calendar_detects_missing_daily_session(flow_factory, missing):
-    daily, _ = _source()
+    daily, _ = _source(sessions=FAULT_SESSIONS)
     daily = daily.drop(index=missing).reset_index(drop=True)
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily), [])})
-    prepared = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), [])})
+    prepared = flows.prepare((_request(sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.INCOMPLETE
 
 
 @pytest.mark.parametrize("whole_day", [False, True], ids=["missing-bar", "missing-day"])
 def test_minute_completeness_requires_every_session_and_bar(flow_factory, whole_day):
-    daily, minute = _source()
-    missing = range(49 * 8, 50 * 8) if whole_day else [49 * 8 + 3]
+    daily, minute = _source(sessions=FAULT_SESSIONS)
+    missing = range(2 * 8, 3 * 8) if whole_day else [2 * 8 + 3]
     minute = minute.drop(index=missing).reset_index(drop=True)
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, _metadata(daily, minute), [])})
-    prepared = flows.prepare((_request("30m"),), policy=PreparePolicy.REFRESH)
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, _metadata(daily, minute, sessions=FAULT_SESSIONS), [])})
+    prepared = flows.prepare((_request("30m", sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.INCOMPLETE
 
 
 def test_complete_minutes_cannot_compensate_for_missing_daily_anchor(flow_factory):
-    daily, minute = _source()
-    daily = daily.drop(index=49).reset_index(drop=True)
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, _metadata(daily, minute), [])})
-    prepared = flows.prepare((_request("30m"),), policy=PreparePolicy.REFRESH)
+    daily, minute = _source(sessions=FAULT_SESSIONS)
+    daily = daily.drop(index=2).reset_index(drop=True)
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(minute, _metadata(daily, minute, sessions=FAULT_SESSIONS), [])})
+    prepared = flows.prepare((_request("30m", sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.INCOMPLETE
 
@@ -186,10 +188,10 @@ def test_reuse_is_offline_and_fetch_reads_certified_window_quality(flow_factory,
 
 @pytest.mark.parametrize("revision", [None, "0" * 64], ids=["unvalidated", "stale"])
 def test_fetch_requires_current_publication_validation(flow_factory, revision):
-    daily, _ = _source()
+    daily, _ = _source(sessions=FAULT_SESSIONS)
     calls = []
-    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily), calls)})
-    request = _request()
+    flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)})
+    request = _request(sessions=FAULT_SESSIONS)
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     assert prepared.ready
     entries = flows._store.load_preparation(prepared.reference)
@@ -209,11 +211,11 @@ def test_fetch_requires_current_publication_validation(flow_factory, revision):
 
 
 def test_changed_revision_requires_prepare_before_fetch(flow_factory, monkeypatch):
-    daily, _ = _source()
+    daily, _ = _source(sessions=FAULT_SESSIONS)
     calls = []
-    providers = {Dataset.ETF_OHLCV: _provider(daily, _metadata(daily), calls)}
+    providers = {Dataset.ETF_OHLCV: _provider(daily, _metadata(daily, sessions=FAULT_SESSIONS), calls)}
     flows = flow_factory(providers)
-    request = _request()
+    request = _request(sessions=FAULT_SESSIONS)
     original = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     monkeypatch.setattr(facade, "_implementation_revision", lambda: "0" * 64)
     upgraded = Dataflows(
@@ -249,20 +251,20 @@ def test_partial_minute_fetch_retains_full_session_quality(flow_factory):
 
 @pytest.mark.parametrize("corruption", ["missing-quality", "missing-calendar", "flags", "hidden-fields", "tolerance", "denominator", "float-version", "bool-version", "calendar-gap", "calendar-hash"])
 def test_unverifiable_quality_metadata_cannot_publish(flow_factory, corruption):
-    daily, _ = _source()
-    metadata = _metadata(daily)
+    daily, _ = _source(sessions=FAULT_SESSIONS)
+    metadata = _metadata(daily, sessions=FAULT_SESSIONS)
     if corruption == "missing-quality":
         del metadata["ohlcv_quality_evidence"]
     elif corruption == "missing-calendar":
         del metadata["daily_session_coverage"]
     elif corruption == "flags":
-        metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[0]]["daily_accurate"] = "true"
+        metadata["ohlcv_quality_evidence"]["sessions"][FAULT_SESSIONS[0]]["daily_accurate"] = "true"
     elif corruption == "hidden-fields":
-        metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[0]]["daily_fields"] = ["VWAP_ABOVE_HIGH"]
+        metadata["ohlcv_quality_evidence"]["sessions"][FAULT_SESSIONS[0]]["daily_fields"] = ["VWAP_ABOVE_HIGH"]
     elif corruption == "tolerance":
         metadata["ohlcv_quality_evidence"]["price_tolerance"] = 1.
     elif corruption == "denominator":
-        metadata["daily_session_coverage"]["expected_dates"] = list(SESSIONS[1:])
+        metadata["daily_session_coverage"]["expected_dates"] = list(FAULT_SESSIONS[1:])
     elif corruption == "float-version":
         metadata["ohlcv_quality_evidence"]["version"] = 1.
     elif corruption == "bool-version":
@@ -274,47 +276,48 @@ def test_unverifiable_quality_metadata_cannot_publish(flow_factory, corruption):
     else:
         metadata["daily_session_coverage"]["calendar_sha256"] = "0" * 64
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, metadata, [])})
-    prepared = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request(sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED
 
 
 def test_calendar_prevents_source_and_denominator_from_jointly_hiding_missing_day(flow_factory):
-    daily, _ = _source()
-    metadata = _metadata(daily)
-    daily = daily.drop(index=49).reset_index(drop=True)
-    del metadata["ohlcv_quality_evidence"]["sessions"][SESSIONS[49]]
-    metadata["daily_session_coverage"]["expected_dates"].remove(SESSIONS[49])
+    daily, _ = _source(sessions=FAULT_SESSIONS)
+    metadata = _metadata(daily, sessions=FAULT_SESSIONS)
+    daily = daily.drop(index=2).reset_index(drop=True)
+    del metadata["ohlcv_quality_evidence"]["sessions"][FAULT_SESSIONS[2]]
+    metadata["daily_session_coverage"]["expected_dates"].remove(FAULT_SESSIONS[2])
     metadata["daily_session_coverage"]["verified_sessions"] -= 1
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, metadata, [])})
-    prepared = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request(sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status in {DataStatus.FAILED, DataStatus.INCOMPLETE}
 
 
 @pytest.mark.parametrize("frequency", ["daily", "30m"])
 def test_source_values_must_match_the_quality_evidence(flow_factory, frequency):
-    daily, minute = _source()
+    daily, minute = _source(sessions=FAULT_SESSIONS)
     if frequency == "daily":
-        metadata = _metadata(daily)
+        metadata = _metadata(daily, sessions=FAULT_SESSIONS)
         frame = daily
-        frame.loc[49, "Amount"] = 8800.
+        frame.loc[2, "Amount"] = 8800.
     else:
-        metadata = _metadata(daily, minute)
+        metadata = _metadata(daily, minute, sessions=FAULT_SESSIONS)
         frame = minute
-        frame.loc[49 * 8, "Volume"] = 101.
+        frame.loc[2 * 8, "Volume"] = 101.
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(frame, metadata, [])})
-    prepared = flows.prepare((_request(frequency),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request(frequency, sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED
+    assert prepared.items[0].error.message == "OHLCV observations differ from post-repair quality evidence"
 
 
 @pytest.mark.parametrize("frequency", ["daily", "30m"])
 def test_rebinding_changed_amount_cannot_reuse_healthy_quality_facts(flow_factory, frequency):
-    daily, minute = _source()
+    daily, minute = _source(sessions=FAULT_SESSIONS)
     frame = daily if frequency == "daily" else minute
-    metadata = _metadata(daily, None if frequency == "daily" else minute)
-    frame.loc[49 if frequency == "daily" else 49 * 8, "Amount"] += 800.
+    metadata = _metadata(daily, None if frequency == "daily" else minute, sessions=FAULT_SESSIONS)
+    frame.loc[2 if frequency == "daily" else 2 * 8, "Amount"] += 800.
 
     def provider(request):
         rebound = deepcopy(metadata)
@@ -324,17 +327,19 @@ def test_rebinding_changed_amount_cannot_reuse_healthy_quality_facts(flow_factor
         return frame.copy(), rebound
 
     flows = flow_factory({Dataset.ETF_OHLCV: provider})
-    prepared = flows.prepare((_request(frequency),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request(frequency, sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED
+    assert prepared.items[0].error.message == "OHLCV publication differs from quality numeric evidence"
+    assert prepared.items[0].error.context["field"] == "Amount"
 
 
 def test_quality_evidence_must_use_the_instrument_market(flow_factory):
-    daily, _ = _source()
-    metadata = _metadata(daily)
+    daily, _ = _source(sessions=FAULT_SESSIONS)
+    metadata = _metadata(daily, sessions=FAULT_SESSIONS)
     metadata["ohlcv_quality_evidence"]["market"] = "hk"
     flows = flow_factory({Dataset.ETF_OHLCV: _provider(daily, metadata, [])})
-    prepared = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request(sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED
 
@@ -369,15 +374,15 @@ def test_structurally_invalid_row_is_not_diluted_by_99_percent_threshold(flow_fa
 
 
 def test_nanosecond_duplicate_close_cannot_publish_as_complete_minute_session(flow_factory):
-    daily, minute = _source()
-    extra = minute.iloc[[49 * 8]].copy()
+    daily, minute = _source(sessions=FAULT_SESSIONS)
+    extra = minute.iloc[[2 * 8]].copy()
     extra["Date"] += pd.Timedelta(nanoseconds=1)
     minute = pd.concat([minute, extra]).sort_values("Date").reset_index(drop=True)
 
     def provider(request):
-        return minute.copy(), _metadata(daily, minute)
+        return minute.copy(), _metadata(daily, minute, sessions=FAULT_SESSIONS)
 
     flows = flow_factory({Dataset.ETF_OHLCV: provider})
-    prepared = flows.prepare((_request("30m"),), policy=PreparePolicy.REFRESH)
+    prepared = flows.prepare((_request("30m", sessions=FAULT_SESSIONS),), policy=PreparePolicy.REFRESH)
     assert not prepared.ready and prepared.reference is None
     assert prepared.items[0].status is DataStatus.FAILED

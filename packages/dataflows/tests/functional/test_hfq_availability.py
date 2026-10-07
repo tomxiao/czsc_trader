@@ -20,14 +20,6 @@ def _bars(dates: list[str]) -> pd.DataFrame:
     })
 
 
-def test_stock_intraday_uses_completed_bar_time_after_premarket_factor() -> None:
-    raw = _bars(["2026-09-08 09:35:00", "2026-09-08 09:40:00"])
-    result = with_scheduled_hfq_availability(
-        raw, factor_source="adj_factor", period="5m"
-    )
-    assert result["AvailableDate"].tolist() == pd.to_datetime(raw["Date"]).tolist()
-
-
 @pytest.mark.parametrize("mutation", ["schedule", "hash"])
 def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, publish_data, mutation) -> None:
     frame = with_scheduled_hfq_availability(

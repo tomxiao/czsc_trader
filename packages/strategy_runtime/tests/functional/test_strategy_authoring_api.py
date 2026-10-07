@@ -54,6 +54,8 @@ def test_strategy_authoring_contracts_are_public() -> None:
     assert set(expected) <= set(strategy_runtime.__all__)
     assert all(getattr(strategy_runtime, name) is value for name, value in expected.items())
     assert not hasattr(strategy_runtime, "StrategyLoader")
+    assert not hasattr(strategy_runtime.StrategyImplementation, "from_candidate")
+    assert not hasattr(strategy_runtime.StrategyImplementation, "from_release")
 
 
 def test_unknown_dataset_preserves_the_supported_contract() -> None:
