@@ -1,0 +1,44 @@
+{
+  "source": "当前会话真实用户明确批准",
+  "user_answer": "批准，请你主导推进阶段三",
+  "recorded_at": "2026-10-07T16:55:33+08:00",
+  "role": "RSCH",
+  "stage_three_authorized": true,
+  "stage_four_authorized": false,
+  "reviewed_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "COMPONENTS",
+    "revision": 1,
+    "content_sha256": "a5c821246aa4f13b3c3c00f7a0405af83b56d1f07841ad481009287ac9a0032f"
+  },
+  "reviewed_proposal": [
+    "区间回归完整策略",
+    "增加lag1自相关状态确认，检验真实增量",
+    "增加退出和损失控制，检验收益与保护权衡"
+  ],
+  "economic_mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 2,
+    "content_sha256": "6d641b1327debef29af53e403c286a0012ea7ab640a4218bc992757b66f5c08c"
+  },
+  "autonomy": "研究员主导方法、参数域、预算、调度和停止判断，保存完整证据及反证",
+  "explicit_exclusions": [
+    "其他批次研究内容",
+    "新增数据源或依赖",
+    "阶段四交付",
+    "冻结",
+    "生产变更",
+    "合并master",
+    "tag",
+    "推送"
+  ]
+}

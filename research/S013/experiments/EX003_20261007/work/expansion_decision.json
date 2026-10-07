@@ -1,0 +1,47 @@
+{
+  "recorded_at": "2026-10-07T17:02:44+08:00",
+  "initial_successful_search_evaluations": 94,
+  "initial_qualifying_configurations": 0,
+  "decision": "继续阶段三：固定持有期对照54项，扩展Optuna联合搜索，各机制64次提议",
+  "expanded_domains": {
+    "entry": [
+      0.05,
+      0.85
+    ],
+    "exit": "max(0.50, entry+gap), gap 0.05..0.40, upper0.99",
+    "max_hold": [
+      1,
+      30
+    ],
+    "range_window": [
+      30,
+      40,
+      60,
+      90,
+      120
+    ],
+    "acf_min": [
+      -0.6,
+      0.5
+    ],
+    "stop_loss": [
+      0.005,
+      0.18
+    ],
+    "trailing_stop": [
+      0.01,
+      0.2
+    ],
+    "cooldown": [
+      0,
+      5
+    ]
+  },
+  "explanation": "扩大高入场阈值增加候选触发机会，缩短持有期直接检验费用及频率代价；改变区间长度检验机会定义对当前窗口的依赖；更紧损失控制检验下跌年修复能力",
+  "history_scope": "扩展窗口只读取同标的实际需要的最小历史，不计入开发池统计",
+  "no_economic_target_change": true,
+  "max_workers": 8,
+  "native_threads": 1,
+  "price_role_limitation": "复权与未复权收益差异及未独立计入权益事件已保存，未改变既定基准合同",
+  "dependency_binding": "初始评价的依赖版本在平台环境身份中保存；后续请求显式声明numpy/pandas/strategy-runtime版本。初始入选配置交接前将用显式依赖新身份复算，保持原评价证据。"
+}

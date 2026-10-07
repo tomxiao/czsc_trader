@@ -1,0 +1,4210 @@
+{
+  "source": "COMPONENTS/1 数据质量证据和报告中的五个残余异常，原件不修复",
+  "scope": "EX004全部成功配置的实际订单，不推断未知分钟发生时点",
+  "successful_configurations": 378,
+  "execution_data_identity": "378989bfdf0c7ab6bd4f348ff5d247fcef6c8befc490e3d52dcfabc9a18a0c55",
+  "pricing": {
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT",
+    "anchor_date": "2019-12-31",
+    "anchor_factor": 0.2803
+  },
+  "high_error_dates": [
+    "2020-03-17",
+    "2020-10-22",
+    "2021-02-25",
+    "2021-03-02"
+  ],
+  "high_error_use": "买入LIMIT只消费Open/Low；卖出MARKET只消费Open，四个High偏差不影响当前撮合规则",
+  "low_error": {
+    "date": "2020-12-01",
+    "raw_daily_low": 6.961,
+    "raw_intraday_minimum": 6.967,
+    "price_scale": 1.0,
+    "normalized_lower": 6.961,
+    "normalized_upper": 6.967,
+    "rule": "严格Low<限价；已按Open或分钟Low成交的订单不会因更低Low改变成交金额"
+  },
+  "orders_on_error_dates": [
+    {
+      "candidate_id": "C0001",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0001",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0001",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0002",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0002",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0003",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0003",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0004",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0004",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0005",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0005",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0005",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0007",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0007",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0009",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0011",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0012",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0012",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0013",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0013",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0018",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0018",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0018",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0018",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0019",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0019",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0020",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0020",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0021",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0021",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0022",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0023",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0023",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0024",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0024",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0024",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0025",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0025",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0025",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0027",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0027",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0027",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0028",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0028",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0030",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0030",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0030",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0031",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0033",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0033",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0033",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0035",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0036",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0036",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0038",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0039",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0041",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0045",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0045",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0048",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0049",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0050",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0052",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0052",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0055",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0055",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0055",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0056",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0058",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0061",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0061",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0062",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0063",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0063",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0065",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0065",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0065",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0065",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0070",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0070",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0072",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0072",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0073",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0073",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0074",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0075",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0075",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0076",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0076",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0076",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0076",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0078",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0078",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0079",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0079",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0080",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0080",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0081",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0081",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0082",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0082",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0083",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0083",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0084",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0084",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0086",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0086",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0086",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0086",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0087",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0088",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0088",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0088",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0089",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0089",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0091",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0091",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0092",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0092",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0093",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0093",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0094",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0095",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0095",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0108",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0108",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0108",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0109",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0109",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0109",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0110",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0110",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0110",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0111",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0111",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0111",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0112",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0112",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0112",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0112",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0113",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0113",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0114",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0114",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0115",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0115",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0116",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0116",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0117",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0117",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0118",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0118",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0119",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0119",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0119",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0119",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0120",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0120",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0121",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0121",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0122",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0122",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0123",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0123",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0124",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0124",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0125",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0125",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0125",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0125",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0126",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0126",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0127",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0127",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0128",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0128",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0129",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0129",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0130",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0130",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0131",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0131",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0131",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0131",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0132",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0133",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0134",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0135",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0136",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0137",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0137",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0137",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0137",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0137",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0138",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0138",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0139",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0139",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0140",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0141",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0142",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0143",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0143",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0143",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0145",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0146",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0146",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0147",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0148",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0148",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0150",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0150",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0151",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0153",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0153",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0155",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0157",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0157",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0158",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0158",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0162",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0163",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0163",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0164",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0164",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0165",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0165",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0166",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0167",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0167",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0168",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0169",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0170",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0171",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0172",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0172",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0172",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0174",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0174",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0175",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0175",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0176",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0178",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0179",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0179",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0181",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0182",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0183",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0183",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0183",
+      "execution_date": "2021-02-25",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0184",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0184",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0185",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0186",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0186",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0187",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0187",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0189",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0189",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0189",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0190",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0190",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0191",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0192",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0193",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0193",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0195",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0198",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0198",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0198",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0199",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0199",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0200",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0200",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0201",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0201",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0202",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0202",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0203",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0203",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0203",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0204",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0204",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0206",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0206",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0208",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0211",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0211",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0217",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0219",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0220",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0224",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0227",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0227",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0232",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0232",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0232",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0241",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0241",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0244",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0248",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0248",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0251",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0253",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0253",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0254",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0255",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0256",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0265",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0265",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0266",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0266",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0268",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0268",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0269",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0269",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0270",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0273",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0273",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0274",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0274",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0275",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0276",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0276",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0276",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0277",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0277",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0278",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0278",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0279",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0281",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0281",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0282",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0283",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0284",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0284",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0285",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0286",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0287",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0288",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0288",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0289",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0290",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0291",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0291",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0293",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0294",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0295",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0296",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0297",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0297",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0298",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0298",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0299",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0300",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0300",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0302",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0303",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0304",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0305",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0306",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.026,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0306",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0307",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0308",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0309",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0309",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0311",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0312",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0315",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0316",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0316",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0317",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0317",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0317",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0318",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0318",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0318",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0319",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0320",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0320",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0320",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0321",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0321",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.195000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0322",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0323",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0327",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0328",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.643,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0328",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0329",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0330",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0331",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0331",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 6.99,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0331",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0332",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0333",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0333",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0334",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.265,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0335",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0336",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.258,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0337",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.287,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0338",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.323,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0339",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.396,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0340",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0341",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.258,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0342",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.287,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0343",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.323,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0344",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.396,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0348",
+      "execution_date": "2020-12-01",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 6.977,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0349",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0350",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.744,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0352",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0353",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.468,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0354",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.613,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0355",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.831,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0356",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0357",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0358",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0358",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0359",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0359",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.116,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0359",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0360",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0360",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.152,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0360",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.116,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0360",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0362",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0362",
+      "execution_date": "2021-02-25",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.396,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0362",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0363",
+      "execution_date": "2020-03-17",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 5.632,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0363",
+      "execution_date": "2020-12-01",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.116,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0363",
+      "execution_date": "2021-02-25",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0363",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0364",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.744,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0364",
+      "execution_date": "2021-03-02",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.324000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0369",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.744,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0369",
+      "execution_date": "2020-10-22",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 7.152,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0369",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0370",
+      "execution_date": "2020-10-22",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.012,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0370",
+      "execution_date": "2021-02-25",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0371",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0372",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0373",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0374",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0375",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0376",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0377",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0378",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0379",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0380",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0381",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0382",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0384",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0385",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0385",
+      "execution_date": "2021-02-25",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.251,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0386",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.66,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0387",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.744,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0388",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0388",
+      "execution_date": "2021-03-02",
+      "side": "SELL",
+      "order_type": "MARKET",
+      "status": "FILLED",
+      "limit_price": 7.181000000000002,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0389",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0390",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0391",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0392",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0393",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    },
+    {
+      "candidate_id": "C0394",
+      "execution_date": "2020-03-17",
+      "side": "BUY",
+      "order_type": "LIMIT",
+      "status": "FILLED",
+      "limit_price": 5.688,
+      "potential_economic_change_from_low_error": false
+    }
+  ],
+  "potential_economic_change_count": 0,
+  "limitations": [
+    "仅检查已声明High/Low偏差；没有重建未知分钟修复轨迹或供应商历史发布记录"
+  ]
+}
