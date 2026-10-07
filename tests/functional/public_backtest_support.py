@@ -17,12 +17,13 @@ from test_candidate_runtime_execution import _install_candidate_dataflows
 
 
 def request_for_prices(candidate_payload, root, monkeypatch, prices, *, start_index=1,
-                       initial_cash=100_000, benchmark=None, flow=None, cost=.001):
+                       initial_cash=100_000, benchmark=None, flow=None, cost=.001, hfq_factors=None):
     payload, source = candidate_payload
     if flow is None:
         flow = [0.1] * len(prices)
     features = pd.DataFrame({"Date": prices["dt"], "Flow": flow})
-    flows = _install_candidate_dataflows(monkeypatch, features, prices, base_dir=root, space=DataSpace(Path("research/S900/data")))
+    flows = _install_candidate_dataflows(monkeypatch, features, prices, base_dir=root,
+        space=DataSpace(Path("research/S900/data")), hfq_factors=hfq_factors)
     marker = Path(root) / "pyproject.toml"
     if not marker.exists():
         (Path(root) / "src/czsc_trader").mkdir(parents=True, exist_ok=True)

@@ -22,6 +22,7 @@ from strategy_evaluator import EvaluationProtocol, MetricObservation, MetricStat
 from strategy_runtime import (
     StrategyCandidate, StrategyRuntime, StrategyInputBinding,
     canonical_sha256, ImplementationDependency,
+    ExecutionPriceBasis, ExecutionPricing,
 )
 from strategy_manager import CandidateKey, CandidateDerivation
 from strategy_runtime.implementation_identity import implementation_sha256
@@ -120,8 +121,11 @@ class EvaluationRequest:
     lineage: EvaluationLineage | None = None
     dependencies: tuple[ImplementationDependency, ...] = ()
     input_bindings: Mapping[str, StrategyInputBinding] = field(default_factory=dict)
+    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.UNADJUSTED
 
     def __post_init__(self):
+        if not isinstance(self.price_basis, ExecutionPriceBasis):
+            raise TypeError("price_basis requires ExecutionPriceBasis")
         if type(self.data_cutoff) is not date:
             raise TypeError("data_cutoff must be a date")
         if not isinstance(self.strategy, StrategyCandidate):
@@ -646,6 +650,10 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
     if data is not None:
         if not isinstance(data, BacktestExecutionData):
             raise ValueError("evaluation requires prepared BacktestExecutionData")
+        if data.pricing.basis is not request.price_basis:
+            raise ValueError("execution data price and quantity units differ from request")
+        if data.pricing.anchor_date is not None and any(data.pricing.anchor_date >= w.start for w in request.windows):
+            raise ValueError("HFQ anchor must precede every evaluation window")
         required_frequencies = set(execution_intraday_frequencies(StrategyRuntime().describe(candidate)))
         if isinstance(request.benchmark.execution, LimitBuyHold):
             required_frequencies.add("30m")
@@ -728,7 +736,7 @@ def _request_identity_payload(
 ) -> dict[str, object]:
     """Project already authenticated request values without loading mutable source files."""
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "experiment_id": request.experiment_id,
@@ -749,6 +757,8 @@ def _request_identity_payload(
             for x in request.costs
         ],
         "data_identity": None if request.execution_data is None else request.execution_data.fingerprint,
+        "price_basis": request.price_basis.value,
+        "pricing": None if request.execution_data is None else request.execution_data.pricing.to_dict(),
         "benchmark": request.benchmark.to_dict(),
         "frequency_window_days": request.frequency_window_days,
         "execution_mode": request.execution_mode,
@@ -821,6 +831,7 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
             asset_type=request.asset_type, start=min(item.start for item in request.windows),
             end=request.data_cutoff, intraday_frequencies=tuple(sorted(frequencies)),
             dataflows=dataflows,
+            price_basis=request.price_basis,
         ))
     _request_contract(request)
     snapshot = StrategySnapshot(
@@ -940,6 +951,7 @@ def _evaluate_strategy(request: EvaluationRequest, *, dataflows: Dataflows) -> E
             "tier": cost.measurement_tier, "benchmark": request.benchmark.to_dict(),
             "frequency_window_days": request.frequency_window_days,
             "metric_version": METRIC_SEMANTICS_VERSION, "execution_mode": request.execution_mode,
+            "pricing": request.execution_data.pricing.to_dict(),
         })
         identity = EvaluationIdentity(
             CandidateKey(request.strategy.strategy_family_id, request.strategy.candidate_id),
@@ -1080,6 +1092,15 @@ def validate_evaluation_evidence(value: dict) -> None:
     if not isinstance(value, dict) or value.get("schema_version") != 5 or value.get("source_kind") != "published_result":
         raise ValueError("account evaluation evidence requires schema 5 published_result")
     request = value["request_identity"]
+    if request.get("schema_version") != 4:
+        raise ValueError("evaluation request requires schema 4 price units")
+    pricing = ExecutionPricing.from_dict(request["pricing"])
+    if pricing.basis.value != request["price_basis"]:
+        raise ValueError("evaluation pricing differs from requested units")
+    if pricing.anchor_date is not None and pricing.anchor_date >= min(
+        date.fromisoformat(w["start"]) for w in request["windows"]
+    ):
+        raise ValueError("evaluation HFQ anchor must precede every window")
     if canonical_sha256(request) != value["request_hash"]:
         raise ValueError("evaluation request identity differs")
     if any(value[name] != request[name] for name in ("strategy_identity", "runtime_binding_hash", "data_identity", "execution_mode")):

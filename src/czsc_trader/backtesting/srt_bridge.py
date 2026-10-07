@@ -26,7 +26,7 @@ from strategy_runtime import (
 )
 
 from trading_execution_engine import HistoricalExecutor
-from .execution_data import BacktestExecutionData, _prices, _empty_prices, _require_execution_frequencies
+from .execution_data import BacktestExecutionData, _require_execution_frequencies
 from .models import StrategySnapshot
 from .result import BacktestResult
 from .signal_replay import SignalReplay
@@ -228,7 +228,8 @@ def prepare_srt_input_binding(
     instance = StrategyRuntime(Path(repository_root) / "strategies", dataflows=dataflows).create(
         StrategyInit(source, TradableWindow(pd.Timestamp(start).date(), pd.Timestamp(end).date()),
                      srt_data_directory(execution_data.root, snapshot, execution_data.symbol),
-                     symbol=execution_data.symbol if snapshot.identity.kind == "REGISTERED" else None)
+                     symbol=execution_data.symbol if snapshot.identity.kind == "REGISTERED" else None,
+                     pricing=execution_data.pricing)
     )
     calendar_request = instance.calendar_request()
     calendar_prepared = dataflows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
@@ -252,6 +253,7 @@ def prepare_srt_input_binding(
 
 
 def _validate_execution_binding(flows, execution_data, prepared):
+    from .execution_data import _execution_frames
     if not execution_data.requests or not execution_data.input_identities:
         raise RuntimeContractError("execution data has no authenticated input list")
     asset = execution_data.asset_type
@@ -292,19 +294,12 @@ def _validate_execution_binding(flows, execution_data, prepared):
         "evaluation_start": sessions[0].date().isoformat(),
         "evaluation_end": sessions[-1].date().isoformat(),
         "inputs": {name: result.identity.content_sha256 for name, result in results.items()},
+        "pricing": execution_data.pricing.to_dict(),
     })
     if execution_data.fingerprint != fingerprint:
         raise RuntimeContractError("execution data fingerprint differs from bound inputs")
-    adjusted = _prices(pd.DataFrame(results["adjusted_daily"].dataframe, copy=False))
-    adjusted.insert(1, "symbol", execution_data.symbol)
-    daily = _prices(pd.DataFrame(results["execution_daily"].dataframe, copy=False))
-    frames = {
-        "adjusted_daily": adjusted,
-        "execution_daily": daily,
-        "execution_intraday": _prices(pd.DataFrame(results["execution_30m"].dataframe, copy=False)) if "execution_30m" in results else _empty_prices(),
-    }
-    if "execution_5m" in results:
-        frames["execution_five_minute"] = _prices(pd.DataFrame(results["execution_5m"].dataframe, copy=False))
+    frames = _execution_frames(results, execution_data.pricing)
+    frames["adjusted_daily"].insert(1, "symbol", execution_data.symbol)
     for name, frame in frames.items():
         actual = getattr(execution_data, name)
         if not isinstance(actual, pd.DataFrame) or canonical_frame_sha256(actual) != canonical_frame_sha256(frame):
@@ -357,6 +352,7 @@ def build_srt_signal_replay(
             source,
             TradableWindow(evaluation[0].date(), evaluation[-1].date()),
             data_dir,
+            pricing=execution_data.pricing,
             symbol=(
                 execution_data.symbol
                 if snapshot.identity.kind == "REGISTERED"
@@ -501,6 +497,7 @@ def replay_srt_account(
                 else None
             ),
             execution_policy=effective_policy,
+            pricing=execution_data.pricing,
         )
     )
     strategy.prepare_data(binding=input_binding)
@@ -516,6 +513,7 @@ def replay_srt_account(
         execution_policy=effective_policy,
         order_types=definition.capabilities.order_types,
         checkpoints=definition.capabilities.checkpoints,
+        pricing=execution_data.pricing,
     )
     from .observation import ObservationExecutor
     observed = ObservationExecutor(strategy.definition, channel)

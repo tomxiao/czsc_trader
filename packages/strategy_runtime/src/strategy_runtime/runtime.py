@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from dataflows import Dataflows
 
@@ -12,6 +12,7 @@ from .loader import StrategyLoader
 from .models import ExecutionPolicy, RuntimeDefinition, StrategyCandidate, StrategyRelease
 from .identity import CandidateContentIdentity, ImplementationDependency, content_identity
 from .strategy import StrategyInstance
+from .pricing import ExecutionPricing
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,8 +24,11 @@ class StrategyInit:
     execution_policy: ExecutionPolicy | None = None
     source_root: Path | None = None
     runtime_binding: RuntimeBinding | None = None
+    pricing: ExecutionPricing = field(default_factory=ExecutionPricing)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.pricing, ExecutionPricing):
+            raise TypeError("pricing requires ExecutionPricing")
         if self.runtime_binding is not None and not isinstance(self.runtime_binding, RuntimeBinding):
             raise TypeError("runtime_binding requires RuntimeBinding")
         object.__setattr__(self, "data_dir", Path(self.data_dir).resolve())
@@ -138,4 +142,5 @@ class StrategyRuntime:
             data_dir=request.data_dir,
             execution_policy=request.execution_policy or definition.execution,
             dataflows=self._dataflows,
+            pricing=request.pricing,
         )

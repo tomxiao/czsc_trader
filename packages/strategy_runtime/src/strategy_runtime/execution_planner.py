@@ -17,6 +17,8 @@ def build_execution_plan(
     policy: ExecutionPolicy,
     signal_reference_price: float,
     execution_reference_price: float,
+    price_scale: float = 1.0,
+    unadjusted_reference_price: float | None = None,
 ) -> Mapping[str, Any]:
     """Build the concrete order plan carried by an SRT execution instruction."""
 
@@ -30,5 +32,7 @@ def build_execution_plan(
             target_position=target_position,
             signal_reference_price=signal_reference_price,
             execution_reference_price=execution_reference_price,
+            price_scale=price_scale,
+            unadjusted_reference_price=unadjusted_reference_price,
         )
     )

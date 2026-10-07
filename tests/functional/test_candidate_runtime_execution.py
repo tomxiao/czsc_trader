@@ -19,7 +19,7 @@ from strategy_runtime import (
 from trading_execution_engine import HistoricalExecutor
 
 
-def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None):
+def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None):
     from dataflows.ohlcv_quality import (
         bind_quality_frame, build_quality_evidence, verify_daily_sessions,
     )
@@ -71,6 +71,10 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             frame = pd.DataFrame({"Date": market["Date"], "TotalShare": range(1, len(market) + 1)})
         else:
             frame = market.copy()
+            if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+                for column in ("Open", "High", "Low", "Close"):
+                    frame[column] = frame[column] * hfq_factors
+                frame["Volume"] = frame["Volume"] / hfq_factors
             if request.frequency == "30m":
                 pieces = []
                 for hour, minute in ((10, 0), (10, 30), (11, 0), (11, 30),
@@ -89,6 +93,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             values.between(pd.Timestamp(request.start), end)
         ].reset_index(drop=True)
         metadata = {"vendor": "test"}
+        if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+            metadata["adjustment"] = "hfq"
         if dataset == Dataset.ETF_SHARE_SIZE.value:
             metadata["vendor_symbol"] = request.symbol
         if dataset in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.ETF_UNADJUSTED_INTRADAY.value}:
@@ -109,6 +115,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             end_day = pd.Timestamp(request.end).normalize()
             anchor_dates = pd.to_datetime(market["Date"]).dt.normalize()
             anchor = market.loc[anchor_dates.between(start_day, end_day)].reset_index(drop=True)
+            if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+                anchor = frame.copy()
             calendar = verify_daily_sessions(
                 SyntheticCalendar(), request.symbol, anchor,
                 start=start_day.date().isoformat(), end=end_day.date().isoformat(),
@@ -119,7 +127,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             )
             metadata.update(
                 daily_session_coverage=calendar,
-                ohlcv_quality_evidence=bind_quality_frame(evidence, frame),
+                ohlcv_quality_evidence=bind_quality_frame(evidence, frame,
+                    adjustment=metadata.get("adjustment", "none")),
             )
             frame.attrs.update({key: deepcopy(metadata[key]) for key in (
                 "daily_session_coverage", "ohlcv_quality_evidence",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from dataclasses import replace
 from threading import Event
 from types import SimpleNamespace
 import json
@@ -22,7 +23,7 @@ from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
 
-def _flows(tmp_path, *, publication=None) -> Dataflows:
+def _flows(tmp_path, *, publication=None, adjustment_factor=1.) -> Dataflows:
     # Aug 31 / Sep 1 / Sep 2 satisfy the real depth-three input; the remaining
     # sessions cover cross-date preparation. Listing predates the source window
     # so a missing history session cannot be excused by an IPO boundary.
@@ -43,6 +44,10 @@ def _flows(tmp_path, *, publication=None) -> Dataflows:
         frame = bars.loc[
             pd.to_datetime(bars["Date"]).between(request.start, request.end)
         ].copy()
+        if request.dataset is Dataset.ETF_OHLCV:
+            for field in ("Open", "High", "Low", "Close"):
+                frame[field] *= adjustment_factor
+            frame["Volume"] /= adjustment_factor
         if publication is not None and request.dataset is Dataset.ETF_UNADJUSTED_DAILY:
             publication["calls"] += 1
             if not publication["complete"]:
@@ -95,11 +100,11 @@ def _flows(tmp_path, *, publication=None) -> Dataflows:
     )
 
 
-def _client(repo_root, tmp_path, account_sessions):
+def _client(repo_root, tmp_path, account_sessions, *, adjustment_factor=1.):
     return SrtAdviceClient(
         repo_root=repo_root,
         data_dir=tmp_path,
-        dataflows=_flows(tmp_path),
+        dataflows=_flows(tmp_path, adjustment_factor=adjustment_factor),
         now=lambda: datetime(2026, 9, 2, 22, 0, tzinfo=ZoneInfo("Asia/Shanghai")),
         session_resolver=lambda signal_date: account_sessions.get(signal_date),
     )
@@ -132,7 +137,7 @@ def _decision(client, prepared):
 
 
 def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_path, monkeypatch):
-    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)})
+    client = _client(pte_frozen[0].root, tmp_path, {date(2026, 9, 2): date(2026, 9, 3)}, adjustment_factor=.3)
     prepared = client.prepare_account_data(
         account_id="s900-v1",
         strategy_id="S900",
@@ -166,12 +171,15 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     assert decision.valid_session == date(2026, 9, 3)
     assert decision.runtime_sha256 == prepared.strategy.runtime_sha256
     assert decision.strategy_output is not None
+    assert decision.signal_reference_price == pytest.approx(1.8)
+    assert decision.execution_reference_price == 6.
+    assert decision.orders and all(order.limit_price >= 6. for order in decision.orders)
     assert decision.observation is not None
     assert decision.observation["status"] == "READY"
     assert decision.observation["series"][0]["key"] == "fixture"
 
     # Restart consumes exactly the same authenticated input binding offline.
-    flows = _flows(tmp_path)
+    flows = _flows(tmp_path, adjustment_factor=.3)
     monkeypatch.setattr(flows, "prepare", lambda *_a, **_k: pytest.fail(
         "restart must read pinned data"))
     reopened = SrtAdviceClient(repo_root=pte_frozen[0].root, data_dir=tmp_path, dataflows=flows)
@@ -180,6 +188,19 @@ def test_pte_prepares_then_uses_one_account_strategy_instance(pte_frozen, tmp_pa
     assert restored.data_reference == prepared.data_reference
     assert restored.input_binding == prepared.input_binding
     assert _verify(reopened, "s900-v1") == prepared.result
+
+    # Inject a unit-contract fault at the genuine SRT output boundary.
+    from strategy_runtime import ExecutionPriceBasis, ExecutionPricing
+    from paper_trading_engine.srt_advice_client import AdviceClientError
+    original_plan = prepared.instance.plan_at
+    def wrong_units(**kwargs):
+        plan = original_plan(**kwargs)
+        return replace(plan, references=replace(plan.references,
+            pricing=ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2026, 9, 1), .3),
+            execution_basis="NORMALIZED_HFQ_CLOSE"))
+    monkeypatch.setattr(prepared.instance, "plan_at", wrong_units)
+    with pytest.raises(AdviceClientError, match="unadjusted prices and real shares"):
+        _decision(client, prepared)
 
 
 def test_prepared_data_is_isolated_by_account(pte_frozen, tmp_path):

@@ -10,7 +10,8 @@ from pathlib import Path
 import pandas as pd
 from dataflows import (DataRequest, DataStatus, Dataflows, Dataset,
                        PreparePolicy, PreparedDataRef, DataResult)
-from strategy_runtime import canonical_sha256, StrategyInputBinding
+from strategy_runtime import (canonical_sha256, StrategyInputBinding,
+                              ExecutionPriceBasis, ExecutionPricing)
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,12 @@ class BacktestExecutionData:
     prepared: PreparedDataRef | None = None
     input_identities: dict[str, str] = field(default_factory=dict)
     strategy_bindings: dict[str, StrategyInputBinding] = field(default_factory=dict)
+    pricing: ExecutionPricing = field(default_factory=ExecutionPricing)
+    raw_execution_daily: pd.DataFrame | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.pricing, ExecutionPricing):
+            raise TypeError("execution data pricing requires ExecutionPricing")
 
     @property
     def evaluation_start(self) -> pd.Timestamp:
@@ -119,6 +126,20 @@ def _empty_prices() -> pd.DataFrame:
     })
 
 
+def _execution_frames(results, pricing: ExecutionPricing) -> dict[str, pd.DataFrame]:
+    adjusted = _prices(results["adjusted_daily"].dataframe)
+    raw = _prices(results["execution_daily"].dataframe)
+    frames = {"adjusted_daily": adjusted, "raw_execution_daily": raw,
+              "execution_daily": pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted),
+              "execution_intraday": _empty_prices()}
+    for key, field_name in (("execution_30m", "execution_intraday"),
+                            ("execution_5m", "execution_five_minute")):
+        if key in results:
+            frames[field_name] = pricing.apply(_prices(results[key].dataframe),
+                                              raw_daily=raw, adjusted_daily=adjusted)
+    return frames
+
+
 def _require_execution_frequencies(
     data: BacktestExecutionData, frequencies: tuple[str, ...],
 ) -> None:
@@ -141,6 +162,7 @@ def _prepare_backtest_execution_data(
     intraday_frequencies: tuple[str, ...] = (),
     prior_sessions: int = 1,
     dataflows: Dataflows,
+    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.UNADJUSTED,
 ) -> BacktestExecutionData:
     """Bind execution prices for declared frequencies and daily benchmark history.
 
@@ -149,6 +171,8 @@ def _prepare_backtest_execution_data(
     """
     if type(prior_sessions) is not int or prior_sessions < 1:
         raise ValueError("prior_sessions must be a positive integer")
+    if not isinstance(price_basis, ExecutionPriceBasis):
+        raise TypeError("price_basis requires ExecutionPriceBasis")
     if (not isinstance(intraday_frequencies, tuple)
             or len(set(intraday_frequencies)) != len(intraday_frequencies)
             or any(value not in {"30m", "5m"} for value in intraday_frequencies)):
@@ -245,15 +269,16 @@ def _prepare_backtest_execution_data(
     }
     if results["trading_calendar"].identity.content_sha256 != calendar.identity.content_sha256:
         raise ValueError("calendar changed while preparing execution inputs")
-    adjusted_daily = _prices(results["adjusted_daily"].dataframe)
+    pricing = ExecutionPricing.from_daily(
+        price_basis, _prices(results["execution_daily"].dataframe),
+        _prices(results["adjusted_daily"].dataframe), signal_start,
+    )
+    frames = _execution_frames(results, pricing)
+    adjusted_daily = frames["adjusted_daily"]
     adjusted_daily.insert(1, "symbol", normalized_symbol)
-    execution_daily = _prices(results["execution_daily"].dataframe)
-    execution_intraday = (
-        _prices(results["execution_30m"].dataframe) if "execution_30m" in results else _empty_prices()
-    )
-    execution_five_minute = (
-        _prices(results["execution_5m"].dataframe) if "execution_5m" in results else None
-    )
+    execution_daily = frames["execution_daily"]
+    execution_intraday = frames["execution_intraday"]
+    execution_five_minute = frames.get("execution_five_minute")
     adjusted_sessions = pd.DatetimeIndex(adjusted_daily["dt"].dt.normalize())
     if not prior[-prior_sessions:].isin(adjusted_sessions).all():
         raise ValueError("adjusted daily prices do not cover declared prior sessions")
@@ -279,6 +304,7 @@ def _prepare_backtest_execution_data(
             "evaluation_start": actual_start.isoformat(),
             "evaluation_end": actual_end.isoformat(),
             "inputs": identities,
+            "pricing": pricing.to_dict(),
         }
     )
     return BacktestExecutionData(
@@ -295,4 +321,6 @@ def _prepare_backtest_execution_data(
         requests=requests,
         prepared=prepared.reference,
         input_identities=identities,
+        pricing=pricing,
+        raw_execution_daily=frames["raw_execution_daily"],
     )

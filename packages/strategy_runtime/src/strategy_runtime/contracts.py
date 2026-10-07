@@ -13,6 +13,7 @@ from typing import Mapping, Protocol, TypeAlias, runtime_checkable
 
 from .errors import RuntimeContractError
 from .models import canonical_sha256
+from .pricing import ExecutionPriceBasis, ExecutionPricing
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
@@ -150,8 +151,11 @@ class PortfolioSnapshot:
     position_quantity: int
     revision: int
     as_of: datetime
+    pricing: ExecutionPricing = field(default_factory=ExecutionPricing, kw_only=True)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.pricing, ExecutionPricing):
+            raise RuntimeContractError("portfolio pricing requires ExecutionPricing")
         object.__setattr__(self, "account_id", _text(self.account_id, "account_id"))
         object.__setattr__(self, "symbol", _text(self.symbol, "symbol").upper())
         object.__setattr__(
@@ -160,7 +164,7 @@ class PortfolioSnapshot:
         object.__setattr__(self, "total_assets", _money(self.total_assets, "total_assets"))
         if self.position_quantity < 0 or self.position_quantity % 100:
             raise RuntimeContractError(
-                "position quantity must use non-negative 100-share lots"
+                "position quantity must use non-negative 100-unit lots"
             )
         if self.revision < 0:
             raise RuntimeContractError("portfolio revision must be non-negative")
@@ -254,8 +258,17 @@ class PriceReference:
     execution_price: Decimal
     signal_basis: str
     execution_basis: str
+    pricing: ExecutionPricing = field(default_factory=ExecutionPricing, kw_only=True)
+    price_scale: Decimal = field(default=Decimal("1"), kw_only=True)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.pricing, ExecutionPricing):
+            raise RuntimeContractError("price reference requires ExecutionPricing")
+        object.__setattr__(self, "price_scale", _money(self.price_scale, "price_scale"))
+        if not self.price_scale.is_finite() or self.price_scale <= 0:
+            raise RuntimeContractError("price scale must be positive and finite")
+        if self.pricing.basis is ExecutionPriceBasis.UNADJUSTED and self.price_scale != 1:
+            raise RuntimeContractError("unadjusted price references require unit scale")
         object.__setattr__(self, "signal_price", _money(self.signal_price, "signal_price"))
         object.__setattr__(
             self, "execution_price", _money(self.execution_price, "execution_price")
@@ -398,7 +411,7 @@ class ExecutionPlan:
             self.cycle_target_quantity,
         )
         if any(value < 0 or value % 100 for value in quantities):
-            raise RuntimeContractError("plan quantities must use non-negative 100-share lots")
+            raise RuntimeContractError("plan quantities must use non-negative 100-unit lots")
         if not math.isfinite(self.target_position):
             raise RuntimeContractError("plan target_position must be finite")
         object.__setattr__(self, "action", _text(self.action, "plan action"))

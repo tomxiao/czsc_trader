@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
+from math import isfinite
 from typing import Any, Mapping
 
 from .errors import RuntimeContractError
@@ -23,6 +24,18 @@ class ExecutionRuleInput:
     target_position: float
     signal_reference_price: float
     execution_reference_price: float
+    price_scale: float = 1.0
+    unadjusted_reference_price: float | None = None
+
+    def __post_init__(self) -> None:
+        if not isfinite(self.price_scale) or self.price_scale <= 0:
+            raise RuntimeContractError("execution price scale must be positive and finite")
+        if self.price_scale != 1 and self.unadjusted_reference_price is None:
+            raise RuntimeContractError("scaled pricing requires its unadjusted reference")
+
+    @property
+    def quote_reference(self) -> float:
+        return self.execution_reference_price if self.unadjusted_reference_price is None else self.unadjusted_reference_price
 
 
 def _round_tick(value: float, tick: float, rounding: str) -> float:
@@ -70,7 +83,7 @@ def _target_plan(
             "FROZEN_RULE requires a binary target position"
         )
     target_position = int(request.target_position)
-    execution_reference_price = request.execution_reference_price
+    execution_reference_price = request.quote_reference
     orders: list[dict[str, object]] = []
     if target_position:
         requested = _round_tick(
@@ -88,7 +101,7 @@ def _target_plan(
             tick,
             "half_up",
         )
-        price = min(requested, upper_guard)
+        price = min(requested, upper_guard) * request.price_scale
         allocation = Decimal(str(capital.get("allocation_fraction", 1.0)))
         unit_cost = Decimal(str(price)) * (1 + Decimal(str(capital["fee_rate"])))
         affordable = actual + int(
@@ -113,7 +126,7 @@ def _target_plan(
             _round_tick(execution_reference_price, tick, "half_up")
             if order_type == "MARKET"
             else lower_guard
-        )
+        ) * request.price_scale
         target = 0
         delta = -actual
         action = "SELL" if actual else "WAIT"
@@ -176,7 +189,7 @@ def _intraday_overlay_plan(
     lot = int(settings["lot_size"])
     fee = Decimal(str(settings["one_way_cost"]))
     buy_limit = Decimal(
-        str(_round_tick(request.execution_reference_price * 1.10, 0.001, "floor"))
+        str(_round_tick(request.quote_reference * 1.10, 0.001, "floor") * request.price_scale)
     )
 
     def affordable(budget: Decimal) -> int:
@@ -239,7 +252,7 @@ def _intraday_overlay_plan(
                     "submit_before": "11:30:00",
                     "dependency_sequence": 0,
                     "dependency_required_status": "FILLED_ALL",
-                    "order": {"side": "SELL", "quantity": event_quantity, "order_type": "MARKET", "limit_price": request.signal_reference_price, "time_in_force": "DAY"},
+                    "order": {"side": "SELL", "quantity": event_quantity, "order_type": "MARKET", "limit_price": request.execution_reference_price, "time_in_force": "DAY"},
                 },
             ]
     return {

@@ -18,6 +18,7 @@ import pandas as pd
 from .errors import RuntimeContractError
 from .alignment import InputAlignment
 from .observation import ObservationDefinition
+from .pricing import ExecutionPricing
 
 
 _FAMILY_ID = re.compile(r"S[0-9]{3}")
@@ -623,8 +624,12 @@ class ExecutionPricingData:
     symbol: str
     adjusted_daily: pd.DataFrame
     execution_daily: pd.DataFrame
+    pricing: ExecutionPricing = field(default_factory=ExecutionPricing)
+    raw_daily: pd.DataFrame = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
+        if not isinstance(self.pricing, ExecutionPricing):
+            raise RuntimeContractError("execution pricing requires ExecutionPricing")
         object.__setattr__(self, "symbol", _text(self.symbol, "pricing symbol").upper())
         adjusted = _daily_prices(self.adjusted_daily, "adjusted daily prices")
         execution = _daily_prices(self.execution_daily, "execution daily prices")
@@ -633,7 +638,10 @@ class ExecutionPricingData:
         if adjusted_cutoff != execution_cutoff:
             raise RuntimeContractError("adjusted and execution pricing cutoffs differ")
         object.__setattr__(self, "adjusted_daily", adjusted)
-        object.__setattr__(self, "execution_daily", execution)
+        object.__setattr__(self, "raw_daily", execution)
+        object.__setattr__(self, "execution_daily", self.pricing.apply(
+            execution, raw_daily=execution, adjusted_daily=adjusted,
+        ))
 
     @property
     def identity_hashes(self) -> Mapping[str, str]:
@@ -643,5 +651,6 @@ class ExecutionPricingData:
             {
                 "adjusted_daily": canonical_frame_sha256(self.adjusted_daily),
                 "execution_daily": canonical_frame_sha256(self.execution_daily),
+                "pricing": self.pricing.fingerprint,
             }
         )

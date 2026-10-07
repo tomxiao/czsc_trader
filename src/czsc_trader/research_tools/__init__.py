@@ -1,4 +1,5 @@
 """Public result and evidence contracts for independently organized research."""
+from strategy_runtime import ExecutionPriceBasis
 
 from ..backtesting.benchmark_contracts import LimitBuyHold, NextOpenBuyHold
 from ..backtesting.service import BacktestEvaluation
@@ -84,6 +85,7 @@ from .evaluation_access import (
 from .assessment import build_assessment_evidence
 
 __all__ = [
+    "ExecutionPriceBasis",
     "BacktestEvaluation",
     'DeliveryStage',
     'DeliveryStatus',

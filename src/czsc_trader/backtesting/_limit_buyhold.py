@@ -9,6 +9,7 @@ from strategy_runtime import (
     ExecutionCapabilities,
     ExecutionPlan,
     ExecutionPolicy,
+    ExecutionPriceBasis,
     OrderSide,
     OrderType,
     PlannedOrder,
@@ -54,6 +55,7 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
         initial_cash=initial_cash,
         execution_policy=policy,
         order_types=("LIMIT",),
+        pricing=data.pricing,
     )
     adjusted = pd.DataFrame(data.adjusted_daily, copy=False)
     adjusted = adjusted.set_index(pd.to_datetime(adjusted["dt"]).dt.normalize())
@@ -67,6 +69,11 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
     ]
     adjusted_close = dict(zip(adjusted.index, adjusted["close"].to_numpy(), strict=True))
     execution_close = dict(zip(prices.index, prices["close"].to_numpy(), strict=True))
+    if data.pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH:
+        raw_prices = data.raw_execution_daily.set_index("dt")
+        scales = (prices["close"] / raw_prices["close"]).to_dict()
+    else:
+        scales = dict.fromkeys(prices.index, 1.0)
     trading_locations = sessions.get_indexer(trading)
     identities = {"execution_data": data.fingerprint}
     for day, location in zip(trading, trading_locations, strict=True):
@@ -82,7 +89,9 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             Decimal(str(adjusted_close[signal_day])),
             Decimal(str(execution_close[signal_day])),
             "ADJUSTED_CLOSE",
-            "UNADJUSTED_CLOSE",
+            "UNADJUSTED_CLOSE" if data.pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
+            pricing=data.pricing,
+            price_scale=Decimal(str(scales[signal_day])),
         )
         raw = build_execution_plan(
             deployment_settings={"cycle_target_quantity": state.cycle_target_quantity},
@@ -92,6 +101,8 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             policy=policy,
             signal_reference_price=float(references.signal_price),
             execution_reference_price=float(references.execution_price),
+            price_scale=float(references.price_scale),
+            unadjusted_reference_price=float(references.execution_price / references.price_scale),
         )
         orders = tuple(
             PlannedOrder(

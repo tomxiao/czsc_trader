@@ -17,6 +17,8 @@ from uuid import uuid4
 from strategy_runtime import (
     DataPreparationResult,
     ExecutionPlan,
+    ExecutionPriceBasis,
+    ExecutionPricing,
     ExecutionState,
     PortfolioSnapshot,
     StrategyInit,
@@ -124,6 +126,9 @@ def _decision_from_plan(
     identity: dict[str, str],
     definition: RuntimeDefinition,
 ) -> AdviceDecision:
+    if (plan.references.pricing.basis is not ExecutionPriceBasis.UNADJUSTED
+            or plan.references.execution_basis != "UNADJUSTED_CLOSE"):
+        raise AdviceClientError("PTE requires unadjusted prices and real shares")
     orders = [_order_payload(order) for order in plan.orders]
     legs = [
         {
@@ -348,6 +353,7 @@ class SrtAdviceClient:
                 TradableWindow(trading_date, trading_date),
                 directory,
                 symbol=str(entry["symbol"]).upper(),
+                pricing=ExecutionPricing(),
             )
         )
         binding = StrategyInputBinding.from_mapping(entry["input_binding"])
@@ -530,6 +536,7 @@ class SrtAdviceClient:
                 TradableWindow(trading_date, trading_date),
                 directory,
                 symbol=symbol.upper(),
+                pricing=ExecutionPricing(),
             )
         )
         prepared = self._prepare_strategy(strategy)

@@ -524,11 +524,26 @@ def _confirmed_target_plan():
     ("portfolio_revision", "historical plan portfolio revision is stale"),
     ("cash", "historical plan cash differs from ledger"),
     ("quantity", "historical plan position differs from ledger"),
-], ids=["strategy", "instrument", "state-revision", "portfolio-revision", "cash", "quantity"])
+    ("pricing", "price and quantity units differ"),
+], ids=["strategy", "instrument", "state-revision", "portfolio-revision", "cash", "quantity", "pricing"])
 def test_historical_execute_rejects_plan_facts_that_differ_from_confirmed_ledger(fact, expected_error):
     channel, plan, point = _confirmed_target_plan()
     before = channel.snapshot(point)
-    if fact in {"strategy", "symbol"}:
+    if fact == "pricing":
+        from strategy_runtime import ExecutionPriceBasis, ExecutionPricing
+        pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH,
+                                  plan.signal_date.replace(year=2025, month=12, day=31), 1.)
+        identities = {**plan.price_identities, "pricing": pricing.fingerprint}
+        signal = signal_identity_for(strategy=plan.strategy, signal_date=plan.signal_date,
+            target_position=plan.target_position, input_identities=plan.input_identities,
+            price_identities=identities)
+        identity = plan_identity_for(signal_identity=signal, actual_quantity=plan.actual_quantity,
+            target_quantity=plan.target_quantity, cycle_target_quantity=plan.cycle_target_quantity,
+            plan_mode=plan.plan_mode, capital_mode=plan.capital_mode,
+            allocation_fraction=plan.allocation_fraction, orders=plan.orders, legs=plan.legs)
+        forged = replace(plan, references=replace(plan.references, pricing=pricing),
+                         signal_identity=signal, plan_identity=identity, price_identities=identities)
+    elif fact in {"strategy", "symbol"}:
         strategy = replace(plan.strategy, **(
             {"reference_id": "S999-v2"} if fact == "strategy" else {"symbol": "510500.SH"}
         ))

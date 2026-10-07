@@ -35,6 +35,7 @@ from .data import PreparedStrategyData
 from .errors import RuntimeCompatibilityError, RuntimeContractError, RuntimeExecutionError
 from .execution_planner import build_execution_plan
 from .models import ExecutionPolicy, ExecutionPricingData
+from .pricing import ExecutionPricing
 from .preparation import PreparedInputs, prepare_inputs, acquire_binding, calendar_request, plan_inputs
 from .input_binding import StrategyInputPlan, StrategyInputBinding
 from .prepared_store import save_prepared_inputs
@@ -99,6 +100,7 @@ class StrategyInstance:
         data_dir: Path,
         execution_policy,
         dataflows: Dataflows | None = None,
+        pricing: ExecutionPricing = ExecutionPricing(),
     ) -> None:
         self._algorithm = algorithm
         self._identity = identity
@@ -106,6 +108,9 @@ class StrategyInstance:
         self._data_dir = Path(data_dir).resolve()
         self._execution_policy = execution_policy
         self._dataflows = dataflows
+        self._pricing_contract = pricing
+        if pricing.anchor_date is not None and pricing.anchor_date >= tradable_window.start:
+            raise RuntimeContractError("HFQ anchor must precede the tradable window")
         self._prepared_data: PreparedStrategyData | None = None
         self._input_binding: StrategyInputBinding | None = None
         self._history_cache: dict[
@@ -151,6 +156,7 @@ class StrategyInstance:
             self._identity.symbol,
             adjusted[0],
             execution[0],
+            self._pricing_contract,
         )
 
     def _summary(self, data: PreparedStrategyData) -> DataPreparationResult:
@@ -371,6 +377,8 @@ class StrategyInstance:
             raise RuntimeContractError("trading point is outside the strategy window")
         if portfolio.symbol != self._identity.symbol:
             raise RuntimeContractError("portfolio symbol differs from strategy")
+        if portfolio.pricing != self._pricing_contract:
+            raise RuntimeContractError("portfolio price and quantity units differ from strategy")
         if portfolio.as_of > point.calculation_time or state.as_of > point.calculation_time:
             raise RuntimeContractError("planning state is newer than calculation time")
 
@@ -395,6 +403,8 @@ class StrategyInstance:
                 policy=self._execution_policy,
                 signal_reference_price=float(references.signal_price),
                 execution_reference_price=float(references.execution_price),
+                price_scale=float(references.price_scale),
+                unadjusted_reference_price=float(references.execution_price / references.price_scale),
             )
         )
         orders = tuple(_planned_order(value) for value in raw.get("orders", ()))

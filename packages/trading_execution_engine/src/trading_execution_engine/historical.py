@@ -15,6 +15,7 @@ from strategy_runtime import (
     ExecutionPlan,
     ExecutionState,
     ExecutionPolicy,
+    ExecutionPricing,
     OrderType,
     PortfolioSnapshot,
     RuntimeContractError,
@@ -95,9 +96,13 @@ class HistoricalExecutor:
         checkpoints: tuple[str, ...] = (),
         account_id: str = "backtest-account",
         execution_five_minute: pd.DataFrame | None = None,
+        pricing: ExecutionPricing = ExecutionPricing(),
     ) -> None:
         if not account_id.strip():
             raise RuntimeContractError("backtest account_id must be non-empty")
+        if not isinstance(pricing, ExecutionPricing):
+            raise RuntimeContractError("historical pricing requires ExecutionPricing")
+        self._pricing = pricing
         if not isfinite(initial_cash) or initial_cash <= 0:
             raise RuntimeContractError("backtest initial_cash must be positive and finite")
         if execution_policy.policy_type not in {"FROZEN_RULE", "INTRADAY_OVERLAY"}:
@@ -190,6 +195,7 @@ class HistoricalExecutor:
             self._quantity,
             self._revision,
             as_of,
+            pricing=self._pricing,
         ), ExecutionState(self._revision, as_of, self._cycle_target)
 
     def execute(self, plan: ExecutionPlan) -> ExecutionOutcome:
@@ -344,6 +350,8 @@ class HistoricalExecutor:
         return "DEC-" + plan.plan_identity[:20].upper()
 
     def _validate_plan(self, plan: ExecutionPlan) -> None:
+        if plan.references.pricing != self._pricing:
+            raise RuntimeContractError("historical plan price and quantity units differ from account")
         if plan.fee_rate != self._configured_fee_rate:
             raise RuntimeContractError(
                 "historical plan fee rate differs from execution policy"

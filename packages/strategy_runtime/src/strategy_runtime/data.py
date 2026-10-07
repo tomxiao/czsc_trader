@@ -13,6 +13,7 @@ import pandas as pd
 from .contracts import PriceReference, StrategyIdentity, TradableWindow
 from .errors import RuntimeContractError
 from .models import ExecutionPricingData, canonical_sha256
+from .pricing import ExecutionPriceBasis
 from .preparation import PreparedInputs
 
 
@@ -33,6 +34,7 @@ class PreparedStrategyData:
     _pricing: ExecutionPricingData
     _adjusted_closes: Mapping[pd.Timestamp, Decimal] = field(init=False, repr=False, compare=False)
     _execution_closes: Mapping[pd.Timestamp, Decimal] = field(init=False, repr=False, compare=False)
+    _raw_closes: Mapping[pd.Timestamp, Decimal] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if self.strategy != self._inputs.strategy:
@@ -84,7 +86,8 @@ class PreparedStrategyData:
         if self.dataset_identity != expected:
             raise RuntimeContractError("prepared dataset identity differs from admitted data")
         for name, frame in (("_adjusted_closes", self._pricing.adjusted_daily),
-                            ("_execution_closes", self._pricing.execution_daily)):
+                            ("_execution_closes", self._pricing.execution_daily),
+                            ("_raw_closes", self._pricing.raw_daily)):
             object.__setattr__(self, name, MappingProxyType({
                 session: Decimal(str(close))
                 for session, close in zip(frame["dt"], frame["close"])
@@ -186,5 +189,7 @@ class PreparedStrategyData:
             adjusted,
             execution,
             "ADJUSTED_CLOSE",
-            "UNADJUSTED_CLOSE",
+            "UNADJUSTED_CLOSE" if self._pricing.pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
+            pricing=self._pricing.pricing,
+            price_scale=execution / self._raw_closes[signal],
         )
