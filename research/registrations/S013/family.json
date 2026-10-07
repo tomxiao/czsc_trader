@@ -9,6 +9,88 @@
       "source": "当前用户明确指令",
       "user_instruction": "s012 因无达标候选，请予以暂停。新开研究分支，注册 s013，标的为 510500，开发池窗口 2020-1-1 至 2026-9-30。"
     },
+    "confirmed_drawdown_policy": {
+      "aggregation": "ALL_COVERED_CALENDAR_YEARS",
+      "annual_anchor": "2020年初始资金；其余年上一年末净值",
+      "confirmation_status": "CONFIRMED",
+      "full_pool_drawdown_use": "按既有政策排序与诊断，经济回撤门槛由逐年矩阵核验",
+      "matrix_columns": [
+        "year",
+        "start",
+        "end",
+        "strategy_drawdown",
+        "buyhold_drawdown",
+        "status",
+        "source_account_reference"
+      ],
+      "missing_year_policy": "明确报告缺失或不可比，年度门槛无法宣称全部通过",
+      "source": "同一条全池连续账户账本；现金和持仓跨年延续",
+      "target": {
+        "lower": null,
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "target_id": "yearly_drawdown_magnitude",
+        "type": "ResearchTarget",
+        "upper": {
+          "inclusive": false,
+          "multiplier": 1.0,
+          "type": "BenchmarkBound"
+        },
+        "when": null
+      },
+      "windows": [
+        {
+          "end": "2020-12-31",
+          "start": "2020-01-01",
+          "year": 2020
+        },
+        {
+          "end": "2021-12-31",
+          "start": "2021-01-01",
+          "year": 2021
+        },
+        {
+          "end": "2022-12-31",
+          "start": "2022-01-01",
+          "year": 2022
+        },
+        {
+          "end": "2023-12-31",
+          "start": "2023-01-01",
+          "year": 2023
+        },
+        {
+          "end": "2024-12-31",
+          "start": "2024-01-01",
+          "year": 2024
+        },
+        {
+          "end": "2025-12-31",
+          "start": "2025-01-01",
+          "year": 2025
+        },
+        {
+          "end": "2026-09-30",
+          "start": "2026-01-01",
+          "year": 2026
+        }
+      ]
+    },
+    "confirmed_execution": {
+      "fee_per_side_bps": 10,
+      "frequency": "60*CLOSED/N",
+      "initial_cash": 1000000.0,
+      "lot_size": 100
+    },
+    "delivery_reference": {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e4f720570b8d5ab215273e458aad9cbb50bc777a5c8171199a15f528fbb32330",
+      "revision": 1,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
     "development_pool": {
       "end": "2026-09-30",
       "inclusive": true,
@@ -24,16 +106,16 @@
       "long_only": true,
       "sell_order": "MARKET"
     },
-    "next_action": "完成阶段一研究任务与评价约定，呈现用户审阅",
+    "next_action": "用户确认基准和必要暖机范围后，发布阶段一确认修订；阶段二另行批准",
     "pending": [
-      "阶段一明确研究问题、策略职责及机制探索范围",
-      "明确年化、最大回撤的统计周期与汇总方法及平均交易频率计算方式",
-      "确认buyhold的执行参数、初始资金、既有数据权限及资源范围",
-      "形成阶段一研究约定及交付，取得用户批准后进入阶段二"
+      "确认BuyHold采用NextOpenBuyHold(100)的明确执行政策",
+      "确认按实际最小窗口读取必要的开发池前暖机历史"
     ],
     "performance_targets": {
       "annual_maximum_drawdown": {
-        "requirement": "策略年化最大回撤幅度严格 < 同期buyhold",
+        "aggregation": "ALL_COVERED_CALENDAR_YEARS",
+        "last_year_end": "2026-09-30",
+        "requirement": "每个自然年策略最大回撤幅度均严格小于该年度BuyHold",
         "strict": true
       },
       "annual_return": {
@@ -54,7 +136,7 @@
     },
     "research_branch": "codex/s013-research",
     "stage": "MANDATE",
-    "status": "REGISTERED",
+    "status": "PARTIAL",
     "symbol": "510500.SH"
   },
   "research_state": "RESEARCHING",
@@ -63,5 +145,5 @@
     "510500.SH"
   ],
   "strategy_id": "S013",
-  "updated_at": "2026-10-07T15:55:28+08:00"
+  "updated_at": "2026-10-07T16:14:02+08:00"
 }
