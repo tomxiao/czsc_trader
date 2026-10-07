@@ -1136,6 +1136,12 @@ def validate_evaluation_evidence(value: dict) -> None:
             raise ValueError("evaluation candidate identity differs")
         ledgers = {name: _evidence_frame(table) for name, table in item["ledgers"].items()}
         replay = ReplayEvidence.from_dict(item["replay_evidence"])
+        if replay.execution_spec.get("pricing") != request["pricing"]:
+            raise ValueError("evaluation replay pricing differs from request")
+        if pricing.basis is ExecutionPriceBasis.UNADJUSTED and any(
+            row.get("price_scale") != 1 for row in replay.execution_daily
+        ):
+            raise ValueError("unadjusted replay requires unit price scales")
         if audit_replay(replay).status is not AuditStatus.PASS:
             raise ValueError("evaluation account audit failed")
         for name, columns in date_columns.items():

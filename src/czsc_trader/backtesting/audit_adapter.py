@@ -30,7 +30,13 @@ def build_replay_evidence(
     initial_cash: float,
     metrics: dict[str, object],
 ) -> ReplayEvidence:
-    daily_prices = pd.DataFrame(data.execution_daily, copy=False)
+    daily_prices = pd.DataFrame(data.execution_daily, copy=False).copy()
+    if data.pricing.basis.value == "UNADJUSTED":
+        daily_prices["unadjusted_close"] = daily_prices["close"]
+    else:
+        raw = data.raw_execution_daily.set_index("dt")["close"]
+        daily_prices["unadjusted_close"] = daily_prices["dt"].map(raw)
+    daily_prices["price_scale"] = daily_prices["close"] / daily_prices["unadjusted_close"]
     support = signals.support_data or {}
     evaluation_sessions = tuple(
         pd.to_datetime(
@@ -76,6 +82,7 @@ def build_replay_evidence(
             initial_cash=float(initial_cash),
             evaluation_sessions=evaluation_sessions,
             execution_spec={
+                "pricing": data.pricing.to_dict(),
                 "mode": "CORE_EVENT_INTRADAY_ROTATION",
                 "fee_rate": overlay_settings["one_way_cost"],
                 "lot_size": overlay_settings["lot_size"],
@@ -119,6 +126,7 @@ def build_replay_evidence(
         ):
             raise ValueError("SRT replay has no effective order-type evidence")
         execution_spec = {
+            "pricing": data.pricing.to_dict(),
             "decision_coverage": "COMPLETE",
             "entry_limit_parameter": entry["limit_parameter"],
             "exit_limit_ratio": exit_rule["limit_ratio"],

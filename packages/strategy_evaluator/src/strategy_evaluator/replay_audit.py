@@ -446,6 +446,13 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
     tick = float(instrument["price_tick"])
     price_limit_ratio = float(instrument["price_limit_ratio"])
     daily = {str(row["date"])[:10]: row for row in evidence.execution_daily}
+    for row in daily.values():
+        raw_close, scale = row.get("unadjusted_close"), row.get("price_scale")
+        if (any(isinstance(x, bool) or not isinstance(x, (int, float))
+                or not np.isfinite(x) or x <= 0 for x in (raw_close, scale))
+            or abs(float(row["close"]) - raw_close * scale) > tolerance):
+            return ReplayAuditResult(AuditStatus.FAIL, digest, tuple(checks),
+                                     ("INVALID_EXECUTION_PRICE_SCALE",))
     intraday_by_day: dict[str, list[Mapping[str, Any]]] = {}
     for row in evidence.execution_intraday:
         intraday_by_day.setdefault(str(row["time"])[:10], []).append(row)
@@ -482,14 +489,14 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             continue
         if order["side"] == "BUY":
             expected_order_type = str(spec.get("entry_order_type", "LIMIT"))
-            signal_close = float(signal["close"])
+            signal_close = float(signal["unadjusted_close"])
             expected_limit = min(
                 _floor(signal_close * (1 + float(spec["entry_limit_parameter"])), tick),
                 _floor(signal_close * (1 + price_limit_ratio), tick) - tick,
             )
         else:
             expected_order_type = str(spec.get("exit_order_type", "MARKET"))
-            signal_close = float(signal["close"])
+            signal_close = float(signal["unadjusted_close"])
             if expected_order_type == "MARKET":
                 expected_limit = _nearest(signal_close, tick)
             else:
@@ -500,6 +507,7 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                     + tick,
                     tick,
                 )
+        expected_limit *= float(signal["price_scale"])
         if str(order.get("order_type", "LIMIT")) != expected_order_type:
             reasons.append("ORDER_TYPE_MISMATCH")
         if abs(float(order["limit_price"]) - expected_limit) > tolerance:

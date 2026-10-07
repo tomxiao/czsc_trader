@@ -20,7 +20,8 @@ def _replay():
         (), {"return": 0., "max_drawdown": 0., "calmar": None, "sharpe": None,
              "closed_trades": 0, "win_rate": None, "win_loss_ratio": None,
              "win_loss_ratio_status": "NO_CLOSED_TRADES"},
-        tuple({"date": day, "open": 1., "close": 1.} for day in dates), (),
+        tuple({"date": day, "open": 1., "close": 1., "unadjusted_close": 1., "price_scale": 1.}
+              for day in dates), (),
     )
 
 

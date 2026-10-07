@@ -94,4 +94,5 @@ def _replay():
          'win_loss_ratio': None, 'win_loss_ratio_status': 'NO_WINS',
          'return': -.0019979999999998332, 'sharpe': -4.171330164821948,
          'closed_trades': 1, 'win_rate': 0.},
-        tuple(dict(date=day, open=1., close=1.) for day in ('2026-09-14', *dates)), ())
+        tuple(dict(date=day, open=1., close=1., unadjusted_close=1., price_scale=1.)
+              for day in ('2026-09-14', *dates)), ())

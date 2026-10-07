@@ -13,14 +13,14 @@ def _trade_evidence(gross_returns, fee_rate, expected_win_rate):
     previous = ("2026-01-02", *days[:-1])
     cash, quantity = 10_000., 0
     decisions, orders, fills, account, trades, daily = [], [], [], [], [], []
-    daily.append(dict(date=previous[0], open=10., close=10.))
+    daily.append(dict(date=previous[0], open=10., close=10., unadjusted_close=10., price_scale=1.))
     for index, day in enumerate(days):
         before_cash, before_quantity = cash, quantity
         # Leave an initial HOLD row and a final BUY that never closes.
         side = "HOLD" if index == 0 else "BUY" if index % 2 else "SELL"
         cycle = f"cycle-{(index - 1) // 2}"
         price = 10. if side != "SELL" else 10. * (1. + gross_returns[index // 2 - 1])
-        daily.append(dict(date=day, open=price, close=10.))
+        daily.append(dict(date=day, open=price, close=10., unadjusted_close=10., price_scale=1.))
         decisions.append(dict(decision_id=f"d{index}", signal_date=previous[index],
                               valid_session=day, target_position=0. if side in {"HOLD", "SELL"} else 1.,
                               action=side, plan_mode="NONE"))
