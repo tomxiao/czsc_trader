@@ -1,16 +1,10 @@
-# S013｜阶段一约定提案（2026-10-07）
+# S013｜阶段二已交付（2026-10-07）
 
-当前身份RSCH，分支`codex/s013-research`，研究状态`RESEARCHING`；阶段一交付`PARTIAL`，尚未获准进入阶段二。
+当前身份RSCH，分支`codex/s013-research`，研究状态`RESEARCHING`。阶段一`MANDATE/2 COMPLETE`；获用户批准后完成阶段二`COMPONENTS/1 COMPLETE`。
 
-- 标的`510500.SH`；开发池2020-01-01至2026-09-30。
-- 三项原目标保留；逐自然年回撤严格比较（2026年截至09-30）、资金100万元、100份整手、每侧10bp及`60×总闭合/N`算法、既有数据／工具范围已获用户确认。
-- [研究员报告](deliveries/MANDATE/1/report.md)、[精确交付引用](materials/stage1_mandate_reference_20261007.json)、[哈希及FULL核验](materials/stage1_mandate_validation_20261007.json)。
-- 初始立项交接原文已按原凭据哈希显式发布并纳入本次交付；新状态不覆盖旧证据。
-- 当前只分配阶段一实验`EX001_20261007`并保存约定材料，未准备市场行情、运行策略或登记候选。
-
-## 待确认
-
-- 确认BuyHold采用NextOpenBuyHold(100)的明确执行政策。
-- 确认按实际最小窗口读取必要的开发池前暖机历史。
-
-确认后发布新修订。下一步建议用户批准阶段二，再核验正式数据覆盖并开展量价信息组件研究。
+- [阶段二研究报告](deliveries/COMPONENTS/1/report.md)、[交付引用](materials/stage2_components_reference_20261007.json)、[完整性与数值核验](materials/stage2_components_validation_20261007.json)。
+- [完整阶段一约定](deliveries/MANDATE/2/report.md)、[真实阶段二授权](materials/stage2_authorization_20261007.json)。
+- 29项组件、2条探索性核心线索；预测模型失效、亏损年份及选择复用限制明确保留。经济目标尚无账户检验。
+- 数据1636开发日及60预热日；日线完备/准确均100%，30分钟完备100%、准确99.6944%，9日可信修复、5日残余偏差。
+- 正式数据仅位于本批次`data/`；准备引用、异常字段值、实现、观察及复算材料已显式发布。Git不包含数据资产，恢复研究须同时保留该DFLS空间。
+- 下一步建议用户批准阶段三，再构建完整入场/退出/损失控制并使用Optuna搜索；不默认采用已失效的预测组合。

@@ -9,6 +9,13 @@
       "source": "当前用户明确指令",
       "user_instruction": "s012 因无达标候选，请予以暂停。新开研究分支，注册 s013，标的为 510500，开发池窗口 2020-1-1 至 2026-9-30。"
     },
+    "component_conclusion": "已完成本轮组件研究。建议保留range_position_60和20日收益acf1两条探索性线索；组合与风险模型失败、年度反向、样本选择和分钟数据异常均保留。请用户决定是否进入完整策略构建。",
+    "component_experiment": {
+      "experiment_id": "EX002_20261007",
+      "strategy_id": "S013",
+      "type": "ExperimentRef"
+    },
+    "confirmed_benchmark": "NextOpenBuyHold(lot_size=100)",
     "confirmed_drawdown_policy": {
       "aggregation": "ALL_COVERED_CALENDAR_YEARS",
       "annual_anchor": "2020年初始资金；其余年上一年末净值",
@@ -86,9 +93,9 @@
         "strategy_id": "S013",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "e4f720570b8d5ab215273e458aad9cbb50bc777a5c8171199a15f528fbb32330",
+      "content_sha256": "a5c821246aa4f13b3c3c00f7a0405af83b56d1f07841ad481009287ac9a0032f",
       "revision": 1,
-      "stage": "MANDATE",
+      "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
     "development_pool": {
@@ -106,10 +113,20 @@
       "long_only": true,
       "sell_order": "MARKET"
     },
-    "next_action": "用户确认基准和必要暖机范围后，发布阶段一确认修订；阶段二另行批准",
+    "mandate_reference": {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "6d641b1327debef29af53e403c286a0012ea7ab640a4218bc992757b66f5c08c",
+      "revision": 2,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "necessary_prior_history_permission": "同标的实际最小输入窗口，剔除绩效与验证样本",
+    "next_action": "请用户决定是否进入阶段三完整策略构建；保持原经济目标，未授权则不搜索策略参数",
     "pending": [
-      "确认BuyHold采用NextOpenBuyHold(100)的明确执行政策",
-      "确认按实际最小窗口读取必要的开发池前暖机历史"
+      "阶段三完整策略构建与优化授权"
     ],
     "performance_targets": {
       "annual_maximum_drawdown": {
@@ -134,9 +151,27 @@
       "source": "research/RSCH_AGENT.md",
       "source_commit": "b3a0efd6"
     },
+    "recommended_components": [
+      "range_position_60",
+      "tsfresh20_autocorrelation__lag_1"
+    ],
     "research_branch": "codex/s013-research",
-    "stage": "MANDATE",
-    "status": "PARTIAL",
+    "stage": "COMPONENTS",
+    "stage_two_authorization": {
+      "evidence_id": "cbbe87d5bb1b6facd741b5952cd869860230403c9ebd0ae4966c011929ee5b85.json",
+      "experiment": {
+        "experiment_id": "EX001_20261007",
+        "strategy_id": "S013",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "confirmed-mandate-and-stage-two-authorization",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "cbbe87d5bb1b6facd741b5952cd869860230403c9ebd0ae4966c011929ee5b85",
+      "type": "EvidenceRef"
+    },
+    "status": "COMPLETE",
     "symbol": "510500.SH"
   },
   "research_state": "RESEARCHING",
@@ -145,5 +180,5 @@
     "510500.SH"
   ],
   "strategy_id": "S013",
-  "updated_at": "2026-10-07T16:14:02+08:00"
+  "updated_at": "2026-10-07T16:36:54+08:00"
 }

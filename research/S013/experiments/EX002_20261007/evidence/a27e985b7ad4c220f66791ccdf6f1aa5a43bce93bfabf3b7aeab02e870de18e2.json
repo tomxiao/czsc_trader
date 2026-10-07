@@ -1,0 +1,19 @@
+{
+  "adaptive": true,
+  "trigger": "首轮29项结果已观察；range60与acf1年度方向较一致，需排除趋势/波动重复及重叠标签解释。",
+  "selected_features": [
+    "range_position_60",
+    "tsfresh20_autocorrelation__lag_1",
+    "turnover_ratio_20",
+    "range_compression_5_20",
+    "pullback_x_trend"
+  ],
+  "checks": [
+    "逐年去中心后相关、逐年循环移位描述性零假设",
+    "所有非重叠相位取样、正负趋势和过去60日相对波动分层",
+    "逐年向前、隔离已完成标签的固定岭回归增量与消融"
+  ],
+  "models": "历史分位秩、固定ridge_lambda=10，不优化模型参数；过去年份拟合，当前年测试",
+  "limitations": "选择了开发池首轮表现较强项；数据和方法存在选择复用；本检验无独立封存样本，无研究族显著性或经济达标判断。",
+  "null": "每年标签保持顺序但随机循环位移25至n-25，300次；保留序列依赖但循环边界为近似；未作多重比较校正"
+}

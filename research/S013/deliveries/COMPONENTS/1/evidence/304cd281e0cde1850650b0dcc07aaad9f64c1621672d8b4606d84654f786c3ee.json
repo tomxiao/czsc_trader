@@ -1,0 +1,839 @@
+{
+  "recorded_at": "2026-10-07T16:23:11+08:00",
+  "space": "research/S013/data",
+  "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+  "calendar": {
+    "status": "READY",
+    "items": [
+      {
+        "request": {
+          "dataset": "calendar.trading_sessions",
+          "symbol": "SSE",
+          "start": "2019-09-01",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": null
+        },
+        "status": "READY",
+        "identity": {
+          "dataset": "calendar.trading_sessions",
+          "source": "tushare",
+          "symbol": "SSE",
+          "data_start": "2019-09-01T00:00:00",
+          "data_cutoff": "2026-09-30T00:00:00",
+          "content_sha256": "b94fe2599bda34fbc0a76d966a4175199d4d49df32b16013019bb910ed14b686",
+          "metadata": {
+            "vendor": "tushare",
+            "exchange": "SSE",
+            "frequency": "daily",
+            "primary_key": [
+              "Date"
+            ],
+            "source_time_field": "Date",
+            "availability_time_field": "Date",
+            "source_calendar": "SSE",
+            "available_at": "SOURCE_PERIOD_CLOSE",
+            "request_range_policy": "EXACT",
+            "provider_binding": "calendar.trading_sessions",
+            "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a"
+          }
+        },
+        "error": null
+      }
+    ],
+    "reference": {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "78a6105a-d66b-47e7-a928-bc3eae7db729",
+      "manifest_sha256": "60149773ad4ac98a6be19ebb06a923c00c30188004fb825d71d223eeeeab0392"
+    }
+  },
+  "warmup_start": "2019-10-09",
+  "warmup_sessions": 60,
+  "pool_sessions": 1636,
+  "first_pool_session": "2020-01-02",
+  "last_pool_session": "2026-09-30",
+  "daily": {
+    "status": "READY",
+    "items": [
+      {
+        "request": {
+          "dataset": "etf.ohlcv",
+          "symbol": "510500.SH",
+          "start": "2019-10-09",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": {
+            "maximum_start_lag_days": null,
+            "minimum_observations": 1,
+            "minimum_sessions": 60,
+            "observations_through": "2019-12-31"
+          }
+        },
+        "status": "READY",
+        "identity": {
+          "dataset": "etf.ohlcv",
+          "source": "tushare",
+          "symbol": "510500.SH",
+          "data_start": "2019-10-09T00:00:00",
+          "data_cutoff": "2026-09-30T00:00:00",
+          "content_sha256": "dd949098833a05f282dfd869f01198a873b9268fc17cd3707e773bc9de63c633",
+          "metadata": {
+            "vendor": "tushare",
+            "market": "a_share",
+            "vendor_symbol": "510500.SH",
+            "period": "daily",
+            "asset_type": "etf",
+            "adjustment": "hfq",
+            "adjustment_factor_source": "fund_adj",
+            "adjustment_factor_sha256": "7e314a7549926bbe01ec89be7721ad611dae264972ed47f4e20f8fc0d5aa58e7",
+            "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+            "adjustment_factor_publication_timestamp_verified": false,
+            "adjustment_factor_revision_history_verified": false,
+            "availability_time_field": "AvailableDate",
+            "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+            "validation": {
+              "status": "PASS",
+              "findings": [],
+              "row_count": 1696
+            },
+            "daily_session_coverage": {
+              "source": "trade_cal",
+              "exchange": "SSE",
+              "start_date": "2019-10-09",
+              "end_date": "2026-09-30",
+              "listing_date": "2013-03-15",
+              "listing_source": "fund_basic",
+              "verified_sessions": 1696,
+              "calendar_sha256": "02912bdc791a4ae8028df3394b569202501ffef5d1f7362bd40b0ddf3084a48a",
+              "expected_date_count": 1696,
+              "calendar_count": 2549
+            },
+            "ohlcv_quality_evidence": {
+              "version": 1,
+              "frequency": "daily",
+              "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+              "price_tolerance": 0.005,
+              "volume_relative_tolerance": 1e-05,
+              "amount_relative_tolerance": 1e-05,
+              "market": "a_share",
+              "publication_adjustment": "hfq",
+              "session_count": 1696,
+              "anomalous_sessions": {},
+              "full_evidence_location": "PreparedDataRef定位的S013独立DFLS资产；本材料仅选定异常和摘要"
+            },
+            "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+            "source_time_field": "Date",
+            "source_calendar": "SOURCE_NATIVE",
+            "request_range_policy": "EXACT",
+            "provider_binding": "etf.ohlcv",
+            "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "ohlcv_quality": {
+              "version": 1,
+              "total_sessions": 1696,
+              "daily": {
+                "complete_sessions": 1696,
+                "accurate_sessions": 1696,
+                "completeness": 1.0,
+                "accuracy": 1.0,
+                "minimum_accuracy": 0.99,
+                "incomplete_dates": [],
+                "inaccurate_dates": []
+              }
+            }
+          }
+        },
+        "error": null
+      },
+      {
+        "request": {
+          "dataset": "etf.unadjusted_daily",
+          "symbol": "510500.SH",
+          "start": "2019-10-09",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "daily",
+          "parameters": {},
+          "coverage": {
+            "maximum_start_lag_days": null,
+            "minimum_observations": 1,
+            "minimum_sessions": 60,
+            "observations_through": "2019-12-31"
+          }
+        },
+        "status": "READY",
+        "identity": {
+          "dataset": "etf.unadjusted_daily",
+          "source": "tushare",
+          "symbol": "510500.SH",
+          "data_start": "2019-10-09T00:00:00",
+          "data_cutoff": "2026-09-30T00:00:00",
+          "content_sha256": "457768b63765acc5046976a1d11697f92a1c4e9bcd50033f733e90d09e274432",
+          "metadata": {
+            "vendor": "tushare",
+            "market": "a_share",
+            "vendor_symbol": "510500.SH",
+            "period": "daily",
+            "asset_type": "etf",
+            "adjustment": "none",
+            "validation": {
+              "status": "PASS",
+              "findings": [],
+              "row_count": 1696
+            },
+            "daily_session_coverage": {
+              "source": "trade_cal",
+              "exchange": "SSE",
+              "start_date": "2019-10-09",
+              "end_date": "2026-09-30",
+              "listing_date": "2013-03-15",
+              "listing_source": "fund_basic",
+              "verified_sessions": 1696,
+              "calendar_sha256": "02912bdc791a4ae8028df3394b569202501ffef5d1f7362bd40b0ddf3084a48a",
+              "expected_date_count": 1696,
+              "calendar_count": 2549
+            },
+            "ohlcv_quality_evidence": {
+              "version": 1,
+              "frequency": "daily",
+              "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+              "price_tolerance": 0.005,
+              "volume_relative_tolerance": 1e-05,
+              "amount_relative_tolerance": 1e-05,
+              "market": "a_share",
+              "publication_adjustment": "none",
+              "session_count": 1696,
+              "anomalous_sessions": {},
+              "full_evidence_location": "PreparedDataRef定位的S013独立DFLS资产；本材料仅选定异常和摘要"
+            },
+            "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+            "source_time_field": "Date",
+            "availability_time_field": "Date",
+            "source_calendar": "SOURCE_NATIVE",
+            "available_at": "SOURCE_PERIOD_CLOSE",
+            "request_range_policy": "EXACT",
+            "provider_binding": "etf.unadjusted_daily",
+            "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "ohlcv_quality": {
+              "version": 1,
+              "total_sessions": 1696,
+              "daily": {
+                "complete_sessions": 1696,
+                "accurate_sessions": 1696,
+                "completeness": 1.0,
+                "accuracy": 1.0,
+                "minimum_accuracy": 0.99,
+                "incomplete_dates": [],
+                "inaccurate_dates": []
+              }
+            }
+          }
+        },
+        "error": null
+      }
+    ],
+    "reference": {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "24e8eddb-1219-418e-80aa-bbe6493190c3",
+      "manifest_sha256": "10372221bb9726755ea48e94409213fb80c1238da32bc3cc28fbeb5dbf1d7098"
+    }
+  },
+  "daily_fetch": {
+    "adjusted": {
+      "identity": {
+        "dataset": "etf.ohlcv",
+        "source": "tushare",
+        "symbol": "510500.SH",
+        "data_start": "2019-10-09T00:00:00",
+        "data_cutoff": "2026-09-30T00:00:00",
+        "content_sha256": "dd949098833a05f282dfd869f01198a873b9268fc17cd3707e773bc9de63c633",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "510500.SH",
+          "period": "daily",
+          "asset_type": "etf",
+          "adjustment": "hfq",
+          "adjustment_factor_source": "fund_adj",
+          "adjustment_factor_sha256": "7e314a7549926bbe01ec89be7721ad611dae264972ed47f4e20f8fc0d5aa58e7",
+          "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+          "adjustment_factor_publication_timestamp_verified": false,
+          "adjustment_factor_revision_history_verified": false,
+          "availability_time_field": "AvailableDate",
+          "available_at": "scheduled fund_adj daily 17:00 Asia/Shanghai; historical publication unverified",
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1696
+          },
+          "daily_session_coverage": {
+            "source": "trade_cal",
+            "exchange": "SSE",
+            "start_date": "2019-10-09",
+            "end_date": "2026-09-30",
+            "listing_date": "2013-03-15",
+            "listing_source": "fund_basic",
+            "verified_sessions": 1696,
+            "calendar_sha256": "02912bdc791a4ae8028df3394b569202501ffef5d1f7362bd40b0ddf3084a48a",
+            "expected_date_count": 1696,
+            "calendar_count": 2549
+          },
+          "ohlcv_quality_evidence": {
+            "version": 1,
+            "frequency": "daily",
+            "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+            "price_tolerance": 0.005,
+            "volume_relative_tolerance": 1e-05,
+            "amount_relative_tolerance": 1e-05,
+            "market": "a_share",
+            "publication_adjustment": "hfq",
+            "session_count": 1696,
+            "anomalous_sessions": {},
+            "full_evidence_location": "PreparedDataRef定位的S013独立DFLS资产；本材料仅选定异常和摘要"
+          },
+          "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+          "source_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "request_range_policy": "EXACT",
+          "provider_binding": "etf.ohlcv",
+          "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+          "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+          "ohlcv_quality": {
+            "version": 1,
+            "total_sessions": 1696,
+            "daily": {
+              "complete_sessions": 1696,
+              "accurate_sessions": 1696,
+              "completeness": 1.0,
+              "accuracy": 1.0,
+              "minimum_accuracy": 0.99,
+              "incomplete_dates": [],
+              "inaccurate_dates": []
+            }
+          }
+        }
+      },
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "rows": 1696,
+      "dtypes": {
+        "Date": "str",
+        "Open": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Close": "float64",
+        "Volume": "float64",
+        "Amount": "float64",
+        "AvailableDate": "datetime64[us]"
+      }
+    },
+    "unadjusted": {
+      "identity": {
+        "dataset": "etf.unadjusted_daily",
+        "source": "tushare",
+        "symbol": "510500.SH",
+        "data_start": "2019-10-09T00:00:00",
+        "data_cutoff": "2026-09-30T00:00:00",
+        "content_sha256": "457768b63765acc5046976a1d11697f92a1c4e9bcd50033f733e90d09e274432",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "510500.SH",
+          "period": "daily",
+          "asset_type": "etf",
+          "adjustment": "none",
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1696
+          },
+          "daily_session_coverage": {
+            "source": "trade_cal",
+            "exchange": "SSE",
+            "start_date": "2019-10-09",
+            "end_date": "2026-09-30",
+            "listing_date": "2013-03-15",
+            "listing_source": "fund_basic",
+            "verified_sessions": 1696,
+            "calendar_sha256": "02912bdc791a4ae8028df3394b569202501ffef5d1f7362bd40b0ddf3084a48a",
+            "expected_date_count": 1696,
+            "calendar_count": 2549
+          },
+          "ohlcv_quality_evidence": {
+            "version": 1,
+            "frequency": "daily",
+            "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+            "price_tolerance": 0.005,
+            "volume_relative_tolerance": 1e-05,
+            "amount_relative_tolerance": 1e-05,
+            "market": "a_share",
+            "publication_adjustment": "none",
+            "session_count": 1696,
+            "anomalous_sessions": {},
+            "full_evidence_location": "PreparedDataRef定位的S013独立DFLS资产；本材料仅选定异常和摘要"
+          },
+          "reference_daily_sha256": "cb751ebd7752e4d383c0235835c1a6aa650c1f4de28a8cbb3903567180799ed9",
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "available_at": "SOURCE_PERIOD_CLOSE",
+          "request_range_policy": "EXACT",
+          "provider_binding": "etf.unadjusted_daily",
+          "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+          "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+          "ohlcv_quality": {
+            "version": 1,
+            "total_sessions": 1696,
+            "daily": {
+              "complete_sessions": 1696,
+              "accurate_sessions": 1696,
+              "completeness": 1.0,
+              "accuracy": 1.0,
+              "minimum_accuracy": 0.99,
+              "incomplete_dates": [],
+              "inaccurate_dates": []
+            }
+          }
+        }
+      },
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount"
+      ],
+      "rows": 1696,
+      "dtypes": {
+        "Date": "str",
+        "Open": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Close": "float64",
+        "Volume": "float64",
+        "Amount": "float64"
+      }
+    }
+  },
+  "execution_30m": {
+    "status": "READY",
+    "items": [
+      {
+        "request": {
+          "dataset": "etf.unadjusted_intraday",
+          "symbol": "510500.SH",
+          "start": "2020-01-02",
+          "end": "2026-09-30",
+          "required_cutoff": "2026-09-30",
+          "frequency": "30m",
+          "parameters": {},
+          "coverage": null
+        },
+        "status": "READY",
+        "identity": {
+          "dataset": "etf.unadjusted_intraday",
+          "source": "tushare",
+          "symbol": "510500.SH",
+          "data_start": "2020-01-02T10:00:00",
+          "data_cutoff": "2026-09-30T15:00:00",
+          "content_sha256": "3ecea090a7ecabc3f13706f1c6d99ef31efccf6fd7ae2bb3ce02695b03ba394f",
+          "metadata": {
+            "vendor": "tushare",
+            "market": "a_share",
+            "vendor_symbol": "510500.SH",
+            "period": "30m",
+            "asset_type": "etf",
+            "adjustment": "none",
+            "source_calendar": "SSE",
+            "source_time_field": "Date",
+            "availability_time_field": "AvailableDate",
+            "available_at": "unadjusted bar close Asia/Shanghai market-observation assumption; historical vendor publication and live-feed latency unverified",
+            "availability_basis": "MARKET_BAR_CLOSE_ASSUMPTION",
+            "source_publication_timestamp_verified": false,
+            "historical_revision_history_verified": false,
+            "live_feed_latency_verified": false,
+            "vendor_history_update_window": "post-session 17:00-21:00 Asia/Shanghai",
+            "validation": {
+              "status": "PASS",
+              "findings": [],
+              "row_count": 13088,
+              "complete_day_count": 1636,
+              "expected_bars_per_day": 8,
+              "session_times": [
+                "10:00:00",
+                "10:30:00",
+                "11:00:00",
+                "11:30:00",
+                "13:30:00",
+                "14:00:00",
+                "14:30:00",
+                "15:00:00"
+              ]
+            },
+            "reference_daily_sha256": "e427efc60adb4ce9927d45f22ebb879458189c6f8b4c378a07d2b10e632520bf",
+            "repair_records": [
+              {
+                "patch_id": "TUSHARE_510500_V2",
+                "patch_version": 2,
+                "findings_before": [
+                  "CROSS_FREQUENCY_MISMATCH"
+                ],
+                "affected_date_count": 9,
+                "affected_date_first": "2020-09-11",
+                "affected_date_last": "2024-06-14",
+                "raw_content_sha256": "fa1f46eba6a4152cf8b57fe88b4bbbd20a4fc1e184f151088c2053e4fb3a628d",
+                "repaired_content_sha256": "a1d5edfa4f6028a587eb78055b6c388ac71d6c055226afaef83ccb339522c0dc",
+                "affected_dates": [
+                  "2020-09-11",
+                  "2020-10-30",
+                  "2024-04-03",
+                  "2024-04-19",
+                  "2024-04-26",
+                  "2024-04-30",
+                  "2024-05-24",
+                  "2024-05-31",
+                  "2024-06-14"
+                ]
+              }
+            ],
+            "daily_session_coverage": {
+              "source": "trade_cal",
+              "exchange": "SSE",
+              "start_date": "2020-01-02",
+              "end_date": "2026-09-30",
+              "listing_date": "2013-03-15",
+              "listing_source": "fund_basic",
+              "verified_sessions": 1636,
+              "calendar_sha256": "508e05fcf74cc200808801ceb5dfcf3152f1c52fc04caa6921f341820b461da4",
+              "expected_date_count": 1636,
+              "calendar_count": 2464
+            },
+            "ohlcv_quality_evidence": {
+              "version": 1,
+              "frequency": "30m",
+              "reference_daily_sha256": "e427efc60adb4ce9927d45f22ebb879458189c6f8b4c378a07d2b10e632520bf",
+              "price_tolerance": 0.005,
+              "volume_relative_tolerance": 1e-05,
+              "amount_relative_tolerance": 1e-05,
+              "market": "a_share",
+              "publication_adjustment": "none",
+              "session_count": 1636,
+              "anomalous_sessions": {
+                "2020-03-17": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 5.699,
+                    "High": 5.768,
+                    "Low": 5.482,
+                    "Close": 5.643,
+                    "Volume": 367579385.0,
+                    "Amount": 2061951657.0
+                  },
+                  "daily_vwap": 5.609541070971649,
+                  "daily_low": 5.482,
+                  "daily_high": 5.768,
+                  "minute_complete": true,
+                  "minute_accurate": false,
+                  "minute_fields": [
+                    "High"
+                  ],
+                  "minute_differences": {
+                    "High": -0.008000000000000007
+                  },
+                  "minute_values": {
+                    "Open": 5.699,
+                    "High": 5.76,
+                    "Low": 5.482,
+                    "Close": 5.643,
+                    "Volume": 367579380.0,
+                    "Amount": 2061951627.0
+                  },
+                  "comparison_daily_values": {
+                    "Open": 5.699,
+                    "High": 5.768,
+                    "Low": 5.482,
+                    "Close": 5.643,
+                    "Volume": 367579385.0,
+                    "Amount": 2061951657.0
+                  },
+                  "minute_clocks": [
+                    "10:00:00",
+                    "10:30:00",
+                    "11:00:00",
+                    "11:30:00",
+                    "13:30:00",
+                    "14:00:00",
+                    "14:30:00",
+                    "15:00:00"
+                  ],
+                  "minute_bar_count": 8
+                },
+                "2020-10-22": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 6.99,
+                    "High": 6.999,
+                    "Low": 6.901,
+                    "Close": 6.968,
+                    "Volume": 157866672.0,
+                    "Amount": 1097041370.0
+                  },
+                  "daily_vwap": 6.949163848845816,
+                  "daily_low": 6.901,
+                  "daily_high": 6.999,
+                  "minute_complete": true,
+                  "minute_accurate": false,
+                  "minute_fields": [
+                    "High"
+                  ],
+                  "minute_differences": {
+                    "High": -0.005999999999999339
+                  },
+                  "minute_values": {
+                    "Open": 6.99,
+                    "High": 6.993,
+                    "Low": 6.901,
+                    "Close": 6.968,
+                    "Volume": 157866672.0,
+                    "Amount": 1097041354.0
+                  },
+                  "comparison_daily_values": {
+                    "Open": 6.99,
+                    "High": 6.999,
+                    "Low": 6.901,
+                    "Close": 6.968,
+                    "Volume": 157866672.0,
+                    "Amount": 1097041370.0
+                  },
+                  "minute_clocks": [
+                    "10:00:00",
+                    "10:30:00",
+                    "11:00:00",
+                    "11:30:00",
+                    "13:30:00",
+                    "14:00:00",
+                    "14:30:00",
+                    "15:00:00"
+                  ],
+                  "minute_bar_count": 8
+                },
+                "2020-12-01": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 6.967,
+                    "High": 7.113,
+                    "Low": 6.961,
+                    "Close": 7.089,
+                    "Volume": 164333452.0,
+                    "Amount": 1160475839.0
+                  },
+                  "daily_vwap": 7.061714002088875,
+                  "daily_low": 6.961,
+                  "daily_high": 7.113,
+                  "minute_complete": true,
+                  "minute_accurate": false,
+                  "minute_fields": [
+                    "Low"
+                  ],
+                  "minute_differences": {
+                    "Low": 0.005999999999999339
+                  },
+                  "minute_values": {
+                    "Open": 6.967,
+                    "High": 7.113,
+                    "Low": 6.967,
+                    "Close": 7.089,
+                    "Volume": 164333452.0,
+                    "Amount": 1160475859.0
+                  },
+                  "comparison_daily_values": {
+                    "Open": 6.967,
+                    "High": 7.113,
+                    "Low": 6.961,
+                    "Close": 7.089,
+                    "Volume": 164333452.0,
+                    "Amount": 1160475839.0
+                  },
+                  "minute_clocks": [
+                    "10:00:00",
+                    "10:30:00",
+                    "11:00:00",
+                    "11:30:00",
+                    "13:30:00",
+                    "14:00:00",
+                    "14:30:00",
+                    "15:00:00"
+                  ],
+                  "minute_bar_count": 8
+                },
+                "2021-02-25": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 7.295,
+                    "High": 7.318,
+                    "Low": 7.172,
+                    "Close": 7.215,
+                    "Volume": 171878036.0,
+                    "Amount": 1242338554.0
+                  },
+                  "daily_vwap": 7.228023911094725,
+                  "daily_low": 7.172,
+                  "daily_high": 7.318,
+                  "minute_complete": true,
+                  "minute_accurate": false,
+                  "minute_fields": [
+                    "High"
+                  ],
+                  "minute_differences": {
+                    "High": -0.0129999999999999
+                  },
+                  "minute_values": {
+                    "Open": 7.295,
+                    "High": 7.305,
+                    "Low": 7.173,
+                    "Close": 7.215,
+                    "Volume": 171878036.0,
+                    "Amount": 1242338541.0
+                  },
+                  "comparison_daily_values": {
+                    "Open": 7.295,
+                    "High": 7.318,
+                    "Low": 7.172,
+                    "Close": 7.215,
+                    "Volume": 171878036.0,
+                    "Amount": 1242338554.0
+                  },
+                  "minute_clocks": [
+                    "10:00:00",
+                    "10:30:00",
+                    "11:00:00",
+                    "11:30:00",
+                    "13:30:00",
+                    "14:00:00",
+                    "14:30:00",
+                    "15:00:00"
+                  ],
+                  "minute_bar_count": 8
+                },
+                "2021-03-02": {
+                  "daily_complete": true,
+                  "daily_accurate": true,
+                  "daily_fields": [],
+                  "daily_values": {
+                    "Open": 7.203,
+                    "High": 7.21,
+                    "Low": 7.081,
+                    "Close": 7.125,
+                    "Volume": 277071870.0,
+                    "Amount": 1977737069.0
+                  },
+                  "daily_vwap": 7.137993001599188,
+                  "daily_low": 7.081,
+                  "daily_high": 7.21,
+                  "minute_complete": true,
+                  "minute_accurate": false,
+                  "minute_fields": [
+                    "High"
+                  ],
+                  "minute_differences": {
+                    "High": -0.006999999999999673
+                  },
+                  "minute_values": {
+                    "Open": 7.203,
+                    "High": 7.203,
+                    "Low": 7.081,
+                    "Close": 7.125,
+                    "Volume": 277071869.0,
+                    "Amount": 1977737037.0
+                  },
+                  "comparison_daily_values": {
+                    "Open": 7.203,
+                    "High": 7.21,
+                    "Low": 7.081,
+                    "Close": 7.125,
+                    "Volume": 277071870.0,
+                    "Amount": 1977737069.0
+                  },
+                  "minute_clocks": [
+                    "10:00:00",
+                    "10:30:00",
+                    "11:00:00",
+                    "11:30:00",
+                    "13:30:00",
+                    "14:00:00",
+                    "14:30:00",
+                    "15:00:00"
+                  ],
+                  "minute_bar_count": 8
+                }
+              },
+              "full_evidence_location": "PreparedDataRef定位的S013独立DFLS资产；本材料仅选定异常和摘要"
+            },
+            "request_range_policy": "EXACT",
+            "provider_binding": "etf.unadjusted_intraday",
+            "provider_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "dfls_revision": "d1848a1ed8b7c2812da24552fceb031b426548edfa0126924274ca8476ec055a",
+            "ohlcv_quality": {
+              "version": 1,
+              "total_sessions": 1636,
+              "daily": {
+                "complete_sessions": 1636,
+                "accurate_sessions": 1636,
+                "completeness": 1.0,
+                "accuracy": 1.0,
+                "minimum_accuracy": 0.99,
+                "incomplete_dates": [],
+                "inaccurate_dates": []
+              },
+              "minute": {
+                "complete_sessions": 1636,
+                "accurate_sessions": 1631,
+                "completeness": 1.0,
+                "accuracy": 0.9969437652811736,
+                "minimum_accuracy": 0.95,
+                "incomplete_dates": [],
+                "inaccurate_dates": [
+                  "2020-03-17",
+                  "2020-10-22",
+                  "2020-12-01",
+                  "2021-02-25",
+                  "2021-03-02"
+                ]
+              }
+            }
+          }
+        },
+        "error": null
+      }
+    ],
+    "reference": {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "ccc29993-10d1-424a-a732-7f47a3204d63",
+      "manifest_sha256": "cda70b9860b0a73f15cd5a2d2f9dfcc0ffd35eec8adef308c882d1b31c6ab50c"
+    }
+  }
+}
