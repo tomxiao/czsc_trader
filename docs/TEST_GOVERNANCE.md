@@ -1,7 +1,7 @@
 # 测试用例治理
 
 本文规定CZSC Trader仓库的测试用例如何创建、收敛、执行和周期性审查。目标是在保护
-TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力的同时，控制TDD带来的
+TDR、DFLS、FSC、STC、SM、SE、SRT、TXE、PTE和WDG关键业务能力的同时，控制TDD带来的
 用例数量、回归耗时和维护成本。
 
 这是一份面向个人量化团队（OPC）的操作规范。判断标准是业务风险和维护价值，不追求用例
@@ -22,8 +22,9 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
    常量涉及公开序列化时通过序列化契约验证；机制断言作为必要的补充诊断。
 5. **保持确定性和离线性。** 使用固定小数据、临时目录和本地模拟适配器，不连接Tushare、
    Futu OpenD、实时网络或Windows服务，不修改PTE生产共享状态。
-6. **研究档案与功能回归分开。** 日常回归不重算历史候选全集；当前契约实验可校验
-   清单、结构和哈希。历史原件供人工查阅，平台不承诺机器复验。
+6. **研究证据与功能回归分开。** 日常回归使用当前契约的合成材料，验证选定证据、交付修订及
+   引用身份，不重算历史候选全集，不治理实验工作区或要求整个实验封存。历史原件供人工查阅，
+   平台不承诺机器复验；真实研究复验按授权范围单独执行。
 7. **用例规模是观测项。** 关注新增原因、重复程度、运行时间和诊断价值，不设置僵硬的数量
    或覆盖率门槛。
 
@@ -39,20 +40,25 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
   共享状态的真实交互序列可以使用循环，并明确其观察范围。
 - 昂贵不可变种子可在进程内复用；每个用例使用独立数据库、目录和执行状态副本，
   不修改共享种子。计算公式由所属模块负责，平台集成避免重复验证整套数值矩阵。
+- 日常候选和冻结链路从测试内维护的合成策略及小数据建立当前契约种子，不依赖真实研究批次、
+  历史实验夹具或仓库内某个既有冻结版本。实际登记发布包的检查使用`release_acceptance`标记，
+  与合成场景分开报告；合成场景仍实际执行登记、检验、冻结、发布及加载。
 - 治理记录同时统计函数、参数节点和实际准备、回放、加载及子进程成本。迁移到其他
   模块不计为全仓降本；不同范围、并发负载或启动条件的耗时不直接比较。
 
 ### 临时目录约定
 
 - 仓库内临时产物统一写入根目录`.tmp/`，该目录整体由Git忽略；
-- Pytest每个进程使用`.tmp/pytest/run-<随机ID>`，结束时清理；Ruff缓存写入
-  `.tmp/ruff/cache`；完整回归日志写入`.tmp/test-regression/run-<随机ID>`；
-- TDR发布前暂存目录通过`czsc_trader.temp_workspace`创建，并按`backtest`、
-  `market-data`、`backtest-update`、`intraday-data`和`evaluation`分区；
+- 使用根目录[conftest.py](../conftest.py)和仓库`.venv`执行Pytest。每个进程使用
+  `.tmp/pytest/run-<运行ID>`和`.tmp/pycache/run-<运行ID>`，结束时清理；Ruff缓存写入
+  `.tmp/ruff/cache`，完整回归日志写入`.tmp/test-regression/run-<随机ID>`；
+- TDR目录暂存通过[czsc_trader.temp_workspace](../src/czsc_trader/temp_workspace.py)按调用方
+  明确的namespace创建，证据文件发布使用独立受管暂存区；研究分配、证据发布、交付及冻结准备
+  分别隔离，不在本文固定枚举分区；
 - 禁止新建`.pytest-*`、`.test-tmp`、包内`.pytest_cache`，也禁止把暂存目录放进
   `data/`、`outputs/`或实验档案目录；
-- 操作系统及第三方库自行管理的系统临时目录不属于仓库资产。实验正式产物必须进入实验
-  清单，不能放在`.tmp/`充当证据。
+- 测试主动创建的脚本、缓存及临时输出按当前沙箱与`AGENTS.md`约束落入`.tmp/`，不得自行
+  使用系统临时目录。正式证据通过公共API显式发布并被交付引用，`.tmp/`不能替代正式证据。
 
 ## 2. 用例类型与生命周期
 
@@ -78,7 +84,6 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 
 - TDR：`tests/functional/`；
 - SM：`packages/strategy_manager/tests/functional/`；
-- REX：`packages/research_experiment/tests/functional/`；
 - SE：`packages/strategy_evaluator/tests/functional/`；
 - FSC：`packages/factor_signal_catalog/tests/functional/`；
 - STC：`packages/strategy_template_catalog/tests/functional/`；
@@ -96,6 +101,26 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 它用于发现契约断裂，不重复模块内部已经覆盖的所有边界条件。
 
 涉及真实行情、Futu或Windows服务的在线检查属于交付验证，不进入默认自动回归套件。
+
+### 2.4 当前研究业务链路的风险归属
+
+研究方法和结论质量由RSCH负责。平台测试验证已声明结论及证据的存在、身份、完整性和
+确定性计算，不把软件`PASS`当作研究结论正确、优化充分或用户批准的证明。
+
+| 契约场景 | 主要风险与观察结果 | 用例归属 |
+| --- | --- | --- |
+| 批次上下文、数据及输入绑定 | 评价、回测、检验沿用指定批次DFLS；准备引用、资产和时间边界一致，拒绝错批次、缺失或损坏输入 | TDR集成与DFLS/SRT模块场景 |
+| 评价与显式留证 | 计算返回实际结果，选定结果由调用方显式发布；批量区分成功、失败、取消和未知，不自动重试或替研究员管理搜索预算 | TDR评价、批量及证据场景 |
+| 组件与候选交付 | 组件定义快照身份匹配，允许同批次共享协议和跨实验材料；正式交接候选登记完整，搜索点不因评价自动登记；不判定方法或结论的科学正确性 | TDR交付与SM登记场景 |
+| 自编报告及交付修订 | 非空报告原始UTF-8字节保存，额外证据显式关联并浅快照；缺失、篡改、身份错误及修订冲突明确拒绝，不依赖可变工作区 | TDR交付与存储场景 |
+| 阶段四计算复核 | 绑定已确认目标、基准和交接集合，核验SE数值及比较结果；完整性验证和完整复算的范围分别报告 | TDR评估交付与SE模块场景 |
+| 检验失败与冻结 | 候选来源独立保存，技术失败保留已完成检查及原因，后续未执行项为未完成；无计划失败报告可交付，冻结要求完整计划、通过检验及精确批准 | TDR检验、冻结与SM契约场景 |
+
+新增或修改用例沿实际契约选择承接位置。研究授权、阶段推进和搜索充分性属于角色责任，
+不为这些研究过程新增平台状态机、全trial回放或固定报告格式断言。
+真实用户决定、实际选型与冻结批准证据的身份认证及绑定仍属于平台契约测试范围。
+具体API和格式版本以[TDR说明](../src/czsc_trader/README.md)、[SM说明](../packages/strategy_manager/README.md)
+及[SE说明](../packages/strategy_evaluator/README.md)为准。
 
 ## 3. 长期用例准入
 
@@ -147,9 +172,9 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 | 提交前 | 聚焦测试及变更范围Ruff；实现未变化时复用本轮有效结果 |
 | 用户要求全量版本或架构验收 | 全部模块功能用例、真实发布验收、PTE前端用例及Ruff；按变更范围增加完整链路验收 |
 | 已验收后的纯文档提交、合并或推送 | 检查文档、链接和差异；实现未变化时复用已验收测试结果 |
-| 服务或外部渠道变更交付 | 完整离线回归后，再执行明确授权的在线验证 |
+| 服务或外部渠道变更交付 | 按已授权范围完成离线验证，再执行明确授权的在线验证；完整离线验收通过统一入口执行 |
 
-完整离线回归默认使用仓库级并行入口：
+完整离线回归在用户要求或已授权验收范围内，使用[仓库级并行入口](../scripts/test-all.ps1)：
 
 ```powershell
 .\scripts\test-all.ps1
@@ -167,11 +192,14 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 冻结及评估交付测试保持同组；其余TDR和PTE各按完整测试文件划分为两组，保留组内夹具复用。
 第一组选择明确文件，第二组通过目录发现其余文件并排除已分组文件，新增TDR或PTE文件仍自动发现。
 `TDR_RUNTIME`独立覆盖候选运行、SRT桥接、批量评价和输入绑定四个文件；这些文件从其他TDR组排除。
-`DFLS`独立运行；其余七个子包在`PACKAGES`内串行运行，控制台Node测试仅在`PTE_2`执行一次。
+`DFLS`独立运行；FSC、STC、SM、SE、SRT、TXE六个子包在`PACKAGES`内串行运行，
+控制台Node测试仅在`PTE_2`执行一次。
 各进程使用独立Pytest工作区、禁用Python字节码写入，并将BLAS等原生计算线程数设为1。
 所有通道结束后统一运行Ruff、输出每条通道的耗时和退出码，
-并把完整日志写入`.tmp/test-regression/`。每组保存`*-selection.json`选择清单，每个Python步骤
-保存独立JUnit XML，记录逐项结果及耗时；完整验收核对收集清单与JUnit无遗漏或重复。
+并把完整日志写入`.tmp/test-regression/`。每组保存`*-selection.json`执行命令选择清单，每个Python步骤
+保存独立JUnit XML，记录逐项结果及耗时。选择清单不是完整收集的测试节点清单，脚本不自动比较全集。
+完整验收由验收者另行核对当前完整收集节点与JUnit结果：无遗漏或重复，失败、跳过及
+被排除的节点分别记录并解释；`--release-acceptance`范围不得因默认排除而漏验。
 任一通道、Node测试或Ruff失败时，脚本整体返回失败。
 
 需要定位失败模块时，使用以下串行命令单独复现：
@@ -180,7 +208,6 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q
-.\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\research_experiment\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q
@@ -190,7 +217,7 @@ TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE、PTE和WDG关键业务能力
 node --test-isolation=none --test packages\paper_trading_engine\tests\functional\console_state.test.mjs
 .\.venv\Scripts\python.exe -m ruff check `
   src tests packages\factor_signal_catalog packages\strategy_template_catalog `
-  packages\strategy_manager packages\research_experiment packages\strategy_evaluator `
+  packages\strategy_manager packages\strategy_evaluator `
   packages\dataflows packages\strategy_runtime packages\trading_execution_engine `
   packages\paper_trading_engine\src packages\paper_trading_engine\tests
 ```
@@ -215,7 +242,7 @@ node --test-isolation=none --test packages\paper_trading_engine\tests\functional
 2. **归类**：区分长期场景、临时TDD、重复场景、实现细节测试和在线检查；
 3. **收敛**：合并同一业务行为的准备与断言，清除残留`TEMP-TDD`；
 4. **删除**：移除重复、废弃、脆弱且无独立风险价值的用例；
-5. **验证**：执行完整离线回归，确认各模块关键场景仍通过；
+5. **验证**：执行覆盖受影响风险的聚焦测试；用户要求或已授权完整验收时，使用统一入口执行全量并核对完整清单；
 6. **记录**：保存治理前后数量、耗时、删除原因和覆盖承接位置。
 
 盘点命令示例：
@@ -224,14 +251,13 @@ node --test-isolation=none --test packages\paper_trading_engine\tests\functional
 rg -n "TEMP-TDD" tests packages -g "*.py" -g "*.mjs"
 .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests packages\strategy_manager\tests `
   packages\dataflows\tests packages\strategy_evaluator\tests packages\factor_signal_catalog\tests `
-  packages\strategy_template_catalog\tests packages\research_experiment\tests `
+  packages\strategy_template_catalog\tests `
   packages\strategy_runtime\tests packages\trading_execution_engine\tests `
   packages\paper_trading_engine\tests `
   --release-acceptance --collect-only -q
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\dataflows\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_manager\tests -q }
-Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\research_experiment\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_evaluator\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\factor_signal_catalog\tests -q }
 Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml packages\strategy_template_catalog\tests -q }
@@ -256,7 +282,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 - 删除该用例后，哪个主场景继续保护其业务风险？
 - 失败信息能否直接指向模块、契约或状态转换？
 
-审查范围包括TDR、DFLS、FSC、STC、SM、REX、SE、SRT、TXE和PTE（含WDG）。一次可以只治理一个
+审查范围包括TDR、DFLS、FSC、STC、SM、SE、SRT、TXE和PTE（含WDG）。一次可以只治理一个
 模块，完成验证和记录后再进入下一模块，避免大规模删除导致覆盖范围难以复核。
 
 ## 8. 治理记录模板
@@ -265,7 +291,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 ```text
 日期：YYYY-MM-DD
-范围：TDR / DFLS / FSC / STC / SM / REX / SE / SRT / TXE / PTE
+范围：TDR / DFLS / FSC / STC / SM / SE / SRT / TXE / PTE
 触发原因：月度检查 / 耗时增长 / 重构前 / 其他
 
 治理前：测试文件__个，测试项__个，完整耗时__秒
@@ -300,8 +326,10 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 - **离线功能回归**：根目录`tests/functional/`覆盖TDR公开API、实验评价、证据漂移、统一回测与失败语义；
   各包`tests/functional/`覆盖模块契约、候选与冻结SRT、TXE账本、PTE发布代次和服务配置。
-- **档案完整性**：调用公开API `validate_archives(context, archive=...)`核验当前契约实验的受管文件、结构和
-  哈希。全库扫描遇到不支持的旧格式时明确失败；历史原件保留供人工查阅，不要求其通过当前机器复验。
+- **证据与交付完整性**：针对明确的`DeliveryReference`调用公开API `validate_delivery`，核验当前
+  修订、前驱引用、选定证据、报告字节及必要决定／检验材料的身份和哈希。`INTEGRITY`与
+  默认`FULL`的复算边界按TDR说明分别报告，不扫描或封存整个实验工作区，不自动重跑研究过程。
+  真实研究材料仅在明确授权范围内只读复核；历史旧格式原件保留，不要求通过当前机器复验。
 - **发布验收**：PTE构建验证附注tag、提交、策略快照和制品身份；发布前置检查验证目标版本及
   数据库兼容性。取得生产写入授权后，再检查服务、健康接口、活动版本和关键账户读取。
 
@@ -310,7 +338,22 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 执行器发生语义变更时，应为当前支持的SRT/TXE链路增加有明确承接位置的迁移测试；仓库不再
 保留独立人工验收脚本。任何PTE部署或运行状态变更需要独立授权。
 
-## 11. 最近一次治理记录
+## 11. 治理与验收记录
+
+以下记录按各轮当时的实现、测试范围和环境保存。历史REX模块、节点数量、分组及耗时不代表
+当前范围；当前模块和执行入口以前述规则及现有脚本为准。日志位于本机`.tmp/`时不随Git分发。
+文档同步、收集检查、聚焦测试、完整离线验收和真实研究复验分别报告，不能相互替代。
+
+### 2026-10-07研究交付重构后的治理文档同步
+
+实现基线为`0ef2d82d`。当前模块目录、八组执行入口及公开研究API已核对：移除现行规则和命令中的
+REX引用，使用显式证据与交付完整性替代整实验档案校验；补充自编报告、共享协议、独立定义快照、
+无计划失败报告和精确冻结批准的测试风险归属。周期治理按受影响风险聚焦验证，完整验收须有相应授权。
+
+以本文盘点命令执行`--release-acceptance --collect-only`，收集1213个Python测试节点，收集过程无错误。
+日志位于`.tmp/test-governance-documentation/collection.log`，仅说明该基线的收集范围。
+本轮未修改实现、用例或回归脚本，未执行测试断言、Node测试、Ruff、真实研究复算或生产检查；
+收集成功不作为当前完整离线回归通过的证明。本文链接、命令语法及引用路径单独核验。
 
 ### 2026-10-05八组并行调度验收
 
@@ -337,7 +380,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 验收代码为`f83775c7`，统一入口`scripts/test-all.ps1`通过：1298项Python、7项Node及Ruff，总耗时241.34秒。完整收集清单与各步骤JUnit逐项一致，无遗漏、重复、失败或跳过。
 
-当前Python节点分布：TDR 341、DFLS 240、FSC 42、STC 3、SM 60、REX 27、SE 165、SRT 134、TXE 45、PTE 241。四通道耗时为`TDR_FREEZE` 164.89秒、`TDR` 239.40秒、`PTE` 200.49秒、`PACKAGES` 228.96秒。
+该轮Python节点分布：TDR 341、DFLS 240、FSC 42、STC 3、SM 60、REX 27、SE 165、SRT 134、TXE 45、PTE 241。四通道耗时为`TDR_FREEZE` 164.89秒、`TDR` 239.40秒、`PTE` 200.49秒、`PACKAGES` 228.96秒。
 
 本轮四批围绕公开契约修复假覆盖、补充独立风险、重写私有目标和默认适配器场景，
 再收敛昂贵准备、完整回放、全目录加载及等价参数。审查基线1255项最终为1298项；
@@ -372,7 +415,7 @@ Measure-Command { .\.venv\Scripts\python.exe -m pytest -c pyproject.toml package
 
 全量日志和JUnit位于`.tmp/test-regression/run-62706ea49a6d44abb0a3a7ba4e262e62/`；
 覆盖承接与收集核验位于`.tmp/test-governance-20261005/`。这些是本机临时验证证据，不随Git分发。
-耗时包含机器负载与并发I/O影响，当前仍高于历史104.10秒；后续根据逐项报告定位重复准备，
+耗时包含机器负载与并发I/O影响，该轮仍高于历史104.10秒；后续根据逐项报告定位重复准备，
 不以删减独立风险或隐藏参数化数量换取预算。未更改产品实现或执行生产、在线取数及研究复算。
 
 ### 2026-10-04测试分层与执行预算验收
