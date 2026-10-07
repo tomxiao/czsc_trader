@@ -63,6 +63,7 @@ research/registrations/
 | S001 | [HANDOFF](S001/HANDOFF.md) | S007 | [HANDOFF](S007/HANDOFF.md) |
 | S002 | [HANDOFF](S002/HANDOFF.md) | S011 | [HANDOFF](S011/HANDOFF.md) |
 | S003 | [HANDOFF](S003/HANDOFF.md) | S012 | [HANDOFF](S012/HANDOFF.md) |
+| S013 | [HANDOFF](S013/HANDOFF.md) | | |
 
 ## 保存与跨机器交接
 
