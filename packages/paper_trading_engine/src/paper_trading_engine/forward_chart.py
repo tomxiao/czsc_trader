@@ -133,7 +133,7 @@ def render_forward_chart_html(value: object) -> str:
       <svg id="forward-svg" role="img" aria-label="交易日K线、策略信号、决策事件、成交、持仓及逐日事件"></svg>
       <div class="forward-tooltip" id="forward-tooltip" role="tooltip" hidden></div>
     </section>
-    <footer><span>截止线左侧为行情背景；信号按信号日展示，决策按生效日展示，状态标明已替代或失效的历史记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
+    <footer><span>截止线左侧为行情背景；信号按信号日展示，决策按生效日展示，并保留已替代的历史记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>
   <script src="/static/forward-chart.js"></script>

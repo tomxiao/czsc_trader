@@ -10,8 +10,9 @@
   const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
   const bars=context.market_data.bars||[];
-  const observations=context.observations||[];
-  const decisions=[...(context.execution.decisions||[])].sort((a,b)=>a.generated_at.localeCompare(b.generated_at));
+  const invalidatedIds=new Set((context.execution.decisions||[]).filter(item=>item.status==='INVALIDATED').map(item=>item.decision_id));
+  const observations=(context.observations||[]).filter(item=>!invalidatedIds.has(item.decision_id));
+  const decisions=(context.execution.decisions||[]).filter(item=>item.status!=='INVALIDATED').sort((a,b)=>a.generated_at.localeCompare(b.generated_at));
   const fills=[...(context.execution.fills||[])].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots||[];
   const cutoff=context.window.selection_data_cutoff;

@@ -24,16 +24,19 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     observations:[
       {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'HOLD',observation:observation(.1)},
       {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'BUY',observation:observation(.3)},
+      {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'BUY',observation:observation(.9)},
+      {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',observation:observation(1.9)},
     ],
     execution:{
       decisions:[
         {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
         {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'HOLD',status:'ACTIVE',target_quantity:0},
-        {decision_id:'LEGACY',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:29:00Z',action:'WAIT',status:'INVALIDATED',target_quantity:0},
+        {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'INVALIDATED',target_quantity:0},
+        {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'INVALIDATED',target_quantity:5000},
       ],
       fills:[
         {fill_id:'<img>',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
-        {fill_id:'F1',channel_order_id:'O1',decision_id:'NEW',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},
+        {fill_id:'F1',channel_order_id:'O1',decision_id:'LEGACY',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},
       ],snapshots:[],
     },
   };
@@ -49,8 +52,10 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 0.300/);
   assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,1);
   assert.match(svg.textContent,/事件/);
-  assert.match(svg.textContent,/决策 3 笔 · 成交 2 笔/);
-  for(const text of ['已替代','已失效','当前有效','目标 0 股','无可用于本图的策略观察事实','买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
+  assert.match(svg.textContent,/决策 2 笔 · 成交 2 笔/);
+  assert.ok(!svg.textContent.includes('已失效'));
+  assert.ok(!svg.textContent.includes('目标 5,000 股'));
+  for(const text of ['已替代','当前有效','目标 0 股','买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
   assert.ok(svg.textContent.includes('日内轮换'));
   assert.ok(svg.textContent.indexOf('买入 100 股')<svg.textContent.indexOf('卖出 400 股'));
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
@@ -58,11 +63,11 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.equal(svg.children.filter(node=>node.attributes.class==='event-label').length,0);
   assert.equal(svg.children.filter(node=>node.name==='circle'&&!node.attributes['data-series-key']&&!node.attributes['data-guide-key']).length,2);
   const tooltip=nodes['forward-tooltip'];
-  for(const id of ['OLD','NEW','LEGACY','F1','O1','O2','<img>','&lt;img&gt;'])assert.ok(!tooltip.innerHTML.includes(id),id);
-  for(const text of ['决策：持有','当前有效','已替代','已失效','买入 100 股','卖出 400 股','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(tooltip.innerHTML.includes(text),text);
+  for(const text of ['OLD','NEW','LEGACY','VOID','F1','O1','O2','<img>','&lt;img&gt;','已失效','5,000 股'])assert.ok(!tooltip.innerHTML.includes(text),text);
+  for(const text of ['决策：持有','当前有效','已替代','买入 100 股','卖出 400 股','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(tooltip.innerHTML.includes(text),text);
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,1);
-  assert.match(svg.textContent,/决策 3 笔 · 成交 2 笔/);
+  assert.match(svg.textContent,/决策 2 笔 · 成交 2 笔/);
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
 });
