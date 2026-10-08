@@ -66,7 +66,7 @@
       lines.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
     }
     lines.push(...dayFills(date).map(fillSummary));
-    if(!lines.length)lines.push('当日无决策或成交事件');
+    if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
   }
   function wrapExplanation(text,width,measure){
@@ -124,13 +124,10 @@
       cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
       const first=observation?.status==='READY'?observation.series?.[0]:null;
       signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
-      const event=`决策 ${selectedDecisions.length} 笔 · 成交 ${selectedFills.length} 笔`;
+      const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
       main.textContent=`${row.date} · ${event}`;
       sub.replaceChildren(...explanations[index].map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
-      const fillDetails=selectedFills.map(item=>`<div>${safe(fillSummary(item))}</div>`).join('');
-      const decisionDetails=selectedDecisions.map(item=>`<div>决策：${safe(actionLabel(item.action))}（${safe(statusLabel(item.status))}）</div>`).join('');
-      const latestDecision=selectedDecisions.at(-1);
-      tooltip.innerHTML=`<div class="head"><span>${safe(row.date)}</span><span>${safe(event)}</span></div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span><span>目标持仓</span><span>${quantity(latestDecision?.target_quantity)}</span></div>${decisionDetails}${selectedFills.length?`<div class="head">成交价（不复权）</div>${fillDetails}<div>箭头仅标记成交日期，纵坐标不代表成交价。</div>`:''}`;
+      tooltip.innerHTML=`<div class="head">${safe(row.date)}</div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span></div>`;
       if(pointer){
         tooltip.hidden=false;
         const tooltipWidth=tooltip.offsetWidth,leftPos=pointer[0]+18;

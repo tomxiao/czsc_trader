@@ -64,7 +64,14 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.equal(svg.children.filter(node=>node.name==='circle'&&!node.attributes['data-series-key']&&!node.attributes['data-guide-key']).length,2);
   const tooltip=nodes['forward-tooltip'];
   for(const text of ['OLD','NEW','LEGACY','VOID','F1','O1','O2','<img>','&lt;img&gt;','已失效','5,000 股'])assert.ok(!tooltip.innerHTML.includes(text),text);
-  for(const text of ['决策：持有','当前有效','已替代','买入 100 股','卖出 400 股','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(tooltip.innerHTML.includes(text),text);
+  for(const text of ['行情（后复权）','开 / 高','低 / 收','2026-09-04'])assert.ok(tooltip.innerHTML.includes(text),text);
+  for(const text of ['目标持仓','未记录','决策','成交','买入','卖出','费用'])assert.ok(!tooltip.innerHTML.includes(text),text);
+  const overlay=svg.children.at(-1);
+  overlay.listeners.pointermove({clientX:68,clientY:60});
+  assert.match(svg.textContent,/2026-09-02 · 当日无可展示事件/);
+  assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
+  assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
+  overlay.listeners.pointermove({clientX:928,clientY:60});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,1);
   assert.match(svg.textContent,/决策 2 笔 · 成交 2 笔/);
