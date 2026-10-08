@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
 
-test('forward chart draws isolated signals and shows decisions and every local-time fill', () => {
+test('forward chart keeps signal series, only fill markers on candles, and business details without IDs', () => {
   class Element {
     constructor(name){this.name=name;this.attributes={};this.children=[];this.style={};this.listeners={};this.classList={add(){}};this.clientWidth=1000;}
     setAttribute(key,value){this.attributes[key]=value;}
@@ -23,7 +23,7 @@ test('forward chart draws isolated signals and shows decisions and every local-t
     market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:[
       {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'HOLD',observation:observation(.1)},
-      {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'HOLD',observation:observation(.3)},
+      {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'BUY',observation:observation(.3)},
     ],
     execution:{
       decisions:[
@@ -54,11 +54,17 @@ test('forward chart draws isolated signals and shows decisions and every local-t
   assert.ok(svg.textContent.includes('日内轮换'));
   assert.ok(svg.textContent.indexOf('买入 100 股')<svg.textContent.indexOf('卖出 400 股'));
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
-  assert.ok(nodes['forward-tooltip'].innerHTML.includes('&lt;img&gt;'));
-  assert.ok(!nodes['forward-tooltip'].innerHTML.includes('<img>'));
+  assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
+  assert.equal(svg.children.filter(node=>node.attributes.class==='event-label').length,0);
+  assert.equal(svg.children.filter(node=>node.name==='circle'&&!node.attributes['data-series-key']&&!node.attributes['data-guide-key']).length,2);
+  const tooltip=nodes['forward-tooltip'];
+  for(const id of ['OLD','NEW','LEGACY','F1','O1','O2','<img>','&lt;img&gt;'])assert.ok(!tooltip.innerHTML.includes(id),id);
+  for(const text of ['决策：持有','当前有效','已替代','已失效','买入 100 股','卖出 400 股','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(tooltip.innerHTML.includes(text),text);
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,1);
   assert.match(svg.textContent,/决策 3 笔 · 成交 2 笔/);
+  assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
+  assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
 });
 
 test('FT-PTEJS01 console state preserves scope, stable polling and Chinese presentation', () => {
