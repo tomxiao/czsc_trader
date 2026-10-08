@@ -1,6 +1,6 @@
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import replace
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 import json
 import os
 from pathlib import Path
@@ -662,6 +662,96 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     service.close()
     store.close()
 
+def test_daily_chart_update_retries_then_persists_success_and_skips_closed_days(
+    new_store, tmp_path, monkeypatch,
+):
+    from dataflows import DataError, DataRequest, Dataset
+    from paper_trading_engine import account_chart
+    from paper_trading_engine.account_chart import AccountChartService
+    from paper_trading_engine.chart_market_data import AccountChartDataError
+    from paper_trading_engine.trading_window import SHANGHAI
+
+    store = new_store(tmp_path / "daily-charts.db")
+    create_account(store, "s001-v1", "v1", "a")
+    due = datetime(2026, 9, 4, 20, 30, tzinfo=SHANGHAI)
+    calls, clock, failed = [], [0.0], [True]
+    render_failed, published = [True], [due.date()]
+    monkeypatch.setattr(account_chart.time, "monotonic", lambda: clock[0])
+
+    def history(**kwargs):
+        calls.append(kwargs)
+        if failed[0]:
+            raise AccountChartDataError(
+                DataRequest(Dataset.ETF_OHLCV, "588080.SH", "2026-03-06", "2026-09-04", "2026-09-04"),
+                DataError("INCOMPLETE_DATA", "published dataframe does not reach the required cutoff",
+                          retryable=True, context={"actual_cutoff": "2026-09-03", "full_evidence": "x" * 600}),
+            )
+        return "a" * 64, pd.DataFrame({
+            "Date": ["2026-09-02", published[0].isoformat()],
+            "Open": [1, 1], "High": [1, 1], "Low": [1, 1], "Close": [1, 1],
+        })
+
+    class ImmediateExecutor:
+        def submit(self, fn, *args):
+            future = Future()
+            try:
+                future.set_result(fn(*args))
+            except Exception as exc:
+                future.set_exception(exc)
+            return future
+
+    def render(_request):
+        if render_failed[0]:
+            raise ValueError("图表渲染失败")
+        return "<html>daily chart</html>"
+
+    options = dict(
+        market_data=SimpleNamespace(
+            history=history, is_trading_day=lambda **kw: (
+                kw["session"].weekday() < 5 and kw["session"] != date(2026, 9, 7)
+            ),
+        ), cache_dir=tmp_path / "charts", executor=ImmediateExecutor(),
+        renderer=render,
+    )
+    service = AccountChartService(store, **options)
+    service.refresh_daily(due.replace(hour=20, minute=29))
+    assert calls == []
+    service.refresh_daily(due)
+    assert "实际截至 2026-09-03" in service.current_error("s001-v1")
+    events = store.query_audit_events(event_type="ACCOUNT_CHART_GENERATION_FAILED")
+    assert events[0]["details"]["data_error"]["context"]["full_evidence"] == "x" * 600
+    service.refresh_daily(due)
+    assert len(calls) == 1  # Failed updates retain their retry interval.
+    failed[0], clock[0] = False, 60.0
+    service.refresh_daily(due)
+    assert service.current_error("s001-v1") == "图表渲染失败"
+    render_failed[0], clock[0] = False, 120.0
+    service.refresh_daily(due)
+    assert service.current_error("s001-v1") is None
+    assert len(calls) == 3 and all(call["refresh_source"] for call in calls)
+    assert store.query_audit_events(event_type="ACCOUNT_CHART_RECOVERED")
+    status = service.status("s001-v1")
+    assert status["market_data_cutoff"] == "2026-09-04"
+    assert "交易日20:30更新" in status["message"]
+    service.close()
+
+    # A restart and ordinary redraw preserve the completed daily update.
+    service = AccountChartService(store, **options)
+    service.status("s001-v1")
+    calls.clear()
+    service.refresh_daily(due)
+    service.refresh_daily(due.replace(day=5))
+    service.refresh_daily(due.replace(day=5))
+    service.refresh_daily(due.replace(day=7))
+    assert calls == []
+    published[0], clock[0] = date(2026, 9, 8), 180.0
+    service.refresh_daily(due.replace(day=8))
+    assert len(calls) == 1 and calls[0]["refresh_source"] is True
+    assert service.status("s001-v1")["market_data_cutoff"] == "2026-09-08"
+    service.close()
+    store.close()
+
+
 def test_legacy_database_with_active_trading_records_is_rejected(tmp_path):
     legacy = tmp_path / "unsafe-legacy.db"
     connection = sqlite3.connect(legacy)
@@ -924,6 +1014,7 @@ def test_account_chart_uses_only_active_decisions(new_store, tmp_path):
     assert status["message"] == (
         "观察事实自 2026-09-04 开始；其中 2 条决策"
         "缺少可用的观察事实，未绘制策略解释"
+        "；行情截至 2026-09-04；交易日20:30更新"
     )
     service.close()
     store.close()
@@ -977,6 +1068,7 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
     assert status["message"] == (
         "等待第一条策略观察事实；其中 1 条决策"
         "缺少可用的观察事实，未绘制策略解释"
+        "；行情截至 2026-09-03；交易日20:30更新"
     )
     assert requests[0]["observations"] == []
     assert requests[0]["window"]["observation_start"] is None

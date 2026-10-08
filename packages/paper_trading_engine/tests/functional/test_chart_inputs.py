@@ -76,25 +76,31 @@ def test_chart_market_data_refreshes_completed_sessions_and_preserves_bound_asse
     assert len(price_requests) == 2
     assert flows.fetch(request, prepared=pinned).dataframe.equals(first)
 
-    # The close advances the required cutoff. Delayed publication fails, then recovers
+    # The scheduled update advances the cutoff. Delayed publication fails, then recovers
     # from the supplier on the same day instead of pinning a stale successful result.
-    clock[0] = datetime(2026, 9, 4, 15, 0, tzinfo=SHANGHAI)
-    with pytest.raises(ValueError, match="preparation failed"):
+    for hour, minute in ((15, 0), (17, 0), (20, 29)):
+        clock[0] = datetime(2026, 9, 4, hour, minute, tzinfo=SHANGHAI)
+        assert source_port.history(**arguments)[1].equals(refreshed)
+    clock[0] = datetime(2026, 9, 4, 20, 30, tzinfo=SHANGHAI)
+    with pytest.raises(ValueError, match="图表行情不可用.*要求截至 2026-09-04.*缺失交易日：2026-09-04") as failed:
         source_port.history(**arguments)
+    assert failed.value.data_error.code == "INCOMPLETE_DATA"
+    assert "ItemPrepareResult" not in str(failed.value)
     source["published"] = pd.Timestamp("2026-09-04")
     _, friday = source_port.history(**arguments)
     assert friday.Date.max() == pd.Timestamp("2026-09-04")
     calls = len(price_requests)
     for day in (5, 7):
-        clock[0] = datetime(2026, 9, day, 16, 0, tzinfo=SHANGHAI)
+        clock[0] = datetime(2026, 9, day, 20, 30, tzinfo=SHANGHAI)
         assert source_port.history(**arguments)[1].equals(friday)
+        assert not source_port.is_trading_day(symbol="588080.SH", session=clock[0].date())
     assert len(price_requests) == calls
 
-    # Holiday-aware pre-close selection excludes the current unfinished daily bar.
+    # The first session after a holiday remains on previous data until 20:30.
     source["published"] = pd.Timestamp("2026-09-08")
     clock[0] = datetime(2026, 9, 8, 14, 0, tzinfo=SHANGHAI)
     assert source_port.history(**arguments)[1].Date.max() == pd.Timestamp("2026-09-04")
-    clock[0] = datetime(2026, 9, 8, 15, 0, tzinfo=SHANGHAI)
+    clock[0] = datetime(2026, 9, 8, 20, 30, tzinfo=SHANGHAI)
     assert source_port.history(**arguments)[1].Date.max() == pd.Timestamp("2026-09-08")
     assert price_requests[-1].end == "2026-09-08"
     assert flows.fetch(request, prepared=pinned).dataframe.equals(first)

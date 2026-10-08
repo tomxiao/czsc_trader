@@ -18,7 +18,9 @@ from uuid import uuid4
 from strategy_runtime import StrategyObservation
 
 from .audit import AuditRecorder
+from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
 from .forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
+from .trading_window import SHANGHAI
 
 
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
@@ -137,6 +139,7 @@ class AccountChartService:
         self._owns_executor = executor is None
         self._jobs: dict[str, Future[None]] = {}
         self._last_submit: dict[str, float] = {}
+        self._last_daily_submit: dict[str, float] = {}
         self._source_refresh_pending: set[str] = set()
         self._source_refresh_running: set[str] = set()
         self._guard = RLock()
@@ -444,6 +447,18 @@ class AccountChartService:
         old.update({"error_fingerprint": error_fingerprint, "error": message})
         self._atomic_write(meta_path, json.dumps(old, ensure_ascii=False))
         if should_audit:
+            details = {"operation": "render", "error": message, "error_type": type(error).__name__}
+            if isinstance(error, AccountChartDataError):
+                details["data_error"] = {
+                    "code": error.data_error.code, "message": error.data_error.message,
+                    "retryable": error.data_error.retryable,
+                    "context": dict(error.data_error.context),
+                }
+                details["data_request"] = {
+                    "dataset": str(error.request.dataset), "symbol": error.request.symbol,
+                    "start": error.request.start, "end": error.request.end,
+                    "required_cutoff": error.request.required_cutoff,
+                }
             with self._store_guard:
                 if self._closing.is_set():
                     return
@@ -455,17 +470,32 @@ class AccountChartService:
                         strategy_id=account.get("strategy_id"),
                         strategy_version=account.get("strategy_version"),
                         release_hash=account.get("release_hash"), symbol=account.get("symbol"),
-                        details={"operation": "render", "error": message},
+                        details=details,
                     )
                 except Exception:
                     return
 
-    def _refresh(self, account: dict[str, Any], refresh_source: bool = False) -> None:
+    def _refresh(
+        self, account: dict[str, Any], refresh_source: bool = False,
+        scheduled_session: date | None = None,
+    ) -> None:
         account_id = str(account["account_id"])
         meta_path = self._meta_path(account_id)
         old_meta = self._load_meta(meta_path)
         try:
+            if scheduled_session is not None and not self.market_data.is_trading_day(
+                symbol=str(account["symbol"]), session=scheduled_session,
+            ):
+                old_meta["last_daily_check"] = scheduled_session.isoformat()
+                self._atomic_write(meta_path, json.dumps(old_meta, ensure_ascii=False))
+                return
             request, has_forward = self._request(account, refresh_source=refresh_source)
+            market_cutoff = str(request["market_data"]["as_of"])
+            if scheduled_session is not None and market_cutoff != scheduled_session.isoformat():
+                raise ValueError(
+                    f"图表行情未更新：要求截至 {scheduled_session.isoformat()}，"
+                    f"实际截至 {market_cutoff}"
+                )
             encoded = json.dumps(
                 request, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
                 allow_nan=False, default=str,
@@ -494,6 +524,11 @@ class AccountChartService:
                             "omitted_decision_count"
                         ],
                         "generated_at": datetime.now(timezone.utc).isoformat(),
+                        "market_data_cutoff": market_cutoff,
+                        "last_daily_check": (
+                            scheduled_session.isoformat() if scheduled_session is not None
+                            else old_meta.get("last_daily_check")
+                        ),
                     },
                     ensure_ascii=False,
                 ),
@@ -537,6 +572,7 @@ class AccountChartService:
             "scope": self._scope(account),
             "selection_data_cutoff": account.get("selection_data_cutoff"),
             "context_sessions": self.context_sessions,
+            "market_data_cutoff": meta.get("market_data_cutoff"),
         }
         if meta.get("error") and refreshing:
             return {
@@ -564,6 +600,13 @@ class AccountChartService:
                     else None
                 )
             )
+            market_message = (
+                f"行情截至 {meta['market_data_cutoff']}；交易日20:30更新"
+                if meta.get("market_data_cutoff") else None
+            )
+            observation_message = "；".join(
+                value for value in (observation_message, market_message) if value
+            ) or None
             return {
                 **base,
                 "status": "REFRESHING" if refreshing else (
@@ -640,6 +683,41 @@ class AccountChartService:
         """Refresh source data and rebuild asynchronously without changing trading state."""
 
         return self.status(account_id, force=True)
+
+    def refresh_daily(self, at: datetime) -> None:
+        """Enqueue independent chart updates at 20:30; retry until fully rendered."""
+        if at.tzinfo is None:
+            raise ValueError("account chart clock must be timezone-aware")
+        local = at.astimezone(SHANGHAI)
+        if local.time() < CHART_UPDATE_TIME:
+            return
+        with self._store_guard:
+            accounts = [dict(row) for row in self.store.strategy_virtual_accounts()
+                        if row.get("status") == "RUNNING"]
+        now = time.monotonic()
+        with self._guard:
+            if self._closing.is_set():
+                return
+            for account in accounts:
+                account_id = str(account["account_id"])
+                if self._load_meta(self._meta_path(account_id)).get("last_daily_check") == local.date().isoformat():
+                    continue
+                job = self._jobs.get(account_id)
+                if job is not None:
+                    if not job.done():
+                        continue
+                    self._consume_job(account, job)
+                    self._jobs.pop(account_id, None)
+                    self._source_refresh_running.discard(account_id)
+                last_submit = self._last_daily_submit.get(account_id)
+                if last_submit is not None and now - last_submit < self.refresh_interval_seconds:
+                    continue
+                self._jobs[account_id] = self._executor.submit(
+                    self._refresh, account, True, local.date(),
+                )
+                self._last_daily_submit[account_id] = now
+                self._last_submit[account_id] = now
+                self._source_refresh_running.add(account_id)
 
     def close(self) -> None:
         with self._guard:

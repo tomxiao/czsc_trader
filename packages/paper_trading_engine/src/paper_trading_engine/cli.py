@@ -766,6 +766,7 @@ def main(
             preparation_time=args.data_prepare_time,
             audit=audit,
             initial_observation_at=initial_observation_at,
+            account_chart=engine.account_chart,
         )
         worker = Thread(target=scheduler.run, args=(stopped,), name="pte-scheduler", daemon=True)
         worker.start()

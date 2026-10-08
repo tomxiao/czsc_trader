@@ -13,6 +13,7 @@ from paper_trading_engine.account_data_preparer import (
 from paper_trading_engine.account_strategy_cycle import AccountStrategyCycle
 from paper_trading_engine.audit import AuditRecorder
 from paper_trading_engine.scheduler import RuntimeScheduler
+from paper_trading_engine.trading_window import SHANGHAI
 
 
 class Engine:
@@ -80,6 +81,25 @@ class Store:
 def _scheduler(engine, prepared_data, store, **kwargs):
     cycle = AccountStrategyCycle(engine, prepared_data, store)
     return RuntimeScheduler(engine, cycle, store, **kwargs)
+
+
+def test_chart_schedule_runs_without_page_requests_or_pending_decisions():
+    store, engine, advice = Store(), Engine(), Advice()
+    store.accounts = [_account()]
+    store.values["last_account_decision_date:s007-v1"] = "2026-09-18"
+    calls = []
+    scheduler = _scheduler(
+        engine, AccountDataPreparer(advice=advice), store,
+        preparation_time="21:00",
+        account_chart=SimpleNamespace(refresh_daily=calls.append),
+    )
+    scheduler.tick_daily(datetime(2026, 9, 18, 20, 29, 59, tzinfo=SHANGHAI))
+    assert calls == []
+    due = datetime(2026, 9, 18, 20, 30, tzinfo=SHANGHAI)
+    scheduler.tick_daily(due)
+    scheduler.tick_daily(due)
+    assert calls == [due]
+    assert advice.calls == [] and engine.calls == []
 
 
 def _wait_until(predicate, timeout=2.0):

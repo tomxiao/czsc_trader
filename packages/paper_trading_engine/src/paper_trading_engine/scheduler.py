@@ -7,6 +7,8 @@ from threading import Event, RLock, Thread
 from time import monotonic
 
 from .audit import AuditRecorder
+from .account_chart import AccountChartService
+from .chart_market_data import CHART_UPDATE_TIME
 from .trading_window import SHANGHAI, shanghai_now
 
 
@@ -23,10 +25,12 @@ class RuntimeScheduler:
         preparation_time: str = "20:30",
         audit: AuditRecorder | None = None,
         initial_observation_at: datetime | None = None,
+        account_chart: AccountChartService | None = None,
     ) -> None:
         self.engine = engine
         self.strategy_cycle = strategy_cycle
         self.store = store
+        self.account_chart = account_chart
         self.order_interval = float(order_interval)
         self.account_interval = float(account_interval)
         self.data_prepare_interval = float(data_prepare_interval)
@@ -38,6 +42,7 @@ class RuntimeScheduler:
         self._last_account = initial_observation_at
         self._last_heartbeat = initial_observation_at
         self._last_data_check: datetime | None = None
+        self._last_chart_check: datetime | None = None
         self._daily_thread: Thread | None = None
         self._account_workers: dict[str, Thread] = {}
         self._failure_lock = RLock()
@@ -179,6 +184,11 @@ class RuntimeScheduler:
 
     def tick_daily(self, now: datetime) -> None:
         local_now = now if now.tzinfo is None else now.astimezone(SHANGHAI)
+        if (self.account_chart is not None
+                and local_now.time().replace(tzinfo=None) >= CHART_UPDATE_TIME
+                and self._due(self._last_chart_check, now, self.data_prepare_interval)):
+            self._guard("account_charts", now, lambda: self.account_chart.refresh_daily(now))
+            self._last_chart_check = now
         if (
             local_now.time().replace(tzinfo=None) < self.preparation_time
             or not self._due(self._last_data_check, now, self.data_prepare_interval)
