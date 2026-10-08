@@ -22,6 +22,17 @@ if (-not (Test-Path -LiteralPath $Python -PathType Leaf)) {
 }
 New-Item -ItemType Directory -Path $RunRoot -Force | Out-Null
 
+# Full regression needs spawn-process IPC and local Git transport permissions.
+# Codex callers must request sandbox_permissions=require_escalated for this entrypoint.
+# Reject a restricted execution environment before launching any test lanes.
+$PreflightOutput = & $Python (Join-Path $PSScriptRoot 'test_preflight.py') $RunRoot 2>&1
+$PreflightExit = $LASTEXITCODE
+$PreflightOutput | Set-Content -Encoding utf8 -LiteralPath (Join-Path $RunRoot 'preflight.log')
+$PreflightOutput | ForEach-Object { Write-Host $_ }
+if ($PreflightExit -ne 0) {
+    throw "Full regression has not started: permission preflight failed. Run this offline entrypoint with the required execution permissions. Evidence: $RunRoot\preflight.log"
+}
+
 $LaneNames = @(
     'TDR_FREEZE', 'PTE_2', 'PTE_1', 'DFLS',
     'TDR_2', 'TDR_1', 'TDR_RUNTIME', 'PACKAGES'
