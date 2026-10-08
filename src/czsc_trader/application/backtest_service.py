@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from strategy_manager import StrategyRegistry, StrategyVersion, canonical_sha256
 from strategy_runtime import StrategyCandidate
+from dataflows import Dataflows
 
 from czsc_trader.backtesting import (
     BacktestRequest,
@@ -15,6 +16,7 @@ from czsc_trader.backtesting.execution_data import (
 
 from ..research_tools.context import ResearchContext
 from .errors import ExecutionError
+from .context import RepositoryContext
 from .runtime_acceptance import _plain
 
 
@@ -30,18 +32,29 @@ def run_backtest(
     """
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
-    repository = context.repository
     if not isinstance(strategy, (StrategyCandidate, StrategyVersion)):
         raise TypeError("backtest strategy must be StrategyCandidate or StrategyVersion")
     if not isinstance(request, BacktestRequest):
         raise TypeError("backtest request must be BacktestRequest")
+    batch_id = strategy.strategy_family_id if isinstance(strategy, StrategyCandidate) else strategy.strategy_id
+    if batch_id != context.strategy_id:
+        raise ExecutionError("backtest_failed", "backtest strategy belongs to another research batch",
+                             context={"strategy": strategy.reference_id if isinstance(strategy, StrategyCandidate)
+                                      else strategy.release_id, "symbol": request.symbol})
+    return _run_authenticated_backtest(context.repository, strategy, request, context.data)
+
+
+def _run_authenticated_backtest(
+    repository: RepositoryContext,
+    strategy: StrategyCandidate | StrategyVersion,
+    request: BacktestRequest,
+    dataflows: Dataflows,
+) -> BacktestEvaluation:
+    """Shared calculation and identity checks for research and independent runs."""
     reference = (
         strategy.reference_id if isinstance(strategy, StrategyCandidate) else strategy.release_id
     )
     try:
-        batch_id = strategy.strategy_family_id if isinstance(strategy, StrategyCandidate) else strategy.strategy_id
-        if batch_id != context.strategy_id:
-            raise ValueError("backtest strategy belongs to another research batch")
         if isinstance(strategy, StrategyCandidate):
             payload = _plain(strategy.payload)
             snapshot = resolve_candidate_snapshot(
@@ -64,7 +77,7 @@ def run_backtest(
             snapshot=snapshot,
             request=request,
             repository_root=repository.root,
-            dataflows=context.data,
+            dataflows=dataflows,
         )
     except BacktestExecutionDataNotReadyError as exc:
         raise ExecutionError(

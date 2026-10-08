@@ -41,40 +41,27 @@ def _context(args: argparse.Namespace) -> RepositoryContext:
 
 
 def _backtest_run(args: argparse.Namespace):
-    from strategy_manager import StrategyRegistry, StrategyManagerError
-    from czsc_trader.application import (
-        BacktestRequest, run_backtest, create_research_context, create_experiment,
-        ExperimentRequest, publish_evidence, CommandResult,
-    )
-    from czsc_trader.research_tools import ResearchBatchRef, MaterialEvidenceWrite
-    from czsc_trader.backtesting.service import _backtest_report_files
+    from strategy_manager import StrategyRegistry, StrategyManagerError, CandidateKey
+    from czsc_trader.application import BacktestRequest, load_candidate
     from czsc_trader.application.errors import ValidationError
+    from .backtest import run_independent_backtest
 
     context = _context(args)
     try:
-        strategy = StrategyRegistry(context.strategy_root).get_version(
-            args.strategy, args.strategy_version
-        )
-    except StrategyManagerError as exc:
-        raise ValidationError("backtest_strategy_invalid", str(exc)) from exc
+        request = BacktestRequest(symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
+                                  initial_cash=args.init_cash, lot_size=args.lot_size)
+    except (TypeError, ValueError) as exc:
+        raise ValidationError("backtest_request_invalid", str(exc)) from exc
     try:
-        research = create_research_context(context, ResearchBatchRef(strategy.strategy_id))
+        strategy = (load_candidate(context, CandidateKey(args.strategy, args.candidate_id))
+                    if args.candidate_id is not None else
+                    StrategyRegistry(context.strategy_root).get_version(args.strategy, args.strategy_version))
     except (StrategyManagerError, ValueError, OSError) as exc:
-        raise ValidationError("backtest_research_context_invalid", str(exc)) from exc
-    evaluation = run_backtest(research, strategy, BacktestRequest(
-        symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
-        initial_cash=args.init_cash, lot_size=args.lot_size))
-    experiment = create_experiment(research, ExperimentRequest(
-        f"{strategy.release_id} 账户回测", f"{args.symbol} 在指定窗口内的实际账户表现", date.today()))
-    artifacts = {}
-    media_types = {"csv": "text/csv", "json": "application/json", "html": "text/html", "md": "text/markdown"}
-    for name, data in _backtest_report_files(evaluation).items():
-        suffix = name.rsplit(".", 1)[1]
-        reference = publish_evidence(research, MaterialEvidenceWrite(
-            experiment, name, data, media_types[suffix], suffix))
-        artifacts[name] = reference.repository_path
-    return CommandResult("PASS", "backtest.run",
-        {"experiment": experiment.to_dict(), "metrics": evaluation.metrics}, artifacts=artifacts)
+        raise ValidationError("backtest_strategy_invalid", str(exc)) from exc
+    output_root = Path(args.outputs_root)
+    if not output_root.is_absolute():
+        output_root = context.root / output_root
+    return run_independent_backtest(context, strategy, request, output_root)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -85,9 +72,12 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_actions = backtest.add_subparsers(
         dest="action", required=True, parser_class=CommandParser
     )
-    backtest_run = backtest_actions.add_parser("run")
+    backtest_run = backtest_actions.add_parser("run", help="run an independent backtest and save reports")
     backtest_run.add_argument("--strategy", required=True)
-    backtest_run.add_argument("--strategy-version", required=True)
+    selection = backtest_run.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--strategy-version", help="registered frozen version, for example v1")
+    selection.add_argument("--candidate-id", help="registered candidate, for example C0621")
+    backtest_run.add_argument("--outputs-root", default="outputs", help="output root, relative to repository by default")
     backtest_run.add_argument("--symbol", required=True)
     backtest_run.add_argument("--asset", required=True, choices=("stock", "etf"))
     backtest_run.add_argument("--start", required=True, type=date.fromisoformat)

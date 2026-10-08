@@ -218,8 +218,10 @@ def _run_backtest(
     return BacktestEvaluation(snapshot, request, signals, execution_data, result, benchmarks, metrics, manifest)
 
 
-def _backtest_report_files(evaluation: BacktestEvaluation) -> dict[str, bytes]:
-    """Render requested report payloads; callers publish them via the evidence API."""
+def _backtest_report_files(
+    evaluation: BacktestEvaluation, *, content_addressed_links: bool = True,
+) -> dict[str, bytes]:
+    """Render reports with evidence hash links or independent-run filenames."""
     if not isinstance(evaluation, BacktestEvaluation):
         raise TypeError("backtest reports require BacktestEvaluation")
     snapshot, request, signals = evaluation.snapshot, evaluation.request, evaluation.signals
@@ -259,7 +261,8 @@ def _backtest_report_files(evaluation: BacktestEvaluation) -> dict[str, bytes]:
         evaluation_start=signals.evaluation_start.date(), evaluation_end=signals.evaluation_end.date(),
         trading_days=len(result.account_daily), lot_size=request.lot_size)
     # Evidence filenames are content identities, so links remain valid after publication.
-    for name in ("chart.html", "ma_chart.html"):
-        report = report.replace(f"({name})", f"({sha256(files[name]).hexdigest()}.html)")
+    if content_addressed_links:
+        for name in ("chart.html", "ma_chart.html"):
+            report = report.replace(f"({name})", f"({sha256(files[name]).hexdigest()}.html)")
     files["report.md"] = report.encode("utf-8")
     return files

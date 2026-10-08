@@ -16,7 +16,7 @@ from test_current_contracts import (
 )
 
 
-def execution_flows(root, *, adjusted_price=1., procurement=None):
+def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
     from dataflows.ohlcv_quality import (
         bind_quality_frame, build_quality_evidence, verify_daily_sessions,
     )
@@ -79,7 +79,7 @@ def execution_flows(root, *, adjusted_price=1., procurement=None):
                 "daily_session_coverage", "ohlcv_quality_evidence",
             )})
         return frame, metadata
-    return Dataflows(base_dir=root, space=DataSpace(Path("research/S900/data")),
+    return Dataflows(base_dir=root, space=space or DataSpace(Path("research/S900/data")),
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
                                      Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
