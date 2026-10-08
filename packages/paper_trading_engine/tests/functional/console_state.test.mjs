@@ -29,6 +29,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     ],
     execution:{
       decisions:[
+        {decision_id:'TIMELINE',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-04T09:00:00+08:00',action:'WAIT',status:'COMPLETED',target_quantity:0},
         {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
         {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'PENDING',target_quantity:0},
         {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-03T13:00:00Z',target_quantity:0},
@@ -53,8 +54,12 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 1.900/);
   assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,2);
   assert.match(svg.textContent,/事件/);
-  assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
-  assert.doesNotMatch(svg.textContent,/决策：/);
+  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
+  assert.match(svg.textContent,/2026-09-04 02:30:00 · 成交：买入/);
+  assert.match(svg.textContent,/2026-09-04 09:00:00 · 决策：等待/);
+  assert.match(svg.textContent,/2026-09-04 11:00:00 · 成交：卖出/);
+  assert.ok(svg.textContent.indexOf('02:30:00 · 成交')<svg.textContent.indexOf('09:00:00 · 决策'));
+  assert.ok(svg.textContent.indexOf('09:00:00 · 决策')<svg.textContent.indexOf('11:00:00 · 成交'));
   assert.ok(!svg.textContent.includes('已失效'));
   assert.ok(!svg.textContent.includes('目标 5,000 股'));
   for(const text of ['买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
@@ -79,7 +84,9 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(svg.textContent,/2026-09-03 · 决策 3 笔/);
   assert.match(svg.textContent,/待执行/);
   assert.match(svg.textContent,/目标 0 股/);
-  assert.match(svg.textContent,/生成 2026-09-03 01:30:00/);
+  assert.match(svg.textContent,/2026-09-03 01:30:00 · 决策：持有/);
+  assert.ok(svg.textContent.indexOf('01:30:00 · 决策')<svg.textContent.indexOf('21:00:00 · 决策'));
+  assert.ok(svg.textContent.indexOf('21:00:00 · 决策')<svg.textContent.indexOf('22:00:00 · 决策'));
   assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
   assert.doesNotMatch(svg.textContent,/已替代|已失效/);
   const eventDate=nodes['forward-event-date'];
@@ -94,7 +101,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   svg.children.at(-1).listeners.pointermove({clientX:928,clientY:60});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,2);
-  assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
+  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
 });

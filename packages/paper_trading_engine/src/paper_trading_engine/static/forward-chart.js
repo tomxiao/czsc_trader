@@ -12,7 +12,7 @@
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
   const bars=context.market_data.bars||[];
   const observations=context.observations||[];
-  const decisions=[...(context.execution.decisions||[])].sort((a,b)=>a.generated_at.localeCompare(b.generated_at));
+  const decisions=[...(context.execution.decisions||[])].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
   const fills=[...(context.execution.fills||[])].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots||[];
   const cutoff=context.window.selection_data_cutoff;
@@ -38,7 +38,7 @@
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
   const dayDecisions=date=>decisions.filter(item=>localTime(item.generated_at).slice(0,10)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
-  const fillSummary=item=>`成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}；时间 ${localTime(item.occurred_at)}`;
+  const fillSummary=item=>`${localTime(item.occurred_at)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
   const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(item=>localTime(item.generated_at).slice(0,10)),...fills.map(fillDate)])].sort();
   const tradingDates=new Set(bars.map(item=>item.date));
   eventDate.replaceChildren(...eventDates.map(date=>{const option=document.createElement('option');option.value=date;option.textContent=`${date}${tradingDates.has(date)?'':'（非交易日）'}`;return option;}));
@@ -62,14 +62,19 @@
       ...(observation.facts||[]).map(item=>`${item.label} ${factValue(item)}`)].join('；');
   }
   function eventLines(date){
-    const lines=[];
-    for(const item of dayDecisions(date)){
-      lines.push(`决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}；生成 ${localTime(item.generated_at)}`);
-      if(item.state_reason)lines.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
+    const events=[
+      ...dayDecisions(date).map(item=>({time:item.generated_at,decision:item})),
+      ...dayFills(date).map(item=>({time:item.occurred_at,fill:item})),
+    ].sort((a,b)=>Date.parse(a.time)-Date.parse(b.time));
+    const lines=events.flatMap(event=>{
+      if(event.fill)return [fillSummary(event.fill)];
+      const item=event.decision;
+      const details=[`${localTime(item.generated_at)} · 决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}`];
+      if(item.state_reason)details.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
       const observation=observationById.get(item.decision_id);
-      lines.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
-    }
-    lines.push(...dayFills(date).map(fillSummary));
+      details.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
+      return details;
+    });
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
   }

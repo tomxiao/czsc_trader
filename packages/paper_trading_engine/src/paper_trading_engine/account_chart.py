@@ -24,7 +24,7 @@ from .trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v7"
+CACHE_RENDER_REVISION = "pte-forward-chart-v8"
 
 
 def _path_comparison_key(path: Path) -> str:
