@@ -604,7 +604,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     first_path = service.chart_path("s001-v2", first["fingerprint"])
     assert first_path.read_text(encoding="utf-8") == "<html>chart-1</html>"
     request = calls[0]
-    assert request["contract_version"] == "pte_forward_chart.v1"
+    assert request["contract_version"] == "pte_forward_chart.v2"
     assert len(request["market_data"]["bars"]) == 62
     assert request["window"]["context_sessions"] == 60
     assert request["window"]["observation_start"] == "2026-09-03"
@@ -614,7 +614,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
     decisions = request["observations"]
     assert {row["account_id"] for row in decisions} == {"s001-v2"}
     assert set(decisions[0]) == {
-        "account_id", "decision_id", "signal_date", "valid_session", "generated_at",
+        "account_id", "symbol", "decision_id", "signal_date", "valid_session", "generated_at",
         "action", "target_quantity", "observation",
     }
     assert request["strategy"]["release_id"] == "S001-v2"
@@ -931,8 +931,9 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     store.close()
 
 
-def test_account_chart_preserves_decision_events_and_authenticated_signal_history(new_store, tmp_path):
+def test_account_chart_preserves_signal_history_across_strategy_packages(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
+    from paper_trading_engine.forward_chart import render_forward_chart_html
 
     store = new_store(tmp_path / "chart-active-decisions.db")
     create_account(store, "s001-v2", "v2", "b")
@@ -975,11 +976,19 @@ def test_account_chart_preserves_decision_events_and_authenticated_signal_histor
     store.save_account_decision(
         "s001-v2", decision_payload("DEC-NEW", "2026-09-04", 0.2),
     )
-    historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-05", 0.5)
-    historical["strategy"]["release_hash"] = "a" * 64
-    historical["observation"] = {"contract_version": "strategy_observation.v1", "status": "READY"}
+    historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-03", 0.5)
+    historical["strategy"] = {"release_hash": "a" * 64, "release_id": "S999-v7"}
+    historical["observation"] = {
+        "contract_version": "strategy_observation.v1", "status": "READY",
+        "series": historical["observation"]["series"],
+    }
+    store.supersede_account_decision("s001-v2", "DEC-LEGACY", "DEC-PREVIOUS-CONTENT")
     store.save_account_decision("s001-v2", historical)
     requests = []
+
+    def render(request):
+        requests.append(request)
+        return render_forward_chart_html(request)
 
     class ImmediateExecutor:
         def submit(self, fn, *args):
@@ -1003,7 +1012,7 @@ def test_account_chart_preserves_decision_events_and_authenticated_signal_histor
             ]),
         )),
         cache_dir=tmp_path / "charts",
-        renderer=lambda request: requests.append(request) or "<html>chart</html>",
+        renderer=render,
         executor=ImmediateExecutor(),
         refresh_interval_seconds=0,
     )
@@ -1011,16 +1020,22 @@ def test_account_chart_preserves_decision_events_and_authenticated_signal_histor
     status = service.status("s001-v2")
 
     assert status["status"] == "READY"
-    assert {row["decision_id"] for row in requests[0]["observations"]} == {"DEC-BASE", "DEC-OLD", "DEC-NEW"}
+    assert {row["decision_id"] for row in requests[0]["observations"]} == {
+        "DEC-BASE", "DEC-OLD", "DEC-NEW", "DEC-PREVIOUS-CONTENT",
+    }
     assert requests[0]["window"]["observation_start"] == "2026-09-02"
-    assert requests[0]["window"]["omitted_decision_count"] == 2
+    assert requests[0]["window"]["omitted_decision_count"] == 1
+    chart_history = next(row for row in requests[0]["observations"] if row["decision_id"] == "DEC-PREVIOUS-CONTENT")
+    assert chart_history["symbol"] == "588080.SH"
+    assert chart_history["observation"]["series"][0]["value"] == 0.5
+    assert set(chart_history["observation"]) == {"status", "series", "facts"}
     events = {row["decision_id"]: row for row in requests[0]["execution"]["decisions"]}
     assert set(events) == {"DEC-BASE", "DEC-OLD", "DEC-NEW", "DEC-LEGACY", "DEC-PREVIOUS-CONTENT"}
     assert events["DEC-OLD"]["status"] == "SUPERSEDED"
     assert events["DEC-BASE"]["signal_date"] == "2026-09-02"
     assert events["DEC-BASE"]["valid_session"] == "2026-09-03"
     assert status["message"] == (
-        "观察事实自 2026-09-02 开始；其中 2 条决策"
+        "观察事实自 2026-09-02 开始；其中 1 条决策"
         "缺少可用于本图的观察事实，未绘制策略信号"
         "；行情截至 2026-09-04；交易日20:30更新"
     )

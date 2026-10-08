@@ -2,13 +2,69 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
+from datetime import date
 from html import escape
 import json
 from typing import Mapping
-from strategy_runtime import StrategyObservation
+from strategy_runtime import (
+    ConstantGuide, ObservedFact, ObservedSeries, ObservationFormat, ObservationValueType,
+)
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v1"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v2"
+
+
+@dataclass(frozen=True, slots=True)
+class ChartObservation:
+    """Display values independent of strategy-package and execution identities."""
+
+    series: tuple[ObservedSeries, ...]
+    facts: tuple[ObservedFact, ...]
+
+    def __post_init__(self):
+        if (type(self.series) is not tuple or type(self.facts) is not tuple or
+            any(not isinstance(item, ObservedSeries) for item in self.series) or
+            any(not isinstance(item, ObservedFact) for item in self.facts)):
+            raise ValueError("chart observation requires typed values")
+        keys = [item.key for item in (*self.series, *self.facts)]
+        if len(keys) != len(set(keys)):
+            raise ValueError("duplicate chart observation keys")
+
+    @classmethod
+    def from_dict(cls, value: object) -> ChartObservation:
+        if (not isinstance(value, dict) or set(value) != {"status", "series", "facts"} or
+            value["status"] != "READY" or type(value["series"]) is not list or
+            type(value["facts"]) is not list):
+            raise ValueError("invalid chart observation fields")
+        series = []
+        for item in value["series"]:
+            if (not isinstance(item, dict) or set(item) != {"key", "label", "value", "guides"} or
+                type(item["guides"]) is not list):
+                raise ValueError("invalid chart series fields")
+            guides = []
+            for guide in item["guides"]:
+                if not isinstance(guide, dict) or set(guide) != {"key", "label", "value"}:
+                    raise ValueError("invalid chart guide fields")
+                guides.append(ConstantGuide(**guide))
+            series.append(ObservedSeries(item["key"], item["label"], item["value"], tuple(guides)))
+        facts = []
+        for item in value["facts"]:
+            if (not isinstance(item, dict) or
+                set(item) != {"key", "label", "value_type", "format", "value"}):
+                raise ValueError("invalid chart fact fields")
+            facts.append(ObservedFact(
+                item["key"], item["label"], ObservationValueType(item["value_type"]),
+                ObservationFormat(item["format"]), item["value"],
+            ))
+        return cls(tuple(series), tuple(facts))
+
+    def to_dict(self):
+        return {
+            "status": "READY",
+            "series": [{**asdict(item), "guides": [asdict(g) for g in item.guides]} for item in self.series],
+            "facts": [asdict(item) for item in self.facts],
+        }
 
 
 def render_forward_chart_html(value: object) -> str:
@@ -29,16 +85,12 @@ def render_forward_chart_html(value: object) -> str:
     if not release_id or not strategy_name:
         raise ValueError("PTE forward chart strategy title is incomplete")
     for row in context['observations']:
-        observation = StrategyObservation.from_dict(row['observation'])
+        ChartObservation.from_dict(row['observation'])
         if (row['account_id'] != strategy['account_id'] or
-            observation.strategy.strategy_id != strategy['strategy_id'] or
-            observation.strategy.reference_id != release_id or
-            observation.strategy.release_hash != strategy['release_hash'] or
-            observation.strategy.symbol != strategy['symbol'] or
-            observation.signal_date.isoformat() != row['signal_date'] or
-            observation.valid_session.isoformat() != row['valid_session'] or
-            observation.action != row['action']):
-            raise ValueError('forward observation differs from account or decision identity')
+            row['symbol'] != strategy['symbol']):
+            raise ValueError('forward observation differs from account or symbol')
+        if date.fromisoformat(row['signal_date']) >= date.fromisoformat(row['valid_session']):
+            raise ValueError('invalid chart observation sessions')
     for row in context['execution'].get('decisions', []):
         if row['account_id'] != strategy['account_id']:
             raise ValueError('forward decision event differs from account identity')

@@ -60,8 +60,7 @@
   function eventLines(date){
     const lines=[];
     for(const item of dayDecisions(date)){
-      const historical=item.release_hash&&item.release_hash!==context.strategy.release_hash?'；历史发布':'';
-      lines.push(`决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}${historical}；生效 ${item.valid_session}；信号 ${item.signal_date}；生成 ${localTime(item.generated_at)}`);
+      lines.push(`决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}；生成 ${localTime(item.generated_at)}`);
       const observation=observationById.get(item.decision_id);
       lines.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
     }

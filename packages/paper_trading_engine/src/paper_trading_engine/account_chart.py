@@ -15,18 +15,16 @@ import time
 from typing import Any, Callable
 from uuid import uuid4
 
-from strategy_runtime import StrategyObservation
-
 from .audit import AuditRecorder
 from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
-from .forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
+from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 from .trading_window import SHANGHAI
 
 
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v5"
+CACHE_RENDER_REVISION = "pte-forward-chart-v6"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -269,36 +267,30 @@ class AccountChartService:
         if not isinstance(observation, dict) or observation.get("status") != "READY":
             message = observation.get("message") if isinstance(observation, dict) else None
             raise ValueError(message or f'decision {row["decision_id"]} has no chart observation')
-        fact = StrategyObservation.from_dict(observation)
-        if (fact.signal_identity != payload.get('signal_identity') or
-            fact.plan_identity != payload.get('plan_identity') or
-            fact.strategy.reference_id != payload.get('strategy', {}).get('release_id') or
-            fact.strategy.release_hash != payload.get('strategy', {}).get('release_hash') or
-            fact.strategy.symbol != payload.get('symbol') or
-            fact.signal_date.isoformat() != row['signal_date'] or
-            fact.valid_session.isoformat() != row['valid_session'] or
-            fact.action != payload.get('action') or
-            fact.strategy.runtime_sha256 != payload.get('runtime_sha256')):
-            raise ValueError('stored observation differs from decision identity')
+        fact = ChartObservation.from_dict({
+            "status": observation["status"], "series": observation["series"],
+            "facts": observation.get("facts", []),
+        })
         return {
             "account_id": row["account_id"],
+            "symbol": payload["symbol"],
             "decision_id": row["decision_id"],
             "signal_date": row["signal_date"],
             "valid_session": row["valid_session"],
             "generated_at": row["generated_at"],
             "action": payload.get("action"),
             "target_quantity": payload.get("target_quantity"),
-            "observation": observation,
+            "observation": fact.to_dict(),
         }
 
     @staticmethod
-    def _has_ready_observation(row: dict[str, Any], release_hash: str) -> bool:
+    def _has_ready_observation(row: dict[str, Any]) -> bool:
         payload = dict(row.get("payload") or {})
         observation = payload.get("observation")
         return (
-            payload.get("strategy", {}).get("release_hash") == release_hash
-            and isinstance(observation, dict)
+            isinstance(observation, dict)
             and observation.get("status") == "READY"
+            and isinstance(observation.get("series"), list)
         )
 
     @staticmethod
@@ -317,13 +309,11 @@ class AccountChartService:
     @staticmethod
     def _decision_event(row: dict[str, Any]) -> dict[str, Any]:
         payload = dict(row.get("payload") or {})
-        strategy = payload.get("strategy") or {}
         return {
             "account_id": row["account_id"], "decision_id": row["decision_id"],
             "signal_date": row["signal_date"], "valid_session": row["valid_session"],
             "generated_at": row["generated_at"], "status": row["status"],
             "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
-            "release_id": strategy.get("release_id"), "release_hash": strategy.get("release_hash"),
         }
 
     def _after_cutoff(
@@ -353,8 +343,7 @@ class AccountChartService:
         decisions = [
             self._decision(row)
             for row in forward_decision_rows
-            if row.get("status") in {"ACTIVE", "SUPERSEDED"}
-            and self._has_ready_observation(row, account["release_hash"])
+            if self._has_ready_observation(row)
         ]
         omitted_decision_count = len(forward_decision_rows) - len(decisions)
         observation_start = min(
