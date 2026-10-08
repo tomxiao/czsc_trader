@@ -732,7 +732,7 @@ def test_daily_chart_update_retries_then_persists_success_and_skips_closed_days(
     assert store.query_audit_events(event_type="ACCOUNT_CHART_RECOVERED")
     status = service.status("s001-v1")
     assert status["market_data_cutoff"] == "2026-09-04"
-    assert "交易日20:30更新" in status["message"]
+    assert status["message"] == "等待第一条策略观察事实"
     service.close()
 
     # A restart and ordinary redraw preserve the completed daily update.
@@ -1034,11 +1034,7 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
     assert events["DEC-OLD"]["status"] == "SUPERSEDED"
     assert events["DEC-BASE"]["signal_date"] == "2026-09-02"
     assert events["DEC-BASE"]["valid_session"] == "2026-09-03"
-    assert status["message"] == (
-        "观察事实自 2026-09-02 开始；其中 1 条决策"
-        "缺少可用于本图的观察事实，未绘制策略信号"
-        "；行情截至 2026-09-04；交易日20:30更新"
-    )
+    assert status["message"] is None
     service.close()
     store.close()
 
@@ -1088,11 +1084,7 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
 
     assert status["status"] == "EMPTY"
     assert status["chart_url"]
-    assert status["message"] == (
-        "等待第一条策略观察事实；其中 1 条决策"
-        "缺少可用于本图的观察事实，未绘制策略信号"
-        "；行情截至 2026-09-03；交易日20:30更新"
-    )
+    assert status["message"] == "等待第一条策略观察事实"
     assert requests[0]["observations"] == []
     assert requests[0]["window"]["observation_start"] is None
     assert requests[0]["window"]["omitted_decision_count"] == 1

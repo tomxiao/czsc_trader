@@ -589,26 +589,6 @@ class AccountChartService:
         if fingerprint and chart_exists:
             has_forward = bool(meta.get("has_forward"))
             has_observation = bool(meta.get("has_observation"))
-            omitted_count = int(meta.get("omitted_decision_count") or 0)
-            observation_start = meta.get("observation_start")
-            observation_message = (
-                f"观察事实自 {observation_start} 开始；其中 {omitted_count} 条决策"
-                "缺少可用于本图的观察事实，未绘制策略信号"
-                if observation_start and omitted_count
-                else (
-                    f"等待第一条策略观察事实；其中 {omitted_count} 条决策"
-                    "缺少可用于本图的观察事实，未绘制策略信号"
-                    if omitted_count
-                    else None
-                )
-            )
-            market_message = (
-                f"行情截至 {meta['market_data_cutoff']}；交易日20:30更新"
-                if meta.get("market_data_cutoff") else None
-            )
-            observation_message = "；".join(
-                value for value in (observation_message, market_message) if value
-            ) or None
             return {
                 **base,
                 "status": "REFRESHING" if refreshing else (
@@ -617,13 +597,10 @@ class AccountChartService:
                 "chart_url": f"/charts/{account_id}/observation.html?v={fingerprint}",
                 "fingerprint": fingerprint,
                 "message": "正在刷新观察图" if refreshing else (
-                    (observation_message if has_observation else (
-                        observation_message or "等待第一条策略观察事实"
-                    )) if has_forward else (
-                        observation_message or (
-                            f"研究截止日为 {account['selection_data_cutoff']}；"
-                            "等待此后交易日的完整收盘行情"
-                        )
+                    (None if has_observation else "等待第一条策略观察事实")
+                    if has_forward else (
+                        f"研究截止日为 {account['selection_data_cutoff']}；"
+                        "等待此后交易日的完整收盘行情"
                     )
                 ),
             }
