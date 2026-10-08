@@ -6,7 +6,6 @@ import pytest
 from dataflows import DataRequest, Dataset
 from strategy_runtime import (
     CalculationScope,
-    CalendarWindow,
     CutoffRule,
     DataPreparationResult,
     DecisionContract,
@@ -14,17 +13,15 @@ from strategy_runtime import (
     HistoryPolicy,
     ImplementationRef,
     InputContract,
-    InputRange,
     InputRequirement,
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
     RuntimeDefinition,
+    RuntimeContractError,
     StrategyIdentity,
     TradableWindow,
     implementation_sha256,
-    next_session_calculation_scope,
-    next_session_calendar_window,
 )
 
 
@@ -33,22 +30,18 @@ def test_strategy_authoring_contracts_are_public() -> None:
 
     expected = {
         "CalculationScope": CalculationScope,
-        "CalendarWindow": CalendarWindow,
         "CutoffRule": CutoffRule,
         "DecisionContract": DecisionContract,
         "ExecutionPolicy": ExecutionPolicy,
         "HistoryPolicy": HistoryPolicy,
         "ImplementationRef": ImplementationRef,
         "InputContract": InputContract,
-        "InputRange": InputRange,
         "InputRequirement": InputRequirement,
         "MonitoringPolicy": MonitoringPolicy,
         "ParameterSet": ParameterSet,
         "RequiredCapabilities": RequiredCapabilities,
         "RuntimeDefinition": RuntimeDefinition,
         "implementation_sha256": implementation_sha256,
-        "next_session_calculation_scope": next_session_calculation_scope,
-        "next_session_calendar_window": next_session_calendar_window,
     }
 
     assert set(expected) <= set(strategy_runtime.__all__)
@@ -56,14 +49,32 @@ def test_strategy_authoring_contracts_are_public() -> None:
     assert not hasattr(strategy_runtime, "StrategyLoader")
     assert not hasattr(strategy_runtime.StrategyImplementation, "from_candidate")
     assert not hasattr(strategy_runtime.StrategyImplementation, "from_release")
+    assert not hasattr(strategy_runtime, "next_session_calculation_scope")
+    assert not hasattr(strategy_runtime, "next_session_calendar_window")
 
 
 def test_unknown_dataset_preserves_the_supported_contract() -> None:
     with pytest.raises(ValueError):
-        DataRequest(dataset="market.trading_calendar", symbol="SSE", start="2026-09-01",
-                    end="2026-09-02", required_cutoff=None)
+        DataRequest(
+            dataset="market.trading_calendar",
+            symbol="SSE",
+            start="2026-09-01",
+            end="2026-09-02",
+            required_cutoff=None,
+        )
     assert Dataset.TRADING_CALENDAR.value == "calendar.trading_sessions"
 
+
+def test_calculation_scope_requires_complete_typed_requests() -> None:
+    window = TradableWindow(date(2026, 9, 3), date(2026, 9, 3))
+    signal = date(2026, 9, 2)
+    request = DataRequest(Dataset.SHIBOR_DAILY, None, '2026-09-01', '2026-09-02', None)
+    scope = CalculationScope(window, (window.start,), {window.start: signal}, (signal,), {'rates': request})
+    assert scope.inputs['rates'] is request
+    with pytest.raises(TypeError):
+        scope.inputs['rates'] = request
+    with pytest.raises(RuntimeContractError, match='named DataRequest'):
+        CalculationScope(window, (window.start,), {window.start: signal}, (signal,), {'rates': (signal, signal)})
 
 
 def test_preparation_result_exposes_the_public_field_name() -> None:

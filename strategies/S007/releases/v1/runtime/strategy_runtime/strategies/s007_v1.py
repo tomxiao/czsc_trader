@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from datetime import date, timedelta
 from typing import Any, Mapping
 
 import numpy as np
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, DataRequest
 
 from strategy_runtime import StrategyImplementation
 from ..calculation import (
     CalculationScope,
-    CalendarWindow,
+    calendar_data_request,
+    build_scope,
     InputRange,
     next_session_calculation_scope,
     next_session_calendar_window,
@@ -368,8 +370,8 @@ class S007V1(StrategyImplementation):
     def definition(self) -> StrategyDefinition:
         return self._definition
 
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
-        return next_session_calendar_window(self._definition, tradable_window)
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
+        return calendar_data_request(self._definition, next_session_calendar_window(self._definition, tradable_window))
 
     def derive_calculation_scope(
         self,
@@ -392,6 +394,7 @@ class S007V1(StrategyImplementation):
         ranges[_SEED] = InputRange(calculation_start, seed_end, None)
         ranges[_EXECUTION] = InputRange(first_signal, last_signal, last_signal)
 
+        observation_dates = {}
         incremental_dates = tuple(
             item for item in calculation_dates if item > _FROZEN_HISTORY_END.date()
         )
@@ -403,6 +406,12 @@ class S007V1(StrategyImplementation):
                     "S007-v1 trading calendar cannot satisfy incremental feature history"
                 )
             feature_start = available[-21]
+            prior_incremental = available[-2]
+            observation_dates = {
+                _SHIBOR: first_incremental, _CHINEXT: first_incremental,
+                _SHARES: prior_incremental, _SPX: first_incremental,
+                _SEED: min(first_signal, seed_end),
+            }
             ranges[_MARKET] = InputRange(min(first_signal, feature_start), last_signal, last_signal)
             ranges[_SHIBOR] = InputRange(feature_start, last_signal, last_signal)
             ranges[_CHINEXT] = InputRange(feature_start, last_signal, last_signal)
@@ -419,12 +428,12 @@ class S007V1(StrategyImplementation):
             ranges[_CHINEXT] = None
             ranges[_SHARES] = None
             ranges[_SPX] = None
-        return CalculationScope(
-            tradable_window,
+        return build_scope(
+            self._definition, tradable_window,
             base.trading_dates,
             base.signal_dates,
             calculation_dates,
-            ranges,
+            ranges, source_root=Path(__file__).resolve().parent.parent, observation_dates=observation_dates,
         )
 
     def calculate_history(

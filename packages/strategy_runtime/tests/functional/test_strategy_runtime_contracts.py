@@ -4,6 +4,7 @@ from dataclasses import fields
 
 import pandas as pd
 import pytest
+from dataflows import DataRequest, Dataset
 
 from strategy_runtime import (
     CutoffRule,
@@ -15,12 +16,12 @@ from strategy_runtime import (
     MonitoringPolicy,
     ParameterSet,
     RequiredCapabilities,
-    RuntimeDefinition, ObservationDefinition,
+    RuntimeDefinition,
+    ObservationDefinition,
     RuntimeContractError,
     StrategyDefinition,
     StrategyImplementation,
-    next_session_calculation_scope,
-    next_session_calendar_window,
+    CalculationScope,
 )
 
 
@@ -36,16 +37,23 @@ def _author_type(*, missing_method=None):
 
     def definition(self):
         runtime = _definition()
-        return StrategyDefinition(**{
-            field.name: self._parameters if field.name == "parameters" else getattr(runtime, field.name)
-            for field in fields(StrategyDefinition)
-        })
+        return StrategyDefinition(
+            **{
+                field.name: self._parameters
+                if field.name == "parameters"
+                else getattr(runtime, field.name)
+                for field in fields(StrategyDefinition)
+            }
+        )
 
-    def calendar_window(self, window):
-        return next_session_calendar_window(self.definition, window)
+    def calendar_request(self, window):
+        return DataRequest(
+            Dataset.TRADING_CALENDAR, "SSE", window.start.isoformat(), window.end.isoformat(), None
+        )
 
     def derive_calculation_scope(self, window, calendar_dates):
-        return next_session_calculation_scope(self.definition, window, calendar_dates)
+        first = calendar_dates[0]
+        return CalculationScope(window, (window.start,), {window.start: first}, (first,), {})
 
     def calculate_history(self, inputs, sessions):
         return pd.DataFrame({"target_position": 0.0}, index=sessions)
@@ -54,7 +62,7 @@ def _author_type(*, missing_method=None):
         "__init__": initialize,
         "from_parameters": classmethod(from_parameters),
         "definition": property(definition),
-        "calendar_window": calendar_window,
+        "calendar_request": calendar_request,
         "derive_calculation_scope": derive_calculation_scope,
         "calculate_history": calculate_history,
     }
@@ -63,9 +71,16 @@ def _author_type(*, missing_method=None):
     return type("ContractAuthor", (StrategyImplementation,), methods)
 
 
-@pytest.mark.parametrize("missing_method", [
-    "from_parameters", "definition", "calendar_window", "derive_calculation_scope", "calculate_history",
-])
+@pytest.mark.parametrize(
+    "missing_method",
+    [
+        "from_parameters",
+        "definition",
+        "calendar_request",
+        "derive_calculation_scope",
+        "calculate_history",
+    ],
+)
 def test_strategy_implementation_requires_every_strategy_owned_method(missing_method) -> None:
     parameters = ParameterSet({"entry_threshold": 0.1})
     complete = _author_type().from_parameters(parameters)
@@ -91,7 +106,7 @@ def _requirement() -> InputRequirement:
 def _definition() -> RuntimeDefinition:
     return RuntimeDefinition(
         schema_version=3,
-            observation=ObservationDefinition((),()),
+        observation=ObservationDefinition((), ()),
         strategy_family_id="S007",
         version="v1",
         release_id="S007-v1",
@@ -134,7 +149,7 @@ def test_runtime_definition_binds_and_validates_tradable_symbol() -> None:
     with pytest.raises(RuntimeContractError, match="tradable_symbol"):
         RuntimeDefinition(
             schema_version=3,
-            observation=ObservationDefinition((),()),
+            observation=ObservationDefinition((), ()),
             strategy_family_id="S007",
             version="v1",
             release_id="S007-v1",
@@ -154,7 +169,7 @@ def test_runtime_definition_requires_input_capabilities() -> None:
     with pytest.raises(RuntimeContractError, match="input datasets"):
         RuntimeDefinition(
             schema_version=3,
-            observation=ObservationDefinition((),()),
+            observation=ObservationDefinition((), ()),
             strategy_family_id="S007",
             version="v1",
             release_id="S007-v1",
@@ -175,7 +190,9 @@ def test_business_definition_excludes_identity_and_enforces_typed_contracts():
     from strategy_runtime import StrategyDefinition
 
     runtime = _definition()
-    business = StrategyDefinition(**{f.name: getattr(runtime, f.name) for f in fields(StrategyDefinition)})
+    business = StrategyDefinition(
+        **{f.name: getattr(runtime, f.name) for f in fields(StrategyDefinition)}
+    )
     assert not hasattr(business, "release_id")
     assert not hasattr(business, "implementation")
     with pytest.raises(RuntimeContractError, match="parameters"):

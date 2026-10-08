@@ -168,11 +168,11 @@ class StrategyInstance:
         )
 
     def calendar_request(self) -> DataRequest:
-        """Describe the prerequisite calendar without accessing a supplier."""
+        """Return the strategy-declared prerequisite request without supplier access."""
         return calendar_request(algorithm=self._algorithm, tradable_window=self._tradable_window)
 
     def plan_inputs(self, calendar: DataResult) -> StrategyInputPlan:
-        """Derive named input requirements from a caller-prepared calendar."""
+        """Authenticate the strategy-declared requests against a prepared calendar."""
         return plan_inputs(strategy=self._identity, algorithm=self._algorithm,
                            tradable_window=self._tradable_window, calendar=calendar)
 

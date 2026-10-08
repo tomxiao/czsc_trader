@@ -126,6 +126,7 @@ class ParameterSet:
 
 @dataclass(frozen=True, slots=True)
 class InputRequirement:
+    """Input identity and strategy-owned planning metadata; the runner does not infer coverage."""
     name: str
     dataset: str
     subject: str | None
@@ -175,7 +176,7 @@ class InputContract:
 
 @dataclass(frozen=True, slots=True)
 class HistoryPolicy:
-    """Declare how much prepared history participates in strategy replay."""
+    """Strategy-owned history configuration, interpreted only by strategy implementation."""
 
     mode: str = "FULL_PUBLICATION_REPLAY"
     canonical_start: str | None = None

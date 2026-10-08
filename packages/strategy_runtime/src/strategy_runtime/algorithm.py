@@ -7,8 +7,9 @@ from datetime import date
 from typing import Mapping, Self
 
 import pandas as pd
+from dataflows import DataRequest
 
-from .calculation import CalculationScope, CalendarWindow
+from .calculation import CalculationScope
 from .contracts import TradableWindow
 from .models import ParameterSet, StrategyDefinition
 from .errors import RuntimeCompatibilityError
@@ -36,8 +37,8 @@ class StrategyImplementation(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
-        """Return the calendar range needed to resolve the tradable window."""
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
+        """Declare the complete prerequisite calendar request."""
 
         raise NotImplementedError
 
@@ -47,7 +48,7 @@ class StrategyImplementation(ABC):
         tradable_window: TradableWindow,
         calendar_dates: tuple[date, ...],
     ) -> CalculationScope:
-        """Derive signal dates and the exact range of every strategy input."""
+        """Declare calculation dates and complete requests for active non-calendar inputs."""
 
         raise NotImplementedError
 

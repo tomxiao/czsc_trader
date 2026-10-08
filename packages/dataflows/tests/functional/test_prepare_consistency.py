@@ -66,6 +66,8 @@ def test_refresh_deduplicates_acquisition_but_checks_each_coverage(flow_factory)
     assert flows.fetch(second, prepared=prepared.reference).ready
 
     excessive = replace(second, coverage=DataCoverageRequirement(minimum_observations=4))
+    assert flows.fetch(excessive, prepared=prepared.reference).status is DataStatus.INCOMPLETE
+    assert len(calls) == 1
     rejected = flows.prepare((first, excessive), policy=PreparePolicy.REFRESH)
     assert len(calls) == 2
     assert rejected.status is PrepareStatus.PARTIAL and rejected.reference is None
@@ -86,6 +88,8 @@ def test_anchored_coverage_recovers_without_counting_later_observations(flow_fac
     required = replace(_request(), coverage=DataCoverageRequirement(
         minimum_observations=2, minimum_sessions=2, observations_through="2026-09-15",
     ))
+    assert flows.fetch(required, prepared=original.reference).status is DataStatus.INCOMPLETE
+    assert len(calls) == 1
     rejected = flows.prepare((required,), policy=PreparePolicy.REUSE)
     assert rejected.status is PrepareStatus.FAILED and rejected.reference is None
     assert rejected.items[0].status is DataStatus.INCOMPLETE
@@ -254,9 +258,12 @@ def test_intraday_fetch_can_read_partial_session_from_complete_preparation(flow_
     morning = replace(request, coverage=DataCoverageRequirement(
         minimum_observations=5, observations_through="2026-09-14 11:30",
     ))
-    assert flows.fetch(morning, prepared=prepared.reference).ready
+    assert flows.fetch(morning, prepared=prepared.reference).status is DataStatus.INCOMPLETE
     sessions = replace(whole_day, coverage=replace(whole_day.coverage, minimum_sessions=2))
-    assert flows.fetch(sessions, prepared=prepared.reference).ready
+    insufficient = flows.fetch(sessions, prepared=prepared.reference)
+    assert insufficient.status is DataStatus.INCOMPLETE
+    assert insufficient.error.context['actual_sessions'] == 1
+    assert flows.fetch(morning, prepared=prepared.reference).status is DataStatus.INCOMPLETE
     assert len(calls) == 1
     assert flows.prepare((morning,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
     assert flows.prepare((sessions,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE

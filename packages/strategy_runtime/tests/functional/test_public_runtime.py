@@ -281,7 +281,7 @@ def plan_binding_seed(frozen_seed_root, runtime_candidate_seed):
     return root / "assets", binding
 
 
-@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates"])
+@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates", "requests"])
 def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
     tmp_path, runtime_candidate, plan_binding_seed, corruption,
 ) -> None:
@@ -297,9 +297,13 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
         changed = replace(plan, calendar_sha256="0" * 64)
     elif corruption == "signal_dates":
         changed = replace(plan, signal_dates={date(2026, 9, 3): date(2026, 9, 1)})
-    else:
+    elif corruption == "calculation_dates":
         changed = replace(plan, calculation_dates=(date(2026, 9, 1), *plan.calculation_dates))
-    if corruption != "calendar_sha256":
+    else:
+        request = plan.requests['flow']
+        requests = {**plan.requests, 'flow': replace(request, coverage=replace(request.coverage, minimum_sessions=2))}
+        changed = replace(plan, requests=requests)
+    if corruption in {"signal_dates", "calculation_dates"}:
         assert changed.calendar_sha256 == plan.calendar_sha256
         assert changed.requests == plan.requests
     corrupted = StrategyInputBinding(changed, binding.prepared)
@@ -341,11 +345,60 @@ def test_latest_available_request_carries_source_freshness_into_preparation(
     assert prepared.available_through == date(2026, 9, 2)
 
 
-def test_session_depth_counts_days_before_first_signal() -> None:
-    from strategy_runtime.validation import validate_history_depth
-    frame = pd.DataFrame({"Date": pd.date_range("2026-01-01 09:31", periods=60, freq="min")})
-    with pytest.raises(RuntimeContractError, match="insufficient history"):
-        validate_history_depth("minute", 60, frame)
+@pytest.mark.parametrize('minimum_sessions', [1, 3])
+def test_strategy_declared_incremental_coverage_is_used_without_runner_warmup_inference(
+    tmp_path, runtime_candidate, minimum_sessions,
+) -> None:
+    from strategy_runtime import RuntimeExecutionError, implementation_sha256
+
+    descriptor = dict(runtime_candidate.payload['runtime'])
+    source = runtime_candidate.source_root / descriptor['source_files'][0]
+    text = source.read_text(encoding='utf-8')
+    # Deliberately inconsistent summary metadata proves the runner does not
+    # reinterpret lookback/staleness: the explicit request is authoritative.
+    declaration = f'''        start, through = date(2026, 9, 1), date(2026, 9, 2)
+        requests['flow'] = DataRequest(Dataset.ETF_SHARE_SIZE, '588080.SH', start.isoformat(), through.isoformat(), through.isoformat(),
+            coverage=DataCoverageRequirement(maximum_start_lag_days=None, minimum_observations=1, minimum_sessions={minimum_sessions}, observations_through=through.isoformat()))
+'''
+    # The fixture is formatted; locate its final return statement by prefix.
+    prefix = '        return CalculationScope('
+    location = text.index(prefix)
+    text = text[:location] + declaration + text[location:]
+    text = text.replace('"daily",\n                1,\n                CutoffRule.SIGNAL_SESSION,',
+                        '"daily",\n                252,\n                CutoffRule.SIGNAL_SESSION,', 1)
+    # Preserve the fixture's own planning for other inputs; its delayed flow
+    # request overrides the initial declaration before calculation.
+    text = text.replace('previous[-max(1, requirement.lookback_sessions)]', 'previous[-1]')
+    text = text.replace('minimum_observations=requirement.lookback_sessions', 'minimum_observations=1')
+    text = text.replace('minimum_sessions=requirement.lookback_sessions', 'minimum_sessions=1')
+    source.write_text(text, encoding='utf-8')
+    descriptor['source_sha256'] = implementation_sha256(tuple(descriptor['source_files']), source_root=runtime_candidate.source_root)
+    candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, 'runtime': descriptor})
+    flows = _flows(tmp_path)
+    window = TradableWindow(date(2026, 8, 31), date(2026, 9, 3))
+    strategy = StrategyRuntime(dataflows=flows).create(StrategyInit(candidate, window, tmp_path / 'context'))
+    assert next(item for item in strategy.definition.inputs.requirements if item.name == 'flow').lookback_sessions == 252
+    request = strategy.calendar_request()
+    calendars = flows.prepare((request,), policy=PreparePolicy.REUSE)
+    plan = strategy.plan_inputs(flows.fetch(request, prepared=calendars.reference))
+    delayed = plan.requests['flow']
+    assert delayed.start == '2026-09-01'
+    assert delayed.coverage.observations_through == '2026-09-02'
+    assert min(plan.signal_dates.values()) == date(2026, 8, 28)
+    assert delayed.coverage.minimum_sessions == minimum_sessions
+    if minimum_sessions == 3:
+        with pytest.raises(RuntimeExecutionError, match='fewer sessions'):
+            strategy.prepare_data(policy=PreparePolicy.REUSE)
+        assert not (tmp_path / 'context/input-bindings').exists()
+    else:
+        strategy.prepare_data(policy=PreparePolicy.REUSE)
+        binding = StrategyInputBinding.from_mapping(strategy.input_binding.to_dict())
+        offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')), providers=ProviderConfig({}))
+        replay = StrategyRuntime(dataflows=offline).create(StrategyInit(candidate, window, tmp_path / 'offline'))
+        replay.prepare_data(binding=binding)
+        assert replay.input_binding == binding
+        with pytest.raises(ValueError, match='does not cover'):
+            replay.inspect_signals()
 
 
 def test_refresh_keeps_old_binding_replayable_and_preserves_historical_files(tmp_path, runtime_candidate) -> None:

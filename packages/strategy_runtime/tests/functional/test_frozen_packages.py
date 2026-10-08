@@ -1,8 +1,11 @@
 """Current real frozen packages load and preserve account execution semantics."""
 from dataclasses import fields, replace
 from pathlib import Path
+from datetime import date
 
 import pytest
+import pandas as pd
+from dataflows import Dataflows, DataSpace, Dataset, ProviderBinding, ProviderConfig, PreparePolicy
 
 from strategy_manager import StrategyRegistry
 from strategy_runtime import (
@@ -14,6 +17,8 @@ from strategy_runtime import (
     load_strategy_deployment,
     materialize_observation,
     ObservationValueType,
+    StrategyInit,
+    TradableWindow,
 )
 from strategy_runtime.contracts import signal_identity_for, plan_identity_for
 from test_observation_contract import observed_plan
@@ -57,6 +62,35 @@ def test_real_rebindable_package_uses_parameter_factory(release_id):
     assert rebound.parameters == original.parameters
     assert rebound.release_hash == original.release_hash
     assert rebound.release_id == original.release_id
+
+
+def test_s007_declares_segmented_requests_for_the_full_2026_backtest_window(tmp_path):
+    record = StrategyRegistry(ROOT).get_version('S007', 'v1')
+
+    def calendar(request):
+        dates = pd.date_range(request.start, request.end)
+        opened = (dates.dayofweek < 5) & ~dates.isin(pd.to_datetime(['2026-01-01', '2026-01-02']))
+        return pd.DataFrame({'Date': dates, 'IsOpen': opened.astype(int)}), {'vendor': 'fixture'}
+
+    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')), providers=ProviderConfig({
+        Dataset.TRADING_CALENDAR: ProviderBinding('fixture', '1', calendar),
+    }))
+    strategy = StrategyRuntime(ROOT, dataflows=flows).create(StrategyInit(
+        StrategyRelease.from_mapping(record.to_dict()),
+        TradableWindow(date(2026, 1, 5), date(2026, 9, 30)), tmp_path / 'context',
+    ))
+    request = strategy.calendar_request()
+    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
+    plan = strategy.plan_inputs(flows.fetch(request, prepared=prepared.reference))
+    assert min(plan.signal_dates.values()) == date(2025, 12, 31)
+    for name in ('incremental_shibor_daily', 'incremental_chinext_daily_basic', 'incremental_etf_share_size'):
+        assert plan.requests[name].start == '2026-08-06'
+    assert plan.requests['incremental_spx_daily'].start == '2026-07-30'
+    assert plan.requests['incremental_chinext_daily_basic'].coverage.minimum_sessions == 20
+    assert plan.requests['incremental_chinext_daily_basic'].coverage.observations_through == '2026-09-03'
+    assert plan.requests['incremental_etf_share_size'].coverage.observations_through == '2026-09-02'
+    assert plan.requests['feature_seed'].end == '2026-09-02'
+    assert plan.requests['feature_seed'].coverage is None
 
 
 def test_current_packages_have_no_research_governance_or_chart_dependency(loaded_release):

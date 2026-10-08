@@ -7,10 +7,6 @@ from .identity import CandidateContentIdentity, ImplementationDependency
 from .alignment import AlignmentRule, AlignedInput, InputAlignment, align_input_history
 from .calculation import (
     CalculationScope,
-    CalendarWindow,
-    InputRange,
-    next_session_calculation_scope,
-    next_session_calendar_window,
 )
 from .binding import RuntimeBinding, RuntimeBindingSpec
 from .observation import (
@@ -83,7 +79,6 @@ __all__ = [
     "AlignmentRule",
     "DataPreparationResult",
     "CalculationScope",
-    "CalendarWindow",
     "CutoffRule",
     "ExecutionCapabilities",
     "DecisionContract",
@@ -96,7 +91,6 @@ __all__ = [
     "InputContract",
     "InputAlignment",
     "InputRequirement",
-    "InputRange",
     "MonitoringPolicy",
     "OrderSide",
     "OrderType",
@@ -130,7 +124,5 @@ __all__ = [
     "load_strategy_deployment",
     "materialize_observation",
     "implementation_sha256",
-    "next_session_calculation_scope",
-    "next_session_calendar_window",
     "unavailable_observation",
 ]

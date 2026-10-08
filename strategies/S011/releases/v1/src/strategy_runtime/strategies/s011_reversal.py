@@ -1,10 +1,12 @@
 """Development prototype: causal short-pressure reversal; no frozen release."""
 from __future__ import annotations
+from pathlib import Path
 from datetime import date
 import numpy as np
 import pandas as pd
 from dataflows import Dataset
-from strategy_runtime import CalculationScope, InputRange, StrategyImplementation, StrategyDefinition, ParameterSet, InputRequirement, InputContract, CutoffRule, DecisionContract, ExecutionPolicy, MonitoringPolicy, RequiredCapabilities, HistoryPolicy, InputAlignment, AlignmentRule, align_input_history, next_session_calendar_window, next_session_calculation_scope, ObservationDefinition, ObservationSeries, ObservationFact, ConstantGuide, ObservationValueType, ObservationFormat
+from strategy_runtime import StrategyImplementation, StrategyDefinition, ParameterSet, InputRequirement, InputContract, CutoffRule, DecisionContract, ExecutionPolicy, MonitoringPolicy, RequiredCapabilities, HistoryPolicy, InputAlignment, AlignmentRule, align_input_history, ObservationDefinition, ObservationSeries, ObservationFact, ConstantGuide, ObservationValueType, ObservationFormat
+from ..calculation import InputRange, calendar_data_request, build_scope, next_session_calendar_window, next_session_calculation_scope
 ALIGNMENT = InputAlignment(AlignmentRule.STRICT_PRIOR, 'Date', 'US', 'SSE', 10, False)
 FIELDS = ('tail_weight', 'spx_weight', 'entry', 'exit', 'max_days', 'lookback', 'premium')
 
@@ -90,8 +92,8 @@ class S011Reversal(StrategyImplementation):
     def definition(self):
         return self._definition
 
-    def calendar_window(self, window):
-        return next_session_calendar_window(self.definition, window)
+    def calendar_request(self, window):
+        return calendar_data_request(self.definition, next_session_calendar_window(self.definition, window))
 
     def derive_calculation_scope(self, window, dates):
         base = next_session_calculation_scope(self.definition, window, dates)
@@ -101,7 +103,7 @@ class S011Reversal(StrategyImplementation):
             ranges[name] = InputRange(date(2024, 12, 26), original.end, original.required_cutoff)
         original = ranges['spx']
         ranges['spx'] = InputRange(date(2024, 12, 16), original.end, None)
-        return CalculationScope(window, base.trading_dates, base.signal_dates, base.calculation_dates, ranges)
+        return build_scope(self.definition, window, base.trading_dates, base.signal_dates, base.calculation_dates, ranges, source_root=Path(__file__).resolve().parent.parent)
 
     def calculate_history(self, inputs, sessions):
         panel = features(inputs)

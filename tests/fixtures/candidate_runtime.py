@@ -3,14 +3,14 @@
 Tests install and freeze this source only in isolated test repositories.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, DataRequest, DataCoverageRequirement
 from strategy_runtime import (
-    ObservationDefinition, ObservationSeries,
+    ObservationDefinition,
+    ObservationSeries,
     CalculationScope,
-    CalendarWindow,
     CutoffRule,
     DecisionContract,
     ExecutionPolicy,
@@ -22,8 +22,6 @@ from strategy_runtime import (
     StrategyDefinition,
     StrategyImplementation,
     TradableWindow,
-    next_session_calculation_scope,
-    next_session_calendar_window,
 )
 
 
@@ -76,7 +74,9 @@ class CandidateFixture(StrategyImplementation):
             for index, symbol in enumerate(reference_symbols, start=1)
         )
         self._definition = StrategyDefinition(
-            observation=ObservationDefinition((ObservationSeries("fixture", "鍚堟垚淇″彿", "fixture_signal"),), ()),
+            observation=ObservationDefinition(
+                (ObservationSeries("fixture", "鍚堟垚淇″彿", "fixture_signal"),), ()
+            ),
             parameters=parameters,
             inputs=InputContract(tuple(requirements)),
             decision=DecisionContract("TARGET_POSITION", 0.0, 1.0, "NEXT_SESSION"),
@@ -126,18 +126,62 @@ class CandidateFixture(StrategyImplementation):
     def definition(self, value):
         self._definition = value
 
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
-        return next_session_calendar_window(self.definition, tradable_window)
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
+        start = tradable_window.start - timedelta(days=31)
+        end = tradable_window.end + timedelta(days=20)
+        return DataRequest(
+            Dataset.TRADING_CALENDAR, "SSE", start.isoformat(), end.isoformat(), end.isoformat()
+        )
 
     def derive_calculation_scope(
         self,
         tradable_window: TradableWindow,
         calendar_dates: tuple[date, ...],
     ) -> CalculationScope:
-        return next_session_calculation_scope(
-            self.definition,
-            tradable_window,
-            calendar_dates,
+        trading_dates = tuple(day for day in calendar_dates if tradable_window.contains(day))
+        signal_dates = {
+            day: max(prior for prior in calendar_dates if prior < day) for day in trading_dates
+        }
+        first_signal, last_signal = min(signal_dates.values()), max(signal_dates.values())
+        requests = {}
+        for requirement in self.definition.inputs.requirements:
+            if requirement.dataset == Dataset.TRADING_CALENDAR.value:
+                continue
+            previous = tuple(day for day in calendar_dates if day <= first_signal)
+            start = previous[-max(1, requirement.lookback_sessions)]
+            end = last_signal
+            cutoff = last_signal
+            if requirement.cutoff_rule is CutoffRule.PREVIOUS_SESSION:
+                end = cutoff = max(day for day in calendar_dates if day < last_signal)
+            elif requirement.cutoff_rule is CutoffRule.LATEST_AVAILABLE:
+                start -= timedelta(days=requirement.maximum_staleness_days)
+                cutoff = max(
+                    start, last_signal - timedelta(days=requirement.maximum_staleness_days)
+                )
+            coverage = (
+                DataCoverageRequirement(
+                    maximum_start_lag_days=None,
+                    minimum_observations=requirement.lookback_sessions,
+                    minimum_sessions=requirement.lookback_sessions,
+                    observations_through=min(first_signal, end).isoformat(),
+                )
+                if requirement.lookback_sessions
+                else None
+            )
+            requests[requirement.name] = DataRequest(
+                requirement.dataset,
+                requirement.subject,
+                start.isoformat(),
+                end.isoformat(),
+                cutoff.isoformat(),
+                requirement.frequency,
+                coverage=coverage,
+            )
+        calculation_dates = tuple(
+            day for day in calendar_dates if first_signal <= day <= last_signal
+        )
+        return CalculationScope(
+            tradable_window, trading_dates, signal_dates, calculation_dates, requests
         )
 
     def calculate_history(self, inputs, sessions):

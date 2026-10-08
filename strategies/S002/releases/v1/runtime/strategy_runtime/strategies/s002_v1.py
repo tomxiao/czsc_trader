@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from datetime import date
 import re
 from typing import Any, Mapping
 
 import czsc
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, DataRequest
 
 from strategy_runtime import StrategyImplementation
 from ..calculation import (
     CalculationScope,
-    CalendarWindow,
+    calendar_data_request,
+    build_scope,
     next_session_calculation_scope,
     next_session_calendar_window,
 )
@@ -263,19 +265,17 @@ class S002V1(StrategyImplementation):
     def definition(self) -> StrategyDefinition:
         return self._definition
 
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
-        return next_session_calendar_window(self._definition, tradable_window)
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
+        return calendar_data_request(self._definition, next_session_calendar_window(self._definition, tradable_window))
 
     def derive_calculation_scope(
         self,
         tradable_window: TradableWindow,
         calendar_dates: tuple[date, ...],
     ) -> CalculationScope:
-        return next_session_calculation_scope(
-            self._definition,
-            tradable_window,
-            calendar_dates,
-        )
+        scope = next_session_calculation_scope(self._definition, tradable_window, calendar_dates)
+        return build_scope(self._definition, tradable_window, scope.trading_dates, scope.signal_dates,
+                           scope.calculation_dates, scope.inputs, source_root=Path(__file__).resolve().parent.parent)
 
     def calculate_history(
         self,

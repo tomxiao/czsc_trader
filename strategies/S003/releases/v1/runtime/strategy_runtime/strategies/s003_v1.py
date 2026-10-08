@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from datetime import date, timedelta
 import json
 from typing import Any, Mapping
 
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, DataRequest
 
 from strategy_runtime import StrategyImplementation
 from ..calculation import (
     CalculationScope,
+    calendar_data_request,
+    build_scope,
     CalendarWindow,
     InputRange,
     next_session_calculation_scope,
@@ -286,12 +289,12 @@ class S003V1(StrategyImplementation):
     def definition(self) -> StrategyDefinition:
         return self._definition
 
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
         window = next_session_calendar_window(self._definition, tradable_window)
         lookback_start = tradable_window.start - timedelta(
             days=int(self._feature["threshold_lookback_sessions"]) * 2 + 31
         )
-        return CalendarWindow(min(window.start, lookback_start), window.end)
+        return calendar_data_request(self._definition, CalendarWindow(min(window.start, lookback_start), window.end))
 
     def derive_calculation_scope(
         self,
@@ -317,10 +320,12 @@ class S003V1(StrategyImplementation):
         seed_start = max(_SEED_START, calculation_start)
         seed_end = min(_SEED_CUTOFF, last_signal)
         ranges[_SEED] = InputRange(seed_start, seed_end, None) if seed_start <= seed_end else None
+        observation_dates = {_SEED: min(first_signal, seed_end)}
         incremental_dates = tuple(item for item in calculation_dates if item > _SEED_CUTOFF)
         if incremental_dates:
             incremental_start = incremental_dates[0]
             incremental_end = incremental_dates[-1]
+            observation_dates.update({_WEIGHTS: incremental_start, _MONEYFLOW: incremental_start})
             ranges[_WEIGHTS] = InputRange(
                 incremental_start - timedelta(days=370), incremental_end, None
             )
@@ -328,12 +333,12 @@ class S003V1(StrategyImplementation):
         else:
             ranges[_WEIGHTS] = None
             ranges[_MONEYFLOW] = None
-        return CalculationScope(
-            tradable_window,
+        return build_scope(
+            self._definition, tradable_window,
             base.trading_dates,
             base.signal_dates,
             calculation_dates,
-            ranges,
+            ranges, source_root=Path(__file__).resolve().parent.parent, observation_dates=observation_dates,
         )
 
     def calculate_history(

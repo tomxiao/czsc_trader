@@ -28,8 +28,8 @@ class _BoundStrategy:
     implementation: StrategyImplementation
     definition: RuntimeDefinition
 
-    def calendar_window(self, window):
-        return self.implementation.calendar_window(window)
+    def calendar_request(self, window):
+        return self.implementation.calendar_request(window)
 
     def derive_calculation_scope(self, window, calendar_dates):
         return self.implementation.derive_calculation_scope(window, calendar_dates)

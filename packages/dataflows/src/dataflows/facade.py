@@ -1241,9 +1241,18 @@ class Dataflows:
                 return self._failure(DataStatus.FAILED, "AMBIGUOUS_PREPARED_DATA",
                                      "overlapping prepared assets disagree", request)
             result = results[0]
+            # A subset read may declare stricter coverage/cutoff conditions than
+            # the original preparation. Validate them against the selected rows;
+            # reading a pinned asset never acquires or repairs supplier data.
+            _validate_coverage(result.dataframe, request)
+            _date_bounds(result.dataframe, request, result.identity.metadata)
             return replace(result, prepared=prepared)
         except StoreError as exc:
             return self._failure(DataStatus.FAILED, exc.code, str(exc), request)
+        except IncompleteDataError as exc:
+            return self._expected_failure(DataStatus.INCOMPLETE, exc, request)
+        except DataflowError as exc:
+            return self._expected_failure(DataStatus.FAILED, exc, request)
         except (TypeError, ValueError, KeyError) as exc:
             return self._failure(DataStatus.FAILED, "PREPARED_DATA_INVALID", str(exc), request)
 

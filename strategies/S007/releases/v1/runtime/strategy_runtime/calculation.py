@@ -1,4 +1,4 @@
-"""Internal calculation ranges derived by each strategy implementation."""
+"""Strategy-owned next-session input planning; the runner does not execute these rules."""
 
 from __future__ import annotations
 
@@ -7,9 +7,18 @@ from datetime import date, timedelta
 from types import MappingProxyType
 from typing import Mapping
 
-from dataflows import Dataset
+from pathlib import Path
+from importlib.resources import files
+from dataflows import (
+    Dataset,
+    DataRequest,
+    DataCoverageRequirement,
+    EvidenceParameters,
+    MoneyflowParameters,
+    NoParameters,
+)
 
-from strategy_runtime import TradableWindow
+from strategy_runtime import TradableWindow, CalculationScope
 from strategy_runtime import RuntimeContractError
 from strategy_runtime import CutoffRule, StrategyDefinition
 
@@ -38,7 +47,7 @@ class InputRange:
 
 
 @dataclass(frozen=True, slots=True)
-class CalculationScope:
+class _InputScope:
     tradable_window: TradableWindow
     trading_dates: tuple[date, ...]
     signal_dates: Mapping[date, date]
@@ -106,12 +115,10 @@ def next_session_calculation_scope(
     definition: StrategyDefinition,
     tradable_window: TradableWindow,
     calendar_dates: tuple[date, ...],
-) -> CalculationScope:
+) -> _InputScope:
     """Derive the exact current frozen next-session calculation semantics."""
 
-    trading_dates = tuple(
-        item for item in calendar_dates if tradable_window.contains(item)
-    )
+    trading_dates = tuple(item for item in calendar_dates if tradable_window.contains(item))
     if (
         not trading_dates
         or trading_dates[0] != tradable_window.start
@@ -122,9 +129,7 @@ def next_session_calculation_scope(
     for trading_date in trading_dates:
         previous = [item for item in calendar_dates if item < trading_date]
         if not previous:
-            raise RuntimeContractError(
-                "trading calendar has no signal session before trading date"
-            )
+            raise RuntimeContractError("trading calendar has no signal session before trading date")
         signal_dates[trading_date] = previous[-1]
     first_signal = signal_dates[trading_dates[0]]
     last_signal = signal_dates[trading_dates[-1]]
@@ -132,9 +137,7 @@ def next_session_calculation_scope(
     ranges: dict[str, InputRange] = {}
     for name, requirement in requirements.items():
         if requirement.dataset == Dataset.TRADING_CALENDAR.value:
-            ranges[name] = InputRange(
-                calendar_dates[0], calendar_dates[-1], calendar_dates[-1]
-            )
+            ranges[name] = InputRange(calendar_dates[0], calendar_dates[-1], calendar_dates[-1])
             continue
         available = [item for item in calendar_dates if item <= first_signal]
         required = max(1, requirement.lookback_sessions)
@@ -169,10 +172,99 @@ def next_session_calculation_scope(
     calculation_dates = tuple(
         item for item in calendar_dates if calculation_start <= item <= last_signal
     )
-    return CalculationScope(
+    return _InputScope(
         tradable_window,
         trading_dates,
         signal_dates,
         calculation_dates,
         ranges,
+    )
+
+
+def calendar_data_request(definition, window: CalendarWindow) -> DataRequest:
+    (requirement,) = (
+        item
+        for item in definition.inputs.requirements
+        if item.dataset == Dataset.TRADING_CALENDAR.value
+    )
+    return DataRequest(
+        requirement.dataset,
+        requirement.subject,
+        window.start.isoformat(),
+        window.end.isoformat(),
+        window.end.isoformat(),
+        requirement.frequency,
+    )
+
+
+def build_scope(
+    definition,
+    tradable_window,
+    trading_dates,
+    signal_dates,
+    calculation_dates,
+    ranges,
+    *,
+    source_root=None,
+    observation_dates=None,
+):
+    """Materialize this strategy's explicit requests, including its coverage policy."""
+    observation_dates = {} if observation_dates is None else observation_dates
+    requests = {}
+    first_signal = min(signal_dates.values())
+    for requirement in definition.inputs.requirements:
+        name = requirement.name
+        value = ranges.get(name)
+        if requirement.dataset == Dataset.TRADING_CALENDAR.value or value is None:
+            continue
+        parameters = NoParameters()
+        if requirement.dataset == Dataset.STRATEGY_FEATURE_EVIDENCE.value:
+            data_source = definition.parameters.values["rule"]["data_source"]
+            package = data_source.get("package")
+            if package == "strategy_runtime":
+                root = source_root
+            elif package is None:
+                root = Path.cwd().resolve()
+            else:
+                root = Path(str(files(package))).resolve()
+            parameters = EvidenceParameters(root, data_source["path"], data_source["sha256"])
+        if requirement.dataset == Dataset.STOCK_MONEYFLOW.value and requirement.subject is None:
+            parameters = MoneyflowParameters(
+                tuple(
+                    item.isoformat()
+                    for item in calculation_dates
+                    if value.start <= item <= value.end
+                )
+            )
+        cutoff = value.required_cutoff
+        if (
+            requirement.cutoff_rule is CutoffRule.LATEST_AVAILABLE
+            and requirement.maximum_staleness_days
+        ):
+            cutoff = max(
+                value.start,
+                calculation_dates[-1] - timedelta(days=requirement.maximum_staleness_days),
+                cutoff or value.start,
+            )
+        coverage = None
+        if requirement.lookback_sessions > 0:
+            through = observation_dates.get(name, min(first_signal, value.end))
+            coverage = DataCoverageRequirement(
+                maximum_start_lag_days=None,
+                minimum_observations=requirement.lookback_sessions,
+                minimum_sessions=requirement.lookback_sessions,
+                observations_through=through.isoformat(),
+            )
+        requests[name] = DataRequest(
+            requirement.dataset,
+            requirement.subject,
+            value.start.isoformat(),
+            value.end.isoformat(),
+            None if cutoff is None else cutoff.isoformat(),
+            requirement.frequency,
+            parameters,
+            coverage=coverage,
+        )
+    return CalculationScope(
+        tradable_window, trading_dates, signal_dates, calculation_dates, requests
     )

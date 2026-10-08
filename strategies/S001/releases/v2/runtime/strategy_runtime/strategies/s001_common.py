@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from pathlib import Path
 from datetime import date, timedelta
 import re
 from typing import Any, Mapping
@@ -10,11 +11,13 @@ from typing import Any, Mapping
 import czsc
 import numpy as np
 import pandas as pd
-from dataflows import Dataset
+from dataflows import Dataset, DataRequest
 
 from strategy_runtime import StrategyImplementation
 from ..calculation import (
     CalculationScope,
+    calendar_data_request,
+    build_scope,
     CalendarWindow,
     InputRange,
 )
@@ -462,11 +465,11 @@ class S001Base(StrategyImplementation):
     def definition(self) -> StrategyDefinition:
         return self._definition
 
-    def calendar_window(self, tradable_window: TradableWindow) -> CalendarWindow:
-        return CalendarWindow(
+    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:
+        return calendar_data_request(self._definition, CalendarWindow(
             _HISTORY_START,
             tradable_window.end + timedelta(days=_CALENDAR_FORWARD_DAYS),
-        )
+        ))
 
     def derive_calculation_scope(
         self,
@@ -507,12 +510,12 @@ class S001Base(StrategyImplementation):
             )
             for name, requirement in requirements.items()
         }
-        return CalculationScope(
-            tradable_window,
+        return build_scope(
+            self._definition, tradable_window,
             trading_dates,
             signal_dates,
             calculation_dates,
-            ranges,
+            ranges, source_root=Path(__file__).resolve().parent.parent,
         )
 
     def calculate_history(

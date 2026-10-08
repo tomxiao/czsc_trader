@@ -208,7 +208,10 @@ def test_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_
     outside = replace(_request(), start="2026-09-13")
     assert flows.fetch(outside, prepared=prepared.reference).error.code == "REQUEST_NOT_PREPARED"
     insufficient = replace(_request(), coverage=DataCoverageRequirement(minimum_observations=4))
-    assert flows.fetch(insufficient, prepared=prepared.reference).ready
+    rejected = flows.fetch(insufficient, prepared=prepared.reference)
+    assert rejected.status is DataStatus.INCOMPLETE
+    assert rejected.error.context['minimum_observations'] == 4
+    assert rejected.error.context['actual_observations'] == 3
     assert _database(tmp_path).stat().st_mtime_ns == before and len(calls) == 1
     assert flows.prepare((insufficient,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
 
