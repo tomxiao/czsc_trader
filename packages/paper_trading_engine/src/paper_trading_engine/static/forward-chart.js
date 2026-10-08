@@ -36,7 +36,7 @@
   const statusLabel=value=>({ACTIVE:'当前有效',SUPERSEDED:'已替代',INVALIDATED:'已失效'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
-  const dayDecisions=date=>decisions.filter(item=>item.valid_session===date);
+  const dayDecisions=date=>decisions.filter(item=>localTime(item.generated_at).slice(0,10)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
   const fillSummary=item=>`成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}；时间 ${localTime(item.occurred_at)}`;
 

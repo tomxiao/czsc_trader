@@ -30,7 +30,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     execution:{
       decisions:[
         {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
-        {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'HOLD',status:'ACTIVE',target_quantity:0},
+        {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'ACTIVE',target_quantity:0},
         {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'INVALIDATED',target_quantity:0},
         {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'INVALIDATED',target_quantity:5000},
       ],
@@ -52,11 +52,11 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 0.300/);
   assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,1);
   assert.match(svg.textContent,/事件/);
-  assert.match(svg.textContent,/决策 2 笔 · 成交 2 笔/);
+  assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
+  assert.doesNotMatch(svg.textContent,/决策：/);
   assert.ok(!svg.textContent.includes('已失效'));
   assert.ok(!svg.textContent.includes('目标 5,000 股'));
-  for(const text of ['已替代','当前有效','目标 0 股','买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
-  assert.ok(svg.textContent.includes('日内轮换'));
+  for(const text of ['买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
   assert.ok(svg.textContent.indexOf('买入 100 股')<svg.textContent.indexOf('卖出 400 股'));
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
@@ -68,13 +68,23 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   for(const text of ['目标持仓','未记录','决策','成交','买入','卖出','费用'])assert.ok(!tooltip.innerHTML.includes(text),text);
   const overlay=svg.children.at(-1);
   overlay.listeners.pointermove({clientX:68,clientY:60});
-  assert.match(svg.textContent,/2026-09-02 · 当日无可展示事件/);
+  assert.match(svg.textContent,/2026-09-02 · 决策 1 笔/);
+  assert.match(svg.textContent,/日内轮换/);
+  assert.match(svg.textContent,/已替代/);
+  assert.doesNotMatch(svg.textContent,/当前有效/);
   assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
   assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
+  overlay.listeners.pointermove({clientX:498,clientY:60});
+  assert.match(svg.textContent,/2026-09-03 · 决策 1 笔/);
+  assert.match(svg.textContent,/当前有效/);
+  assert.match(svg.textContent,/目标 0 股/);
+  assert.match(svg.textContent,/生成 2026-09-03 01:30:00/);
+  assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
+  assert.doesNotMatch(svg.textContent,/已替代|已失效/);
   overlay.listeners.pointermove({clientX:928,clientY:60});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,1);
-  assert.match(svg.textContent,/决策 2 笔 · 成交 2 笔/);
+  assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
 });
