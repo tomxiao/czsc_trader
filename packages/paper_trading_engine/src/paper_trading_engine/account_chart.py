@@ -26,7 +26,7 @@ from .trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v4"
+CACHE_RENDER_REVISION = "pte-forward-chart-v5"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -314,6 +314,18 @@ class AccountChartService:
             "limit_price": row.get("limit_price") or payload.get("limit_price"),
         }
 
+    @staticmethod
+    def _decision_event(row: dict[str, Any]) -> dict[str, Any]:
+        payload = dict(row.get("payload") or {})
+        strategy = payload.get("strategy") or {}
+        return {
+            "account_id": row["account_id"], "decision_id": row["decision_id"],
+            "signal_date": row["signal_date"], "valid_session": row["valid_session"],
+            "generated_at": row["generated_at"], "status": row["status"],
+            "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
+            "release_id": strategy.get("release_id"), "release_hash": strategy.get("release_hash"),
+        }
+
     def _after_cutoff(
         self, rows: list[dict[str, Any]], cutoff: str, fields: tuple[str, ...],
     ) -> list[dict[str, Any]]:
@@ -331,20 +343,18 @@ class AccountChartService:
         with self._store_guard:
             if self._closing.is_set():
                 raise _RefreshCancelled
-            decision_rows = [
-                row for row in self.store.account_decisions(account_id)
-                if row.get("status") == "ACTIVE"
-            ]
+            decision_rows = self.store.account_decisions(account_id)
             intent_rows = self.store.account_intents(account_id)
             fill_rows = self.store.account_fills(account_id)
             snapshot_rows = self.store.account_snapshots(account_id)
         forward_decision_rows = self._after_cutoff(
-            decision_rows, cutoff, ("signal_date",)
+            decision_rows, cutoff, ("valid_session",)
         )
         decisions = [
             self._decision(row)
             for row in forward_decision_rows
-            if self._has_ready_observation(row, account["release_hash"])
+            if row.get("status") in {"ACTIVE", "SUPERSEDED"}
+            and self._has_ready_observation(row, account["release_hash"])
         ]
         omitted_decision_count = len(forward_decision_rows) - len(decisions)
         observation_start = min(
@@ -410,7 +420,10 @@ class AccountChartService:
                 "bars": bars,
             },
             "observations": decisions,
-            "execution": {"intents": intents, "fills": fills, "snapshots": snapshots},
+            "execution": {
+                "decisions": [self._decision_event(row) for row in forward_decision_rows],
+                "intents": intents, "fills": fills, "snapshots": snapshots,
+            },
         }
         return request, any(bar["date"] > cutoff for bar in bars)
 
@@ -591,11 +604,11 @@ class AccountChartService:
             observation_start = meta.get("observation_start")
             observation_message = (
                 f"观察事实自 {observation_start} 开始；其中 {omitted_count} 条决策"
-                "缺少可用的观察事实，未绘制策略解释"
+                "缺少可用于本图的观察事实，未绘制策略信号"
                 if observation_start and omitted_count
                 else (
                     f"等待第一条策略观察事实；其中 {omitted_count} 条决策"
-                    "缺少可用的观察事实，未绘制策略解释"
+                    "缺少可用于本图的观察事实，未绘制策略信号"
                     if omitted_count
                     else None
                 )

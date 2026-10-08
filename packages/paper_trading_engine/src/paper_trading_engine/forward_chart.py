@@ -39,6 +39,9 @@ def render_forward_chart_html(value: object) -> str:
             observation.valid_session.isoformat() != row['valid_session'] or
             observation.action != row['action']):
             raise ValueError('forward observation differs from account or decision identity')
+    for row in context['execution'].get('decisions', []):
+        if row['account_id'] != strategy['account_id']:
+            raise ValueError('forward decision event differs from account identity')
     encoded = json.dumps(
         context,
         ensure_ascii=False,
@@ -75,10 +78,10 @@ def render_forward_chart_html(value: object) -> str:
       </div>
     </div>
     <section class="forward-stage" id="forward-stage">
-      <svg id="forward-svg" role="img" aria-label="交易日K线、策略信号、成交、持仓及逐日解释"></svg>
+      <svg id="forward-svg" role="img" aria-label="交易日K线、策略信号、决策事件、成交、持仓及逐日事件"></svg>
       <div class="forward-tooltip" id="forward-tooltip" role="tooltip" hidden></div>
     </section>
-    <footer><span>截止线左侧仅作行情背景；右侧为冻结版本前瞻记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
+    <footer><span>截止线左侧为行情背景；信号按信号日展示，决策按生效日展示，状态标明已替代或失效的历史记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>
   <script src="/static/forward-chart.js"></script>

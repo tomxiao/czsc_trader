@@ -931,7 +931,7 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
     store.close()
 
 
-def test_account_chart_uses_only_active_decisions(new_store, tmp_path):
+def test_account_chart_preserves_decision_events_and_authenticated_signal_history(new_store, tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
 
     store = new_store(tmp_path / "chart-active-decisions.db")
@@ -965,6 +965,9 @@ def test_account_chart_uses_only_active_decisions(new_store, tmp_path):
     legacy = decision_payload("DEC-LEGACY", "2026-09-03", 0.0)
     legacy.pop("observation")
     store.save_account_decision("s001-v2", legacy)
+    store.save_account_decision(
+        "s001-v2", decision_payload("DEC-BASE", "2026-09-02", 0.0),
+    )
     store.save_account_decision(
         "s001-v2", decision_payload("DEC-OLD", "2026-09-04", 0.1),
     )
@@ -1008,12 +1011,17 @@ def test_account_chart_uses_only_active_decisions(new_store, tmp_path):
     status = service.status("s001-v2")
 
     assert status["status"] == "READY"
-    assert [row["decision_id"] for row in requests[0]["observations"]] == ["DEC-NEW"]
-    assert requests[0]["window"]["observation_start"] == "2026-09-04"
+    assert {row["decision_id"] for row in requests[0]["observations"]} == {"DEC-BASE", "DEC-OLD", "DEC-NEW"}
+    assert requests[0]["window"]["observation_start"] == "2026-09-02"
     assert requests[0]["window"]["omitted_decision_count"] == 2
+    events = {row["decision_id"]: row for row in requests[0]["execution"]["decisions"]}
+    assert set(events) == {"DEC-BASE", "DEC-OLD", "DEC-NEW", "DEC-LEGACY", "DEC-PREVIOUS-CONTENT"}
+    assert events["DEC-OLD"]["status"] == "SUPERSEDED"
+    assert events["DEC-BASE"]["signal_date"] == "2026-09-02"
+    assert events["DEC-BASE"]["valid_session"] == "2026-09-03"
     assert status["message"] == (
-        "观察事实自 2026-09-04 开始；其中 2 条决策"
-        "缺少可用的观察事实，未绘制策略解释"
+        "观察事实自 2026-09-02 开始；其中 2 条决策"
+        "缺少可用于本图的观察事实，未绘制策略信号"
         "；行情截至 2026-09-04；交易日20:30更新"
     )
     service.close()
@@ -1067,7 +1075,7 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
     assert status["chart_url"]
     assert status["message"] == (
         "等待第一条策略观察事实；其中 1 条决策"
-        "缺少可用的观察事实，未绘制策略解释"
+        "缺少可用于本图的观察事实，未绘制策略信号"
         "；行情截至 2026-09-03；交易日20:30更新"
     )
     assert requests[0]["observations"] == []

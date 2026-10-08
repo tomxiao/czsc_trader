@@ -1,6 +1,65 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
+
+test('forward chart draws isolated signals and shows decisions and every local-time fill', () => {
+  class Element {
+    constructor(name){this.name=name;this.attributes={};this.children=[];this.style={};this.listeners={};this.classList={add(){}};this.clientWidth=1000;}
+    setAttribute(key,value){this.attributes[key]=value;}
+    appendChild(node){this.children.push(node);return node;}
+    replaceChildren(...nodes){this.children=nodes;this._text='';}
+    addEventListener(name,handler){this.listeners[name]=handler;}
+    set textContent(value){this._text=value;this.children=[];}
+    get textContent(){return (this._text||'')+this.children.map(node=>node.textContent).join('');}
+    getBoundingClientRect(){return {left:0,top:0,width:1000,height:800};}
+  }
+  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof'].map(id=>[id,new Element(id)]));
+  const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
+  const context={
+    strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current'},
+    window:{selection_data_cutoff:'2026-09-02',observation_start:'2026-09-02'},
+    market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
+    observations:[
+      {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'HOLD',observation:observation(.1)},
+      {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'HOLD',observation:observation(.3)},
+    ],
+    execution:{
+      decisions:[
+        {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
+        {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:30:00Z',action:'HOLD',status:'ACTIVE',target_quantity:0},
+        {decision_id:'LEGACY',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T12:29:00Z',action:'WAIT',status:'INVALIDATED',target_quantity:0},
+      ],
+      fills:[
+        {fill_id:'<img>',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
+        {fill_id:'F1',channel_order_id:'O1',decision_id:'NEW',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},
+      ],snapshots:[],
+    },
+  };
+  nodes['forward-context'].textContent=JSON.stringify(context);
+  const window={listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},removeEventListener(){}};window.parent=window;
+  runInNewContext(readFileSync(new URL('../../src/paper_trading_engine/static/forward-chart.js',import.meta.url),'utf8'),{
+    window,document:{documentElement:new Element('html'),querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:()=>({getContext:()=>({measureText:text=>({width:text.length*7})})}),createElementNS:(_ns,name)=>new Element(name)},
+    getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#a78bfa'}),ResizeObserver:class{observe(){}},
+  });
+  const svg=nodes['forward-svg'];
+  const points=()=>svg.children.filter(node=>node.attributes['data-series-key']==='score');
+  assert.equal(points().length,1);
+  assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 0.300/);
+  assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,1);
+  assert.match(svg.textContent,/事件/);
+  assert.match(svg.textContent,/决策 3 笔 · 成交 2 笔/);
+  for(const text of ['已替代','已失效','当前有效','目标 0 股','无可用于本图的策略观察事实','买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
+  assert.ok(svg.textContent.includes('日内轮换'));
+  assert.ok(svg.textContent.indexOf('买入 100 股')<svg.textContent.indexOf('卖出 400 股'));
+  assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
+  assert.ok(nodes['forward-tooltip'].innerHTML.includes('&lt;img&gt;'));
+  assert.ok(!nodes['forward-tooltip'].innerHTML.includes('<img>'));
+  nodes['forward-stage'].clientWidth=360;window.listeners.resize();
+  assert.equal(points().length,1);
+  assert.match(svg.textContent,/决策 3 笔 · 成交 2 笔/);
+});
 
 test('FT-PTEJS01 console state preserves scope, stable polling and Chinese presentation', () => {
   assert.deepEqual(parseRoute('/accounts/s001-v2'), {page: 'account', accountId: 's001-v2'});

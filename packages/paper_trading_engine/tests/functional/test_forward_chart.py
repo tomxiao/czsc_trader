@@ -54,7 +54,15 @@ def _context() -> dict[str, object]:
                 },
             }
         ],
-        "execution": {"intents": [], "fills": [], "snapshots": []},
+        "execution": {
+            "decisions": [{
+                "account_id": "s007-v1", "decision_id": "DEC-1",
+                "signal_date": "2026-09-03", "valid_session": "2026-09-04",
+                "generated_at": "2026-09-03T12:00:00+00:00",
+                "action": "BUY", "target_quantity": 1000, "status": "ACTIVE",
+            }],
+            "intents": [], "fills": [], "snapshots": [],
+        },
     }
 
 
@@ -77,6 +85,10 @@ def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
     assert payload["observations"][0]["observation"]["series"][0]["label"] == "基础分"
     assert reason in html
     assert payload["observations"][0]["observation"]["facts"][0]["value"] == reason
+    assert payload["execution"]["decisions"][0]["valid_session"] == "2026-09-04"
+    context["execution"]["decisions"][0]["account_id"] = "foreign-account"
+    with pytest.raises(ValueError, match="decision event differs"):
+        render_forward_chart_html(context)
 
 
 def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
