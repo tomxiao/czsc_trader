@@ -23,7 +23,7 @@ export const auditQuery = filters => {
 export const auditCategoryLabel = value => ({STRATEGY:'策略事件',TRADING:'交易事件',SYSTEM:'系统事件',OTHER:'其他事件'}[value]||value||'未分类');
 export const auditEventLabel = value => ({
   ACCOUNT_RETIRED:'账户退出并回收资金',
-  MARKET_DATA_PUBLICATION_REQUESTED:'请求发布数据',MARKET_DATA_PUBLISHED:'发布数据成功',MARKET_DATA_PUBLICATION_FAILED:'发布数据失败',MARKET_DATA_OBSERVED:'验收SRT数据',MARKET_DATA_OBSERVATION_FAILED:'SRT数据验收失败',DECISION_GENERATED:'生成决策',DECISION_GENERATION_FAILED:'生成决策失败',ACCOUNT_DECISION_DRIVEN:'人工驱动账户决策',ACCOUNT_DECISION_DRIVE_FAILED:'人工驱动账户决策失败',DECISION_SUPERSEDED:'旧决策已失效',SIGNAL_TRIGGERED:'触发信号',SIGNAL_CLEARED:'信号解除',DECISION_EXPIRED:'决策过期',CHANNEL_STRATEGY_BOUND:'历史关系 · 渠道曾直接绑定策略',ACCOUNT_STRATEGY_BOUND:'虚拟账户绑定策略',ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称',ACCOUNT_CHANNEL_BOUND:'虚拟账户绑定渠道',CHANNEL_RECONCILIATION_FAILED:'渠道对账失败',CHANNEL_RECONCILIATION_RECOVERED:'渠道对账恢复',
+  MARKET_DATA_PUBLICATION_REQUESTED:'请求发布数据',MARKET_DATA_PUBLISHED:'发布数据成功',MARKET_DATA_PUBLICATION_FAILED:'发布数据失败',MARKET_DATA_OBSERVED:'验收SRT数据',MARKET_DATA_OBSERVATION_FAILED:'SRT数据验收失败',DECISION_GENERATED:'生成决策',DECISION_GENERATION_FAILED:'生成决策失败',ACCOUNT_DECISION_DRIVEN:'人工驱动账户决策',ACCOUNT_DECISION_DRIVE_FAILED:'人工驱动账户决策失败',DECISION_SUPERSEDED:'决策已被替代',SIGNAL_TRIGGERED:'触发信号',SIGNAL_CLEARED:'信号解除',DECISION_EXPIRED:'决策过期',CHANNEL_STRATEGY_BOUND:'历史关系 · 渠道曾直接绑定策略',ACCOUNT_STRATEGY_BOUND:'虚拟账户绑定策略',ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称',ACCOUNT_CHANNEL_BOUND:'虚拟账户绑定渠道',CHANNEL_RECONCILIATION_FAILED:'渠道对账失败',CHANNEL_RECONCILIATION_RECOVERED:'渠道对账恢复',
   EXECUTION_PLAN_LEG_READY:'计划环节就绪',EXECUTION_PLAN_BLOCKED:'执行计划阻塞',ORDER_INTENT_CREATED:'创建订单意图',ORDER_INTENT_RECOVERED:'恢复订单意图',ORDER_SUBMISSION_BLOCKED:'订单提交受阻',ORDER_SUBMITTED:'订单已提交',ORDER_SUBMISSION_FAILED:'订单提交失败',ORDER_REJECTED:'订单被明确拒绝',CANCEL_REQUESTED:'请求撤单',CANCEL_SUCCEEDED:'撤单成功',CANCEL_FAILED:'撤单失败',ORDER_PARTIALLY_FILLED:'订单部分成交',ORDER_FILLED:'订单成交',ORDER_TERMINATED:'订单终止',BROKER_FEE_RECONCILED:'Futu费用对账',
   SERVICE_STARTED:'服务启动',SERVICE_STOPPED:'服务停止',RESTART_REQUESTED:'请求重启',ACCOUNT_PAUSED:'账户暂停',ACCOUNT_RESUMED:'账户恢复',ACCOUNT_EXECUTION_MIGRATED:'账户执行关系迁移',ACCOUNT_RECONCILIATION_RECOVERED:'账户对账恢复',EXTERNAL_CALL_SUCCEEDED:'外部接口调用成功',EXTERNAL_CALL_FAILED:'外部接口调用失败',DEPENDENCY_DEGRADED:'外部依赖降级',DEPENDENCY_RECOVERED:'外部依赖恢复',SCHEDULER_OPERATION_FAILED:'调度任务失败',SCHEDULER_OPERATION_RECOVERED:'调度任务恢复',SCHEDULER_CYCLE_FAILED:'调度周期失败',VIRTUAL_ACCOUNT_FAILED:'虚拟账户运行失败',ACCOUNT_CHART_GENERATION_FAILED:'前瞻观察图生成失败',ACCOUNT_CHART_RECOVERED:'前瞻观察图恢复',LEGACY_EVENT:'历史事件',UNCLASSIFIED_EVENT:'未分类事件',
 }[value]||value||'未知事件');
@@ -50,7 +50,7 @@ export const systemEventLabel = value => ({
 export const systemAlertCount = value => (value?.alerts?.length||0)+(value?.scheduler_failures?.length||0);
 export const releaseVersionLabel = value => value?.release?.release_id||'版本未知';
 export function chooseAccountId(requested, accounts, defaultAccountId){
-  const visible=accounts.filter(item=>item.status!=='RETIRED');
+  const visible=accounts.filter(item=>item.run_state!=='RETIRED');
   if(visible.some(item=>item.account_id===requested))return requested;
   if(visible.some(item=>item.account_id===defaultAccountId))return defaultAccountId;
   return sortVirtualAccounts(visible)[0]?.account_id??null;
@@ -76,21 +76,12 @@ const money = value => value==null?'—':Number(value).toLocaleString('zh-CN',{m
 const pct = value => value==null?'—':`${(Number(value)*100).toFixed(2)}%`;
 const shortHash = value => value?String(value).slice(0,10):'—';
 export const actionLabel = value => ({BUY:'买入',SELL:'卖出',ROTATE:'日内轮换',WAIT:'等待',HOLD:'持有'}[value]||value||'等待');
-export const statusLabel = value => ({READY:'就绪',RUNNING:'运行中',OK:'正常',CONNECTED:'已连接',DEGRADED:'降级',PAPER_READY:'获准模拟交易',LIVE_READY:'获准实盘交易',BLOCKED:'阻塞',UNAVAILABLE:'不可用',ACCOUNT_CHART_UNAVAILABLE:'前瞻观察图不可用',CHANNEL_UNAVAILABLE:'Futu不可用',CHANNEL_CASH_MISMATCH:'PTE账务现金与Futu现金不一致',CHANNEL_RECONCILIATION_BLOCKED:'渠道对账阻塞',FUTU_CASH_RECONCILIATION_UNATTRIBUTED:'Futu现金差异来源不明',FUTU_CASH_RECONCILIATION_OUT_OF_RANGE:'Futu费用差异超出允许范围',FUTU_CASH_RECONCILIATION_AMBIGUOUS:'Futu现金差异无法安全归属',VIRTUAL_ACCOUNT_BLOCKED:'虚拟账户阻塞',ORDER_SUBMISSION_UNRESOLVED:'存在下单结果待确认',DATA_PUBLICATION_FAILED:'发布数据失败',DATA_PUBLICATION_OVERDUE:'数据发布超期',PUBLICATION_CALENDAR_UNAVAILABLE:'发布所需交易日历不可用',DECISION_GENERATION_OVERDUE:'决策生成超期',SCHEDULER_STALLED:'调度器停滞',SCHEDULER_OPERATION_FAILED:'调度任务失败',WAITING_DEPENDENCY:'等待前序成交及计划时点',PENDING_SUBMIT:'待提交',SUBMITTING:'提交中',SUBMISSION_UNCERTAIN:'提交结果待确认',SUBMISSION_FAILED:'提交失败',SUPERSEDED:'已被新决策替代',REJECTED:'已拒绝',EXPIRED:'已过期',TIMEOUT:'结果未知',SUBMITTED:'已提交',FILLED_PART:'部分成交',FILLED_ALL:'全部成交',CANCELLING_ALL:'撤单中',SUBMIT_FAILED:'提交失败',CANCELLED_PART:'部分成交后撤单',CANCELLED_ALL:'已撤销',FAILED:'失败',DISABLED:'已失效',DELETED:'已删除',FILL_CANCELLED:'成交已撤销',PENDING:'待执行'}[value]||value||'—');
-export const accountOperatingStatus = account => account.status==='RETIRED'?'已退出':account.paused?'已暂停':statusLabel(account.health||account.status);
-export function decisionExecutionLabel(decision,intents=[]){
+export const statusLabel = value => ({READY:'就绪',PAUSED:'已暂停',RETIRED:'已退出',EXECUTING:'执行中',COMPLETED:'已完成',CANCELLED:'已取消',INCOMPLETE:'未完成',RUNNING:'运行中',OK:'正常',CONNECTED:'已连接',DEGRADED:'降级',PAPER_READY:'获准模拟交易',LIVE_READY:'获准实盘交易',BLOCKED:'阻塞',UNAVAILABLE:'不可用',ACCOUNT_CHART_UNAVAILABLE:'前瞻观察图不可用',CHANNEL_UNAVAILABLE:'Futu不可用',CHANNEL_CASH_MISMATCH:'PTE账务现金与Futu现金不一致',CHANNEL_RECONCILIATION_BLOCKED:'渠道对账阻塞',FUTU_CASH_RECONCILIATION_UNATTRIBUTED:'Futu现金差异来源不明',FUTU_CASH_RECONCILIATION_OUT_OF_RANGE:'Futu费用差异超出允许范围',FUTU_CASH_RECONCILIATION_AMBIGUOUS:'Futu现金差异无法安全归属',VIRTUAL_ACCOUNT_BLOCKED:'虚拟账户阻塞',ORDER_SUBMISSION_UNRESOLVED:'存在下单结果待确认',DATA_PUBLICATION_FAILED:'发布数据失败',DATA_PUBLICATION_OVERDUE:'数据发布超期',PUBLICATION_CALENDAR_UNAVAILABLE:'发布所需交易日历不可用',DECISION_GENERATION_OVERDUE:'决策生成超期',SCHEDULER_STALLED:'调度器停滞',SCHEDULER_OPERATION_FAILED:'调度任务失败',WAITING_DEPENDENCY:'等待前序成交及计划时点',PENDING_SUBMIT:'待提交',SUBMITTING:'提交中',SUBMISSION_UNCERTAIN:'提交结果待确认',SUBMISSION_FAILED:'提交失败',SUPERSEDED:'已被新决策替代',REJECTED:'已拒绝',EXPIRED:'已过期',TIMEOUT:'结果未知',SUBMITTED:'已提交',FILLED_PART:'部分成交',FILLED_ALL:'全部成交',CANCELLING_ALL:'撤单中',SUBMIT_FAILED:'提交失败',CANCELLED_PART:'部分成交后撤单',CANCELLED_ALL:'已撤销',FAILED:'失败',DISABLED:'已失效',DELETED:'已删除',FILL_CANCELLED:'成交已撤销',PENDING:'待执行'}[value]||value||'—');
+export const accountOperatingStatus = account => account.run_state==='RETIRED'?'已退出':account.run_state==='PAUSED'?`已暂停${account.health==='BLOCKED'?' · 阻塞':''}`:statusLabel(account.health||account.run_state);
+export function decisionExecutionLabel(decision){
   if(!decision?.decision_id)return '等待生成决策';
-  if(['WAIT','HOLD'].includes(String(decision.action||'').toUpperCase()))return '本次决策无需下单';
-  const related=intents.filter(item=>item.decision_id===decision.decision_id);
-  if(!related.length)return '尚未创建订单意图';
-  const latest=related.reduce((current,item)=>{
-    const currentTime=Date.parse(current.created_at||'');
-    const itemTime=Date.parse(item.created_at||'');
-    if(Number.isFinite(itemTime)&&(!Number.isFinite(currentTime)||itemTime>currentTime))return item;
-    return !Number.isFinite(itemTime)&&!Number.isFinite(currentTime)?item:current;
-  });
-  const failed=related.filter(item=>item!==latest&&['REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','TIMEOUT'].includes(item.status)).length;
-  return `${statusLabel(latest.status)}${failed?`（此前 ${failed} 次未成功）`:''}`;
+  if(decision.status==='COMPLETED'&&['NO_ORDER','MIGRATION_NO_ORDER'].includes(decision.state_reason))return '本次决策无需下单';
+  return decision.status?statusLabel(decision.status):'决策状态未记录';
 }
 export function auditSummary(event){
   const detail=event?.details||event?.payload||{};
@@ -149,15 +140,15 @@ function accountRecords(kind,title,columns,rows,view){
 export function accountMarkup(snapshot,accountList=state.accounts,view={}){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
   const executionState=decisionExecutionLabel(d,intents);
-  const accounts=sortVirtualAccounts(accountList.filter(item=>item.status!=='RETIRED'));
+  const accounts=sortVirtualAccounts(accountList.filter(item=>item.run_state!=='RETIRED'));
   const gapActions=intents.filter(item=>item.attention_required).map(item=>`<div class="alert execution-gap"><strong>前瞻执行缺口</strong> · ${esc(item.attention_reason||statusLabel(item.status))}<button class="button secondary" type="button" data-ack-intent="${esc(item.intent_id)}">复核后确认</button></div>`).join('');
   const tab=view.tab||'chart',recordTab=view.records||'intents';
   return `<div class="layout account-layout" data-account-page data-account-id="${esc(scope.account_id)}">
-    <aside class="sidebar" data-account-section="sidebar"><h2>虚拟账户</h2><label class="account-picker">切换账户<select id="accountPicker">${accounts.map(item=>`<option value="${esc(item.account_id)}" ${item.account_id===scope.account_id?'selected':''}>${esc(item.name||item.account_id)} · ${esc(statusLabel(item.health))}</option>`).join('')}</select></label><div class="account-cards">${accounts.map(item=>`<button class="account-card ${item.account_id===scope.account_id?'active':''}" data-account="${esc(item.account_id)}"><strong>${esc(item.name)}</strong><small>${esc(item.release_id)} · ${item.paused?'已暂停':statusLabel(item.health)}</small><small>资产 ${money(item.total_assets)}</small></button>`).join('')}</div></aside>
+    <aside class="sidebar" data-account-section="sidebar"><h2>虚拟账户</h2><label class="account-picker">切换账户<select id="accountPicker">${accounts.map(item=>`<option value="${esc(item.account_id)}" ${item.account_id===scope.account_id?'selected':''}>${esc(item.name||item.account_id)} · ${esc(statusLabel(item.health))}</option>`).join('')}</select></label><div class="account-cards">${accounts.map(item=>`<button class="account-card ${item.account_id===scope.account_id?'active':''}" data-account="${esc(item.account_id)}"><strong>${esc(item.name)}</strong><small>${esc(item.release_id)} · ${accountOperatingStatus(item)}</small><small>资产 ${money(item.total_assets)}</small></button>`).join('')}</div></aside>
     <div class="workspace">
-      <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><h1>${esc(a.name)}</h1><div class="subtle">${esc(scope.release_id)} · ${esc(a.symbol)} · Futu · ${esc(statusLabel(a.health))}</div></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button id="accountSwitch" ${a.status==='RETIRED'?'disabled':''} class="switch ${a.paused?'paused':''}" role="switch" aria-checked="${!a.paused}">${a.status==='RETIRED'?'已退出 · 资金已回收':a.paused?'已暂停 · 点击恢复':'自动运行 · 点击暂停'}</button></div><details class="account-details" data-account-details="accountDetails" ${view.accountDetails?'open':''}><summary>账户详情</summary><div class="kv"><div><span>账户 ID / 策略</span>${esc(scope.account_id)} · ${esc(a.strategy_name_snapshot)}</div><div><span>内容身份 / 资格</span>${esc(scope.release_hash)} · ${esc(qualificationLabel(a.qualification_snapshot))}</div><div><span>选择截止 / 观察起点</span>${esc(a.selection_data_cutoff)} / ${esc(a.observation_start)}</div><div><span>账务更新 / 日终估值</span>${esc(formatBeijingTime(a.updated_at))} / ${esc(a.last_settlement_session)}</div></div></details></section>
+      <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><h1>${esc(a.name)}</h1><div class="subtle">${esc(scope.release_id)} · ${esc(a.symbol)} · Futu · ${esc(statusLabel(a.health))}</div></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出 · 资金已回收':a.run_state==='PAUSED'?'已暂停 · 点击恢复':'自动运行 · 点击暂停'}</button></div><details class="account-details" data-account-details="accountDetails" ${view.accountDetails?'open':''}><summary>账户详情</summary><div class="kv"><div><span>账户 ID / 策略</span>${esc(scope.account_id)} · ${esc(a.strategy_name_snapshot)}</div><div><span>内容身份 / 资格</span>${esc(scope.release_hash)} · ${esc(qualificationLabel(a.qualification_snapshot))}</div><div><span>选择截止 / 观察起点</span>${esc(a.selection_data_cutoff)} / ${esc(a.observation_start)}</div><div><span>账务更新 / 日终估值</span>${esc(formatBeijingTime(a.updated_at))} / ${esc(a.last_settlement_session)}</div></div></details></section>
       <div data-account-section="alerts">${alerts(snapshot.alerts)}${gapActions}</div>
-      <div class="grid account-metrics" data-account-section="metrics">${metric(a.status==='RETIRED'?'已回收资金':'总资产',money(a.status==='RETIRED'?a.released_cash:a.total_assets))}${metric('当前累计收益',pct(m.current_total_return))}${metric('可用现金',money(a.cash))}${metric('冻结资金',money(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
+      <div class="grid account-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',money(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('当前累计收益',pct(m.current_total_return))}${metric('可用现金',money(a.cash))}${metric('冻结资金',money(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
       <section class="panel account-decision" data-account-section="decision"><details data-account-details="decisionDetails" ${view.decisionDetails?'open':''}><summary><strong>最新决策 · ${esc(actionLabel(d.action))}</strong><span>目标 ${formatQuantity(d.target_quantity)}</span><span>有效交易日 ${esc(d.valid_session||'—')}</span><span>${esc(executionState)}</span><span class="subtle">详情</span></summary><div class="kv"><div><span>决策 ID</span>${esc(d.decision_id||'—')}</div><div><span>信号日期</span>${esc(d.signal_date||'—')}</div><div><span>执行参考价（不复权）</span>${formatPrice(d.execution_reference_price)}</div></div></details></section>
       <div class="account-tabs" role="tablist" aria-label="账户视图">${[['chart','前瞻观察'],['records','交易记录'],['performance','绩效']].map(([key,label])=>`<button type="button" role="tab" id="account-tab-${key}" aria-controls="account-panel-${key}" aria-selected="${tab===key}" tabindex="${tab===key?0:-1}" data-account-tab="${key}">${label}</button>`).join('')}</div>
       <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选择截止 ${esc(a.selection_data_cutoff)} · 截止线左侧为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
@@ -195,7 +186,7 @@ function renderAccount(snapshot){
   for(const kind of ['intents','orders','fills'])view.pages[kind]=recordPage(snapshot[kind]||[],view.pages[kind]).page;
   const markup=accountMarkup(snapshot,state.accounts,accountView(scope.account_id));
   if(!replaceAccountSections(markup,scope.account_id))document.querySelector('#app').innerHTML=markup;
-  bindAccountEvents(scope.account_id,a.paused);
+  bindAccountEvents(scope.account_id,a.run_state);
   applyAccountView(scope.account_id);
 }
 async function retryAccountChart(accountId){
@@ -257,7 +248,7 @@ function applyAccountView(accountId){
     document.querySelectorAll(selector).forEach(el=>{const selected=el.dataset[attribute]===view[key];el.setAttribute('aria-selected',String(selected));el.tabIndex=selected?0:-1;});
   }
 }
-function bindAccountEvents(accountId,paused){
+function bindAccountEvents(accountId,runState){
   const view=accountView(accountId);
   document.querySelectorAll('[data-account]').forEach(el=>el.onclick=()=>navigate(`/accounts/${encodeURIComponent(el.dataset.account)}`));
   document.querySelector('#accountPicker').onchange=event=>navigate(`/accounts/${encodeURIComponent(event.target.value)}`);
@@ -274,7 +265,7 @@ function bindAccountEvents(accountId,paused){
     });
   }
   document.querySelectorAll('[data-record-page]').forEach(el=>el.onclick=()=>{view.pages[el.dataset.recordKind]=Number(el.dataset.recordPage);renderAccount(state.accountSnapshot);});
-  document.querySelector('#accountSwitch').onclick=async()=>{try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${paused?'resume':'pause'}`);toast(paused?'账户已恢复':'账户已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};
+  document.querySelector('#accountSwitch').onclick=async()=>{try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/${runState==='PAUSED'?'resume':'pause'}`);toast(runState==='PAUSED'?'账户已恢复':'账户已暂停');await loadRoute({showLoading:false});}catch(e){toast(e.message);}};
   document.querySelectorAll('[data-ack-intent]').forEach(el=>el.onclick=async()=>{const note=prompt('请填写复核结论。确认后账户才会恢复自动交易：');if(!note?.trim())return;try{await post(`/api/virtual-accounts/${encodeURIComponent(accountId)}/intents/${encodeURIComponent(el.dataset.ackIntent)}/acknowledge`,{resolution_note:note.trim()});toast('执行缺口已确认');await loadRoute({showLoading:false});}catch(e){toast(e.message);}});
 }
 

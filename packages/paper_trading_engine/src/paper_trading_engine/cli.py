@@ -295,7 +295,7 @@ def _strategy_deployments(
     bindings = {}
     deployments = {}
     for account in accounts:
-        if account.get("status") == "RETIRED":
+        if account.get("run_state") == "RETIRED":
             continue
         key = (
             account["strategy_id"], account["strategy_version"],
@@ -388,7 +388,7 @@ def _backfill_selection_cutoffs(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
-        if account.get("status") == "RETIRED":
+        if account.get("run_state") == "RETIRED":
             continue
         if account.get("selection_data_cutoff"):
             continue
@@ -431,7 +431,7 @@ def _synchronize_strategy_names(
     deployments: dict[str, AccountStrategyBinding],
 ) -> None:
     for account in store.strategy_virtual_accounts():
-        if account.get("status") == "RETIRED":
+        if account.get("run_state") == "RETIRED":
             continue
         try:
             identity = deployments.get(str(account["account_id"]))

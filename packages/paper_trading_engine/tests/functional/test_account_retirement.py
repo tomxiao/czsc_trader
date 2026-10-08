@@ -16,7 +16,7 @@ from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
 from paper_trading_engine.store import PaperStore
-from pte_support import FakeBroker, decision
+from pte_support import FakeBroker, decision, adopt_test_decision
 
 
 def create(store, account_id="one", capital=100000):
@@ -62,7 +62,8 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
             "frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at) "
             "VALUES('fixture','one','REALIZED_PNL',?,'0',0,'0',?,0,'now')", (str(pnl), str(cash)),
         )
-    store.save_account_decision("one", asdict(decision()))
+    conclusion = asdict(replace(decision(), strategy={**decision().strategy, "release_hash": "a" * 64}))
+    store.save_account_decision("one", conclusion)
     before = store._connection.execute("SELECT payload FROM decisions").fetchone()[0]
     broker.value = replace(broker.value, account=replace(
         broker.value.account, cash=float(Decimal("1000000") + pnl), total_assets=float(Decimal("1000000") + pnl),
@@ -73,19 +74,19 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(setup,
     assert result.remaining_strategy_accounts == 0
     assert not broker.placed and not broker.cancelled
     account = store.virtual_account("one")
-    assert account["cash"] == "0.0000" and account["status"] == "RETIRED"
+    assert account["cash"] == "0.0000" and account["run_state"] == "RETIRED"
     assert account["initial_cash"] == "100000.0000"
     assert Decimal(account["realized_pnl"]) == pnl
-    row = store._connection.execute("SELECT payload,status FROM decisions").fetchone()
-    assert row[0] == before and row[1] == "INVALIDATED"
+    row = store.account_decision("one", conclusion["decision_id"])
+    assert json.loads(before) == row["payload"] and row["status"] == "COMPLETED"
     assert store.capital_pool_balance().unallocated_cash == Decimal("1000000") + pnl
     assert store.capital_pool_balance().recovered_pnl == pnl
-    with pytest.raises(ValueError, match="running"):
+    with pytest.raises(ValueError, match="paused"):
         execution.retire_account(request)
     with pytest.raises(ValueError, match="retired"):
         store.set_virtual_paused("one", False)
     with pytest.raises(ValueError, match="inactive"):
-        store.save_account_decision("one", asdict(decision()))
+        store.save_account_decision("one", conclusion)
     create(store, "new", Decimal("1000000") + pnl)
     assert store.capital_pool_balance().unallocated_cash == 0
     with pytest.raises(ValueError, match="unallocated"):
@@ -115,20 +116,22 @@ def test_retirement_rejects_unsafe_state_without_releasing_capital(setup, failur
     elif failure == "wrong_hash":
         request = replace(request, expected_release_hash="b" * 64)
     elif failure in {"pending", "attention"}:
-        with store._connection as c:
-            c.execute(
-                "INSERT INTO intents(intent_id,account_id,decision_id,order_sequence,symbol,side,quantity,"
-                "limit_price,valid_session,payload,status,attention_required,created_at,updated_at) "
-                "VALUES('i','one','d',0,'588080.SH','BUY',100,'1','2099-01-01','{}',?,?,'now','now')",
-                ("PENDING_SUBMIT" if failure == "pending" else "REJECTED", int(failure == "attention")),
-            )
+        store.set_virtual_paused("one", False)
+        adopt_test_decision(store, account_id="one", decision_id="d", valid_session="2099-01-01",
+                            orders=[{"side": "BUY", "quantity": 100, "order_type": "LIMIT", "limit_price": 1.0}])
+        intent = store.create_account_intent(account_id="one", decision_id="d", order_sequence=0,
+            symbol="588080.SH", side="BUY", quantity=100, limit_price="1", valid_session="2099-01-01")
+        if failure == "attention":
+            store.release_account_intent(intent["intent_id"], "REJECTED",
+                                         attention_reason="synthetic rejection requires review")
+        store.set_virtual_paused("one", True)
     elif failure == "cash":
         broker.value = replace(broker.value, account=replace(broker.value.account, cash=999000))
     else:
         monkeypatch.setattr(broker, "order_snapshot", lambda: (_ for _ in ()).throw(RuntimeError("unavailable")))
     with pytest.raises((ValueError, RuntimeError, ChannelReconciliationError)):
         execution.retire_account(request)
-    assert store.virtual_account("one")["status"] == "RUNNING"
+    assert store.virtual_account("one")["run_state"] == ("RUNNING" if failure == "not_paused" else "PAUSED")
     assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
     assert store.capital_pool_balance().recovered_pnl == 0
     assert not broker.placed
@@ -145,13 +148,13 @@ def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_u
     monkeypatch.setattr(store, "_insert_audit_event", fail)
     with pytest.raises(RuntimeError, match="audit unavailable"):
         execution.retire_account(request)
-    assert store.virtual_account("one")["status"] == "RUNNING"
+    assert store.virtual_account("one")["run_state"] == "PAUSED"
     assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
     monkeypatch.setattr(store, "_insert_audit_event", original)
     for method in ("_cancel_expired_planned_orders", "_expire_unsubmitted_intents"):
         monkeypatch.setattr(execution, method, lambda *_: pytest.fail("retirement must only reconcile"))
     assert execution.retire_account(request).remaining_strategy_accounts == 1
-    assert store.virtual_account("two")["status"] == "RUNNING"
+    assert store.virtual_account("two")["run_state"] == "PAUSED"
     assert broker.cancelled == broker.placed == []
 
 

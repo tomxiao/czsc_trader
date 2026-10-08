@@ -345,9 +345,12 @@ def test_runtime_database_migrates_v1_decisions_to_supersession_schema(tmp_path)
     indexes = {
         row["name"] for row in store._connection.execute("PRAGMA index_list(decisions)")
     }
-    assert {"status", "superseded_by", "superseded_at"}.issubset(columns)
+    assert {"legacy_status", "superseded_by", "superseded_at"}.issubset(columns)
+    assert "status" not in columns
     assert "uq_decisions_account_signal_date" not in indexes
-    assert "uq_decisions_active_signal_date" in indexes
+    assert "uq_decisions_active_signal_date" not in indexes
+    assert store._connection.execute("SELECT COUNT(*) FROM decision_state_events").fetchone()[0] == 0
+    assert store._connection.execute("SELECT COUNT(*) FROM decision_adoptions").fetchone()[0] == 0
     store.close()
 
 

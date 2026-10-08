@@ -20,6 +20,7 @@ from .broker import (
     TERMINAL_ORDER_STATUSES,
 )
 from .channel import FUTU_SIMULATE_CN_CHANNEL_ID, require_futu_simulate_cn_broker
+from .lifecycle import IntentControlState
 from .trading_window import SHANGHAI, is_submission_window, shanghai_now
 
 
@@ -162,37 +163,6 @@ class FutuExecution:
             },
         )
 
-    def _recover_future_plan_expiries(self, moment: datetime) -> None:
-        session = moment.astimezone(SHANGHAI).date().isoformat()
-        recovered_accounts: set[str] = set()
-        for intent in self.store.attention_account_intents():
-            if (
-                intent["status"] != "EXPIRED"
-                or intent.get("channel_order_id")
-                or intent["valid_session"] <= session
-                or intent.get("attention_reason") != "计划订单错过提交截止时间"
-                or not intent["payload"].get("plan_mode")
-            ):
-                continue
-            account = self.store.virtual_account(intent["account_id"])
-            event = self.audit.build(
-                "ORDER_INTENT_RECOVERED", source="futu_execution",
-                account_id=intent["account_id"], strategy_id=account.get("strategy_id"),
-                strategy_version=account.get("strategy_version"),
-                release_hash=account.get("release_hash"), channel=FUTU_SIMULATE_CN_CHANNEL_ID,
-                decision_id=intent["decision_id"], correlation_id=intent["decision_id"],
-                details={
-                    "intent_id": intent["intent_id"],
-                    "reason": "future_session_deadline_comparison_repaired",
-                    "valid_session": intent["valid_session"],
-                },
-            )
-            self.store.recover_future_planned_intent(intent["intent_id"], event)
-            recovered_accounts.add(intent["account_id"])
-        for account_id in recovered_accounts:
-            if not self.store.attention_account_intents(account_id):
-                self.store.set_virtual_health(account_id, "OK")
-
     def _expire_unsubmitted_intents(self, moment: datetime) -> None:
         """Terminate stale local intents before broker or account health gates run."""
         local = moment.astimezone(SHANGHAI)
@@ -297,7 +267,7 @@ class FutuExecution:
                     details={"reason": "planned_deadline", "error": str(exc)},
                 )
                 raise
-            self.store.update_account_intent_status(intent["intent_id"], "CANCELLING_ALL")
+            self.store.update_account_intent_status(intent["intent_id"], IntentControlState.CANCELLING_ALL)
             self.audit.record(
                 "CANCEL_REQUESTED", source="futu_execution",
                 account_id=intent["account_id"], channel=FUTU_SIMULATE_CN_CHANNEL_ID,
@@ -313,7 +283,7 @@ class FutuExecution:
         """Reconcile verified aggregate Futu fees without altering strategy PnL."""
         if self._snapshot is None:
             return
-        accounts = [row for row in self.store.virtual_accounts() if row.get("status") != "RETIRED"]
+        accounts = [row for row in self.store.virtual_accounts() if row.get("run_state") != "RETIRED"]
         if self.store.unresolved_account_intents() or any(
             Decimal(row["frozen_cash"]) != 0 for row in accounts
         ):
@@ -476,6 +446,7 @@ class FutuExecution:
         if moment.tzinfo is None:
             raise ValueError("reconciliation clock must be timezone-aware")
         if expire_orders:
+            self.store.expire_unsubmitted_decisions(moment)
             self._expire_unsubmitted_intents(moment)
         previous_reconciliation = self.store.get_setting("channel_reconciliation_status")
         orders = self._order_snapshot()
@@ -588,7 +559,7 @@ class FutuExecution:
         if self._snapshot is not None:
             accounts = [
                 account for account in self.store.strategy_virtual_accounts()
-                if account.get("status") != "RETIRED"
+                if account.get("run_state") != "RETIRED"
             ]
             owned_symbols = {str(account["symbol"]).upper() for account in accounts}
             foreign_positions = [
@@ -665,6 +636,7 @@ class FutuExecution:
         moment = self.now()
         if moment.tzinfo is None:
             raise ValueError("submission clock must be timezone-aware")
+        self.store.expire_unsubmitted_decisions(moment)
         self._expire_unsubmitted_intents(moment)
         if reconcile:
             self.refresh_orders()
@@ -676,7 +648,6 @@ class FutuExecution:
             raise ChannelReconciliationError("Futu渠道对账已阻塞，禁止提交订单")
         self._require_cash_reconciliation()
         session = moment.astimezone(SHANGHAI).date().isoformat()
-        self._recover_future_plan_expiries(moment)
         self._activate_dependency_intents(moment)
         deterministic_failures: list[tuple[str, Exception]] = []
         for row in self.store.pending_account_intents():
@@ -686,8 +657,8 @@ class FutuExecution:
             if row["valid_session"] > session:
                 continue
             if (
-                bool(account["paused"])
-                or account["status"] != "RUNNING"
+                account["run_state"] == "PAUSED"
+                or account["run_state"] != "RUNNING"
                 or account["health"] not in {"READY", "OK"}
             ):
                 continue
@@ -696,7 +667,8 @@ class FutuExecution:
                 or not is_submission_window(moment)
             ):
                 continue
-            if not self.store.claim_account_intent(row["intent_id"]):
+            submit_moment = self.now()
+            if not self.store.claim_account_intent(row["intent_id"], moment=submit_moment):
                 continue
             intent = OrderIntent(
                 row["intent_id"], row["decision_id"], row["symbol"], row["side"],
@@ -736,7 +708,7 @@ class FutuExecution:
                 continue
             except Exception as exc:
                 self.store.update_account_intent_status(
-                    row["intent_id"], "SUBMISSION_UNCERTAIN"
+                    row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
                     row["account_id"], "BLOCKED",
@@ -753,7 +725,7 @@ class FutuExecution:
                 self._validate_order(row, order)
             except ValueError as exc:
                 self.store.update_account_intent_status(
-                    row["intent_id"], "SUBMISSION_UNCERTAIN"
+                    row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
                     row["account_id"], "BLOCKED",
@@ -778,7 +750,7 @@ class FutuExecution:
                 )
             except Exception:
                 self.store.update_account_intent_status(
-                    row["intent_id"], "SUBMISSION_UNCERTAIN"
+                    row["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN
                 )
                 self.store.set_virtual_health(
                     row["account_id"], "BLOCKED",
@@ -836,7 +808,7 @@ class FutuExecution:
         )
         logical_quantity = sum(
             int(row["quantity"]) for row in self.store.strategy_virtual_accounts()
-            if row["symbol"] == symbol and row.get("status") != "RETIRED"
+            if row["symbol"] == symbol and row.get("run_state") != "RETIRED"
         )
         if broker_quantity != logical_quantity:
             raise ValueError("broker quantity differs from logical quantity; ledger repair blocked")
@@ -871,7 +843,7 @@ class FutuExecution:
             raise RuntimeError("PTE is stopping; account retirement is unavailable")
         with self.store._lock:
             account = self.store.virtual_account(request.account_id)
-            if account["status"] != "RUNNING" or not account["paused"]:
+            if account["run_state"] != "PAUSED":
                 raise ValueError("retirement requires a paused running account")
             if account["release_hash"] != request.expected_release_hash:
                 raise ValueError("retirement release hash differs from account")
@@ -879,7 +851,7 @@ class FutuExecution:
                 raise ValueError("retirement requires no position or frozen cash")
             # Reconcile only. Retirement must never submit or liquidate orders.
             self._refresh_orders(expire_orders=False)
-            accounts = [row for row in self.store.virtual_accounts() if row["status"] != "RETIRED"]
+            accounts = [row for row in self.store.virtual_accounts() if row["run_state"] != "RETIRED"]
             expected_cash = self.store.capital_pool_balance().unallocated_cash + sum(
                 (Decimal(row["cash"]) + Decimal(row["frozen_cash"]) for row in accounts), Decimal("0"),
             )

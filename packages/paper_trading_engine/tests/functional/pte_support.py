@@ -13,6 +13,50 @@ from paper_trading_engine.broker import (
 )
 
 
+def adopt_test_decision(store, *, account_id, decision_id, valid_session, orders=None, legs=None):
+    """Persist an explicit synthetic plan through the real decision adoption API."""
+    from dataclasses import asdict
+    from datetime import timedelta
+
+    try:
+        return store.account_decision(account_id, decision_id)
+    except KeyError:
+        pass
+    account = store.virtual_account(account_id)
+    payload = asdict(decision())
+    planned = [leg["order"] if "order" in leg else leg for leg in (legs or orders or [])]
+    delta = sum(order["quantity"] * (1 if order["side"] == "BUY" else -1) for order in planned)
+    normalized_legs = [{**leg, "order": {key: leg[key] for key in ("side", "quantity", "order_type", "limit_price")}}
+                       if "order" not in leg else leg for leg in (legs or [])]
+    payload.update(
+        decision_id=decision_id, symbol=account["symbol"],
+        strategy={"strategy_id": account["strategy_id"], "version": account["strategy_version"],
+                  "release_hash": account["release_hash"]},
+        signal_date=(date.fromisoformat(valid_session)-timedelta(days=1)).isoformat(),
+        valid_session=valid_session, actual_quantity=account["quantity"],
+        available_cash=float(account["cash"]) + float(account["frozen_cash"]),
+        orders=planned if not legs else [], plan_legs=normalized_legs,
+        target_quantity=account["quantity"] + delta, delta_quantity=delta,
+        cycle_target_quantity=account["quantity"] + delta,
+        action=planned[0]["side"] if planned else "HOLD",
+        plan_identity=sha256(repr((decision_id, valid_session, planned)).encode()).hexdigest(),
+    )
+    return store.save_account_decision(account_id, payload)
+
+
+def claim_test_intent(store, intent_id):
+    """Claim after a deterministic successful channel/cash reconciliation fixture."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    store.set_setting("channel_reconciliation_status", "OK")
+    store.set_setting("futu_cash_reconciliation_status", "OK")
+    intent = store.account_intent(intent_id)
+    return store.claim_account_intent(
+        intent_id, moment=datetime.fromisoformat(intent["valid_session"] + "T09:30:00").replace(tzinfo=ZoneInfo("Asia/Shanghai")),
+    )
+
+
 def preparation(value: AdviceDecision, identity: str = "c" * 64):
     return SimpleNamespace(
         strategy=SimpleNamespace(

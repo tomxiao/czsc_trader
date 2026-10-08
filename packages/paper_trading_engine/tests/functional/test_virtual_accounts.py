@@ -19,7 +19,7 @@ from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine import cli as pte_cli
 from paper_trading_engine.web_api import PteWebApi
 from paper_trading_engine.runtime_lock import RuntimeDatabaseLock
-from pte_support import FakeBroker, decision
+from pte_support import FakeBroker, decision, adopt_test_decision, claim_test_intent
 from pte_control_support import create_bound_account, engine_arguments, installed_binding
 
 
@@ -62,7 +62,7 @@ def test_offline_account_pause_and_resume_are_atomic_and_audited(new_store, tmp_
         payload = json.loads(capsys.readouterr().out)
         assert payload["status"] == "PASS" and payload["command"] == f"pte.account.{action}"
         result = payload["result"]
-        assert bool(result["paused"]) is paused
+        assert result["run_state"] == ("PAUSED" if paused else "RUNNING")
         assert len(store.query_audit_events(event_type=event_type, account_id="one")) == 1
     def reject(*args, **kwargs):
         raise RuntimeError("audit unavailable")
@@ -73,7 +73,7 @@ def test_offline_account_pause_and_resume_are_atomic_and_audited(new_store, tmp_
         "--account-id", "one",
     ]) == 5
     assert "audit unavailable" in json.loads(capsys.readouterr().out)["error"]["message"]
-    assert store.virtual_account("one")["paused"] == 0
+    assert store.virtual_account("one")["run_state"] == "RUNNING"
     store.close()
 
 
@@ -139,11 +139,12 @@ def test_readonly_store_keeps_consistent_snapshot_and_rejects_writes(new_store, 
     database = tmp_path / "snapshot.db"
     writer = new_store(database)
     create_account(writer, "one", "v1", "a")
+    writer.set_virtual_paused("one", False)
     reader = PaperStore.open_readonly(database)
     try:
-        assert reader.virtual_account("one")["paused"] == 0
+        assert reader.virtual_account("one")["run_state"] == "RUNNING"
         writer.set_virtual_paused("one", True)
-        assert reader.virtual_account("one")["paused"] == 0
+        assert reader.virtual_account("one")["run_state"] == "RUNNING"
         with pytest.raises(sqlite3.OperationalError, match="readonly"):
             reader.set_setting("unauthorized", "1")
     finally:
@@ -239,7 +240,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(
             before = store.virtual_accounts()
             engine = pte_cli.build_engine(args)
             try:
-                assert engine.store.virtual_account("retired")["status"] == "RETIRED"
+                assert engine.store.virtual_account("retired")["run_state"] == "RETIRED"
             finally:
                 engine.close()
         assert store.virtual_accounts() == before
@@ -389,12 +390,16 @@ def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path)
     )}
     assert not {"virtual_intents", "virtual_orders", "virtual_fills", "virtual_snapshots"} & tables
 
+    assert store.virtual_account("s001-v2")["run_state"] == "PAUSED"
+    store.set_virtual_paused("s001-v2", False)
+    adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-2", valid_session="2026-09-04",
+                        orders=[{"side":"BUY", "quantity":1000, "order_type":"LIMIT", "limit_price":1.68}])
     intent = store.create_account_intent(
         account_id="s001-v2", decision_id="DEC-2", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04", fee_rate="0.0005",
     )
-    assert store.claim_account_intent(intent["intent_id"])
+    assert claim_test_intent(store, intent["intent_id"])
     store.bind_channel_order(intent["intent_id"], "1001", {
         "channel_order_id": "1001", "symbol": "588080.SH", "side": "BUY",
         "quantity": 1000, "limit_price": 1.68, "status": "SUBMITTED",
@@ -405,19 +410,24 @@ def test_ft_pte01_account_model_migration_and_independent_futu_ledgers(tmp_path)
         "1001", cumulative_quantity=1000, average_price="1.670",
         occurred_at="2026-09-04T01:31:00+00:00",
     )
+    report = store.account_order("1001")
+    store.update_channel_order_report(report["channel_order_id"], {**report, "status": "FILLED_ALL"})
+    assert store.account_decision("s001-v2", "DEC-2")["status"] == "COMPLETED"
     assert store.virtual_account("s001-v1")["quantity"] == 0
     assert store.virtual_account("s001-v2")["quantity"] == 1000
     assert store.virtual_account("s001-v2")["cash"] == "98329.1650"
     assert store.virtual_account("s001-v2")["total_assets"] == "99999.1650"
     assert store.account_fills("s001-v2")[0]["channel_id"] == "futu_simulate_cn"
 
+    adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-3", valid_session="2026-09-04",
+                        orders=[{"side":"SELL", "quantity":1000, "order_type":"MARKET", "limit_price":1.65}])
     sell_intent = store.create_account_intent(
         account_id="s001-v2", decision_id="DEC-3", order_sequence=0,
         symbol="588080.SH", side="SELL", quantity=1000,
         limit_price="1.650", valid_session="2026-09-04", fee_rate="0.0005",
         order_type="MARKET",
     )
-    assert store.claim_account_intent(sell_intent["intent_id"])
+    assert claim_test_intent(store, sell_intent["intent_id"])
     store.bind_channel_order(sell_intent["intent_id"], "1002", {
         "channel_order_id": "1002", "symbol": "588080.SH", "side": "SELL",
         "quantity": 1000, "limit_price": 1.65, "status": "SUBMITTED",
@@ -526,9 +536,10 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
             "signal_date": "2026-09-03",
             "valid_session": "2026-09-04",
             "action": "WAIT",
+            "orders": [],
             "target_quantity": 0,
             "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
-            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
+            "strategy":{"strategy_id":"S001", "version":"v2", "release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
                 "contract_version": "strategy_observation.v2",
                 "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
@@ -630,7 +641,7 @@ def test_ft_pte03_account_chart_builds_bounded_scope_and_reuses_cache(new_store,
         "account_orders",
         lambda _account_id: [
             {
-                "account_id": "s001-v2",
+                "account_id": "s001-v2", "decision_id": "DEC-1",
                 "created_at": "2026-09-04T09:30:00+08:00",
                 "updated_at": "2026-09-04T09:30:05+08:00",
                 "status": "FILLED_ALL",
@@ -859,9 +870,10 @@ def test_account_chart_runs_market_fetch_and_render_on_dedicated_worker(new_stor
             "signal_date": "2026-09-03",
             "valid_session": "2026-09-04",
             "action": "WAIT",
+            "orders": [],
             "target_quantity": 0,
             "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
-            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
+            "strategy":{"strategy_id":"S001", "version":"v2", "release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
                 "contract_version": "strategy_observation.v2",
                 "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
@@ -947,7 +959,7 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
             "action": "WAIT",
             "target_quantity": 0,
             "signal_identity":"e"*64, "plan_identity":"f"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH",
-            "strategy":{"release_id":"S001-v2", "release_hash":"b"*64},
+            "strategy":{"strategy_id":"S001", "version":"v2", "release_id":"S001-v2", "release_hash":"b"*64},
             "observation": {
                 "contract_version": "strategy_observation.v2",
                 "strategy": {"strategy_id":"S001", "reference_id":"S001-v2", "release_hash":"b"*64, "runtime_sha256":"c"*64, "symbol":"588080.SH"},
@@ -963,27 +975,48 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
             },
         }
 
+    # Model an actual v3 history, then migrate it before rendering. Old no-order
+    # decisions retain their payload and replacement evidence as COMPLETED facts.
     legacy = decision_payload("DEC-LEGACY", "2026-09-03", 0.0)
     legacy.pop("observation")
-    store.save_account_decision("s001-v2", legacy)
-    store.save_account_decision(
-        "s001-v2", decision_payload("DEC-BASE", "2026-09-02", 0.0),
-    )
-    store.save_account_decision(
-        "s001-v2", decision_payload("DEC-OLD", "2026-09-04", 0.1),
-    )
-    store.supersede_account_decision("s001-v2", "DEC-OLD", "DEC-NEW")
-    store.save_account_decision(
-        "s001-v2", decision_payload("DEC-NEW", "2026-09-04", 0.2),
-    )
     historical = decision_payload("DEC-PREVIOUS-CONTENT", "2026-09-03", 0.5)
-    historical["strategy"] = {"release_hash": "a" * 64, "release_id": "S999-v7"}
+    historical["strategy"] = {"strategy_id":"S999", "version":"v7", "release_hash":"a" * 64, "release_id":"S999-v7"}
     historical["observation"] = {
         "contract_version": "strategy_observation.v1", "status": "READY",
         "series": historical["observation"]["series"],
     }
-    store.supersede_account_decision("s001-v2", "DEC-LEGACY", "DEC-PREVIOUS-CONTENT")
-    store.save_account_decision("s001-v2", historical)
+    history = [
+        (legacy, "SUPERSEDED", "DEC-PREVIOUS-CONTENT"),
+        (decision_payload("DEC-BASE", "2026-09-02", 0.0), "ACTIVE", None),
+        (decision_payload("DEC-OLD", "2026-09-04", 0.1), "SUPERSEDED", "DEC-NEW"),
+        (decision_payload("DEC-NEW", "2026-09-04", 0.2), "ACTIVE", None),
+        (historical, "INVALIDATED", None),
+    ]
+    database = store.path
+    financial_before = tuple(store.virtual_account("s001-v2")[key] for key in ("cash", "frozen_cash", "quantity"))
+    store.close()
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TRIGGER decision_content_immutable")
+        connection.execute("DROP TRIGGER retired_instance_irreversible")
+        connection.execute("DROP TABLE decision_state_events")
+        connection.execute("DROP TABLE decision_adoptions")
+        connection.execute("ALTER TABLE virtual_accounts DROP COLUMN run_state")
+        connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_status TO status")
+        connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_paused TO paused")
+        connection.execute("ALTER TABLE decisions RENAME COLUMN legacy_status TO status")
+        connection.execute("UPDATE settings SET value='3' WHERE key='runtime_database_schema_version'")
+        for payload, status, replacement in history:
+            payload["orders"] = []
+            connection.execute(
+                "INSERT INTO decisions(account_id,decision_id,payload,signal_date,valid_session,generated_at,status,superseded_by,superseded_at) VALUES(?,?,?,?,?,?,?,?,?)",
+                ("s001-v2", payload["decision_id"], json.dumps(payload), payload["signal_date"],
+                 payload["valid_session"], payload["signal_date"]+"T12:30:00+00:00", status, replacement,
+                 "2026-10-08T12:26:51+00:00" if replacement else None),
+            )
+    store = PaperStore(database)
+    assert tuple(store.virtual_account("s001-v2")[key] for key in ("cash", "frozen_cash", "quantity")) == financial_before
+    assert store.account_decision("s001-v2", "DEC-OLD")["legacy_status"] == "SUPERSEDED"
+    assert store.account_decision("s001-v2", "DEC-PREVIOUS-CONTENT")["payload"] == historical
     requests = []
 
     def render(request):
@@ -1031,7 +1064,8 @@ def test_account_chart_preserves_signal_history_across_strategy_packages(new_sto
     assert set(chart_history["observation"]) == {"status", "series", "facts"}
     events = {row["decision_id"]: row for row in requests[0]["execution"]["decisions"]}
     assert set(events) == {"DEC-BASE", "DEC-OLD", "DEC-NEW", "DEC-LEGACY", "DEC-PREVIOUS-CONTENT"}
-    assert events["DEC-OLD"]["status"] == "SUPERSEDED"
+    assert events["DEC-OLD"]["status"] == "COMPLETED"
+    assert events["DEC-OLD"]["state_reason"] == "MIGRATION_NO_ORDER"
     assert events["DEC-BASE"]["signal_date"] == "2026-09-02"
     assert events["DEC-BASE"]["valid_session"] == "2026-09-03"
     assert status["message"] is None
@@ -1051,6 +1085,8 @@ def test_account_chart_waits_for_first_observation_without_rejecting_legacy_deci
         {
             "account_id": "s001-v2",
             "decision_id": "DEC-LEGACY",
+            "strategy": {"strategy_id":"S001", "version":"v2", "release_hash":"b"*64},
+            "symbol":"588080.SH", "orders":[],
             "signal_date": "2026-09-03",
             "valid_session": "2026-09-04",
             "action": "WAIT",
@@ -1295,3 +1331,4 @@ def test_ft_pte02_new_account_is_created_only_after_strategy_runtime_preflight(
     assert created["strategy_id"] == "S900"
     assert created["release_hash"] == release_hash
     assert created["initial_cash"] == "100000.0000"
+    assert created["run_state"] == "PAUSED"

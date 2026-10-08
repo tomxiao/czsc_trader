@@ -164,7 +164,7 @@ class PteCoordinator:
         signal_date = self.strategy_cycle.latest_completed_signal_date(observed_at)
         failures = []
         for account in self.store.strategy_virtual_accounts():
-            if account.get("status") == "RETIRED":
+            if account.get("run_state") == "RETIRED":
                 continue
             try:
                 self.strategy_cycle.run(

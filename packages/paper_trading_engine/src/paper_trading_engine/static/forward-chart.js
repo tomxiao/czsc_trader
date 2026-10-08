@@ -3,6 +3,7 @@
   const stage=document.querySelector('#forward-stage');
   const svg=document.querySelector('#forward-svg');
   const tooltip=document.querySelector('#forward-tooltip');
+  const eventDate=document.querySelector('#forward-event-date');
   const context=JSON.parse(document.querySelector('#forward-context').textContent);
   const embedded=window.parent!==window;
   if(embedded)root.classList.add('embedded');
@@ -10,9 +11,8 @@
   const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null};
   const bars=context.market_data.bars||[];
-  const invalidatedIds=new Set((context.execution.decisions||[]).filter(item=>item.status==='INVALIDATED').map(item=>item.decision_id));
-  const observations=(context.observations||[]).filter(item=>!invalidatedIds.has(item.decision_id));
-  const decisions=(context.execution.decisions||[]).filter(item=>item.status!=='INVALIDATED').sort((a,b)=>a.generated_at.localeCompare(b.generated_at));
+  const observations=context.observations||[];
+  const decisions=[...(context.execution.decisions||[])].sort((a,b)=>a.generated_at.localeCompare(b.generated_at));
   const fills=[...(context.execution.fills||[])].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots||[];
   const cutoff=context.window.selection_data_cutoff;
@@ -33,12 +33,15 @@
     return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(time);
   };
   const fillDate=item=>item.occurred_at?localTime(item.occurred_at).slice(0,10):item.session;
-  const statusLabel=value=>({ACTIVE:'当前有效',SUPERSEDED:'已替代',INVALIDATED:'已失效'}[value]||value);
+  const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
   const dayDecisions=date=>decisions.filter(item=>localTime(item.generated_at).slice(0,10)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
   const fillSummary=item=>`成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}；时间 ${localTime(item.occurred_at)}`;
+  const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(item=>localTime(item.generated_at).slice(0,10)),...fills.map(fillDate)])].sort();
+  const tradingDates=new Set(bars.map(item=>item.date));
+  eventDate.replaceChildren(...eventDates.map(date=>{const option=document.createElement('option');option.value=date;option.textContent=`${date}${tradingDates.has(date)?'':'（非交易日）'}`;return option;}));
 
   document.querySelector('#forward-title').textContent=`${context.strategy.release_id} · ${context.strategy.name}`;
   const observationStart=context.window.observation_start;
@@ -62,12 +65,29 @@
     const lines=[];
     for(const item of dayDecisions(date)){
       lines.push(`决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}；生成 ${localTime(item.generated_at)}`);
+      if(item.state_reason)lines.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
       const observation=observationById.get(item.decision_id);
       lines.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
     }
     lines.push(...dayFills(date).map(fillSummary));
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
+  }
+  function reasonLabel(value){
+    return ({
+      NO_ORDER:'计划无需下单',PLAN_GENERATED:'生成待执行计划',PLAN_REPLACED:'由新决策替代',
+      ACCOUNT_RETIRED:'账户退出前撤回未执行计划',SUBMISSION_STARTED:'开始提交订单',
+      PLAN_FILLED:'计划全部成交',PLAN_ENDED_WITHOUT_COMPLETION:'计划全部结束，未完成原定交易',
+      CHANNEL_RESULT_UNCERTAIN:'渠道结果待确认',CHANNEL_EXECUTION:'渠道执行中',AWAITING_EXECUTION:'等待执行',
+      AWAITING_FILL_RECONCILIATION:'等待成交事实对账',EXECUTION_WINDOW_PASSED:'执行时窗已结束',
+      REPLACED:'由新决策替代',EXPIRED:'超过执行时限',CANCELLED:'执行前撤回',REJECTED:'订单拒绝',
+      MIGRATION_NO_ORDER:'历史计划无需下单',MIGRATION_SUBMISSION_UNCERTAIN:'历史渠道提交结果待确认',
+      MIGRATION_ALL_PLANNED_ORDERS_FILLED:'历史计划全部成交',
+      MIGRATION_ORIGINAL_PLAN_REJECTED_OPERATOR_COMPENSATION:'原计划被拒绝，后续人工补偿成交独立保留',
+      MIGRATION_UNSUBMITTED_REPLACEMENT:'历史未提交计划已被替代',MIGRATION_ALL_INTENTS_ENDED:'历史订单意图全部结束，计划未完成',
+      MIGRATION_SUBMITTED_WORK_REMAINS:'历史已提交交易仍待结束',MIGRATION_VALID_SESSION_PASSED:'历史计划超过有效交易日',
+      MIGRATION_UNSUBMITTED_PLAN:'历史计划尚未提交',
+    }[value]||value);
   }
   function wrapExplanation(text,width,measure){
     const lines=[];
@@ -90,8 +110,9 @@
     const measure=document.createElement('canvas').getContext('2d');
     measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
     const explanations=rows.map(row=>wrapExplanation(eventLines(row.date),innerW-24,measure));
+    const selectedExplanation=wrapExplanation(eventLines(state.selected||rows.at(-1).date),innerW-24,measure);
     const explainTop=compact?positionTop+12:positionTop+positionH+18;
-    const explainH=Math.max(62,44+18*Math.max(...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
+    const explainH=Math.max(62,44+18*Math.max(selectedExplanation.length,...explanations.map(lines=>lines.length))),axisTop=explainTop+explainH+8,height=axisTop+30;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
@@ -117,16 +138,21 @@
     [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{if(compact&&index===1)return;add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
     const tickCount=compact?4:7;for(let i=0;i<tickCount;i++){const index=Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
     const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2})),main=add(el('text',{x:left+12,y:explainTop+22,class:'explain-main'})),sub=add(el('text',{x:left+12,y:explainTop+42,class:'explain-sub'}));
+    function showEvents(date){
+      state.selected=date;eventDate.value=date;
+      const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
+      const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
+      main.textContent=`${date} · ${event}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
+      sub.replaceChildren(...wrapExplanation(eventLines(date),innerW-24,measure).map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
+    }
     function select(index,pointer){
       index=Math.max(0,Math.min(rows.length-1,index));state.selected=rows[index].date;
       const row=rows[index],decision=byDate.get(row.date),observation=decision?.observation;
-      const selectedFills=dayFills(row.date),selectedDecisions=dayDecisions(row.date);
+      showEvents(row.date);
+      cross.style.display='';priceDot.style.display='';
       cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
       const first=observation?.status==='READY'?observation.series?.[0]:null;
       signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
-      const event=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
-      main.textContent=`${row.date} · ${event}`;
-      sub.replaceChildren(...explanations[index].map((text,line)=>el('tspan',{x:left+12,dy:line?18:0,'xml:space':'preserve'},text)));
       tooltip.innerHTML=`<div class="head">${safe(row.date)}</div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span></div>`;
       if(pointer){
         tooltip.hidden=false;
@@ -136,9 +162,12 @@
       }
     }
     const selectedIndex=rows.findIndex(row=>row.date===state.selected);
-    select(selectedIndex<0?rows.length-1:selectedIndex,null);
+    if(state.selected&&selectedIndex<0){
+      showEvents(state.selected);cross.style.display='none';priceDot.style.display='none';signalDot.style.display='none';tooltip.hidden=true;
+    }else select(selectedIndex<0?rows.length-1:selectedIndex,null);
     const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop+explainH-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
   }
+  eventDate.addEventListener('change',()=>{state.selected=eventDate.value;tooltip.hidden=true;render();});
   document.querySelectorAll('[data-range]').forEach(button=>button.addEventListener('click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);document.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
   document.querySelectorAll('[data-layer]').forEach(button=>button.addEventListener('click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
   const viewportWindow=embedded?window.parent:window;

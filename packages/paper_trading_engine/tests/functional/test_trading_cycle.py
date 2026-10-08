@@ -18,7 +18,8 @@ from paper_trading_engine.contracts import AdviceDecision, OrderSpec, PlanLegSpe
 from paper_trading_engine.futu_execution import FutuExecution
 from paper_trading_engine.scheduler import RuntimeScheduler
 from paper_trading_engine.store import PaperStore
-from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation
+from paper_trading_engine.lifecycle import IntentControlState
+from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation, adopt_test_decision, claim_test_intent
 
 
 def _wait_until(predicate, timeout=2.0):
@@ -63,6 +64,7 @@ def test_blocked_or_draining_account_cannot_complete_a_decision_generation(new_s
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     store.set_setting("last_data_prepare_date", "2026-09-01")
     store.set_virtual_health("s001-v1", "BLOCKED", "等待人工处理")
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
@@ -114,6 +116,7 @@ def test_immediate_split_order_intents_are_persisted_atomically(new_store, tmp_p
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     audit = AuditRecorder(store)
     events = [
         audit.build(
@@ -142,6 +145,7 @@ def test_immediate_split_order_intents_are_persisted_atomically(new_store, tmp_p
 
     monkeypatch.setattr(store, "_insert_audit_event", fail_second_event)
     with pytest.raises(RuntimeError, match="audit persistence"):
+        adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-SPLIT", valid_session="2026-09-02", orders=orders)
         store.create_account_immediate_intents(
             account_id="s001-v1", decision_id="DEC-SPLIT", symbol="588080.SH",
             valid_session="2026-09-02", fee_rate="0.0005",
@@ -154,6 +158,7 @@ def test_immediate_split_order_intents_are_persisted_atomically(new_store, tmp_p
     assert store.query_audit_events(event_type="ORDER_INTENT_CREATED") == []
 
     monkeypatch.setattr(store, "_insert_audit_event", original_insert)
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-SPLIT", valid_session="2026-09-02", orders=orders)
     created = store.create_account_immediate_intents(
         account_id="s001-v1", decision_id="DEC-SPLIT", symbol="588080.SH",
         valid_session="2026-09-02", fee_rate="0.0005",
@@ -161,6 +166,82 @@ def test_immediate_split_order_intents_are_persisted_atomically(new_store, tmp_p
     )
     assert len(created) == 2
     assert float(store.virtual_account("s001-v1")["frozen_cash"]) == 3361.68
+    store.close()
+
+
+def test_initial_commit_rolls_back_and_pause_does_not_change_decision_content(new_store, tmp_path, monkeypatch):
+    store = new_store(tmp_path / "lifecycle-commit.db")
+    account = store.create_virtual_account(
+        "s001-v1", "test", "legacy", "a" * 64, 100_000,
+        strategy_id="S001", strategy_name_snapshot="test", strategy_version="v1",
+        release_hash="b" * 64, qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
+    )
+    assert account["run_state"] == "PAUSED"
+    advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
+    accounts = AccountEngine(store, advice)
+    store.set_virtual_paused("s001-v1", False)
+    original = store.create_account_immediate_intents
+
+    def fail_persistence(**kwargs):
+        raise RuntimeError("intent persistence failed")
+
+    monkeypatch.setattr(store, "create_account_immediate_intents", fail_persistence)
+    with pytest.raises(RuntimeError, match="persistence"):
+        accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
+    assert store.account_decisions("s001-v1") == []
+    assert store.account_snapshots("s001-v1") == []
+    assert store.query_audit_events(event_type="DECISION_GENERATED") == []
+    assert store.virtual_account("s001-v1")["last_decision_id"] is None
+    assert store.account_invariant_violations() == []
+
+    monkeypatch.setattr(store, "create_account_immediate_intents", original)
+    store.set_virtual_paused("s001-v1", True)
+    accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
+    observed = store.account_decisions("s001-v1")[0]
+    assert "execution_disposition" not in observed["payload"]
+    assert observed["status"] == "PENDING" and store.account_intents("s001-v1") == []
+    store.set_virtual_paused("s001-v1", False)
+    accounts.drive_account_decision("s001-v1", prepared=preparation(advice.value))
+    adopted = store.account_decision("s001-v1", observed["decision_id"])
+    assert adopted["payload"] == observed["payload"]
+    assert adopted["generated_at"] == observed["generated_at"]
+    assert len(store.account_intents("s001-v1")) == 1
+    store.close()
+
+
+@pytest.mark.parametrize("entry", ["single", "immediate", "plan"])
+def test_order_entry_rejects_terminal_or_changed_immutable_plan(new_store, tmp_path, entry):
+    store = new_store(tmp_path / "entry-gate.db")
+    store.create_virtual_account(
+        "s001-v1", "test", "legacy", "a" * 64, 100_000,
+        strategy_id="S001", strategy_name_snapshot="test", strategy_version="v1",
+        release_hash="b" * 64, qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
+    )
+    store.set_virtual_paused("s001-v1", False)
+    planned = {"sequence": 0, "side": "BUY", "quantity": 100, "order_type": "LIMIT", "limit_price": 1.68}
+    leg = {**planned, "plan_mode": "CORE_SETUP", "role": "CORE_SETUP", "checkpoint": "OPEN",
+           "submit_after": "09:30:00", "submit_before": "09:35:00", "dependency_sequence": None}
+    adopt_test_decision(store, account_id="s001-v1", decision_id="GATED", valid_session="2026-09-02",
+                        orders=[planned] if entry != "plan" else None, legs=[leg] if entry == "plan" else None)
+
+    def create(quantity):
+        common = {"account_id": "s001-v1", "decision_id": "GATED", "symbol": "588080.SH", "valid_session": "2026-09-02", "fee_rate": .0005}
+        if entry == "single":
+            return store.create_account_intent(**common, order_sequence=0, side="BUY", quantity=quantity, limit_price=1.68, order_type="LIMIT")
+        if entry == "immediate":
+            return store.create_account_immediate_intents(**common, orders=[{**planned, "quantity": quantity}])
+        return store.create_account_plan_intents(**common, legs=[{**leg, "quantity": quantity}])
+
+    before = store.virtual_account("s001-v1")
+    with pytest.raises(ValueError, match="immutable plan"):
+        create(200)
+    assert store.virtual_account("s001-v1") == before
+    assert store.account_intents("s001-v1") == []
+    store.expire_unsubmitted_decisions(datetime(2026, 9, 3, tzinfo=timezone.utc))
+    assert store.account_decision("s001-v1", "GATED")["status"] == "INCOMPLETE"
+    with pytest.raises(ValueError, match="terminal"):
+        create(100)
+    assert store.account_intents("s001-v1") == []
     store.close()
 
 
@@ -183,7 +264,7 @@ def intraday_setup_decision(strategy: dict[str, str]) -> AdviceDecision:
     )
 
 
-def test_recovered_buy_uses_a_new_reservation_generation_and_release(new_store, tmp_path):
+def test_expired_plan_is_terminal_and_requires_new_decision(new_store, tmp_path):
     store = new_store(tmp_path / "generation.db")
     store.create_virtual_account(
         "s003-v1", "S003-v1模拟账户", "legacy", "a" * 64, 100_000,
@@ -192,6 +273,14 @@ def test_recovered_buy_uses_a_new_reservation_generation_and_release(new_store, 
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-GENERATION", valid_session="2026-09-14", legs=[{
+            "sequence": 0, "side": "BUY", "quantity": 1000,
+            "order_type": "LIMIT", "limit_price": "7.5000",
+            "plan_mode": "CORE_SETUP", "role": "CORE_SETUP", "checkpoint": "OPEN",
+            "submit_after": "09:30:00", "submit_before": "09:35:00",
+            "dependency_sequence": None, "dependency_required_status": None,
+        }])
+    store.set_virtual_paused("s003-v1", False)
     [intent] = store.create_account_plan_intents(
         account_id="s003-v1", decision_id="DEC-GENERATION", symbol="510500.SH",
         valid_session="2026-09-14", fee_rate="0.0005",
@@ -206,9 +295,11 @@ def test_recovered_buy_uses_a_new_reservation_generation_and_release(new_store, 
     store.release_account_intent(
         intent["intent_id"], "EXPIRED", attention_reason="计划订单错过提交截止时间",
     )
-    store.recover_future_planned_intent(intent["intent_id"])
+    with pytest.raises(ValueError, match="terminal"):
+        store.update_account_intent_status(intent["intent_id"], IntentControlState.SUBMISSION_UNCERTAIN)
     recovered = store.account_intent(intent["intent_id"])
-    assert recovered["reservation_generation"] == 2
+    assert recovered["reservation_generation"] == 1
+    assert store.account_decision("s003-v1", "DEC-GENERATION")["status"] == "INCOMPLETE"
     store.release_account_intent(intent["intent_id"], "REJECTED")
     assert store.account_invariant_violations() == []
     with store._lock:
@@ -216,7 +307,7 @@ def test_recovered_buy_uses_a_new_reservation_generation_and_release(new_store, 
             "SELECT 1 FROM account_ledger WHERE account_id=? AND entry_type='INTENT_RELEASE'",
             ("s003-v1",),
         ).fetchall()
-    assert len(releases) == 2
+    assert len(releases) == 1
     store.release_account_intent(intent["intent_id"], "REJECTED")
     assert store.account_invariant_violations() == []
     store.close()
@@ -231,6 +322,8 @@ def test_missing_recovered_release_can_be_repaired_once_with_audit(new_store, tm
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-REPAIR", valid_session="2026-09-14", orders=[{'side': "BUY", 'quantity': 1000, 'order_type': 'LIMIT' if "BUY" == 'BUY' else 'MARKET', 'limit_price': "7.5000"}])
+    store.set_virtual_paused("s003-v1", False)
     intent = store.create_account_intent(
         account_id="s003-v1", decision_id="DEC-REPAIR", order_sequence=0,
         symbol="510500.SH", side="BUY", quantity=1000,
@@ -269,13 +362,16 @@ def test_ft_pte02_account_decision_futu_order_fill_restart_and_idempotence(new_s
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(
         store, advice, now=lambda: datetime(2026, 9, 8, 6, 35, tzinfo=timezone.utc),
     )
     broker = FakeBroker()
+    FutuExecution(store, broker).refresh_orders()
     execution = FutuExecution(store, broker, symbol="588080.SH", today=lambda: date(2026, 9, 2))
 
+    FutuExecution(store, FakeBroker()).refresh_orders()
     accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
     accounts.refresh_account("s001-v1", prepared=preparation(advice.value))
     assert len(store.account_decisions("s001-v1")) == 1
@@ -392,6 +488,7 @@ def test_account_snapshot_values_position_with_execution_price(new_store, tmp_pa
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     with store._lock, store._connection:
         store._connection.execute(
             "UPDATE virtual_accounts SET cash='90000.0000',quantity=1000 "
@@ -421,7 +518,9 @@ def test_ft_pte10_intraday_plan_waits_for_fill_and_recovers_after_restart(new_st
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    store.set_virtual_paused("s003-v1", False)
     broker = FakeBroker()
+    FutuExecution(store, broker).refresh_orders()
     strategy = {
         "strategy_id": "S003", "name": "成分资金流宽度早盘延续",
         "version": "v1", "release_id": "S003-v1",
@@ -547,7 +646,9 @@ def test_ft_pte11_intraday_plan_blocks_exit_when_entry_is_not_filled(new_store, 
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    store.set_virtual_paused("s003-v1", False)
     broker = FakeBroker()
+    FutuExecution(store, broker).refresh_orders()
     strategy = {
         "strategy_id": "S003", "name": "成分资金流宽度早盘延续",
         "version": "v1", "release_id": "S003-v1",
@@ -656,6 +757,7 @@ def test_existing_decision_id_is_preserved_when_same_decision_is_recomputed(new_
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     old_decision = decision()
     old_payload = asdict(old_decision)
     old_payload["prepared_data_identity"] = preparation(old_decision).data_identity
@@ -689,6 +791,7 @@ def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision())
     accounts = AccountEngine(store, advice)
     coordinator = _operator_coordinator(accounts, store)
@@ -713,13 +816,12 @@ def test_operator_can_drive_one_account_decision_with_explicit_result_and_audit(
         signal_identity="7" * 64,
     )
     superseded = coordinator.drive_virtual_account_decision("s001-v1")
-    assert superseded["status"] == "DECISION_SUPERSEDED"
-    assert superseded["superseded_decision_id"] == first["decision_id"]
+    assert superseded["status"] == "DECISION_COMPLETED"
     assert superseded["reused_decision"] is False
     decisions = store.account_decisions("s001-v1")
     assert {row["decision_id"]: row["status"] for row in decisions} == {
-        first["decision_id"]: "SUPERSEDED",
-        superseded["decision_id"]: "ACTIVE",
+        first["decision_id"]: "COMPLETED",
+        superseded["decision_id"]: "COMPLETED",
     }
     events = store.query_audit_events(
         event_type="ACCOUNT_DECISION_DRIVEN", account_id="s001-v1",
@@ -746,6 +848,7 @@ def test_operator_supersedes_unsubmitted_intents_and_releases_reservations(new_s
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     coordinator = _operator_coordinator(AccountEngine(store, advice), store)
     first = coordinator.drive_virtual_account_decision("s001-v1")
@@ -786,6 +889,7 @@ def test_operator_supersession_projects_s003_style_reserved_cash(new_store, tmp_
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     first_decision = replace(
         decision(OrderSpec("BUY", 5900, "LIMIT", 8.613, "DAY")),
         fee_rate=0.00012,
@@ -827,6 +931,7 @@ def test_operator_supersession_calculation_failure_preserves_old_reservation(new
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
     accounts.drive_account_decision(
@@ -861,6 +966,7 @@ def test_operator_supersession_rejects_intent_claimed_during_calculation(new_sto
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
     accounts.drive_account_decision(
@@ -871,7 +977,7 @@ def test_operator_supersession_rejects_intent_claimed_during_calculation(new_sto
     class ClaimingAdvice(FakeAdvice):
         def get_decision(self, *args, **kwargs):
             value = super().get_decision(*args, **kwargs)
-            assert store.claim_account_intent(old_intent["intent_id"])
+            assert claim_test_intent(store, old_intent["intent_id"])
             return value
 
     accounts.advice = ClaimingAdvice(replace(
@@ -896,13 +1002,14 @@ def test_operator_cannot_supersede_claimed_intent(new_store, tmp_path):
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
     accounts.drive_account_decision(
         "s001-v1", prepared=preparation(advice.value)
     )
     intent = store.account_intents("s001-v1")[0]
-    assert store.claim_account_intent(intent["intent_id"])
+    assert claim_test_intent(store, intent["intent_id"])
     advice.value = replace(
         decision(), decision_id="DEC-TWO", source_decision_id="DEC-TWO",
     )
@@ -925,6 +1032,7 @@ def test_operator_supersession_rolls_back_as_one_transaction(new_store, tmp_path
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(store, advice)
     first = accounts.drive_account_decision(
@@ -956,7 +1064,7 @@ def test_operator_supersession_rolls_back_as_one_transaction(new_store, tmp_path
     assert after["frozen_cash"] == before["frozen_cash"]
     assert store.account_intent(old_intent["intent_id"])["status"] == "PENDING_SUBMIT"
     decisions = store.account_decisions("s001-v1")
-    assert len(decisions) == 1 and decisions[0]["status"] == "ACTIVE"
+    assert len(decisions) == 1 and decisions[0]["status"] == "PENDING"
     assert store.query_audit_events(event_type="DECISION_SUPERSEDED") == []
     assert store.query_audit_events(event_type="ORDER_INTENT_SUPERSEDED") == []
     store.close()
@@ -972,6 +1080,13 @@ def test_core_setup_partial_and_duplicate_fills_are_exactly_once(new_store, tmp_
             release_hash="c" * 64, qualification_snapshot="PAPER_READY",
             selection_data_cutoff="2026-09-08", symbol="510500.SH",
         )
+        adopt_test_decision(store, account_id="core", decision_id="DEC-TEST", valid_session="2026-09-14", legs=[{
+                "sequence": 0, "side": "BUY", "quantity": 1000, "order_type": "LIMIT",
+                "limit_price": "7.5000", "plan_mode": "CORE_SETUP", "role": "CORE_SETUP",
+                "checkpoint": "OPEN", "submit_after": "09:30:00", "submit_before": "09:35:00",
+                "dependency_sequence": None, "dependency_required_status": None,
+            }])
+        store.set_virtual_paused("core", False)
         [intent] = store.create_account_plan_intents(
             account_id="core", decision_id="DEC-TEST", symbol="510500.SH",
             valid_session="2026-09-14", fee_rate="0.0005", legs=[{
@@ -981,7 +1096,7 @@ def test_core_setup_partial_and_duplicate_fills_are_exactly_once(new_store, tmp_
                 "dependency_sequence": None, "dependency_required_status": None,
             }],
         )
-        assert store.claim_account_intent(intent["intent_id"])
+        assert claim_test_intent(store, intent["intent_id"])
         store.bind_channel_order(intent["intent_id"], "order", {
             "channel_order_id": "order", "symbol": "510500.SH", "side": "BUY",
             "quantity": 1000, "limit_price": 7.5, "status": "SUBMITTED",

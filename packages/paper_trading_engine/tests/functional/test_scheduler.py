@@ -116,7 +116,7 @@ def _account(account_id="s007-v1", **overrides):
         "account_id": account_id,
         "symbol": "588080.SH",
         "asset_type": "etf",
-        "status": "RUNNING",
+        "run_state": "RUNNING",
         "strategy_id": "S007",
         "strategy_version": "v1",
         "release_hash": "b" * 64,

@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 from zipfile import ZipFile
@@ -263,7 +264,7 @@ def release_verification_runtime(pte_frozen, new_store, tmp_path):
     store.close()
 
 
-@pytest.mark.parametrize("binding", ["empty", "valid", "wrong_hash", "wrong_cutoff", "invalid_config"])
+@pytest.mark.parametrize("binding", ["empty", "valid", "legacy_v3", "wrong_hash", "wrong_cutoff", "invalid_config"])
 def test_release_verifies_configuration_and_bindings_without_preparing_data(
     release_verification_runtime, binding,
 ):
@@ -280,6 +281,19 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
         (runtime / "shared/config/pte.json").write_text('{"schema_version":999}', encoding="utf-8")
     store.close()
     database = runtime / "shared/state/runtime.db"
+    if binding == "legacy_v3":
+        # Verification precedes the production migration and must remain read-only.
+        with sqlite3.connect(database) as connection:
+            connection.execute("DROP TRIGGER decision_content_immutable")
+            connection.execute("DROP TRIGGER retired_instance_irreversible")
+            connection.execute("UPDATE virtual_accounts SET legacy_status='RUNNING',legacy_paused=1")
+            connection.execute("ALTER TABLE virtual_accounts DROP COLUMN run_state")
+            connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_status TO status")
+            connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_paused TO paused")
+            connection.execute("ALTER TABLE decisions RENAME COLUMN legacy_status TO status")
+            connection.execute("DROP TABLE decision_state_events")
+            connection.execute("DROP TABLE decision_adoptions")
+            connection.execute("UPDATE settings SET value='3' WHERE key='runtime_database_schema_version'")
     database_before = database.read_bytes()
     data = runtime / "shared/data"
     data_before = {path.relative_to(data).as_posix(): path.read_bytes()

@@ -151,6 +151,8 @@ class AccountEngine:
                 )
             )
         )
+        if same_plan and self.store.account_decision(account_id, str(previous["decision_id"]))["status"] in {"CANCELLED", "INCOMPLETE", "SUPERSEDED"}:
+            same_plan = False
         if same_plan:
             return replace(
                 decision,
@@ -165,7 +167,7 @@ class AccountEngine:
             generated_at = generated_at.astimezone(self._BEIJING)
         stamp = generated_at.strftime("%Y%m%d-%H%M")
         suffix = sha256(
-            f"{account_id}\0{decision.plan_identity}".encode("utf-8")
+            f"{account_id}\0{decision.plan_identity}\0{generated_at.isoformat()}".encode("utf-8")
         ).hexdigest()[:12].upper()
         return replace(
             decision,
@@ -190,9 +192,9 @@ class AccountEngine:
         account = self.store.virtual_account(account_id)
         if self._draining:
             raise AccountDecisionBlockedError("PTE正在停止，禁止生成新的账户决策")
-        if account["status"] != "RUNNING":
+        if account["run_state"] == "RETIRED":
             raise AccountDecisionBlockedError(
-                f"虚拟账户状态不允许生成决策: {account['status']}"
+                f"虚拟账户状态不允许生成决策: {account['run_state']}"
             )
         if account["health"] == "BLOCKED":
             raise AccountDecisionBlockedError(
@@ -309,9 +311,9 @@ class AccountEngine:
         # Re-read the account after the potentially long-running strategy call.
         # Store-level intent creation performs the same gate inside its transaction.
         execution_account = self.store.virtual_account(account_id)
-        if execution_account["status"] != "RUNNING":
+        if execution_account["run_state"] == "RETIRED":
             raise AccountDecisionBlockedError(
-                f"虚拟账户状态不允许执行决策: {execution_account['status']}"
+                f"虚拟账户状态不允许执行决策: {execution_account['run_state']}"
             )
         if execution_account["health"] == "BLOCKED":
             raise AccountDecisionBlockedError(
@@ -339,8 +341,6 @@ class AccountEngine:
             )
 
         payload = asdict(decision)
-        if bool(execution_account["paused"]):
-            payload["execution_disposition"] = "SKIPPED_PAUSED"
         payload["prepared_data_identity"] = prepared.data_identity
         payload["prepared_data_reference"] = dict(prepared.data_reference)
         previous = json.loads(previous_payload) if previous_payload else None
@@ -355,18 +355,26 @@ class AccountEngine:
             operator_drive
             and previous_decision_id
             and decision.decision_id != previous_decision_id
+            and self.store.account_decision(account_id, str(previous_decision_id))["status"] == "PENDING"
             and (
-                decision.signal_date.isoformat() == previous.get("signal_date")
+                decision.valid_session.isoformat() == previous.get("valid_session")
+                or decision.signal_date.isoformat() == previous.get("signal_date")
                 or active_intents
             )
         )
         superseded_intent_ids: tuple[str, ...] = ()
         if supersede_previous:
             with self.store.atomic_decision_update():
+                locked_account = self.store.virtual_account(account_id)
                 current_active = [
                     row for row in self.store.account_intents(account_id)
                     if row["status"] not in TERMINAL_INTENT_STATUSES
                 ]
+                if (self._planning_revision(locked_account, current_active) != source_revision
+                        or locked_account["release_hash"] != account["release_hash"]
+                        or locked_account["run_state"] != execution_account["run_state"]
+                        or locked_account["health"] == "BLOCKED"):
+                    raise AccountDecisionBlockedError("账户在替换提交前发生变化，决策未提交")
                 replacement_state_changed = (
                     bool(current_active)
                     if replacement_snapshot is None
@@ -425,13 +433,22 @@ class AccountEngine:
                     ),
                 )
                 status = self._persist_generated_decision(
-                    account_id, payload, execution_account, decision, account,
+                    account_id, payload, locked_account, decision, account,
                     previous_action,
                 )
         else:
-            status = self._persist_generated_decision(
-                account_id, payload, execution_account, decision, account, previous_action,
-            )
+            with self.store.atomic_decision_update():
+                locked_account = self.store.virtual_account(account_id)
+                locked_intents = [row for row in self.store.account_intents(account_id)
+                                  if row["status"] not in TERMINAL_INTENT_STATUSES]
+                if (self._planning_revision(locked_account, locked_intents) != source_revision
+                        or locked_account["release_hash"] != account["release_hash"]
+                        or locked_account["run_state"] != execution_account["run_state"]
+                        or locked_account["health"] == "BLOCKED"):
+                    raise AccountDecisionBlockedError("账户在提交前发生变化，决策未提交")
+                status = self._persist_generated_decision(
+                    account_id, payload, locked_account, decision, account, previous_action,
+                )
         if not operator_drive:
             return status
         if supersede_previous:
@@ -519,7 +536,7 @@ class AccountEngine:
                     },
                 )
 
-        if not bool(execution_account["paused"]):
+        if execution_account["run_state"] == "RUNNING" and self.store.account_decision(account_id, decision.decision_id)["status"] == "PENDING":
             if decision.plan_legs:
                 plan_events = []
                 plan_rows = []

@@ -10,6 +10,7 @@ from paper_trading_engine.audit import AuditContractError, AuditEvent, AuditReco
 from paper_trading_engine.performance_export import (
     _canonical_sha256, calculate_metrics, export_performance,
 )
+from pte_support import adopt_test_decision, claim_test_intent
 from strategy_manager import PerformanceEvidence, RegistryError, StrategyRegistry, ValidationError
 
 
@@ -73,6 +74,10 @@ def _export_window(new_store, tmp_path, count, flat, version):
         strategy_version=version.version, release_hash=version.release_hash,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="forward", decision_id="synthetic",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 100,
+                        "order_type": ("LIMIT" if "BUY" == "BUY" else "MARKET"), "limit_price": float("1"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("forward", False)
     store.create_account_intent(
         account_id="forward", decision_id="synthetic", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=100,
@@ -188,14 +193,18 @@ def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(new_s
         release_hash="b" * 64, qualification_snapshot="PAPER_READY",
         selection_data_cutoff="2026-09-02",
     )
+    store.set_virtual_paused("s001-forward", False)
     for index, (session, side, price) in enumerate((("2026-09-03", "BUY", "1.0"), ("2026-09-04", "SELL", "1.1"))):
         order_id = f"ORDER-{side}"
+        adopt_test_decision(store, account_id="s001-forward", decision_id=f"DEC-{side}",
+                            valid_session=session, orders=[{"side": side, "quantity": 1000,
+                            "order_type": ("LIMIT" if side == "BUY" else "MARKET"), "limit_price": float(price), "time_in_force": "DAY"}])
         intent = store.create_account_intent(
-            account_id="s001-forward", decision_id=f"DEC-{side}", order_sequence=index,
+            account_id="s001-forward", decision_id=f"DEC-{side}", order_sequence=0,
             symbol="588080.SH", side=side, quantity=1000,
             limit_price=price, valid_session=session, fee_rate="0.0005",
         )
-        assert store.claim_account_intent(intent["intent_id"])
+        assert claim_test_intent(store, intent["intent_id"])
         store.bind_channel_order(intent["intent_id"], order_id, {
             "channel_order_id": order_id, "symbol": "588080.SH", "side": side,
             "quantity": 1000, "limit_price": float(price), "status": "FILLED_ALL",

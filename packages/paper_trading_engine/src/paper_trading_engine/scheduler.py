@@ -200,7 +200,7 @@ class RuntimeScheduler:
                 self._account_workers.pop(account_id, None)
         signal_date = local_now.date()
         for account in self.store.strategy_virtual_accounts():
-            if account.get("status") != "RUNNING":
+            if account.get("run_state") == "RETIRED":
                 continue
             account_id = str(account["account_id"])
             if account_id in self._account_workers:

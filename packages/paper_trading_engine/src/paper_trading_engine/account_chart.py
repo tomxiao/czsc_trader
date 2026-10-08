@@ -24,7 +24,7 @@ from .trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v6"
+CACHE_RENDER_REVISION = "pte-forward-chart-v7"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -313,6 +313,8 @@ class AccountChartService:
             "account_id": row["account_id"], "decision_id": row["decision_id"],
             "signal_date": row["signal_date"], "valid_session": row["valid_session"],
             "generated_at": row["generated_at"], "status": row["status"],
+            "state_reason": row["state_reason"], "state_changed_at": row["state_changed_at"],
+            "state_events": row["state_events"],
             "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
         }
 
@@ -672,7 +674,7 @@ class AccountChartService:
             return
         with self._store_guard:
             accounts = [dict(row) for row in self.store.strategy_virtual_accounts()
-                        if row.get("status") == "RUNNING"]
+                        if row.get("run_state") != "RETIRED"]
         now = time.monotonic()
         with self._guard:
             if self._closing.is_set():

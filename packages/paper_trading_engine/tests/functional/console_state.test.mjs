@@ -15,7 +15,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     get textContent(){return (this._text||'')+this.children.map(node=>node.textContent).join('');}
     getBoundingClientRect(){return {left:0,top:0,width:1000,height:800};}
   }
-  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof'].map(id=>[id,new Element(id)]));
+  const nodes=Object.fromEntries(['pte-forward-chart','forward-stage','forward-svg','forward-tooltip','forward-context','forward-title','forward-subtitle','forward-asof','forward-event-date'].map(id=>[id,new Element(id)]));
   const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
   const context={
     strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current'},
@@ -30,9 +30,10 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     execution:{
       decisions:[
         {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
-        {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'ACTIVE',target_quantity:0},
-        {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'INVALIDATED',target_quantity:0},
-        {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'INVALIDATED',target_quantity:5000},
+        {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'PENDING',target_quantity:0},
+        {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-03T13:00:00Z',target_quantity:0},
+        {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'CANCELLED',state_reason:'CANCELLED',state_changed_at:'2026-09-03T14:00:00Z',target_quantity:5000},
+        {decision_id:'WEEKEND',signal_date:'2026-09-04',valid_session:'2026-09-07',generated_at:'2026-09-05T03:00:00Z',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-05T03:00:00Z',target_quantity:0},
       ],
       fills:[
         {fill_id:'<img>',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
@@ -43,14 +44,14 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   nodes['forward-context'].textContent=JSON.stringify(context);
   const window={listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},removeEventListener(){}};window.parent=window;
   runInNewContext(readFileSync(new URL('../../src/paper_trading_engine/static/forward-chart.js',import.meta.url),'utf8'),{
-    window,document:{documentElement:new Element('html'),querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:()=>({getContext:()=>({measureText:text=>({width:text.length*7})})}),createElementNS:(_ns,name)=>new Element(name)},
+    window,document:{documentElement:new Element('html'),querySelector:selector=>nodes[selector.slice(1)],querySelectorAll:()=>[],createElement:name=>name==='canvas'?({getContext:()=>({measureText:text=>({width:text.length*7})})}):new Element(name),createElementNS:(_ns,name)=>new Element(name)},
     getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#a78bfa'}),ResizeObserver:class{observe(){}},
   });
   const svg=nodes['forward-svg'];
   const points=()=>svg.children.filter(node=>node.attributes['data-series-key']==='score');
-  assert.equal(points().length,1);
-  assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 0.300/);
-  assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,1);
+  assert.equal(points().length,2);
+  assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 1.900/);
+  assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,2);
   assert.match(svg.textContent,/事件/);
   assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
   assert.doesNotMatch(svg.textContent,/决策：/);
@@ -71,19 +72,28 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(svg.textContent,/2026-09-02 · 决策 1 笔/);
   assert.match(svg.textContent,/日内轮换/);
   assert.match(svg.textContent,/已替代/);
-  assert.doesNotMatch(svg.textContent,/当前有效/);
+  assert.doesNotMatch(svg.textContent,/待执行/);
   assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
   assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
   overlay.listeners.pointermove({clientX:498,clientY:60});
-  assert.match(svg.textContent,/2026-09-03 · 决策 1 笔/);
-  assert.match(svg.textContent,/当前有效/);
+  assert.match(svg.textContent,/2026-09-03 · 决策 3 笔/);
+  assert.match(svg.textContent,/待执行/);
   assert.match(svg.textContent,/目标 0 股/);
   assert.match(svg.textContent,/生成 2026-09-03 01:30:00/);
   assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
   assert.doesNotMatch(svg.textContent,/已替代|已失效/);
-  overlay.listeners.pointermove({clientX:928,clientY:60});
+  const eventDate=nodes['forward-event-date'];
+  assert.ok(eventDate.children.some(option=>option.value==='2026-09-05'&&option.textContent.includes('非交易日')));
+  const candleCount=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length;
+  eventDate.value='2026-09-05';eventDate.listeners.change();
+  assert.match(svg.textContent,/2026-09-05 · 决策 1 笔 · 非交易日，无行情K线/);
+  assert.match(svg.textContent,/状态原因：计划无需下单/);
+  assert.equal(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length,candleCount);
+  assert.equal(tooltip.hidden,true);
+  assert.equal(svg.children.find(node=>node.attributes.class==='crosshair').style.display,'none');
+  svg.children.at(-1).listeners.pointermove({clientX:928,clientY:60});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
-  assert.equal(points().length,1);
+  assert.equal(points().length,2);
   assert.match(svg.textContent,/2026-09-04 · 成交 2 笔/);
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
@@ -136,19 +146,18 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_UNATTRIBUTED'), 'Futu现金差异来源不明');
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_OUT_OF_RANGE'), 'Futu费用差异超出允许范围');
   assert.equal(statusLabel('FUTU_CASH_RECONCILIATION_AMBIGUOUS'), 'Futu现金差异无法安全归属');
-  assert.equal(accountOperatingStatus({paused:false,status:'RUNNING',health:'BLOCKED'}), '阻塞');
-  assert.equal(accountOperatingStatus({paused:true,status:'RUNNING',health:'OK'}), '已暂停');
+  assert.equal(accountOperatingStatus({run_state:'RUNNING',health:'BLOCKED'}), '阻塞');
+  assert.equal(accountOperatingStatus({run_state:'PAUSED',health:'OK'}), '已暂停');
   assert.equal(formatPrice('1.5899999999999999'), '1.590');
   assert.equal(formatQuantity(60500), '60,500 股');
-  assert.equal(decisionExecutionLabel({decision_id:'D1',action:'HOLD'}, []), '本次决策无需下单');
+  assert.equal(decisionExecutionLabel({decision_id:'D1',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER'}), '本次决策无需下单');
+  assert.equal(decisionExecutionLabel({decision_id:'D2',action:'SELL',status:'COMPLETED'}), '已完成');
   assert.equal(decisionExecutionLabel(
-    {decision_id:'D2',action:'SELL'}, [{decision_id:'D2',status:'FILLED_ALL'}],
-  ), '全部成交');
-  assert.equal(decisionExecutionLabel(
-    {decision_id:'D2',action:'SELL'}, [
-      {decision_id:'D2',status:'REJECTED'}, {decision_id:'D2',status:'FILLED_ALL'},
-    ],
-  ), '全部成交（此前 1 次未成功）');
+    {decision_id:'D2',action:'SELL',status:'INCOMPLETE'},
+    [{decision_id:'D2',status:'REJECTED'}, {decision_id:'D2',status:'FILLED_ALL'}],
+  ), '未完成');
+  assert.equal(decisionExecutionLabel({decision_id:'D3',action:'HOLD',status:'CANCELLED'}),'已取消');
+  assert.equal(accountOperatingStatus({run_state:'PAUSED',health:'BLOCKED'}),'已暂停 · 阻塞');
   assert.equal(auditSummary({
     event_type:'ORDER_FILLED',details:{side:'SELL',quantity:60500,average_fill_price:1.589999999999},
   }), '卖出 60,500 股，成交均价 1.590');
@@ -210,7 +219,7 @@ test('virtual account orders show order time and remain newest first', () => {
 test('retired account shows recovered cash and cannot be resumed', () => {
   const html = accountMarkup({
     scope: {account_id:'closed',release_id:'S001-v1'},
-    account: {account_id:'closed',status:'RETIRED',paused:true,initial_cash:'100000',
+    account: {account_id:'closed',run_state:'RETIRED',initial_cash:'100000',
       cash:'0',total_assets:'0',released_cash:'101250.4321'},
     metrics: {current_total_return:0.012504321},
   });
@@ -218,14 +227,14 @@ test('retired account shows recovered cash and cannot be resumed', () => {
   assert.match(html, /已退出 · 资金已回收/);
   assert.match(html, /已回收资金/);
   assert.doesNotMatch(html, /点击恢复/);
-  assert.equal(accountOperatingStatus({status:'RETIRED',paused:true}), '已退出');
+  assert.equal(accountOperatingStatus({run_state:'RETIRED'}), '已退出');
 });
 
 test('virtual account navigation excludes retired accounts and stale selections', () => {
   const accounts = [
-    {account_id:'s002-v1',release_id:'S002-v1',status:'RETIRED',symbol:'510500.SH'},
-    {account_id:'s011-v1',release_id:'S011-v1',status:'RUNNING',symbol:'159326.SZ'},
-    {account_id:'s003-v1',release_id:'S003-v1',status:'RUNNING',paused:true,symbol:'510500.SH'},
+    {account_id:'s002-v1',release_id:'S002-v1',run_state:'RETIRED',symbol:'510500.SH'},
+    {account_id:'s011-v1',release_id:'S011-v1',run_state:'RUNNING',symbol:'159326.SZ'},
+    {account_id:'s003-v1',release_id:'S003-v1',run_state:'PAUSED',symbol:'510500.SH'},
   ];
   assert.equal(chooseAccountId('s002-v1',accounts,'s002-v1'),'s011-v1');
   assert.equal(chooseAccountId(null,accounts,'s002-v1'),'s011-v1');
@@ -235,7 +244,7 @@ test('virtual account navigation excludes retired accounts and stale selections'
   assert.equal(chooseAccountId(null,[],null),null);
   const html = accountMarkup({
     scope:{account_id:'s011-v1',release_id:'S011-v1'},
-    account:{account_id:'s011-v1',status:'RUNNING'},
+    account:{account_id:'s011-v1',run_state:'RUNNING'},
   },accounts);
   assert.doesNotMatch(html,/data-account="s002-v1"/);
   assert.doesNotMatch(html,/S002-v1/);

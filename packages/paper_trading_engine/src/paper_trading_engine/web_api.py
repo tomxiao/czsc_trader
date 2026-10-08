@@ -76,7 +76,7 @@ class PteWebApi:
         alerts = list(channel.get("alerts", []))
         accounts = [
             row for row in self.store.strategy_virtual_accounts()
-            if row.get("status") != "RETIRED"
+            if row.get("run_state") != "RETIRED"
         ]
         prepared_by_account = {
             str(row["account_id"]): self.store.get_setting(
@@ -214,9 +214,8 @@ class PteWebApi:
                 "strategy_id": row["strategy_id"],
                 "symbol": row["symbol"],
                 "release_id": f'{row["strategy_id"]}-{row["strategy_version"]}',
-                "release_hash": row["release_hash"], "paused": bool(row["paused"]),
+                "release_hash": row["release_hash"], "run_state": row["run_state"],
                 "health": row["health"], "total_assets": row["total_assets"],
-                "status": row["status"],
                 "quantity": row["quantity"], "latest_action": decision.get("action"),
                 "alert_count": int(bool(row.get("last_error"))) + int(bool(chart_error)),
             })
@@ -242,15 +241,15 @@ class PteWebApi:
             "account_id", "name", "strategy_id", "strategy_name_snapshot", "strategy_version",
             "release_hash", "qualification_snapshot", "symbol", "initial_cash", "cash",
             "frozen_cash", "total_assets", "quantity", "average_cost", "realized_pnl",
-            "cycle_target", "paused", "observation_start", "last_settlement_session", "health",
-            "last_error", "channel_id", "status", "created_at", "updated_at",
+            "cycle_target", "run_state", "observation_start", "last_settlement_session", "health",
+            "last_error", "channel_id", "created_at", "updated_at",
             "selection_data_cutoff", "released_cash",
         }
         events = self.store.query_audit_events(account_id=account_id, limit=200)
         chart_error = self._account_chart_error(account_id)
         metrics = dict(status.get("metrics", {}))
         initial_cash = float(status["initial_cash"])
-        ending_assets = status["released_cash"] if status.get("status") == "RETIRED" else status["total_assets"]
+        ending_assets = status["released_cash"] if status.get("run_state") == "RETIRED" else status["total_assets"]
         metrics["current_total_return"] = (
             float(ending_assets) / initial_cash - 1 if initial_cash else None
         )
@@ -259,12 +258,21 @@ class PteWebApi:
             account_alerts.append({"code": "ACCOUNT_BLOCKED", "message": status["last_error"]})
         if chart_error:
             account_alerts.append({"code": "ACCOUNT_CHART_UNAVAILABLE", "message": chart_error})
+        decision = status.get("last_decision")
+        if decision:
+            row = self.store.account_decision(account_id, decision["decision_id"])
+            decision = {
+                **decision,
+                **{key: row[key] for key in (
+                    "status", "state_reason", "state_changed_at", "state_events",
+                )},
+            }
         return {
             "scope": {"account_id": account_id, "strategy_id": strategy_id,
                       "release_id": release_id, "release_hash": status.get("release_hash")},
             "as_of": _now(),
             "account": {key: status.get(key) for key in account_keys},
-            "decision": status.get("last_decision"),
+            "decision": decision,
             "orders": _descending_transaction_rows(
                 [row for row in status.get("orders", []) if row.get("account_id") == account_id],
                 time_field="created_at", id_field="channel_order_id",
@@ -323,7 +331,7 @@ class PteWebApi:
                 "initial_cash": row["initial_cash"], "cash": row["cash"],
                 "frozen_cash": row["frozen_cash"], "total_assets": row["total_assets"],
                 "quantity": row["quantity"],
-                "paused": bool(row["paused"]), "status": row["status"],
+                "run_state": row["run_state"],
                 "health": row["health"], "last_error": row["last_error"],
             }
             for row in self.store.virtual_accounts()
@@ -333,12 +341,12 @@ class PteWebApi:
         channel_accounts = [
             row for row in self.store.virtual_accounts()
             if row.get("channel_id") == FUTU_SIMULATE_CN_CHANNEL_ID
-            and row.get("status") != "RETIRED"
+            and row.get("run_state") != "RETIRED"
         ]
         pool = self.store.capital_pool_balance()
         capital_pool = float(pool.registered_capital)
         allocated = float(pool.allocated_capital)
-        strategy_allocated = sum(float(row["initial_cash"]) for row in accounts if row["status"] != "RETIRED")
+        strategy_allocated = sum(float(row["initial_cash"]) for row in accounts if row["run_state"] != "RETIRED")
         unallocated = float(pool.unallocated_cash)
         # PTE reserves cash before a future-session order reaches Futu.  The
         # reservation changes the virtual account's available cash, but the

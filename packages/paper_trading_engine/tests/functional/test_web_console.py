@@ -11,6 +11,7 @@ import pytest
 from paper_trading_engine.web import create_server
 from paper_trading_engine.audit import AuditRecorder
 from paper_trading_engine.web_api import PteWebApi
+from pte_support import adopt_test_decision
 
 
 def test_account_snapshot_scopes_and_orders_transactions_without_mutating_source():
@@ -77,8 +78,8 @@ class FakeEngine:
             raise RuntimeError("invalid token")
         self.cancelled.append(order_id)
         return self.status()
-    def pause_virtual(self, account_id): return {"account_id": account_id, "paused": True}
-    def resume_virtual(self, account_id): return {"account_id": account_id, "paused": False}
+    def pause_virtual(self, account_id): return {"account_id": account_id, "run_state": "PAUSED"}
+    def resume_virtual(self, account_id): return {"account_id": account_id, "run_state": "RUNNING"}
     def acknowledge_execution_gap(self, account_id, intent_id, resolution_note):
         self.acknowledged.append((account_id, intent_id, resolution_note))
     def repair_account_ledger(self, account_id, intent_id):
@@ -213,6 +214,18 @@ def test_ft_pte05_console_resources_interventions_events_and_restart(new_store, 
     ))
     account_index = account_api.virtual_accounts()
     assert account_index["accounts"][0]["symbol"] == "588080.SH"
+    assert account_index["accounts"][0]["run_state"] == "PAUSED"
+    assert not {"status", "paused"} & account_index["accounts"][0].keys()
+    adopted = adopt_test_decision(account_store, account_id="s007-v1", decision_id="WEB-DECISION", valid_session="2026-09-04")
+    account_api.virtual = SimpleNamespace(status=lambda account_id: {
+        **account_store.virtual_account(account_id), "last_decision": adopted["payload"],
+    })
+    snapshot = account_api.virtual_account_snapshot("s007-v1")
+    assert snapshot["account"]["run_state"] == "PAUSED"
+    assert not {"status", "paused"} & snapshot["account"].keys()
+    assert snapshot["decision"]["status"] == "COMPLETED"
+    assert snapshot["decision"]["state_reason"] == "NO_ORDER"
+    assert len(snapshot["decision"]["state_events"]) == 1
     account_store.close()
 
     requested, engine = Event(), FakeEngine()

@@ -27,7 +27,7 @@ from paper_trading_engine.futu_gateway import FutuGateway, FutuGatewayError
 from paper_trading_engine.coordinator import PteCoordinator, ReconnectableExecution
 from paper_trading_engine.store import PaperStore
 from paper_trading_engine.contracts import OrderSpec
-from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation
+from pte_support import FakeAdvice, FakeBroker, broker_snapshot, decision, preparation, adopt_test_decision, claim_test_intent
 
 
 def test_manual_refresh_propagates_channel_failure(new_store, tmp_path):
@@ -109,6 +109,11 @@ def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tm
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-EXPIRED",
+                        valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-EXPIRED", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -137,6 +142,8 @@ def test_unattributed_futu_cash_blocks_reconciliation_and_submission(new_store, 
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     broker = FakeBroker()
     broker.value = BrokerSnapshot(
         BrokerAccount("SIMULATE", "CN", 999_900, 999_900, 0), (), (),
@@ -163,7 +170,12 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
         strategy_version="v2", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    store.set_virtual_paused("s001-v2", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
+    adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-BUY",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     buy = store.create_account_intent(
         account_id="s001-v2", decision_id="DEC-BUY", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -195,6 +207,9 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
     assert float(store.virtual_account("s001-v2")["cash"]) == pytest.approx(98_329.165)
     assert len(store.query_audit_events(event_type="CHANNEL_FEE_VARIANCE_RECONCILED")) == 1
 
+    adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-SELL",
+                        valid_session="2026-09-04", orders=[{"side": "SELL", "quantity": 1000,
+                        "order_type": "MARKET", "limit_price": float("1.600"), "time_in_force": "DAY"}])
     store.create_account_intent(
         account_id="s001-v2", decision_id="DEC-SELL", order_sequence=0,
         symbol="588080.SH", side="SELL", quantity=1000,
@@ -221,7 +236,7 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
     assert store.account_intent(buy["intent_id"])["status"] == "FILLED_ALL"
     store.close()
 
-    # Legacy four-decimal cost bases are repaired once after an account is flat.
+    # Reopening schema v4 preserves financial evidence without implicit rewrites.
     with sqlite3.connect(tmp_path / "fee-reconciliation.db") as connection:
         connection.execute(
             "UPDATE virtual_accounts SET realized_pnl='-75.0000' WHERE account_id='s001-v2'"
@@ -230,9 +245,9 @@ def test_ft_pte03_estimated_fees_reconcile_to_futu_cash_exactly_once(new_store, 
             "UPDATE fills SET realized_pnl='-75.0000' WHERE account_id='s001-v2' AND side='SELL'"
         )
     migrated = PaperStore(tmp_path / "fee-reconciliation.db")
-    assert float(migrated.virtual_account("s001-v2")["realized_pnl"]) == pytest.approx(-71.635)
+    assert float(migrated.virtual_account("s001-v2")["realized_pnl"]) == pytest.approx(-75)
     assert sum(float(row["realized_pnl"]) for row in migrated.account_fills("s001-v2")) == (
-        pytest.approx(-71.635)
+        pytest.approx(-75)
     )
     migration_count = len(migrated.query_audit_events(event_type="ACCOUNT_EXECUTION_MIGRATED"))
     migrated.close()
@@ -252,7 +267,12 @@ def test_ft_pte03_accepts_fixed_futu_fees_for_a_small_order(new_store, tmp_path)
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    store.set_virtual_paused("s003-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
+    adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-SMALL-BUY",
+                        valid_session="2026-09-21", orders=[{"side": "BUY", "quantity": 400,
+                        "order_type": "LIMIT", "limit_price": float("8.613"), "time_in_force": "DAY"}])
     store.create_account_intent(
         account_id="s003-v1", decision_id="DEC-SMALL-BUY", order_sequence=0,
         symbol="510500.SH", side="BUY", quantity=400,
@@ -295,7 +315,12 @@ def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-08",
         symbol="510500.SH",
     )
+    store.set_virtual_paused("s003-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_channel_reconciliation_account()
+    adopt_test_decision(store, account_id="s003-v1", decision_id="DEC-IMPLAUSIBLE-FEE",
+                        valid_session="2026-09-21", orders=[{"side": "BUY", "quantity": 400,
+                        "order_type": "LIMIT", "limit_price": float("8.613"), "time_in_force": "DAY"}])
     store.create_account_intent(
         account_id="s003-v1", decision_id="DEC-IMPLAUSIBLE-FEE", order_sequence=0,
         symbol="510500.SH", side="BUY", quantity=400,
@@ -327,7 +352,7 @@ def test_ft_pte03_blocks_implausible_small_order_cash_charge(new_store, tmp_path
 def test_ft_pte03_rejects_undefined_execution_channel_and_protects_system_account(new_store, tmp_path):
     store = new_store(tmp_path / "strict-channel.db")
     reconciliation = store.create_channel_reconciliation_account()
-    with pytest.raises(ValueError, match="cannot create order intents"):
+    with pytest.raises(ValueError, match="running strategy account"):
         store.create_account_intent(
             account_id=reconciliation["account_id"], decision_id="DEC-SYSTEM", order_sequence=0,
             symbol="588080.SH", side="BUY", quantity=100, limit_price="1.680",
@@ -353,11 +378,19 @@ def test_ft_pte03_multiple_accounts_share_only_safe_futu_channel(new_store, tmp_
             qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
             symbol=symbol,
         )
+        store.set_virtual_paused(account_id, False)
+        FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
+    adopt_test_decision(store, account_id="s001-v2", decision_id="DEC-2",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     first_intent = store.create_account_intent(
         account_id="s001-v2", decision_id="DEC-2", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
+    adopt_test_decision(store, account_id="s002-v1", decision_id="DEC-3",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("7.500"), "time_in_force": "DAY"}])
     store.create_account_intent(
         account_id="s002-v1", decision_id="DEC-3", order_sequence=0,
         symbol="510500.SH", side="BUY", quantity=1000,
@@ -463,6 +496,11 @@ def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(new_store, tmp_
         strategy_version="v1", release_hash="a" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-FAIL",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-FAIL", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -476,12 +514,15 @@ def test_ft_pte03_failed_or_cancelled_buy_releases_reserved_cash(new_store, tmp_
     assert float(account["frozen_cash"]) == 0
     assert store.account_intent(intent["intent_id"])["status"] == "SUBMISSION_FAILED"
 
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-CANCEL",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
     second = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-CANCEL", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
-    assert store.claim_account_intent(second["intent_id"])
+    assert claim_test_intent(store, second["intent_id"])
     store.bind_channel_order(second["intent_id"], "2001", {
         "channel_order_id": "2001", "symbol": "588080.SH", "side": "BUY",
         "quantity": 1000, "limit_price": 1.68, "status": "SUBMITTED",
@@ -508,6 +549,11 @@ def test_ft_pte03_channel_and_account_pause_block_pending_submission(new_store, 
         strategy_version="v1", release_hash="a" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-PAUSE",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-PAUSE", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -542,6 +588,11 @@ def test_ft_pte03_uncertain_submission_recovers_remote_order_once(new_store, tmp
         strategy_version="v1", release_hash="a" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-UNCERTAIN",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-UNCERTAIN", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -564,6 +615,10 @@ def test_ft_pte03_uncertain_submission_recovers_remote_order_once(new_store, tmp
     assert float(account["frozen_cash"]) > 0
     assert account["health"] == "BLOCKED"
     assert store.account_intent(intent["intent_id"])["status"] == "SUBMISSION_UNCERTAIN"
+    assert store.account_decision("s001-v1", "DEC-UNCERTAIN")["status"] == "EXECUTING"
+    with pytest.raises(TypeError, match="IntentControlState"):
+        store.update_account_intent_status(intent["intent_id"], "PENDING_SUBMIT")
+    assert not claim_test_intent(store, intent["intent_id"])
     assert len(broker.placed) == 1
     assert len(broker.value.orders) == 1
     assert store.account_orders("s001-v1") == []
@@ -603,6 +658,11 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
         strategy_version="v1", release_hash="a" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-REJECT",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     rejected = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-REJECT", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -619,9 +679,16 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     assert store.account_invariant_violations() == []
     assert len(store.query_audit_events(event_type="ORDER_REJECTED")) == 1
 
-    store.set_virtual_health("s001-v1", "OK")
+    execution.acknowledge_execution_gap(
+        "s001-v1", rejected["intent_id"], "已确认拒单无成交，创建独立替代计划",
+    )
+    assert store.account_decision("s001-v1", "DEC-REJECT")["status"] == "INCOMPLETE"
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-RETRY",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    assert store.account_decision("s001-v1", "DEC-RETRY")["state_events"][0]["related_decision_id"] == "DEC-REJECT"
     second = store.create_account_intent(
-        account_id="s001-v1", decision_id="DEC-REJECT", order_sequence=1,
+        account_id="s001-v1", decision_id="DEC-RETRY", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
@@ -664,17 +731,13 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     first.refresh_orders()
     store.close()
 
-    # A pre-v2 failed attempt followed by a completed retry remains resolved on migration.
-    with sqlite3.connect(tmp_path / "reject.db") as connection:
-        connection.execute(
-            "UPDATE intents SET attention_required=0,attention_reason=NULL,"
-            "resolved_at=NULL,resolution_note=NULL WHERE intent_id=?",
-            (rejected["intent_id"],),
-        )
+    # Restart preserves the rejected plan and its independently completed successor.
     migrated = PaperStore(tmp_path / "reject.db")
     migrated_rejection = migrated.account_intent(rejected["intent_id"])
     assert migrated_rejection["attention_required"] is False
-    assert second["intent_id"] in migrated_rejection["resolution_note"]
+    assert migrated_rejection["resolution_note"] == "已确认拒单无成交，创建独立替代计划"
+    assert migrated.account_decision("s001-v1", "DEC-REJECT")["status"] == "INCOMPLETE"
+    assert migrated.account_decision("s001-v1", "DEC-RETRY")["status"] == "COMPLETED"
     assert migrated.attention_account_intents("s001-v1") == []
     migration_count = len(migrated.query_audit_events(
         event_type="ACCOUNT_EXECUTION_MIGRATED",
@@ -695,6 +758,11 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    adopt_test_decision(partial_store, account_id="s001-v1", decision_id="DEC-PARTIAL",
+                        valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    partial_store.set_virtual_paused("s001-v1", False)
+    FutuExecution(partial_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     partial = partial_store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-PARTIAL", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -723,6 +791,9 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
     )
     assert partial_store.virtual_account("s001-v1")["health"] == "OK"
     assert partial_store.attention_account_intents("s001-v1") == []
+    adopt_test_decision(partial_store, account_id="s001-v1", decision_id="DEC-CLOSE",
+                        valid_session="2026-09-02", orders=[{"side": "SELL", "quantity": 400,
+                        "order_type": "MARKET", "limit_price": float("1.600"), "time_in_force": "DAY"}])
     partial_store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-CLOSE", order_sequence=0,
         symbol="588080.SH", side="SELL", quantity=400,
@@ -749,6 +820,11 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    adopt_test_decision(timeout_store, account_id="s001-v1", decision_id="DEC-TIMEOUT",
+                        valid_session="2026-09-02", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    timeout_store.set_virtual_paused("s001-v1", False)
+    FutuExecution(timeout_store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     timeout = timeout_store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-TIMEOUT", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
@@ -797,6 +873,8 @@ def test_ft_pte03_rejected_decision_remains_blocked_until_operator_review(new_st
         strategy_version="v1", release_hash="b" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-01",
     )
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     advice = FakeAdvice(decision(OrderSpec("BUY", 1000, "LIMIT", 1.68, "DAY")))
     accounts = AccountEngine(
         store, advice,
@@ -825,12 +903,17 @@ def test_ft_pte03_missing_broker_order_and_overfill_block_without_mutating_ledge
         strategy_version="v1", release_hash="a" * 64,
         qualification_snapshot="PAPER_READY", selection_data_cutoff="2026-09-02",
     )
+    adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-MISSING",
+                        valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
+                        "order_type": "LIMIT", "limit_price": float("1.680"), "time_in_force": "DAY"}])
+    store.set_virtual_paused("s001-v1", False)
+    FutuExecution(store, FakeBroker(), now=lambda: datetime.fromisoformat("2026-09-01T09:30:00+08:00")).refresh_orders()
     intent = store.create_account_intent(
         account_id="s001-v1", decision_id="DEC-MISSING", order_sequence=0,
         symbol="588080.SH", side="BUY", quantity=1000,
         limit_price="1.680", valid_session="2026-09-04",
     )
-    assert store.claim_account_intent(intent["intent_id"])
+    assert claim_test_intent(store, intent["intent_id"])
     order = BrokerOrder(
         "3001", "588080.SH", "BUY", 1000, 1.68,
         "SUBMITTED", 0, 0, intent["intent_id"],

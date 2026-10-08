@@ -21,6 +21,8 @@ from .audit import (
     AuditSeverity,
     redact_details,
 )
+from .lifecycle import (RunState, DecisionState, IntentControlState, TERMINAL_DECISION_STATES,
+                        validate_transition, planned_orders, execution_state)
 from .account_binding import AccountBindingUpdate, AccountStrategyBinding
 from .account_retirement import (
     AccountRetirementRequest, AccountRetirementResult, AccountRetirementStatus, CapitalPoolBalance,
@@ -41,8 +43,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 3
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3)
+RUNTIME_DATABASE_SCHEMA_VERSION = 4
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4)
 
 
 def _utc_now() -> str:
@@ -51,67 +53,63 @@ def _utc_now() -> str:
 
 def _update_account_bindings(
     connection: sqlite3.Connection,
-    bindings: tuple[tuple[AccountBindingUpdate, AccountStrategyBinding], ...],
+    bindings: tuple[tuple[AccountBindingUpdate, AccountStrategyBinding, dict[str, object]], ...],
 ) -> None:
-    """Apply to an existing exclusive transaction; caller owns commit/rollback."""
-    from decimal import Decimal
+    """Switch validated bindings and adopt prepared replacements in one transaction."""
+    from .audit import AuditRecorder
 
     if not connection.in_transaction:
         raise RuntimeError("account binding update requires a transaction")
-    for update, binding in bindings:
+    store = PaperStore.__new__(PaperStore)
+    store._connection, store._lock, store._atomic_decision_depth = connection, RLock(), 1
+    audit = AuditRecorder(store)
+    for update, binding, payload in bindings:
         account_id = update.account_id
-        account = connection.execute(
-            "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,),
-        ).fetchone()
-        if (
-            account is None or account["account_type"] != STRATEGY_ACCOUNT_TYPE
-            or account["status"] == "RETIRED"
-        ):
-            raise ValueError(f"{account_id}: requires an existing non-retired strategy account")
-        require_futu_simulate_cn(account["channel_id"])
-        if account["release_hash"] != update.expected_release_hash:
-            raise ValueError(f"{account_id}: current release hash differs from expected hash")
-        if binding.release_hash != update.target_release_hash:
-            raise ValueError(f"{account_id}: target release hash differs from installed strategy")
-        if (
-            account["strategy_id"], account["strategy_version"], account["symbol"],
-            account["selection_data_cutoff"], account["asset_type"],
-        ) != (
-            binding.strategy_id, binding.version, binding.symbol,
-            binding.selection_data_cutoff.isoformat(), "etf",
-        ):
-            raise ValueError(f"{account_id}: strategy identity, symbol or selection cutoff differs")
-        if Decimal(account["frozen_cash"]) != 0:
-            raise ValueError(f"{account_id}: frozen cash blocks binding update")
-        intents = connection.execute(
-            "SELECT status,attention_required FROM intents WHERE account_id=?", (account_id,),
-        ).fetchall()
-        if any(row["status"] not in TERMINAL_INTENT_STATUSES or row["attention_required"] for row in intents):
-            raise ValueError(f"{account_id}: unfinished or unresolved intents block binding update")
-        orders = connection.execute(
-            "SELECT payload FROM orders WHERE account_id=?", (account_id,),
-        ).fetchall()
-        if any(json.loads(row["payload"]).get("status") not in TERMINAL_ORDER_STATUSES for row in orders):
-            raise ValueError(f"{account_id}: unfinished orders block binding update")
+        account = store.virtual_account(account_id)
+        if account["run_state"] != RunState.PAUSED or account["release_hash"] != update.expected_release_hash:
+            raise ValueError(f"{account_id}: paused account binding changed concurrently")
+        pending = [row for row in store.account_decisions(account_id) if row["status"] == DecisionState.PENDING]
+        if any(row["status"] == DecisionState.EXECUTING for row in store.account_decisions(account_id)):
+            raise ValueError(f"{account_id}: executing decision blocks binding update")
+        for row in pending:
+            event = audit.build(
+                "DECISION_SUPERSEDED", source="account_maintenance", actor_type="OPERATOR",
+                account_id=account_id, decision_id=row["decision_id"],
+                details={"replacement_decision_id": payload["decision_id"], "reason": "STRATEGY_UPGRADE"},
+            )
+            store.supersede_account_decision(account_id, row["decision_id"], str(payload["decision_id"]),
+                                            audit_event=event, _in_transaction=True)
+        for intent in store.account_intents(account_id):
+            if intent["status"] in TERMINAL_INTENT_STATUSES:
+                continue
+            if intent["status"] not in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"} or intent.get("channel_order_id"):
+                raise ValueError(f"{account_id}: submitted intent blocks binding update")
+            store.release_account_intent(
+                intent["intent_id"], "SUPERSEDED", _in_transaction=True,
+                audit_event=audit.build("ORDER_INTENT_SUPERSEDED", source="account_maintenance",
+                    actor_type="OPERATOR", account_id=account_id, decision_id=intent["decision_id"],
+                    details={"intent_id": intent["intent_id"], "replacement_decision_id": payload["decision_id"]}),
+            )
         changed = connection.execute(
-            "UPDATE virtual_accounts SET release_hash=?,strategy_name_snapshot=?,"
-            "qualification_snapshot=?,last_decision_id=NULL,last_decision_payload=NULL,"
-            "updated_at=? WHERE account_id=? AND release_hash=?",
-            (binding.release_hash, binding.name, binding.qualification.value,
-             _utc_now(), account_id, update.expected_release_hash),
+            "UPDATE virtual_accounts SET release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,updated_at=? "
+            "WHERE account_id=? AND release_hash=? AND run_state='PAUSED'",
+            (binding.release_hash, binding.name, binding.qualification.value, _utc_now(), account_id, update.expected_release_hash),
         ).rowcount
         if changed != 1:
             raise ValueError(f"{account_id}: account binding changed concurrently")
-        connection.execute(
-            "UPDATE decisions SET status='INVALIDATED' WHERE account_id=? AND status='ACTIVE'",
-            (account_id,),
-        )
+        store.save_account_decision(account_id, payload, _in_transaction=True)
+        audit.record("ACCOUNT_STRATEGY_BOUND", source="account_maintenance", actor_type="OPERATOR",
+                     account_id=account_id, release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
+                     details={"previous_release_hash": update.expected_release_hash, "reason": "STRATEGY_UPGRADE"})
+        audit.record("DECISION_GENERATED", source="account_maintenance", actor_type="OPERATOR",
+                     account_id=account_id, release_hash=binding.release_hash, decision_id=str(payload["decision_id"]),
+                     details={"signal_date": str(payload["signal_date"]), "valid_session": str(payload["valid_session"]),
+                              "action": payload["action"], "reason": "STRATEGY_UPGRADE"})
         connection.executemany(
             "DELETE FROM settings WHERE key=?",
             [(f"{prefix}:{account_id}",) for prefix in (
-                "last_account_decision_date", "last_account_schedule_skip_date",
-                "last_prepared_data_id", "last_data_prepare_date",
-                "last_data_preparation", "data_preparation_error",
+                "last_account_decision_date", "last_account_schedule_skip_date", "last_prepared_data_id",
+                "last_data_prepare_date", "last_data_preparation", "data_preparation_error",
             )],
         )
 
@@ -172,6 +170,7 @@ class PaperStore:
         store.path = Path(path)
         store._lock = RLock()
         store._atomic_decision_depth = 0
+        store._readonly = True
         store._connection = sqlite3.connect(
             store.path.resolve().as_uri() + "?mode=ro", uri=True, check_same_thread=False,
         )
@@ -194,6 +193,7 @@ class PaperStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = RLock()
         self._atomic_decision_depth = 0
+        self._readonly = False
         self._connection = sqlite3.connect(self.path, check_same_thread=False)
         self._connection.row_factory = sqlite3.Row
         try:
@@ -201,6 +201,12 @@ class PaperStore:
         except Exception:
             self._connection.close()
             raise
+        stored_schema = self._connection.execute(
+            "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
+        ).fetchone()
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4}:
+            self._initialize_lifecycle()
+            return
         self._connection.executescript(
             """
             PRAGMA journal_mode=WAL;
@@ -515,18 +521,38 @@ class PaperStore:
             (str(RUNTIME_DATABASE_SCHEMA_VERSION),),
         )
         self._connection.commit()
+        self._initialize_lifecycle()
+
+    def _initialize_lifecycle(self):
+        from .lifecycle_migration import migrate_lifecycle
+        try:
+            self._connection.execute("BEGIN IMMEDIATE")
+            migrate_lifecycle(self._connection, _utc_now())
+            self._connection.execute(
+                "INSERT INTO settings(key,value) VALUES('runtime_database_schema_version',?) "
+                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                (str(RUNTIME_DATABASE_SCHEMA_VERSION),),
+            )
+            self._connection.commit()
+        except BaseException:
+            self._connection.rollback()
+            self._connection.close()
+            raise
 
     @contextmanager
     def atomic_decision_update(self):
         """Serialize and atomically commit one decision and its local order intents."""
         with self._lock:
+            if getattr(self, "_readonly", False):
+                raise sqlite3.OperationalError("attempt to write a readonly database")
             if self._connection.in_transaction:
                 raise RuntimeError("nested store transaction is not supported")
             self._connection.execute("BEGIN IMMEDIATE")
             self._atomic_decision_depth += 1
             try:
                 yield
-            except Exception:
+                self._validate_decision_relations()
+            except BaseException:
                 self._connection.rollback()
                 raise
             else:
@@ -535,11 +561,11 @@ class PaperStore:
                 self._atomic_decision_depth -= 1
 
     def _write_context(self, in_transaction: bool):
-        return (
-            nullcontext()
-            if in_transaction or self._atomic_decision_depth
-            else self._connection
-        )
+        if in_transaction or self._atomic_decision_depth:
+            if not self._connection.in_transaction:
+                raise RuntimeError("business write requires the caller's transaction")
+            return nullcontext()
+        return self.atomic_decision_update()
 
     def _backfill_intent_reserve_ledger(self) -> int:
         """Make pre-v2 BUY reservations visible in the reconstructable ledger."""
@@ -892,7 +918,7 @@ class PaperStore:
         return None if row is None else str(row["value"])
 
     def set_setting(self, key: str, value: str) -> None:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO settings(key, value) VALUES(?, ?) "
                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -969,13 +995,13 @@ class PaperStore:
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
                 "strategy_id,strategy_name_snapshot,strategy_version,release_hash,"
                 "selection_data_cutoff,qualification_snapshot,symbol,asset_type,initial_cash,cash,total_assets,"
-                "channel_id,account_type,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "channel_id,account_type,run_state,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     account_id, name, baseline_version, baseline_sha256, strategy_id,
                     strategy_name_snapshot, strategy_version, release_hash,
                     selection_data_cutoff, qualification_snapshot, symbol.upper(), asset_type,
                     str(cash), str(cash), str(cash),
-                    FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, "RUNNING", now, now,
+                    FUTU_SIMULATE_CN_CHANNEL_ID, STRATEGY_ACCOUNT_TYPE, RunState.PAUSED, now, now,
                 ),
             )
             scope = {
@@ -1004,7 +1030,7 @@ class PaperStore:
 
         require_futu_simulate_cn(FUTU_SIMULATE_CN_CHANNEL_ID)
         baseline = hashlib.sha256(b"futu_simulate_cn:channel_reconciliation.v1").hexdigest()
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             existing = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE channel_id=? AND account_type=?",
                 (FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE),
@@ -1016,11 +1042,11 @@ class PaperStore:
             now = _utc_now()
             self._connection.execute(
                 "INSERT INTO virtual_accounts(account_id,name,baseline_version,baseline_sha256,"
-                "symbol,asset_type,initial_cash,cash,total_assets,channel_id,account_type,status,"
+                "symbol,asset_type,initial_cash,cash,total_assets,channel_id,account_type,run_state,"
                 "created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (account_id, "Futu模拟盘CN渠道平账账户", "channel_reconciliation.v1", baseline,
                  "CASH.CN", "cash", "0.0000", "0.0000", "0.0000",
-                 FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, "SYSTEM", now, now),
+                 FUTU_SIMULATE_CN_CHANNEL_ID, CHANNEL_RECONCILIATION_ACCOUNT_TYPE, None, now, now),
             )
             self._insert_audit_event(self._new_audit_event(
                 "CHANNEL_RECONCILIATION_ACCOUNT_CREATED", source="account_registry",
@@ -1038,7 +1064,7 @@ class PaperStore:
             cutoff = date.fromisoformat(str(selection_data_cutoff)).isoformat()
         except (TypeError, ValueError) as exc:
             raise ValueError("selection_data_cutoff must be a nonempty ISO date") from exc
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             cursor = self._connection.execute(
                 "UPDATE virtual_accounts SET selection_data_cutoff=?,updated_at=? "
                 "WHERE account_id=? AND release_hash=? AND selection_data_cutoff IS NULL",
@@ -1053,7 +1079,7 @@ class PaperStore:
         normalized_name = str(strategy_name).strip()
         if not normalized_name:
             raise ValueError("strategy name is required")
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             account = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()
@@ -1102,13 +1128,13 @@ class PaperStore:
             return value
 
         now = _utc_now()
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             source = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (old_account_id,)
             ).fetchone()
             if source is None:
                 raise KeyError(old_account_id)
-            if source["status"] == "RETIRED":
+            if source["run_state"] == "RETIRED":
                 raise ValueError("retired account cannot be renamed")
             if old_account_id != account_id and self._connection.execute(
                 "SELECT 1 FROM virtual_accounts WHERE account_id=?", (account_id,)
@@ -1165,7 +1191,7 @@ class PaperStore:
         new_value = Decimal(new_initial_cash).quantize(Decimal("0.0001"))
         if new_value <= 0 or not new_value.is_finite():
             raise ValueError("new initial cash must be positive")
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             account = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()
@@ -1207,14 +1233,17 @@ class PaperStore:
             ).fetchone()
         if row is None:
             raise KeyError(account_id)
-        return dict(row)
+        result = dict(row)
+        result.pop("legacy_status", None)
+        result.pop("legacy_paused", None)
+        return result
 
     def virtual_accounts(self):
         with self._lock:
             rows = self._connection.execute(
                 "SELECT * FROM virtual_accounts ORDER BY created_at, account_id"
             ).fetchall()
-        return [dict(row) for row in rows]
+        return [self.virtual_account(row["account_id"]) for row in rows]
 
     def strategy_virtual_accounts(self):
         return [
@@ -1228,7 +1257,7 @@ class PaperStore:
         with self._lock:
             registered = Decimal(self._setting("futu_capital_pool"))
             allocated = sum((Decimal(row[0]) for row in self._connection.execute(
-                "SELECT initial_cash FROM virtual_accounts WHERE status<>'RETIRED'"
+                "SELECT initial_cash FROM virtual_accounts WHERE (run_state IS NULL OR run_state<>'RETIRED')"
             )), Decimal("0"))
             recovered = sum((Decimal(row[1]) - Decimal(row[0]) for row in self._connection.execute(
                 "SELECT initial_cash,released_cash FROM account_retirements"
@@ -1247,11 +1276,11 @@ class PaperStore:
 
         with self.atomic_decision_update():
             account = self.virtual_account(request.account_id)
-            if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["status"] != "RUNNING":
-                raise ValueError("retirement requires a running strategy account")
+            if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.PAUSED:
+                raise ValueError("retirement requires a paused strategy account")
             if account["release_hash"] != request.expected_release_hash:
                 raise ValueError("retirement release hash differs from account")
-            if not account["paused"]:
+            if account["run_state"] != RunState.PAUSED:
                 raise ValueError("pause the account before retirement")
             if account["quantity"] != 0 or Decimal(account["frozen_cash"]) != 0:
                 raise ValueError("retirement requires no position or frozen cash")
@@ -1282,14 +1311,14 @@ class PaperStore:
                 (f"retirement:{request.account_id}", request.account_id, str(-cash), now),
             )
             self._connection.execute(
-                "UPDATE virtual_accounts SET status='RETIRED',cash='0.0000',total_assets='0.0000',"
+                "UPDATE virtual_accounts SET run_state='RETIRED',cash='0.0000',total_assets='0.0000',"
                 "cycle_target=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
                 "WHERE account_id=?", (now, request.account_id),
             )
-            self._connection.execute(
-                "UPDATE decisions SET status='INVALIDATED' WHERE account_id=? AND status='ACTIVE'",
-                (request.account_id,),
-            )
+            for decision in self.account_decisions(request.account_id):
+                if decision["status"] == DecisionState.PENDING:
+                    self._transition_decision(request.account_id, decision["decision_id"],
+                                              DecisionState.CANCELLED, "ACCOUNT_RETIRED")
             self._insert_audit_event(self._new_audit_event(
                 "ACCOUNT_RETIRED", source="account_retirement", actor_type="OPERATOR",
                 correlation_id=f"retirement:{request.account_id}", account_id=request.account_id,
@@ -1299,7 +1328,7 @@ class PaperStore:
             ))
             remaining = self._connection.execute(
                 "SELECT COUNT(*) FROM virtual_accounts WHERE strategy_id=? AND strategy_version=? "
-                "AND status<>'RETIRED'",
+                "AND run_state<>'RETIRED'",
                 (account["strategy_id"], account["strategy_version"]),
             ).fetchone()[0]
         return AccountRetirementResult(AccountRetirementStatus.RETIRED, request.account_id, cash, remaining)
@@ -1314,24 +1343,31 @@ class PaperStore:
         return None if row is None else dict(row)
 
     def set_virtual_paused(self, account_id: str, paused: bool):
+        if type(paused) is not bool:
+            raise TypeError("pause requires a boolean")
+        target = RunState.PAUSED if paused else RunState.RUNNING
         with self._lock, self._write_context(False):
-            account = self._connection.execute(
-                "SELECT account_type,status FROM virtual_accounts WHERE account_id=?", (account_id,)
-            ).fetchone()
-            if account is not None and account["account_type"] != STRATEGY_ACCOUNT_TYPE:
-                raise ValueError("system reconciliation account cannot be paused")
-            if account is not None and account["status"] == "RETIRED":
+            account = self.virtual_account(account_id)
+            if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
+                raise ValueError("system reconciliation account has no strategy lifecycle")
+            if account["run_state"] == RunState.RETIRED:
                 raise ValueError("retired account cannot be paused or resumed")
-            changed = self._connection.execute(
-                "UPDATE virtual_accounts SET paused=?, updated_at=? WHERE account_id=?",
-                (int(paused), _utc_now(), account_id),
-            ).rowcount
-        if not changed:
-            raise KeyError(account_id)
+            if target == RunState.RUNNING and (
+                account["health"] == "BLOCKED"
+                or account["qualification_snapshot"] not in {"PAPER_READY", "LIVE_READY"}
+                or self.unresolved_account_intents(account_id)
+                or self.attention_account_intents(account_id)
+                or self.account_invariant_violations()
+            ):
+                raise ValueError("account enable checks failed; resolve health and execution gaps first")
+            self._connection.execute(
+                "UPDATE virtual_accounts SET run_state=?,updated_at=? WHERE account_id=?",
+                (target, _utc_now(), account_id),
+            )
         return self.virtual_account(account_id)
 
     def set_virtual_health(self, account_id: str, health: str, error: str | None = None):
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             changed = self._connection.execute(
                 "UPDATE virtual_accounts SET health=?,last_error=?,updated_at=? WHERE account_id=?",
                 (health, error, _utc_now(), account_id),
@@ -1414,7 +1450,7 @@ class PaperStore:
     def add_event(self, event_type: str, payload: dict[str, object]) -> None:
         """Compatibility facade for pre-audit callers."""
         event = self._legacy_audit_event(event_type, payload)
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._insert_audit_event(event)
 
     @staticmethod
@@ -1527,7 +1563,7 @@ class PaperStore:
         return self.query_audit_events(limit=limit)
 
     def set_operation_failure(self, operation: str, payload: dict[str, object]) -> None:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO operation_failures(operation,payload,updated_at) VALUES(?,?,?) "
                 "ON CONFLICT(operation) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at",
@@ -1535,7 +1571,7 @@ class PaperStore:
             )
 
     def clear_operation_failure(self, operation: str) -> None:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._connection.execute("DELETE FROM operation_failures WHERE operation=?", (operation,))
 
     def operation_failures(self) -> list[dict[str, object]]:
@@ -1573,13 +1609,10 @@ class PaperStore:
         identity = f"{account_id}\0{decision_id}\0{order_sequence}".encode("utf-8")
         intent_id = "PTE-" + hashlib.sha256(identity).hexdigest()[:20].upper()
         now = _utc_now()
-        with self._lock, self._connection:
-            decision = self._connection.execute(
-                "SELECT status FROM decisions WHERE account_id=? AND decision_id=?",
-                (account_id, decision_id),
-            ).fetchone()
-            if decision is not None and decision["status"] != "ACTIVE":
-                raise ValueError("inactive decision cannot create order intents")
+        with self._lock, self._write_context(False):
+            self._require_execution_eligible(account_id, decision_id, symbol, valid_session)
+            self._require_planned_orders(account_id, decision_id, [{"sequence": order_sequence,
+                "side": side, "quantity": quantity, "order_type": order_type, "limit_price": price}])
             existing = self._connection.execute(
                 "SELECT * FROM intents WHERE account_id=? AND decision_id=? AND order_sequence=?",
                 (account_id, decision_id, order_sequence),
@@ -1609,11 +1642,12 @@ class PaperStore:
             require_futu_simulate_cn(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
-            if account["status"] != "RUNNING":
+            self._require_execution_portfolio(account_id, decision_id, creating=True)
+            if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow order intents")
             if account["health"] == "BLOCKED":
                 raise ValueError("blocked virtual account cannot create order intents")
-            if bool(account["paused"]):
+            if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create order intents")
             if side == "SELL" and quantity > int(account["quantity"]):
                 raise ValueError("sell quantity exceeds account position")
@@ -1706,6 +1740,8 @@ class PaperStore:
             for sequence in sequences
         }
         with self._lock, self._write_context(_in_transaction):
+            self._require_execution_eligible(account_id, decision_id, symbol, valid_session)
+            self._require_planned_orders(account_id, decision_id, legs, complete=True)
             existing = self._connection.execute(
                 "SELECT * FROM intents WHERE account_id=? AND decision_id=? "
                 "ORDER BY order_sequence",
@@ -1759,11 +1795,12 @@ class PaperStore:
             require_futu_simulate_cn(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
-            if account["status"] != "RUNNING":
+            self._require_execution_portfolio(account_id, decision_id, creating=True)
+            if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow execution plans")
             if account["health"] == "BLOCKED":
                 raise ValueError("blocked virtual account cannot create execution plans")
-            if bool(account["paused"]):
+            if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create execution plans")
             buy_reserve = Decimal("0")
             planned_sell = 0
@@ -1946,6 +1983,8 @@ class PaperStore:
             intent_ids[sequence] = "PTE-" + hashlib.sha256(identity).hexdigest()[:20].upper()
 
         with self._lock, self._write_context(_in_transaction):
+            self._require_execution_eligible(account_id, decision_id, symbol, valid_session)
+            self._require_planned_orders(account_id, decision_id, normalized, complete=True)
             existing = self._connection.execute(
                 "SELECT * FROM intents WHERE account_id=? AND decision_id=? "
                 "ORDER BY order_sequence", (account_id, decision_id),
@@ -1983,11 +2022,12 @@ class PaperStore:
             require_futu_simulate_cn(account["channel_id"])
             if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("channel reconciliation account cannot create order intents")
-            if account["status"] != "RUNNING":
+            self._require_execution_portfolio(account_id, decision_id, creating=True)
+            if account["run_state"] != "RUNNING":
                 raise ValueError("virtual account status does not allow order intents")
             if account["health"] == "BLOCKED":
                 raise ValueError("blocked virtual account cannot create order intents")
-            if bool(account["paused"]):
+            if account["run_state"] == RunState.PAUSED:
                 raise ValueError("paused virtual account cannot create order intents")
 
             buy_reserve = sum(
@@ -2076,109 +2116,289 @@ class PaperStore:
             ).fetchall()
         return [self._account_intent_row(row) for row in rows]
 
+    def _decision_events(self, account_id: str, decision_id: str):
+        rows = self._connection.execute(
+            "SELECT * FROM decision_state_events WHERE account_id=? AND decision_id=? ORDER BY sequence",
+            (account_id, decision_id),
+        ).fetchall()
+        return [{**dict(row), "evidence": json.loads(row["evidence"])} for row in rows]
+
+    def _append_decision_state(self, account_id, decision_id, state: DecisionState,
+                               reason: str, related_decision_id=None, evidence=None):
+        if type(state) is not DecisionState or not reason:
+            raise TypeError("decision state requires an enum and a nonempty reason")
+        sequence = self._connection.execute(
+            "SELECT COALESCE(MAX(sequence),0)+1 FROM decision_state_events WHERE account_id=? AND decision_id=?",
+            (account_id, decision_id),
+        ).fetchone()[0]
+        self._connection.execute(
+            "INSERT INTO decision_state_events(account_id,decision_id,sequence,state,reason,"
+            "related_decision_id,occurred_at,evidence) VALUES(?,?,?,?,?,?,?,?)",
+            (account_id, decision_id, sequence, state, reason, related_decision_id,
+             _utc_now(), json.dumps(evidence or {}, ensure_ascii=False, default=str)),
+        )
+
+    def _validate_decision_relations(self):
+        missing = self._connection.execute(
+            "SELECT e.decision_id FROM decision_state_events e LEFT JOIN decisions d "
+            "ON d.account_id=e.account_id AND d.decision_id=e.related_decision_id "
+            "WHERE e.state='SUPERSEDED' AND (e.related_decision_id IS NULL OR d.decision_id IS NULL) LIMIT 1"
+        ).fetchone()
+        if missing is not None:
+            raise ValueError("superseded decision requires an existing replacement in the same commit")
+
+    def _transition_decision(self, account_id, decision_id, state: DecisionState,
+                             reason: str, related_decision_id=None):
+        events = self._decision_events(account_id, decision_id)
+        if not events:
+            raise ValueError("decision has no lifecycle evidence")
+        previous = DecisionState(events[-1]["state"])
+        validate_transition(previous, state, reason=reason, related_decision_id=related_decision_id)
+        if state in {DecisionState.SUPERSEDED, DecisionState.CANCELLED}:
+            if any(row.get("channel_order_id") or row["status"] in UNRESOLVED_INTENT_STATUSES
+                   for row in self.account_intents(account_id, decision_id)):
+                raise ValueError("submitted decision cannot be superseded or cancelled")
+        self._append_decision_state(account_id, decision_id, state, reason, related_decision_id)
+
+    def _refresh_decision_state(self, account_id, decision_id):
+        events = self._decision_events(account_id, decision_id)
+        if not events:
+            raise ValueError("execution fact has no originating decision")
+        previous = DecisionState(events[-1]["state"])
+        decision = self.account_decision(account_id, decision_id)
+        target = DecisionState(decision["status"])
+        if target == previous:
+            return
+        if previous == DecisionState.PENDING and target == DecisionState.COMPLETED:
+            self._transition_decision(account_id, decision_id, DecisionState.EXECUTING, "CHANNEL_EXECUTION")
+        self._transition_decision(account_id, decision_id, target, decision["state_reason"])
+
+    def _require_execution_eligible(self, account_id, decision_id, symbol, valid_session,
+                                    *, moment=None, submitting=False):
+        account = self.virtual_account(account_id)
+        require_futu_simulate_cn(account["channel_id"])
+        if account["account_type"] != STRATEGY_ACCOUNT_TYPE or account["run_state"] != RunState.RUNNING:
+            raise ValueError("only a running strategy account may execute a decision")
+        if account["health"] not in {"READY", "OK"}:
+            raise ValueError("blocked virtual account cannot execute decisions")
+        decision = self.account_decision(account_id, decision_id)
+        if decision["status"] not in {DecisionState.PENDING, DecisionState.EXECUTING}:
+            raise ValueError("terminal decision cannot create or submit order intents")
+        adopted = self._connection.execute(
+            "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
+            (account_id, valid_session),
+        ).fetchone()
+        if adopted is None or adopted[0] != decision_id:
+            raise ValueError("decision is not the adopted plan for its effective session")
+        payload = decision["payload"]
+        identity = payload["strategy"]
+        if (identity.get("strategy_id"), identity.get("version"), identity.get("release_hash"),
+            payload.get("symbol"), decision["valid_session"]) != (
+            account["strategy_id"], account["strategy_version"], account["release_hash"],
+            symbol.upper(), valid_session,
+        ) or account["symbol"] != symbol.upper():
+            raise ValueError("decision identity or effective session differs from account")
+        if self.get_setting("channel_reconciliation_status") == "BLOCKED" or self.get_setting("futu_cash_reconciliation_status") == "BLOCKED":
+            raise ValueError("channel or cash reconciliation blocks execution")
+        if submitting:
+            from .trading_window import is_submission_window
+            from datetime import timedelta
+            if moment is None or moment.tzinfo is None:
+                raise ValueError("submission requires an aware execution clock")
+            if moment.astimezone(timezone(timedelta(hours=8))).date().isoformat() != valid_session or not is_submission_window(moment):
+                raise ValueError("decision is outside its execution session")
+            if any(self.get_setting(key) != "OK" for key in ("channel_reconciliation_status", "futu_cash_reconciliation_status")):
+                raise ValueError("successful channel and cash reconciliation required before submission")
+        return decision
+
+    def _require_planned_orders(self, account_id, decision_id, requests, *, complete=False):
+        from decimal import Decimal
+        decision = self.account_decision(account_id, decision_id)
+        plan = planned_orders(decision["payload"])
+        if complete and len(requests) != len(plan):
+            raise ValueError("intent count differs from immutable plan")
+        for request in requests:
+            sequence = request["sequence"]
+            if type(sequence) is not int or not 0 <= sequence < len(plan):
+                raise ValueError("intent sequence does not exist in immutable plan")
+            expected = plan[sequence]
+            if (str(request["side"]).upper(), int(request["quantity"]), str(request["order_type"]).upper(),
+                Decimal(str(request["limit_price"])).quantize(Decimal("0.0001"))) != (
+                expected["side"], expected["quantity"], expected["order_type"],
+                Decimal(str(expected["limit_price"])).quantize(Decimal("0.0001")),
+            ):
+                raise ValueError("intent order differs from immutable plan")
+            legs = decision["payload"].get("plan_legs") or []
+            if legs:
+                leg = legs[sequence]
+                for key in ("submit_after", "submit_before", "dependency_sequence"):
+                    if str(request.get(key)) != str(leg.get(key)):
+                        raise ValueError("intent execution window or dependency differs from immutable plan")
+
+    def _require_execution_portfolio(self, account_id, decision_id, *, creating=False):
+        from decimal import Decimal
+        account = self.virtual_account(account_id)
+        decision = self.account_decision(account_id, decision_id)
+        if creating and decision["status"] != DecisionState.PENDING:
+            raise ValueError("executing decision cannot add new order intents")
+        payload = decision["payload"]
+        fills = [row for row in self.account_fills(account_id) if row["decision_id"] == decision_id]
+        quantity = int(payload["actual_quantity"])
+        cash = Decimal(str(payload["available_cash"]))
+        for fill in fills:
+            direction = 1 if fill["side"] == "BUY" else -1
+            quantity += direction * fill["quantity"]
+            cash -= direction * Decimal(fill["price"]) * fill["quantity"] + Decimal(fill["fee"])
+        if quantity != account["quantity"] or cash.quantize(Decimal("0.0001")) != (
+            Decimal(account["cash"]) + Decimal(account["frozen_cash"])
+        ).quantize(Decimal("0.0001")):
+            raise ValueError("account portfolio differs from the adopted plan and its fills")
+        if any(row["decision_id"] != decision_id and row["status"] not in TERMINAL_INTENT_STATUSES
+               for row in self.account_intents(account_id)):
+            raise ValueError("another decision still owns execution intents")
+
     def save_account_decision(
         self, account_id: str, payload: dict[str, object], *, _in_transaction: bool = False,
     ) -> dict[str, Any]:
         decision_id = str(payload["decision_id"])
+        if not any(key in payload for key in ("plan_legs", "orders", "order")):
+            raise ValueError("decision requires explicit immutable order-plan evidence")
         signal_date = str(payload["signal_date"])
         valid_session = str(payload["valid_session"])
-        now = _utc_now()
+        date.fromisoformat(signal_date)
+        if date.fromisoformat(valid_session) <= date.fromisoformat(signal_date):
+            raise ValueError("decision effective session must follow its signal date")
         encoded = json.dumps(payload, ensure_ascii=False, default=str)
         cycle_target = int(payload.get("cycle_target_quantity") or 0) or None
         if payload.get("plan_mode") == "CORE_SETUP":
-            # A core identity exists only after the setup order is fully filled.
-            # The planned quantity remains available in the immutable decision payload.
             cycle_target = None
         with self._lock, self._write_context(_in_transaction):
             account = self.virtual_account(account_id)
-            if account["status"] != "RUNNING":
+            if account["run_state"] == RunState.RETIRED or account["account_type"] != STRATEGY_ACCOUNT_TYPE:
                 raise ValueError("inactive account cannot save decisions")
-            same_session = self._connection.execute(
-                "SELECT decision_id FROM decisions "
-                "WHERE account_id=? AND signal_date=? AND status='ACTIVE'",
-                (account_id, signal_date),
-            ).fetchone()
-            if same_session is not None and same_session["decision_id"] != decision_id:
-                raise ValueError(
-                    "account already has another decision for the same signal date"
-                )
+            identity = payload["strategy"]
+            if (identity.get("strategy_id"), identity.get("version"), identity.get("release_hash"), payload.get("symbol")) != (
+                account["strategy_id"], account["strategy_version"], account["release_hash"], account["symbol"],
+            ):
+                raise ValueError("decision strategy identity differs from account")
             existing = self._connection.execute(
-                "SELECT payload,status FROM decisions WHERE account_id=? AND decision_id=?",
-                (account_id, decision_id),
+                "SELECT payload FROM decisions WHERE account_id=? AND decision_id=?", (account_id, decision_id),
             ).fetchone()
             if existing is not None:
-                if existing["status"] != "ACTIVE":
-                    raise ValueError("inactive decision cannot become active again")
                 previous = json.loads(existing["payload"])
                 current = json.loads(encoded)
-                runtime_fields = {
-                    "source_decision_id", "actual_quantity", "delta_quantity", "available_cash",
-                    "portfolio_revision", "state_revision",
-                }
+                runtime_fields = {"source_decision_id", "actual_quantity", "delta_quantity", "available_cash",
+                                  "portfolio_revision", "state_revision", "execution_disposition"}
                 if not previous.get("plan_identity"):
                     runtime_fields.update({"signal_identity", "plan_identity"})
-                previous_identity = {
-                    key: value for key, value in previous.items() if key not in runtime_fields
-                }
-                current_identity = {
-                    key: value for key, value in current.items() if key not in runtime_fields
-                }
-                if previous_identity != current_identity:
+                if {k:v for k,v in previous.items() if k not in runtime_fields} != {k:v for k,v in current.items() if k not in runtime_fields}:
                     raise ValueError("existing decision differs from the idempotent request")
-            canonical = encoded if existing is None else str(existing["payload"])
+                if self.account_decision(account_id, decision_id)["status"] in {DecisionState.CANCELLED, DecisionState.INCOMPLETE, DecisionState.SUPERSEDED}:
+                    raise ValueError("terminal decision cannot become active again")
+            else:
+                prior_decision = None
+                adopted = self._connection.execute(
+                    "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
+                    (account_id, valid_session),
+                ).fetchone()
+                if adopted is not None:
+                    previous = self.account_decision(account_id, adopted[0])
+                    if previous["status"] in {DecisionState.PENDING, DecisionState.EXECUTING}:
+                        raise ValueError("adopted pending decision requires an explicit atomic replacement")
+                    prior_decision = previous
+                self._connection.execute(
+                    "INSERT INTO decisions(account_id,decision_id,payload,signal_date,valid_session,generated_at,legacy_status) VALUES(?,?,?,?,?,?,'NOT_APPLICABLE')",
+                    (account_id, decision_id, encoded, signal_date, valid_session, _utc_now()),
+                )
+                self._append_decision_state(
+                    account_id, decision_id,
+                    DecisionState.PENDING if planned_orders(json.loads(encoded)) else DecisionState.COMPLETED,
+                    "PLAN_GENERATED" if planned_orders(json.loads(encoded)) else "NO_ORDER",
+                    related_decision_id=prior_decision["decision_id"] if prior_decision else None,
+                    evidence={"relation": "RECOMPUTED_FROM", "prior_state": prior_decision["status"]} if prior_decision else None,
+                )
             self._connection.execute(
-                "INSERT OR IGNORE INTO decisions(account_id,decision_id,payload,signal_date,"
-                "valid_session,generated_at) VALUES(?,?,?,?,?,?)",
-                (account_id, decision_id, encoded, signal_date, valid_session, now),
+                "INSERT INTO decision_adoptions(account_id,valid_session,decision_id) VALUES(?,?,?) "
+                "ON CONFLICT(account_id,valid_session) DO UPDATE SET decision_id=excluded.decision_id",
+                (account_id, valid_session, decision_id),
             )
-            self._connection.execute(
-                "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,"
-                "cycle_target=?,updated_at=? WHERE account_id=?",
-                (decision_id, canonical, cycle_target, now, account_id),
-            )
+            if existing is None:
+                self._connection.execute(
+                    "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,cycle_target=?,updated_at=? WHERE account_id=?",
+                    (decision_id, encoded, cycle_target, _utc_now(), account_id),
+                )
+            else:
+                self._connection.execute(
+                    "UPDATE virtual_accounts SET last_decision_id=?,last_decision_payload=?,updated_at=? WHERE account_id=?",
+                    (decision_id, existing["payload"], _utc_now(), account_id),
+                )
         return self.account_decision(account_id, decision_id)
 
-    def supersede_account_decision(
-        self, account_id: str, decision_id: str, superseded_by: str,
-        *, audit_event: AuditEvent | None = None, _in_transaction: bool = False,
-    ) -> dict[str, Any]:
-        if decision_id == superseded_by:
-            raise ValueError("a decision cannot supersede itself")
-        now = _utc_now()
+    def supersede_account_decision(self, account_id: str, decision_id: str, superseded_by: str,
+                                   *, audit_event: AuditEvent | None = None, _in_transaction=False):
+        if decision_id == superseded_by or not superseded_by:
+            raise ValueError("a decision requires a distinct replacement")
         with self._lock, self._write_context(_in_transaction):
-            changed = self._connection.execute(
-                "UPDATE decisions SET status='SUPERSEDED',superseded_by=?,superseded_at=? "
-                "WHERE account_id=? AND decision_id=? AND status='ACTIVE'",
-                (superseded_by, now, account_id, decision_id),
-            ).rowcount
-            if not changed:
-                raise ValueError("active decision to supersede was not found")
+            self._transition_decision(account_id, decision_id, DecisionState.SUPERSEDED, "PLAN_REPLACED", superseded_by)
+            self._connection.execute(
+                "UPDATE decisions SET superseded_by=?,superseded_at=? WHERE account_id=? AND decision_id=?",
+                (superseded_by, _utc_now(), account_id, decision_id),
+            )
             if audit_event is not None:
                 self._insert_audit_event(audit_event)
         return self.account_decision(account_id, decision_id)
 
     def account_decision(self, account_id: str, decision_id: str) -> dict[str, Any]:
         with self._lock:
-            row = self._connection.execute(
-                "SELECT * FROM decisions WHERE account_id=? AND decision_id=?",
-                (account_id, decision_id),
-            ).fetchone()
-        if row is None:
-            raise KeyError((account_id, decision_id))
-        result = dict(row)
-        result["payload"] = json.loads(result["payload"])
-        return result
+            row = self._connection.execute("SELECT * FROM decisions WHERE account_id=? AND decision_id=?", (account_id, decision_id)).fetchone()
+            if row is None:
+                raise KeyError((account_id, decision_id))
+            result = dict(row)
+            result["payload"] = json.loads(result["payload"])
+            events = self._decision_events(account_id, decision_id)
+            if not events:
+                raise ValueError("decision has no lifecycle evidence")
+            baseline = DecisionState(events[-1]["state"])
+            if baseline in TERMINAL_DECISION_STATES:
+                state, reason = baseline, "TERMINAL"
+            else:
+                intents = self.account_intents(account_id, decision_id)
+                orders = [row for row in self.account_orders(account_id) if row["decision_id"] == decision_id]
+                fills = [row for row in self.account_fills(account_id) if row["decision_id"] == decision_id]
+                state, reason = execution_state(result["payload"], baseline, intents, orders, fills)
+            result.update(status=state, state_reason=events[-1]["reason"] if reason in {"TERMINAL", "AWAITING_EXECUTION", "NO_ORDER"} else reason,
+                          state_changed_at=events[-1]["occurred_at"],
+                          state_events=[{key: event[key] for key in ("sequence", "state", "reason", "occurred_at", "related_decision_id")} for event in events])
+            return result
 
     def account_decisions(self, account_id: str | None = None) -> list[dict[str, Any]]:
         sql = "SELECT account_id,decision_id FROM decisions"
-        values: tuple[object, ...] = ()
+        values = ()
         if account_id is not None:
             sql += " WHERE account_id=?"
             values = (account_id,)
-        sql += " ORDER BY generated_at DESC"
+        sql += " ORDER BY generated_at DESC,decision_id"
         with self._lock:
             keys = [tuple(row) for row in self._connection.execute(sql, values).fetchall()]
         return [self.account_decision(str(account), str(decision)) for account, decision in keys]
+
+    def expire_unsubmitted_decisions(self, moment: datetime) -> None:
+        """Close elapsed observation plans without backfilling historical orders."""
+        from datetime import timedelta, time
+        if moment.tzinfo is None:
+            raise ValueError("expiry requires an aware clock")
+        local = moment.astimezone(timezone(timedelta(hours=8)))
+        with self._lock, self._write_context(False):
+            for row in self.account_decisions():
+                if row["status"] != DecisionState.PENDING or self.account_intents(row["account_id"], row["decision_id"]):
+                    continue
+                past = row["valid_session"] < local.date().isoformat()
+                legs = row["payload"].get("plan_legs") or []
+                missed_deadline = bool(legs) and row["valid_session"] == local.date().isoformat() and all(
+                    local.time().replace(tzinfo=None) > time.fromisoformat(leg["submit_before"]) for leg in legs
+                )
+                if past or missed_deadline:
+                    self._transition_decision(row["account_id"], row["decision_id"], DecisionState.INCOMPLETE, "EXECUTION_WINDOW_PASSED")
 
     @staticmethod
     def _account_intent_row(row: sqlite3.Row) -> dict[str, Any]:
@@ -2194,27 +2414,63 @@ class PaperStore:
             ).fetchone()
         return None if row is None else self._account_intent_row(row)
 
-    def update_account_intent_status(self, intent_id: str, status: str) -> dict[str, Any]:
-        with self._lock, self._connection:
+    def update_account_intent_status(self, intent_id: str, status: IntentControlState) -> dict[str, Any]:
+        from .broker import ACTIVE_ORDER_STATUSES
+        if type(status) is not IntentControlState:
+            raise TypeError("local intent control requires IntentControlState")
+        with self._lock, self._write_context(False):
+            previous = self.account_intent(intent_id)
+            if previous is None:
+                raise KeyError(intent_id)
+            if previous["status"] in TERMINAL_INTENT_STATUSES and status != previous["status"]:
+                raise ValueError("terminal intent cannot be reactivated")
+            if status == IntentControlState.SUBMISSION_UNCERTAIN and previous["status"] not in {"SUBMITTING", "SUBMITTED", "SUBMISSION_UNCERTAIN"}:
+                raise ValueError("uncertain outcome requires an existing submission attempt")
+            if status == IntentControlState.CANCELLING_ALL and (
+                not previous.get("channel_order_id") or previous["status"] not in ACTIVE_ORDER_STATUSES
+            ):
+                raise ValueError("cancellation requires a known active channel order")
             changed = self._connection.execute(
                 "UPDATE intents SET status=?,updated_at=? WHERE intent_id=?",
                 (status, _utc_now(), intent_id),
             ).rowcount
+            self._refresh_decision_state(previous["account_id"], previous["decision_id"])
         if not changed:
             raise KeyError(intent_id)
         result = self.account_intent(intent_id)
         assert result is not None
         return result
 
-    def claim_account_intent(self, intent_id: str) -> bool:
-        """Atomically grant one submitter ownership of a pending intent."""
-        with self._lock, self._connection:
-            changed = self._connection.execute(
-                "UPDATE intents SET status='SUBMITTING',updated_at=? "
-                "WHERE intent_id=? AND status='PENDING_SUBMIT'",
-                (_utc_now(), intent_id),
-            ).rowcount
-        return bool(changed)
+    def claim_account_intent(self, intent_id: str, *, moment: datetime) -> bool:
+        """Recheck the adopted plan and grant one submitter ownership atomically."""
+        with self._lock, self._write_context(False):
+            row = self.account_intent(intent_id)
+            if row is None:
+                raise KeyError(intent_id)
+            if row["status"] != "PENDING_SUBMIT":
+                return False
+            self._require_execution_eligible(row["account_id"], row["decision_id"], row["symbol"],
+                                             row["valid_session"], moment=moment, submitting=True)
+            plan_payload = self.account_decision(row["account_id"], row["decision_id"])["payload"]
+            all_intents = self.account_intents(row["account_id"], row["decision_id"])
+            if sorted(item["order_sequence"] for item in all_intents) != list(range(len(planned_orders(plan_payload)))):
+                raise ValueError("all plan intents must be persisted before channel submission")
+            legs = plan_payload.get("plan_legs") or []
+            self._require_planned_orders(row["account_id"], row["decision_id"], [{
+                "sequence": row["order_sequence"], "side": row["side"], "quantity": row["quantity"],
+                "order_type": row["payload"].get("order_type", "LIMIT"), "limit_price": row["limit_price"],
+                "submit_after": row["payload"].get("submit_after"), "submit_before": row["payload"].get("submit_before"),
+                "dependency_sequence": legs[row["order_sequence"]].get("dependency_sequence") if legs else None,
+            }])
+            self._require_execution_portfolio(row["account_id"], row["decision_id"])
+            from datetime import time, timedelta
+            clock = moment.astimezone(timezone(timedelta(hours=8))).time().replace(tzinfo=None)
+            payload = row["payload"]
+            if (payload.get("submit_after") and clock < time.fromisoformat(payload["submit_after"])) or (payload.get("submit_before") and clock > time.fromisoformat(payload["submit_before"])):
+                raise ValueError("plan leg is outside its submission window")
+            self._connection.execute("UPDATE intents SET status='SUBMITTING',updated_at=? WHERE intent_id=?", (_utc_now(), intent_id))
+            self._refresh_decision_state(row["account_id"], row["decision_id"])
+        return True
 
     def pending_account_intents(self) -> list[dict[str, Any]]:
         with self._lock:
@@ -2233,7 +2489,7 @@ class PaperStore:
         return [self._account_intent_row(row) for row in rows]
 
     def activate_dependency_intent(self, intent_id: str) -> bool:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             changed = self._connection.execute(
                 "UPDATE intents SET status='PENDING_SUBMIT',updated_at=? "
                 "WHERE intent_id=? AND status='WAITING_DEPENDENCY'",
@@ -2271,7 +2527,7 @@ class PaperStore:
     def require_account_intent_attention(self, intent_id: str, reason: str) -> dict[str, Any]:
         if not str(reason).strip():
             raise ValueError("intent attention reason is required")
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             changed = self._connection.execute(
                 "UPDATE intents SET attention_required=1,attention_reason=?,resolved_at=NULL,"
                 "resolution_note=NULL,updated_at=? WHERE intent_id=?",
@@ -2289,7 +2545,7 @@ class PaperStore:
         if not str(resolution_note).strip():
             raise ValueError("intent resolution note is required")
         now = _utc_now()
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             row = self._connection.execute(
                 "SELECT status,attention_required FROM intents WHERE intent_id=?", (intent_id,),
             ).fetchone()
@@ -2308,12 +2564,17 @@ class PaperStore:
         assert result is not None
         return result
 
-    def account_intents(self, account_id: str | None = None) -> list[dict[str, Any]]:
+    def account_intents(self, account_id: str | None = None, decision_id: str | None = None) -> list[dict[str, Any]]:
         sql = "SELECT * FROM intents"
         values: tuple[object, ...] = ()
         if account_id is not None:
             sql += " WHERE account_id=?"
             values = (account_id,)
+        if decision_id is not None:
+            if account_id is None:
+                raise ValueError("decision intents require an account")
+            sql += " AND decision_id=?"
+            values += (decision_id,)
         sql += " ORDER BY created_at,order_sequence"
         with self._lock:
             rows = self._connection.execute(sql, values).fetchall()
@@ -2327,7 +2588,7 @@ class PaperStore:
         initial_payload = dict(payload)
         initial_payload["cumulative_filled_quantity"] = 0
         initial_payload["average_fill_price"] = 0
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             intent = self._connection.execute(
                 "SELECT * FROM intents WHERE intent_id=?", (intent_id,)
             ).fetchone()
@@ -2374,6 +2635,7 @@ class PaperStore:
                 "UPDATE intents SET status=?,channel_order_id=?,updated_at=? WHERE intent_id=?",
                 (str(payload.get("status", "SUBMITTED")), str(channel_order_id), now, intent_id),
             )
+            self._refresh_decision_state(intent["account_id"], intent["decision_id"])
             if audit_event is not None:
                 self._insert_audit_event(audit_event)
         return self.account_order(str(channel_order_id))
@@ -2448,82 +2710,8 @@ class PaperStore:
                         int(account["quantity"]), now,
                     ),
                 )
-            if audit_event is not None:
-                self._insert_audit_event(audit_event)
-        result = self.account_intent(intent_id)
-        assert result is not None
-        return result
-
-    def recover_future_planned_intent(
-        self, intent_id: str, audit_event: AuditEvent | None = None,
-    ) -> dict[str, Any]:
-        """Requeue an unsubmitted future plan that an older clock comparison expired."""
-        from decimal import Decimal
-
-        now = _utc_now()
-        with self._lock, self._connection:
-            intent = self._connection.execute(
-                "SELECT * FROM intents WHERE intent_id=?", (intent_id,),
-            ).fetchone()
-            if intent is None:
-                raise KeyError(intent_id)
-            if (
-                intent["status"] != "EXPIRED"
-                or not bool(intent["attention_required"])
-                or intent["channel_order_id"] is not None
-                or intent["attention_reason"] != "计划订单错过提交截止时间"
-            ):
-                raise ValueError("intent is not a recoverable future plan expiry")
-            payload = json.loads(intent["payload"])
-            if not payload.get("plan_mode"):
-                raise ValueError("recoverable intent must belong to an execution plan")
-            dependency = payload.get("dependency_intent_id")
-            status = "PENDING_SUBMIT" if dependency is None else "WAITING_DEPENDENCY"
-            account = self._connection.execute(
-                "SELECT * FROM virtual_accounts WHERE account_id=?", (intent["account_id"],),
-            ).fetchone()
-            if account is None:
-                raise KeyError(intent["account_id"])
-            reserve = Decimal("0")
-            generation = int(intent["reservation_generation"])
-            if intent["side"] == "BUY":
-                generation += 1
-                fee = Decimal(str(payload.get("fee_rate", "0.0005")))
-                reserve = (
-                    Decimal(intent["limit_price"]) * int(intent["quantity"])
-                    * (Decimal("1") + fee)
-                ).quantize(Decimal("0.0001"))
-                cash = Decimal(account["cash"])
-                if reserve > cash:
-                    raise ValueError("account cash is below the recovered intent reservation")
-                self._connection.execute(
-                    "UPDATE virtual_accounts SET cash=?,frozen_cash=?,updated_at=? WHERE account_id=?",
-                    (
-                        str((cash - reserve).quantize(Decimal("0.0001"))),
-                        str((Decimal(account["frozen_cash"]) + reserve).quantize(Decimal("0.0001"))),
-                        now, intent["account_id"],
-                    ),
-                )
-                self._connection.execute(
-                    "INSERT INTO account_ledger(ledger_entry_id,account_id,entry_type,order_id,"
-                    "fill_id,cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,"
-                    "quantity_after,occurred_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (
-                        str(uuid5(NAMESPACE_URL, f"pte-reserve:{intent_id}:{generation}")),
-                        intent["account_id"], "INTENT_RESERVE", None, None,
-                        str(-reserve), str(reserve), 0, "0.0000",
-                        str((cash - reserve).quantize(Decimal("0.0001"))),
-                        int(account["quantity"]), now,
-                    ),
-                )
-            self._connection.execute(
-                "UPDATE intents SET status=?,attention_required=0,attention_reason=NULL,"
-                "resolved_at=?,resolution_note=?,reservation_generation=?,updated_at=? "
-                "WHERE intent_id=?",
-                (
-                    status, now, "自动修复未来交易日时间窗误判", generation, now, intent_id,
-                ),
-            )
+            if status != "SUPERSEDED":
+                self._refresh_decision_state(intent["account_id"], intent["decision_id"])
             if audit_event is not None:
                 self._insert_audit_event(audit_event)
         result = self.account_intent(intent_id)
@@ -2536,7 +2724,7 @@ class PaperStore:
         """Persist the latest Futu order state, then release any unused reservation."""
         status = str(payload.get("status", "UNKNOWN"))
         now = _utc_now()
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             order = self._connection.execute(
                 "SELECT * FROM orders WHERE channel_order_id=?", (channel_order_id,)
             ).fetchone()
@@ -2552,15 +2740,16 @@ class PaperStore:
             intent_id = str(order["intent_id"])
             previous_status = str(intent["status"])
             if status not in TERMINAL_ORDER_STATUSES:
+                if previous_status in TERMINAL_INTENT_STATUSES:
+                    raise ValueError("terminal channel intent cannot be reactivated")
                 self._connection.execute(
                     "UPDATE intents SET status=?,updated_at=? WHERE intent_id=?",
                     (status, now, intent_id),
                 )
-        if (
-            status in TERMINAL_ORDER_STATUSES
-            and previous_status not in TERMINAL_INTENT_STATUSES
-        ):
-            self.release_account_intent(intent_id, status)
+            if status in TERMINAL_ORDER_STATUSES and previous_status not in TERMINAL_INTENT_STATUSES:
+                self.release_account_intent(intent_id, status, _in_transaction=True)
+            else:
+                self._refresh_decision_state(order["account_id"], order["decision_id"])
         return self.account_order(channel_order_id)
 
     def account_order(self, channel_order_id: str) -> dict[str, Any]:
@@ -2598,7 +2787,7 @@ class PaperStore:
 
         if isinstance(cumulative_quantity, bool) or not isinstance(cumulative_quantity, int):
             raise ValueError("cumulative filled quantity must be an integer")
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             order = self._connection.execute(
                 "SELECT * FROM orders WHERE channel_order_id=?", (channel_order_id,)
             ).fetchone()
@@ -2791,7 +2980,7 @@ class PaperStore:
         if event.event_type != "BROKER_FEE_RECONCILED" or event.account_id != account_id:
             raise ValueError("fee reconciliation audit event does not match the account")
         ledger_id = str(uuid5(NAMESPACE_URL, f"pte-broker-fee:{reference}"))
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             existing = self._connection.execute(
                 "SELECT 1 FROM account_ledger WHERE ledger_entry_id=?", (ledger_id,),
             ).fetchone()
@@ -2882,7 +3071,7 @@ class PaperStore:
         if event.account_id != account["account_id"]:
             raise ValueError("channel fee variance audit account does not match")
         ledger_id = str(uuid5(NAMESPACE_URL, f"pte-channel-fee-variance:{reference}"))
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             existing = self._connection.execute(
                 "SELECT 1 FROM account_ledger WHERE ledger_entry_id=?", (ledger_id,)
             ).fetchone()
@@ -2912,7 +3101,7 @@ class PaperStore:
         with self._lock:
             accounts = self._connection.execute(
                 "SELECT account_id,initial_cash,cash,frozen_cash,quantity FROM virtual_accounts "
-                "WHERE status!='RETIRED' ORDER BY account_id"
+                "WHERE (run_state IS NULL OR run_state!='RETIRED') ORDER BY account_id"
             ).fetchall()
             for account in accounts:
                 entries = self._connection.execute(
@@ -2959,7 +3148,7 @@ class PaperStore:
         """Append one missing release entry after proving the account was already unfrozen."""
         from decimal import Decimal
 
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             account = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()
@@ -3076,7 +3265,7 @@ class PaperStore:
             )
 
     def save_snapshot(self, payload: dict[str, object]) -> None:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO snapshots(created_at, payload) VALUES(?, ?)",
                 (_utc_now(), json.dumps(payload, ensure_ascii=False, default=str)),
@@ -3090,14 +3279,14 @@ class PaperStore:
         return None if row is None else json.loads(row["payload"])
 
     def save_cancel_token(self, token: str, channel_order_id: str, expires_at: str) -> None:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             self._connection.execute(
                 "INSERT INTO cancel_tokens(token, channel_order_id, expires_at) VALUES(?, ?, ?)",
                 (token, channel_order_id, expires_at),
             )
 
     def consume_cancel_token(self, token: str, channel_order_id: str, now: str) -> str:
-        with self._lock, self._connection:
+        with self._lock, self._write_context(False):
             row = self._connection.execute(
                 "SELECT channel_order_id, expires_at, used_at FROM cancel_tokens WHERE token=?",
                 (token,),

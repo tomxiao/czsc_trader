@@ -118,6 +118,7 @@ def render_forward_chart_html(value: object) -> str:
       <div class="forward-status"><span></span><b id="forward-asof"></b></div>
     </header>
     <div class="forward-toolbar">
+      <label class="forward-controls">事件日期 <select id="forward-event-date" aria-label="选择事件日期"></select></label>
       <div class="forward-controls" aria-label="观察窗口">
         <button type="button" data-range="20" aria-pressed="false">20日</button>
         <button type="button" data-range="40" aria-pressed="false">40日</button>
@@ -133,7 +134,7 @@ def render_forward_chart_html(value: object) -> str:
       <svg id="forward-svg" role="img" aria-label="交易日K线、策略信号、决策事件、成交、持仓及逐日事件"></svg>
       <div class="forward-tooltip" id="forward-tooltip" role="tooltip" hidden></div>
     </section>
-    <footer><span>截止线左侧为行情背景；信号按信号日展示，决策按生效日展示，并保留已替代的历史记录</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
+    <footer><span>截止线左侧为行情背景；信号按信号日展示，决策按北京时间创建日展示；保留历史决策，非交易日通过事件日期浏览</span><span>紫色＝策略信号　橙色＝成交　蓝色＝持仓</span><span>K线使用后复权价；成交箭头仅标记日期，纵坐标不代表成交价。</span></footer>
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>
   <script src="/static/forward-chart.js"></script>
