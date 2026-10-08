@@ -1,0 +1,594 @@
+{
+  "batch": 11,
+  "elapsed_seconds": 41.10663680010475,
+  "rows": [
+    {
+      "candidate_id": "C0503",
+      "kind": "STRESS",
+      "status": "SUCCEEDED",
+      "request_sha256": "1f0dc820c948c69071d8c7a55b1edc22d52f33843e6668a7a0600f423e3f6c15",
+      "trial": 0,
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX004_20261007"
+        },
+        "evidence_id": "b12b60d19f2c082dcdffc0cd33ca8dc8d33546a845317285b9a953ca04630da4.json",
+        "sha256": "b12b60d19f2c082dcdffc0cd33ca8dc8d33546a845317285b9a953ca04630da4",
+        "media_type": "application/json",
+        "name": "stage-four-stress-c0503",
+        "schema": "account_evaluation",
+        "schema_version": 5
+      },
+      "result_sha256": "739ad4705e21293e1105242516038ce9298af0a259f8f2df409ad21c821551d0",
+      "evaluations": [
+        "b8768528bc0378bda192bc9ac98aa81f96c6dad72a4351050df5507616284f62",
+        "8363d1f24892f2c0038655b423eb40dcf01b55257f68259b52aee6bab6421dab"
+      ],
+      "scenarios": {
+        "stress_20bp_per_side": {
+          "net_cagr": 0.09528593583294587,
+          "full_max_drawdown": -0.19477373093799744,
+          "closed_trades": 116
+        },
+        "stress_30bp_per_side": {
+          "net_cagr": 0.05703826239943943,
+          "full_max_drawdown": -0.2575186825188135,
+          "closed_trades": 116
+        }
+      }
+    },
+    {
+      "candidate_id": "C0551",
+      "kind": "PARAMETERS",
+      "status": "SUCCEEDED",
+      "request_sha256": "bf7e86dc9b329bfcb4c6cb916f124b5d974eec92a9660ec94583c2d84be65e9c",
+      "trial": 1,
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX004_20261007"
+        },
+        "evidence_id": "9d194cc5aee0443fdf8eaca805bf5f0b1ddbbda2dcc8278eff73d15f26d28fcb.json",
+        "sha256": "9d194cc5aee0443fdf8eaca805bf5f0b1ddbbda2dcc8278eff73d15f26d28fcb",
+        "media_type": "application/json",
+        "name": "stage-four-parameters-c0551",
+        "schema": "account_evaluation",
+        "schema_version": 5
+      },
+      "result_sha256": "10e8d5079d5d7f461bb79a74064de8933bee246f1373ca82f0d6aa9a1a34d253",
+      "evaluations": [
+        "c920edddf202c988348c68c1a9adf6216f726dfa974c67a4580a03a60dbfa6e8"
+      ],
+      "four_gates": {
+        "status": "SUCCEEDED",
+        "candidate_id": "C0551",
+        "net_cagr": 0.007756705677002262,
+        "buyhold_cagr": 0.07222773742293187,
+        "return_threshold": 0.1083416061343978,
+        "annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.09545762647146272,
+            "return": 0.11924534140000032,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 1119245.3414000003
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.055365627618604196,
+            "return": 0.023543780014342763,
+            "sessions": 243,
+            "opening_equity": 1119245.3414000003,
+            "closing_equity": 1145596.6075
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.11533318780983182,
+            "return": 0.050939960953313435,
+            "sessions": 242,
+            "opening_equity": 1145596.6075,
+            "closing_equity": 1203953.2539542983
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.15317670125286587,
+            "return": -0.11930855136016172,
+            "sessions": 242,
+            "opening_equity": 1203953.2539542983,
+            "closing_equity": 1060311.335319658
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.10599217626079938,
+            "return": 0.17604168100486506,
+            "sessions": 242,
+            "opening_equity": 1060311.335319658,
+            "closing_equity": 1246970.3251778437
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.08466964923275355,
+            "return": -0.04702697316906501,
+            "sessions": 243,
+            "opening_equity": 1246970.3251778437,
+            "closing_equity": 1188329.085153085
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.12790577242359702,
+            "return": -0.11519275747968416,
+            "sessions": 181,
+            "opening_equity": 1188329.085153085,
+            "closing_equity": 1051442.1810409906
+          }
+        },
+        "buyhold_annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.14979032439479056,
+            "return": 0.22182056280000007,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 1221820.5628
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.09707883222292812,
+            "return": 0.17243203004964203,
+            "sessions": 243,
+            "opening_equity": 1221820.5628,
+            "closing_equity": 1432501.5628
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.2842195951671921,
+            "return": -0.18327701619863168,
+            "sessions": 242,
+            "opening_equity": 1432501.5628,
+            "closing_equity": 1169956.9506701392
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.17274273580415822,
+            "return": -0.06248046279687314,
+            "sessions": 242,
+            "opening_equity": 1169956.9506701392,
+            "closing_equity": 1096857.4989398504
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.1858319229061478,
+            "return": 0.06959554559221637,
+            "sessions": 242,
+            "opening_equity": 1096857.4989398504,
+            "closing_equity": 1173193.8950154833
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.1380379095435691,
+            "return": 0.3272583866825256,
+            "sessions": 243,
+            "opening_equity": 1173193.8950154833,
+            "closing_equity": 1557131.4363640386
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.1877031187625251,
+            "return": 0.009950525910459973,
+            "sessions": 181,
+            "opening_equity": 1557131.4363640386,
+            "closing_equity": 1572625.7130675707
+          }
+        },
+        "annual_dd_margins": {
+          "2020": 0.054332697923327844,
+          "2021": 0.04171320460432393,
+          "2022": 0.16888640735736027,
+          "2023": 0.019566034551292355,
+          "2024": 0.07983974664534843,
+          "2025": 0.05336826031081554,
+          "2026": 0.05979734633892808
+        },
+        "min_dd_margin": 0.019566034551292355,
+        "closed_trades": 145,
+        "frequency60": 5.3178484107579465,
+        "gates": {
+          "return": false,
+          "annual_drawdown": true,
+          "frequency": true,
+          "negative_buyhold_year_profit": false
+        },
+        "qualified": false,
+        "deficit": 2.8379388401369967,
+        "full_max_drawdown": -0.281718969750714,
+        "final_quantity": 114500,
+        "total_fees": 328545.854313985,
+        "order_statuses": {
+          "FILLED": 291
+        },
+        "result_hash": "10e8d5079d5d7f461bb79a74064de8933bee246f1373ca82f0d6aa9a1a34d253",
+        "request_hash": "bf7e86dc9b329bfcb4c6cb916f124b5d974eec92a9660ec94583c2d84be65e9c",
+        "content_sha256": "61ca1e3ee5a88ace60b0f287fb92ab3b19a27d9c8b21e81a8150e7cc80efcec6",
+        "input_sha256": "6c7680662440b63d09cdc473ca0d18506798738bfdcbe2854059fe2b9de82758",
+        "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+        "environment_sha256": "079244ed38dec4bfc9018923825ca872d653f91199931bff88ab4e24ff79facf",
+        "negative_buyhold_years": [
+          "2022",
+          "2023"
+        ]
+      }
+    },
+    {
+      "candidate_id": "C0552",
+      "kind": "PARAMETERS",
+      "status": "SUCCEEDED",
+      "request_sha256": "3d40a58568fb521be81f7a64ab7e4dbce7bbf84af49e52a6070bf39535153d59",
+      "trial": 2,
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX004_20261007"
+        },
+        "evidence_id": "bc99d47d166d9aae47ad5dbb07a6217821a9009f1dce17786932abe01db3580b.json",
+        "sha256": "bc99d47d166d9aae47ad5dbb07a6217821a9009f1dce17786932abe01db3580b",
+        "media_type": "application/json",
+        "name": "stage-four-parameters-c0552",
+        "schema": "account_evaluation",
+        "schema_version": 5
+      },
+      "result_sha256": "73ee16b749a2c30ca5eb091940d393566b1136abd14d39ce69de423401f8819d",
+      "evaluations": [
+        "ad387adb8593c8e133fec039916a382010468b6af0dbd9a7f0dbd5af3c6e179e"
+      ],
+      "four_gates": {
+        "status": "SUCCEEDED",
+        "candidate_id": "C0552",
+        "net_cagr": 0.07065336336323291,
+        "buyhold_cagr": 0.07222773742293187,
+        "return_threshold": 0.1083416061343978,
+        "annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.07203887142920196,
+            "return": 0.1199441801000003,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 1119944.1801000002
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.030007778248719363,
+            "return": 0.10668464332689331,
+            "sessions": 243,
+            "opening_equity": 1119944.1801000002,
+            "closing_equity": 1239425.0254999988
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.2008751325199054,
+            "return": -0.11204744567520464,
+            "sessions": 242,
+            "opening_equity": 1239425.0254999988,
+            "closing_equity": 1100550.6172867985
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.09603826611814437,
+            "return": -0.024573865346200208,
+            "sessions": 242,
+            "opening_equity": 1100550.6172867985,
+            "closing_equity": 1073505.8346109153
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.10025872612993048,
+            "return": 0.47301486063828846,
+            "sessions": 242,
+            "opening_equity": 1073505.8346109153,
+            "closing_equity": 1581290.047363787
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.022393147834645744,
+            "return": 0.10655530389982948,
+            "sessions": 243,
+            "opening_equity": 1581290.047363787,
+            "closing_equity": 1749784.888914411
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.1493426230892141,
+            "return": -0.10977909955541254,
+            "sessions": 181,
+            "opening_equity": 1749784.888914411,
+            "closing_equity": 1557695.0793937193
+          }
+        },
+        "buyhold_annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.14979032439479056,
+            "return": 0.22182056280000007,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 1221820.5628
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.09707883222292812,
+            "return": 0.17243203004964203,
+            "sessions": 243,
+            "opening_equity": 1221820.5628,
+            "closing_equity": 1432501.5628
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.2842195951671921,
+            "return": -0.18327701619863168,
+            "sessions": 242,
+            "opening_equity": 1432501.5628,
+            "closing_equity": 1169956.9506701392
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.17274273580415822,
+            "return": -0.06248046279687314,
+            "sessions": 242,
+            "opening_equity": 1169956.9506701392,
+            "closing_equity": 1096857.4989398504
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.1858319229061478,
+            "return": 0.06959554559221637,
+            "sessions": 242,
+            "opening_equity": 1096857.4989398504,
+            "closing_equity": 1173193.8950154833
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.1380379095435691,
+            "return": 0.3272583866825256,
+            "sessions": 243,
+            "opening_equity": 1173193.8950154833,
+            "closing_equity": 1557131.4363640386
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.1877031187625251,
+            "return": 0.009950525910459973,
+            "sessions": 181,
+            "opening_equity": 1557131.4363640386,
+            "closing_equity": 1572625.7130675707
+          }
+        },
+        "annual_dd_margins": {
+          "2020": 0.07775145296558861,
+          "2021": 0.06707105397420876,
+          "2022": 0.08334446264728668,
+          "2023": 0.07670446968601385,
+          "2024": 0.08557319677621733,
+          "2025": 0.11564476170892335,
+          "2026": 0.03836049567331101
+        },
+        "min_dd_margin": 0.03836049567331101,
+        "closed_trades": 102,
+        "frequency60": 3.740831295843521,
+        "gates": {
+          "return": false,
+          "annual_drawdown": true,
+          "frequency": false,
+          "negative_buyhold_year_profit": false
+        },
+        "qualified": false,
+        "deficit": 1.4173175584678737,
+        "full_max_drawdown": -0.26576296930742305,
+        "final_quantity": 169600,
+        "total_fees": 254052.26580784871,
+        "order_statuses": {
+          "FILLED": 206,
+          "UNFILLED": 1
+        },
+        "result_hash": "73ee16b749a2c30ca5eb091940d393566b1136abd14d39ce69de423401f8819d",
+        "request_hash": "3d40a58568fb521be81f7a64ab7e4dbce7bbf84af49e52a6070bf39535153d59",
+        "content_sha256": "5a9979e81f3f76a374af03de3955a9dca3a684a93bd56a0c521b876a14f48f91",
+        "input_sha256": "f5a87ad3296451a986c532cc1c753d559ff1264a6626a5fbd0e18e283023d8a8",
+        "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+        "environment_sha256": "079244ed38dec4bfc9018923825ca872d653f91199931bff88ab4e24ff79facf",
+        "negative_buyhold_years": [
+          "2022",
+          "2023"
+        ]
+      }
+    },
+    {
+      "candidate_id": "C0553",
+      "kind": "PARAMETERS",
+      "status": "SUCCEEDED",
+      "request_sha256": "42a5371cbcc9200a7bca3767ac8831c42dfc87a9642835f8c402b00be97a5305",
+      "trial": 3,
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX004_20261007"
+        },
+        "evidence_id": "4277212925afb0d6b0c1f81f24781f52a4256c0fd98a88590a5a3b98ace9e78d.json",
+        "sha256": "4277212925afb0d6b0c1f81f24781f52a4256c0fd98a88590a5a3b98ace9e78d",
+        "media_type": "application/json",
+        "name": "stage-four-parameters-c0553",
+        "schema": "account_evaluation",
+        "schema_version": 5
+      },
+      "result_sha256": "164d4c456b444c53133d3863a4b0bdf4b61c043c5fd3c4bbf320e15ad0a836ea",
+      "evaluations": [
+        "7ed8371fb7096c524476e674426b98879da6285d5ca92a40436a4bfe780a0630"
+      ],
+      "four_gates": {
+        "status": "SUCCEEDED",
+        "candidate_id": "C0553",
+        "net_cagr": 0.0014922489758093516,
+        "buyhold_cagr": 0.07222773742293187,
+        "return_threshold": 0.1083416061343978,
+        "annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.1113640807114088,
+            "return": -0.021688838399999244,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 978311.1616000008
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.024948133934120986,
+            "return": 0.11167013051484265,
+            "sessions": 243,
+            "opening_equity": 978311.1616000008,
+            "closing_equity": 1087559.2967000003
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.13925413514481166,
+            "return": -0.1295851067368501,
+            "sessions": 242,
+            "opening_equity": 1087559.2967000003,
+            "closing_equity": 946627.8091544771
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.09002759364474078,
+            "return": -0.0521041635616728,
+            "sessions": 242,
+            "opening_equity": 946627.8091544771,
+            "closing_equity": 897304.5589542643
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.10552712576138401,
+            "return": 0.35849100016367297,
+            "sessions": 242,
+            "opening_equity": 897304.5589542643,
+            "closing_equity": 1218980.1677452018
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.053396615207249365,
+            "return": -0.016564989116021334,
+            "sessions": 243,
+            "opening_equity": 1218980.1677452018,
+            "closing_equity": 1198787.7745338567
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.1874226697019299,
+            "return": -0.1577094932296763,
+            "sessions": 181,
+            "opening_equity": 1198787.7745338567,
+            "closing_equity": 1009727.5621221906
+          }
+        },
+        "buyhold_annual": {
+          "2020": {
+            "max_drawdown_magnitude": 0.14979032439479056,
+            "return": 0.22182056280000007,
+            "sessions": 243,
+            "opening_equity": 1000000.0,
+            "closing_equity": 1221820.5628
+          },
+          "2021": {
+            "max_drawdown_magnitude": 0.09707883222292812,
+            "return": 0.17243203004964203,
+            "sessions": 243,
+            "opening_equity": 1221820.5628,
+            "closing_equity": 1432501.5628
+          },
+          "2022": {
+            "max_drawdown_magnitude": 0.2842195951671921,
+            "return": -0.18327701619863168,
+            "sessions": 242,
+            "opening_equity": 1432501.5628,
+            "closing_equity": 1169956.9506701392
+          },
+          "2023": {
+            "max_drawdown_magnitude": 0.17274273580415822,
+            "return": -0.06248046279687314,
+            "sessions": 242,
+            "opening_equity": 1169956.9506701392,
+            "closing_equity": 1096857.4989398504
+          },
+          "2024": {
+            "max_drawdown_magnitude": 0.1858319229061478,
+            "return": 0.06959554559221637,
+            "sessions": 242,
+            "opening_equity": 1096857.4989398504,
+            "closing_equity": 1173193.8950154833
+          },
+          "2025": {
+            "max_drawdown_magnitude": 0.1380379095435691,
+            "return": 0.3272583866825256,
+            "sessions": 243,
+            "opening_equity": 1173193.8950154833,
+            "closing_equity": 1557131.4363640386
+          },
+          "2026": {
+            "max_drawdown_magnitude": 0.1877031187625251,
+            "return": 0.009950525910459973,
+            "sessions": 181,
+            "opening_equity": 1557131.4363640386,
+            "closing_equity": 1572625.7130675707
+          }
+        },
+        "annual_dd_margins": {
+          "2020": 0.03842624368338177,
+          "2021": 0.07213069828880714,
+          "2022": 0.14496546002238042,
+          "2023": 0.08271514215941744,
+          "2024": 0.0803047971447638,
+          "2025": 0.08464129433631973,
+          "2026": 0.00028044906059521146
+        },
+        "min_dd_margin": 0.00028044906059521146,
+        "closed_trades": 119,
+        "frequency60": 4.364303178484108,
+        "gates": {
+          "return": false,
+          "annual_drawdown": true,
+          "frequency": true,
+          "negative_buyhold_year_profit": false
+        },
+        "qualified": false,
+        "deficit": 2.527198792693439,
+        "full_max_drawdown": -0.2688325245846567,
+        "final_quantity": 109900,
+        "total_fees": 243892.81215536926,
+        "order_statuses": {
+          "FILLED": 240,
+          "UNFILLED": 1
+        },
+        "result_hash": "164d4c456b444c53133d3863a4b0bdf4b61c043c5fd3c4bbf320e15ad0a836ea",
+        "request_hash": "42a5371cbcc9200a7bca3767ac8831c42dfc87a9642835f8c402b00be97a5305",
+        "content_sha256": "e51dd25a820c41059dc1e7dffeca95e595b3b7a0d012708425b65a5134f9aa85",
+        "input_sha256": "0c1b3167507631756da42fff92fae4f1181c41227168d0995b836ea2ce583c0b",
+        "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+        "environment_sha256": "079244ed38dec4bfc9018923825ca872d653f91199931bff88ab4e24ff79facf",
+        "negative_buyhold_years": [
+          "2022",
+          "2023"
+        ]
+      }
+    }
+  ],
+  "optuna": {
+    "direction": "maximize",
+    "seed": 13,
+    "trials": [
+      {
+        "number": 0,
+        "params": {
+          "configuration": 0
+        },
+        "value": 0.09528593583294587,
+        "state": "COMPLETE"
+      },
+      {
+        "number": 1,
+        "params": {
+          "configuration": 1
+        },
+        "value": 0.007756705677002262,
+        "state": "COMPLETE"
+      },
+      {
+        "number": 2,
+        "params": {
+          "configuration": 2
+        },
+        "value": 0.07065336336323291,
+        "state": "COMPLETE"
+      },
+      {
+        "number": 3,
+        "params": {
+          "configuration": 3
+        },
+        "value": 0.0014922489758093516,
+        "state": "COMPLETE"
+      }
+    ]
+  }
+}
