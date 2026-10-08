@@ -1,0 +1,1195 @@
+{
+  "name": "four_gate_adaptive_followup_1",
+  "date": "2026-10-08",
+  "center": {
+    "candidate_id": "C0440",
+    "content_sha256": "7338491da707a262d47d556d7909eedc657b529ba7e1b26b3c84723d9b659c8e",
+    "result_hash": "c0cc34684901a143e156422850b7419e5bec538eb5541e47701f7a6b45639a08",
+    "parameters": {
+      "bull": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": null,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      },
+      "bear": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      },
+      "regime_window": 20,
+      "regime_threshold": 0.0,
+      "exit_on_regime_change": true
+    },
+    "annual": {
+      "2020": {
+        "max_drawdown_magnitude": 0.0709150842534263,
+        "return": 0.1544330240999996,
+        "sessions": 243,
+        "opening_equity": 1000000.0,
+        "closing_equity": 1154433.0240999996
+      },
+      "2021": {
+        "max_drawdown_magnitude": 0.02539189703208866,
+        "return": 0.1267885713111072,
+        "sessions": 243,
+        "opening_equity": 1154433.0240999996,
+        "closing_equity": 1300801.9378999996
+      },
+      "2022": {
+        "max_drawdown_magnitude": 0.10146451936393275,
+        "return": 0.07961644211154817,
+        "sessions": 242,
+        "opening_equity": 1300801.9378999996,
+        "closing_equity": 1404367.1600874045
+      },
+      "2023": {
+        "max_drawdown_magnitude": 0.05654799777780173,
+        "return": 0.003029045330814828,
+        "sessions": 242,
+        "opening_equity": 1404367.1600874045,
+        "closing_equity": 1408621.051876417
+      },
+      "2024": {
+        "max_drawdown_magnitude": 0.10022661864484583,
+        "return": 0.587042075579443,
+        "sessions": 242,
+        "opening_equity": 1408621.051876417,
+        "closing_equity": 2235540.877874847
+      },
+      "2025": {
+        "max_drawdown_magnitude": 0.03533134307783792,
+        "return": 0.08317157243190976,
+        "sessions": 243,
+        "opening_equity": 2235540.877874847,
+        "closing_equity": 2421474.32792351
+      },
+      "2026": {
+        "max_drawdown_magnitude": 0.09885782559012335,
+        "return": -0.04753466290267094,
+        "sessions": 181,
+        "opening_equity": 2421474.32792351,
+        "closing_equity": 2306370.3620181945
+      }
+    },
+    "closed_trades": 113
+  },
+  "reason": "首个四门达标点2023盈利仅0.303%、113闭合距最低110较近，bear持有4位于初始域下沿。扩至1/2/3及12，并检验状态阈值/期限、入场过滤、上涨持有期和限价的单变量及六个持有期×阈值交互。",
+  "hypotheses": [
+    "更短负动量持有期能否维持收益并提高实际闭合交易数",
+    "状态退出改善是否依赖精确20日与零阈值，若相邻值亏损则作为反证",
+    "正相关性与两路线阈值是否有必要，溢价造成的填单变化是否主导结果"
+  ],
+  "parameters_domain": "全部原强类型合法域内；不是新增目标。初始阈值[-.02,.02]扩至±.04，初始bear持有[4,9]扩至[1,12]；原有信号锚点语义保持。",
+  "selection_history": "C0440是在已见全开发池中选择；39点初轮尚在完成，扩边设计仅依据已出现C0440。仍为开发搜索，未执行阶段四自检。",
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "budget_note": "结果与机制、边界及竞争解释共同决定收口；次数和首个达标本身不构成停止依据",
+  "configurations": [
+    {
+      "label": "regime-threshold--0.04",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.04,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-threshold--0.01",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.01,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-threshold--0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-threshold-0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-threshold-0.01",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.01,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-threshold-0.04",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.04,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-5",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 5,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-10",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 10,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-15",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 15,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-25",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 25,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-30",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 30,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-40",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 40,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "regime-window-60",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 60,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-hold-1",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 1,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-hold-2",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 2,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-hold-3",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 3,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-hold-5",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 5,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-hold-12",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 12,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-acf-0.075",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.075,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-acf-0.125",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.125,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bull-hold-6",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 6,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bull-hold-10",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 10,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bull-entry-0.625",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.625,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bull-entry-0.725",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.725,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-entry-0.8",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.8,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "bear-entry-0.9",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.9,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "global-limit-premium-0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.005
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.005
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "global-limit-premium-0.015",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.015
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 4,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.015
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.0,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-2-threshold--0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 2,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-2-threshold-0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 2,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-3-threshold--0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 3,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-3-threshold-0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 3,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-5-threshold--0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 5,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": -0.005,
+        "exit_on_regime_change": true
+      }
+    },
+    {
+      "label": "joint-bear-hold-5-threshold-0.005",
+      "parameters": {
+        "bull": {
+          "range_window": 180,
+          "entry": 0.675,
+          "exit": 0.95,
+          "max_hold": 8,
+          "acf_min": null,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "bear": {
+          "range_window": 120,
+          "entry": 0.85,
+          "exit": 0.99,
+          "max_hold": 5,
+          "acf_min": 0.1,
+          "stop_loss": null,
+          "trailing_stop": null,
+          "cooldown": 0,
+          "momentum_min": null,
+          "limit_premium": 0.01
+        },
+        "regime_window": 20,
+        "regime_threshold": 0.005,
+        "exit_on_regime_change": true
+      }
+    }
+  ]
+}

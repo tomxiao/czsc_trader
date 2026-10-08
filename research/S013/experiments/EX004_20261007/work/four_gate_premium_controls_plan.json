@@ -1,0 +1,41 @@
+{
+  "name": "four_gate_premium_controls",
+  "configurations": [
+    {
+      "label": "sparse-route-premium1pct",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 9,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "deep-route-premium1pct",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 12,
+        "acf_min": -0.3,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    }
+  ],
+  "reason": "状态分工统一使用1%限价溢价，先建立相同执行参数的两条原策略对照；已完成相同配置复用，原件保持",
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1
+  }
+}

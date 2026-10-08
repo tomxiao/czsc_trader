@@ -1,16 +1,24 @@
 # EX004：S013后复权阶段三研究
 
-本工作区组织获批的阶段三重跑及2026-10-08新增约束复核。当前结论见[阶段三修订二](../../../deliveries/CANDIDATES/2/report.md)，旧[阶段三交付](../../../deliveries/CANDIDATES/1/report.md)保持原件；工作文件不替代交付与正式证据。
+本工作区组织获批的阶段三重跑、新增约束复核及续研。当前结论见[阶段三修订三](../../../deliveries/CANDIDATES/3/report.md)，旧[修订二](../../../deliveries/CANDIDATES/2/report.md)与[原阶段三交付](../../../deliveries/CANDIDATES/1/report.md)保持原件；工作文件不替代交付与正式证据。
 
 ## 结果与口径
 
-378个不同配置完成评价，原三项目标下六个达标：C0371、C0384、C0385、C0386、C0387、C0392；它们及八个必要对照已登记。新增“BuyHold亏损年份策略须盈利”后，六点均不通过；378个配置中11个仅满足新增条件，全部四项同时达标为0。约定MANDATE/4与候选CANDIDATES/2的FULL校验PASS。没有针对新约束展开新搜索，没有进入阶段四。
+旧378个不同配置原三项目标下六个达标；新增“BuyHold亏损年份策略须盈利”后均不通过。用户批准继续阶段三，本次新增116个完整账户配置，累计494成功，历史16次UNKNOWN保留；四项同时达标10个，全部交接，七个前沿/反证一并保留。新交付CANDIDATES/3的FULL校验及17份正式账本独立复算均PASS。约定MANDATE/4保持，没有进入阶段四。
 
 `review_negative_benchmark_years.py`从已发布统计复核378个成功配置，并从14份正式完整账本独立复算年度收益；核对严格大于零与基准零收益不触发边界。本次没有刷新数据或新增策略评价。新计算证据、用户原文和旧交付引用均随修订关联；旧统计及旧判定保持原件。
 
 价格采用HFQ_RESEARCH，锚点2019-12-31、因子0.2803；100个研究单位整手、100万元、单侧10bp。BuyHold同价格单位和同一连续账户。原始网格形成T日限价后转换研究价格，T+1历史撮合；计划不读取T+1开盘或因子。PTE真实份额与未复权价格边界保持。
 
 ## 实际执行与复算入口
+
+- `economics_r4.py`单独应用新增严格盈利条件，年度实际净收益沿用连续账户；`search_results_r4.json`保存新判定与本次搜索，旧统计原件不改。
+- `four_gate_*_plan.json`在各轮评价前发布；两种固定队列执行器以Optuna管理，最多4个spawn进程、每个原生线程1、单请求1，每个Python父进程只评价一批。原策略由`fixed_search_r4.py`运行，状态组合由`fixed_search_adaptive.py`运行；相同配置复用。
+- `adaptive_range/strategy_runtime/strategies/`保存独立组合实现和360日原区间实现字节副本。动量只选择入场路线、锁定至退出，可在状态变化时退出；不按年份路由。`adaptive_synthetic_precheck.py`检查未来隔离、相同路线、锁定/退出及14个非法参数；`check_adaptive_controls.py`比较三个FULL同路线账户。
+- `check_adaptive_input_control.py`使用公共DFLS fetch，验真C0439/C0440所有准备输入，包括180条2019预热。`analyse_adaptive_attribution.py`按实际每日权益对账价格与费用贡献，保留2023余量、2024集中及退出政策不一致反证；正式复现以交付中关联的实际源码快照与哈希为准。
+- `analyse_four_gate_search.py`保留全部10个达标和可行前沿/反证；`quality_audit_r4.py`核对494个成功配置在已声明分钟异常日期的实际订单。`four_gate_stopping_review.md`给出机制、扩边饱和和转入标准自检的依据。
+- `deliver_four_gate_search.py`包含公共治理写入，保存控制两侧完整账户，登记达标/必要配置及发布CANDIDATES/3。现有交付不可覆盖；未来结论另立修订。`verify_four_gate_delivery.py`从正式账户独立重算17个保留配置，核对全部四门与交接完整性。
+- 本次过程状态位于`.tmp/s013-negative-years/`，完整结果缓存沿用`.tmp/s013-stage3-hfq/`；原缓存和工作材料不能代替正式证据、登记源码、DFLS资产及准备引用。
 
 - `bootstrap.py`保存初始协议、约定修订及基线。它包含正式写入，不能作为普通复算脚本直接重复运行。旧EX003及旧基线发布证据不可改写。
 - `replay_plan.json`固定旧270个成功配置，`fixed_search.py`以Optuna固定队列和配置哈希去重组织完整账户评价；四轮`hfq_followup_*_plan.json`在各轮评价前发布。计划重复点复用同口径结果。

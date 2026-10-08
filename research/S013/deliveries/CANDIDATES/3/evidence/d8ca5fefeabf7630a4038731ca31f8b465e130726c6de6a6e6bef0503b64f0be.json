@@ -1,0 +1,95 @@
+{
+  "status": "PASS",
+  "candidates": [
+    "C0439",
+    "C0440"
+  ],
+  "prepared_references": [
+    {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "41912033-43b8-4f5c-bd80-2ccc28e09e12",
+      "manifest_sha256": "5850b106397b76996c6187e636941d6e3ff6ae91de609e075a1820f3c19c5c81"
+    },
+    {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "41912033-43b8-4f5c-bd80-2ccc28e09e12",
+      "manifest_sha256": "5850b106397b76996c6187e636941d6e3ff6ae91de609e075a1820f3c19c5c81"
+    }
+  ],
+  "non_strategy_plan_sha256": "66ced3352c8db58be698e9bf89cd84086c626bd2b22d74e57599cce909a95f11",
+  "execution_input_identities": {
+    "trading_calendar": "1f4649a711c71d7fa8c41fb2105a6c31f924b2a7c7280bc6b2c383cf70165dc4",
+    "adjusted_daily": "dc26daaf2fba54aca75c2472f4917fc3382838a2d5ee0007d2a99b47ce2e487a",
+    "execution_30m": "3ecea090a7ecabc3f13706f1c6d99ef31efccf6fd7ae2bb3ce02695b03ba394f",
+    "execution_daily": "881446f0b057b9b6e532056d17fe386b34f59ae1088950610acc6245dfb8b46f"
+  },
+  "public_fetch_exact_checks": {
+    "calendar": {
+      "rows": 2824,
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "serialized_dataframe_sha256": "d6b697be4df557499f86ed224fee0934c5bbdb7c3141cd69de4eb59c63b26ceb",
+      "types": {
+        "Date": "datetime64[us]",
+        "IsOpen": "int64",
+        "PreviousTradingDate": "datetime64[us]"
+      },
+      "exactly_equal": true
+    },
+    "daily": {
+      "rows": 1815,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "serialized_dataframe_sha256": "b5b6a7d19bc412f6c1e3f13a2c82d3e1f675d2798fd05312528ec4b5394f3630",
+      "types": {
+        "Date": "str",
+        "Open": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Close": "float64",
+        "Volume": "float64",
+        "Amount": "float64",
+        "AvailableDate": "datetime64[us]"
+      },
+      "exactly_equal": true,
+      "first_date": "2019-04-10",
+      "last_date": "2026-09-29",
+      "pre_2020_rows": 180
+    },
+    "execution": {
+      "rows": 1636,
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount"
+      ],
+      "serialized_dataframe_sha256": "2c79890fedb237d477e837eaba395587d57c2ef0c0ca3544d7c38a7aa215c658",
+      "types": {
+        "Date": "str",
+        "Open": "float64",
+        "High": "float64",
+        "Low": "float64",
+        "Close": "float64",
+        "Volume": "float64",
+        "Amount": "float64"
+      },
+      "exactly_equal": true
+    }
+  },
+  "claim": "公开fetch按两次不可变准备引用验真；包含180条2019预热的所有命名输入逐值、类型与索引精确一致；整体准备身份随策略不同而独立。仅支持开发池内完整退出政策对照。"
+}

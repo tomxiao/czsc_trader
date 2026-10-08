@@ -1,0 +1,536 @@
+{
+  "name": "four_gate_acf_1",
+  "date": "2026-10-08",
+  "user_confirmation": {
+    "proposal": "建议继续阶段三，针对亏损年份研究盈利机制，暂不进入阶段四。是否继续？",
+    "answer": "同意",
+    "scope": "S013阶段三；沿用当前分支、数据、资源与已安装依赖"
+  },
+  "hypotheses": [
+    "正相关性过滤可减少持续下跌中的反复入场；缩短最长持有期限有可能恢复交易频率，同时需核对费用及收益损失。",
+    "短窗口低位反转在负基准年份已有盈利线索；缩短持有并放宽相关性过滤可检验收益和频率是否能够同时改善。"
+  ],
+  "falsification": "以四项同时核验，逐年利润不通过或收益/回撤/频率退化均公开保存；不将诊断设为额外经济否决条件",
+  "scope_and_causality": "2022/2023只用于开发目标与归因；策略不得读取自然年盈亏、下一日价格或未来基准走势，不按历史年份硬编码交易",
+  "selection_history": "全开发池已用于378个旧配置选择；先对新增条件通过的稀疏路线和旧高收益路线做反事实对照，不视为样本外",
+  "implementation": "已有RangeReversion原源码，账户和SRT/TXE口径保持；不新增外部数据源或依赖",
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "configurations": [
+    {
+      "label": "acf-positive-center-hold3-acf0.025",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 3,
+        "acf_min": 0.025,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold3-acf0.05",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 3,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold3-acf0.075",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 3,
+        "acf_min": 0.075,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold3-acf0.1",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 3,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold4-acf0.025",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.025,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold4-acf0.05",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold4-acf0.075",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.075,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold4-acf0.1",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold6-acf0.025",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 6,
+        "acf_min": 0.025,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold6-acf0.05",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 6,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold6-acf0.075",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 6,
+        "acf_min": 0.075,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold6-acf0.1",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 6,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold8-acf0.025",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 8,
+        "acf_min": 0.025,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold8-acf0.05",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 8,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold8-acf0.075",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 8,
+        "acf_min": 0.075,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-hold8-acf0.1",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 8,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf-0.05",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": -0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf0.0",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": 0.0,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf0.025",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": 0.025,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf0.05",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf0.075",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": 0.075,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "old-high-return-acf0.1",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.675,
+        "exit": 0.95,
+        "max_hold": 8,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold3-acf-0.3",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 3,
+        "acf_min": -0.3,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold3-acf-0.1",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 3,
+        "acf_min": -0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold3-acf0.0",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 3,
+        "acf_min": 0.0,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold4-acf-0.3",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 4,
+        "acf_min": -0.3,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold4-acf-0.1",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 4,
+        "acf_min": -0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold4-acf0.0",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 4,
+        "acf_min": 0.0,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold6-acf-0.3",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 6,
+        "acf_min": -0.3,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold6-acf-0.1",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 6,
+        "acf_min": -0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "short-range-positive-hold6-acf0.0",
+      "parameters": {
+        "range_window": 60,
+        "entry": 0.3,
+        "exit": 0.65,
+        "max_hold": 6,
+        "acf_min": 0.0,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "acf-positive-center-premium-control",
+      "parameters": {
+        "range_window": 120,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 9,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "long-range-acf-hold4-0.05",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.05,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    },
+    {
+      "label": "long-range-acf-hold4-0.1",
+      "parameters": {
+        "range_window": 180,
+        "entry": 0.85,
+        "exit": 0.99,
+        "max_hold": 4,
+        "acf_min": 0.1,
+        "stop_loss": null,
+        "trailing_stop": null,
+        "cooldown": 0,
+        "momentum_min": null,
+        "limit_premium": 0.01
+      }
+    }
+  ],
+  "budget_note": "34个声明对照为第一轮，结果决定有依据的扩边或新机制；轮数和预算不作为研究充分的独立证明"
+}
