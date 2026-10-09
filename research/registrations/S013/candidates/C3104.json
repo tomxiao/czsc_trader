@@ -1,0 +1,135 @@
+{
+  "record": {
+    "content_sha256": "4ce0c214fc27a5ab5018c3f7e3fbec3140807efec76bb03466c39903276891c7",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "all-bull--0.35-all_entries-boundary",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.95,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "turnover",
+            "scope": "both",
+            "threshold": -0.175
+          },
+          "context": {
+            "entry_gate": "regime_reentry",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_FEATURES"
+          },
+          "exit_on_regime_change": true,
+          "opportunity_confirmation": {
+            "application": "all_entries",
+            "enabled": true,
+            "profile": "all",
+            "route_scope": "bull",
+            "threshold": -0.35,
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "regime_threshold": 0.005,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C3104",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "4ce0c214fc27a5ab5018c3f7e3fbec3140807efec76bb03466c39903276891c7",
+      "evidence": {
+        "path": "assets/candidates/C3104/derivation/479891b2fdb62943b3d636396675274087edaf6f509e35960351f46e4d888e06.json",
+        "sha256": "479891b2fdb62943b3d636396675274087edaf6f509e35960351f46e4d888e06"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C2308",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "387bc956c31cfabe330ae365a8eb52fe6420742a46f2e35f1dbdcce10761f208",
+      "protocol_sha256": "1533acb4966ce6b552299daec9c0404825b6e625238cab73cf9fd2ba8e32bdaf"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C3104",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX007_20261009/3565be8a703c4bcdea07978fc14bb0003b50190c54ed109ca0333a0a7546c53a.json",
+          "sha256": "3565be8a703c4bcdea07978fc14bb0003b50190c54ed109ca0333a0a7546c53a"
+        }
+      ],
+      "experiment_id": "EX007_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C3104/payload/1dbbf6b4ebefe30b2c0ee3a7303b6b808d77064bc344f9bf7c602dfae93b9b3f.json",
+      "sha256": "1dbbf6b4ebefe30b2c0ee3a7303b6b808d77064bc344f9bf7c602dfae93b9b3f"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      },
+      {
+        "path": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime/strategies/complement_confirmed_range.py",
+        "sha256": "f75b7f71c1731204342f5c9445e5e0a9dfccd5945cc39d11df24ff9722093a1f"
+      }
+    ],
+    "source_root": "assets/candidates/C3104/source/42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21/strategy_runtime",
+    "source_sha256": "42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21"
+  },
+  "record_sha256": "fa47f74aca0bd90e759c4dbb8c2333ec0312fc708de42d5ed91cad49a23d936d"
+}

@@ -1,0 +1,34 @@
+{
+  "name": "cost_complement_pressure",
+  "candidates": [
+    "C3000",
+    "C3001",
+    "C3107",
+    "C3100",
+    "C3006"
+  ],
+  "selection": "two exact parent controls; highest CAGR and negative-year margin among new qualified configurations (all new if none qualify), strongest new margin and smallest original four-gate deficit; ties stable search order",
+  "scenarios": [
+    {
+      "name": "baseline",
+      "one_way_cost": 0.001,
+      "level": "FORMAL"
+    },
+    {
+      "name": "stress20",
+      "one_way_cost": 0.002,
+      "level": "STRESS"
+    },
+    {
+      "name": "stress30",
+      "one_way_cost": 0.003,
+      "level": "STRESS"
+    }
+  ],
+  "eligibility": "unchanged baseline four gates; pressure diagnostics do not exclude candidates",
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1
+  }
+}

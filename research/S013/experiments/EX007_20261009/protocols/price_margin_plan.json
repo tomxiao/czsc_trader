@@ -1,0 +1,285 @@
+{
+  "name": "cost_confirmation_price_margin",
+  "configurations": [
+    {
+      "candidate_id": "C3200",
+      "parent": "C2308",
+      "origin_configuration": "C3107",
+      "price_margin": 0.0,
+      "bull_momentum_floor": 0.005,
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": 0.005,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.325,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "config_hash": "388cce3f93a3df6d3f4560bb4efd141701f4edcbb40963a4cc475472e445d12b",
+      "label": "C3107-bull-all-entries-price-margin-0"
+    },
+    {
+      "candidate_id": "C3201",
+      "parent": "C2308",
+      "origin_configuration": "C3107",
+      "price_margin": 0.0025,
+      "bull_momentum_floor": 0.0075,
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": 0.0075,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.325,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "config_hash": "a50b0d5899e390a6bd0eb4ed9f8ad42a541fb70e53f75ff2c8b8290fb02f54d3",
+      "label": "C3107-bull-all-entries-price-margin-0.0025"
+    },
+    {
+      "candidate_id": "C3202",
+      "parent": "C2308",
+      "origin_configuration": "C3107",
+      "price_margin": 0.005,
+      "bull_momentum_floor": 0.01,
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": 0.01,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.325,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "config_hash": "f8903703c62b0ef007b95cbb1dd5ef1def633ad836b11d2d9762a95ad86685a6",
+      "label": "C3107-bull-all-entries-price-margin-0.005"
+    },
+    {
+      "candidate_id": "C3203",
+      "parent": "C2308",
+      "origin_configuration": "C3107",
+      "price_margin": 0.01,
+      "bull_momentum_floor": 0.015,
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": 0.015,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.325,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "config_hash": "8a5dfbafb285be8e14f34eafe8cbe15c126a14b4706a856d2a411f367bf4f44e",
+      "label": "C3107-bull-all-entries-price-margin-0.01"
+    }
+  ],
+  "prechecked_controls": [
+    "C3200"
+  ],
+  "precheck_file": "price_margin_precheck.json",
+  "origin_configuration": "C3107",
+  "origin_result_hash": "3f274887ed72ecb56c89544842a5d28d0535f1fbffd6049989a8f29953466548",
+  "origin_configuration_hash": "299b0badfbe7e4bd87fa136e0913b84b8c86769fb6f92f35950d403bbc961520",
+  "attribution_sha256": "0d9b3d488bdbb36f4987f1ba0b25eca5f0eae113791df5703bfd021098aaaa18",
+  "source_files": {
+    "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategies/complement_confirmed_range.py": "f75b7f71c1731204342f5c9445e5e0a9dfccd5945cc39d11df24ff9722093a1f",
+    "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "authorized_scope": "Continue approved S013 stage-three research on the same research branch; reuse only existing 510500.SH developer-pool data 2020-01-02..2026-09-30 and existing warmup.",
+  "hypothesis": "Price distance above the existing bull state boundary may confirm buys that amount/volume absolute ranks do not distinguish. The existing momentum_min component applies to every bull entry, including regime reentry.",
+  "expression": "bull momentum20 >= .005 + price_margin; momentum20 and regime_momentum are the same causal 20-session price expression in this configuration.",
+  "scope": "Only bull.momentum_min changes. C3107 ordinary-bull supplementary gate remains ordinary-only, original reentry gate remains unchanged, all exits and both zero cooldowns remain unchanged.",
+  "control": "C3200 margin zero must reproduce all C3107 signals, five ledgers, semantics and benchmark exactly with relational identifiers normalized.",
+  "known_information": "All 38 EX007 configurations and the full previously seen S013 developer pool were examined. The 2023 losing bull/regime cohorts, score nonseparation and low-boundary-margin entry dates were inspected before this plan. This is adaptive development, with no holdout or out-of-sample claim.",
+  "competing_explanations": [
+    "Known-year selection bias",
+    "Delayed entry and missed profitable opportunities",
+    "Reduced frequency below the existing gate",
+    "Price-path and lot-size changes across the continuous account"
+  ],
+  "hard_gates": "The same four user-confirmed gates at baseline one-way 10bp; no additional acceptance gates.",
+  "diagnostics": "Price margin is a causal price amplitude, not a probability or waiting-day count. Annual price/fees, route cohorts, concentration and 20/30bp sensitivity remain report-only.",
+  "excluded": [
+    "Fixed waiting-day cooldown",
+    "Other research-batch data/results",
+    "External source acquisition",
+    "New runtime source or dependencies",
+    "Platform edits",
+    "Production/freeze/stage advancement",
+    "Merge/tag/push"
+  ],
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  }
+}

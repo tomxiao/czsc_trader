@@ -1,0 +1,1175 @@
+{
+  "name": "cost_confirmation_initial",
+  "prechecked_controls": [
+    "C3000",
+    "C3001"
+  ],
+  "configurations": [
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-ordinary_entries-disabled"
+    },
+    {
+      "parent": "C2132",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2132-all--0.2-ordinary_entries-disabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.0,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.0"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.05,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.05"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.1"
+    },
+    {
+      "parent": "C2132",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.0,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      },
+      "label": "C2132-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.0"
+    },
+    {
+      "parent": "C2132",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.05,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      },
+      "label": "C2132-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.05"
+    },
+    {
+      "parent": "C2132",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      },
+      "label": "C2132-all--0.2-ordinary_entries-enabled-bull-raw-acf-0.1"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.3,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.3-all_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.3,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.3-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-all_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.3,
+          "weighting": "EQUAL_FEATURES",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-acf_volume--0.3-all_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.3,
+          "weighting": "EQUAL_FEATURES",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-acf_volume--0.3-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.2,
+          "weighting": "EQUAL_FEATURES",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-acf_volume--0.2-all_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.2,
+          "weighting": "EQUAL_FEATURES",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-acf_volume--0.2-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": -0.2,
+          "weighting": "EQUAL_FEATURES",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-acf--0.2-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "weighting": "EQUAL_FEATURES",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-volume--0.2-ordinary_entries-enabled"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 7,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-all_entries-enabled-hold-('bull', 7)"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 7,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled-hold-('bull', 7)"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "all_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-all_entries-enabled-hold-('bear', 3)"
+    },
+    {
+      "parent": "C2308",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "opportunity_confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "weighting": "EQUAL_BLOCKS",
+          "application": "ordinary_entries",
+          "route_scope": "bull"
+        }
+      },
+      "label": "C2308-all--0.2-ordinary_entries-enabled-hold-('bear', 3)"
+    }
+  ],
+  "attribution_sha256": "90818588f35f4362bc53d563e3115809b5e4f118cb62062975edf9ece6dc4bff",
+  "basis": "2023 C2308 bull/regime-exit trades are loss-making; C2132 total CAGR is stronger but weak-year price contribution insufficient; retain state-reentry amount gate and test bull price/volume confirmation separately.",
+  "competing_explanations": [
+    "frequency reduction alone",
+    "missed profitable entries",
+    "shorter holding changes prices and fees",
+    "known-pool adaptive selection",
+    "single large 2024 return concentration"
+  ],
+  "source_files": {
+    "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategies/complement_confirmed_range.py": "f75b7f71c1731204342f5c9445e5e0a9dfccd5945cc39d11df24ff9722093a1f",
+    "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "known_information": "all prior S013 results and this developer pool reused; no holdout",
+  "scope": "only buys use extra confirmation; original exits unchanged except two explicitly declared max-hold parameter controls; no waiting-day gate",
+  "diagnostics": "annual price/fee attribution and representative full-account 20/30bp pressure; not new eligibility gates",
+  "continuation": "refine meaningful boundary improvements or test amplitude-based state hysteresis if entry filters cannot retain frequency; no fixed-count adequacy claim"
+}
