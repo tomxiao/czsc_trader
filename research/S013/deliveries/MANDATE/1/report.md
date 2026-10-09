@@ -52,9 +52,9 @@ RSCH按问题自主选择方法、实验顺序和反证。组件进入策略前�
 
 ## 选定证据
 
-- [真实用户指令及逐项答复](evidence/e0130453f640fb3c2546ac19886aaee57636e3715ffeb1a2bcdb46eebcac4c9d.json)
-- [研究约定与强类型目标](evidence/cee491496cb193991da702929f5f8a86e9baf528bf630ef225eee87e6aade244.json)
-- [本机资源清单](evidence/a5825fe8e0a2a8d6e7c4fa6203289fe1a57e4dbba3021b892ea50996ac92cddf.json)
-- [初始立项交接原件](evidence/56bceb3b2baf1213ddc1cc78e9a935c5e040995c17898cb632d0ad39560f9f84.md)
-- [用户确认的默认研究指南](evidence/e01a1da4a814fcdfd1579b2fa151410f3a919d95ca837f83554a56409734d1d3.md)
-- [立项依据](evidence/a3298d3d9732fae8f5a75d8f03fbccff426cd96ab204f29b93395255045de111.json)
+- [真实用户指令及逐项答复](../../../assets/deliveries/MANDATE/1/evidence/e0130453f640fb3c2546ac19886aaee57636e3715ffeb1a2bcdb46eebcac4c9d.json)
+- [研究约定与强类型目标](../../../assets/deliveries/MANDATE/1/evidence/cee491496cb193991da702929f5f8a86e9baf528bf630ef225eee87e6aade244.json)
+- [本机资源清单](../../../assets/deliveries/MANDATE/1/evidence/a5825fe8e0a2a8d6e7c4fa6203289fe1a57e4dbba3021b892ea50996ac92cddf.json)
+- [初始立项交接原件](../../../assets/deliveries/MANDATE/1/evidence/56bceb3b2baf1213ddc1cc78e9a935c5e040995c17898cb632d0ad39560f9f84.md)
+- [用户确认的默认研究指南](../../../assets/deliveries/MANDATE/1/evidence/e01a1da4a814fcdfd1579b2fa151410f3a919d95ca837f83554a56409734d1d3.md)
+- [立项依据](../../../assets/deliveries/MANDATE/1/evidence/a3298d3d9732fae8f5a75d8f03fbccff426cd96ab204f29b93395255045de111.json)

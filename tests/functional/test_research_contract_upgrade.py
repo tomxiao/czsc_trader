@@ -39,15 +39,15 @@ def _evaluation_fixture(candidate_payload, tmp_path, monkeypatch, *, prepared):
     repository = RepositoryContext.discover(tmp_path)
     experiment = ExperimentRef("S900", "EX001_20261007")
     folder = experiment.resolve(tmp_path)
-    (folder / "work").mkdir(parents=True)
+    (folder / "src").mkdir(parents=True)
     (folder / "experiment.json").write_text(json.dumps(experiment.to_dict()), encoding="utf-8")
-    runtime_root = folder / "work/strategy_runtime"
+    runtime_root = folder / "src/strategy_runtime"
     shutil.copytree(package, runtime_root)
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1.})
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .8, .1, 0., 0.]})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path,
-                                        space=DataSpace(Path("research/S900/data")))
+                                        space=DataSpace(Path("research/S900/assets/data")))
     context = ResearchContext(ResearchBatchRef("S900"), repository, flows,
                               StrategyRuntime(dataflows=flows),
                               EvaluationAccess(dataflows=flows, strategy_id="S900"))
@@ -85,7 +85,7 @@ def test_preparation_uses_only_batch_data_space(unprepared_evaluation):
                for binding in bound.input_bindings.values())
     result = context.evaluation.evaluate(bound)
     assert result.request_hash
-    foreign = Dataflows(base_dir=context.repository.root, space=DataSpace(Path("research/S901/data")),
+    foreign = Dataflows(base_dir=context.repository.root, space=DataSpace(Path("research/S901/assets/data")),
                         providers=ProviderConfig(bindings={}))
     with pytest.raises(ValueError, match="another data space"):
         EvaluationAccess(dataflows=foreign).evaluate(bound)

@@ -55,7 +55,7 @@ class EvidenceRef(_Record):
 
     @property
     def repository_path(self):
-        return f"{self.experiment.repository_path}/{self.path}"
+        return f"research/{self.experiment.strategy_id}/assets/evidence/{self.experiment.experiment_id}/{self.evidence_id}"
 
     def resolve(self, repository_root: Path) -> Path:
         target = managed_path(repository_root, self.repository_path)

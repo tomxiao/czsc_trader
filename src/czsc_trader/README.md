@@ -44,7 +44,7 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 - 研究批次、实验和交付采用强类型请求；其他服务是否接收文件路径以各自公开签名为准。
 - 单次评价和回测返回计算结果，数据准备可能更新 DFLS 资产，计算缓存位于 `.tmp/`。它们不自动登记候选或保存阶段报告。
 - 显式发布的证据、候选快照及阶段修订不可覆盖；同一内容可复用，冲突明确失败。
-- 实验 `work/` 可修改，技术修正或重复计算可沿用同一实验。实验不需要整体封存，也无需保留全部运行过程。
+- 实验 `src/`、`protocols/`、`others/` 和根目录 `notes.md` 可修改，技术修正或重复计算可沿用同一实验。运行结果、搜索数据库及检查点按需要保存于批次 `assets/runs/<实验>/<运行>/`。
 - 正式结论的修正通过新交付修订表达。影响判断的有效负面结果、反证和修正说明仍须随结论保存。
 - 数据身份、日期或数值不符时明确失败；研究成功、技术通过与用户批准分别判断。
 
@@ -73,13 +73,14 @@ research = create_research_context(
 experiment = create_experiment(
     research, ExperimentRequest("收益机会检验", "该机制能否改善账户收益？", date(2026, 10, 7)),
 )
-work = experiment.resolve(repository.root) / "work"
+experiment_root = experiment.resolve(repository.root)
+source = experiment_root / "src"
 ```
 
-`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json` 和初始笔记。
-编号在批次内跨日期递增，分配时参考本批次旧目录的现有编号；三位编号耗尽时拒绝。具体代码及材料由 RSCH 写入 `work`。
+`create_experiment` 在 `research/S900/experiments/EXxxx_YYYYMMDD/` 分配身份，创建 `experiment.json`、根目录初始 `notes.md` 及 `src/`、`protocols/`、`others/`。
+编号在批次内跨日期递增，分配时参考本批次旧目录的现有编号；三位编号耗尽时拒绝。源码、实验方案和其他材料分别保存于对应目录，运行资料由研究程序按需要组织。
 
-上下文的 `data`、`runtime` 和 `evaluation` 共用 `research/<批次>/data/`。DFLS 的只读 `binding`
+上下文的 `data`、`runtime` 和 `evaluation` 共用 `research/<批次>/assets/data/`。DFLS 的只读 `binding`
 返回 `DataSpaceBinding(base_dir, space, space_id)`，可核对实际空间；批次上下文拒绝混用另一批次的数据能力。
 默认供应商配置使用仓库 `.env`；需要明确的供应商绑定时向 `create_research_context` 提供 `ProviderConfig`。
 
@@ -106,7 +107,7 @@ if not market.ready:
 
 ### 账户评价
 
-继续前例，先按 SRT 契约在 `work/strategy_runtime/` 编写策略并保存已核对的 `work/payload.json`。
+继续前例，先按 SRT 契约在 `src/strategy_runtime/` 编写策略并保存已核对的 `src/payload.json`。
 下面的绑定来自该载荷，不能以任意参数替换真实源码身份。
 
 ```python
@@ -116,8 +117,8 @@ from czsc_trader.research_tools import (
     EvaluationRequest, EvaluationWindow, EvaluationCost, EvaluationBenchmark, NextOpenBuyHold,
 )
 
-payload = json.loads((work / "payload.json").read_text(encoding="utf-8"))
-candidate = StrategyCandidate("S900", "C0001", payload, work / "strategy_runtime")
+payload = json.loads((source / "payload.json").read_text(encoding="utf-8"))
+candidate = StrategyCandidate("S900", "C0001", payload, source / "strategy_runtime")
 request = EvaluationRequest(
     repository_root=repository.root, experiment_id=experiment.experiment_id,
     strategy=candidate,
@@ -252,8 +253,9 @@ verified_path = note.resolve(repository.root)
 ```
 
 上例说明材料发布格式，实际结论须来自已完成研究。`EvidenceRef` 保存业务名、实验身份、内容哈希、媒体格式及可选 schema。
-`path` 相对所属实验，`repository_path` 相对仓库；`resolve(repository.root)` 核验文件哈希。
-TDR 根据内容生成 `evidence/<hash>.<suffix>`，同内容可复用，已有内容冲突拒绝覆盖。
+`path` 为交付包内的 `evidence/<hash>.<suffix>`，`repository_path` 为仓库内的
+`research/<批次>/assets/evidence/<实验>/<hash>.<suffix>`；`resolve(repository.root)` 核验文件哈希。
+TDR 按内容哈希保存证据，同内容可复用，已有内容冲突拒绝覆盖。
 证据引用可通过 `to_dict/from_dict` 保存和恢复。完整评价留证必须使用对应已绑定请求，材料发布不会自动变成账户评价证据。
 
 ## 6. 候选登记与自检
@@ -271,10 +273,10 @@ registration = register_candidate(repository, CandidateRegistrationRequest(
 ```
 
 请求中的证据须为同批次、同候选内容的已发布完整评价，可来自该批次多个实验。
-TDR 保存 `evidence/payload/` 和 `evidence/source/` 快照；SM 登记 schema 3，内容身份仍为 schema 2。
+TDR 保存 `assets/candidates/<候选>/payload/<hash>.json` 和 `assets/candidates/<候选>/source/<hash>/strategy_runtime/` 快照；SM 登记 schema 3，内容身份仍为 schema 2。
 文件引用相对批次根 `research/<策略ID>/`，`source_root` 记录快照源码根。
 同键同登记内容复用，冲突拒绝；`load_candidate(repository, CandidateKey(...))` 认证记录及源码后返回候选。
-登记记录、源码快照和支撑证据须一起保留，修改原 work 不影响已登记候选。
+登记记录、源码快照和支撑证据须一起保留，修改原实验源码不影响已登记候选。
 
 未交接的搜索点无须逐个登记。`CandidateDerivation` 记录参数、实现或执行规则派生；
 补充评价关系可使用 `EvaluationLineage`，不能据此覆盖已登记内容。
@@ -342,8 +344,10 @@ if checked.status is not ValidationStatus.PASS:
     raise RuntimeError(checked.issues)
 ```
 
-交付位于 `research/<批次>/deliveries/<阶段>/<修订>/`，包含 `delivery.json`、`report.md`、`receipt.json`、
-选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。不复制整个 work 或历史执行目录。
+完整交付位于 `research/<批次>/assets/deliveries/<阶段>/<修订>/`，包含 `delivery.json`、`report.md`、`receipt.json`、
+选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
+公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
+发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
 `DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 6，读取时拒绝旧交付格式，
 不自动迁移历史原件。账户评价证据与 `StrategyVersion` 继续使用各自的 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
@@ -374,7 +378,7 @@ if checked.status is not ValidationStatus.PASS:
 | `FreezeCandidateRequest`（SM） | `request_id/inspection/approval`；绑定准确检验和批准 |
 
 请求与引用的构造见 [SM 手册](../../packages/strategy_manager/README.md) 及 [公开类型](application/inspection_service.py)。
-技术检验保存于所属实验 `evidence/inspection/`，可以在同一实验追加独立检验；每次报告与计划以内容身份保存。
+技术检验保存于批次 `assets/evidence/<实验>/inspection/`，可以在同一实验追加独立检验；每次报告与计划以内容身份保存。
 检验核对可交付文件、源代码闭包、依赖、数据截止日、实际信号和账户账本，以及冻结运行的技术等价性。
 重放需要保留原绑定引用及对应批次数据资产，不能只保存一份账户 JSON。
 

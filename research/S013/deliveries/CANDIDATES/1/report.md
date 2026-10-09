@@ -32,20 +32,20 @@
 
 | 配置 | 净年化 | 闭合交易 | 每60日 | 逐年回撤 | 未满足项 | 全账户证据 |
 | --- | ---: | ---: | ---: | --- | --- | --- |
-| C0375 | 14.2072% | 65 | 2.384 | 通过 | 频率 | [账本](evidence/b51ed48585ef336a55944819de71c9abbcd5b01d02382bce4005ff8cbc897756.json) |
-| C0385 | 13.5570% | 111 | 4.071 | 通过 | 无 | [账本](evidence/53a2a66fdbb9cd58925ac37c5f6acec84f59feb6b39bdd92a39ba5d26295f1bb.json) |
-| C0357 | 12.6950% | 61 | 2.237 | 未通过 | 逐年回撤、频率 | [账本](evidence/fe286c0b52838fc4f36f3a565497c4b09bd393806518d52c18ed6d41d5e48683.json) |
-| C0384 | 12.3396% | 111 | 4.071 | 通过 | 无 | [账本](evidence/5e5f8167e80be3a3d8d6212208d729b594e46046d826a56c7acfe0247371730d.json) |
-| C0371 | 12.3300% | 111 | 4.071 | 通过 | 无 | [账本](evidence/11de885cfa94375565ec452dac283aaade098e4d412b6a742a282e38ae145ec9.json) |
-| C0387 | 11.9643% | 111 | 4.071 | 通过 | 无 | [账本](evidence/2f4ace7978c3623b2e4b33ea6ad480469938834c92fa16c6348cbb9674f245be.json) |
-| C0392 | 11.8446% | 112 | 4.108 | 通过 | 无 | [账本](evidence/3e2226319625c50d6fa8f62860ddc9e13d75807ed8397b2ca85e23580718ff2d.json) |
-| C0386 | 11.8098% | 111 | 4.071 | 通过 | 无 | [账本](evidence/fb1f003618e5cf283828e5a02b0e5c4fc19f9314d3e57a7a1fa4fda6d647bd4a.json) |
-| C0351 | 10.2119% | 144 | 5.281 | 未通过 | 收益、逐年回撤 | [账本](evidence/30b2c5d2b3364e517a9bf9cf8aa384ef39dc9e6e11cc820498840cc5df59c27e.json) |
-| C0343 | 9.7606% | 64 | 2.347 | 通过 | 收益、频率 | [账本](evidence/c75acb8a307dc29c8f5d0a70ea3482c19ce00063e891b0e0e263eaa44987cef4.json) |
-| C0176 | 9.0571% | 64 | 2.347 | 通过 | 收益、频率 | [账本](evidence/fc0913e345e505145ea18cde13a2903accf3676aabca3ee5e3a4f71b4b70fb49.json) |
-| C0339 | 8.6802% | 147 | 5.391 | 通过 | 收益 | [账本](evidence/7587861b9794991548ea00be69037f21ecd0ae746ff43a10cb07376ae2b08e49.json) |
-| C0195 | 8.2497% | 146 | 5.355 | 通过 | 收益 | [账本](evidence/d06979c6355e9cd080e2e454e39be6872f2b2cebb6a23509995b8e9e20e6c12f.json) |
-| C0001 | 7.9839% | 74 | 2.714 | 通过 | 收益、频率 | [账本](evidence/2ccd698e1b2c1e9bfeb9fedb02028703f4490ef41100b123a348f2aec246e06b.json) |
+| C0375 | 14.2072% | 65 | 2.384 | 通过 | 频率 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/b51ed48585ef336a55944819de71c9abbcd5b01d02382bce4005ff8cbc897756.json) |
+| C0385 | 13.5570% | 111 | 4.071 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/53a2a66fdbb9cd58925ac37c5f6acec84f59feb6b39bdd92a39ba5d26295f1bb.json) |
+| C0357 | 12.6950% | 61 | 2.237 | 未通过 | 逐年回撤、频率 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/fe286c0b52838fc4f36f3a565497c4b09bd393806518d52c18ed6d41d5e48683.json) |
+| C0384 | 12.3396% | 111 | 4.071 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/5e5f8167e80be3a3d8d6212208d729b594e46046d826a56c7acfe0247371730d.json) |
+| C0371 | 12.3300% | 111 | 4.071 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/11de885cfa94375565ec452dac283aaade098e4d412b6a742a282e38ae145ec9.json) |
+| C0387 | 11.9643% | 111 | 4.071 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/2f4ace7978c3623b2e4b33ea6ad480469938834c92fa16c6348cbb9674f245be.json) |
+| C0392 | 11.8446% | 112 | 4.108 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/3e2226319625c50d6fa8f62860ddc9e13d75807ed8397b2ca85e23580718ff2d.json) |
+| C0386 | 11.8098% | 111 | 4.071 | 通过 | 无 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/fb1f003618e5cf283828e5a02b0e5c4fc19f9314d3e57a7a1fa4fda6d647bd4a.json) |
+| C0351 | 10.2119% | 144 | 5.281 | 未通过 | 收益、逐年回撤 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/30b2c5d2b3364e517a9bf9cf8aa384ef39dc9e6e11cc820498840cc5df59c27e.json) |
+| C0343 | 9.7606% | 64 | 2.347 | 通过 | 收益、频率 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/c75acb8a307dc29c8f5d0a70ea3482c19ce00063e891b0e0e263eaa44987cef4.json) |
+| C0176 | 9.0571% | 64 | 2.347 | 通过 | 收益、频率 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/fc0913e345e505145ea18cde13a2903accf3676aabca3ee5e3a4f71b4b70fb49.json) |
+| C0339 | 8.6802% | 147 | 5.391 | 通过 | 收益 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/7587861b9794991548ea00be69037f21ecd0ae746ff43a10cb07376ae2b08e49.json) |
+| C0195 | 8.2497% | 146 | 5.355 | 通过 | 收益 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/d06979c6355e9cd080e2e454e39be6872f2b2cebb6a23509995b8e9e20e6c12f.json) |
+| C0001 | 7.9839% | 74 | 2.714 | 通过 | 收益、频率 | [账本](../../../assets/deliveries/CANDIDATES/1/evidence/2ccd698e1b2c1e9bfeb9fedb02028703f4490ef41100b123a348f2aec246e06b.json) |
 
 ### 全部达标候选的交易机制
 
@@ -60,7 +60,7 @@
 | C0387 | 0.90 | 2.00% | 未启用 | 0.8918个百分点 |
 | C0392 | 0.90 | 1.00% | 6% | 1.5567个百分点 |
 
-![净年化与闭合交易取舍](evidence/e7eac87543f67ee7980cf2197e935529ebfb99562d0f0ec6ce876a4715c73229.png)
+![净年化与闭合交易取舍](../../../assets/deliveries/CANDIDATES/1/evidence/e7eac87543f67ee7980cf2197e935529ebfb99562d0f0ec6ce876a4715c73229.png)
 
 ## 逐年回撤核验
 
@@ -127,31 +127,31 @@
 
 ## 关联证据
 
-- [hfq-search-results](evidence/057d1c88889bbc410fa2828f1527e04c02859dcbdbce9ae447c9816f1cbb9ee7.json)
-- [hfq-search-analysis](evidence/5f919a558ed0cad267da012eb7667ab1151a9d4ba66cd749e0c218943830dea1.json)
-- [hfq-quality-impact](evidence/5f5654a0d0c54581d5c8910e1557149cee2335e021db3429b225bc233398ed33.json)
-- [hfq-stopping-review](evidence/089f517d509946be31e36ec95e3e097129ac510772c4ae9e06897c21273c751e.md)
-- [hfq-replay-plan](evidence/ccb2532439065abecefffa845912593dcd1f4aac3bb600401bd6b1d904185292.json)
-- [hfq-replay-coverage](evidence/2c6e880283fe4f49fbb8f9455b0929d875bdf7002ac429ea6b5e1022bdce7860.json)
-- [hfq-replay-interruption-history](evidence/fb432e3ed345c6dd2f3ce0162cc1668e4e6f1816e492f321b7158d39e9bf1573.json)
-- [hfq-explicit-replay-completion-plan](evidence/137ef9d7fe328997fb3f5e5d5aa422130895cfe30b96df977aec8e512c48f010.json)
-- [hfq-explicit-replay-completion-coverage](evidence/949a3ac1093efa50e2f6f1eba58ebf7090f32b060b0ca0a96413a6749557c458.json)
-- [hfq-parallel-interruption](evidence/72d65685f483c355bf77f352221d5a995404e6d6d5b069dcf67d517f1ae293f0.json)
-- [hfq-parallel-interruption-r2](evidence/9ae28d885932a1afdb1d73ea0005f35b1d98676235c792841d7506dc988166f2.json)
-- [hfq-explicit-recovery4-plan](evidence/d6ed0c031ba08871f7e7650b18500ff57d6a28bb38771008257414f72b59c4ed.json)
-- [hfq-explicit-recovery4-coverage](evidence/8d11b2a61576b58414be72a2f4ad28c017324702aee85529c106b4dc9e7fea65.json)
-- [hfq-extended-preparation-rejection](evidence/dfdaf4e0603610ec7a59afe9bf55542ae68d783eff029fece71769ee1c51c5f3.json)
-- [hfq-audit-contract-correction](evidence/81fc050cd02c523a04b5740e239a4c84b95de07da116416102d980a3bc8cc53d.json)
-- [hfq-followup-1-plan](evidence/2f533192e981e533c5c75c7bb831eb2ea75307ef045d34f5e4fd1b31ca86150a.json)
-- [hfq-followup-1-coverage](evidence/08b67489ac59be2e7a960f6a2a563d48484dc06f6e65cdf7890cd4f7aa03586a.json)
-- [hfq-followup-2-plan](evidence/84c350942ed4afddbb732a9a9e777fdfba6c31a21698d562402e5cab6c641ae0.json)
-- [hfq-followup-2-coverage](evidence/6337ecbf24d9c4c026b93726cf62a093f399aad8f3406c5d9b86e0bc5250a689.json)
-- [hfq-followup-3-plan](evidence/0521b6f86e067c32dca07652ec1d5d4847090c125d3753755cc73232cc02af95.json)
-- [hfq-followup-3-coverage](evidence/d039e97568ac1e75fdd76224009e7e13fdfa1ab82a0d6f5ff0f4ce3e63e1470d.json)
-- [hfq-followup-4-plan](evidence/4d64b06936a3610b92052cb3138ab9f975b6132e91ba5fd254ce0300e1238993.json)
-- [hfq-followup-4-coverage](evidence/8d348e3d7ab288e9a4044e8c1ab091fa00c79f45dc1640b188ee9c565441aa8e.json)
-- [authorization](evidence/05dba9d42fe47ab54f4a5e5db6e9be37abe8f0267345a2541152fbb61ba8251a.json)
-- [protocol](evidence/e265b2f26e8042bf78981950ddfe53ed8aebcf35d4d87247a44d004af0879c2b.md)
-- [hfq-reproduction-sources](evidence/61116860dbfe462c0f36db02511004b914b6306d8c7ee8c9e6c0868b271c349f.json)
-- [hfq-performance-frequency](evidence/e7eac87543f67ee7980cf2197e935529ebfb99562d0f0ec6ce876a4715c73229.png)
-- [hfq-selected-account-diagnostics](evidence/cc222f22d7bfbee4db49cf01382e8339b745638a81b59a3117a8643eeb39c803.json)
+- [hfq-search-results](../../../assets/deliveries/CANDIDATES/1/evidence/057d1c88889bbc410fa2828f1527e04c02859dcbdbce9ae447c9816f1cbb9ee7.json)
+- [hfq-search-analysis](../../../assets/deliveries/CANDIDATES/1/evidence/5f919a558ed0cad267da012eb7667ab1151a9d4ba66cd749e0c218943830dea1.json)
+- [hfq-quality-impact](../../../assets/deliveries/CANDIDATES/1/evidence/5f5654a0d0c54581d5c8910e1557149cee2335e021db3429b225bc233398ed33.json)
+- [hfq-stopping-review](../../../assets/deliveries/CANDIDATES/1/evidence/089f517d509946be31e36ec95e3e097129ac510772c4ae9e06897c21273c751e.md)
+- [hfq-replay-plan](../../../assets/deliveries/CANDIDATES/1/evidence/ccb2532439065abecefffa845912593dcd1f4aac3bb600401bd6b1d904185292.json)
+- [hfq-replay-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/2c6e880283fe4f49fbb8f9455b0929d875bdf7002ac429ea6b5e1022bdce7860.json)
+- [hfq-replay-interruption-history](../../../assets/deliveries/CANDIDATES/1/evidence/fb432e3ed345c6dd2f3ce0162cc1668e4e6f1816e492f321b7158d39e9bf1573.json)
+- [hfq-explicit-replay-completion-plan](../../../assets/deliveries/CANDIDATES/1/evidence/137ef9d7fe328997fb3f5e5d5aa422130895cfe30b96df977aec8e512c48f010.json)
+- [hfq-explicit-replay-completion-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/949a3ac1093efa50e2f6f1eba58ebf7090f32b060b0ca0a96413a6749557c458.json)
+- [hfq-parallel-interruption](../../../assets/deliveries/CANDIDATES/1/evidence/72d65685f483c355bf77f352221d5a995404e6d6d5b069dcf67d517f1ae293f0.json)
+- [hfq-parallel-interruption-r2](../../../assets/deliveries/CANDIDATES/1/evidence/9ae28d885932a1afdb1d73ea0005f35b1d98676235c792841d7506dc988166f2.json)
+- [hfq-explicit-recovery4-plan](../../../assets/deliveries/CANDIDATES/1/evidence/d6ed0c031ba08871f7e7650b18500ff57d6a28bb38771008257414f72b59c4ed.json)
+- [hfq-explicit-recovery4-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/8d11b2a61576b58414be72a2f4ad28c017324702aee85529c106b4dc9e7fea65.json)
+- [hfq-extended-preparation-rejection](../../../assets/deliveries/CANDIDATES/1/evidence/dfdaf4e0603610ec7a59afe9bf55542ae68d783eff029fece71769ee1c51c5f3.json)
+- [hfq-audit-contract-correction](../../../assets/deliveries/CANDIDATES/1/evidence/81fc050cd02c523a04b5740e239a4c84b95de07da116416102d980a3bc8cc53d.json)
+- [hfq-followup-1-plan](../../../assets/deliveries/CANDIDATES/1/evidence/2f533192e981e533c5c75c7bb831eb2ea75307ef045d34f5e4fd1b31ca86150a.json)
+- [hfq-followup-1-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/08b67489ac59be2e7a960f6a2a563d48484dc06f6e65cdf7890cd4f7aa03586a.json)
+- [hfq-followup-2-plan](../../../assets/deliveries/CANDIDATES/1/evidence/84c350942ed4afddbb732a9a9e777fdfba6c31a21698d562402e5cab6c641ae0.json)
+- [hfq-followup-2-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/6337ecbf24d9c4c026b93726cf62a093f399aad8f3406c5d9b86e0bc5250a689.json)
+- [hfq-followup-3-plan](../../../assets/deliveries/CANDIDATES/1/evidence/0521b6f86e067c32dca07652ec1d5d4847090c125d3753755cc73232cc02af95.json)
+- [hfq-followup-3-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/d039e97568ac1e75fdd76224009e7e13fdfa1ab82a0d6f5ff0f4ce3e63e1470d.json)
+- [hfq-followup-4-plan](../../../assets/deliveries/CANDIDATES/1/evidence/4d64b06936a3610b92052cb3138ab9f975b6132e91ba5fd254ce0300e1238993.json)
+- [hfq-followup-4-coverage](../../../assets/deliveries/CANDIDATES/1/evidence/8d348e3d7ab288e9a4044e8c1ab091fa00c79f45dc1640b188ee9c565441aa8e.json)
+- [authorization](../../../assets/deliveries/CANDIDATES/1/evidence/05dba9d42fe47ab54f4a5e5db6e9be37abe8f0267345a2541152fbb61ba8251a.json)
+- [protocol](../../../assets/deliveries/CANDIDATES/1/evidence/e265b2f26e8042bf78981950ddfe53ed8aebcf35d4d87247a44d004af0879c2b.md)
+- [hfq-reproduction-sources](../../../assets/deliveries/CANDIDATES/1/evidence/61116860dbfe462c0f36db02511004b914b6306d8c7ee8c9e6c0868b271c349f.json)
+- [hfq-performance-frequency](../../../assets/deliveries/CANDIDATES/1/evidence/e7eac87543f67ee7980cf2197e935529ebfb99562d0f0ec6ce876a4715c73229.png)
+- [hfq-selected-account-diagnostics](../../../assets/deliveries/CANDIDATES/1/evidence/cc222f22d7bfbee4db49cf01382e8339b745638a81b59a3117a8643eeb39c803.json)

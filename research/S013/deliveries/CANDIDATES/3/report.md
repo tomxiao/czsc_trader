@@ -28,16 +28,16 @@ C0440在2023年净利润仅4253.89元：1月盈利60542.65元，其余月份合�
 
 | 候选 | 净年化 | 闭合交易 | 每60日 | 2022收益 | 2023收益 | 最小逐年回撤优势 | 完整账户 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C0440 | 13.7375% | 113 | 4.1443 | 7.9616% | 0.3029% | 7.1687个百分点 | [账本](evidence/86267ffbd3fc5c00a256cc8c688a7d41fca292a319aa61eaf022ae3b2ac2adee.json) |
-| C0472 | 11.3437% | 114 | 4.1809 | 1.6192% | 0.5498% | 4.1209个百分点 | [账本](evidence/5963b93901bce3aefe6c597f7036cf114dda4b81e43947ea96bd871be82f9415.json) |
-| C0494 | 13.9456% | 116 | 4.2543 | 7.9588% | 0.3054% | 7.1690个百分点 | [账本](evidence/126f5da0a8282cae70311f432f02c51f9e3e5054bf8a39c6f64a8437c32f008d.json) |
-| C0496 | 13.3924% | 113 | 4.1443 | 7.4082% | 0.3036% | 7.1813个百分点 | [账本](evidence/04310b8e7eef172a3a9bd72cfaa57551fbddcc1ce673e1e06d6e680374710762.json) |
-| C0503 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](evidence/15c1bdb11f4733d01dcd97199e0c24e14b00168d0e29d7bd7375854b8e09fdc0.json) |
-| C0504 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](evidence/96e54ee8c814242e0bff43c65557daea3ae1c6f52115761917d28a884c219dfc.json) |
-| C0505 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](evidence/7da65d9a8f7dc022a3329e5ec1eddc61f2afead2d78cc436d211e1edddb09378.json) |
-| C0506 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](evidence/10c5aee918bc117be42101ddb96dd0aa301b99ef7a7ba8cba5eccdea49093748.json) |
-| C0507 | 10.9939% | 117 | 4.2910 | 1.6228% | 0.5500% | 4.1211个百分点 | [账本](evidence/5e97627763d38a31807928a37ff061f1e1702b323826f104860c3dd6c7aefc00.json) |
-| C0509 | 10.9939% | 117 | 4.2910 | 1.6228% | 0.5500% | 4.1211个百分点 | [账本](evidence/1b926a7e7f8536a1fb88c2e62b1f75cacc022ab5cb15b6fecd4e43dd967bdc28.json) |
+| C0440 | 13.7375% | 113 | 4.1443 | 7.9616% | 0.3029% | 7.1687个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/86267ffbd3fc5c00a256cc8c688a7d41fca292a319aa61eaf022ae3b2ac2adee.json) |
+| C0472 | 11.3437% | 114 | 4.1809 | 1.6192% | 0.5498% | 4.1209个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/5963b93901bce3aefe6c597f7036cf114dda4b81e43947ea96bd871be82f9415.json) |
+| C0494 | 13.9456% | 116 | 4.2543 | 7.9588% | 0.3054% | 7.1690个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/126f5da0a8282cae70311f432f02c51f9e3e5054bf8a39c6f64a8437c32f008d.json) |
+| C0496 | 13.3924% | 113 | 4.1443 | 7.4082% | 0.3036% | 7.1813个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/04310b8e7eef172a3a9bd72cfaa57551fbddcc1ce673e1e06d6e680374710762.json) |
+| C0503 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/15c1bdb11f4733d01dcd97199e0c24e14b00168d0e29d7bd7375854b8e09fdc0.json) |
+| C0504 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/96e54ee8c814242e0bff43c65557daea3ae1c6f52115761917d28a884c219dfc.json) |
+| C0505 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/7da65d9a8f7dc022a3329e5ec1eddc61f2afead2d78cc436d211e1edddb09378.json) |
+| C0506 | 13.4887% | 116 | 4.2543 | 7.9596% | 0.3038% | 6.5762个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/10c5aee918bc117be42101ddb96dd0aa301b99ef7a7ba8cba5eccdea49093748.json) |
+| C0507 | 10.9939% | 117 | 4.2910 | 1.6228% | 0.5500% | 4.1211个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/5e97627763d38a31807928a37ff061f1e1702b323826f104860c3dd6c7aefc00.json) |
+| C0509 | 10.9939% | 117 | 4.2910 | 1.6228% | 0.5500% | 4.1211个百分点 | [账本](../../../assets/deliveries/CANDIDATES/3/evidence/1b926a7e7f8536a1fb88c2e62b1f75cacc022ab5cb15b6fecd4e43dd967bdc28.json) |
 
 下面列出完整参数相对C0440的变化，所有正式身份包含源码和依赖；没有以相同表现合并不同配置。
 
@@ -156,31 +156,31 @@ C0440作为机制对照中心展示；这不是阶段四正式排序或选型。
 
 ## 关联证据
 
-- [stage-two-data](evidence/304cd281e0cde1850650b0dcc07aaad9f64c1621672d8b4606d84654f786c3ee.json)
-- [four-gate-search-results](evidence/949368ac6e7006cbee3e48c8d5272fc47eee60181f47236ef66e47146785f57f.json)
-- [four-gate-search-analysis](evidence/d91e72526977aceadab3a1f52217333825c6fd890f85fd8638c339a1cbda4ed2.json)
-- [four-gate-quality-impact](evidence/e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a.json)
-- [four-gate-loss-diagnostics](evidence/398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f.json)
-- [four-gate-adaptive-controls](evidence/39b35a1f02c7c0ffeb03e740c899778f56b7135ffbc61be6ae24b2142f948316.json)
-- [four-gate-adaptive-attribution](evidence/5e0c87ad94ae1cdd55a42ef2640322dc0ff108dabddbca425e609f77fea9d35c.json)
-- [four-gate-adaptive-input-control](evidence/d8ca5fefeabf7630a4038731ca31f8b465e130726c6de6a6e6bef0503b64f0be.json)
-- [four-gate-acf-1-plan](evidence/9b1b82bf693c76232877103a4daa347c9444ffcf2f8809ef6ab004e2c4dc8e0e.json)
-- [four-gate-acf-1-coverage](evidence/66f2bd4a63216218449545aa67eaa5388b32dc3745658089c5b9d30d2e9ca38d.json)
-- [four-gate-adaptive-1-plan](evidence/2fcc84e5f58c84264144c0773539170c391da917d2a666b44b1795ade54fd11b.json)
-- [four-gate-adaptive-1-coverage](evidence/9a8b08bd7f0fc066b9cea3ca0b07fe6e8382555fa935b133cc9c7e6cb8f18784.json)
-- [four-gate-adaptive-entry-extension-plan](evidence/18e2e01a64dd17d17050a028ba4831d28cfa2b7e8b8d99f40228ce373505c863.json)
-- [four-gate-adaptive-entry-extension-coverage](evidence/fe63948ff92d232777dafaeb147f2f4b3c2b008c49c2b8a5fa14807fa8246684.json)
-- [four-gate-adaptive-followup-1-plan](evidence/bd42539b0663f7cf4cc3db64a2753f6a7ad5727dde110149486d0c1511c32eca.json)
-- [four-gate-adaptive-followup-1-coverage](evidence/656e979bf843ea35d8c67b94023a6113d5c659b25f70db5e679ebf5dda3a15eb.json)
-- [four-gate-premium-controls-plan](evidence/2a01a8b73d324bf839f7c952536f289650155feaf70d4134a7addd7528981026.json)
-- [four-gate-premium-controls-coverage](evidence/b04484ed6b498649c4ad5eb68071fb12a7b57020d6a428d80c84f4c874fda5e3.json)
-- [four-gate-stopping-review](evidence/9a57ffd93b486e3bf16cf9c7dea99b015f71e7aa13c3cb0e24d9cf764626eaac.md)
-- [four-gate-continuation-authorization](evidence/49dec35af4f4b26781f76462be221979ac938c13a3a405251ce43d9c928572e9.json)
-- [four-gate-reproduction-sources](evidence/72376d002e46adc179ab35d149a38ab3f7fcf6d11d6b7c6dfee4142b25c7d5df.json)
-- [control-account-c0385](evidence/53a2a66fdbb9cd58925ac37c5f6acec84f59feb6b39bdd92a39ba5d26295f1bb.json)
-- [control-account-c0430](evidence/e1f9c05baec4433befb59f4f67938852b245e0921b5f9aa5d9a9aa863fa1d289.json)
-- [control-account-c0426](evidence/da42555e35650e969457687d26d9515de67cbe22ed665f733b86e039d19a2e3e.json)
-- [control-account-c0431](evidence/88f42e2c184828e61ffe68b967f6cec4c779911de6a998a5d98772c799d3008a.json)
-- [control-account-c0429](evidence/de5b15c11f60b865f860f99775377230a858cc570aee377b1f2b75e42c8778a7.json)
-- [control-account-c0432](evidence/169d3ccb27a29a57f5d349d9d0981d52fb1c720ab7d22d5534668d6c5acfcbd3.json)
-- [four-gate-selected-account-references](evidence/d170f94380efc4f015beb922fb41359057780f4e4c8c9075499f38846ce76bce.json)
+- [stage-two-data](../../../assets/deliveries/CANDIDATES/3/evidence/304cd281e0cde1850650b0dcc07aaad9f64c1621672d8b4606d84654f786c3ee.json)
+- [four-gate-search-results](../../../assets/deliveries/CANDIDATES/3/evidence/949368ac6e7006cbee3e48c8d5272fc47eee60181f47236ef66e47146785f57f.json)
+- [four-gate-search-analysis](../../../assets/deliveries/CANDIDATES/3/evidence/d91e72526977aceadab3a1f52217333825c6fd890f85fd8638c339a1cbda4ed2.json)
+- [four-gate-quality-impact](../../../assets/deliveries/CANDIDATES/3/evidence/e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a.json)
+- [four-gate-loss-diagnostics](../../../assets/deliveries/CANDIDATES/3/evidence/398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f.json)
+- [four-gate-adaptive-controls](../../../assets/deliveries/CANDIDATES/3/evidence/39b35a1f02c7c0ffeb03e740c899778f56b7135ffbc61be6ae24b2142f948316.json)
+- [four-gate-adaptive-attribution](../../../assets/deliveries/CANDIDATES/3/evidence/5e0c87ad94ae1cdd55a42ef2640322dc0ff108dabddbca425e609f77fea9d35c.json)
+- [four-gate-adaptive-input-control](../../../assets/deliveries/CANDIDATES/3/evidence/d8ca5fefeabf7630a4038731ca31f8b465e130726c6de6a6e6bef0503b64f0be.json)
+- [four-gate-acf-1-plan](../../../assets/deliveries/CANDIDATES/3/evidence/9b1b82bf693c76232877103a4daa347c9444ffcf2f8809ef6ab004e2c4dc8e0e.json)
+- [four-gate-acf-1-coverage](../../../assets/deliveries/CANDIDATES/3/evidence/66f2bd4a63216218449545aa67eaa5388b32dc3745658089c5b9d30d2e9ca38d.json)
+- [four-gate-adaptive-1-plan](../../../assets/deliveries/CANDIDATES/3/evidence/2fcc84e5f58c84264144c0773539170c391da917d2a666b44b1795ade54fd11b.json)
+- [four-gate-adaptive-1-coverage](../../../assets/deliveries/CANDIDATES/3/evidence/9a8b08bd7f0fc066b9cea3ca0b07fe6e8382555fa935b133cc9c7e6cb8f18784.json)
+- [four-gate-adaptive-entry-extension-plan](../../../assets/deliveries/CANDIDATES/3/evidence/18e2e01a64dd17d17050a028ba4831d28cfa2b7e8b8d99f40228ce373505c863.json)
+- [four-gate-adaptive-entry-extension-coverage](../../../assets/deliveries/CANDIDATES/3/evidence/fe63948ff92d232777dafaeb147f2f4b3c2b008c49c2b8a5fa14807fa8246684.json)
+- [four-gate-adaptive-followup-1-plan](../../../assets/deliveries/CANDIDATES/3/evidence/bd42539b0663f7cf4cc3db64a2753f6a7ad5727dde110149486d0c1511c32eca.json)
+- [four-gate-adaptive-followup-1-coverage](../../../assets/deliveries/CANDIDATES/3/evidence/656e979bf843ea35d8c67b94023a6113d5c659b25f70db5e679ebf5dda3a15eb.json)
+- [four-gate-premium-controls-plan](../../../assets/deliveries/CANDIDATES/3/evidence/2a01a8b73d324bf839f7c952536f289650155feaf70d4134a7addd7528981026.json)
+- [four-gate-premium-controls-coverage](../../../assets/deliveries/CANDIDATES/3/evidence/b04484ed6b498649c4ad5eb68071fb12a7b57020d6a428d80c84f4c874fda5e3.json)
+- [four-gate-stopping-review](../../../assets/deliveries/CANDIDATES/3/evidence/9a57ffd93b486e3bf16cf9c7dea99b015f71e7aa13c3cb0e24d9cf764626eaac.md)
+- [four-gate-continuation-authorization](../../../assets/deliveries/CANDIDATES/3/evidence/49dec35af4f4b26781f76462be221979ac938c13a3a405251ce43d9c928572e9.json)
+- [four-gate-reproduction-sources](../../../assets/deliveries/CANDIDATES/3/evidence/72376d002e46adc179ab35d149a38ab3f7fcf6d11d6b7c6dfee4142b25c7d5df.json)
+- [control-account-c0385](../../../assets/deliveries/CANDIDATES/3/evidence/53a2a66fdbb9cd58925ac37c5f6acec84f59feb6b39bdd92a39ba5d26295f1bb.json)
+- [control-account-c0430](../../../assets/deliveries/CANDIDATES/3/evidence/e1f9c05baec4433befb59f4f67938852b245e0921b5f9aa5d9a9aa863fa1d289.json)
+- [control-account-c0426](../../../assets/deliveries/CANDIDATES/3/evidence/da42555e35650e969457687d26d9515de67cbe22ed665f733b86e039d19a2e3e.json)
+- [control-account-c0431](../../../assets/deliveries/CANDIDATES/3/evidence/88f42e2c184828e61ffe68b967f6cec4c779911de6a998a5d98772c799d3008a.json)
+- [control-account-c0429](../../../assets/deliveries/CANDIDATES/3/evidence/de5b15c11f60b865f860f99775377230a858cc570aee377b1f2b75e42c8778a7.json)
+- [control-account-c0432](../../../assets/deliveries/CANDIDATES/3/evidence/169d3ccb27a29a57f5d349d9d0981d52fb1c720ab7d22d5534668d6c5acfcbd3.json)
+- [four-gate-selected-account-references](../../../assets/deliveries/CANDIDATES/3/evidence/d170f94380efc4f015beb922fb41359057780f4e4c8c9075499f38846ce76bce.json)

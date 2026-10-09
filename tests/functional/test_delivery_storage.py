@@ -13,6 +13,8 @@ def test_evidence_publication_is_explicit_idempotent_and_batch_scoped(context):
     request = MaterialEvidenceWrite(ExperimentRef("S900", "EX001_20261007"), "measurement", b"test", "text/plain", "txt")
     first = publish_evidence(research, request)
     assert first == publish_evidence(research, request)
+    assert first.path == f"evidence/{first.sha256}.txt"
+    assert first.repository_path == f"research/S900/assets/evidence/EX001_20261007/{first.sha256}.txt"
     assert first.resolve(research.repository.root).read_bytes() == b"test"
     with pytest.raises(ValueError, match="another research batch"):
         publish_evidence(research, replace(request, experiment=ExperimentRef("S901", "EX001_20261007")))
@@ -34,3 +36,4 @@ def test_missing_selected_evidence_leaves_no_visible_delivery(context):
     with pytest.raises(d.DeliveryValidationError):
         assemble_delivery(research.repository, definition, replace(content(), facts=(fact,)))
     assert not (research.repository.research_root / "S900/deliveries/COMPONENTS/1").exists()
+    assert not (research.repository.research_root / "S900/assets/deliveries/COMPONENTS/1").exists()

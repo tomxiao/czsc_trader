@@ -34,9 +34,14 @@ def test_research_identity_credentials_context_and_editable_experiments(minimal_
                for item in ("SGC-S910-001", "SGC-S910-002"))
     research = create_research_context(repository, first, providers=ProviderConfig(bindings={}))
     assert research.data.binding.space_id == research.evaluation.data.binding.space_id
+    assert research.data.binding.space.path.as_posix() == "research/S910/assets/data"
     one = create_experiment(research, ExperimentRequest("收益机会", "价格驱动是否有效", date(2026, 10, 7)))
     folder = one.resolve(repository.root)
-    notes = folder / "work/notes.md"
+    assert {path.name for path in folder.iterdir()} == {
+        "experiment.json", "notes.md", "src", "protocols", "others"}
+    assert all((folder / name).is_dir() for name in ("src", "protocols", "others"))
+    notes = folder / "notes.md"
+    assert notes.read_text(encoding="utf-8") == "# 收益机会\n\n价格驱动是否有效\n"
     notes.write_text("修正技术错误后继续使用原实验", encoding="utf-8")
     two = create_experiment(research, ExperimentRequest("独立收益假设", "新机制", date(2026, 10, 7)))
     assert (one.experiment_id, two.experiment_id) == ("EX001_20261007", "EX002_20261007")

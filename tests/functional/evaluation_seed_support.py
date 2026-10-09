@@ -21,7 +21,7 @@ def relocate_request(request, root):
 
 def restored_context(root):
     repository = RepositoryContext.discover(root)
-    flows = Dataflows(base_dir=root, space=DataSpace(Path("research/S900/data")),
+    flows = Dataflows(base_dir=root, space=DataSpace(Path("research/S900/assets/data")),
                      providers=ProviderConfig(bindings={}))
     return research_context(repository, flows)
 

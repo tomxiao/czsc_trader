@@ -37,7 +37,7 @@
 
 ## 关联证据
 
-- [用户确认](evidence/b276b477c58e36764dbfb5f9bf489b7d4a51ac2ff5914930f424d8448786b259.json)
-- [逐配置条件复核及账本复算](evidence/14614deb941bbdd90b5f0c754806588f36e11c486b03874bbcd58ebf66bd30eb.json)
-- [计算源码](evidence/177c5e3ab9faef6b4c92ffc7866f2b502bc2a33bf799b6a86241b5a334d83cc0.json)
-- [原搜索统计](evidence/057d1c88889bbc410fa2828f1527e04c02859dcbdbce9ae447c9816f1cbb9ee7.json)
+- [用户确认](../../../assets/deliveries/CANDIDATES/2/evidence/b276b477c58e36764dbfb5f9bf489b7d4a51ac2ff5914930f424d8448786b259.json)
+- [逐配置条件复核及账本复算](../../../assets/deliveries/CANDIDATES/2/evidence/14614deb941bbdd90b5f0c754806588f36e11c486b03874bbcd58ebf66bd30eb.json)
+- [计算源码](../../../assets/deliveries/CANDIDATES/2/evidence/177c5e3ab9faef6b4c92ffc7866f2b502bc2a33bf799b6a86241b5a334d83cc0.json)
+- [原搜索统计](../../../assets/deliveries/CANDIDATES/2/evidence/057d1c88889bbc410fa2828f1527e04c02859dcbdbce9ae447c9816f1cbb9ee7.json)

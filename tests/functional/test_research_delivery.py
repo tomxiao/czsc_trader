@@ -47,12 +47,12 @@ def test_delivery_keeps_selected_evidence_and_excludes_work(context):
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     value = replace(content(), facts=(fact,))
     experiment = reference.experiment.resolve(context.repository.root)
-    (experiment / "work/unselected.txt").write_text("technical iteration")
+    (experiment / "others/unselected.txt").write_text("technical iteration")
     receipt = assemble_delivery(context.repository, definition, value)
     publication = published(context.repository, receipt)
     assert (publication / reference.path).is_file()
-    assert not list(publication.rglob("work"))
-    shutil.rmtree(experiment / "work")
+    assert not list(publication.rglob("others"))
+    shutil.rmtree(experiment / "others")
     reference.resolve(context.repository.root).unlink()
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     assert d.DeliveryContent.from_dict(json.loads((publication / "delivery.json").read_text(encoding="utf-8"))["content"]) == value
@@ -157,3 +157,60 @@ def test_stage_payload_and_explicit_partial_state(context):
     assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS
     with pytest.raises(ValueError):
         replace(partial, incomplete_items=())
+
+
+@pytest.mark.parametrize("location", ["public", "package"])
+def test_delivery_rejects_a_missing_public_or_complete_package(context, location):
+    from czsc_trader.application.delivery_service import _public_delivery_path
+
+    definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
+    value = content()
+    receipt = assemble_delivery(context.repository, definition, value)
+    public = _public_delivery_path(context.repository, receipt.reference)
+    package = published(context.repository, receipt)
+    assert {path.name for path in public.iterdir()} == {"report.md", "receipt.json"}
+    for name in ("report.md", "receipt.json"):
+        assert (public / name).read_bytes() == (package / name).read_bytes()
+    shutil.rmtree(public if location == "public" else package)
+    assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.FAIL
+    with pytest.raises(d.DeliveryValidationError, match="incomplete"):
+        assemble_delivery(context.repository, definition, value)
+
+
+@pytest.mark.parametrize("filename", ["report.md", "receipt.json"])
+def test_delivery_rejects_public_copy_tampering(context, filename):
+    from czsc_trader.application.delivery_service import _public_delivery_path
+
+    definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
+    value = content()
+    receipt = assemble_delivery(context.repository, definition, value)
+    public = _public_delivery_path(context.repository, receipt.reference)
+    (public / filename).write_bytes(b"tampered")
+    result = validate_delivery(context.repository, receipt.reference)
+    assert result.status is d.ValidationStatus.FAIL
+    assert result.issues[0].code == "PUBLIC_DELIVERY"
+    with pytest.raises(d.DeliveryValidationError, match="differs"):
+        assemble_delivery(context.repository, definition, value)
+
+
+def test_public_publication_failure_rolls_back_its_complete_package(context, monkeypatch):
+    from pathlib import Path
+    from czsc_trader.application.delivery_service import _delivery_path, _public_delivery_path
+
+    definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
+    public = _public_delivery_path(context.repository, definition)
+    package = _delivery_path(context.repository, definition)
+    original = Path.rename
+
+    def fail_public(source, target):
+        if target == public:
+            raise OSError("public publication denied")
+        return original(source, target)
+
+    monkeypatch.setattr(Path, "rename", fail_public)
+    with pytest.raises(d.DeliveryValidationError, match="public publication denied"):
+        assemble_delivery(context.repository, definition, content())
+    assert not package.exists() and not public.exists()
+    monkeypatch.undo()
+    receipt = assemble_delivery(context.repository, definition, content())
+    assert validate_delivery(context.repository, receipt.reference).status is d.ValidationStatus.PASS

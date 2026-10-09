@@ -323,9 +323,9 @@ def create_research_context(
     if type(repository) is not RepositoryContext or type(batch) is not ResearchBatchRef:
         raise TypeError("context requires RepositoryContext and ResearchBatchRef")
     StrategyRegistry(repository.research_registry_root).get_family(batch.strategy_id)
-    managed_path(repository.root, f"research/{batch.strategy_id}/data")
+    managed_path(repository.root, f"research/{batch.strategy_id}/assets/data")
     data = Dataflows(base_dir=repository.root,
-                    space=DataSpace(Path(f"research/{batch.strategy_id}/data")),
+                    space=DataSpace(Path(f"research/{batch.strategy_id}/assets/data")),
                     providers=providers if providers is not None else ProviderConfig(env_file=repository.root / ".env"))
     return ResearchContext(batch, repository, data, StrategyRuntime(repository.strategy_root, dataflows=data),
                            EvaluationAccess(dataflows=data, resources=resources, strategy_id=batch.strategy_id))
@@ -352,9 +352,10 @@ def create_experiment(context: ResearchContext, request: ExperimentRequest) -> E
         reference = ExperimentRef(context.strategy_id, f"EX{number:03}_{request.run_date:%Y%m%d}")
         staging = create_temporary_directory(root, "research-allocation")
         try:
-            (staging / "work").mkdir()
+            for name in ("src", "protocols", "others"):
+                (staging / name).mkdir()
             (staging / "experiment.json").write_text(json.dumps(reference.to_dict(), sort_keys=True), encoding="utf-8")
-            (staging / "work/notes.md").write_text(f"# {request.title}\n\n{request.question}\n", encoding="utf-8")
+            (staging / "notes.md").write_text(f"# {request.title}\n\n{request.question}\n", encoding="utf-8")
             parent.mkdir(parents=True, exist_ok=True)
             staging.rename(reference.resolve(root))
         finally:

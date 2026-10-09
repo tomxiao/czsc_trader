@@ -79,8 +79,8 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     if candidate.source_root is None or not candidate.source_root.is_relative_to(context.root.resolve()):
         raise ValueError("registration requires candidate sources inside repository")
     root = context.research_root / request.experiment.strategy_id
-    prefix_root = f"experiments/{request.experiment.experiment_id}"
-    experiment_root = root / prefix_root
+    prefix_root = f"assets/candidates/{candidate.candidate_id}"
+    experiment_root = request.experiment.resolve(context.root)
     for path in (experiment_root, experiment_root.parent, root, context.research_root):
         if path.is_symlink() or path.is_junction():
             raise ValueError("candidate experiment root contains a link")
@@ -94,9 +94,9 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     registry.get_family(candidate.strategy_family_id)
     payload_data = json.dumps(dict(candidate.payload), default=dict, sort_keys=True,
                               ensure_ascii=False, separators=(",", ":"), allow_nan=False).encode("utf-8")
-    payload = _publish(root, f"{prefix_root}/evidence/payload/{sha256(payload_data).hexdigest()}.json", payload_data, context.root)
+    payload = _publish(root, f"{prefix_root}/payload/{sha256(payload_data).hexdigest()}.json", payload_data, context.root)
     source_files = []
-    prefix = f"{prefix_root}/evidence/source/{identity.source_sha256}/strategy_runtime"
+    prefix = f"{prefix_root}/source/{identity.source_sha256}/strategy_runtime"
     for name in candidate.payload["runtime"]["source_files"]:
         source = (candidate.source_root / name).resolve()
         if not source.is_relative_to(candidate.source_root):
@@ -108,7 +108,8 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
     ) != identity:
         raise ValueError("candidate sources changed during registration")
     origin = CandidateRegistrationOrigin(request.experiment.experiment_id,
-        tuple(CandidateEvidence(f"experiments/{ref.experiment.experiment_id}/{ref.path}", ref.sha256) for ref in request.evidence))
+        tuple(CandidateEvidence(Path(ref.repository_path).relative_to(
+            Path(f"research/{request.experiment.strategy_id}")).as_posix(), ref.sha256) for ref in request.evidence))
     derivation = request.derivation
     if derivation is not None:
         parent = json.loads(derivation.evidence.resolve(context.root).read_text(encoding="utf-8"))
@@ -119,7 +120,7 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
                for run in parent["runs"]):
             raise ValueError("derivation evidence differs from parent identity")
         derivation = replace(derivation, evidence=_publish(root,
-            f"{prefix_root}/evidence/derivation/{derivation.evidence.sha256}.json",
+            f"{prefix_root}/derivation/{derivation.evidence.sha256}.json",
             derivation.evidence.resolve(context.root).read_bytes(), context.root))
     record = CandidateRegistration(CandidateKey(candidate.strategy_family_id, candidate.candidate_id),
         identity.content_sha256, identity.source_sha256, identity.dependency_sha256, payload,

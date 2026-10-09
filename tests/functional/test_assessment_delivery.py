@@ -31,7 +31,11 @@ def fresh_completed(managed_evaluation):
     result = research.evaluation.evaluate(request)
     experiment = ExperimentRef("S900", request.experiment_id)
     reference = publish_evidence(research, EvaluationEvidenceWrite(experiment, "account", request, result))
-    register_candidate(context, CandidateRegistrationRequest(request.strategy, experiment, (reference,), ()))
+    registration = register_candidate(context, CandidateRegistrationRequest(request.strategy, experiment, (reference,), ()))
+    assert registration.payload.path == f"assets/candidates/C0001/payload/{registration.payload.sha256}.json"
+    assert registration.source_root == f"assets/candidates/C0001/source/{registration.source_sha256}/strategy_runtime"
+    assert all(item.path.startswith(f"{registration.source_root}/") for item in registration.source_files)
+    assert registration.origin.evidence[0].path == f"assets/evidence/{experiment.experiment_id}/{reference.evidence_id}"
     evidence = build_assessment_evidence(request, result)
     return context, research, request, result, d.EvaluationEvidenceRef(reference, tuple(x.evaluation_id for x in evidence))
 
@@ -349,7 +353,7 @@ def test_frequency_targets_require_the_confirmed_window(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     payload = value.payload
-    source = context.root / "research/S900/deliveries/MANDATE/1/delivery.json"
+    source = context.root / "research/S900/assets/deliveries/MANDATE/1/delivery.json"
     original = d.DeliveryContent.from_dict(
         json.loads(source.read_text(encoding="utf-8"))["content"]
     )
@@ -425,7 +429,7 @@ def test_handoff_requires_registered_content_but_published_delivery_is_independe
 ):
     context, _, _, _, _ = completed
     prepare(completed)
-    root = context.research_root / "S900/deliveries/CANDIDATES/1"
+    root = context.research_root / "S900/assets/deliveries/CANDIDATES/1"
     document = json.loads((root / "delivery.json").read_text(encoding="utf-8"))
     definition = d.DeliveryDefinition.from_dict(document["definition"])
     value = d.DeliveryContent.from_dict(document["content"])

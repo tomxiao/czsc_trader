@@ -87,7 +87,7 @@ def persisted_candidate(tmp_path, registration):
     root.mkdir()
     source = b"# synthetic runtime source\n"
     source_hash = sha256(b"strategy.py\0" + source + b"\0").hexdigest()
-    source_root = f"experiments/EX001_20261003/evidence/source/{source_hash}/strategy_runtime"
+    source_root = f"assets/candidates/C0001/source/{source_hash}/strategy_runtime"
     source_path = f"{source_root}/strategy.py"
     (root / source_path).parent.mkdir(parents=True)
     (root / source_path).write_bytes(source)

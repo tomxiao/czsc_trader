@@ -68,7 +68,7 @@ class ResearchContext:
             if type(value) is not expected:
                 raise TypeError(f"research context requires {expected.__name__}")
         binding = self.data.binding
-        if binding.base_dir != self.repository.root or binding.space.path != Path(f"research/{self.strategy_id}/data"):
+        if binding.base_dir != self.repository.root or binding.space.path != Path(f"research/{self.strategy_id}/assets/data"):
             raise ValueError("research data must use the batch-owned repository space")
         if self.evaluation.data is not self.data or self.evaluation.strategy_id != self.strategy_id:
             raise ValueError("research evaluation must use the same batch and data capability")

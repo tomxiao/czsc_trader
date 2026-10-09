@@ -79,7 +79,7 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
                 "daily_session_coverage", "ohlcv_quality_evidence",
             )})
         return frame, metadata
-    return Dataflows(base_dir=root, space=space or DataSpace(Path("research/S900/data")),
+    return Dataflows(base_dir=root, space=space or DataSpace(Path("research/S900/assets/data")),
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
                                      Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
@@ -95,7 +95,7 @@ def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(
     assert result.manifest["audit"]["status"] == "PASS"
     assert not (repository.root / "outputs").exists()
     assert not (repository.root / "data/backtest").exists()
-    assert not list((repository.root / "research").glob("*/experiments/*/evidence/*"))
+    assert not list((repository.root / "research").glob("*/assets/evidence/*/*"))
     assert result.result.account_daily.iloc[0]["cash_before"] == 100000
     assert result.result.orders["quantity"].mod(100).eq(0).all()
     assert len(result.result.observations) == len(result.result.decisions)

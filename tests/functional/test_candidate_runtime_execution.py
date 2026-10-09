@@ -138,7 +138,7 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
     from czsc_trader.temp_workspace import create_temporary_directory
     root = base_dir if base_dir is not None else create_temporary_directory(Path.cwd(), "test-dataflows")
     flows = Dataflows(
-        base_dir=root, space=space if space is not None else DataSpace(Path("research/S900/data")),
+        base_dir=root, space=space if space is not None else DataSpace(Path("research/S900/assets/data")),
         providers=ProviderConfig(bindings={dataset: ProviderBinding("synthetic", "v1", fetch)
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
                             Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
@@ -170,7 +170,7 @@ def test_tdr_candidate_replay_uses_srt_prepared_data_and_txe_without_rule_parser
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .2, .9, 0.]})
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1., "high": 1., "low": 1., "vol": 1000., "amount": 1000.})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=tmp_path,
-        space=DataSpace(Path("research/S001/data")))
+        space=DataSpace(Path("research/S001/assets/data")))
     execution_data = _execution_data(flows, tmp_path, sessions)
     execution_frames = (
         ("execution_daily", execution_data.execution_daily),
@@ -276,7 +276,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
     daily.loc[2, "open"] = 1.1  # First LIMIT cannot fill; unchanged target must retry.
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .8, .1, 0., 0.]})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root,
-        space=DataSpace(Path("research/S900/data")))
+        space=DataSpace(Path("research/S900/assets/data")))
     data = _execution_data(flows, root, sessions)
     (root / "src/czsc_trader").mkdir(parents=True)
     (root / "pyproject.toml").write_text("")

@@ -145,9 +145,9 @@ def test_public_research_evidence_resolves_only_within_its_owner(tmp_path):
 
 def test_experiment_evidence_resolves_from_batch_without_archive_manifest(tmp_path):
     owner = ResearchEvidenceOwner("S900", "EX001_20261003")
-    assert owner.repository_path == "research/S900/experiments/EX001_20261003"
-    evidence = tmp_path / owner.repository_path / "evidence/result.json"
+    assert owner.repository_path == "research/S900/assets/evidence/EX001_20261003"
+    evidence = tmp_path / owner.repository_path / "inspection/result.json"
     evidence.parent.mkdir(parents=True)
     evidence.write_bytes(b'{"result":"synthetic"}')
-    reference = ResearchEvidenceRef(owner, "evidence/result.json", sha256(evidence.read_bytes()).hexdigest())
+    reference = ResearchEvidenceRef(owner, "inspection/result.json", sha256(evidence.read_bytes()).hexdigest())
     assert reference.resolve(tmp_path) == evidence

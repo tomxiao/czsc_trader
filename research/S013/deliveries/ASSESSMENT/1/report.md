@@ -108,14 +108,14 @@ PBO表示区块组合中，按Sharpe在一半样本选优后，在另一半样�
 
 ## 正式证据与复现
 
-- [stage-four-predeclared-plan](evidence/cae07af35ee823be16d517d56e281b7aa4e5e0ca7ac10fe6116914d89edeb3c0.json)，SHA256 `cae07af35ee823be16d517d56e281b7aa4e5e0ca7ac10fe6116914d89edeb3c0`。
-- [stage-four-coverage](evidence/6ed726cebfa673df5ea7c4e75b5224338398bd04a3ee8ca4fb462ec0658d2424.json)，SHA256 `6ed726cebfa673df5ea7c4e75b5224338398bd04a3ee8ca4fb462ec0658d2424`。
-- [stage-four-annual-four-gates](evidence/fefc96b84efdfb4d64868b20f66d64ac3aee08e75c54af3a5e43a00de469f340.json)，SHA256 `fefc96b84efdfb4d64868b20f66d64ac3aee08e75c54af3a5e43a00de469f340`。
-- [stage-four-neighborhood-gates](evidence/f7db37aa7da1022e41c1dcce14fde384f1a951cc6f8191bea0d64cbca94a83b5.json)，SHA256 `f7db37aa7da1022e41c1dcce14fde384f1a951cc6f8191bea0d64cbca94a83b5`。
-- [stage-four-independent-verification](evidence/c5aef9200de1ddc005f0649bcbfc3eeb25af43680efe1bd9096637bb6e2e5f4d.json)，SHA256 `c5aef9200de1ddc005f0649bcbfc3eeb25af43680efe1bd9096637bb6e2e5f4d`。
-- [stage-four-quality-impact](evidence/ff9f7514014398d661f9410aa95af77563ced256b78ec2154176b8730bb12347.json)，SHA256 `ff9f7514014398d661f9410aa95af77563ced256b78ec2154176b8730bb12347`。
-- [stage-four-reproduction-sources](evidence/d4a44f7231063e3c664d1a82584fda78ccb771ba7ab1742719319f674a4f46fe.json)，SHA256 `d4a44f7231063e3c664d1a82584fda78ccb771ba7ab1742719319f674a4f46fe`。
-- [four-gate-loss-diagnostics](evidence/398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f.json)，SHA256 `398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f`。
-- [four-gate-quality-impact](evidence/e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a.json)，SHA256 `e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a`。
+- [stage-four-predeclared-plan](../../../assets/deliveries/ASSESSMENT/1/evidence/cae07af35ee823be16d517d56e281b7aa4e5e0ca7ac10fe6116914d89edeb3c0.json)，SHA256 `cae07af35ee823be16d517d56e281b7aa4e5e0ca7ac10fe6116914d89edeb3c0`。
+- [stage-four-coverage](../../../assets/deliveries/ASSESSMENT/1/evidence/6ed726cebfa673df5ea7c4e75b5224338398bd04a3ee8ca4fb462ec0658d2424.json)，SHA256 `6ed726cebfa673df5ea7c4e75b5224338398bd04a3ee8ca4fb462ec0658d2424`。
+- [stage-four-annual-four-gates](../../../assets/deliveries/ASSESSMENT/1/evidence/fefc96b84efdfb4d64868b20f66d64ac3aee08e75c54af3a5e43a00de469f340.json)，SHA256 `fefc96b84efdfb4d64868b20f66d64ac3aee08e75c54af3a5e43a00de469f340`。
+- [stage-four-neighborhood-gates](../../../assets/deliveries/ASSESSMENT/1/evidence/f7db37aa7da1022e41c1dcce14fde384f1a951cc6f8191bea0d64cbca94a83b5.json)，SHA256 `f7db37aa7da1022e41c1dcce14fde384f1a951cc6f8191bea0d64cbca94a83b5`。
+- [stage-four-independent-verification](../../../assets/deliveries/ASSESSMENT/1/evidence/c5aef9200de1ddc005f0649bcbfc3eeb25af43680efe1bd9096637bb6e2e5f4d.json)，SHA256 `c5aef9200de1ddc005f0649bcbfc3eeb25af43680efe1bd9096637bb6e2e5f4d`。
+- [stage-four-quality-impact](../../../assets/deliveries/ASSESSMENT/1/evidence/ff9f7514014398d661f9410aa95af77563ced256b78ec2154176b8730bb12347.json)，SHA256 `ff9f7514014398d661f9410aa95af77563ced256b78ec2154176b8730bb12347`。
+- [stage-four-reproduction-sources](../../../assets/deliveries/ASSESSMENT/1/evidence/d4a44f7231063e3c664d1a82584fda78ccb771ba7ab1742719319f674a4f46fe.json)，SHA256 `d4a44f7231063e3c664d1a82584fda78ccb771ba7ab1742719319f674a4f46fe`。
+- [four-gate-loss-diagnostics](../../../assets/deliveries/ASSESSMENT/1/evidence/398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f.json)，SHA256 `398dab96565f1fbad004ce1aebe07e1d33841b0d59bc0a953f0229ecd826938f`。
+- [four-gate-quality-impact](../../../assets/deliveries/ASSESSMENT/1/evidence/e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a.json)，SHA256 `e44df456c81c4813c9d5bad256ec08ec70a0378a2c32fa72f684c855404ed17a`。
 
 新增所有账户通过公开TDR FULL评价及完整事实适配，五项自检/七项比较使用公开SE；独立复核标准中心四门、七项指标和逐日资金/仓位对账。无需全仓回归；本轮未改变平台代码、数据源、依赖或生产。没有执行冻结、合并、打tag、推送、同步或部署。正式DFLS资产须与交付一同保留。

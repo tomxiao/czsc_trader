@@ -9,6 +9,8 @@ import shutil
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
 from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates, ResearchMetric
+from strategy_manager.write_lock import RegistryWriteLock
+from strategy_manager.errors import RegistryError
 
 from .context import RepositoryContext
 from ..research_tools import delivery as d
@@ -35,6 +37,11 @@ def _resolve(root: Path, relative: str) -> Path:
 
 
 def _delivery_path(context: RepositoryContext, reference) -> Path:
+    return _resolve(context.root,
+        f"research/{reference.strategy_id}/assets/deliveries/{reference.stage.value}/{reference.revision}")
+
+
+def _public_delivery_path(context: RepositoryContext, reference) -> Path:
     return _resolve(context.root,
         f"research/{reference.strategy_id}/deliveries/{reference.stage.value}/{reference.revision}")
 
@@ -165,7 +172,7 @@ def _validate_inspection_delivery(definition, content, root, context):
     if report != payload.inspection or report != validate_inspection(context.root, report.reference):
         _fail("INSPECTION_REPORT", "inspection", "inspection differs from persisted evidence")
     selection = read_decision(context.root, report.selection)
-    receipt_path = _delivery_path(context, payload.source_assessment) / "receipt.json"
+    receipt_path = _public_delivery_path(context, payload.source_assessment) / "receipt.json"
     if (not isinstance(selection.subject, f.CandidateSelectionSubject)
         or selection.subject.delivery.path != receipt_path.relative_to(context.root).as_posix()
         or selection.subject.delivery.sha256 != sha256(receipt_path.read_bytes()).hexdigest()):
@@ -296,7 +303,17 @@ def _manifest(root) -> tuple[d.PublicationFile, ...]:
     return tuple(result)
 
 
-def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidationScope.INTEGRITY):
+def _validate_public_copy(context, reference, root):
+    public = _public_delivery_path(context, reference)
+    if not public.is_dir() or {item.name for item in public.iterdir()} != {"report.md", "receipt.json"}:
+        _fail("PUBLIC_DELIVERY", "delivery", "public delivery must contain its report and receipt")
+    for name in ("report.md", "receipt.json"):
+        if _resolve(public, name).read_bytes() != _resolve(root, name).read_bytes():
+            _fail("PUBLIC_DELIVERY", name, "public delivery differs from the complete package")
+
+
+def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidationScope.INTEGRITY,
+                   *, published=True):
     identity = (reference.batch, reference.stage, reference.revision)
     if identity in visited:
         _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
@@ -319,6 +336,8 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     _validate_content(definition, content, root, context, scope)
     if _resolve(root, "report.md").read_bytes() != content.report.encode("utf-8"):
         _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
+    if published:
+        _validate_public_copy(context, reference, root)
     return receipt
 
 
@@ -364,13 +383,27 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
     if (type(context) is not RepositoryContext or type(definition) is not d.DeliveryDefinition
         or type(content) is not d.DeliveryContent):
         raise TypeError("assembly requires RepositoryContext, DeliveryDefinition and DeliveryContent")
-    staging = None
+    lock = _resolve(context.root, f".tmp/delivery-publication/{definition.strategy_id}")
+    try:
+        with RegistryWriteLock(lock).hold():
+            return _assemble_delivery(context, definition, content)
+    except (RegistryError, OSError) as exc:
+        raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
+
+
+def _assemble_delivery(context, definition, content):
+    staging = public_staging = None
+    installed_package = installed_public = completed = False
+    destination = public_destination = None
     try:
         definition = d.DeliveryDefinition.from_dict(definition.to_dict())
         content = d.DeliveryContent.from_dict(content.to_dict())
         document = {"schema_version": 6, "definition": definition.to_dict(), "content": content.to_dict()}
         destination = _delivery_path(context, definition)
-        if destination.exists():
+        public_destination = _public_delivery_path(context, definition)
+        if destination.exists() or public_destination.exists():
+            if not destination.is_dir() or not public_destination.is_dir():
+                _fail("PARTIAL_PUBLICATION", "delivery", "delivery publication is incomplete")
             if _read_json(_resolve(destination, "delivery.json")) != document:
                 raise d.DeliveryConflictError("delivery revision contains different content")
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
@@ -406,25 +439,33 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
         reference = d.DeliveryReference(definition.batch, definition.stage, definition.revision, d._digest(files))
         receipt = d.DeliveryReceipt(reference, files)
         (staging / "receipt.json").write_bytes(d._canonical(receipt))
-        _read_delivery(context, reference, staging, set())
+        _read_delivery(context, reference, staging, set(), published=False)
+        public_staging = create_temporary_directory(context.root, "delivery-public")
+        for name in ("report.md", "receipt.json"):
+            shutil.copyfile(staging / name, public_staging / name)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            staging.rename(destination)
-        except OSError:
-            if destination.exists():
-                existing = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-                if existing.reference != reference:
-                    raise d.DeliveryConflictError("delivery revision contains different content")
-                return _read_delivery(context, reference, destination, set())
-            raise
+        public_destination.parent.mkdir(parents=True, exist_ok=True)
+        staging.rename(destination)
+        installed_package = True
         staging = None
+        public_staging.rename(public_destination)
+        installed_public = True
+        public_staging = None
+        _validate_public_copy(context, reference, destination)
+        completed = True
         return receipt
     except (d.DeliveryValidationError, d.DeliveryConflictError):
         raise
     except (OSError, ValueError, TypeError, KeyError) as exc:
         raise d.DeliveryValidationError((d.DeliveryIssue("ASSEMBLY_FAILED", "delivery", str(exc)),)) from exc
     finally:
-        if staging is not None and staging.exists():
-            temporary_root = (context.root / ".tmp").resolve()
-            if staging.resolve().is_relative_to(temporary_root) and not staging.is_symlink():
-                shutil.rmtree(staging)
+        if not completed:
+            for installed, path in ((installed_public, public_destination), (installed_package, destination)):
+                if installed and path is not None and path.exists():
+                    safe = _resolve(context.root, path.relative_to(context.root).as_posix())
+                    shutil.rmtree(safe)
+        for temporary in (staging, public_staging):
+            if temporary is not None and temporary.exists():
+                temporary_root = (context.root / ".tmp").resolve()
+                if temporary.resolve().is_relative_to(temporary_root) and not temporary.is_symlink():
+                    shutil.rmtree(temporary)

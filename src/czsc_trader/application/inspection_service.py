@@ -40,7 +40,7 @@ from strategy_runtime import StrategyInit, TradableWindow, ExecutionPolicy
 from .context import RepositoryContext
 from .candidate_service import load_candidate, _registered_root
 from .runtime_acceptance import runtime_readiness, require_same_runtime_content
-from .delivery_service import validate_delivery, _delivery_path, _resolve
+from .delivery_service import validate_delivery, _delivery_path, _public_delivery_path, _resolve
 from ..research_tools import delivery as d
 from ..research_tools.evaluation import (
     EvaluationRequest, serialize_evaluation_evidence, validate_evaluation_evidence,
@@ -77,7 +77,7 @@ class _EvidenceStore:
 
     def put(self, data):
         digest = sha256(data).hexdigest()
-        prefix = "evidence/inspection" if self.owner.experiment_id else "decisions/objects"
+        prefix = "inspection" if self.owner.experiment_id else "decisions/objects"
         ref = f.ResearchEvidenceRef(self.owner, f"{prefix}/{digest}", digest)
         target = _resolve(self.context.root, ref.repository_path)
         from .evidence_service import _publish_bytes
@@ -92,12 +92,12 @@ class _EvidenceStore:
 def _delivery(context, ref):
     path = ref.resolve(context.root)
     receipt = d.DeliveryReceipt.from_dict(_read(path))
-    if path != (_delivery_path(context, receipt.reference) / "receipt.json").resolve():
+    if path != (_public_delivery_path(context, receipt.reference) / "receipt.json").resolve():
         raise ValueError("decision delivery must reference its published receipt")
     checked = validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY)
     if checked.status is not d.ValidationStatus.PASS:
         raise ValueError(f"decision delivery is invalid: {checked.issues}")
-    document = _read(path.parent / "delivery.json")
+    document = _read(_delivery_path(context, receipt.reference) / "delivery.json")
     return receipt.reference, d.DeliveryContent.from_dict(document["content"])
 
 

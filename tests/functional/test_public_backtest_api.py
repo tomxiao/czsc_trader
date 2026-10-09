@@ -42,7 +42,7 @@ def test_lot_size_conflict_fails_before_data_access(candidate_payload, minimal_r
     payload, source = candidate_payload
     candidate = StrategyCandidate("S900", "C0001", payload, source)
     repository = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
-    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/data")), providers=ProviderConfig(bindings={})))
+    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     def forbidden(**kwargs):
         pytest.fail("conflicting lot_size must fail before fetching data")
     monkeypatch.setattr("czsc_trader.backtesting.service._prepare_backtest_execution_data", forbidden)
@@ -56,7 +56,7 @@ def test_lot_size_conflict_fails_before_data_access(candidate_payload, minimal_r
 def test_backtest_rejects_tampered_version_before_data_access(current_frozen, monkeypatch):
 
     repository, version = current_frozen
-    context = research_context(repository, Dataflows(base_dir=repository.root, space=DataSpace(Path("research/S900/data")), providers=ProviderConfig(bindings={})))
+    context = research_context(repository, Dataflows(base_dir=repository.root, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
 
     def forbidden(*args, **kwargs):
@@ -74,7 +74,7 @@ def test_backtest_public_api_rejects_unsupported_arguments(candidate_payload, mi
     payload, source = candidate_payload
     candidate = StrategyCandidate("S900", "C0001", payload, source)
     repository = RepositoryContext.discover(minimal_repo, explicit_root=minimal_repo)
-    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/data")), providers=ProviderConfig(bindings={})))
+    context = research_context(repository, Dataflows(base_dir=minimal_repo, space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
 
     def forbidden(*args, **kwargs):
@@ -143,7 +143,7 @@ def test_backtest_rejects_another_batch_before_data_access(candidate_payload, mi
     payload, source = candidate_payload
     repository = RepositoryContext.discover(minimal_repo)
     context = research_context(repository, Dataflows(base_dir=minimal_repo,
-        space=DataSpace(Path("research/S900/data")), providers=ProviderConfig(bindings={})))
+        space=DataSpace(Path("research/S900/assets/data")), providers=ProviderConfig(bindings={})))
     def forbidden(*args, **kwargs):
         pytest.fail("foreign batch must fail before data preparation")
     monkeypatch.setattr(Dataflows, "prepare", forbidden)

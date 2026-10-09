@@ -38,7 +38,7 @@ def terminated_worker(request):
 def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_evaluation):
     context, request = managed_evaluation
     access = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2, 1), strategy_id="S900")
-    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/data")))
+    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
     outcomes = access.evaluate_many((request, replace(request, initial_cash=13),
                                      replace(request, initial_cash=200_000), request))
     assert [x.status for x in outcomes] == [EvaluationStatus.SUCCEEDED, EvaluationStatus.FAILED,
@@ -55,7 +55,7 @@ def test_parallel_results_preserve_order_and_failure_is_not_retried(managed_eval
 def test_cancellation_and_worker_loss_return_truthful_status(managed_evaluation):
     context, request = managed_evaluation
     access = context.evaluation
-    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/data")))
+    access._batch_evaluator = SyntheticEvaluator(context.repository.root, DataSpace(Path("research/S900/assets/data")))
     cancelled = access.evaluate_many((replace(request, initial_cash=14),))[0]
     assert cancelled.status is EvaluationStatus.CANCELLED and cancelled.result is None
     broken = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2))

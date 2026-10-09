@@ -118,7 +118,7 @@ class ResearchEvidenceOwner(Record):
     def repository_path(self):
         if self.experiment_id is None:
             return f"research/{self.strategy_id}"
-        return f"research/{self.strategy_id}/experiments/{self.experiment_id}"
+        return f"research/{self.strategy_id}/assets/evidence/{self.experiment_id}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -380,7 +380,7 @@ class CandidateInspectionReport(Record):
 
     @property
     def reference(self) -> ResearchEvidenceRef:
-        return ResearchEvidenceRef(self.owner, f"evidence/inspection/{self.sha256}", self.sha256)
+        return ResearchEvidenceRef(self.owner, f"inspection/{self.sha256}", self.sha256)
 
 
 class FreezeStatus(StrEnum):

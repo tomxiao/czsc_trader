@@ -133,7 +133,7 @@ def test_managed_inspection_freeze_and_idempotent_query(fresh_inspection, monkey
     )
     assert not context.strategy_root.exists()
     assert report.reference.resolve(context.root).is_relative_to(
-        context.research_root / "S900/experiments" / request.experiment.experiment_id
+        context.research_root / "S900/assets/evidence" / request.experiment.experiment_id
     )
     assert f.CandidateInspectionReport.from_dict(report.to_dict()) == report
     operation = approve(context, report, source)
