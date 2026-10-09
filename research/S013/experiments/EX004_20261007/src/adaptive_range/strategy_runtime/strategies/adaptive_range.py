@@ -1,12 +1,11 @@
 """S013 causal dual-route range strategy; routing uses only known daily closes."""
 from collections.abc import Mapping
 from dataclasses import replace
-from datetime import timedelta
 import math
 
 import numpy as np
 import pandas as pd
-from strategy_runtime import CalendarWindow, InputContract, ParameterSet
+from strategy_runtime import InputContract, ParameterSet
 
 from .range_reversion import RangeReversion, components
 
@@ -47,9 +46,8 @@ class AdaptiveRange(RangeReversion):
         return replace(base, parameters=self._parameters,
                        inputs=InputContract(requirements))
 
-    def calendar_window(self, window):
-        return CalendarWindow(
-            window.start - timedelta(days=max(45, self._warmup * 2)), window.end)
+    def calendar_request(self, window):
+        return super().calendar_request(window)
 
     def calculate_history(self, inputs, sessions):
         p = self._parameters.values

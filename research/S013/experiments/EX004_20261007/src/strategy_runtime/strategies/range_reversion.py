@@ -3,11 +3,11 @@ from datetime import timedelta
 import math
 import numpy as np
 import pandas as pd
+from dataflows import DataRequest, DataCoverageRequirement, Dataset
 from strategy_runtime import (
     StrategyImplementation, StrategyDefinition, ParameterSet, InputContract,
     InputRequirement, CutoffRule, DecisionContract, ExecutionPolicy, MonitoringPolicy,
-    RequiredCapabilities, ObservationDefinition, CalendarWindow,
-    next_session_calculation_scope,
+    RequiredCapabilities, ObservationDefinition, CalculationScope,
 )
 
 
@@ -79,12 +79,42 @@ class RangeReversion(StrategyImplementation):
             tradable_symbol='510500.SH', observation=ObservationDefinition((),()),
         )
 
-    def calendar_window(self, window):
-        # Only the earlier calendar needed for feature warmup; no future sessions.
-        return CalendarWindow(window.start-timedelta(days=max(45,self._parameters.values['range_window']*2)),window.end)
+    def calendar_request(self, window):
+        warmup = max(item.lookback_sessions for item in self.definition.inputs.requirements)
+        start = window.start - timedelta(days=max(45, warmup * 2))
+        return DataRequest(Dataset.TRADING_CALENDAR, 'SSE', start.isoformat(),
+                           window.end.isoformat(), window.end.isoformat())
 
     def derive_calculation_scope(self, window, calendar_dates):
-        return next_session_calculation_scope(self.definition,window,calendar_dates)
+        trading = tuple(day for day in calendar_dates if window.contains(day))
+        if not trading or trading[0] != window.start or trading[-1] != window.end:
+            raise ValueError('tradable window endpoints must be open sessions')
+        signals = {}
+        for day in trading:
+            previous = tuple(item for item in calendar_dates if item < day)
+            if not previous:
+                raise ValueError('trading calendar lacks preceding signal session')
+            signals[day] = previous[-1]
+        first, last = signals[trading[0]], signals[trading[-1]]
+        available = tuple(day for day in calendar_dates if day <= first)
+        inputs = {}
+        for item in self.definition.inputs.requirements:
+            if item.dataset == Dataset.TRADING_CALENDAR.value:
+                continue
+            depth = max(1, item.lookback_sessions)
+            if len(available) < depth:
+                raise ValueError('trading calendar cannot satisfy input history: ' + item.name)
+            if item.cutoff_rule is not CutoffRule.SIGNAL_SESSION:
+                raise ValueError('S013 inputs require signal-session cutoff')
+            start = available[-depth]
+            coverage = DataCoverageRequirement(
+                maximum_start_lag_days=None, minimum_observations=depth,
+                minimum_sessions=depth, observations_through=first.isoformat())
+            inputs[item.name] = DataRequest(
+                item.dataset, item.subject, start.isoformat(), last.isoformat(),
+                last.isoformat(), item.frequency, coverage=coverage)
+        calculation = tuple(day for day in calendar_dates if first <= day <= last)
+        return CalculationScope(window, trading, signals, calculation, inputs)
 
     def calculate_history(self, inputs, sessions):
         p = self._parameters.values
