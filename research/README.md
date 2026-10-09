@@ -19,40 +19,56 @@
 
 ## 批次空间与落盘职责
 
+以下为已确认的目标布局；平台适配及 S013 存量迁移按后续评审方案实施。
+
 ```text
 research/<批次>/
-  batch.json
-  HANDOFF.md
-  batches/                         # 后续立项凭据对应的材料（如有）
-  data/
-  decisions/
+  batch.json                         # 批次身份
+  HANDOFF.md                         # 当前状态、成果引用及下一步
+  batches/                           # 后续立项凭据对应的材料
+  materials/                         # 研究任务、授权依据、评价约定
+
   experiments/<实验>/
-    experiment.json
-    work/
-    evidence/
+    experiment.json                  # 实验身份
+    src/                             # 验证程序、策略实现、自定义组件
+    protocols/                       # 假设、方法、参数域、搜索及自检方案
+    notes.md                         # 观察、判断变化、修正及停止依据
+    others/                          # 定义以外的资料，供 RSCH 灵活组织
+
   deliveries/<阶段>/<修订>/
-  freeze_requests/<请求ID>/
-research/registrations/
+    report.md                        # 研究员编写的阶段报告
+    receipt.json                     # 交付身份及关联文件引用
+
+  decisions/                         # 正式用户决定
+  freeze_requests/<请求ID>/           # 冻结请求及事务记录
+
+  assets/
+    data/                            # 实际使用的数据资产
+    runs/<实验>/<运行>/               # 请求、结果、搜索数据库、检查点
+    evidence/<实验>/                 # 显式发布的正式证据
+    candidates/<候选>/               # 候选载荷、源码及依赖快照
+    deliveries/<阶段>/<修订>/         # 完整机器交付包
+
+research/registrations/               # 研究族、立项凭据和候选登记
+.tmp/research/<批次>/<实验>/           # 临时缓存、排错及可丢弃输出
+outputs/                             # 用户发起的独立回测产物
+strategies/                          # 冻结运行版本及发布包
 ```
 
-| 路径 | 路径确定及写入责任 | 内容与生命周期 |
-| --- | --- | --- |
-| 批次目录、`batch.json`、初始 `HANDOFF.md`、`batches/` | TDR `research_governance_service` 根据强类型批次请求确定并写入 | 研究身份与立项材料；后续交接由 RSCH 更新 |
-| `data/` | TDR `research_governance_service.create_research_context` 指定空间；DFLS 写入 | 数据资产、质量证据和完整 prepare 引用 |
-| 实验目录、`experiment.json`、初始 `work/notes.md` | TDR `research_governance_service.create_experiment` 分配编号并创建 | 实验身份；同批次编号跨日期递增 |
-| `work/` | RSCH 组织并写入 | 源码、笔记与材料可修改；技术修正和重复计算可沿用实验 |
-| `evidence/<hash>.<suffix>` | TDR `evidence_service.publish_evidence` 确定路径并写入 | 明确保留的结果或材料；内容不可覆盖 |
-| `evidence/payload/`、`evidence/source/` | TDR `candidate_service` 保存；SM 登记引用 | 候选载荷和源码快照，不依赖可变 work |
-| `evidence/inspection/` | TDR `inspection_service` 确定并写入 | 技术检验、冻结计划及必要证据 |
-| `deliveries/<阶段>/<修订>/` | TDR `delivery_service` 根据批次、阶段、修订确定并写入 | 机器结论、人工报告、回执和选定证据浅快照；修正另发修订 |
-| `decisions/` 及其 `objects/` | TDR `inspection_service`、`research_evidence` 写入 | 用户批准、拒绝或待定及真实确认依据 |
-| `freeze_requests/<请求ID>/` | TDR 保存研究请求；SM 按显式日志根保存事务事实 | 请求、提交或失败及查询依据 |
-| `research/registrations/` | SM `StrategyRegistry` 写入，TDR 组织业务调用 | 研究族、立项凭据和候选登记 |
-| `strategies/` | SM 写入运行版本及发布包，SRT 管理部署身份 | 运行发布，独立于研究工作区 |
-| `.tmp/` | 工具和平台计算按宿主确定并写入 | 临时缓存、排错和未选定输出 |
+下表批次内路径相对 `research/<批次>/`；`research/registrations/`、`.tmp/` 和 `strategies/` 相对仓库根。
 
-实验无需整体封存。影响正式结论的有效负面结果、反证和修正解释随交付保存；技术错误的过程记录按需要留存。
-`HANDOFF.md` 记录当前状态和精确引用，正式结论以对应修订的交付为准。
+| 路径 | 写入责任 | 保存与修改规则 |
+| --- | --- | --- |
+| `batch.json`、`batches/`、`experiment.json` | 平台创建 | 身份记录通过公共 API 维护 |
+| `materials/`、实验内 `src/`、`protocols/`、`notes.md`、`others/`、`HANDOFF.md` | RSCH | 按研究需要编辑、补充和更新 |
+| `assets/data/` | 经平台入口，由 DFLS 写入 | 保存实际使用的数据版本，更新时保留已有研究引用 |
+| `assets/runs/` | RSCH 组织写入 | 按接续需要保存和更新，选定材料发布为正式证据 |
+| `assets/evidence/`、`assets/candidates/` | 平台通过公共 API 发布 | 按发布身份保存原始内容，变更形成新证据或新候选 |
+| `assets/deliveries/` | 平台通过公共 API 发布 | 按修订保存，修正形成新修订 |
+| `deliveries/` | RSCH 编写报告，平台原样发布报告及回执 | 与完整交付包对应，按修订保存，修正形成新修订 |
+| `decisions/`、`freeze_requests/`、`research/registrations/` | 平台按实际授权写入 | 通过公共 API 维护，保留授权与状态变化历史 |
+| `strategies/` | SM 写入运行版本及发布包，SRT 管理部署身份 | 按授权保存发布版本和部署记录 |
+| `.tmp/` | RSCH、工具及平台 | 保存临时缓存及排错材料，可随任务更新、替换 |
 
 ## 策略批次
 
@@ -67,11 +83,13 @@ research/registrations/
 
 ## 保存与跨机器交接
 
-当前 Git 规则忽略 `research/<批次>/data/`、根 `data/`、`.tmp/` 及旧实验机器制品中的指定路径。
-新的已发布证据与交付按实际 Git 跟踪规则保存，受哈希约束的文件保留原始字节。
-交接时明确正式交付引用、候选源码与支撑证据，以及复算所需的完整 DFLS 空间位置和同步责任。
-单独保存准备引用或 Git clone 无法恢复缺失的数据资产；`.tmp/` 不能作为正式证据的唯一位置。
+`HANDOFF.md` 记录当前研究所需的精确成果引用、资产位置及下一步任务。
 
-旧 `experiments/`、旧候选和交付保留原件及哈希供人工查阅。当前入口不自动解析旧格式；继续研究时在授权范围内
-生成新契约证据，历史引用与新结果分别说明。目录更新不授予清理历史数据的权限。
+资产交接包含任务所需的数据空间、候选快照、正式证据和完整交付包。未完成研究的交接同时包含必要运行状态。
+交接说明列明资产保管位置、同步范围、责任人、恢复方式和实际就绪状态。
+
+恢复后核对数据空间及准备引用、候选身份、证据哈希，以及报告、回执与完整交付包的一致性。
+接续研究按实际需要恢复搜索数据库和检查点，核验结果记入交接说明。
+
+历史研究原件按原目录、原始字节和哈希保存。延续研究时按当前契约形成新成果，并关联所采用的历史依据。
 PTE 生产状态以实际运行环境为准，操作边界见[PTE 运维手册](../docs/PTE_OPERATIONS.md)。
