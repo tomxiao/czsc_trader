@@ -1,0 +1,111 @@
+{
+  "record": {
+    "content_sha256": "e1bfa2d1e86fc4588b2964780521ed2a798160e1a096556977e26ccde45c2d95",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "recovery-hold-6-4-cooldown5",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 6,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "exit_confirmation": 1,
+          "exit_direction": "both",
+          "exit_on_regime_change": true,
+          "regime_band": 0.0,
+          "regime_confirmation": 1,
+          "regime_cooldown": 5,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C1315",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "e1bfa2d1e86fc4588b2964780521ed2a798160e1a096556977e26ccde45c2d95",
+      "evidence": {
+        "path": "assets/candidates/C1315/derivation/fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c.json",
+        "sha256": "fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9023",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "efcc154a9eb594672bf65a59f8ac96afaaab978c1c86fcdfe4b1a0dac60315a8",
+      "protocol_sha256": "403ec5ac1c8492e9f03e082fb8905d4321b71edb706af292f7e7fc4c548da5f3"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C1315",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX005_20261009/1a1bb2191108fd04325f824187defea67b441c8a7a27693c7feeaa8120eedb3c.json",
+          "sha256": "1a1bb2191108fd04325f824187defea67b441c8a7a27693c7feeaa8120eedb3c"
+        }
+      ],
+      "experiment_id": "EX005_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C1315/payload/7330123c929d5b84421abf376aa64dff8877d64b108b385ffd442a2ae5956152.json",
+      "sha256": "7330123c929d5b84421abf376aa64dff8877d64b108b385ffd442a2ae5956152"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C1315/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/stable_range.py",
+        "sha256": "6bf3f4ffb500468e7ba0e6ab71073f771c02e6ab217b5d48c52fb8d9fc3b371b"
+      },
+      {
+        "path": "assets/candidates/C1315/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C1315/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      }
+    ],
+    "source_root": "assets/candidates/C1315/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime",
+    "source_sha256": "73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4"
+  },
+  "record_sha256": "d7ffeadd58dbcdb94e99556a099dc78a4509c3c42791aab524b3e72bc7013b26"
+}

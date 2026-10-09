@@ -1,0 +1,800 @@
+{
+  "name": "state_frequency_recovery",
+  "basis": {
+    "net_cagr": 0.11280923597279036,
+    "annual": {
+      "2020": {
+        "max_drawdown_magnitude": 0.05771146271668126,
+        "return": 0.1564986033999991,
+        "sessions": 243,
+        "opening_equity": 1000000.0,
+        "closing_equity": 1156498.6033999992
+      },
+      "2021": {
+        "max_drawdown_magnitude": 0.022403747353551773,
+        "return": 0.10212801939644822,
+        "sessions": 243,
+        "opening_equity": 1156498.6033999992,
+        "closing_equity": 1274609.5151999996
+      },
+      "2022": {
+        "max_drawdown_magnitude": 0.07181419919220433,
+        "return": 0.041841832645225896,
+        "sessions": 242,
+        "opening_equity": 1274609.5151999996,
+        "closing_equity": 1327941.5132230103
+      },
+      "2023": {
+        "max_drawdown_magnitude": 0.03887145509625822,
+        "return": 0.05044346117749421,
+        "sessions": 242,
+        "opening_equity": 1327941.5132230103,
+        "closing_equity": 1394927.4793912582
+      },
+      "2024": {
+        "max_drawdown_magnitude": 0.10021926683365467,
+        "return": 0.462157072101423,
+        "sessions": 242,
+        "opening_equity": 1394927.4793912582,
+        "closing_equity": 2039603.0790605403
+      },
+      "2025": {
+        "max_drawdown_magnitude": 0.03533058113513132,
+        "return": 0.03643874296274863,
+        "sessions": 243,
+        "opening_equity": 2039603.0790605403,
+        "closing_equity": 2113923.651404458
+      },
+      "2026": {
+        "max_drawdown_magnitude": 0.0988776418180165,
+        "return": -0.05315917853109886,
+        "sessions": 181,
+        "opening_equity": 2113923.651404458,
+        "closing_equity": 2001549.206618336
+      }
+    },
+    "closed_trades": 96,
+    "gates": {
+      "return": true,
+      "annual_drawdown": true,
+      "frequency": false,
+      "negative_buyhold_year_profit": true
+    },
+    "result_hash": "15c4a3b02cbf548288e608b0012375300906c425a5c9e78e434d359b6509c130"
+  },
+  "hypothesis": "cooldown5 improved both negative-BuyHold-year margins; shorter route holding may recover missing turnover without losing that margin",
+  "counterclaim": "cooldown2/short-hold interactions failed; gains may come from skipping specific market paths and disappear on timing changes",
+  "attribution": "same hold cells with cooldown0/2/5; cooldown6/8 independently checks the new upper boundary",
+  "selection_bias": "same seen developer pool, adaptively extended after observed results, no holdout",
+  "resources": {
+    "max_workers": 4,
+    "native_threads_per_worker": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "initial_budget": 19,
+  "configurations": [
+    {
+      "label": "recovery-hold-4-2-cooldown0",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 0
+      }
+    },
+    {
+      "label": "recovery-hold-4-2-cooldown2",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 2
+      }
+    },
+    {
+      "label": "recovery-hold-4-2-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-4-3-cooldown0",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 0
+      }
+    },
+    {
+      "label": "recovery-hold-4-3-cooldown2",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 2
+      }
+    },
+    {
+      "label": "recovery-hold-4-3-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-6-2-cooldown0",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 6,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 0
+      }
+    },
+    {
+      "label": "recovery-hold-6-2-cooldown2",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 6,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 2
+      }
+    },
+    {
+      "label": "recovery-hold-6-2-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 6,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-6-3-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 6,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-8-2-cooldown0",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 0
+      }
+    },
+    {
+      "label": "recovery-hold-8-2-cooldown2",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 2
+      }
+    },
+    {
+      "label": "recovery-hold-8-2-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 2,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-8-3-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 3,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-4-4-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-6-4-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 6,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-7-4-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 7,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "recovery-hold-8-4-cooldown6",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 6
+      }
+    },
+    {
+      "label": "recovery-hold-8-4-cooldown8",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 8
+      }
+    }
+  ]
+}

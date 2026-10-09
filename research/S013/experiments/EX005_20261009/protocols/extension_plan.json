@@ -1,0 +1,168 @@
+{
+  "name": "state_cooldown_extension",
+  "purpose": "check the upper cooldown boundary and the untested direction-by-cooldown interaction",
+  "basis": "cooldown3 increased2023profit but lost2022profit/CAGR; cooldown2 is a frequency-limited frontier; risk-only exit remained qualified",
+  "counterclaim": "additional cooling loses protective/rebound timing and frequency; interaction may not combine individual benefits",
+  "method": "Optuna fixed queue, four distinct configurations, unchanged data/source/execution",
+  "resources": {
+    "max_workers": 4,
+    "native_threads_per_worker": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "initial_budget": 4,
+  "configurations": [
+    {
+      "label": "final-both-cooldown4",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 4
+      }
+    },
+    {
+      "label": "final-both-cooldown5",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "regime_cooldown": 5
+      }
+    },
+    {
+      "label": "final-bull_to_bear-cooldown1",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "bull_to_bear",
+        "regime_cooldown": 1
+      }
+    },
+    {
+      "label": "final-bull_to_bear-cooldown2",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "exit_confirmation": 1,
+        "exit_direction": "bull_to_bear",
+        "regime_cooldown": 2
+      }
+    }
+  ]
+}

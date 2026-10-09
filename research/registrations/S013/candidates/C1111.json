@@ -1,0 +1,111 @@
+{
+  "record": {
+    "content_sha256": "d06d72ef3fd24707c4a61d9dcc66969a866d8ab6c2ceae4f73460c8e747e5aa7",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "hold-7-4-both-cooldown2",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 7,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "exit_confirmation": 1,
+          "exit_direction": "both",
+          "exit_on_regime_change": true,
+          "regime_band": 0.0,
+          "regime_confirmation": 1,
+          "regime_cooldown": 2,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C1111",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "d06d72ef3fd24707c4a61d9dcc66969a866d8ab6c2ceae4f73460c8e747e5aa7",
+      "evidence": {
+        "path": "assets/candidates/C1111/derivation/fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c.json",
+        "sha256": "fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9023",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "efcc154a9eb594672bf65a59f8ac96afaaab978c1c86fcdfe4b1a0dac60315a8",
+      "protocol_sha256": "0d310de95c68bd94dce8b9459d6e63391e59a753e3fd7ac583d3ba040a1917ec"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C1111",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX005_20261009/ff5d44ac88813b2a917edc30c86e76afc7298a72f3e517aad3f21e93a1f4fbbe.json",
+          "sha256": "ff5d44ac88813b2a917edc30c86e76afc7298a72f3e517aad3f21e93a1f4fbbe"
+        }
+      ],
+      "experiment_id": "EX005_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C1111/payload/32b7f3383a119c26787c6ee283ab1e3b74bc6f6f42c78a034cd0ef89c18d57cc.json",
+      "sha256": "32b7f3383a119c26787c6ee283ab1e3b74bc6f6f42c78a034cd0ef89c18d57cc"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C1111/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/stable_range.py",
+        "sha256": "6bf3f4ffb500468e7ba0e6ab71073f771c02e6ab217b5d48c52fb8d9fc3b371b"
+      },
+      {
+        "path": "assets/candidates/C1111/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C1111/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      }
+    ],
+    "source_root": "assets/candidates/C1111/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime",
+    "source_sha256": "73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4"
+  },
+  "record_sha256": "c4b7b961940531f4555ca6e0947017dc5958bc4c1b43805279d616f7b12613d6"
+}

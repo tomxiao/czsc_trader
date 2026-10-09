@@ -1,0 +1,111 @@
+{
+  "record": {
+    "content_sha256": "0180d7b46a66e6976771bc5b07173273668e6b36bfac88d70d5d550fc170f19e",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "final-both-cooldown5",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "exit_confirmation": 1,
+          "exit_direction": "both",
+          "exit_on_regime_change": true,
+          "regime_band": 0.0,
+          "regime_confirmation": 1,
+          "regime_cooldown": 5,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C1201",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "0180d7b46a66e6976771bc5b07173273668e6b36bfac88d70d5d550fc170f19e",
+      "evidence": {
+        "path": "assets/candidates/C1201/derivation/fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c.json",
+        "sha256": "fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9023",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "efcc154a9eb594672bf65a59f8ac96afaaab978c1c86fcdfe4b1a0dac60315a8",
+      "protocol_sha256": "18c0ab22332c8574e0f4b138206e531cfc6882a28146a9068258bdd2b828e74c"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C1201",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX005_20261009/ede99987146bfbeb02772a1ec830580cce5615b559dc307feea4bbf6de5c4625.json",
+          "sha256": "ede99987146bfbeb02772a1ec830580cce5615b559dc307feea4bbf6de5c4625"
+        }
+      ],
+      "experiment_id": "EX005_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C1201/payload/45bd7de580bacd1edac9a131ac31d6da8892083cfa7213adb8437f87eac9dccf.json",
+      "sha256": "45bd7de580bacd1edac9a131ac31d6da8892083cfa7213adb8437f87eac9dccf"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C1201/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/stable_range.py",
+        "sha256": "6bf3f4ffb500468e7ba0e6ab71073f771c02e6ab217b5d48c52fb8d9fc3b371b"
+      },
+      {
+        "path": "assets/candidates/C1201/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C1201/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      }
+    ],
+    "source_root": "assets/candidates/C1201/source/73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4/strategy_runtime",
+    "source_sha256": "73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4"
+  },
+  "record_sha256": "b1863d8cdd8085f3d66e82c53c66cb5d13eee2080cb97d27243b4e35aaceadbc"
+}

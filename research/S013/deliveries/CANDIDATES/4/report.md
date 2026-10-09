@@ -1,0 +1,200 @@
+# S013阶段三修订四：状态周转、年度盈利余量与频率的机制对照
+
+本轮没有找到同时满足原四项目标、又提高基准亏损年份最小盈利余量的新配置。新增达标配置保留资格，但未解决原阶段四揭示的盈利薄弱问题。 完成89个不同源码/参数配置的真实完整账户评价，全部SUCCEEDED，无FAILED或UNKNOWN。
+其中3个通过原四门，包含C1000原模型复现控制；其余2个为新增达标配置。
+原阶段三10个中心以C9001–C9030技术迁移后的对应身份继续保留，本轮未改变其历史资格、账本或阶段四结论。
+
+## 授权、目标和价格边界
+
+2026-10-09用户批准回阶段三研究年度盈利余量与成本敏感性。仅使用S013、510500.SH和原开发池；所有供应商入口显式禁止新取数，实际评价全部复用本批次正式资产。
+实际2020-01-02至2026-09-30共1636交易日，初始100万元、100个后复权研究单位整手、每侧10bp（0.1%）、T日已知信息在T+1执行、只做多、不加杠杆。
+HFQ_RESEARCH沿用2019-12-31锚点及0.2803因子，原始0.001价格网格经实际price_scale转换；BuyHold使用同标的下一交易日开盘、同费用和资本。
+结果属于研究单位账户，不能直接视为PTE真实ETF份额收益。
+
+四项同时要求：整体净年化≥同窗BuyHold的1.5倍；每自然年回撤幅度严格更小；平均每60交易日闭合交易数≥4（本窗至少110笔）；BuyHold实际年度收益<0时，策略同年收益严格>0。
+闭合交易为完成入场和退出的周期。年度现金与持仓连续，以初始现金或上一年末权益作为锚；2026仅截至9月30日，使用未舍入数值作资格判断。
+年度盈利余量指基准亏损年份策略正收益超过0的幅度；费用压力、参数扰动及集中性继续只作诊断，未增加经济否决门。
+
+## 机制、控制和研究判断
+
+原C0494的技术继任C9023，2023价格收益约6.50万元，费用约6.06万元，净利约4340元。原阶段三归因表明，状态变化退出保护了2022，却增加了2023费用；不能简单取消全部状态退出。
+
+新StableRange实现分别控制动量阈值死区、连续状态确认、连续退出确认、退出方向和仅状态退出后的冷却；入场锁定路线、持有期、止损、限价及T+1执行沿用原语义。
+上涨路线bull、下跌路线bear按过去20个交易日动量相对0选择。设置中的hold-a-b表示两条路线分别最多持有a/b个信号日；both表示双向状态退出，bull_to_bear表示仅上涨转下跌退出，cooldown表示退出后等待的信号日数。
+死区表示动量在阈值附近保留原状态；确认表示连续若干个信号日才认可变化。冷却按信号目标状态计数，不按实际成交日重置；实际限价未成交与信号持有锚的差异仍是已知限制。
+
+C1000关闭全部新增机制，所有原信号及完整经济账本与C9023精确一致，跨账本关联ID仅作保持关系的归一化。单进程和spawn批量结果亦精确一致。
+小死区或延迟确认多数减少交易，但同时损失价格收益和2022风险控制；仅保留下跌转上涨退出失去2022盈利，是取消上涨转下跌风险出口的明确反证。
+仅保留上涨转下跌退出、或把bull持有期从8改9日，仍出现新达标配置，但盈利余量未改善。
+
+状态冷却2日及后续扩边确实提高了部分年度盈利。较短持有期的同参数配对对照，用于核验是否能恢复频率而保留改善；新增参数搜索没有按2022/2023标签或日期硬编码路由。
+以下结果是同一已见开发池内完整策略路径的对照，不能把某一退出交易的完整周期利润直接解释为该退出动作的因果贡献，也不能把跨年周期总利润代替年度收益。
+
+## 标准配置与前沿
+
+|配置|机制|净年化|闭合交易|2022净收益|2023净收益|原四门|
+|---|---|---:|---:|---:|---:|---|
+|C1000|原模型复现控制|13.9456%|116|7.9588%|0.3054%|通过|
+|C1013|仅上涨转下跌退出|12.6309%|111|6.6622%|0.2181%|通过|
+|C1124|上涨路线持有上限9信号日|12.1907%|115|3.7709%|0.0236%|通过|
+|C1201|双向退出后冷却5信号日|11.2809%|96|4.1842%|5.0443%|未通过：交易频率|
+|C1203|上涨转下跌退出后冷却2信号日|11.8041%|102|3.3303%|3.7072%|未通过：交易频率|
+|C1016|双向退出后冷却2信号日|12.0527%|104|5.2298%|1.3531%|未通过：交易频率|
+
+阶段三前沿只展示收益、负基准年份盈利余量和达到4次上限后的频率取舍；达到原频率要求的值同等满足目标。不是阶段四正式排序，不按新的加权分或费用硬门重新判资格。
+
+## 年度价格与费用归因
+
+按实际每日持仓、成交价格和费用重建价格损益：昨日持仓的收盘变动，加当日成交至收盘的估值变化，再扣实际费用；与每日权益增量对账。各年度贡献分别按该配置当年期初权益归一化，因此期初资本可能不同。
+
+|配置|2023价格贡献|2023费用贡献|2023净收益|2023净利（元）|
+|---|---:|---:|---:|---:|
+|C1000|4.5715%|4.2661%|0.3054%|4339.96|
+|C1013|4.2809%|4.0628%|0.2181%|3023.67|
+|C1124|4.2981%|4.2745%|0.0236%|297.20|
+|C1201|8.1548%|3.1105%|5.0443%|66985.97|
+|C1203|7.2124%|3.5051%|3.7072%|49467.15|
+|C1016|5.0174%|3.6642%|1.3531%|17887.16|
+
+C1016相对原控制的2023收益改善，并非纯节费：价格贡献增加约0.4458个百分点，费用贡献减少约0.6019个百分点，共改善约1.0477个百分点；但全窗少了12笔闭合交易。
+C1013按年初资本的费用贡献虽下降，价格贡献也下降且幅度更大，净盈利余量变薄。C1124在2023的净利仅约297元，降低绝对费用没有解决正收益接近零的问题。
+
+## 同持有期的配对反证与扩边
+
+|配置|设置|净年化|闭合交易|2022净收益|2023净收益|
+|---|---|---:|---:|---:|---:|
+|C1103|hold-6-4-both-cooldown0|11.3900%|121|-3.3941%|-0.1511%|
+|C1105|hold-6-4-both-cooldown2|10.1078%|108|-1.7278%|0.8935%|
+|C1109|hold-7-4-both-cooldown0|11.1550%|117|3.0154%|-2.5840%|
+|C1111|hold-7-4-both-cooldown2|9.7012%|105|-4.0856%|-1.5656%|
+|C1016|regime-only-cooldown-2|12.0527%|104|5.2298%|1.3531%|
+|C1200|final-both-cooldown4|10.4201%|98|3.0922%|5.0736%|
+|C1201|final-both-cooldown5|11.2809%|96|4.1842%|5.0443%|
+|C1202|final-bull_to_bear-cooldown1|11.4176%|107|-0.0628%|4.1683%|
+|C1203|final-bull_to_bear-cooldown2|11.8041%|102|3.3303%|3.7072%|
+|C1314|recovery-hold-4-4-cooldown5|10.2496%|116|-1.1912%|3.6004%|
+|C1315|recovery-hold-6-4-cooldown5|10.2783%|101|-1.7382%|4.5688%|
+|C1316|recovery-hold-7-4-cooldown5|11.2240%|97|2.5123%|2.0213%|
+|C1317|recovery-hold-8-4-cooldown6|9.2485%|93|-4.2280%|4.2786%|
+|C1318|recovery-hold-8-4-cooldown8|9.1508%|87|-7.5319%|4.1725%|
+
+冷却5日的外沿6/8日同时降低年化、交易频率并使2022转负，没有继续单向扩冷却的改善依据。将bull最长持有改4日确实恢复到116笔，但2022转为亏损、整体年化10.2496%仍低于原门槛；改6/7日也未同时满足四门。
+这组配对与扩边说明当前盈利提高依赖避开特定持仓路径，不能仅靠增加短周期交易来补足频率；不是已证明所有持有期和冷却组合都无效。所有新达标配置及盈利余量前沿均保留；失败对照没有被自动重试或改写为成功。
+
+## 费用压力
+
+全部新标准达标配置及选定前沿在相同输入下重算单侧20/30bp，并各自核验10bp基线重复账本精确一致。费用压力不改变标准场景资格。
+
+|配置|10bp年化|20bp年化|30bp年化|20bp的2022收益|20bp的2023收益|30bp的2023收益|
+|---|---:|---:|---:|---:|---:|---:|
+|C1124|12.1907%|8.3105%|4.5611%|-1.9152%|-4.0492%|-7.9530%|
+|C1000|13.9456%|9.9701%|6.1319%|2.0401%|-3.7803%|-7.6979%|
+|C1013|12.6309%|8.8652%|5.2270%|0.8118%|-3.6724%|-7.4094%|
+|C1016|12.0527%|8.5569%|5.1700%|0.2572%|-2.1939%|-5.6160%|
+|C1201|11.2809%|8.0728%|4.9530%|-0.5489%|1.9708%|-1.0132%|
+|C1203|11.8041%|8.3821%|5.0648%|-1.5479%|0.2767%|-3.0406%|
+
+## 逐自然年目标核验
+
+收益按各自实际连续权益计算；下表优先并列BuyHold与标准达标配置。
+
+|年份|BuyHold净收益|C1000|C1013|C1124|
+|---|---:|---:|---:|---:|
+|2020|22.1821%|16.8297%|13.8296%|10.9642%|
+|2021|17.2432%|12.6784%|14.1727%|9.3103%|
+|2022|-18.3277%|7.9588%|6.6622%|3.7709%|
+|2023|-6.2480%|0.3054%|0.2181%|0.0236%|
+|2024|6.9596%|58.6988%|51.0243%|60.0326%|
+|2025|32.7258%|8.3156%|8.3170%|11.2487%|
+|2026|0.9951%|-4.7547%|-4.7540%|-5.8551%|
+
+逐年回撤优势为BuyHold回撤幅度减策略回撤幅度，正数满足严格更小；单位百分点。
+
+|年份|C1000|C1013|C1124|
+|---|---:|---:|---:|
+|2020|9.0031|6.6640|4.8636|
+|2021|7.1690|7.4322|7.1693|
+|2022|18.2749|18.6557|16.8418|
+|2023|11.6210|11.2146|11.5605|
+|2024|8.5626|8.5612|8.5606|
+|2025|10.2703|10.2707|10.2703|
+|2026|8.8826|8.8838|7.8410|
+
+## 搜索、证据和限制
+
+本轮89个不同配置，由Optuna固定队列在主进程管理、按参数哈希去重；4个Windows spawn评价进程，每个原生线程1、每请求workers=1、种子13。另有1次控制复算，及6个三费用场景请求，其中10bp基线为重复一致性检查。
+各轮在运行前显式发布方案，后续设计依据已观察结果并披露选择历史；不是随机未见样本检验。原阶段三494个成功配置、16次UNKNOWN及阶段四80个扰动的历史原件保持，本轮没有用新增计数冒充完整搜索分布校正。
+整个开发池反复用于路线和参数选择，没有独立保留样本。原阶段四统计诊断不自动适用于新候选；本轮未计算新的完整研究族PBO/DSR，不把排名或置信区间解释为未来成功概率。
+
+所有89个标准账户独立核验年度权益、逐日现金及持仓、价格/费用损益，金额重建误差均小于0.000001元。已声明2020-12-01分钟Low偏差可能改变实际订单的数量为0；四个分钟High偏差不进入可信日线特征或当前撮合。仅覆盖已声明异常，未知分钟路径及供应商因子历史可得性限制保持。
+原31份研究资产、28份历史准备及原候选/交付原件保持；计算消费技术迁移后契约版本1的正式资产及新准备引用。正式账户、源码、依赖和准备引用须随交付保留；Git和.tmp缓存不能替代正式资产。
+新增策略未进入阶段四标准自检、阶段五技术检验或冻结；本轮未修改平台、依赖、生产或PTE账户，也未执行全仓回归。
+
+## 收口与下一步
+
+本轮没有找到同时满足原四项目标、又提高基准亏损年份最小盈利余量的新配置。新增达标配置保留资格，但未解决原阶段四揭示的盈利薄弱问题。 停止判断应依据真实改善、配对反证和剩余方向，而非固定评价次数；本轮不宣称已穷举所有策略或不存在更优配置。
+建议先审阅本轮正式交付，保留旧候选和全部新达标配置，暂缓冻结。若本轮周转机制的盈利与频率取舍不能共存，应优先重新研究能增加价格收益的可用信息，而非继续只围绕亏损年份的少量交易微调。
+进入阶段四、回阶段二、选择候选、冻结及生产动作分别等待用户明确决定。
+
+
+## 正式证据索引
+
+- [continuation-account-references](../../../assets/deliveries/CANDIDATES/4/evidence/ea384e8043661ba679014dcf64b0df0200a6401390595a1820db04a2ddc4590a.json)
+- [continuation-authorization](../../../assets/deliveries/CANDIDATES/4/evidence/b4751bc075e818e9a3f90004c1866f462b3a221abe1533da98663dcbe7df3c09.json)
+- [continuation-cost-diagnostics](../../../assets/deliveries/CANDIDATES/4/evidence/996df772b98c020bbe962a59b9cd3da2961e7dadf2422fe96f8b2478859e0e0c.json)
+- [continuation-diagnostics](../../../assets/deliveries/CANDIDATES/4/evidence/34dab0bb63b59676defb232926f6c930f948f333b1f9e7cc828f045dcbbaf0ce.json)
+- [continuation-extension-plan](../../../assets/deliveries/CANDIDATES/4/evidence/18c0ab22332c8574e0f4b138206e531cfc6882a28146a9068258bdd2b828e74c.json)
+- [continuation-extra-stress-plan](../../../assets/deliveries/CANDIDATES/4/evidence/21d70dc43120c48c030bb14055e9e2c302f72d87fd678f3d785e3877b51fc01d.json)
+- [continuation-followup-plan](../../../assets/deliveries/CANDIDATES/4/evidence/0d310de95c68bd94dce8b9459d6e63391e59a753e3fd7ac583d3ba040a1917ec.json)
+- [continuation-initial-plan](../../../assets/deliveries/CANDIDATES/4/evidence/a82ce2b7fdcba41449f879ae4eab18c9cc72326dd6baee46032c3ce99bf87e5b.json)
+- [continuation-mechanism-boundary-check](../../../assets/deliveries/CANDIDATES/4/evidence/30b15d8aaa420427db95b06700dc9c83ecb6f2056bdb7d5c8243f75dd8d3ae1b.json)
+- [continuation-precheck](../../../assets/deliveries/CANDIDATES/4/evidence/364441acfbe891970dae8026382ae00b43d6ff1001b7b05ce537b601242a1603.json)
+- [continuation-preservation](../../../assets/deliveries/CANDIDATES/4/evidence/935e34a4232784aab52313925b4633a937b5f8f09afabf8054950a80288b74fd.json)
+- [continuation-recovery-plan](../../../assets/deliveries/CANDIDATES/4/evidence/403ec5ac1c8492e9f03e082fb8905d4321b71edb706af292f7e7fc4c548da5f3.json)
+- [continuation-reproduction](../../../assets/deliveries/CANDIDATES/4/evidence/163ff309b3cf31b2f718a0bb112277c854906d5e13b167c33999d68b4583e6fd.json)
+- [continuation-selection](../../../assets/deliveries/CANDIDATES/4/evidence/425109e42a4349ca75ac487db0386995db106315a70ef166df1e64040c66c979.json)
+- [continuation-state-cooldown-extension](../../../assets/deliveries/CANDIDATES/4/evidence/5d3f0712e3bedc27d34946a7e138649bc8d6b401c9eb9682ea558330ef4bd840.json)
+- [continuation-state-frequency-recovery](../../../assets/deliveries/CANDIDATES/4/evidence/c62a89675f8abcaf838f5625594340eb989ca378de5dabd3e629c2be5101b259.json)
+- [continuation-state-hold-interaction](../../../assets/deliveries/CANDIDATES/4/evidence/ec4c15dae9a1587e1cb64baa0381c9aeb4d0bcd0a412ad1a02f0d1c92c32a554.json)
+- [continuation-state-stability-initial](../../../assets/deliveries/CANDIDATES/4/evidence/3924379d90e6b5995d51ea6d65d9672f1b9975bbdd54340c722a9ad08da11d43.json)
+- [continuation-stress-plan](../../../assets/deliveries/CANDIDATES/4/evidence/c96bf94c7ab8bae5159121ad66fcd36e5838e99030fda5375cfc442854df950f.json)
+- [continuation-synthetic-check](../../../assets/deliveries/CANDIDATES/4/evidence/7500176c0dd1d47ccf4137f574baf57d8855bd45a954f32c3208fa77f9cc596b.json)
+- [contract-migration-equivalence](../../../assets/deliveries/CANDIDATES/4/evidence/1feb451377f24d3901e62de62f3935374946135577c08937fc849a7e030c6005.json)
+- [cost-C1000](../../../assets/deliveries/CANDIDATES/4/evidence/462b58b995d3b8b3288bf4e2717c9d86a36be4d58e16db841cda7447337fa31b.json)
+- [cost-C1013](../../../assets/deliveries/CANDIDATES/4/evidence/19875b16b395e377a4d67e7cd61d8347a2be93f7eec6a35384244121dfc3ca93.json)
+- [cost-C1016](../../../assets/deliveries/CANDIDATES/4/evidence/bc4647209a192e1f53eeec85396e5ac041c03d6240e07e74eeca3df3cdc83005.json)
+- [cost-C1124](../../../assets/deliveries/CANDIDATES/4/evidence/f375ac87bd38d1282661f4098de72bfbe87360a294c8290affe6c09c4c652976.json)
+- [cost-C1201](../../../assets/deliveries/CANDIDATES/4/evidence/e1d26defaac8ab2cb90f5fd45417b72e51adb51a4846f76979b4bd86c8e6a889.json)
+- [cost-C1203](../../../assets/deliveries/CANDIDATES/4/evidence/ce6b39dd920785ae7a0a5891165faead344e5f0acb2a2f76381df598b8f7dbed.json)
+- [stage-two-data](../../../assets/deliveries/CANDIDATES/4/evidence/304cd281e0cde1850650b0dcc07aaad9f64c1621672d8b4606d84654f786c3ee.json)
+- [C1000完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/3bdddb97c03cce6da5b963a353bde216c4c2c14aa243e725927a26be57cb6305.json)
+- [C1001完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/248f44d0e26fe84e839c0e2b7410d58112d406d80887f40a39631d8b262caafa.json)
+- [C1013完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/61dd042547a4a59b85ff17ea2be1192e757028c223d862b70474d727c87e15c0.json)
+- [C1014完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/78394ffc389d83e38ee8db580265d54ea58b006f92203d9d636c2ff168c25573.json)
+- [C1015完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/f5a66220ba4a631ef96e84bd2ad9b2dccb1b1fb26bda93dfac8e86ddc7385c55.json)
+- [C1016完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/162f7f3140d0f784db929c7e081ba43770999eebd897b9e138720d1aa97e639a.json)
+- [C1017完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/141605f5ffcec91be03630ad58e10015a79abd778a8e9eaa3b7310bca198e0ad.json)
+- [C1103完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/e00ae1e37f8469ecda02723ef12bf92820937689ca48e3ce9b13642cfb08785d.json)
+- [C1105完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/528d6528e984a3b0440b0fd372c5e67cad524292abb67b891ed12752f7204cd5.json)
+- [C1109完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/05253f6c1841f810d7196310642a4b7991fd95f4707ad019e3d5581018d9af2b.json)
+- [C1111完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/ff5d44ac88813b2a917edc30c86e76afc7298a72f3e517aad3f21e93a1f4fbbe.json)
+- [C1124完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/0b40189dd4aade40918ea4119ecbe17aa81ffb8ef641fd32d30715cc929e5b17.json)
+- [C1200完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/d4916ee9cad62965747890822f5205cfe445e4a6898a79741c654690a8e41775.json)
+- [C1201完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/ede99987146bfbeb02772a1ec830580cce5615b559dc307feea4bbf6de5c4625.json)
+- [C1202完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/7ed5f6d307a66f124a1845f36f7a45b6dbe1189eb315e2fed420d9d44e0f512f.json)
+- [C1203完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/8a02ad0b3e2db0c900236afbdad1c0a1d211a94134754aa9a8021b6361eb9c88.json)
+- [C1314完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/8c31339bd714e9eba5a431c40a128098078d921d61fc5ed418425f035acb55b8.json)
+- [C1315完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/1a1bb2191108fd04325f824187defea67b441c8a7a27693c7feeaa8120eedb3c.json)
+- [C1316完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/4d317851dc9da2b3b46932d38e150c90d2ad8e05d98b43c424f152c533f89ea0.json)
+- [C1317完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/20f636d7bb4f16a6045b2f3336946262c62178f4896ac9f361a59b3a632cfb0a.json)
+- [C1318完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/da3ce01aad567b837d14917efea48b7e987285245d979d8446999c92628f684b.json)
+- [C9018完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/12b1103556638e4902d6ef9a3ba7b76fc0502cc3a68c3ee90c2bf0e2c5480f28.json)
+- [C9020完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/8f570966ef68704c918e45d556e43649e0b9c0f0700186054e36ffc0b83784c3.json)
+- [C9023完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c.json)
+- [C9024完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/1a5f42dd206eccc6049e3b5bf55afaadb3b2d60999b385f633452c557ab565e8.json)
+- [C9025完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/049a622eb6d24a3105cbb37ef182539e9698d0794d6eb4c7ae07e7774583e005.json)
+- [C9026完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/dd1808b47afe3ef0efd4dab3a5ce0d71a55b857e3b76cdc9e641050d3cddea27.json)
+- [C9027完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/91685cd72cd716eeac212a1618aca2432fc70a53bac76a00217dce418ce8f1f9.json)
+- [C9028完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/402aab2547a5476fc629adb32412080f8f921fa8f19bc39b84812cceba437ef4.json)
+- [C9029完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc.json)
+- [C9030完整账户](../../../assets/deliveries/CANDIDATES/4/evidence/b2fd6abba44aa22148fef49e05aa21215aa1437598e4eeed393d0468872b55a8.json)
