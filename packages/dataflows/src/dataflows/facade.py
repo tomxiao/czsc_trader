@@ -10,6 +10,7 @@ from dataclasses import fields, is_dataclass, replace
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import pandas as pd
 import numpy as np
@@ -17,6 +18,7 @@ import numpy as np
 from .asset_store import AssetStore, StoreError
 
 from .contract import (
+    DATA_CONTRACT_VERSION,
     ETF_INTRADAY_OBSERVATION_RULE,
     FXCM_AVAILABILITY_RULE,
     FRED_GVZ_AVAILABILITY_RULE,
@@ -996,7 +998,7 @@ def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
 
 
 def _implementation_revision() -> str:
-    """Invalidate REUSE when adapter, validation or repair implementation changes."""
+    """Identify acquisition code for provenance independently of data compatibility."""
     digest = hashlib.sha256()
     root = Path(__file__).parent
     for path in sorted(root.rglob("*.py")):
@@ -1014,6 +1016,7 @@ class Dataflows:
         if not isinstance(providers, ProviderConfig):
             raise TypeError("providers must be ProviderConfig")
         self._store = AssetStore(base_dir, space)
+        self._contract_version = DATA_CONTRACT_VERSION
         self._revision = _implementation_revision()
         if providers.bindings is None:
             self._providers = {
@@ -1036,6 +1039,45 @@ class Dataflows:
 
         return tuple(sorted(self._providers))
 
+    def _require_contract_version(self, version: Any, *, location: str) -> None:
+        if version is None:
+            raise StoreError("DATA_CONTRACT_VERSION_MISSING",
+                             f"{location} has no data contract version; expected {self._contract_version}")
+        if type(version) is not int or version != self._contract_version:
+            raise StoreError("DATA_CONTRACT_VERSION_MISMATCH",
+                             f"{location} data contract version {version!r} differs from required {self._contract_version}")
+
+    def _check_existing_contracts(self, connection, planned) -> None:
+        # Disposable index misses must not hide an incompatible stored publication.
+        missing = [row for row in planned if row[1] is not None
+                   and self._store.lookup_asset(connection, row[3]) is None]
+        if not missing:
+            return
+        publications = connection.execute(
+            "SELECT preparation_id,manifest_sha256 FROM preparations ORDER BY prepared_at DESC"
+        ).fetchall()
+        for preparation_id, manifest_sha256 in publications:
+            try:
+                reference = PreparedDataRef(self._store.space_id, UUID(preparation_id), manifest_sha256)
+            except (TypeError, ValueError) as exc:
+                raise StoreError("PREPARATION_CORRUPT", "stored preparation identity is invalid") from exc
+            for entry in self._store.load_preparation(reference):
+                declared = {key: value for key, value in entry["request"].items()
+                            if key not in {"coverage", "required_cutoff"}}
+                for row in tuple(missing):
+                    selector = {key: value for key, value in row[2].items()
+                                if key not in {"coverage", "required_cutoff"}}
+                    if declared != selector:
+                        continue
+                    stored = self._store.read_asset(connection, entry["asset_id"])
+                    if stored.identity.metadata.get("provider_binding") != row[1].name:
+                        continue
+                    self._require_contract_version(entry.get("data_contract_version"), location="preparation")
+                    self._require_contract_version(stored.identity.metadata.get("data_contract_version"), location="asset")
+                    missing.remove(row)
+            if not missing:
+                return
+
     def prepare(
         self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy,
     ) -> PrepareResult:
@@ -1053,10 +1095,8 @@ class Dataflows:
         def check(result: DataResult, request: DataRequest) -> DataResult:
             if not result.ready:
                 return result
-            # This revision can only publish an asset after full source validation.
-            return self._checked_result(
-                result, request, validated=result.identity.metadata.get("dfls_revision") == self._revision,
-            )
+            self._require_contract_version(result.identity.metadata.get("data_contract_version"), location="asset")
+            return self._checked_result(result, request, validated=True)
 
         planned = []
         requirements: dict[str, list[DataRequest]] = {}
@@ -1068,13 +1108,10 @@ class Dataflows:
             key = hashlib.sha256(json.dumps({
                 "request": selector,
                 "provider": binding.name if binding else None,
-                "provider_revision": binding.revision if binding else None,
-                "dfls_revision": self._revision,
             }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
             planned.append((request, binding, record, key))
             requirements.setdefault(key, []).append(request)
         prepare_key = hashlib.sha256(json.dumps({
-            "dfls_revision": self._revision,
             "requests": [{"request": record, "asset_key": key} for _, _, record, key in planned],
         }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         try:
@@ -1083,9 +1120,10 @@ class Dataflows:
                     cached = self._store.lookup_preparation(connection, prepare_key)
                     if cached is not None:
                         cached_entries = self._store.load_preparation(cached)
+                        for entry in cached_entries:
+                            self._require_contract_version(entry.get("data_contract_version"), location="preparation")
                         if ([entry["request"] for entry in cached_entries] != [row[2] for row in planned]
-                                or any(entry.get("validated_revision") != self._revision
-                                       or entry.get("prepare_key") != prepare_key for entry in cached_entries)):
+                                or any(entry.get("prepare_key") != prepare_key for entry in cached_entries)):
                             raise StoreError("PREPARATION_CORRUPT", "cached preparation differs from complete request")
                         assets = {}
                         for request, entry in zip(requests, cached_entries):
@@ -1098,6 +1136,7 @@ class Dataflows:
                         if all(item.ready for item in items):
                             return PrepareResult(PrepareStatus.READY, tuple(items), cached)
                         raise StoreError("PREPARATION_CORRUPT", "cached preparation no longer satisfies its request")
+                    self._check_existing_contracts(connection, planned)
                 for request, binding, record, key in planned:
                     asset_id = None
                     if binding is None:
@@ -1145,7 +1184,7 @@ class Dataflows:
                     ))
                     if result.ready:
                         entries.append({"request": record, "asset_id": asset_id,
-                                        "validated_revision": self._revision, "prepare_key": prepare_key})
+                                        "data_contract_version": self._contract_version, "prepare_key": prepare_key})
                 if all(item.status is DataStatus.READY for item in items):
                     self._assert_consistent(connection, entries)
                     reference = self._store.publish(connection, entries)
@@ -1212,12 +1251,12 @@ class Dataflows:
             if not matching:
                 return self._failure(DataStatus.FAILED, "REQUEST_NOT_PREPARED",
                                      "request is outside this preparation", request)
-            if any(entry.get("validated_revision") != self._revision for entry in matching):
-                return self._failure(DataStatus.FAILED, "PREPARATION_VALIDATION_REQUIRED",
-                                     "preparation requires validation by the current DFLS revision", request)
+            for entry in matching:
+                self._require_contract_version(entry.get("data_contract_version"), location="preparation")
             results = []
             for asset_id in sorted({entry["asset_id"] for entry in matching}):
                 stored = self._store.read(asset_id)
+                self._require_contract_version(stored.identity.metadata.get("data_contract_version"), location="asset")
                 numerical = pd.DataFrame(stored.dataframe, copy=False)
                 dates = pd.to_datetime(numerical["Date"], errors="raise")
                 selected = dates.between(pd.Timestamp(request.start), _end_timestamp(request.end))
@@ -1317,7 +1356,7 @@ class Dataflows:
             _validate_coverage(frame, request)
             metadata = _lineage_metadata(request, frame, metadata)
             metadata.update(provider_binding=provider.name, provider_revision=provider.revision,
-                            dfls_revision=self._revision)
+                            dfls_revision=self._revision, data_contract_version=self._contract_version)
             quality = _validate_provider_output(frame, request, metadata)
             if str(request.dataset) in _OHLCV_DATASETS:
                 metadata["ohlcv_quality"] = quality

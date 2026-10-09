@@ -13,6 +13,9 @@ from uuid import UUID
 
 import pandas as pd
 
+# Change only when the published data contract changes, independently of code revisions.
+DATA_CONTRACT_VERSION = 1
+
 FXCM_AVAILABILITY_RULE = (
     "conservative source date + 2 calendar days at 08:00 Asia/Shanghai; "
     "vendor publication timestamp unverified"
@@ -518,7 +521,7 @@ Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
 
 @dataclass(frozen=True, slots=True)
 class ProviderBinding:
-    """Provider implementation and revision used to identify prepared assets."""
+    """Provider identity and implementation revision retained for source provenance."""
 
     name: str
     revision: str
