@@ -1,0 +1,123 @@
+{
+  "record": {
+    "content_sha256": "8479e1fb2604471df615f749632e3308c05288904c934221e0b56abf7047111a",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "C9029-policy-control-regime_reentry--0.185",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.95,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "turnover",
+            "scope": "both",
+            "threshold": -0.185
+          },
+          "context": {
+            "entry_gate": "regime_reentry",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_FEATURES"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.005,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C2401",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "8479e1fb2604471df615f749632e3308c05288904c934221e0b56abf7047111a",
+      "evidence": {
+        "path": "assets/candidates/C2401/derivation/86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc.json",
+        "sha256": "86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9029",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "6408cff8f2ff8d0173ed47996cf2c5d4884117481271531fb25f32ec3020da5f",
+      "protocol_sha256": "26cc400d520127da1925306ee7b127d8fc0f33b39c7c16bdbb777d46877365f0"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C2401",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX006_20261009/82c62a56c6d73849594162c36d9813023e95ef542814ba984822e4d9efc2be0d.json",
+          "sha256": "82c62a56c6d73849594162c36d9813023e95ef542814ba984822e4d9efc2be0d"
+        }
+      ],
+      "experiment_id": "EX006_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C2401/payload/1c4cf797de5318b84da5c74b554e424a225ba53d4578eb1a9b8346f208cb1a2e.json",
+      "sha256": "1c4cf797de5318b84da5c74b554e424a225ba53d4578eb1a9b8346f208cb1a2e"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C2401/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C2401/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C2401/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C2401/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      }
+    ],
+    "source_root": "assets/candidates/C2401/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime",
+    "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+  },
+  "record_sha256": "34cad5011ec987437a8ff0256cd208ebd959c48bb99548026e74c41e4447f2ca"
+}

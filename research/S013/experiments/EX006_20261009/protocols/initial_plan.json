@@ -1,0 +1,4270 @@
+{
+  "name": "confirmation_initial",
+  "hypothesis": "entry confirmation selects information quality rather than elapsed time",
+  "borrowed_expression": "separate existing opportunity/exit logic from a buy-only causal rolling-percentile score",
+  "reference_snapshot": {
+    "source": "\"\"\"Frozen S007-v1 multi-source causal feature-gate runtime.\"\"\"\n\nfrom __future__ import annotations\n\nfrom pathlib import Path\nfrom datetime import date, timedelta\nfrom typing import Any, Mapping\n\nimport numpy as np\nimport pandas as pd\nfrom dataflows import Dataset, DataRequest\n\nfrom strategy_runtime import StrategyImplementation\nfrom ..calculation import (\n    CalculationScope,\n    calendar_data_request,\n    build_scope,\n    InputRange,\n    next_session_calculation_scope,\n    next_session_calendar_window,\n)\nfrom strategy_runtime import TradableWindow\nfrom strategy_runtime import RuntimeContractError\nfrom ..execution_rules import effective_target_order_type\nfrom strategy_runtime import ObservationDefinition\nfrom strategy_runtime import (\n    CutoffRule,\n    DecisionContract,\n    ExecutionPolicy,\n    HistoryPolicy,\n    InputContract,\n    InputRequirement,\n    MonitoringPolicy,\n    ParameterSet,\n    RequiredCapabilities,\n    StrategyDefinition,\n)\n\n\n_SEED = \"feature_seed\"\n_MARKET = \"adjusted_daily\"\n_SHIBOR = \"incremental_shibor_daily\"\n_CHINEXT = \"incremental_chinext_daily_basic\"\n_SHARES = \"incremental_etf_share_size\"\n_SPX = \"incremental_spx_daily\"\n_EXECUTION = \"execution_daily\"\n_CALENDAR = \"trading_calendar\"\n_FROZEN_HISTORY_START = pd.Timestamp(\"2021-01-04\")\n_FROZEN_HISTORY_END = pd.Timestamp(\"2026-09-02\")\n_GLOBAL_HISTORY_START = pd.Timestamp(\"2020-12-01\")\n\n\ndef _object(value: Any, field_name: str) -> Mapping[str, Any]:\n    if not isinstance(value, Mapping):\n        raise RuntimeContractError(f\"{field_name} must be an object\")\n    return value\n\n\ndef causal_percentile(values: pd.Series, window: int, minimum: int) -> pd.Series:\n    def rank_last(items: np.ndarray) -> float:\n        current = items[-1]\n        valid = items[np.isfinite(items)]\n        if not np.isfinite(current) or len(valid) < minimum:\n            return np.nan\n        return float(\n            (np.count_nonzero(valid < current) + 0.5 * np.count_nonzero(valid == current))\n            / len(valid)\n            - 0.5\n        )\n\n    return values.astype(float).rolling(window, min_periods=minimum).apply(rank_last, raw=True)\n\n\ndef materialize_s007_features(inputs: Mapping[str, pd.DataFrame]) -> pd.DataFrame:\n    market = inputs[_MARKET].copy()\n    market[\"Date\"] = pd.to_datetime(market[\"Date\"]).dt.normalize()\n    market = market.drop_duplicates(\"Date\", keep=\"last\").set_index(\"Date\").sort_index()\n    sessions = market.index\n    close = pd.to_numeric(market[\"Close\"], errors=\"raise\")\n    volume = pd.to_numeric(market[\"Volume\"], errors=\"raise\")\n    amount = pd.to_numeric(market[\"Amount\"], errors=\"raise\")\n    output = pd.DataFrame(index=sessions)\n    output[\"price_close_vwap_deviation\"] = close / (amount / volume) - 1.0\n    output[\"price_intraday_range\"] = (\n        pd.to_numeric(market[\"High\"], errors=\"raise\") - pd.to_numeric(market[\"Low\"], errors=\"raise\")\n    ) / close\n    output[\"tsfresh__log_volume_change__mean__lb20\"] = (\n        np.log(volume).diff().rolling(20, min_periods=20).mean()\n    )\n\n    shibor = inputs[_SHIBOR].drop_duplicates(\"Date\", keep=\"last\").copy()\n    shibor[\"Date\"] = pd.to_datetime(shibor[\"Date\"]).dt.normalize()\n    overnight = (\n        shibor.set_index(\"Date\")[\"OvernightRate\"]\n        .astype(float)\n        .sort_index()\n        .reindex(sessions)\n        .ffill(limit=4)\n    )\n    output[\"risk_shibor_on_change_5d\"] = overnight.diff(5)\n\n    chinext = inputs[_CHINEXT].drop_duplicates(\"Date\", keep=\"last\").copy()\n    chinext[\"Date\"] = pd.to_datetime(chinext[\"Date\"]).dt.normalize()\n    turnover = (\n        chinext.set_index(\"Date\")[\"TurnoverRateFreeFloat\"]\n        .astype(float)\n        .sort_index()\n        .reindex(sessions)\n    )\n    output[\"risk_chinext_turnover_z20\"] = (\n        turnover - turnover.rolling(20).mean()\n    ) / turnover.rolling(20).std(ddof=0)\n\n    shares = inputs[_SHARES].drop_duplicates(\"Date\", keep=\"last\").copy()\n    shares[\"Date\"] = pd.to_datetime(shares[\"Date\"]).dt.normalize()\n    total_share = (\n        shares.set_index(\"Date\")[\"TotalShare\"].astype(float).sort_index().reindex(sessions)\n    )\n    output[\"micro_share_change_5d_lag1\"] = total_share.pct_change(5, fill_method=None).shift(1)\n\n    spx = inputs[_SPX].drop_duplicates(\"Date\", keep=\"last\").copy()\n    spx[\"Date\"] = pd.to_datetime(spx[\"Date\"]).dt.normalize()\n    mapped = pd.merge_asof(\n        pd.DataFrame({\"date\": sessions}),\n        spx[[\"Date\", \"PercentChange\"]].sort_values(\"Date\"),\n        left_on=\"date\",\n        right_on=\"Date\",\n        direction=\"backward\",\n        allow_exact_matches=False,\n    ).set_index(\"date\")\n    output[\"risk_global_spx_return\"] = mapped[\"PercentChange\"].astype(float)\n    # S007-v1 was researched and frozen with a feature panel beginning on this\n    # session.  Earlier market rows may be published as calculation context,\n    # but admitting them into rolling normalization changes the frozen target\n    # sequence during 2021.  Keep the historical initialization boundary part\n    # of the executable version identity.\n    return output.loc[output.index >= _FROZEN_HISTORY_START]\n\n\ndef _seed_panel(seed: pd.DataFrame, features: list[str]) -> pd.DataFrame:\n    required = {\"Date\", *features}\n    if not required <= set(seed.columns):\n        raise RuntimeContractError(\"S007-v1 feature seed is structurally incomplete\")\n    panel = seed.loc[:, [\"Date\", *features]].copy()\n    panel[\"Date\"] = pd.to_datetime(panel[\"Date\"], errors=\"raise\").dt.normalize()\n    if panel[\"Date\"].duplicated().any():\n        raise RuntimeContractError(\"S007-v1 feature seed contains duplicate sessions\")\n    for feature in features:\n        panel[feature] = pd.to_numeric(panel[feature], errors=\"coerce\")\n    panel = panel.set_index(\"Date\").sort_index()\n    if panel.index.min() != _FROZEN_HISTORY_START or panel.index.max() > _FROZEN_HISTORY_END:\n        raise RuntimeContractError(\"S007-v1 feature seed has an invalid frozen range\")\n    return panel\n\n\ndef calculate_s007_history(\n    panel: pd.DataFrame, normalization: Mapping[str, Any], score: Mapping[str, Any]\n) -> pd.DataFrame:\n    orientations = {\n        name: int(value) for name, value in _object(score[\"orientations\"], \"orientations\").items()\n    }\n    normalized = pd.DataFrame(index=panel.index)\n    for feature, orientation in orientations.items():\n        normalized[feature] = (\n            causal_percentile(\n                panel[feature],\n                int(normalization[\"lookback_sessions\"]),\n                int(normalization[\"minimum_observations\"]),\n            )\n            * orientation\n        )\n    base_weights = dict(_object(score[\"base_weights\"], \"base weights\"))\n    confirmation_weights = dict(_object(score[\"confirmation_weights\"], \"confirmation weights\"))\n    base = normalized.mul(pd.Series(base_weights), axis=1).sum(axis=1, min_count=len(base_weights))\n    confirmation = normalized.mul(pd.Series(confirmation_weights), axis=1).sum(\n        axis=1, min_count=len(confirmation_weights)\n    )\n    current = 0\n    targets: list[int] = []\n    actions: list[str] = []\n    for base_value, confirmation_value in zip(base, confirmation, strict=True):\n        action = \"HOLD_POSITION\" if current else \"HOLD_CASH\"\n        if np.isfinite(base_value):\n            if (\n                current == 0\n                and base_value >= float(score[\"entry_threshold\"])\n                and confirmation_value >= float(score[\"confirmation_threshold\"])\n            ):\n                current = 1\n                action = \"ENTER\"\n            elif current == 1 and base_value <= float(score[\"exit_threshold\"]):\n                current = 0\n                action = \"EXIT\"\n        targets.append(current)\n        actions.append(action)\n    return pd.DataFrame(\n        {\n            \"base_score\": base,\n            \"confirmation_score\": confirmation,\n            \"target_position\": targets,\n            \"action\": actions,\n        },\n        index=panel.index,\n    )\n\n\ndef resolve_s007_feature_panel(\n    inputs: Mapping[str, pd.DataFrame],\n    score: Mapping[str, Any],\n) -> pd.DataFrame:\n    \"\"\"Combine the immutable frozen seed with point-in-time incremental features.\"\"\"\n\n    features = sorted(score[\"orientations\"])\n    if _SEED not in inputs:\n        raise RuntimeContractError(\"S007-v1 prepared inputs have no feature seed\")\n    panel = _seed_panel(inputs[_SEED], features)\n    incremental_names = {_SHIBOR, _CHINEXT, _SHARES, _SPX}\n    present = incremental_names.intersection(inputs)\n    if present and present != incremental_names:\n        raise RuntimeContractError(\"S007-v1 incremental inputs are incomplete\")\n    if present:\n        materialized = materialize_s007_features(inputs)\n        additions = materialized.loc[materialized.index > _FROZEN_HISTORY_END, features]\n        panel = pd.concat([panel, additions])\n    return panel[~panel.index.duplicated(keep=\"last\")].sort_index()\n\n\nclass S007V1(StrategyImplementation):\n    \"\"\"Executable S007-v1; every feature is materialized from DFLS inputs.\"\"\"\n\n    def __init__(self, parameters: ParameterSet) -> None:\n        payload = _object(parameters.values, \"strategy parameters\")\n        if payload.get(\"strategy_kind\") != \"causal_feature_gate\":\n            raise RuntimeContractError(\"S007-v1 strategy_kind differs\")\n        rule = _object(payload.get(\"rule\"), \"S007-v1 rule\")\n        self._normalization = _object(rule.get(\"normalization\"), \"S007-v1 normalization\")\n        self._score = _object(rule.get(\"score\"), \"S007-v1 score\")\n        execution = _object(rule.get(\"execution\"), \"S007-v1 execution\")\n        self._symbol = str(rule.get(\"symbol\", \"\")).upper()\n        if self._symbol != \"588080.SH\":\n            raise RuntimeContractError(\"S007-v1 frozen symbol must be 588080.SH\")\n        requirements = (\n            InputRequirement(\n                _SEED,\n                Dataset.STRATEGY_FEATURE_EVIDENCE.value,\n                \"S007-v1\",\n                \"daily\",\n                0,\n                CutoffRule.LATEST_AVAILABLE,\n            ),\n            InputRequirement(\n                _MARKET,\n                Dataset.ETF_OHLCV.value,\n                self._symbol,\n                \"daily\",\n                1,\n                CutoffRule.SIGNAL_SESSION,\n            ),\n            InputRequirement(\n                _SHIBOR, Dataset.SHIBOR_DAILY.value, None, \"daily\", 6, CutoffRule.SIGNAL_SESSION\n            ),\n            InputRequirement(\n                _CHINEXT,\n                Dataset.INDEX_DAILY_BASIC.value,\n                \"399006.SZ\",\n                \"daily\",\n                20,\n                CutoffRule.SIGNAL_SESSION,\n            ),\n            InputRequirement(\n                _SHARES,\n                Dataset.ETF_SHARE_SIZE.value,\n                self._symbol,\n                \"daily\",\n                6,\n                CutoffRule.PREVIOUS_SESSION,\n            ),\n            InputRequirement(\n                _SPX,\n                Dataset.GLOBAL_INDEX_DAILY.value,\n                \"SPX\",\n                \"daily\",\n                1,\n                CutoffRule.LATEST_AVAILABLE,\n                7,\n            ),\n            InputRequirement(\n                _EXECUTION,\n                Dataset.ETF_UNADJUSTED_DAILY.value,\n                self._symbol,\n                \"daily\",\n                1,\n                CutoffRule.SIGNAL_SESSION,\n            ),\n            InputRequirement(\n                _CALENDAR,\n                Dataset.TRADING_CALENDAR.value,\n                \"SSE\",\n                \"daily\",\n                0,\n                CutoffRule.LATEST_AVAILABLE,\n            ),\n        )\n        self._definition = StrategyDefinition(\n            ParameterSet(payload),\n            InputContract(requirements),\n            DecisionContract(\"TARGET_POSITION\", 0.0, 1.0, \"NEXT_SESSION_OPEN\"),\n            ExecutionPolicy(\"FROZEN_RULE\", execution),\n            MonitoringPolicy(\"FORWARD_OBSERVATION\", {\"frozen\": True}),\n            RequiredCapabilities(\n                tuple(sorted({item.dataset for item in requirements})),\n                tuple(\n                    sorted(\n                        {\n                            effective_target_order_type(execution, \"BUY\"),\n                            effective_target_order_type(execution, \"SELL\"),\n                        }\n                    )\n                ),\n            ),\n            tradable_symbol=self._symbol,\n            history=HistoryPolicy(\"CANONICAL_REPLAY\", \"2021-01-04\", \"2020-12-01\"),\n            observation=ObservationDefinition.from_dict(\n                {\n                    \"contract_version\": \"strategy_observation.v2\",\n                    \"series\": [\n                        {\n                            \"guides\": [\n                                {\n                                    \"key\": \"entry_threshold\",\n                                    \"label\": \"入场阈值\",\n                                    \"value\": 0.10449974411727908,\n                                    \"kind\": \"CONSTANT\",\n                                },\n                                {\n                                    \"key\": \"exit_threshold\",\n                                    \"label\": \"退出阈值\",\n                                    \"value\": 0.047857421473087296,\n                                    \"kind\": \"CONSTANT\",\n                                },\n                            ],\n                            \"key\": \"base_score\",\n                            \"label\": \"基础分\",\n                            \"value_field\": \"base_score\",\n                        },\n                        {\n                            \"guides\": [\n                                {\n                                    \"key\": \"confirmation_threshold\",\n                                    \"label\": \"确认门\",\n                                    \"value\": -0.012073272333918687,\n                                    \"kind\": \"CONSTANT\",\n                                }\n                            ],\n                            \"key\": \"confirmation_score\",\n                            \"label\": \"确认分\",\n                            \"value_field\": \"confirmation_score\",\n                        },\n                    ],\n                    \"facts\": [],\n                }\n            ),\n        )\n\n    @classmethod\n    def from_parameters(cls, parameters: ParameterSet) -> \"S007V1\":\n        return cls(parameters)\n\n    @property\n    def definition(self) -> StrategyDefinition:\n        return self._definition\n\n    def calendar_request(self, tradable_window: TradableWindow) -> DataRequest:\n        return calendar_data_request(self._definition, next_session_calendar_window(self._definition, tradable_window))\n\n    def derive_calculation_scope(\n        self,\n        tradable_window: TradableWindow,\n        calendar_dates: tuple[date, ...],\n    ) -> CalculationScope:\n        base = next_session_calculation_scope(\n            self._definition,\n            tradable_window,\n            calendar_dates,\n        )\n        first_signal = base.signal_dates[base.trading_dates[0]]\n        last_signal = base.signal_dates[base.trading_dates[-1]]\n        calculation_start = date.fromisoformat(self._definition.history.canonical_start)\n        calculation_dates = tuple(\n            item for item in calendar_dates if calculation_start <= item <= last_signal\n        )\n        ranges = dict(base.inputs)\n        seed_end = min(_FROZEN_HISTORY_END.date(), last_signal)\n        ranges[_SEED] = InputRange(calculation_start, seed_end, None)\n        ranges[_EXECUTION] = InputRange(first_signal, last_signal, last_signal)\n\n        observation_dates = {}\n        incremental_dates = tuple(\n            item for item in calculation_dates if item > _FROZEN_HISTORY_END.date()\n        )\n        if incremental_dates:\n            first_incremental = incremental_dates[0]\n            available = tuple(item for item in calendar_dates if item <= first_incremental)\n            if len(available) < 21:\n                raise RuntimeContractError(\n                    \"S007-v1 trading calendar cannot satisfy incremental feature history\"\n                )\n            feature_start = available[-21]\n            prior_incremental = available[-2]\n            observation_dates = {\n                _SHIBOR: first_incremental, _CHINEXT: first_incremental,\n                _SHARES: prior_incremental, _SPX: first_incremental,\n                _SEED: min(first_signal, seed_end),\n            }\n            ranges[_MARKET] = InputRange(min(first_signal, feature_start), last_signal, last_signal)\n            ranges[_SHIBOR] = InputRange(feature_start, last_signal, last_signal)\n            ranges[_CHINEXT] = InputRange(feature_start, last_signal, last_signal)\n            previous = tuple(item for item in calendar_dates if item < last_signal)\n            if not previous:\n                raise RuntimeContractError(\n                    \"S007-v1 trading calendar has no prior share publication session\"\n                )\n            ranges[_SHARES] = InputRange(feature_start, previous[-1], previous[-1])\n            ranges[_SPX] = InputRange(feature_start - timedelta(days=7), last_signal, None)\n        else:\n            ranges[_MARKET] = InputRange(first_signal, last_signal, last_signal)\n            ranges[_SHIBOR] = None\n            ranges[_CHINEXT] = None\n            ranges[_SHARES] = None\n            ranges[_SPX] = None\n        return build_scope(\n            self._definition, tradable_window,\n            base.trading_dates,\n            base.signal_dates,\n            calculation_dates,\n            ranges, source_root=Path(__file__).resolve().parent.parent, observation_dates=observation_dates,\n        )\n\n    def calculate_history(\n        self,\n        inputs: Mapping[str, pd.DataFrame],\n        sessions: pd.DatetimeIndex,\n    ) -> pd.DataFrame:\n        panel = resolve_s007_feature_panel(inputs, self._score)\n        history = calculate_s007_history(panel, self._normalization, self._score)\n        requested = pd.DatetimeIndex(sessions).normalize()\n        requested.name = \"date\"\n        missing = requested.difference(history.index)\n        if not missing.empty:\n            raise RuntimeContractError(\n                \"S007-v1 prepared history misses calculation sessions: \"\n                + \",\".join(item.date().isoformat() for item in missing)\n            )\n        return history.reindex(requested)\n",
+    "definition": {
+      "change_summary": "冻结S007-C001多源机会风险门控机制及唯一正式执行规则",
+      "forward_start": "2026-09-03",
+      "parent_version": null,
+      "release_hash": "19c6bdb05c7fb1daae5bb71f0bd61cd09d7987f049e2dac6c95e3f2a063259b2",
+      "release_id": "S007-v1",
+      "schema_version": 5,
+      "selection_data_cutoff": "2026-09-02",
+      "source_candidate": "S007-C001",
+      "source_experiment": "experiments/S007/20260916_S007_EX37",
+      "strategy_id": "S007",
+      "strategy_payload": {
+        "parameters": {
+          "candidate_source": {
+            "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+            "candidate_id": "S007-C001",
+            "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+            "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+          },
+          "rule": {
+            "data_source": {
+              "format": "S007_SELECTED_FEATURE_SEED_V1",
+              "package": "strategy_runtime",
+              "path": "resources/s007_v1_seed.csv.gz",
+              "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+            },
+            "execution": {
+              "capital": {
+                "allocation_fraction": 1.0,
+                "fee_rate": 0.001,
+                "mode": "full_available_cash",
+                "target_scope": "entry_cycle"
+              },
+              "entry": {
+                "limit_family": "previous_close_ratio",
+                "limit_parameter": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "floor"
+              },
+              "exit": {
+                "limit_ratio": 0.2,
+                "order_type": "LIMIT",
+                "price_rounding": "nearest_half_up"
+              },
+              "instrument": {
+                "asset_type": "etf",
+                "lot_size": 100,
+                "market": "CN",
+                "maximum_order_quantity": 1000000,
+                "price_limit_ratio": 0.2,
+                "price_tick": 0.001,
+                "symbol": "588080.SH"
+              },
+              "virtual_fill": {
+                "buy_intraday": "low_strictly_below_limit",
+                "buy_open": "open_at_or_below_limit",
+                "liquidity_check": "diagnostic_only",
+                "sell": "marketable_limit_at_open",
+                "touch_only": "uncertain_unfilled"
+              }
+            },
+            "normalization": {
+              "lookback_sessions": 252,
+              "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+              "minimum_observations": 20
+            },
+            "score": {
+              "base_weights": {
+                "price_close_vwap_deviation": 0.28658573721959246,
+                "price_intraday_range": 0.06350436740892215,
+                "risk_chinext_turnover_z20": 0.3057021379837475,
+                "risk_global_spx_return": 0.20014784300885136,
+                "risk_shibor_on_change_5d": 0.14405991437888652
+              },
+              "confirmation_threshold": -0.012073272333918687,
+              "confirmation_weights": {
+                "micro_share_change_5d_lag1": 0.4069229172274985,
+                "tsfresh__log_volume_change__mean__lb20": 0.5930770827725015
+              },
+              "entry_threshold": 0.10449974411727908,
+              "exit_threshold": 0.047857421473087296,
+              "orientations": {
+                "micro_share_change_5d_lag1": -1,
+                "price_close_vwap_deviation": -1,
+                "price_intraday_range": 1,
+                "risk_chinext_turnover_z20": 1,
+                "risk_global_spx_return": 1,
+                "risk_shibor_on_change_5d": -1,
+                "tsfresh__log_volume_change__mean__lb20": 1
+              }
+            },
+            "symbol": "588080.SH"
+          },
+          "strategy_kind": "causal_feature_gate",
+          "symbol": "588080.SH"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.s007_v1",
+          "qualname": "S007V1",
+          "source_files": [
+            "strategies/s007_v1.py",
+            "calculation.py",
+            "execution_rules.py",
+            "resources/s007_v1_seed.csv.gz"
+          ],
+          "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+        }
+      },
+      "version": "v1"
+    }
+  },
+  "features": {
+    "acf": "existing 20-return lag1 ACF; positive orientation, state confirmation",
+    "turnover": "Amount / trailing20 mean Amount; positive participation orientation",
+    "volume": "mean of last20 log Volume changes; positive growth orientation, same expression as S007-v1"
+  },
+  "normalization": "complete trailing120 observations, current midrank centered[-.5,.5]; one trailing60 contrast",
+  "weights": "equal and fixed within each declared subset; no outcome-fit weights",
+  "scope": "original opportunity AND confirmation>=threshold while flat; original holding/exit state; zero cooldown",
+  "initial_evidence": "ACF exploratory support; amount/volume confirmation not established; stage-two combination negatives retained",
+  "competing_explanations": [
+    "redundant bear ACF restriction",
+    "lower turnover alone",
+    "volume/amount duplication",
+    "missed profitable entries or delayed protective state routes",
+    "same-data adaptive selection"
+  ],
+  "controls": [
+    "ten exact disabled-model accounts",
+    "single and paired feature ablations",
+    "same-date reversed score",
+    "old bear ACF on/off x confirmation ACF on/off",
+    "route-specific gates",
+    "causal prefix/future invariance and immediate next-session reconsideration"
+  ],
+  "hard_gates": [
+    "CAGR>=1.5*same BuyHold",
+    "each calendar-year drawdown strictly smaller",
+    "closed*60/1636>=4",
+    "strict positive actual return in negative BuyHold years"
+  ],
+  "diagnostics_only": [
+    "annual profit margin",
+    "20/30bp pressure",
+    "conditional opportunities/score and price/fee attribution"
+  ],
+  "boundary": "threshold[-.2,.1] provisional; expand or refine useful boundary improvements; no fixed trial-count adequacy claim",
+  "known_information": "full developer pool reused and all S013 past results seen; no holdout; S007 expression only read",
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "method": "Optuna fixed queue dedup, public TDR FULL accounts",
+  "configurations": [
+    {
+      "parent": "C9018",
+      "label": "C9018-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9020",
+      "label": "C9020-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9024",
+      "label": "C9024-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.015,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.015,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9025",
+      "label": "C9025-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.925,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9026",
+      "label": "C9026-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9027",
+      "label": "C9027-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.975,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9028",
+      "label": "C9028-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9029",
+      "label": "C9029-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9030",
+      "label": "C9030-all--0.5-1-both-n120-disabled",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9020",
+      "label": "C9020-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9020",
+      "label": "C9020-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9020",
+      "label": "C9020-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9020",
+      "label": "C9020-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9024",
+      "label": "C9024-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.015,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.015,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9024",
+      "label": "C9024-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.015,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.015,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9024",
+      "label": "C9024-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.015,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.015,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9024",
+      "label": "C9024-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.015,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.015,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9025",
+      "label": "C9025-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.925,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9025",
+      "label": "C9025-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.925,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9025",
+      "label": "C9025-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.925,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9025",
+      "label": "C9025-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.925,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9026",
+      "label": "C9026-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9026",
+      "label": "C9026-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9026",
+      "label": "C9026-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9026",
+      "label": "C9026-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9027",
+      "label": "C9027-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.975,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9027",
+      "label": "C9027-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.975,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9027",
+      "label": "C9027-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.975,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9027",
+      "label": "C9027-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.975,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9028",
+      "label": "C9028-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9028",
+      "label": "C9028-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9028",
+      "label": "C9028-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9028",
+      "label": "C9028-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9029",
+      "label": "C9029-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9029",
+      "label": "C9029-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9029",
+      "label": "C9029-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9029",
+      "label": "C9029-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9030",
+      "label": "C9030-all--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9030",
+      "label": "C9030-all--0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9030",
+      "label": "C9030-all-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9030",
+      "label": "C9030-all-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_turnover--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_turnover-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_turnover-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-acf_volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover_volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover_volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-turnover_volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all--0.1--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all-0.0--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9018",
+      "label": "C9018-all-0.1--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_turnover--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_turnover-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_turnover-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf_volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover_volume--0.2-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover_volume-0.0-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-turnover_volume-0.1-1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover_volume",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.1--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.0--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.1--1-both-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": -1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.5-1-both-n120-disabled-oldacf-off",
+      "parameters": {
+        "bear": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": false,
+          "profile": "all",
+          "threshold": -0.5,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-acf-0.0-1-both-n120-oldacf-off",
+      "parameters": {
+        "bear": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.1-1-bull-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "bull",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.0-1-bull-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "bull",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.1-1-bear-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "bear",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.0-1-bear-n120",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "bear",
+          "lookback": 120
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all--0.1-1-both-n60",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 60
+        }
+      }
+    },
+    {
+      "parent": "C9023",
+      "label": "C9023-all-0.0-1-both-n60",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 60
+        }
+      }
+    }
+  ],
+  "source_files": {
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+  }
+}

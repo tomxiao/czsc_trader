@@ -1,0 +1,114 @@
+{
+  "record": {
+    "content_sha256": "26c59f6b454ea6f699833a11197902d7d02425e0ded0f07da80f0773d142cd51",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "C9030-all--0.5-1-both-n120-disabled",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.985,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": false,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.5
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.005,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C2009",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "26c59f6b454ea6f699833a11197902d7d02425e0ded0f07da80f0773d142cd51",
+      "evidence": {
+        "path": "assets/candidates/C2009/derivation/b2fd6abba44aa22148fef49e05aa21215aa1437598e4eeed393d0468872b55a8.json",
+        "sha256": "b2fd6abba44aa22148fef49e05aa21215aa1437598e4eeed393d0468872b55a8"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9030",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "da5ceba82a36a59927cf7939b05c08d320e9d4c82f400b65d1d6e3148a328c77",
+      "protocol_sha256": "9bb3042c0d081aa537298d240ad828ee3284cfd8e504f6af8af7a880dd53781d"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C2009",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX006_20261009/675dbf0764258f1b0cb535e4acd0fa01209708c12fad83f4c3ac36a7cef567ff.json",
+          "sha256": "675dbf0764258f1b0cb535e4acd0fa01209708c12fad83f4c3ac36a7cef567ff"
+        }
+      ],
+      "experiment_id": "EX006_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C2009/payload/698e5d2445156c839140c84cd1f88f42f7c097de161161ee5d772b7122e4a085.json",
+      "sha256": "698e5d2445156c839140c84cd1f88f42f7c097de161161ee5d772b7122e4a085"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      }
+    ],
+    "source_root": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime",
+    "source_sha256": "9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f"
+  },
+  "record_sha256": "868b5f2112311fa321cbf6d2adf3c7dec4a5fbc8d8b96a280bd1ce70fe48d41a"
+}

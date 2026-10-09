@@ -1,0 +1,2947 @@
+{
+  "name": "confirmation_context",
+  "selection_basis": [
+    {
+      "index": 18,
+      "candidate_id": "C2018",
+      "label": "C9023-all--0.2-1-both-n120",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      },
+      "config_hash": "88bd7fa58f772273d18d5094ee15aa7fe180ac38c8f95a0037cf76de873bb088",
+      "search": "confirmation_initial",
+      "status": "SUCCEEDED",
+      "trial": 18,
+      "net_cagr": 0.1556347593981675,
+      "buyhold_cagr": 0.07222773742293187,
+      "return_threshold": 0.1083416061343978,
+      "annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.06127198110147036,
+          "return": 0.1738106668000008,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1173810.6668000007
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.02878858123586192,
+          "return": 0.09708050405663671,
+          "sessions": 243,
+          "opening_equity": 1173810.6668000007,
+          "closing_equity": 1287764.7980000016
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.11374167856921646,
+          "return": 0.08095264341002473,
+          "sessions": 242,
+          "opening_equity": 1287764.7980000016,
+          "closing_equity": 1392012.762488478
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.05673094995933492,
+          "return": 0.002838878356493213,
+          "sessions": 242,
+          "opening_equity": 1392012.762488478,
+          "closing_equity": 1395964.5173918689
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.10021010643686412,
+          "return": 0.6500808076615188,
+          "sessions": 242,
+          "opening_equity": 1395964.5173918689,
+          "closing_equity": 2303454.2583247973
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.03533500898051112,
+          "return": 0.11076509640568899,
+          "sessions": 243,
+          "opening_equity": 2303454.2583247973,
+          "closing_equity": 2558596.591314238
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.045424494036613194,
+          "return": -0.0003833485711717266,
+          "sessions": 181,
+          "opening_equity": 2558596.591314238,
+          "closing_equity": 2557615.756966753
+        }
+      },
+      "buyhold_annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.14979032439479056,
+          "return": 0.22182056280000007,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1221820.5628
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.09707883222292812,
+          "return": 0.17243203004964203,
+          "sessions": 243,
+          "opening_equity": 1221820.5628,
+          "closing_equity": 1432501.5628
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.2842195951671921,
+          "return": -0.18327701619863168,
+          "sessions": 242,
+          "opening_equity": 1432501.5628,
+          "closing_equity": 1169956.9506701392
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.17274273580415822,
+          "return": -0.06248046279687314,
+          "sessions": 242,
+          "opening_equity": 1169956.9506701392,
+          "closing_equity": 1096857.4989398504
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.1858319229061478,
+          "return": 0.06959554559221637,
+          "sessions": 242,
+          "opening_equity": 1096857.4989398504,
+          "closing_equity": 1173193.8950154833
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.1380379095435691,
+          "return": 0.3272583866825256,
+          "sessions": 243,
+          "opening_equity": 1173193.8950154833,
+          "closing_equity": 1557131.4363640386
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.1877031187625251,
+          "return": 0.009950525910459973,
+          "sessions": 181,
+          "opening_equity": 1557131.4363640386,
+          "closing_equity": 1572625.7130675707
+        }
+      },
+      "annual_dd_margins": {
+        "2020": 0.0885183432933202,
+        "2021": 0.0682902509870662,
+        "2022": 0.17047791659797562,
+        "2023": 0.1160117858448233,
+        "2024": 0.08562181646928368,
+        "2025": 0.10270290056305797,
+        "2026": 0.1422786247259119
+      },
+      "min_dd_margin": 0.0682902509870662,
+      "closed_trades": 110,
+      "frequency60": 4.034229828850855,
+      "gates": {
+        "return": true,
+        "annual_drawdown": true,
+        "frequency": true,
+        "negative_buyhold_year_profit": true
+      },
+      "qualified": true,
+      "deficit": 0.0,
+      "full_max_drawdown": -0.14159987610185076,
+      "final_quantity": 278500,
+      "total_fees": 336378.78445315734,
+      "order_statuses": {
+        "FILLED": 221
+      },
+      "result_hash": "d8f5eb3de3029015518422c788c0405468d0da5b6c6470872dc568c64483677a",
+      "request_hash": "fe01f203b90bfb9de63cbea78ef700218454748f1f1801aefd27745c6953e3c7",
+      "content_sha256": "d5b4459751fbc42e6f1409f2f3c47bee4eebc2d760cb371e92101fbdc862304d",
+      "input_sha256": "9381261daa1b38e031985e7b3b95ada5a4cedb2ac4efa1d23ed0efb9302ac11b",
+      "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+      "environment_sha256": "5d33c7fbd865797809d6f0deb2037bd8993477a107dc12177998bc87b9b6c1ab",
+      "negative_buyhold_years": [
+        "2022",
+        "2023"
+      ],
+      "negative_year_min_profit": 0.002838878356493213
+    },
+    {
+      "index": 55,
+      "candidate_id": "C2055",
+      "label": "C9018-turnover-0.1-1-both-n120",
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      },
+      "config_hash": "db76b3addaad299e10c8ea27c22fddaaf9bfd970e02d7d8b6d10df1632343755",
+      "search": "confirmation_initial",
+      "status": "SUCCEEDED",
+      "trial": 55,
+      "net_cagr": 0.12351096073807355,
+      "buyhold_cagr": 0.07222773742293187,
+      "return_threshold": 0.1083416061343978,
+      "annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.06543462909191566,
+          "return": 0.14766700060000004,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1147667.0006000001
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.04356449328910905,
+          "return": 0.12853341319640643,
+          "sessions": 243,
+          "opening_equity": 1147667.0006000001,
+          "closing_equity": 1295180.5574000003
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.09354876752989294,
+          "return": 0.060142882436557965,
+          "sessions": 242,
+          "opening_equity": 1295180.5574000003,
+          "closing_equity": 1373076.449397824
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.021056924432063084,
+          "return": 0.051442569166248564,
+          "sessions": 242,
+          "opening_equity": 1373076.449397824,
+          "closing_equity": 1443711.0296165186
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.07936552179014367,
+          "return": 0.3770611873988443,
+          "sessions": 242,
+          "opening_equity": 1443711.0296165186,
+          "closing_equity": 1988078.4247045312
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.023519914780882,
+          "return": 0.07807561361444249,
+          "sessions": 243,
+          "opening_equity": 1988078.4247045312,
+          "closing_equity": 2143298.8676269716
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.045419553987092964,
+          "return": -0.006270009190346815,
+          "sessions": 181,
+          "opening_equity": 2143298.8676269716,
+          "closing_equity": 2129860.3640292906
+        }
+      },
+      "buyhold_annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.14979032439479056,
+          "return": 0.22182056280000007,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1221820.5628
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.09707883222292812,
+          "return": 0.17243203004964203,
+          "sessions": 243,
+          "opening_equity": 1221820.5628,
+          "closing_equity": 1432501.5628
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.2842195951671921,
+          "return": -0.18327701619863168,
+          "sessions": 242,
+          "opening_equity": 1432501.5628,
+          "closing_equity": 1169956.9506701392
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.17274273580415822,
+          "return": -0.06248046279687314,
+          "sessions": 242,
+          "opening_equity": 1169956.9506701392,
+          "closing_equity": 1096857.4989398504
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.1858319229061478,
+          "return": 0.06959554559221637,
+          "sessions": 242,
+          "opening_equity": 1096857.4989398504,
+          "closing_equity": 1173193.8950154833
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.1380379095435691,
+          "return": 0.3272583866825256,
+          "sessions": 243,
+          "opening_equity": 1173193.8950154833,
+          "closing_equity": 1557131.4363640386
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.1877031187625251,
+          "return": 0.009950525910459973,
+          "sessions": 181,
+          "opening_equity": 1557131.4363640386,
+          "closing_equity": 1572625.7130675707
+        }
+      },
+      "annual_dd_margins": {
+        "2020": 0.0843556953028749,
+        "2021": 0.05351433893381907,
+        "2022": 0.19067082763729915,
+        "2023": 0.15168581137209514,
+        "2024": 0.10646640111600414,
+        "2025": 0.11451799476268709,
+        "2026": 0.14228356477543214
+      },
+      "min_dd_margin": 0.05351433893381907,
+      "closed_trades": 68,
+      "frequency60": 2.4938875305623474,
+      "gates": {
+        "return": true,
+        "annual_drawdown": true,
+        "frequency": false,
+        "negative_buyhold_year_profit": true
+      },
+      "qualified": false,
+      "deficit": 0.37652811735941316,
+      "full_max_drawdown": -0.0943029089943348,
+      "final_quantity": 0,
+      "total_fees": 198307.60874987513,
+      "order_statuses": {
+        "FILLED": 136
+      },
+      "result_hash": "5a4d1d0f5c86fdbabb70ec834930469e1b1e4bb9f1d26b6943a118687f19449d",
+      "request_hash": "4f29ba426e800aee7a25a59b4a9bf7630caa8db5690c5e87e25f944f22a56268",
+      "content_sha256": "47a92fa7efde32bed224f35fde35c1b5a534a4a3fc784526a5b87ee8ad3bfa9a",
+      "input_sha256": "fa9d1d8c5596f62736c34029365ea66d234401c15223d1500cc2ec86bf9d45d8",
+      "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+      "environment_sha256": "5d33c7fbd865797809d6f0deb2037bd8993477a107dc12177998bc87b9b6c1ab",
+      "negative_buyhold_years": [
+        "2022",
+        "2023"
+      ],
+      "negative_year_min_profit": 0.051442569166248564
+    },
+    {
+      "index": 59,
+      "candidate_id": "C2059",
+      "label": "C9018-acf_turnover--0.2-1-both-n120",
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "acf_turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      },
+      "config_hash": "9df0a4f10a6bea74c42a884702d762f284b92fed3a17342269de6a1adaf79d64",
+      "search": "confirmation_initial",
+      "status": "SUCCEEDED",
+      "trial": 59,
+      "net_cagr": 0.1513056619449782,
+      "buyhold_cagr": 0.07222773742293187,
+      "return_threshold": 0.1083416061343978,
+      "annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.08970228660647739,
+          "return": 0.13109325969999963,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1131093.2596999996
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.02701192937814123,
+          "return": 0.09908067627396644,
+          "sessions": 243,
+          "opening_equity": 1131093.2596999996,
+          "closing_equity": 1243162.7448000007
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.09768980453711196,
+          "return": 0.11077958097682261,
+          "sessions": 242,
+          "opening_equity": 1243162.7448000007,
+          "closing_equity": 1380879.7927549414
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.056728247761465345,
+          "return": 0.0028493519566772374,
+          "sessions": 242,
+          "opening_equity": 1380879.7927549414,
+          "closing_equity": 1384814.4052943639
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.10021978098738582,
+          "return": 0.6500759148976878,
+          "sessions": 242,
+          "opening_equity": 1384814.4052943639,
+          "closing_equity": 2285048.896779595
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.03533200333522468,
+          "return": 0.09276333511477475,
+          "sessions": 243,
+          "opening_equity": 2285048.896779595,
+          "closing_equity": 2497017.6533452068
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.04542553475439037,
+          "return": -0.00038696601976151435,
+          "sessions": 181,
+          "opening_equity": 2497017.6533452068,
+          "closing_equity": 2496051.3923626174
+        }
+      },
+      "buyhold_annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.14979032439479056,
+          "return": 0.22182056280000007,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1221820.5628
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.09707883222292812,
+          "return": 0.17243203004964203,
+          "sessions": 243,
+          "opening_equity": 1221820.5628,
+          "closing_equity": 1432501.5628
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.2842195951671921,
+          "return": -0.18327701619863168,
+          "sessions": 242,
+          "opening_equity": 1432501.5628,
+          "closing_equity": 1169956.9506701392
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.17274273580415822,
+          "return": -0.06248046279687314,
+          "sessions": 242,
+          "opening_equity": 1169956.9506701392,
+          "closing_equity": 1096857.4989398504
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.1858319229061478,
+          "return": 0.06959554559221637,
+          "sessions": 242,
+          "opening_equity": 1096857.4989398504,
+          "closing_equity": 1173193.8950154833
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.1380379095435691,
+          "return": 0.3272583866825256,
+          "sessions": 243,
+          "opening_equity": 1173193.8950154833,
+          "closing_equity": 1557131.4363640386
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.1877031187625251,
+          "return": 0.009950525910459973,
+          "sessions": 181,
+          "opening_equity": 1557131.4363640386,
+          "closing_equity": 1572625.7130675707
+        }
+      },
+      "annual_dd_margins": {
+        "2020": 0.060088037788313176,
+        "2021": 0.0700669028447869,
+        "2022": 0.18652979063008013,
+        "2023": 0.11601448804269288,
+        "2024": 0.08561214191876199,
+        "2025": 0.10270590620834441,
+        "2026": 0.14227758400813473
+      },
+      "min_dd_margin": 0.060088037788313176,
+      "closed_trades": 111,
+      "frequency60": 4.070904645476773,
+      "gates": {
+        "return": true,
+        "annual_drawdown": true,
+        "frequency": true,
+        "negative_buyhold_year_profit": true
+      },
+      "qualified": true,
+      "deficit": 0.0,
+      "full_max_drawdown": -0.14160599604379298,
+      "final_quantity": 271800,
+      "total_fees": 335668.81698451657,
+      "order_statuses": {
+        "FILLED": 223
+      },
+      "result_hash": "f3959172f211f0f4adf334f9ef7aa2d0f467c6f943f895c38cf99338eda2d6b6",
+      "request_hash": "a7fc772ab0b6b9b6ad711cb48f0280c57bfc30acb71f814a9a3375a82a903cf9",
+      "content_sha256": "c6b448e8f72c869323a939542112ec8efd1448970cf9919e1be372e9b2f77e49",
+      "input_sha256": "1a051b8ca589131ab7787e80548db161141fc82b54fcc5c974d9eabaea814abc",
+      "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+      "environment_sha256": "5d33c7fbd865797809d6f0deb2037bd8993477a107dc12177998bc87b9b6c1ab",
+      "negative_buyhold_years": [
+        "2022",
+        "2023"
+      ],
+      "negative_year_min_profit": 0.0028493519566772374
+    },
+    {
+      "index": 76,
+      "candidate_id": "C2076",
+      "label": "C9023-turnover-0.1-1-both-n120",
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        }
+      },
+      "config_hash": "f9f4620ae1003b08912c493625a967bd9985aa2d16c5e90c0fd0fe6e72b2d149",
+      "search": "confirmation_initial",
+      "status": "SUCCEEDED",
+      "trial": 76,
+      "net_cagr": 0.1248466278180993,
+      "buyhold_cagr": 0.07222773742293187,
+      "return_threshold": 0.1083416061343978,
+      "annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.06543462909191566,
+          "return": 0.1565519715000001,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1156551.9715000002
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.04356535967297448,
+          "return": 0.1285493007349907,
+          "sessions": 243,
+          "opening_equity": 1156551.9715000002,
+          "closing_equity": 1305225.9187
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.09354988396323771,
+          "return": 0.060124963313172186,
+          "sessions": 242,
+          "opening_equity": 1305225.9187,
+          "closing_equity": 1383702.579177239
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.021060387486640075,
+          "return": 0.05143091014127665,
+          "sessions": 242,
+          "opening_equity": 1383702.579177239,
+          "closing_equity": 1454867.6621891563
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.07936575022384285,
+          "return": 0.3770900438446567,
+          "sessions": 242,
+          "opening_equity": 1454867.6621891563,
+          "closing_equity": 2003483.7727122384
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.02352564824486647,
+          "return": 0.07806591102947724,
+          "sessions": 243,
+          "opening_equity": 2003483.7727122384,
+          "closing_equity": 2159887.5586617934
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.04542203674463585,
+          "return": -0.006266629385996647,
+          "sessions": 181,
+          "opening_equity": 2159887.5586617934,
+          "closing_equity": 2146352.3438162347
+        }
+      },
+      "buyhold_annual": {
+        "2020": {
+          "max_drawdown_magnitude": 0.14979032439479056,
+          "return": 0.22182056280000007,
+          "sessions": 243,
+          "opening_equity": 1000000.0,
+          "closing_equity": 1221820.5628
+        },
+        "2021": {
+          "max_drawdown_magnitude": 0.09707883222292812,
+          "return": 0.17243203004964203,
+          "sessions": 243,
+          "opening_equity": 1221820.5628,
+          "closing_equity": 1432501.5628
+        },
+        "2022": {
+          "max_drawdown_magnitude": 0.2842195951671921,
+          "return": -0.18327701619863168,
+          "sessions": 242,
+          "opening_equity": 1432501.5628,
+          "closing_equity": 1169956.9506701392
+        },
+        "2023": {
+          "max_drawdown_magnitude": 0.17274273580415822,
+          "return": -0.06248046279687314,
+          "sessions": 242,
+          "opening_equity": 1169956.9506701392,
+          "closing_equity": 1096857.4989398504
+        },
+        "2024": {
+          "max_drawdown_magnitude": 0.1858319229061478,
+          "return": 0.06959554559221637,
+          "sessions": 242,
+          "opening_equity": 1096857.4989398504,
+          "closing_equity": 1173193.8950154833
+        },
+        "2025": {
+          "max_drawdown_magnitude": 0.1380379095435691,
+          "return": 0.3272583866825256,
+          "sessions": 243,
+          "opening_equity": 1173193.8950154833,
+          "closing_equity": 1557131.4363640386
+        },
+        "2026": {
+          "max_drawdown_magnitude": 0.1877031187625251,
+          "return": 0.009950525910459973,
+          "sessions": 181,
+          "opening_equity": 1557131.4363640386,
+          "closing_equity": 1572625.7130675707
+        }
+      },
+      "annual_dd_margins": {
+        "2020": 0.0843556953028749,
+        "2021": 0.053513472549953645,
+        "2022": 0.19066971120395437,
+        "2023": 0.15168234831751815,
+        "2024": 0.10646617268230496,
+        "2025": 0.11451226129870262,
+        "2026": 0.14228108201788925
+      },
+      "min_dd_margin": 0.053513472549953645,
+      "closed_trades": 69,
+      "frequency60": 2.530562347188264,
+      "gates": {
+        "return": true,
+        "annual_drawdown": true,
+        "frequency": false,
+        "negative_buyhold_year_profit": true
+      },
+      "qualified": false,
+      "deficit": 0.36735941320293397,
+      "full_max_drawdown": -0.09431402083106155,
+      "final_quantity": 0,
+      "total_fees": 202024.2686347128,
+      "order_statuses": {
+        "FILLED": 138
+      },
+      "result_hash": "04334050e6f640c449b31cfa9cc0e9bfb74bb08d17ee6852c179e14bea2b69aa",
+      "request_hash": "22882bb7f7c383c59c0abaf4fa7d455d62fd39cf103e5c2f8cd46d288ae30678",
+      "content_sha256": "6cc815c7350bc7d2c5ae735826ece479acf3a1bd32f951c4440bcbddf7362aa1",
+      "input_sha256": "f6a4f663d23abb7ecddab3378f35e921683202b8b557f9b1cc286058d6525ca0",
+      "protocol_sha256": "32b565d6dcc9c4b6e4d7752a5eb7761fd0ca37da6556d655c688ddbda59c49f9",
+      "environment_sha256": "5d33c7fbd865797809d6f0deb2037bd8993477a107dc12177998bc87b9b6c1ab",
+      "negative_buyhold_years": [
+        "2022",
+        "2023"
+      ],
+      "negative_year_min_profit": 0.05143091014127665
+    }
+  ],
+  "initial_results_sha256": "bbcfac82721dd8cad76374145f29dcea58fb79f62e4431ebc68e1f9b9fcdbe6e",
+  "observed": "loose composite gates qualify but margin remains thin; stronger amount confirmation raises margin and loses frequency",
+  "mechanism_basis": "prior S013 state-exit churn attribution; target only state reentry, without calendar waiting",
+  "context_semantics": "last exit reason==regime persists until next signal entry; score reevaluated daily; all other entries preserve original rules",
+  "raw_units": "40-session paired normalization, existing raw asset has 60 warmup days; daily HFQ-volume*HFQ-close/raw-close must equal raw Volume",
+  "raw_preparation": {
+    "status": "PASS",
+    "source_request": {
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "start": "2019-10-09",
+      "end": "2026-09-30",
+      "required_cutoff": "2026-09-30",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": {
+        "maximum_start_lag_days": null,
+        "minimum_observations": 1,
+        "minimum_sessions": 60,
+        "observations_through": "2019-12-31"
+      }
+    },
+    "source_prepared": {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "ca4c91b9-982c-4dba-affe-3a27c5b4e741",
+      "manifest_sha256": "c56ab429810957b70d2a640b1216831c1d2f92a39dc01b23c91e8eba56ad9f1b"
+    },
+    "source_content_sha256": "457768b63765acc5046976a1d11697f92a1c4e9bcd50033f733e90d09e274432",
+    "new_prepared": {
+      "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+      "preparation_id": "7aba4b91-ab97-42c2-8f45-12815877607f",
+      "manifest_sha256": "fa3b8a4ebaf3d24497aa395bfe69847ea96972c6133910d03ee90ee1b71085c3"
+    },
+    "new_request": {
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510500.SH",
+      "start": "2019-10-09",
+      "end": "2026-09-29",
+      "required_cutoff": null
+    },
+    "subset_frame": "EXACT_EQUAL",
+    "rows": 1695,
+    "existing_asset_adapter_calls": 1,
+    "external_data_acquisition": false
+  },
+  "local_preparation": "exact scope from existing authenticated S013 asset through existing offline preparation pattern; no new external provider/data",
+  "block_weighting": "ACF .5, amount .25, volume .25; compare equal-feature thirds without fitting weights",
+  "bounds": "threshold-.3 lower extension; source semantic domains remain fixed; inspect useful boundary improvements",
+  "controls": "C2100 full account exact vs C2018; all-entry/state-reentry pairs, raw/adjusted-volume pairs, block weights, route-specific gates",
+  "prechecked_controls": [
+    "C2100"
+  ],
+  "precheck_file": "context_precheck.json",
+  "configurations": [
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.3,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all--0.3-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.3,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.3-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.3,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-turnover--0.3-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.3,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-turnover--0.3-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-turnover--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-turnover--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-turnover-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-turnover-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-turnover-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-turnover-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all--0.2-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all--0.2-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all-0.0-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-all-0.0-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-volume--0.2-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-volume--0.2-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-volume--0.2-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-volume--0.2-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-volume-0.0-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-all-volume-0.0-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-volume-0.0-ADJUSTED-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "volume",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 40
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "RAW",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-volume-0.0-RAW-n40-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        }
+      },
+      "label": "C9023-all-all--0.2-ADJUSTED-n120-EQUAL_BLOCKS-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-ADJUSTED-n120-EQUAL_BLOCKS-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        }
+      },
+      "label": "C9023-all-all-0.0-ADJUSTED-n120-EQUAL_BLOCKS-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-ADJUSTED-n120-EQUAL_BLOCKS-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-all--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-all-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-all-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-turnover--0.2-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-turnover-0.0-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9018",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": 0.1,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9018-regime_reentry-turnover-0.1-ADJUSTED-n120-EQUAL_FEATURES-both"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "bull",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-ADJUSTED-n120-EQUAL_FEATURES-bull"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "bull",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-ADJUSTED-n120-EQUAL_FEATURES-bull"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": -0.2,
+          "orientation": 1,
+          "scope": "bear",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all--0.2-ADJUSTED-n120-EQUAL_FEATURES-bear"
+    },
+    {
+      "parent": "C9023",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "all",
+          "threshold": 0.0,
+          "orientation": 1,
+          "scope": "bear",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9023-regime_reentry-all-0.0-ADJUSTED-n120-EQUAL_FEATURES-bear"
+    }
+  ],
+  "original_four_gates_unchanged": true,
+  "scope": "stage3 only; 0 fixed cooldown; no platform/PTE/release action",
+  "known_information": "adaptive same-pool extension; no independent validation; S007 expression only used as structure",
+  "source_files": {
+    "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "resources": {
+    "max_workers": 4,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  }
+}

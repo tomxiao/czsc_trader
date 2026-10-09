@@ -1,0 +1,123 @@
+{
+  "record": {
+    "content_sha256": "85ab9e663ce7eb99e05fc033f1de7debcf6a2a97d3629b6da7678470f7c5570a",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "C9029-best-margin-volume--0.175-RAW",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.95,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 40,
+            "orientation": 1,
+            "profile": "volume",
+            "scope": "both",
+            "threshold": -0.175
+          },
+          "context": {
+            "entry_gate": "regime_reentry",
+            "volume_basis": "RAW",
+            "weighting": "EQUAL_FEATURES"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.005,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C2310",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "85ab9e663ce7eb99e05fc033f1de7debcf6a2a97d3629b6da7678470f7c5570a",
+      "evidence": {
+        "path": "assets/candidates/C2310/derivation/86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc.json",
+        "sha256": "86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9029",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "6408cff8f2ff8d0173ed47996cf2c5d4884117481271531fb25f32ec3020da5f",
+      "protocol_sha256": "de32d86528bce02a21a07e06733e391940d1c6c10801d71eb33599eb10707b63"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C2310",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX006_20261009/57353a22e8a326565cb25bd15f60b35e094d436274afa56444cc7ce953688ff7.json",
+          "sha256": "57353a22e8a326565cb25bd15f60b35e094d436274afa56444cc7ce953688ff7"
+        }
+      ],
+      "experiment_id": "EX006_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C2310/payload/7c3a1176c386020759436b71e148b14dcc4a549e90f0bf9687cfb6068ab15cdf.json",
+      "sha256": "7c3a1176c386020759436b71e148b14dcc4a549e90f0bf9687cfb6068ab15cdf"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C2310/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C2310/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C2310/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C2310/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      }
+    ],
+    "source_root": "assets/candidates/C2310/source/62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c/strategy_runtime",
+    "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+  },
+  "record_sha256": "bf5ee8893bc4f7ce9094bfc82d5fcd2ff94cfe0fbdf4d5f3e6906358a396e53a"
+}

@@ -1,0 +1,114 @@
+{
+  "record": {
+    "content_sha256": "c0bbf8244f02c69a02996b7c882f27113d145f47e9277e8beecfc3ac57a01bda",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": "C9023-all-0.1--1-both-n120",
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": -1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": 0.1
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        }
+      },
+      "child": {
+        "candidate_id": "C2091",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "c0bbf8244f02c69a02996b7c882f27113d145f47e9277e8beecfc3ac57a01bda",
+      "evidence": {
+        "path": "assets/candidates/C2091/derivation/fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c.json",
+        "sha256": "fcf6e9bef89a648056226e3b0a10b791e1a3636df8d18246dc649f3719bd785c"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C9023",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "efcc154a9eb594672bf65a59f8ac96afaaab978c1c86fcdfe4b1a0dac60315a8",
+      "protocol_sha256": "9bb3042c0d081aa537298d240ad828ee3284cfd8e504f6af8af7a880dd53781d"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C2091",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX006_20261009/185e26e74ccf19986414f650336f86cc75d812f26ceb67cdd9cb29b27cdc750c.json",
+          "sha256": "185e26e74ccf19986414f650336f86cc75d812f26ceb67cdd9cb29b27cdc750c"
+        }
+      ],
+      "experiment_id": "EX006_20261009"
+    },
+    "payload": {
+      "path": "assets/candidates/C2091/payload/d224c7ea9a9e02cb6d849ee5a9c1c16cea5c6c40124ae9690908603fecd992ec.json",
+      "sha256": "d224c7ea9a9e02cb6d849ee5a9c1c16cea5c6c40124ae9690908603fecd992ec"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C2091/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C2091/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C2091/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      }
+    ],
+    "source_root": "assets/candidates/C2091/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime",
+    "source_sha256": "9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f"
+  },
+  "record_sha256": "705d4b50938f91dd3db6742851434e6867e2efe62f3b120cbe77e8b4ade7e972"
+}

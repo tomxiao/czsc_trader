@@ -1,0 +1,153 @@
+{
+  "name": "confirmation_policy_control",
+  "precheck_file": "context_precheck.json",
+  "observed_center": "C2308",
+  "basis": "Matched all-entry versus state-exit-reentry gate at the new best parent; nearest threshold neighbors. Stop this mechanism round after these controls and full account/cost attribution, with remaining directions explicit.",
+  "seen_best_margin_sha256": "73d61d5ab137e9ed6b019997089697cdb32c642df71cff2751502a491b6c1cff",
+  "source_files": {
+    "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "configurations": [
+    {
+      "parent": "C9029",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.175,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9029-policy-control-all--0.175"
+    },
+    {
+      "parent": "C9029",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.185,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9029-policy-control-regime_reentry--0.185"
+    },
+    {
+      "parent": "C9029",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20,
+        "confirmation": {
+          "enabled": true,
+          "profile": "turnover",
+          "threshold": -0.165,
+          "orientation": 1,
+          "scope": "both",
+          "lookback": 120
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        }
+      },
+      "label": "C9029-policy-control-regime_reentry--0.165"
+    }
+  ]
+}
