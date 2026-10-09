@@ -1,0 +1,468 @@
+{
+  "date": "2026-10-10",
+  "main_plan_sha256": "30c87d82fe3caefa016a0cba381a91d453000b0779250967d81559c8e75dd1fc",
+  "basis": "All632 perturbed accounts fail overall CAGR. Before interpreting sensitivity, verify unchanged parameters under a newly prepared signal binding against original formal accounts.",
+  "cases": [
+    {
+      "kind": "STRESS",
+      "candidate_id": "C9018",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C9018"
+        },
+        "content_sha256": "b20f75df3720bdfbf95b8f932a3af203a14e062df8ce505e5d2cc8c0a7c1ecb1"
+      },
+      "parent_source_sha256": "82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5",
+      "child_source_sha256": "82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5",
+      "child_content_sha256": "b20f75df3720bdfbf95b8f932a3af203a14e062df8ce505e5d2cc8c0a7c1ecb1",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C1000",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C1000"
+        },
+        "content_sha256": "98ed0387dc872562c7e6ad5557c545410a76670338174c14a1cab3ee10179756"
+      },
+      "parent_source_sha256": "73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4",
+      "child_source_sha256": "73a7f6d534bb91b82875f00d2baaec5d4d6225ff643e587e4cba1cfad89510c4",
+      "child_content_sha256": "98ed0387dc872562c7e6ad5557c545410a76670338174c14a1cab3ee10179756",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_confirmation": 1,
+        "exit_direction": "both",
+        "exit_on_regime_change": true,
+        "regime_band": 0.0,
+        "regime_confirmation": 1,
+        "regime_cooldown": 0,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C2000",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C2000"
+        },
+        "content_sha256": "d262e0afe129eff226a608e0a84a22e84542b3b396269614e84eb929903428e1"
+      },
+      "parent_source_sha256": "9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f",
+      "child_source_sha256": "9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f",
+      "child_content_sha256": "d262e0afe129eff226a608e0a84a22e84542b3b396269614e84eb929903428e1",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.85,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": false,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.5
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C2100",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C2100"
+        },
+        "content_sha256": "daf6d8ca23009d84870c7727faca533e0759a175684a7116e25828c7643f6085"
+      },
+      "parent_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_content_sha256": "daf6d8ca23009d84870c7727faca533e0759a175684a7116e25828c7643f6085",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C2132",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C2132"
+        },
+        "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+      },
+      "parent_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C2308",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C2308"
+        },
+        "content_sha256": "387bc956c31cfabe330ae365a8eb52fe6420742a46f2e35f1dbdcce10761f208"
+      },
+      "parent_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c",
+      "child_content_sha256": "387bc956c31cfabe330ae365a8eb52fe6420742a46f2e35f1dbdcce10761f208",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C3008",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C3008"
+        },
+        "content_sha256": "2db89bc81b315a69c0feb526f093ed50c77a9f837d8afa873392cfd682412964"
+      },
+      "parent_source_sha256": "42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21",
+      "child_source_sha256": "42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21",
+      "child_content_sha256": "2db89bc81b315a69c0feb526f093ed50c77a9f837d8afa873392cfd682412964",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "opportunity_confirmation": {
+          "application": "all_entries",
+          "enabled": true,
+          "profile": "all",
+          "route_scope": "bull",
+          "threshold": -0.3,
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      }
+    },
+    {
+      "kind": "STRESS",
+      "candidate_id": "C3107",
+      "parent": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S013",
+          "candidate_id": "C3107"
+        },
+        "content_sha256": "e5a0caafa64dcaa17413263298fc1f33124381817c7ebb211147b9eec3ac7f5f"
+      },
+      "parent_source_sha256": "42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21",
+      "child_source_sha256": "42bb25efd957923c3efa0d3a0946bafb7aab802c88eb51d634400cb22efefe21",
+      "child_content_sha256": "e5a0caafa64dcaa17413263298fc1f33124381817c7ebb211147b9eec3ac7f5f",
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "turnover",
+          "scope": "both",
+          "threshold": -0.175
+        },
+        "context": {
+          "entry_gate": "regime_reentry",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_FEATURES"
+        },
+        "exit_on_regime_change": true,
+        "opportunity_confirmation": {
+          "application": "ordinary_entries",
+          "enabled": true,
+          "profile": "all",
+          "route_scope": "bull",
+          "threshold": -0.325,
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      }
+    }
+  ],
+  "resources": {
+    "outer_workers": 4,
+    "inner_workers": 1,
+    "native_threads": 1
+  },
+  "qualification": "exact economic tables/dtypes/relational ID structure; no cash tolerance",
+  "scope": "technical controls only; same identities/parameters/10bp/data; not new parameter trials or a changed economic gate"
+}

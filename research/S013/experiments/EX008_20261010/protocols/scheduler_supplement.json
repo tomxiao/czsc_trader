@@ -1,0 +1,24 @@
+{
+  "version": "same-plan-end-to-end-spawn4",
+  "date": "2026-10-10",
+  "plan_sha256": "30c87d82fe3caefa016a0cba381a91d453000b0779250967d81559c8e75dd1fc",
+  "reason": "Initial32 public input binding and request authentication consumed >230 serial CPU seconds; move public prepare/evaluate_many/publish to four independent workers.",
+  "resources": {
+    "outer_spawn_workers": 4,
+    "inner_evaluation_workers": 1,
+    "native_threads_per_worker": 1,
+    "seed": 13
+  },
+  "scope": "No candidate, parameter, cost, ranking, data, dependency or eligibility change. No nested process pools or fallback.",
+  "verification": "First remaining exact planned bound account is computed in parent serial and one worker; identical request/result hashes required before remaining submission.",
+  "original_execution_sources": {
+    "assess.py": "01383199c9730796fabc80cf7e1f028fb4a74a3597e30c9029954136a456122b",
+    "common.py": "3d3537bd6e70532c9f5824380c6575aea9060246ec01218bfac0b028721ce545",
+    "declare.py": "8e817abc841e7ef0860ad9f4229ac6da5ac385974ad9fe7a0d1863cdc73b7c5d",
+    "deliver.py": "f4d7a0415de5e6b9d123ef3b68483df4914a3473615523120a3244a75e804baa",
+    "precheck_se.py": "75302f80b3b963eb3af275b413d2e59af35b869a40f3a42eccc6ca6a71cf9336",
+    "quality.py": "df2ee9392f0f99589ca37315ac176952925f9fd496942e98d87f00eebebeb4d1",
+    "run.py": "720ead1187ed49b8a30456598277d2c97d0da04be72b721d12b56c9f487c578f",
+    "run_parallel.py": "551415b9d3dfde69e0e34bfee17e66f1fadc84ab11b6a54f71850c1989f9e8e7"
+  }
+}
