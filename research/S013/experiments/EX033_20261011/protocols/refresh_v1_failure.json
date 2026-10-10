@@ -1,0 +1,24 @@
+{
+  "status": "FAILED",
+  "phase": "supplemental-local-year-classification",
+  "exception_type": "KeyError",
+  "error": "2019",
+  "cause": "First native signal_date precedes 2020 account start by one T+1 session; v1 assumed signal years equal account years.",
+  "failed_method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX033_20261011"
+    },
+    "evidence_id": "20b40ce2d5b352703675eba4850ea984ff3b8e7551e6baf87c5d616fdf56cc59.json",
+    "sha256": "20b40ce2d5b352703675eba4850ea984ff3b8e7551e6baf87c5d616fdf56cc59",
+    "media_type": "application/json",
+    "name": "declared-refresh-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "new_account_evaluations": 0,
+  "replacement": "refresh_diagnosis_v2.py, execution-valid-session annual grouping; original method/source retained immutable.",
+  "secondary_review_correction": "Do not label reentry within episode merely because exit lies there; require both events in the same episode."
+}

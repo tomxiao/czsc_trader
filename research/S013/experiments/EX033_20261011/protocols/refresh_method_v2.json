@@ -1,0 +1,35 @@
+{
+  "source_sha256": "803693be7d1b4841afaa1b989997ca9e95899a9e86256c61b133516fdbe5a1e2",
+  "primary_diagnosis_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX033_20261011"
+    },
+    "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+    "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+    "media_type": "application/json",
+    "name": "native-exit-reentry-diagnosis",
+    "schema": null,
+    "schema_version": null
+  },
+  "previous_failed_method": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX033_20261011"
+    },
+    "evidence_id": "20b40ce2d5b352703675eba4850ea984ff3b8e7551e6baf87c5d616fdf56cc59.json",
+    "sha256": "20b40ce2d5b352703675eba4850ea984ff3b8e7551e6baf87c5d616fdf56cc59",
+    "media_type": "application/json",
+    "name": "declared-refresh-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "technical_correction": "v1 stopped on valid 2019-12-31 decision for 2020-01-02 execution: assign annual decision groups to valid_session year. No native account rerun, parameter or economic change. Also require TIME exit and next entry inside the same state episode when counting within-episode reentries.",
+  "new_account_evaluations": 0,
+  "method": "Reuse exact same 33 native accounts. Per day one-step cross-check p(features_p,state_p), q(features_q,state_q), p(features_p,state_q), q(features_q,state_p); first two must reproduce native target/state/reason. For divergent native targets, no direct difference on either fixed state => inherited-state only; no state effect under either fixed rule/features => current-rule/features only; others mixed. No off-policy state propagated or cash/profit simulated. Count bear TIME exits followed by next entry before rawbear or original range-entry opportunity refresh, inclusive exit..next-entry. Eight-session group is diagnostic center bull H8 scale, not economic gate or filtering.",
+  "limits": "Fixed historical features and inherited states; joint parameter attribution remains local/descriptive, not isolated parameter causality. Range-opportunity memory is proposed only if supported; will change entry behavior and may harm frequency."
+}
