@@ -1,0 +1,91 @@
+{
+  "purpose": "Before the fixed batch, evaluate B0/M1 once serial and once in a spawn process, compare all five strategy/benchmark ledgers and all signal histories exactly. Reuse the verified control for the fixed queue.",
+  "configuration_budget": "12 unique configurations unchanged; one duplicate evaluation solely for serial/spawn equivalence, total planned account evaluations 13.",
+  "source": "research technical preflight under the approved scope",
+  "synthetic_check": {
+    "status": "PASS",
+    "cases": [
+      {
+        "background": "B0",
+        "mode": "M0",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B0",
+        "mode": "M1",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B0",
+        "mode": "M2",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B0",
+        "mode": "M3",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B1",
+        "mode": "M0",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B1",
+        "mode": "M1",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B1",
+        "mode": "M2",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B1",
+        "mode": "M3",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B2",
+        "mode": "M0",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B2",
+        "mode": "M1",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B2",
+        "mode": "M2",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      },
+      {
+        "background": "B2",
+        "mode": "M3",
+        "causal_prefix": "EXACT_EQUAL",
+        "future_invariance": "EXACT_EQUAL"
+      }
+    ],
+    "branches": [
+      "zero delta passes both",
+      "positive/negative delta",
+      "no cooldown",
+      "weak confirmation cannot trigger exit",
+      "invalid direction rejected",
+      "original holding/exit branch AST identical",
+      "first session delta computed using previous actual trading day"
+    ]
+  }
+}
