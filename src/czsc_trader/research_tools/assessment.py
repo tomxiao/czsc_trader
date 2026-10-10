@@ -19,7 +19,7 @@ from strategy_evaluator import (
     AssessmentDerivationKind,
     ReplayEvidence,
 )
-from strategy_runtime import canonical_sha256
+from strategy_runtime import canonical_sha256, StrategyInputBinding
 
 from .evaluation import (
     EvaluationRequest,
@@ -51,6 +51,17 @@ def _assessment_with_replays(
         if result.execution_data is None or result.execution_data.fingerprint != result.data_identity:
             raise ValueError("assessment requires the evaluated execution data")
         request = replace(request, execution_data=result.execution_data)
+    if not request.input_bindings:
+        bindings = {}
+        for run in result.runs:
+            binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
+            if run.window_id in bindings and bindings[run.window_id] != binding:
+                raise ValueError("evaluation scenarios have conflicting window input bindings")
+            bindings[run.window_id] = binding
+        request = replace(request, input_bindings=bindings)
+    if any(run.signals.support_data["input_binding"] != request.input_bindings[run.window_id].to_dict()
+           for run in result.runs):
+        raise ValueError("evaluation input binding differs from authenticated request")
     content = result.runs[0].identity.content_sha256
     binding = canonical_sha256(request.runtime_binding)
     expected = canonical_sha256(_request_identity_payload(request, content, binding))
@@ -185,5 +196,7 @@ def _assessment_with_replays(
                 None if lineage is None else canonical_sha256(lineage.to_dict()),
                 comparison.economic_sha256,
                 None if lineage is None else AssessmentDerivationKind(lineage.kind.value),
+                parameter_point=None if request.lineage is None or request.lineage.parameter_binding is None
+                else request.lineage.parameter_binding.point,
             ), replay,
         )

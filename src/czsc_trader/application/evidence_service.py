@@ -64,7 +64,7 @@ def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest) ->
         value = serialize_evaluation_evidence(request.request, request.result)
         data = json.dumps(value, ensure_ascii=False, sort_keys=True,
                           separators=(",", ":"), allow_nan=False).encode("utf-8")
-        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 5
+        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 6
     else:
         data = request.content
         media_type, suffix = request.media_type, request.suffix

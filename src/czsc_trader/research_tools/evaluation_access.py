@@ -19,6 +19,7 @@ from .evaluation import (
     _evaluate_strategy, _evaluation_result_hash, _request_contract,
 )
 from ._evaluation_workers import PlatformEvaluator, compute, pack
+from .parameter_evaluation import validate_parameter_request
 
 
 @dataclass(frozen=True, slots=True)
@@ -108,7 +109,9 @@ class EvaluationAccess:
         if any(binding.prepared.space_id != self.data.binding.space_id
                for binding in request.input_bindings.values()):
             raise ValueError("input binding belongs to another data space")
-        return _bind_evaluation_inputs(request, dataflows=self.data)
+        prepared = _bind_evaluation_inputs(request, dataflows=self.data)
+        validate_parameter_request(prepared, self.data)
+        return prepared
 
     def evaluate(self, request: EvaluationRequest) -> EvaluationResult:
         prepared = self.prepare(request)

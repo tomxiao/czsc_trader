@@ -1,5 +1,7 @@
 """Research comparison contracts, independent of orchestration and repositories."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date
 from enum import StrEnum
@@ -180,7 +182,10 @@ class EvaluationScenarioContext(ResearchRecord):
 
     def validate(self):
         require(0 <= self.one_way_cost < 1, "cost must be in [0, 1)")
-        require(bool(re.fullmatch(r"[0-9a-f]{64}", self.benchmark_contract_sha256)), "benchmark contract requires SHA-256")
+        require(
+            bool(re.fullmatch(r"[0-9a-f]{64}", self.benchmark_contract_sha256)),
+            "benchmark contract requires SHA-256",
+        )
 
 
 @dataclass(frozen=True)
@@ -208,9 +213,18 @@ class AssessmentEvidence(ResearchRecord):
     derivation_sha256: str | None = None
     behavior_sha256: str | None = None
     derivation_kind: AssessmentDerivationKind | None = None
+    parameter_point: ParameterPointBinding | None = None
 
     def validate(self):
         require(re.fullmatch(r"[0-9a-f]{32}", self.attempt_id) is not None, "invalid attempt_id")
+        require(
+            self.parameter_point is None
+            or (
+                self.parent is not None
+                and self.derivation_kind is AssessmentDerivationKind.PARAMETERS
+            ),
+            "parameter point requires parameter derivation",
+        )
         require(
             self.initial_cash > 0 and self.opening_quantity >= 0 and self.frequency_window_days > 0,
             "invalid account opening/frequency contract",
@@ -316,12 +330,258 @@ class QuantileMethod(StrEnum):
     WEIGHTED_ECDF = "WEIGHTED_ECDF"
 
 
+class ParameterCoordinateKind(StrEnum):
+    CONTINUOUS = "CONTINUOUS"
+    INTEGER = "INTEGER"
+
+
+@dataclass(frozen=True)
+class ParameterCoordinate(ResearchRecord):
+    name: str
+    center: float
+    lower: float
+    upper: float
+    kind: ParameterCoordinateKind
+
+    def validate(self):
+        require(
+            self.lower < self.upper
+            and math.isfinite(self.upper - self.lower)
+            and self.lower <= self.center <= self.upper,
+            "invalid parameter domain",
+        )
+        if self.kind is ParameterCoordinateKind.INTEGER:
+            require(
+                all(x.is_integer() for x in (self.center, self.lower, self.upper)),
+                "integer coordinate requires integral domain",
+            )
+
+
+@dataclass(frozen=True)
+class ParameterPerturbationProtocol(ResearchRecord):
+    radius: float = 0.05
+    point_count: int = 32
+    seed: int = 13
+    max_attempts: int = 100000
+    distance_tolerance: float = 1e-10
+    version: str = "parameter-total-domain-l2-v1"
+    random_generator: str = "PCG64"
+    integer_rounding: str = "HALF_EVEN"
+    quantile_method: QuantileMethod = QuantileMethod.LINEAR
+
+    def validate(self):
+        require(0 < self.radius <= 1 and self.point_count > 0, "invalid radius/count")
+        require(
+            self.seed >= 0 and self.max_attempts >= self.point_count, "invalid seed/attempt budget"
+        )
+        require(
+            0 < self.distance_tolerance <= 1e-8 and self.distance_tolerance < self.radius,
+            "invalid distance tolerance",
+        )
+        require(self.version == "parameter-total-domain-l2-v1", "unsupported parameter method")
+        require(
+            self.random_generator == "PCG64" and self.integer_rounding == "HALF_EVEN",
+            "unsupported sampling algorithm",
+        )
+        require(self.quantile_method is QuantileMethod.LINEAR, "parameter protocol requires LINEAR")
+
+    @property
+    def method_sha256(self):
+        # Sampling budget and strategy-specific coordinates do not change the method identity.
+        return digest(
+            (
+                self.version,
+                self.random_generator,
+                self.integer_rounding,
+                self.radius,
+                self.point_count,
+                self.seed,
+                self.distance_tolerance,
+                self.quantile_method,
+                "Q10_RETURN_Q90_DRAWDOWN_COMPLETE",
+            )
+        )
+
+
+@dataclass(frozen=True)
+class ParameterSpace(ResearchRecord):
+    coordinates: tuple[ParameterCoordinate, ...]
+    mapping_sha256: str
+    feasibility_sha256: str
+
+    def validate(self):
+        require(bool(self.coordinates), "empty parameter space")
+        unique((x.name for x in self.coordinates), "parameter coordinate")
+
+
+@dataclass(frozen=True)
+class ParameterDesignRequest(ResearchRecord):
+    center: AssessmentCandidate
+    protocol: ParameterPerturbationProtocol
+    space: ParameterSpace
+
+
+@dataclass(frozen=True)
+class ParameterPerturbationPoint(ResearchRecord):
+    index: int
+    coordinates: tuple[float, ...]
+    actual_radius: float
+
+    def validate(self):
+        require(
+            self.index >= 0 and bool(self.coordinates) and self.actual_radius > 0,
+            "invalid parameter point",
+        )
+
+
+@dataclass(frozen=True)
+class ParameterPointBinding(ResearchRecord):
+    design_sha256: str
+    point_index: int
+    coordinates: tuple[float, ...]
+    actual_radius: float
+
+    def validate(self):
+        require(
+            self.point_index >= 0 and bool(self.coordinates) and self.actual_radius > 0,
+            "invalid point binding",
+        )
+
+
+class ParameterRejectionReason(StrEnum):
+    INTEGER_RADIUS = "INTEGER_RADIUS"
+    DOMAIN = "DOMAIN"
+    CONSTRAINT = "CONSTRAINT"
+    DUPLICATE = "DUPLICATE"
+    DEGENERATE_DIRECTION = "DEGENERATE_DIRECTION"
+
+
+@dataclass(frozen=True)
+class ParameterDesignRejection(ResearchRecord):
+    reason: ParameterRejectionReason
+    count: int
+
+    def validate(self):
+        require(self.count > 0, "rejection count must be positive")
+
+
+@dataclass(frozen=True)
+class ParameterPerturbationDesign(ResearchRecord):
+    center: AssessmentCandidate
+    protocol: ParameterPerturbationProtocol
+    space: ParameterSpace
+    points: tuple[ParameterPerturbationPoint, ...]
+    attempts: int
+    rejections: tuple[ParameterDesignRejection, ...]
+
+    def validate(self):
+        require(len(self.points) == self.protocol.point_count, "design must cover prescribed count")
+        require(
+            any(x.kind is ParameterCoordinateKind.CONTINUOUS for x in self.space.coordinates),
+            "all-integer space requires discrete method",
+        )
+        require(
+            tuple(x.index for x in self.points) == tuple(range(len(self.points))),
+            "point indices differ",
+        )
+        unique((x.coordinates for x in self.points), "parameter point")
+        unique((x.reason for x in self.rejections), "rejection reason")
+        require(
+            self.attempts == len(self.points) + sum(x.count for x in self.rejections),
+            "attempt accounting differs",
+        )
+        require(self.attempts <= self.protocol.max_attempts, "attempt budget exceeded")
+        for point in self.points:
+            require(
+                len(point.coordinates) == len(self.space.coordinates), "point dimension differs"
+            )
+            radius = math.sqrt(
+                sum(
+                    ((v - c.center) / (c.upper - c.lower)) ** 2
+                    for v, c in zip(point.coordinates, self.space.coordinates)
+                )
+            )
+            require(
+                abs(radius - self.protocol.radius) <= self.protocol.distance_tolerance
+                and abs(radius - point.actual_radius) <= self.protocol.distance_tolerance,
+                "actual radius differs",
+            )
+            require(
+                all(
+                    c.lower <= v <= c.upper
+                    and (c.kind is ParameterCoordinateKind.CONTINUOUS or v.is_integer())
+                    for v, c in zip(point.coordinates, self.space.coordinates)
+                ),
+                "point outside parameter domain",
+            )
+
+    def bind_point(self, index: int) -> ParameterPointBinding:
+        require(type(index) is int and 0 <= index < len(self.points), "point index outside design")
+        point = self.points[index]
+        return ParameterPointBinding(self.sha256, index, point.coordinates, point.actual_radius)
+
+
+class ParameterDesignStatus(StrEnum):
+    COMPLETE = "COMPLETE"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+    DESIGN_FAILED = "DESIGN_FAILED"
+
+
+@dataclass(frozen=True)
+class ParameterDesignResult(ResearchRecord):
+    request_sha256: str
+    status: ParameterDesignStatus
+    design: ParameterPerturbationDesign | None
+    attempts: int
+    rejections: tuple[ParameterDesignRejection, ...]
+    reason: str | None
+
+    def validate(self):
+        require(
+            (self.status is ParameterDesignStatus.COMPLETE) == (self.design is not None),
+            "design status differs",
+        )
+        require(
+            (self.status is ParameterDesignStatus.COMPLETE) == (self.reason is None),
+            "design reason differs",
+        )
+        require(
+            self.attempts >= 0 and sum(x.count for x in self.rejections) <= self.attempts,
+            "invalid design attempt accounting",
+        )
+        unique((x.reason for x in self.rejections), "result rejection reason")
+        if self.design is not None:
+            require(
+                self.attempts == self.design.attempts and self.rejections == self.design.rejections,
+                "result/design accounting differs",
+            )
+
+
+@dataclass(frozen=True)
+class ParameterDiagnosticContext(ResearchRecord):
+    protocol: ParameterPerturbationProtocol
+    design_sha256: str
+    space_sha256: str
+    dimension: int
+    prescribed_points: int
+    valid_points: int
+
+    def validate(self):
+        require(
+            self.dimension > 0
+            and self.prescribed_points == self.protocol.point_count
+            and 0 <= self.valid_points <= self.prescribed_points,
+            "invalid parameter coverage",
+        )
+
+
 @dataclass(frozen=True)
 class PerturbationLink(ResearchRecord):
     parent: AssessmentCandidate
     child: AssessmentCandidate
     weight: float
     derivation_sha256: str
+    parameter_point: ParameterPointBinding | None = None
 
     def validate(self):
         require(
@@ -347,6 +607,7 @@ class SelfCheckProtocol(ResearchRecord):
     seed: int
     reconciliation_tolerance: float
     pbo_blocks: int = 10
+    parameter_protocol: ParameterPerturbationProtocol | None = None
 
     def validate(self):
         for name in (
@@ -364,6 +625,16 @@ class SelfCheckProtocol(ResearchRecord):
             self.pbo_blocks >= 2 and self.pbo_blocks % 2 == 0, "PBO requires positive even blocks"
         )
         require(self.seed >= 0, "seed must be nonnegative")
+        require(
+            self.parameter_protocol is None
+            or self.quantile_method is self.parameter_protocol.quantile_method,
+            "declared parameter quantile differs",
+        )
+        require(
+            self.parameter_protocol is None
+            or self.minimum_perturbations <= self.parameter_protocol.point_count,
+            "minimum perturbations exceeds prescribed point count",
+        )
 
 
 class IncompleteEvaluationStatus(StrEnum):
@@ -429,9 +700,58 @@ class CandidateAssessmentRequest(ResearchRecord):
     evidence: tuple[AssessmentEvidence, ...]
     incomplete: tuple[IncompleteEvaluation, ...] = ()
     family_returns: FamilyReturnEvidence | None = None
+    parameter_designs: tuple[ParameterPerturbationDesign, ...] = ()
 
     def validate(self):
         require(bool(self.centers), "explicit center set must be nonempty")
+        unique((x.center for x in self.parameter_designs), "parameter design center")
+        require(
+            all(x.center in self.centers for x in self.parameter_designs), "design center absent"
+        )
+        declared = self.protocol.parameter_protocol
+        require(not self.parameter_designs or declared is not None, "parameter protocol missing")
+        require(
+            all(x.protocol == declared for x in self.parameter_designs), "design protocol differs"
+        )
+        designs = {x.center: x for x in self.parameter_designs}
+        for link in self.perturbations:
+            if declared is not None:
+                require(
+                    link.parent in designs and link.parameter_point is not None,
+                    "unbound parameter link",
+                )
+                require(
+                    link.parameter_point
+                    == designs[link.parent].bind_point(link.parameter_point.point_index),
+                    "parameter point differs from design",
+                )
+            else:
+                require(link.parameter_point is None, "parameter link requires declared protocol")
+        for center in designs:
+            unique(
+                (x.parameter_point.point_index for x in self.perturbations if x.parent == center),
+                "parameter point coverage",
+            )
+        for item in self.evidence:
+            if item.parameter_point is not None:
+                require(
+                    declared is not None and item.parent in designs,
+                    "bound evidence requires declared design",
+                )
+                require(
+                    item.parameter_point
+                    == designs[item.parent].bind_point(item.parameter_point.point_index),
+                    "bound evidence differs from design",
+                )
+                require(
+                    any(
+                        x.child == item.candidate
+                        and x.parent == item.parent
+                        and x.parameter_point == item.parameter_point
+                        for x in self.perturbations
+                    ),
+                    "bound evidence has no matching perturbation link",
+                )
         unique((x.candidate_id for x in self.centers), "center")
         unique(
             ((x.parent.candidate_id, x.child.candidate_id) for x in self.perturbations),
@@ -551,8 +871,25 @@ class CandidateAssessment(ResearchRecord):
     coverage_gaps: tuple[str, ...]
     behavior_sha256: str | None
     benchmark: BenchmarkAssessment
+    parameter_context: ParameterDiagnosticContext | None = None
 
     def validate(self):
+        if (
+            self.parameter_context is not None
+            and self.parameter_context.valid_points != self.parameter_context.prescribed_points
+        ):
+            require(
+                all(
+                    x.status is not DiagnosticStatus.AVAILABLE
+                    for x in self.diagnostics
+                    if x.metric
+                    in (
+                        ResearchMetric.PARAMETER_RETURN_DEGRADATION,
+                        ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                    )
+                ),
+                "available parameter metrics require complete coverage",
+            )
         require(
             (self.context_sha256 is None) == (self.baseline_scenario is None),
             "baseline context/scenario must be supplied together",
@@ -589,11 +926,11 @@ class AssessmentPanel(ResearchRecord):
     rows: tuple[CandidateAssessment, ...]
     family_diagnostics: tuple[FamilyDiagnostic, ...]
     family_limitations: tuple[str, ...]
-    formula_version: str = "research-assessment-v2"
+    formula_version: str = "research-assessment-v3"
 
     def validate(self):
         require(
-            self.formula_version == "research-assessment-v2",
+            self.formula_version == "research-assessment-v3",
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
@@ -872,6 +1209,44 @@ class CandidateComparison(ResearchRecord):
     sensitivities: tuple[SensitivityRanking, ...]
     behavior_groups: tuple[BehaviorGroup, ...]
     pairs: tuple[PairwiseComparison, ...]
+
+
+@dataclass(frozen=True)
+class ParameterRobustnessComparisonRequest(ResearchRecord):
+    rows: tuple[CandidateAssessment, ...]
+
+    def validate(self):
+        require(len(self.rows) >= 2, "parameter comparison needs at least two candidates")
+        unique((x.candidate for x in self.rows), "parameter comparison candidate")
+
+
+@dataclass(frozen=True)
+class ParameterRobustnessRow(ResearchRecord):
+    candidate: AssessmentCandidate
+    evaluation_context_sha256: str | None
+    parameter_context: ParameterDiagnosticContext | None
+    metric_version: str | None
+    frequency_window_days: int | None
+    return_degradation: float | None
+    drawdown_degradation: float | None
+
+    def validate(self):
+        require(
+            all(x is None or x >= 0 for x in (self.return_degradation, self.drawdown_degradation)),
+            "negative parameter degradation",
+        )
+
+
+@dataclass(frozen=True)
+class ParameterRobustnessComparison(ResearchRecord):
+    request_sha256: str
+    comparable: bool
+    rows: tuple[ParameterRobustnessRow, ...]
+    reasons: tuple[str, ...]
+    limitations: tuple[str, ...]
+
+    def validate(self):
+        require(self.comparable == (not self.reasons), "parameter comparison status differs")
 
 
 __all__ = [

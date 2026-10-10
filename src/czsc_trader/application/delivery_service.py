@@ -81,8 +81,8 @@ def _references(content):
 def _account_evidence(root, ref):
     from ..research_tools.evaluation import validate_evaluation_evidence
 
-    if (ref.schema, ref.schema_version) != ("account_evaluation", 5):
-        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 5 required")
+    if (ref.schema, ref.schema_version) != ("account_evaluation", 6):
+        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 6 required")
     _read_evidence(root, ref)
     value = _read_json(_resolve(root, ref.path))
     validate_evaluation_evidence(value)
@@ -225,8 +225,8 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
 
     def source(ref):
         document = _read_json(_resolve(_delivery_path(context, ref), "delivery.json"))
-        if document.get("schema_version") != 6:
-            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 6 handoffs")
+        if document.get("schema_version") != 7:
+            _fail("ASSESSMENT_SOURCE", ref.stage.value, "assessment requires schema 7 handoffs")
         return d.DeliveryContent.from_dict(document["content"]).payload
 
     candidates = source(payload.source_candidates)
@@ -270,13 +270,23 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
             or evidence.scenario_context.benchmark_kind != benchmark.kind):
             _fail("BENCHMARK_BINDING", evidence.evaluation_id, "benchmark differs from confirmed mandate")
     saved = {}
+    saved_requests = {}
+    saved_policies = {}
     for reference in _references(content):
-        if (reference.schema, reference.schema_version) == ("account_evaluation", 5):
+        if (reference.schema, reference.schema_version) == ("account_evaluation", 6):
+            account = _read_json(_resolve(root, reference.path))
+            saved_requests[account["request_hash"]] = account["request_identity"]
+            saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
+                                                          for x in account["runs"])
             for evidence in _account_evidence(root, reference):
                 saved[evidence.evaluation_id] = evidence
     predecessor_root = _delivery_path(context, payload.source_candidates)
     for candidate in candidates.candidates:
         for reference in candidate.evaluations:
+            account = _read_json(_resolve(predecessor_root, reference.evidence.path))
+            saved_requests[account["request_hash"]] = account["request_identity"]
+            saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
+                                                          for x in account["runs"])
             for evidence in _account_evidence(predecessor_root, reference.evidence):
                 previous = saved.setdefault(evidence.evaluation_id, evidence)
                 if previous != evidence:
@@ -284,12 +294,63 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     for evidence in payload.assessment_request.evidence:
         if saved.get(evidence.evaluation_id) != evidence:
             _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "assessment differs from saved evaluation facts")
+    _validate_parameter_plans(payload, root, saved_requests, saved_policies)
     if scope is d.DeliveryValidationScope.INTEGRITY:
         return
     if not _assessment_recomputation_matches(assess_candidates(payload.assessment_request), payload.assessment):
         _fail("ASSESSMENT_RESULT", "assessment", "assessment differs from numeric recomputation")
     if compare_candidates(payload.comparison_request) != payload.comparison:
         _fail("COMPARISON_RESULT", "comparison", "comparison differs from numeric recomputation")
+
+
+def _validate_parameter_plans(payload, root, saved_requests, saved_policies):
+    from ..research_tools.parameter_evaluation import (
+        ParameterEvaluationPlan, ParameterEvaluationBinding, validate_parameter_contract,
+        parameter_execution_policy,
+    )
+
+    plans = {}
+    for reference in payload.parameter_plans:
+        plan = ParameterEvaluationPlan.from_dict(json.loads(_read_evidence(root, reference)))
+        _read_evidence(root, plan.mapping_evidence)
+        _read_evidence(root, plan.feasibility_evidence)
+        if plan.design.sha256 in plans:
+            _fail("PARAMETER_PLAN", reference.path, "duplicate parameter design")
+        plans[plan.design.sha256] = (reference, plan)
+        central = saved_requests.get(plan.center_request_sha256)
+        evidence = tuple(x for x in payload.assessment_request.evidence if x.candidate == plan.design.center
+                         and x.window_id == payload.assessment_request.protocol.baseline_window
+                         and x.scenario_id == payload.assessment_request.protocol.standard_scenario)
+        if (central is None or not evidence or any(x.request_sha256 != plan.center_request_sha256 for x in evidence)
+            or central["nonparameter_context_sha256"] != plan.nonparameter_context_sha256
+            or central["content_sha256"] != plan.design.center.content_sha256
+            or central["strategy_reference"] != plan.design.center.candidate_id):
+            _fail("PARAMETER_CENTER", reference.path, "planned center differs from saved center account")
+        center_bindings = {x.window_id: json.loads(x.binding_json) for x in plan.center_inputs}
+        if central["input_bindings"] != center_bindings:
+            _fail("PARAMETER_CENTER", reference.path, "planned center input identities differ")
+        policy = json.loads(plan.execution_contract_json)["policy"]
+        if any(parameter_execution_policy(x) != policy for x in saved_policies[plan.center_request_sha256]):
+            _fail("PARAMETER_CENTER", reference.path, "planned center execution policy differs")
+        links = tuple(x for x in payload.assessment_request.perturbations if x.parent == plan.design.center)
+        expected = tuple((x.candidate, plan.design.bind_point(index)) for index, x in enumerate(plan.children))
+        actual = tuple((x.child, x.parameter_point) for x in links)
+        if set(actual) != set(expected) or len(actual) != len(expected):
+            _fail("PARAMETER_PLAN", reference.path, "assessment links differ from complete plan")
+    if set(plans) != {x.sha256 for x in payload.assessment_request.parameter_designs}:
+        _fail("PARAMETER_PLAN", "parameter_plans", "assessment designs differ from published plans")
+    for evidence in payload.assessment_request.evidence:
+        if evidence.parameter_point is None:
+            continue
+        reference, plan = plans[evidence.parameter_point.design_sha256]
+        contract = saved_requests[evidence.request_sha256]
+        binding = ParameterEvaluationBinding.from_dict(contract["parameter_binding"])
+        if binding.plan != reference or binding.point != evidence.parameter_point:
+            _fail("PARAMETER_PLAN", evidence.evaluation_id, "saved account uses another parameter plan")
+        validate_parameter_contract(contract, plan, binding)
+        if any(parameter_execution_policy(x) != json.loads(plan.execution_contract_json)["policy"]
+               for x in saved_policies[evidence.request_sha256]):
+            _fail("PARAMETER_PLAN", evidence.evaluation_id, "saved child execution policy differs")
 
 
 def _manifest(root) -> tuple[d.PublicationFile, ...]:
@@ -320,7 +381,7 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     visited = visited | {identity}
     document = _read_json(_resolve(root, "delivery.json"))
     if (type(document) is not dict or set(document) != {"schema_version", "definition", "content"}
-        or type(document["schema_version"]) is not int or document["schema_version"] != 6):
+        or type(document["schema_version"]) is not int or document["schema_version"] != 7):
         _fail("DELIVERY_SCHEMA", "delivery.json", "unsupported delivery schema")
     receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(root, "receipt.json")))
     if receipt.reference != reference or d._digest(receipt.files) != reference.content_sha256:
@@ -398,7 +459,7 @@ def _assemble_delivery(context, definition, content):
     try:
         definition = d.DeliveryDefinition.from_dict(definition.to_dict())
         content = d.DeliveryContent.from_dict(content.to_dict())
-        document = {"schema_version": 6, "definition": definition.to_dict(), "content": content.to_dict()}
+        document = {"schema_version": 7, "definition": definition.to_dict(), "content": content.to_dict()}
         destination = _delivery_path(context, definition)
         public_destination = _public_delivery_path(context, definition)
         if destination.exists() or public_destination.exists():
@@ -430,6 +491,13 @@ def _assemble_delivery(context, definition, content):
             if reference.experiment.strategy_id != definition.strategy_id:
                 _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
             copy(reference.resolve(context.root).read_bytes(), reference.path, reference.sha256)
+        if isinstance(content.payload, d.CandidateAssessmentDelivery):
+            from ..research_tools.parameter_evaluation import read_parameter_plan
+
+            for reference in content.payload.parameter_plans:
+                plan = read_parameter_plan(reference, context.root)
+                for material in (plan.mapping_evidence, plan.feasibility_evidence):
+                    copy(material.resolve(context.root).read_bytes(), material.path, material.sha256)
         for reference in _support_references(context, content):
             copy(reference.resolve(context.root).read_bytes(), f"support/{reference.sha256}", reference.sha256)
         _validate_content(definition, content, staging, context)

@@ -69,14 +69,14 @@ class DeliveryDefinition(_Record):
     stage: DeliveryStage
     revision: int
     predecessors: tuple[DeliveryReference, ...] = ()
-    schema_version: int = 6
+    schema_version: int = 7
 
     @property
     def strategy_id(self):
         return self.batch.strategy_id
 
     def _validate(self):
-        if self.revision < 1 or self.schema_version != 6:
+        if self.revision < 1 or self.schema_version != 7:
             raise ValueError("invalid delivery revision/schema")
         _unique(((x.stage,x.revision) for x in self.predecessors), "predecessor")
         for ref in self.predecessors:
@@ -301,8 +301,8 @@ class EvaluationEvidenceRef(_Record):
     evaluation_ids: tuple[str, ...] = ()
 
     def _validate(self):
-        if (self.evidence.schema,self.evidence.schema_version) != ("account_evaluation",5):
-            raise ValueError("evaluation evidence requires published account schema 5")
+        if (self.evidence.schema,self.evidence.schema_version) != ("account_evaluation",6):
+            raise ValueError("evaluation evidence requires published account schema 6")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:
             _hash(value)
@@ -430,6 +430,8 @@ class CandidateAssessmentDelivery(_Record):
     contrary_evidence: tuple[EvidenceRef, ...]
     pending_decisions: tuple[str, ...]
 
+    parameter_plans: tuple[EvidenceRef, ...] = ()
+
     def _validate(self):
         if (
             self.source_candidates.stage is not DeliveryStage.CANDIDATES
@@ -542,10 +544,10 @@ class PublicationFile(_Record):
 class DeliveryReceipt(_Record):
     reference: DeliveryReference
     files: tuple[PublicationFile, ...]
-    schema_version: int = 6
+    schema_version: int = 7
 
     def _validate(self):
-        if self.schema_version != 6:
+        if self.schema_version != 7:
             raise ValueError("unsupported receipt schema")
         if not self.files:
             raise ValueError("receipt requires file manifest")

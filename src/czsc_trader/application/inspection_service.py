@@ -290,7 +290,7 @@ class _InvalidInspectionReference(ValueError):
 
 def _load_reference(context, reference, store):
     value = _read(reference.evidence.resolve(context.root))
-    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 5:
+    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 6:
         raise ValueError("inspection requires platform account evaluation evidence")
     validate_evaluation_evidence(value)
     if value["request_identity"]["experiment_id"] != reference.evidence.experiment.experiment_id:

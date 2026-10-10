@@ -1,13 +1,17 @@
 """Published evidence identities; researchers never choose its storage path."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
 import re
+from typing import TYPE_CHECKING
 
 from ._records import _Record, _hash, _path, _text
 from .context import ExperimentRef
-from .evaluation import EvaluationRequest, EvaluationResult
+if TYPE_CHECKING:
+    from .evaluation import EvaluationRequest, EvaluationResult
 
 
 def managed_path(root: Path, relative: str) -> Path:
@@ -98,6 +102,8 @@ class EvaluationEvidenceWrite:
     result: EvaluationResult
 
     def __post_init__(self):
+        from .evaluation import EvaluationRequest, EvaluationResult
+
         _name(self.name)
         for value, expected in (
             (self.experiment, ExperimentRef), (self.request, EvaluationRequest),

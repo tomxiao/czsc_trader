@@ -60,6 +60,29 @@ from .research_models import (
     CandidateComparison,
 )
 from .research_assessment import assess_candidates, compare_candidates
+from .research_models import (
+    ParameterCoordinateKind,
+    ParameterCoordinate,
+    ParameterPerturbationProtocol,
+    ParameterSpace,
+    ParameterDesignRequest,
+    ParameterPerturbationPoint,
+    ParameterPointBinding,
+    ParameterRejectionReason,
+    ParameterDesignRejection,
+    ParameterPerturbationDesign,
+    ParameterDesignStatus,
+    ParameterDesignResult,
+    ParameterDiagnosticContext,
+    ParameterRobustnessComparisonRequest,
+    ParameterRobustnessRow,
+    ParameterRobustnessComparison,
+)
+from .parameter_perturbation import (
+    ParameterFeasibility,
+    build_parameter_perturbation_design,
+    compare_parameter_robustness,
+)
 from .audit_models import (
     AuditFinding,
     AuditIdentity,
@@ -148,6 +171,25 @@ from .ledger_comparison import (
 )
 
 __all__ = [
+    "ParameterCoordinateKind",
+    "ParameterCoordinate",
+    "ParameterPerturbationProtocol",
+    "ParameterSpace",
+    "ParameterDesignRequest",
+    "ParameterPerturbationPoint",
+    "ParameterPointBinding",
+    "ParameterRejectionReason",
+    "ParameterDesignRejection",
+    "ParameterPerturbationDesign",
+    "ParameterDesignStatus",
+    "ParameterDesignResult",
+    "ParameterDiagnosticContext",
+    "ParameterRobustnessComparisonRequest",
+    "ParameterRobustnessRow",
+    "ParameterRobustnessComparison",
+    "ParameterFeasibility",
+    "build_parameter_perturbation_design",
+    "compare_parameter_robustness",
     "AssessmentDerivationKind",
     "assess_candidates",
     "compare_candidates",

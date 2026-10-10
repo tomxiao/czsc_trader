@@ -46,7 +46,7 @@ def test_full_sample_frequency_and_benchmark_are_computed_from_accounts():
         evidence(), frequency_window_days=60, benchmark_equity=(1000.0, 1100.0, 900.0, 1050.0)
     )
     panel = assess_candidates(replace(request(), evidence=(base,)))
-    assert panel.formula_version == "research-assessment-v2"
+    assert panel.formula_version == "research-assessment-v3"
     assert values(panel)[m.ResearchMetric.FULL_SAMPLE_FREQUENCY].value == 30.0
     assert values(panel)[m.ResearchMetric.FREQUENCY_MEDIAN].value is None
     got = {x.metric: x for x in panel.rows[0].benchmark.diagnostics}

@@ -343,6 +343,9 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
                 )
             )
         ),
+        parameter_context=m.ParameterDiagnosticContext(
+            m.ParameterPerturbationProtocol(), "a" * 64, "b" * 64, 2, 32, 32
+        ),
     )
 
 

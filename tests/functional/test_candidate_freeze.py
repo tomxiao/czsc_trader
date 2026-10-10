@@ -482,7 +482,7 @@ def test_unavailable_independent_replay_reference_reports_failure(inspection, da
     evidence = publish_evidence(request.research, MaterialEvidenceWrite(
         request.experiment, "independent_inspection_reference", original + b"\n",
         "application/json", "json"))
-    evidence = replace(evidence, schema="account_evaluation", schema_version=5)
+    evidence = replace(evidence, schema="account_evaluation", schema_version=6)
     assert evidence.repository_path != replay.reference.evidence.repository_path
     reference = EvaluationEvidenceRef(evidence, replay.reference.evaluation_ids)
     path = evidence.resolve(context.root)

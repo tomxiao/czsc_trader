@@ -226,7 +226,8 @@ JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链�
 ## 5. 显式发布和读取证据
 
 计算完成后，按交付需要选择结果留证。完整账户证据保存请求身份、策略输入绑定、信号、账户账本、基准、指标和 SE 适配事实，
-发布时核验请求与结果一致。它的格式是 `account_evaluation`／schema 5。
+发布时核验请求与结果一致。它的格式是 `account_evaluation`／schema 6，请求身份使用 schema 5，
+包含实际策略输入绑定及可选的参数扰动点绑定。
 
 ```python
 from czsc_trader.application import publish_evidence
@@ -291,6 +292,54 @@ assessment_evidence = build_assessment_evidence(bound_request, result)
 实际费用、计量层级、基准、窗口及输入身份须可比，不能仅依赖相同场景名。
 账户比较使用 SE `compare_ledgers`，按目的选用 `STRICT/ECONOMIC` 并读取实际状态；计算口径见 [SE 手册](../../packages/strategy_evaluator/README.md)。
 
+### 参数扰动评价
+
+SE 生成 `ParameterPerturbationDesign`，RSCH 将规定坐标转换为实际策略载荷；TDR 认证载荷、
+同源执行条件和真实账户。默认研究流程采用 5% 总距离、32 个联合点、种子 13；平台接受显式协议，
+不根据研究结果自动增加距离或替换规定点。具体几何与分位数口径见 [SE 参数扰动](../../packages/strategy_evaluator/README.md)。
+
+先用 `MaterialEvidenceWrite` 发布坐标映射及可行性约束材料；其原始字节哈希应分别等于
+`ParameterSpace.mapping_sha256`、`feasibility_sha256`。中心和全部子候选通过
+`research.evaluation.prepare` 准备后，构造完整计划：
+
+```python
+from czsc_trader.research_tools import ParameterEvaluationPlan, EvaluationLineage
+
+plan = ParameterEvaluationPlan.create(
+    design, prepared_center, prepared_children,
+    mapping_evidence=mapping_reference, feasibility_evidence=constraint_reference,
+    dataflows=research.data,
+)
+plan_reference = publish_evidence(research, MaterialEvidenceWrite(
+    experiment, "parameter-evaluation-plan",
+    json.dumps(plan.to_dict(), ensure_ascii=False).encode("utf-8"), "application/json", "json",
+))
+point_binding = plan.bind_point(plan_reference, 0, repository_root=repository.root)
+child_request = replace(prepared_children[0], lineage=EvaluationLineage(derivation, point_binding))
+child_result = research.evaluation.evaluate(child_request)
+```
+
+上例需导入 `json` 及 `dataclasses.replace`；`derivation` 为实际中心与该子候选的 `PARAMETERS` 派生关系。
+`ParameterEvaluationPlan` 使用 schema 1，保存中心和各子候选的完整规范 JSON 载荷、内容身份、
+规定点集、中心请求身份、中心输入准备身份、固定执行契约和映射／约束材料引用。
+各子载荷及有效内容必须互不相同，也必须不同于中心；相同行为不构成拒绝理由。
+`ParameterEvaluationBinding` 保存已发布计划引用及 SE `ParameterPointBinding`，进入请求哈希和账户证据。
+普通评价可以不提供该绑定；带绑定的评价必须核验计划已经发布、文件字节一致、点序号及实际载荷匹配。
+
+计划和实际评价固定源码、依赖、非参数结构、标的、窗口、截止日、资金、费用场景、价格单位、基准和频率口径。
+同时核验 SRT 实际执行政策、订单能力及决策时间规则，不能通过参数切换执行契约。
+参数导致的预热起点变化允许存在；策略原始输入用已固定的 DFLS 准备引用，在中心与子候选共同日期范围内
+通过公开 `Dataflows.fetch` 核对来源、原始值及时间契约。除起点与预热所需最小观测／交易日数量外，
+输入源请求须相同；共同范围使用两者中较小的历史覆盖要求，范围不足或数据失败明确拒绝。
+中心范围以外新增的预热内容保留其准备身份，不能据共同范围校验声称已与不存在的中心区间逐值复验。
+这些校验不调用实时供应商重新获取数据，也不比较整个可能随参数变化的派生输入哈希。
+
+`build_assessment_evidence` 把已认证点绑定传给 SE；缺失或失败账户仍按实际状态处理，不能填零。
+阶段四 `CandidateAssessmentDelivery.parameter_plans` 显式引用计划。交付浅快照计划及其映射／约束材料，
+核对实际中心请求、全部规定父子关系和保存账户的点身份，并在 `FULL` 范围重算 SE。
+发布后的校验读取交付快照，不依赖实验 `work/`、原计划材料文件或可变源码。
+平台只认证声明、身份及确定性计算；坐标业务含义、映射合理性及研究授权由 RSCH 负责。
+
 ## 7. 五阶段交付
 
 `assemble_delivery(repository, DeliveryDefinition, DeliveryContent) -> DeliveryReceipt` 直接接受强类型数据。
@@ -348,8 +397,8 @@ if checked.status is not ValidationStatus.PASS:
 选定证据的 `evidence/` 浅快照及必要的决定／检验 `support/`。
 公开目录 `research/<批次>/deliveries/<阶段>/<修订>/` 保存对应的 `report.md` 和 `receipt.json`。
 发布与校验核对两处报告及回执的字节一致性；完整包只包含已选定材料。
-`DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 6，读取时拒绝旧交付格式，
-不自动迁移历史原件。账户评价证据与 `StrategyVersion` 继续使用各自的 schema 5。
+`DeliveryDefinition`、`DeliveryReceipt` 和 `delivery.json` 使用 schema 7，读取时拒绝旧交付格式，
+不自动迁移历史原件。账户评价证据使用 schema 6，`StrategyVersion` 继续使用 schema 5。
 修订号在“批次＋阶段”内唯一，同内容重复发布复用，冲突拒绝覆盖，失败不留下可见的半成品修订。
 前驱为同批次的 `DeliveryReference`；同阶段前驱只能是更早修订。
 

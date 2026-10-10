@@ -75,6 +75,85 @@ SE保留原始计算结果，不统一舍入或强制线程数。受管交付的
 [TDR交付API](../../src/czsc_trader/README.md#7-五阶段交付)负责，仅对`DSR_EFFECTIVE`
 应用`rel_tol=1e-12`、`abs_tol=0.0`；其余自检字段及候选比较结果仍精确核验。
 
+### 参数扰动
+
+参数几何和账户评价分开。RSCH事前声明所有活跃数值坐标、有限上下界、中心、
+坐标映射及纯参数约束的源码哈希；SE生成坐标，TDR将完整计划与实际评价绑定。
+SE不猜测策略参数含义，也不读取账户收益筛选扰动点。
+
+公开契约为`ParameterCoordinate`、`ParameterSpace`、`ParameterPerturbationProtocol`、
+`ParameterDesignRequest`、`ParameterPerturbationDesign`及`ParameterPointBinding`。
+`ResearchRecord.to_dict/from_dict/sha256`提供严格序列化和内容身份；当前字段必须齐全，
+不自动补齐历史格式。自检输出公式版本为`research-assessment-v3`，历史原件保持不变。
+
+```python
+from strategy_evaluator import (
+    ParameterCoordinate, ParameterCoordinateKind, ParameterSpace,
+    ParameterPerturbationProtocol, ParameterDesignRequest,
+    ParameterDesignStatus, build_parameter_perturbation_design,
+)
+
+# center是AssessmentCandidate；坐标及两个源码哈希由RSCH事前确定。
+space = ParameterSpace(
+    coordinates=(
+        ParameterCoordinate("entry", 0.5, 0.0, 1.0, ParameterCoordinateKind.CONTINUOUS),
+        ParameterCoordinate("exit", 0.5, 0.0, 1.0, ParameterCoordinateKind.CONTINUOUS),
+    ),
+    mapping_sha256=mapping_source_sha256,
+    feasibility_sha256=constraint_source_sha256,
+)
+result = build_parameter_perturbation_design(
+    ParameterDesignRequest(center, ParameterPerturbationProtocol(), space),
+    feasibility=lambda coordinates: coordinates[0] >= coordinates[1],
+)
+if result.status is ParameterDesignStatus.COMPLETE:
+    point_binding = result.design.bind_point(0)  # 索引从0开始
+```
+
+默认协议为总距离`0.05`、32点、种子13；研究默认只使用该档排序，10%和20%须由用户
+另外提出、各自建立协议和证据，不能混入同一分位数。算法固定为PCG64生成独立高斯方向，
+按完整参数域宽标准化，并归一化到总欧氏距离：
+
+`r = sqrt(sum(((x_i - center_i) / (upper_i - lower_i))**2))`
+
+距离不除以维数或维数平方根；8维和13维均保持同一总距离。连续坐标对仿射单位换算保持一致；
+整数坐标以原坐标的一个单位为离散步长；单位转换放入载荷映射，SE仍以原整数坐标采样，不能改变舍入精度后声称等价。
+该规则不保证任意非线性改写或经济风险等价。参数域、拆分坐标及映射变化必须另外解释，
+不能在见到结果后用于改善稳健性读数。
+
+整数坐标按HALF_EVEN取整，保留其实际移动，再按剩余平方距离缩放连续坐标；
+整数移动正好用完半径时，连续移动为零。不得裁剪到边界。超域、约束失败、重复点、
+整数移动超出半径及退化方向只在评价前拒绝，记录原因计数与抽样次数；这是受约束的
+混合抽样，不声明为均匀球面样本。约束回调必须返回真正的`bool`，其业务纯度与源码
+身份由RSCH负责。SE核验几何与内容身份，不能仅凭源码哈希证明回调没有经济筛选。
+
+`COMPLETE`返回全部规定点；全整数空间返回`NOT_APPLICABLE`，须另行评审离散方法；
+抽样预算耗尽或浮点坐标无法表达规定距离时返回`DESIGN_FAILED`，不返回可供评价的部分设计。
+非法协议直接拒绝，错误约束回调直接报错，没有自动放宽约束或更换算法。
+
+评价接入时，`SelfCheckProtocol.parameter_protocol`必须显式声明；
+`CandidateAssessmentRequest.parameter_designs`逐中心携带设计；每个`PerturbationLink`
+和对应`AssessmentEvidence.parameter_point`必须与设计同一点一致。
+绑定包括设计哈希、点序号、坐标及实际距离。全部规定点在同一中心原生评价条件下
+成功，才用LINEAR计算`max(0, 中心净年化-Q10)`及`max(0, Q90回撤-中心回撤)`；
+回撤含初始财富。没有成功的点不填零、不替换、不从已完成子集计算完整指标。
+无显式设计的旧式局部诊断没有新方法身份，不能用于统一参数排序。
+
+`CandidateAssessment.parameter_context`公开协议、设计/参数空间哈希、维度和覆盖数。
+协议的`method_sha256`包含算法、半径、点数、种子、距离容差及固定分位数/完整覆盖规则，
+排除策略特有参数域、映射、维度和抽样预算：这些信息另有内容身份，预算不改变已完成
+规定点的计算规则。具体参数域不同不自动导致跨族不可比。
+
+`compare_parameter_robustness(ParameterRobustnessComparisonRequest(rows))`仅返回参数
+退化对照及明确的`comparable/reasons/limitations`，保留各自评价上下文；方法、指标版本、
+频率窗口及完整覆盖必须一致。它允许披露后的原生经济上下文差异，不输出总体候选赢家。
+普通`compare_candidates`仍要求经济上下文一致。默认完整证据政策要求声明参数方法且方法一致；
+既有`PREFIX_PARTIAL`能力可在前两项已决定先后时保留关系，真正走到参数项时，
+缺失方法或方法不同的候选对明确不可比，不能把未经声明的局部诊断当作统一证据。
+参数退化是有限样本诊断，不是置信区间或新的经济验收门。
+
+相关账户计划与绑定详见[TDR公开API](../../src/czsc_trader/README.md)。
+
 ### 比较请求与政策
 
 `CandidateComparisonRequest`显式传入比较候选集、`ResearchTargets`、自检面板和

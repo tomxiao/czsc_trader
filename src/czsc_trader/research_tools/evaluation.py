@@ -24,7 +24,8 @@ from strategy_runtime import (
     canonical_sha256, ImplementationDependency,
     ExecutionPriceBasis, ExecutionPricing,
 )
-from strategy_manager import CandidateKey, CandidateDerivation
+from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind
+from .parameter_evaluation import ParameterEvaluationBinding
 from strategy_runtime.implementation_identity import implementation_sha256
 from trading_execution_engine import ExecutionResult
 
@@ -158,10 +159,15 @@ class EvaluationRequest:
 @dataclass(frozen=True, slots=True)
 class EvaluationLineage:
     derivation: CandidateDerivation
+    parameter_binding: ParameterEvaluationBinding | None = None
 
     def __post_init__(self):
         if not isinstance(self.derivation, CandidateDerivation):
             raise TypeError("lineage requires CandidateDerivation")
+        if self.parameter_binding is not None and type(self.parameter_binding) is not ParameterEvaluationBinding:
+            raise TypeError("lineage requires ParameterEvaluationBinding")
+        if self.parameter_binding is not None and self.derivation.kind is not CandidateDerivationKind.PARAMETERS:
+            raise ValueError("parameter point binding requires PARAMETERS derivation")
 
 
 @dataclass(frozen=True, slots=True)
@@ -736,9 +742,27 @@ def _request_identity_payload(
 ) -> dict[str, object]:
     """Project already authenticated request values without loading mutable source files."""
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
+        "parameter_binding": None if request.lineage is None or request.lineage.parameter_binding is None
+        else request.lineage.parameter_binding.to_dict(),
+        "input_bindings": {name: item.to_dict() for name, item in request.input_bindings.items()},
+        "nonparameter_context_sha256": canonical_sha256({
+            "payload": {key: value for key, value in request.strategy.payload.items() if key != "parameters"},
+            "runtime_binding": {key: value for key, value in request.runtime_binding.items() if key != "candidate_id"},
+            "dependencies": [{"name": item.name, "version": item.version} for item in sorted(request.dependencies)],
+            "symbol": request.symbol, "asset_type": request.asset_type.lower(),
+            "windows": [{"id": x.window_id, "start": x.start.isoformat(), "end": x.end.isoformat()}
+                        for x in request.windows],
+            "cutoff": request.data_cutoff.isoformat(), "cash": request.initial_cash,
+            "costs": [{"id": x.scenario_id, "cost": x.one_way_cost, "tier": x.measurement_tier}
+                      for x in request.costs],
+            "data": None if request.execution_data is None else request.execution_data.fingerprint,
+            "price_basis": request.price_basis.value, "benchmark": request.benchmark.to_dict(),
+            "frequency_window_days": request.frequency_window_days, "mode": request.execution_mode,
+            "metric_version": METRIC_SEMANTICS_VERSION,
+        }),
         "experiment_id": request.experiment_id,
         "strategy_reference": request.strategy.reference_id,
         "strategy_identity": request.strategy.runtime_identity_sha256,
@@ -1057,7 +1081,7 @@ def serialize_evaluation_evidence(request: EvaluationRequest, result: Evaluation
         }
         runs.append(item)
     return {
-            "schema_version": 5,
+            "schema_version": 6,
             "source_kind": "published_result",
             "request_identity": _request_identity_payload(
                 request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
@@ -1089,11 +1113,11 @@ def validate_evaluation_evidence(value: dict) -> None:
     from strategy_evaluator import AssessmentEvidence, ReplayEvidence, audit_replay, AuditStatus
     from ..backtesting.audit_adapter import _records
 
-    if not isinstance(value, dict) or value.get("schema_version") != 5 or value.get("source_kind") != "published_result":
-        raise ValueError("account evaluation evidence requires schema 5 published_result")
+    if not isinstance(value, dict) or value.get("schema_version") != 6 or value.get("source_kind") != "published_result":
+        raise ValueError("account evaluation evidence requires schema 6 published_result")
     request = value["request_identity"]
-    if request.get("schema_version") != 4:
-        raise ValueError("evaluation request requires schema 4 price units")
+    if request.get("schema_version") != 5:
+        raise ValueError("evaluation request requires schema 5 parameter identities")
     pricing = ExecutionPricing.from_dict(request["pricing"])
     if pricing.basis.value != request["price_basis"]:
         raise ValueError("evaluation pricing differs from requested units")
@@ -1106,6 +1130,12 @@ def validate_evaluation_evidence(value: dict) -> None:
     if any(value[name] != request[name] for name in ("strategy_identity", "runtime_binding_hash", "data_identity", "execution_mode")):
         raise ValueError("evaluation metadata differs from request")
     projected = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+    if request["input_bindings"] != value["input_bindings"]:
+        raise ValueError("saved input bindings differ from authenticated request")
+    parameter_binding = request["parameter_binding"]
+    point = None if parameter_binding is None else ParameterEvaluationBinding.from_dict(parameter_binding).point
+    if any(item.parameter_point != point for item in projected):
+        raise ValueError("assessment parameter point differs from authenticated request")
     if not projected or len(projected) != len(value["runs"]):
         raise ValueError("evaluation assessment coordinates differ")
     runs = []
@@ -1120,6 +1150,8 @@ def validate_evaluation_evidence(value: dict) -> None:
         "trades": ("entry_date", "exit_date"),
     }
     for item, assessment in zip(value["runs"], projected, strict=True):
+        if item["signal_support"]["input_binding"] != request["input_bindings"][item["window_id"]]:
+            raise ValueError("run input binding differs from authenticated request")
         identity = item["identity"]
         if (assessment.request_sha256 != value["request_hash"]
             or assessment.result_sha256 != value["result_hash"]

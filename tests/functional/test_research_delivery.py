@@ -70,7 +70,7 @@ def test_researcher_report_and_declared_evidence_are_preserved(context):
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.COMPONENTS, 1)
     receipt = assemble_delivery(context.repository, definition, value)
     publication = published(context.repository, receipt)
-    assert receipt.schema_version == definition.schema_version == 6
+    assert receipt.schema_version == definition.schema_version == 7
     assert (publication / "report.md").read_bytes() == report.encode("utf-8")
     assert (publication / reference.path).read_bytes() == reference.resolve(context.repository.root).read_bytes()
     reference.resolve(context.repository.root).unlink()

@@ -247,6 +247,7 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             if reason:
                 gaps.append(reason)
             links = [x for x in request.perturbations if x.parent == center]
+            design = next((x for x in request.parameter_designs if x.center == center), None)
             neighbors = [
                 evidence.get((x.child, p.baseline_window, p.standard_scenario)) for x in links
             ]
@@ -261,6 +262,10 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                         neighbor.derivation_kind is m.AssessmentDerivationKind.PARAMETERS,
                         "parameter self-check requires a parameter-only derivation",
                     )
+                    m.require(
+                        neighbor.parameter_point == link.parameter_point,
+                        "parameter evidence point differs from link",
+                    )
             comparable = all(
                 x is not None
                 and x.context_sha256 == base.context_sha256
@@ -268,7 +273,17 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 and x.scenario_context == base.scenario_context
                 for x in neighbors
             )
-            if len(neighbors) >= p.minimum_perturbations and comparable:
+            declared_complete = design is None or (
+                len(links) == design.protocol.point_count
+                and {x.parameter_point.point_index for x in links}
+                == set(range(design.protocol.point_count))
+            )
+            if (
+                len(neighbors) >= p.minimum_perturbations
+                and comparable
+                and declared_complete
+                and (p.parameter_protocol is None or design is not None)
+            ):
                 performances = [_performance(x) for x in neighbors]
                 weights = [x.weight for x in links]
                 values = (
@@ -409,10 +424,43 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 tuple(gaps),
                 None if base is None else base.behavior_sha256,
                 benchmark,
+                None
+                if not request.parameter_designs
+                else _parameter_context(request, center, evidence, base),
             )
         )
     family, limitations = _family(request)
     return m.AssessmentPanel(request.sha256, p.sha256, tuple(rows), family, limitations)
+
+
+def _parameter_context(request, center, evidence, base):
+    design = next((x for x in request.parameter_designs if x.center == center), None)
+    if design is None:
+        return None
+    valid = 0
+    for link in request.perturbations:
+        if link.parent != center:
+            continue
+        neighbor = evidence.get(
+            (link.child, request.protocol.baseline_window, request.protocol.standard_scenario)
+        )
+        if (
+            base is not None
+            and neighbor is not None
+            and neighbor.parameter_point == link.parameter_point
+            and neighbor.context_sha256 == base.context_sha256
+            and neighbor.metric_version == base.metric_version
+            and neighbor.scenario_context == base.scenario_context
+        ):
+            valid += 1
+    return m.ParameterDiagnosticContext(
+        design.protocol,
+        design.sha256,
+        design.space.sha256,
+        len(design.space.coordinates),
+        design.protocol.point_count,
+        valid,
+    )
 
 
 def _check_target(target, row, frequency_window_days):
@@ -491,8 +539,24 @@ def _bin(value, spec):
     )
 
 
-def _compare_pair(a, b, layer, order):
+def _compare_pair(a, b, layer, order, parameter_methods):
     for metric, left, right in zip(order, a.bin_values, b.bin_values):
+        if metric in (
+            m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
+            m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+        ):
+            method_a, method_b = parameter_methods[a.candidate], parameter_methods[b.candidate]
+            if method_a is None or method_b is None or method_a != method_b:
+                return m.PairwiseComparison(
+                    a.candidate,
+                    b.candidate,
+                    layer,
+                    m.PairwiseRelation.INCOMPARABLE,
+                    metric,
+                    "MISSING_DECLARED_PARAMETER_METHOD"
+                    if method_a is None or method_b is None
+                    else "PARAMETER_METHODS_DIFFER",
+                )
         if left is None or right is None:
             return m.PairwiseComparison(
                 a.candidate,
@@ -516,11 +580,13 @@ def _compare_pair(a, b, layer, order):
     return m.PairwiseComparison(a.candidate, b.candidate, layer, m.PairwiseRelation.TIE, None, None)
 
 
-def _order_layer(members, layer, order):
+def _order_layer(members, layer, order, parameter_methods):
     members = sorted(members, key=lambda x: x.candidate.candidate_id)
     ids = [x.candidate for x in members]
     edges, ties, unknown = ({x: set() for x in ids} for _ in range(3))
-    pairs = tuple(_compare_pair(a, b, layer, order) for a, b in combinations(members, 2))
+    pairs = tuple(
+        _compare_pair(a, b, layer, order, parameter_methods) for a, b in combinations(members, 2)
+    )
     for pair in pairs:
         a, b = pair.candidate_a, pair.candidate_b
         if pair.relation is m.PairwiseRelation.A_BEFORE_B:
@@ -589,6 +655,19 @@ def _rank(request, bins, order):
         ]
         missing = [metric for metric in order if metrics[metric].value is None]
         reasons.extend(f"{metric.value}:{metrics[metric].reason}" for metric in missing)
+        missing_parameter_method = row.parameter_context is None
+        if missing_parameter_method:
+            reasons.append("MISSING_DECLARED_PARAMETER_METHOD")
+            missing.extend(
+                metric
+                for metric in order
+                if metric
+                in (
+                    m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
+                    m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                )
+                and metric not in missing
+            )
         if any(x.status is m.TargetCheckStatus.FAILED for x in checks):
             status = m.ComparisonStatus.TARGET_NOT_MET
         elif (
@@ -606,7 +685,17 @@ def _rank(request, bins, order):
                 reasons.append("EVALUATION_CONTEXTS_DIFFER")
         else:
             status = m.ComparisonStatus.RANKED
-        values = tuple(_bin(metrics[metric].value, specifications[metric]) for metric in order)
+        values = tuple(
+            None
+            if missing_parameter_method
+            and metric
+            in (
+                m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
+                m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+            )
+            else _bin(metrics[metric].value, specifications[metric])
+            for metric in order
+        )
         records.append(
             m.CandidateRank(
                 row.candidate, status, checks, None, None, values, tuple(reasons), None, None
@@ -627,12 +716,27 @@ def _rank(request, bins, order):
     }
     # Absent pressure evidence is missing data; two different known scenarios remain incompatible.
     stress_contexts = {x.stress_scenario for x in eligible_rows if x.stress_scenario is not None}
-    if len(contexts) > 1 or len(stress_contexts) > 1:
+    parameter_methods = {
+        x.candidate: None
+        if x.parameter_context is None
+        else x.parameter_context.protocol.method_sha256
+        for x in eligible_rows
+    }
+    incompatible_parameter_methods = (
+        len(set(parameter_methods.values())) > 1
+        and request.policy.missing_evidence_policy is m.MissingEvidencePolicy.REQUIRE_COMPLETE
+    )
+    if len(contexts) > 1 or len(stress_contexts) > 1 or incompatible_parameter_methods:
         records = [
             replace(
                 x,
                 status=m.ComparisonStatus.INCOMPARABLE,
-                reasons=(*x.reasons, "EVALUATION_CONTEXTS_DIFFER"),
+                reasons=(
+                    *x.reasons,
+                    "PARAMETER_METHODS_DIFFER"
+                    if incompatible_parameter_methods
+                    else "EVALUATION_CONTEXTS_DIFFER",
+                ),
             )
             if x.status is m.ComparisonStatus.RANKED
             else x
@@ -662,7 +766,7 @@ def _rank(request, bins, order):
     result, pairs = [], []
     for layer in sorted(set(layers.values())):
         members = [x for x in records if layers.get(x.candidate.candidate_id) == layer]
-        ranked, comparisons = _order_layer(members, layer, order)
+        ranked, comparisons = _order_layer(members, layer, order, parameter_methods)
         result.extend(ranked)
         pairs.extend(comparisons)
     result.extend(
