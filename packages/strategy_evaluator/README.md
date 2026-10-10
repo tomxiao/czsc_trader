@@ -178,7 +178,7 @@ if result.status is ParameterDesignStatus.COMPLETE:
 敏感性方案另列，不改写基准排序；输出不自动产生入选或冻结决定。
 
 平台提供上述政策能力；当前RSCH研究政策使用原始值分层及完整证据比较，具体以
-[RSCH排序规则](../../research/RSCH_AGENT.md#排序规则)和获批协议为准，调用方不得据工具能力自行改政策。
+[RSCH排序规则](../../research/RSCH_AGENT.md#研究族内排序规则)和获批协议为准，调用方不得据工具能力自行改政策。
 按该研究政策构造请求时，显式设置`ParetoBasis.RAW`和`MissingEvidencePolicy.REQUIRE_COMPLETE`；
 其他政策须先获用户批准并另立协议版本。
 
