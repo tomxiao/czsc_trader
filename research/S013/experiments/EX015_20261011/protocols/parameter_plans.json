@@ -1,0 +1,4988 @@
+{
+  "status": "DECLARED",
+  "geometry": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX015_20261011"
+    },
+    "evidence_id": "251d21f02017fd245bc4325f9ab64d50a110ef58c63a826e86bb857253eec9ae.json",
+    "sha256": "251d21f02017fd245bc4325f9ab64d50a110ef58c63a826e86bb857253eec9ae",
+    "media_type": "application/json",
+    "name": "prospective-common-parameter-geometry",
+    "schema": null,
+    "schema_version": null
+  },
+  "mapping": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX015_20261011"
+    },
+    "evidence_id": "b572f4ffe57aabad6214ef91e641f43599b9fb229e42e86006794e5efa611ec3.json",
+    "sha256": "b572f4ffe57aabad6214ef91e641f43599b9fb229e42e86006794e5efa611ec3",
+    "media_type": "application/json",
+    "name": "parameter-coordinate-mapping",
+    "schema": null,
+    "schema_version": null
+  },
+  "feasibility": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX015_20261011"
+    },
+    "evidence_id": "00ec1847c731904e76f6eac10a3c2260626a2c6d61df3de1087d5680d06b0b3f.json",
+    "sha256": "00ec1847c731904e76f6eac10a3c2260626a2c6d61df3de1087d5680d06b0b3f",
+    "media_type": "application/json",
+    "name": "parameter-coordinate-feasibility",
+    "schema": null,
+    "schema_version": null
+  },
+  "analysis_sha256": "b395d61c5d4b003301fe026a63564e69cebcb0b846c1e6b827f5bae99cbe2a90",
+  "centers": [
+    {
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "mechanism": "TIME",
+      "background": "B0",
+      "center_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX012_20261011"
+        },
+        "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+        "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+        "media_type": "application/json",
+        "name": "mechanism-final-account-b0-m1",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "plan_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "66260902b1ec4c14979c3696540497f38f8890d5bd80217edd3ca270237f3f71.json",
+        "sha256": "66260902b1ec4c14979c3696540497f38f8890d5bd80217edd3ca270237f3f71",
+        "media_type": "application/json",
+        "name": "parameter-plan-b0-time",
+        "schema": null,
+        "schema_version": null
+      },
+      "design": {
+        "type": "ParameterPerturbationDesign",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S013-C2132",
+          "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.range_window",
+              "center": 180.0,
+              "lower": 21.0,
+              "upper": 360.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.entry",
+              "center": 0.675,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.exit",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.max_hold",
+              "center": 8.0,
+              "lower": 1.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.range_window",
+              "center": 120.0,
+              "lower": 21.0,
+              "upper": 360.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.entry",
+              "center": 0.9,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.exit",
+              "center": 0.99,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.max_hold",
+              "center": 4.0,
+              "lower": 1.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.acf_min",
+              "center": 0.1,
+              "lower": -0.6,
+              "upper": 0.5,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "regime_window",
+              "center": 20.0,
+              "lower": 5.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "regime_threshold",
+              "center": 0.0,
+              "lower": -0.2,
+              "upper": 0.2,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation.lookback",
+              "center": 120.0,
+              "lower": 40.0,
+              "upper": 120.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation.threshold",
+              "center": -0.2,
+              "lower": -0.5,
+              "upper": 0.5,
+              "kind": "CONTINUOUS"
+            }
+          ],
+          "mapping_sha256": "b572f4ffe57aabad6214ef91e641f43599b9fb229e42e86006794e5efa611ec3",
+          "feasibility_sha256": "00ec1847c731904e76f6eac10a3c2260626a2c6d61df3de1087d5680d06b0b3f"
+        },
+        "points": [
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 0,
+            "coordinates": [
+              183.0,
+              0.6840517012559002,
+              0.9436520750187196,
+              8.0,
+              113.0,
+              0.9215807740770411,
+              0.9871174670981083,
+              5.0,
+              0.10590168512423424,
+              21.0,
+              0.00790182839670243,
+              120.0,
+              -0.180969581517341
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 1,
+            "coordinates": [
+              175.0,
+              0.6932544107702187,
+              0.9285286258882087,
+              8.0,
+              126.0,
+              0.9032434563237629,
+              0.9846752089018559,
+              3.0,
+              0.09453100723548666,
+              21.0,
+              0.005168128005359139,
+              120.0,
+              -0.21807146615836265
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 2,
+            "coordinates": [
+              184.0,
+              0.6508741262685361,
+              0.9411665848482244,
+              7.0,
+              125.0,
+              0.903926199046902,
+              0.9976852536436023,
+              4.0,
+              0.08759118184806992,
+              21.0,
+              0.00940132507841443,
+              120.0,
+              -0.18945700059721501
+            ],
+            "actual_radius": 0.05000000000000002
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 3,
+            "coordinates": [
+              179.0,
+              0.6928448670606199,
+              0.9615657767379403,
+              9.0,
+              122.0,
+              0.9284531591364462,
+              0.9837342374624725,
+              4.0,
+              0.08870471275704692,
+              21.0,
+              -0.0043193200070212835,
+              119.0,
+              -0.1873787145745614
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 4,
+            "coordinates": [
+              185.0,
+              0.6822849733572236,
+              0.9159679859711339,
+              7.0,
+              116.0,
+              0.8846841403773825,
+              0.984827946801736,
+              5.0,
+              0.09571111183532614,
+              20.0,
+              0.003545497960016164,
+              120.0,
+              -0.19846930176987304
+            ],
+            "actual_radius": 0.04999999999999998
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 5,
+            "coordinates": [
+              181.0,
+              0.6945745794938021,
+              0.9462636144710538,
+              8.0,
+              127.0,
+              0.8775780886636113,
+              0.9841680501867286,
+              4.0,
+              0.1052059414490505,
+              21.0,
+              0.004602258723806772,
+              118.0,
+              -0.2045479004981316
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 6,
+            "coordinates": [
+              175.0,
+              0.6932478470746607,
+              0.9459859362332266,
+              7.0,
+              118.0,
+              0.9341787879151585,
+              0.9885304744582283,
+              5.0,
+              0.10699670197241276,
+              20.0,
+              -0.0037886652436564684,
+              120.0,
+              -0.20484658563143468
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 7,
+            "coordinates": [
+              186.0,
+              0.6757320098031773,
+              0.9728963213541634,
+              9.0,
+              120.0,
+              0.8884070236186015,
+              0.9959407090365863,
+              4.0,
+              0.08591873224670925,
+              21.0,
+              0.0035825870067247856,
+              118.0,
+              -0.20230970375210766
+            ],
+            "actual_radius": 0.05000000000000004
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 8,
+            "coordinates": [
+              181.0,
+              0.659066355016898,
+              0.9223313729158785,
+              9.0,
+              122.0,
+              0.9104665224403282,
+              0.9858880501653495,
+              4.0,
+              0.12557803153570518,
+              20.0,
+              -0.005511928821419141,
+              120.0,
+              -0.18288995225868662
+            ],
+            "actual_radius": 0.04999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 9,
+            "coordinates": [
+              176.0,
+              0.6458791214604802,
+              0.9241220934223138,
+              7.0,
+              123.0,
+              0.9009979455837632,
+              0.9814572233786321,
+              3.0,
+              0.0985855063122219,
+              20.0,
+              -0.002544644089210709,
+              120.0,
+              -0.20860938645895957
+            ],
+            "actual_radius": 0.049999999999999954
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 10,
+            "coordinates": [
+              183.0,
+              0.6705775999115855,
+              0.9459825014156723,
+              8.0,
+              120.0,
+              0.9161482487751917,
+              0.9564365521331066,
+              4.0,
+              0.06866323599856888,
+              20.0,
+              0.0013133210009273013,
+              120.0,
+              -0.18671948463731355
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 11,
+            "coordinates": [
+              181.0,
+              0.6478753865885072,
+              0.9386852631757342,
+              9.0,
+              125.0,
+              0.9005113282039575,
+              0.9743536784927028,
+              5.0,
+              0.07686597864378579,
+              20.0,
+              -0.00043711217508983773,
+              120.0,
+              -0.2121193730337779
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 12,
+            "coordinates": [
+              177.0,
+              0.6925222193313757,
+              0.9400968774031642,
+              6.0,
+              119.0,
+              0.9001096083326585,
+              0.9861424466549025,
+              3.0,
+              0.10875266730083051,
+              20.0,
+              -0.008846513606880267,
+              120.0,
+              -0.20204418893451925
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 13,
+            "coordinates": [
+              180.0,
+              0.6445691055276271,
+              0.93544304684085,
+              8.0,
+              125.0,
+              0.9045563336312413,
+              0.991441265174317,
+              5.0,
+              0.11716953426197646,
+              21.0,
+              0.0028249599544802194,
+              119.0,
+              -0.19264695086574532
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 14,
+            "coordinates": [
+              169.0,
+              0.6753655952976839,
+              0.9413723047797777,
+              8.0,
+              123.0,
+              0.900516762442482,
+              0.9633915838762189,
+              4.0,
+              0.08371591519225163,
+              20.0,
+              0.002514073010550139,
+              119.0,
+              -0.18692181069108024
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 15,
+            "coordinates": [
+              186.0,
+              0.6710886976479999,
+              0.9601183923795265,
+              7.0,
+              117.0,
+              0.9134324839415169,
+              0.9651518636028584,
+              4.0,
+              0.08608281451146134,
+              21.0,
+              0.00639950111205867,
+              119.0,
+              -0.19834173113674028
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 16,
+            "coordinates": [
+              178.0,
+              0.691777985917264,
+              0.9532561315110716,
+              9.0,
+              122.0,
+              0.9193072116628709,
+              0.9937025835988759,
+              3.0,
+              0.11062739383793134,
+              20.0,
+              0.013143636891019887,
+              120.0,
+              -0.19795094123486573
+            ],
+            "actual_radius": 0.05000000000000003
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 17,
+            "coordinates": [
+              179.0,
+              0.6884545634915032,
+              0.9601785898899797,
+              8.0,
+              115.0,
+              0.8823507773209207,
+              0.9930825310018558,
+              5.0,
+              0.11893604540166611,
+              19.0,
+              -0.0007927901513597853,
+              118.0,
+              -0.21118074632615658
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 18,
+            "coordinates": [
+              175.0,
+              0.6689904998571722,
+              0.9483041748299401,
+              9.0,
+              109.0,
+              0.9051915890550931,
+              0.9838008883401533,
+              4.0,
+              0.11126593730666252,
+              21.0,
+              -0.002730618257493215,
+              120.0,
+              -0.18113620219170118
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 19,
+            "coordinates": [
+              178.0,
+              0.6817280058461913,
+              0.9362445237659185,
+              8.0,
+              118.0,
+              0.878175666541421,
+              0.9771747749303933,
+              3.0,
+              0.10546804081092373,
+              19.0,
+              0.0009056230258097903,
+              118.0,
+              -0.21680569238055186
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 20,
+            "coordinates": [
+              177.0,
+              0.7089575650817806,
+              0.9606565425331379,
+              9.0,
+              122.0,
+              0.8980364898201915,
+              0.9905978336053541,
+              4.0,
+              0.10419064621945795,
+              20.0,
+              0.005174975036152371,
+              118.0,
+              -0.20467153052360246
+            ],
+            "actual_radius": 0.04999999999999998
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 21,
+            "coordinates": [
+              183.0,
+              0.6703833462886029,
+              0.9479984283748835,
+              9.0,
+              121.0,
+              0.9231818866917738,
+              0.9894614785288159,
+              4.0,
+              0.08479158480053237,
+              18.0,
+              -0.0021646130885278492,
+              120.0,
+              -0.204466307989448
+            ],
+            "actual_radius": 0.05000000000000002
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 22,
+            "coordinates": [
+              178.0,
+              0.6704166448167818,
+              0.926324821632756,
+              8.0,
+              124.0,
+              0.8994372132245273,
+              0.9648284745998312,
+              4.0,
+              0.11658257324613455,
+              20.0,
+              0.0055484235637601395,
+              118.0,
+              -0.1918845911729645
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 23,
+            "coordinates": [
+              184.0,
+              0.6670984578725118,
+              0.9488917326549587,
+              7.0,
+              129.0,
+              0.8937401529645769,
+              0.9700802869473708,
+              4.0,
+              0.10266129530270406,
+              21.0,
+              -0.007037258696428356,
+              119.0,
+              -0.19182539088908024
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 24,
+            "coordinates": [
+              175.0,
+              0.6759623796498087,
+              0.9311937534788076,
+              8.0,
+              122.0,
+              0.8959841844463663,
+              0.9924364324631483,
+              6.0,
+              0.11546917713144976,
+              21.0,
+              0.002387393585039286,
+              119.0,
+              -0.2012951627853227
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 25,
+            "coordinates": [
+              182.0,
+              0.6738791597465197,
+              0.9386883752589809,
+              8.0,
+              120.0,
+              0.8916311924481942,
+              0.9964601471187473,
+              2.0,
+              0.0798881111250835,
+              20.0,
+              -0.005049281998766984,
+              119.0,
+              -0.2206212474495668
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 26,
+            "coordinates": [
+              176.0,
+              0.6753840325992979,
+              0.9396568902779466,
+              8.0,
+              128.0,
+              0.9122365960234118,
+              0.9937483568669188,
+              5.0,
+              0.07666976007422542,
+              20.0,
+              -0.009929054327517903,
+              119.0,
+              -0.195158931581914
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 27,
+            "coordinates": [
+              183.0,
+              0.6719062477938397,
+              0.9452516298599883,
+              8.0,
+              111.0,
+              0.8973123811981805,
+              0.9992042005169446,
+              2.0,
+              0.1083024642544108,
+              19.0,
+              -0.002958427446493556,
+              120.0,
+              -0.19879531518126464
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 28,
+            "coordinates": [
+              186.0,
+              0.6700166509703228,
+              0.9748995925882412,
+              8.0,
+              122.0,
+              0.9082787323283648,
+              0.9767458061045663,
+              3.0,
+              0.09929244149529204,
+              20.0,
+              0.00462510090868717,
+              119.0,
+              -0.17382242370419865
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 29,
+            "coordinates": [
+              182.0,
+              0.6828080082752628,
+              0.9323971912328499,
+              8.0,
+              123.0,
+              0.9040656441343092,
+              0.9978148752829757,
+              4.0,
+              0.07934471928081716,
+              20.0,
+              -0.01297583348779726,
+              119.0,
+              -0.18057627590184586
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 30,
+            "coordinates": [
+              187.0,
+              0.6791295544067452,
+              0.9281982511918527,
+              9.0,
+              122.0,
+              0.8986862097003199,
+              0.9973444972639197,
+              4.0,
+              0.08842823637515858,
+              19.0,
+              0.004019949751948383,
+              118.0,
+              -0.19397851132182792
+            ],
+            "actual_radius": 0.05000000000000001
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 31,
+            "coordinates": [
+              182.0,
+              0.6848215616710606,
+              0.9670706646770514,
+              9.0,
+              127.0,
+              0.9083974640148283,
+              0.995434631188401,
+              5.0,
+              0.10063647898827051,
+              19.0,
+              -1.9503781889239074e-05,
+              118.0,
+              -0.20451963537861248
+            ],
+            "actual_radius": 0.05000000000000001
+          }
+        ],
+        "attempts": 61,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "INTEGER_RADIUS",
+            "count": 1
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 28
+          }
+        ]
+      },
+      "children": [
+        {
+          "label": "B0-TIME-P00",
+          "candidate_id": "C7600",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6840517012559002
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9436520750187196
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 113
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9215807740770411
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9871174670981083
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10590168512423424
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00790182839670243
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.180969581517341
+            }
+          },
+          "content_sha256": "b2c7c431bc0d7f5815fabc1d99a15e5036a95459b38df5fad3bbe5cf841bfdc3"
+        },
+        {
+          "label": "B0-TIME-P01",
+          "candidate_id": "C7601",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6932544107702187
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9285286258882087
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 126
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9032434563237629
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9846752089018559
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09453100723548666
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.005168128005359139
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21807146615836265
+            }
+          },
+          "content_sha256": "c82cea174fbb11d2a841da8b0e3e29252bb048623ad4191bed0c3bbe7ecfb281"
+        },
+        {
+          "label": "B0-TIME-P02",
+          "candidate_id": "C7602",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 184
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6508741262685361
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9411665848482244
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.903926199046902
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9976852536436023
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08759118184806992
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00940132507841443
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18945700059721501
+            }
+          },
+          "content_sha256": "ed574570059054ba0b2a87f1f7283c0bf95f8562ec287603b5a8a007e7bae3ab"
+        },
+        {
+          "label": "B0-TIME-P03",
+          "candidate_id": "C7603",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 179
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6928448670606199
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9615657767379403
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9284531591364462
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9837342374624725
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08870471275704692
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0043193200070212835
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.1873787145745614
+            }
+          },
+          "content_sha256": "046339ecb4ea9a7ce1d722d5dc5645b3e8bffb943a46854f1c9d6bb55797eb34"
+        },
+        {
+          "label": "B0-TIME-P04",
+          "candidate_id": "C7604",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 185
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6822849733572236
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9159679859711339
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 116
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8846841403773825
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.984827946801736
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09571111183532614
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.003545497960016164
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19846930176987304
+            }
+          },
+          "content_sha256": "31d3938ff43b81e94818097bf6f7c4407b2687a5289332f8f6f181177d956c28"
+        },
+        {
+          "label": "B0-TIME-P05",
+          "candidate_id": "C7605",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6945745794938021
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9462636144710538
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 127
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8775780886636113
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9841680501867286
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.1052059414490505
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.004602258723806772
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2045479004981316
+            }
+          },
+          "content_sha256": "580918c5bc111db91e28b65a603c3fc14b8d6e3f8e2eee5ab038381528a43cc7"
+        },
+        {
+          "label": "B0-TIME-P06",
+          "candidate_id": "C7606",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6932478470746607
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9459859362332266
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 118
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9341787879151585
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9885304744582283
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10699670197241276
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0037886652436564684
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20484658563143468
+            }
+          },
+          "content_sha256": "0cd2b72f39677172d1ab4cff39d0fbc367a83fee0f717ea491f72011105059e8"
+        },
+        {
+          "label": "B0-TIME-P07",
+          "candidate_id": "C7607",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6757320098031773
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9728963213541634
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8884070236186015
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9959407090365863
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08591873224670925
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0035825870067247856
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20230970375210766
+            }
+          },
+          "content_sha256": "b5cad1782303184da970f0021487315f059f8fc2178bd0dc0b1b30ea5c494cc6"
+        },
+        {
+          "label": "B0-TIME-P08",
+          "candidate_id": "C7608",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.659066355016898
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9223313729158785
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9104665224403282
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9858880501653495
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.12557803153570518
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.005511928821419141
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18288995225868662
+            }
+          },
+          "content_sha256": "9c41db9171dfb139727e88d3eabcc1f64060eead7fb3c608b892fdb2d2db5e3d"
+        },
+        {
+          "label": "B0-TIME-P09",
+          "candidate_id": "C7609",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 176
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6458791214604802
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9241220934223138
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9009979455837632
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9814572233786321
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.0985855063122219
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002544644089210709
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20860938645895957
+            }
+          },
+          "content_sha256": "03ce5d4bdcc87233c00c01a34a47b34c86e93df723293218e2fbc4d9480a6f50"
+        },
+        {
+          "label": "B0-TIME-P10",
+          "candidate_id": "C7610",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6705775999115855
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9459825014156723
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9161482487751917
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9564365521331066
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.06866323599856888
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0013133210009273013
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18671948463731355
+            }
+          },
+          "content_sha256": "f31ba5c624cb7cae7377995ca75f1b800d7b8e1b449dc7c0efe82a21ccbbd2dc"
+        },
+        {
+          "label": "B0-TIME-P11",
+          "candidate_id": "C7611",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6478753865885072
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9386852631757342
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9005113282039575
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9743536784927028
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07686597864378579
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.00043711217508983773
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2121193730337779
+            }
+          },
+          "content_sha256": "7c6684cd5c3ce9f5365f285b8834be95b19291592202bc0d73a7306544b82893"
+        },
+        {
+          "label": "B0-TIME-P12",
+          "candidate_id": "C7612",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 177
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6925222193313757
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9400968774031642
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 6
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 119
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9001096083326585
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9861424466549025
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10875266730083051
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.008846513606880267
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20204418893451925
+            }
+          },
+          "content_sha256": "3521153f7efb4348c9d675e0080f75207bfd6b83d93e44e9d6e9516b3ef91de3"
+        },
+        {
+          "label": "B0-TIME-P13",
+          "candidate_id": "C7613",
+          "changes": {
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6445691055276271
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.93544304684085
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9045563336312413
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.991441265174317
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11716953426197646
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0028249599544802194
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19264695086574532
+            }
+          },
+          "content_sha256": "f3988226a58706486280f8431c99a928606bb232d12859af722874a566d809aa"
+        },
+        {
+          "label": "B0-TIME-P14",
+          "candidate_id": "C7614",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 169
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6753655952976839
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9413723047797777
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.900516762442482
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9633915838762189
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08371591519225163
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.002514073010550139
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18692181069108024
+            }
+          },
+          "content_sha256": "6e25c6befd406d734260759cde3123a4ef25aa18388ec031c6bed83e07aabd1d"
+        },
+        {
+          "label": "B0-TIME-P15",
+          "candidate_id": "C7615",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6710886976479999
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9601183923795265
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 117
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9134324839415169
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9651518636028584
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08608281451146134
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00639950111205867
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19834173113674028
+            }
+          },
+          "content_sha256": "e60f4c7358a88203640853a842291b1588aef050ebd98bc5acbd61ab61109266"
+        },
+        {
+          "label": "B0-TIME-P16",
+          "candidate_id": "C7616",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.691777985917264
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9532561315110716
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9193072116628709
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9937025835988759
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11062739383793134
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.013143636891019887
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19795094123486573
+            }
+          },
+          "content_sha256": "6a677aaac500c69ed0d0d81fa954150592fc5387d6078a2577c1dbc7c864a163"
+        },
+        {
+          "label": "B0-TIME-P17",
+          "candidate_id": "C7617",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 179
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6884545634915032
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9601785898899797
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 115
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8823507773209207
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9930825310018558
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11893604540166611
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0007927901513597853
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21118074632615658
+            }
+          },
+          "content_sha256": "b34158cf2a425346ce21a4edfacac84fe7ece8104110b1e37fa49cc8b5e99cf0"
+        },
+        {
+          "label": "B0-TIME-P18",
+          "candidate_id": "C7618",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6689904998571722
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9483041748299401
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 109
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9051915890550931
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9838008883401533
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11126593730666252
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002730618257493215
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18113620219170118
+            }
+          },
+          "content_sha256": "f680c6a0ca05cd3140a48e840cfedb3282549e704051045804cf6e01bfafda4f"
+        },
+        {
+          "label": "B0-TIME-P19",
+          "candidate_id": "C7619",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6817280058461913
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9362445237659185
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 118
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.878175666541421
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9771747749303933
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10546804081092373
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0009056230258097903
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21680569238055186
+            }
+          },
+          "content_sha256": "a8d3d67aad0754325d7db35bbf91f2860dbb5a9d219d8d473781f43aa52037c5"
+        },
+        {
+          "label": "B0-TIME-P20",
+          "candidate_id": "C7620",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 177
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.7089575650817806
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9606565425331379
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8980364898201915
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9905978336053541
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10419064621945795
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.005174975036152371
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20467153052360246
+            }
+          },
+          "content_sha256": "0c9c8bfe7c3b5c3834d1bb81a09e54abbb3c6f6bdf859e8d67d526dca7917498"
+        },
+        {
+          "label": "B0-TIME-P21",
+          "candidate_id": "C7621",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6703833462886029
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9479984283748835
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 121
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9231818866917738
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9894614785288159
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08479158480053237
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 18
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0021646130885278492
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.204466307989448
+            }
+          },
+          "content_sha256": "83c95a0c1196a9f73c2f068086a0dfe47f7050c3d366d99887cb449f8ba181f3"
+        },
+        {
+          "label": "B0-TIME-P22",
+          "candidate_id": "C7622",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6704166448167818
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.926324821632756
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 124
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8994372132245273
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9648284745998312
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11658257324613455
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0055484235637601395
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.1918845911729645
+            }
+          },
+          "content_sha256": "b0dab8518d5017d360695df49173bfc63acc686220edf105bd98d6f95f87da0d"
+        },
+        {
+          "label": "B0-TIME-P23",
+          "candidate_id": "C7623",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 184
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6670984578725118
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9488917326549587
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 129
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8937401529645769
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9700802869473708
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10266129530270406
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.007037258696428356
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19182539088908024
+            }
+          },
+          "content_sha256": "8051951a4607d0388ba87d86814a4cdad98aac6adaa97bdbd38d3695fbb08e51"
+        },
+        {
+          "label": "B0-TIME-P24",
+          "candidate_id": "C7624",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6759623796498087
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9311937534788076
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8959841844463663
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9924364324631483
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 6
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11546917713144976
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.002387393585039286
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2012951627853227
+            }
+          },
+          "content_sha256": "986ea2c4f1062fabed20e50c4a6a70c34e0148d24e854fac0fec90f44d1df589"
+        },
+        {
+          "label": "B0-TIME-P25",
+          "candidate_id": "C7625",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6738791597465197
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9386883752589809
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8916311924481942
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9964601471187473
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 2
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.0798881111250835
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.005049281998766984
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2206212474495668
+            }
+          },
+          "content_sha256": "850f3b10a913fb2e2add62aaf3706cb5f9a9720b8038f42805d6e61a2c6e66a7"
+        },
+        {
+          "label": "B0-TIME-P26",
+          "candidate_id": "C7626",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 176
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6753840325992979
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9396568902779466
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 128
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9122365960234118
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9937483568669188
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07666976007422542
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.009929054327517903
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.195158931581914
+            }
+          },
+          "content_sha256": "00eb25c34d3610d68a957d3dec31fc19e298436d85f1fdb14ead61c8facb82b3"
+        },
+        {
+          "label": "B0-TIME-P27",
+          "candidate_id": "C7627",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6719062477938397
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9452516298599883
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 111
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8973123811981805
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9992042005169446
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 2
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.1083024642544108
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002958427446493556
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19879531518126464
+            }
+          },
+          "content_sha256": "c9c05886095b2b69f1581242c65f890a57dfe43e1d07db5d5b233b8604d51b7c"
+        },
+        {
+          "label": "B0-TIME-P28",
+          "candidate_id": "C7628",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6700166509703228
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9748995925882412
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9082787323283648
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9767458061045663
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09929244149529204
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00462510090868717
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.17382242370419865
+            }
+          },
+          "content_sha256": "8f3b68b0f111248a80cfe0a299e1b2e915f33d4674a70b77ec510a10c5cc23c8"
+        },
+        {
+          "label": "B0-TIME-P29",
+          "candidate_id": "C7629",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6828080082752628
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9323971912328499
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9040656441343092
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9978148752829757
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07934471928081716
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.01297583348779726
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18057627590184586
+            }
+          },
+          "content_sha256": "ff6312c49d869de012df2af79a00d7b150e28e46ce9354a0bb87029449c6afef"
+        },
+        {
+          "label": "B0-TIME-P30",
+          "candidate_id": "C7630",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 187
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6791295544067452
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9281982511918527
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8986862097003199
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9973444972639197
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08842823637515858
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.004019949751948383
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19397851132182792
+            }
+          },
+          "content_sha256": "49df8e69c340dcecd2108ac606bf13b361aeaaec97c2dad465a313c680b52afd"
+        },
+        {
+          "label": "B0-TIME-P31",
+          "candidate_id": "C7631",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6848215616710606
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9670706646770514
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 127
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9083974640148283
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.995434631188401
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10063647898827051
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -1.9503781889239074e-05
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20451963537861248
+            }
+          },
+          "content_sha256": "b44b358fcf8ea5dc163dba4016beec8ec445488843d560f318ea2c8ae9c857c3"
+        }
+      ],
+      "center_request_sha256": "4a76c370cfb1b9d315b9197765d8c279348338413cd22b8172f3ca7dae60da11"
+    },
+    {
+      "label": "N8",
+      "candidate_id": "C7408",
+      "mechanism": "HIGH_SCORE",
+      "background": "B0",
+      "center_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "6810460b64b9ee5a30aed48f969000335a1627e3874b7f8e4c5d91bc48a6b591.json",
+        "sha256": "6810460b64b9ee5a30aed48f969000335a1627e3874b7f8e4c5d91bc48a6b591",
+        "media_type": "application/json",
+        "name": "information-mechanism-n8",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "plan_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "c86e17106ddbe5f140a5f66d5c555813975ae3680230be5fa59a81ce91190116.json",
+        "sha256": "c86e17106ddbe5f140a5f66d5c555813975ae3680230be5fa59a81ce91190116",
+        "media_type": "application/json",
+        "name": "parameter-plan-n8",
+        "schema": null,
+        "schema_version": null
+      },
+      "design": {
+        "type": "ParameterPerturbationDesign",
+        "center": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S013-C7408",
+          "content_sha256": "7c8bd9dd35883049e35cecde55887ab069d0ade92b17c984afc4500f82d77aab"
+        },
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "space": {
+          "type": "ParameterSpace",
+          "coordinates": [
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.range_window",
+              "center": 180.0,
+              "lower": 21.0,
+              "upper": 360.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.entry",
+              "center": 0.675,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.exit",
+              "center": 0.95,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bull.max_hold",
+              "center": 8.0,
+              "lower": 1.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.range_window",
+              "center": 120.0,
+              "lower": 21.0,
+              "upper": 360.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.entry",
+              "center": 0.9,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.exit",
+              "center": 0.99,
+              "lower": 0.0,
+              "upper": 1.0,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.max_hold",
+              "center": 4.0,
+              "lower": 1.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "bear.acf_min",
+              "center": 0.1,
+              "lower": -0.6,
+              "upper": 0.5,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "regime_window",
+              "center": 20.0,
+              "lower": 5.0,
+              "upper": 60.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "regime_threshold",
+              "center": 0.0,
+              "lower": -0.2,
+              "upper": 0.2,
+              "kind": "CONTINUOUS"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation.lookback",
+              "center": 120.0,
+              "lower": 40.0,
+              "upper": 120.0,
+              "kind": "INTEGER"
+            },
+            {
+              "type": "ParameterCoordinate",
+              "name": "confirmation.threshold",
+              "center": -0.2,
+              "lower": -0.5,
+              "upper": 0.5,
+              "kind": "CONTINUOUS"
+            }
+          ],
+          "mapping_sha256": "b572f4ffe57aabad6214ef91e641f43599b9fb229e42e86006794e5efa611ec3",
+          "feasibility_sha256": "00ec1847c731904e76f6eac10a3c2260626a2c6d61df3de1087d5680d06b0b3f"
+        },
+        "points": [
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 0,
+            "coordinates": [
+              183.0,
+              0.6840517012559002,
+              0.9436520750187196,
+              8.0,
+              113.0,
+              0.9215807740770411,
+              0.9871174670981083,
+              5.0,
+              0.10590168512423424,
+              21.0,
+              0.00790182839670243,
+              120.0,
+              -0.180969581517341
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 1,
+            "coordinates": [
+              175.0,
+              0.6932544107702187,
+              0.9285286258882087,
+              8.0,
+              126.0,
+              0.9032434563237629,
+              0.9846752089018559,
+              3.0,
+              0.09453100723548666,
+              21.0,
+              0.005168128005359139,
+              120.0,
+              -0.21807146615836265
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 2,
+            "coordinates": [
+              184.0,
+              0.6508741262685361,
+              0.9411665848482244,
+              7.0,
+              125.0,
+              0.903926199046902,
+              0.9976852536436023,
+              4.0,
+              0.08759118184806992,
+              21.0,
+              0.00940132507841443,
+              120.0,
+              -0.18945700059721501
+            ],
+            "actual_radius": 0.05000000000000002
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 3,
+            "coordinates": [
+              179.0,
+              0.6928448670606199,
+              0.9615657767379403,
+              9.0,
+              122.0,
+              0.9284531591364462,
+              0.9837342374624725,
+              4.0,
+              0.08870471275704692,
+              21.0,
+              -0.0043193200070212835,
+              119.0,
+              -0.1873787145745614
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 4,
+            "coordinates": [
+              185.0,
+              0.6822849733572236,
+              0.9159679859711339,
+              7.0,
+              116.0,
+              0.8846841403773825,
+              0.984827946801736,
+              5.0,
+              0.09571111183532614,
+              20.0,
+              0.003545497960016164,
+              120.0,
+              -0.19846930176987304
+            ],
+            "actual_radius": 0.04999999999999998
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 5,
+            "coordinates": [
+              181.0,
+              0.6945745794938021,
+              0.9462636144710538,
+              8.0,
+              127.0,
+              0.8775780886636113,
+              0.9841680501867286,
+              4.0,
+              0.1052059414490505,
+              21.0,
+              0.004602258723806772,
+              118.0,
+              -0.2045479004981316
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 6,
+            "coordinates": [
+              175.0,
+              0.6932478470746607,
+              0.9459859362332266,
+              7.0,
+              118.0,
+              0.9341787879151585,
+              0.9885304744582283,
+              5.0,
+              0.10699670197241276,
+              20.0,
+              -0.0037886652436564684,
+              120.0,
+              -0.20484658563143468
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 7,
+            "coordinates": [
+              186.0,
+              0.6757320098031773,
+              0.9728963213541634,
+              9.0,
+              120.0,
+              0.8884070236186015,
+              0.9959407090365863,
+              4.0,
+              0.08591873224670925,
+              21.0,
+              0.0035825870067247856,
+              118.0,
+              -0.20230970375210766
+            ],
+            "actual_radius": 0.05000000000000004
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 8,
+            "coordinates": [
+              181.0,
+              0.659066355016898,
+              0.9223313729158785,
+              9.0,
+              122.0,
+              0.9104665224403282,
+              0.9858880501653495,
+              4.0,
+              0.12557803153570518,
+              20.0,
+              -0.005511928821419141,
+              120.0,
+              -0.18288995225868662
+            ],
+            "actual_radius": 0.04999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 9,
+            "coordinates": [
+              176.0,
+              0.6458791214604802,
+              0.9241220934223138,
+              7.0,
+              123.0,
+              0.9009979455837632,
+              0.9814572233786321,
+              3.0,
+              0.0985855063122219,
+              20.0,
+              -0.002544644089210709,
+              120.0,
+              -0.20860938645895957
+            ],
+            "actual_radius": 0.049999999999999954
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 10,
+            "coordinates": [
+              183.0,
+              0.6705775999115855,
+              0.9459825014156723,
+              8.0,
+              120.0,
+              0.9161482487751917,
+              0.9564365521331066,
+              4.0,
+              0.06866323599856888,
+              20.0,
+              0.0013133210009273013,
+              120.0,
+              -0.18671948463731355
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 11,
+            "coordinates": [
+              181.0,
+              0.6478753865885072,
+              0.9386852631757342,
+              9.0,
+              125.0,
+              0.9005113282039575,
+              0.9743536784927028,
+              5.0,
+              0.07686597864378579,
+              20.0,
+              -0.00043711217508983773,
+              120.0,
+              -0.2121193730337779
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 12,
+            "coordinates": [
+              177.0,
+              0.6925222193313757,
+              0.9400968774031642,
+              6.0,
+              119.0,
+              0.9001096083326585,
+              0.9861424466549025,
+              3.0,
+              0.10875266730083051,
+              20.0,
+              -0.008846513606880267,
+              120.0,
+              -0.20204418893451925
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 13,
+            "coordinates": [
+              180.0,
+              0.6445691055276271,
+              0.93544304684085,
+              8.0,
+              125.0,
+              0.9045563336312413,
+              0.991441265174317,
+              5.0,
+              0.11716953426197646,
+              21.0,
+              0.0028249599544802194,
+              119.0,
+              -0.19264695086574532
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 14,
+            "coordinates": [
+              169.0,
+              0.6753655952976839,
+              0.9413723047797777,
+              8.0,
+              123.0,
+              0.900516762442482,
+              0.9633915838762189,
+              4.0,
+              0.08371591519225163,
+              20.0,
+              0.002514073010550139,
+              119.0,
+              -0.18692181069108024
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 15,
+            "coordinates": [
+              186.0,
+              0.6710886976479999,
+              0.9601183923795265,
+              7.0,
+              117.0,
+              0.9134324839415169,
+              0.9651518636028584,
+              4.0,
+              0.08608281451146134,
+              21.0,
+              0.00639950111205867,
+              119.0,
+              -0.19834173113674028
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 16,
+            "coordinates": [
+              178.0,
+              0.691777985917264,
+              0.9532561315110716,
+              9.0,
+              122.0,
+              0.9193072116628709,
+              0.9937025835988759,
+              3.0,
+              0.11062739383793134,
+              20.0,
+              0.013143636891019887,
+              120.0,
+              -0.19795094123486573
+            ],
+            "actual_radius": 0.05000000000000003
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 17,
+            "coordinates": [
+              179.0,
+              0.6884545634915032,
+              0.9601785898899797,
+              8.0,
+              115.0,
+              0.8823507773209207,
+              0.9930825310018558,
+              5.0,
+              0.11893604540166611,
+              19.0,
+              -0.0007927901513597853,
+              118.0,
+              -0.21118074632615658
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 18,
+            "coordinates": [
+              175.0,
+              0.6689904998571722,
+              0.9483041748299401,
+              9.0,
+              109.0,
+              0.9051915890550931,
+              0.9838008883401533,
+              4.0,
+              0.11126593730666252,
+              21.0,
+              -0.002730618257493215,
+              120.0,
+              -0.18113620219170118
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 19,
+            "coordinates": [
+              178.0,
+              0.6817280058461913,
+              0.9362445237659185,
+              8.0,
+              118.0,
+              0.878175666541421,
+              0.9771747749303933,
+              3.0,
+              0.10546804081092373,
+              19.0,
+              0.0009056230258097903,
+              118.0,
+              -0.21680569238055186
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 20,
+            "coordinates": [
+              177.0,
+              0.7089575650817806,
+              0.9606565425331379,
+              9.0,
+              122.0,
+              0.8980364898201915,
+              0.9905978336053541,
+              4.0,
+              0.10419064621945795,
+              20.0,
+              0.005174975036152371,
+              118.0,
+              -0.20467153052360246
+            ],
+            "actual_radius": 0.04999999999999998
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 21,
+            "coordinates": [
+              183.0,
+              0.6703833462886029,
+              0.9479984283748835,
+              9.0,
+              121.0,
+              0.9231818866917738,
+              0.9894614785288159,
+              4.0,
+              0.08479158480053237,
+              18.0,
+              -0.0021646130885278492,
+              120.0,
+              -0.204466307989448
+            ],
+            "actual_radius": 0.05000000000000002
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 22,
+            "coordinates": [
+              178.0,
+              0.6704166448167818,
+              0.926324821632756,
+              8.0,
+              124.0,
+              0.8994372132245273,
+              0.9648284745998312,
+              4.0,
+              0.11658257324613455,
+              20.0,
+              0.0055484235637601395,
+              118.0,
+              -0.1918845911729645
+            ],
+            "actual_radius": 0.050000000000000024
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 23,
+            "coordinates": [
+              184.0,
+              0.6670984578725118,
+              0.9488917326549587,
+              7.0,
+              129.0,
+              0.8937401529645769,
+              0.9700802869473708,
+              4.0,
+              0.10266129530270406,
+              21.0,
+              -0.007037258696428356,
+              119.0,
+              -0.19182539088908024
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 24,
+            "coordinates": [
+              175.0,
+              0.6759623796498087,
+              0.9311937534788076,
+              8.0,
+              122.0,
+              0.8959841844463663,
+              0.9924364324631483,
+              6.0,
+              0.11546917713144976,
+              21.0,
+              0.002387393585039286,
+              119.0,
+              -0.2012951627853227
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 25,
+            "coordinates": [
+              182.0,
+              0.6738791597465197,
+              0.9386883752589809,
+              8.0,
+              120.0,
+              0.8916311924481942,
+              0.9964601471187473,
+              2.0,
+              0.0798881111250835,
+              20.0,
+              -0.005049281998766984,
+              119.0,
+              -0.2206212474495668
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 26,
+            "coordinates": [
+              176.0,
+              0.6753840325992979,
+              0.9396568902779466,
+              8.0,
+              128.0,
+              0.9122365960234118,
+              0.9937483568669188,
+              5.0,
+              0.07666976007422542,
+              20.0,
+              -0.009929054327517903,
+              119.0,
+              -0.195158931581914
+            ],
+            "actual_radius": 0.05
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 27,
+            "coordinates": [
+              183.0,
+              0.6719062477938397,
+              0.9452516298599883,
+              8.0,
+              111.0,
+              0.8973123811981805,
+              0.9992042005169446,
+              2.0,
+              0.1083024642544108,
+              19.0,
+              -0.002958427446493556,
+              120.0,
+              -0.19879531518126464
+            ],
+            "actual_radius": 0.049999999999999996
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 28,
+            "coordinates": [
+              186.0,
+              0.6700166509703228,
+              0.9748995925882412,
+              8.0,
+              122.0,
+              0.9082787323283648,
+              0.9767458061045663,
+              3.0,
+              0.09929244149529204,
+              20.0,
+              0.00462510090868717,
+              119.0,
+              -0.17382242370419865
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 29,
+            "coordinates": [
+              182.0,
+              0.6828080082752628,
+              0.9323971912328499,
+              8.0,
+              123.0,
+              0.9040656441343092,
+              0.9978148752829757,
+              4.0,
+              0.07934471928081716,
+              20.0,
+              -0.01297583348779726,
+              119.0,
+              -0.18057627590184586
+            ],
+            "actual_radius": 0.04999999999999999
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 30,
+            "coordinates": [
+              187.0,
+              0.6791295544067452,
+              0.9281982511918527,
+              9.0,
+              122.0,
+              0.8986862097003199,
+              0.9973444972639197,
+              4.0,
+              0.08842823637515858,
+              19.0,
+              0.004019949751948383,
+              118.0,
+              -0.19397851132182792
+            ],
+            "actual_radius": 0.05000000000000001
+          },
+          {
+            "type": "ParameterPerturbationPoint",
+            "index": 31,
+            "coordinates": [
+              182.0,
+              0.6848215616710606,
+              0.9670706646770514,
+              9.0,
+              127.0,
+              0.9083974640148283,
+              0.995434631188401,
+              5.0,
+              0.10063647898827051,
+              19.0,
+              -1.9503781889239074e-05,
+              118.0,
+              -0.20451963537861248
+            ],
+            "actual_radius": 0.05000000000000001
+          }
+        ],
+        "attempts": 61,
+        "rejections": [
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "INTEGER_RADIUS",
+            "count": 1
+          },
+          {
+            "type": "ParameterDesignRejection",
+            "reason": "DOMAIN",
+            "count": 28
+          }
+        ]
+      },
+      "children": [
+        {
+          "label": "N8-P00",
+          "candidate_id": "C7632",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6840517012559002
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9436520750187196
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 113
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9215807740770411
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9871174670981083
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10590168512423424
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00790182839670243
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.180969581517341
+            }
+          },
+          "content_sha256": "c53a520fea7194f3c5bb53e5210ced3cd407724cf3ef46e4197819e1798a8904"
+        },
+        {
+          "label": "N8-P01",
+          "candidate_id": "C7633",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6932544107702187
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9285286258882087
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 126
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9032434563237629
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9846752089018559
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09453100723548666
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.005168128005359139
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21807146615836265
+            }
+          },
+          "content_sha256": "b78b7b24169a92bbb741c35c90fe321bb3bffd6b03ba7cea50029ffc8d9804bb"
+        },
+        {
+          "label": "N8-P02",
+          "candidate_id": "C7634",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 184
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6508741262685361
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9411665848482244
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.903926199046902
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9976852536436023
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08759118184806992
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00940132507841443
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18945700059721501
+            }
+          },
+          "content_sha256": "841c492fd7edec88d76aee2c92f91b25a1603c6f09860d726acfe68921778cdd"
+        },
+        {
+          "label": "N8-P03",
+          "candidate_id": "C7635",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 179
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6928448670606199
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9615657767379403
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9284531591364462
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9837342374624725
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08870471275704692
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0043193200070212835
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.1873787145745614
+            }
+          },
+          "content_sha256": "352af41707fc3066e9531a0ee9beea9d6c16f166c98ca9079c8fa22ff0197de3"
+        },
+        {
+          "label": "N8-P04",
+          "candidate_id": "C7636",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 185
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6822849733572236
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9159679859711339
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 116
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8846841403773825
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.984827946801736
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09571111183532614
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.003545497960016164
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19846930176987304
+            }
+          },
+          "content_sha256": "2b8ee04973a22d72dd32c0aa34f084ad337fb75e7cf5e4e952abb3ea7ab9df07"
+        },
+        {
+          "label": "N8-P05",
+          "candidate_id": "C7637",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6945745794938021
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9462636144710538
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 127
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8775780886636113
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9841680501867286
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.1052059414490505
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.004602258723806772
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2045479004981316
+            }
+          },
+          "content_sha256": "2e6643ae3f155ed000ce070e3e2f90bd4f5ad97b9e78d2a8c316078b0009e679"
+        },
+        {
+          "label": "N8-P06",
+          "candidate_id": "C7638",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6932478470746607
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9459859362332266
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 118
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9341787879151585
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9885304744582283
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10699670197241276
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0037886652436564684
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20484658563143468
+            }
+          },
+          "content_sha256": "4cf888d0267f974a0c5f1b5b7a33819a79038074f0775a9f63f9a462de3fa898"
+        },
+        {
+          "label": "N8-P07",
+          "candidate_id": "C7639",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6757320098031773
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9728963213541634
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8884070236186015
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9959407090365863
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08591873224670925
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0035825870067247856
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20230970375210766
+            }
+          },
+          "content_sha256": "07b53b4fc5398784535e58d62aa44b99a6cf11976eaebe3a5ec404634969d768"
+        },
+        {
+          "label": "N8-P08",
+          "candidate_id": "C7640",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.659066355016898
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9223313729158785
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9104665224403282
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9858880501653495
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.12557803153570518
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.005511928821419141
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18288995225868662
+            }
+          },
+          "content_sha256": "ad695d54fe6a97f10bd15ec7919d8a11efde3e4f653e40f01cad177dd16cd0b1"
+        },
+        {
+          "label": "N8-P09",
+          "candidate_id": "C7641",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 176
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6458791214604802
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9241220934223138
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9009979455837632
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9814572233786321
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.0985855063122219
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002544644089210709
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20860938645895957
+            }
+          },
+          "content_sha256": "113c5dc61548770178733ba1d12868d79037655f4190d1ce8b6ff3bfaf574e25"
+        },
+        {
+          "label": "N8-P10",
+          "candidate_id": "C7642",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6705775999115855
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9459825014156723
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9161482487751917
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9564365521331066
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.06866323599856888
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0013133210009273013
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18671948463731355
+            }
+          },
+          "content_sha256": "fbb914acc79de7dde8749303259ed09c5ec268406dca8ab2f85ab372e3b96f3f"
+        },
+        {
+          "label": "N8-P11",
+          "candidate_id": "C7643",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 181
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6478753865885072
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9386852631757342
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9005113282039575
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9743536784927028
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07686597864378579
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.00043711217508983773
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2121193730337779
+            }
+          },
+          "content_sha256": "01e419567a60dff9a08b76fe8c81c7487f9cda802dd51486a77bd8bbad0a43bd"
+        },
+        {
+          "label": "N8-P12",
+          "candidate_id": "C7644",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 177
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6925222193313757
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9400968774031642
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 6
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 119
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9001096083326585
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9861424466549025
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10875266730083051
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.008846513606880267
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20204418893451925
+            }
+          },
+          "content_sha256": "53ada77883e44bf91905f4c9a2b505603bff46b5e1408f179ce1b682fc886bf3"
+        },
+        {
+          "label": "N8-P13",
+          "candidate_id": "C7645",
+          "changes": {
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6445691055276271
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.93544304684085
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 125
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9045563336312413
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.991441265174317
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11716953426197646
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0028249599544802194
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19264695086574532
+            }
+          },
+          "content_sha256": "091f1e5d96aaa7cc58133f769eb8fe212a51e5c6b0c597860a907a4cce5c7231"
+        },
+        {
+          "label": "N8-P14",
+          "candidate_id": "C7646",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 169
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6753655952976839
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9413723047797777
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.900516762442482
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9633915838762189
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08371591519225163
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.002514073010550139
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18692181069108024
+            }
+          },
+          "content_sha256": "1853045fff595ed21e1618ccc22254e99d6e8d983af60bbde8e124cbec1f49c3"
+        },
+        {
+          "label": "N8-P15",
+          "candidate_id": "C7647",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6710886976479999
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9601183923795265
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 117
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9134324839415169
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9651518636028584
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08608281451146134
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00639950111205867
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19834173113674028
+            }
+          },
+          "content_sha256": "adff212b0f7cbd55cf602c2affda1076967c4007dae050b188383075e13ac746"
+        },
+        {
+          "label": "N8-P16",
+          "candidate_id": "C7648",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.691777985917264
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9532561315110716
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9193072116628709
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9937025835988759
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11062739383793134
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.013143636891019887
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19795094123486573
+            }
+          },
+          "content_sha256": "3350a75643a93a94d037b359d668934b5541f667b9b20099720248176c342a19"
+        },
+        {
+          "label": "N8-P17",
+          "candidate_id": "C7649",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 179
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6884545634915032
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9601785898899797
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 115
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8823507773209207
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9930825310018558
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11893604540166611
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0007927901513597853
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21118074632615658
+            }
+          },
+          "content_sha256": "d91cfdd840f3cb725c7b79fe300ae1d1e91abf0ef0e9065b993c6cb2e246d4b1"
+        },
+        {
+          "label": "N8-P18",
+          "candidate_id": "C7650",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6689904998571722
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9483041748299401
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 109
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9051915890550931
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9838008883401533
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11126593730666252
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002730618257493215
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18113620219170118
+            }
+          },
+          "content_sha256": "c34d0de6453e6cd76a5ee1d8e7d4fb95d568305a47c9516130072676dc3c2509"
+        },
+        {
+          "label": "N8-P19",
+          "candidate_id": "C7651",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6817280058461913
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9362445237659185
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 118
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.878175666541421
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9771747749303933
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10546804081092373
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0009056230258097903
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.21680569238055186
+            }
+          },
+          "content_sha256": "5cdea5407df79b82f1f06d0044b13cf3d0d07ee75f682b467245fa4c46a7a15e"
+        },
+        {
+          "label": "N8-P20",
+          "candidate_id": "C7652",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 177
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.7089575650817806
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9606565425331379
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8980364898201915
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9905978336053541
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10419064621945795
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.005174975036152371
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20467153052360246
+            }
+          },
+          "content_sha256": "b5d5397bc8a0665548ef0236108fbdfe49bb21c71a1e12e58dfd9e056360389c"
+        },
+        {
+          "label": "N8-P21",
+          "candidate_id": "C7653",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6703833462886029
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9479984283748835
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 121
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9231818866917738
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9894614785288159
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08479158480053237
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 18
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.0021646130885278492
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.204466307989448
+            }
+          },
+          "content_sha256": "c4a397a7d7bb1a7f4cf1eafb50021e84e7577850cc7a76d5205577598115a561"
+        },
+        {
+          "label": "N8-P22",
+          "candidate_id": "C7654",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 178
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6704166448167818
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.926324821632756
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 124
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8994372132245273
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9648284745998312
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11658257324613455
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.0055484235637601395
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.1918845911729645
+            }
+          },
+          "content_sha256": "353cac83cb042673ed4d07e600a7c6668421db3c0e2a71da8139f4f8005cd68e"
+        },
+        {
+          "label": "N8-P23",
+          "candidate_id": "C7655",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 184
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6670984578725118
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9488917326549587
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 7
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 129
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8937401529645769
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9700802869473708
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10266129530270406
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.007037258696428356
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19182539088908024
+            }
+          },
+          "content_sha256": "0c8dd526c9726fcd91f66a6c9dfeca53de4b2c8dc8bb3ae3c72b9a8db58a92b9"
+        },
+        {
+          "label": "N8-P24",
+          "candidate_id": "C7656",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 175
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6759623796498087
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9311937534788076
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8959841844463663
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9924364324631483
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 6
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.11546917713144976
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 21
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.002387393585039286
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2012951627853227
+            }
+          },
+          "content_sha256": "ff9bafe7904cbc6c794ed15d1240199fb653415e1a4cf321a29cdc4c9f21a578"
+        },
+        {
+          "label": "N8-P25",
+          "candidate_id": "C7657",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6738791597465197
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9386883752589809
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8916311924481942
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9964601471187473
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 2
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.0798881111250835
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.005049281998766984
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.2206212474495668
+            }
+          },
+          "content_sha256": "ceb62db8f9288e1392ddd17fe1bfdfbea4e4d2ec6b9841ba991e449bd61f8f6f"
+        },
+        {
+          "label": "N8-P26",
+          "candidate_id": "C7658",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 176
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6753840325992979
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9396568902779466
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 128
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9122365960234118
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9937483568669188
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07666976007422542
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.009929054327517903
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.195158931581914
+            }
+          },
+          "content_sha256": "c7abe845790143a8efd58312818ea622e55ed36d731eaa437a83f566a2ce3f3c"
+        },
+        {
+          "label": "N8-P27",
+          "candidate_id": "C7659",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 183
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6719062477938397
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9452516298599883
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 111
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8973123811981805
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9992042005169446
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 2
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.1083024642544108
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.002958427446493556
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19879531518126464
+            }
+          },
+          "content_sha256": "9d05a3fcc952c63fe682ba0597d9baa62260d8a94f9224ec91d6db4c2cf4c256"
+        },
+        {
+          "label": "N8-P28",
+          "candidate_id": "C7660",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 186
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6700166509703228
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9748995925882412
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9082787323283648
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9767458061045663
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 3
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.09929244149529204
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.00462510090868717
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.17382242370419865
+            }
+          },
+          "content_sha256": "b199fbcc0c5a2416af45d77f795907be83dece15ea325bb95f24fbcab89011cf"
+        },
+        {
+          "label": "N8-P29",
+          "candidate_id": "C7661",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6828080082752628
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9323971912328499
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 123
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9040656441343092
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9978148752829757
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.07934471928081716
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -0.01297583348779726
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 119
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.18057627590184586
+            }
+          },
+          "content_sha256": "52490674e519090e70114441fcab9972544c2a24c99cc03cdd4060d6e135602b"
+        },
+        {
+          "label": "N8-P30",
+          "candidate_id": "C7662",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 187
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6791295544067452
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9281982511918527
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 122
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.8986862097003199
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.9973444972639197
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.08842823637515858
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": 0.004019949751948383
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.19397851132182792
+            }
+          },
+          "content_sha256": "059e4bc876251c959019ce9e4d18f3b234e04b25938719b3c1b3861e2d0c0fae"
+        },
+        {
+          "label": "N8-P31",
+          "candidate_id": "C7663",
+          "changes": {
+            "bull.range_window": {
+              "before": 180,
+              "after": 182
+            },
+            "bull.entry": {
+              "before": 0.675,
+              "after": 0.6848215616710606
+            },
+            "bull.exit": {
+              "before": 0.95,
+              "after": 0.9670706646770514
+            },
+            "bull.max_hold": {
+              "before": 8,
+              "after": 9
+            },
+            "bear.range_window": {
+              "before": 120,
+              "after": 127
+            },
+            "bear.entry": {
+              "before": 0.9,
+              "after": 0.9083974640148283
+            },
+            "bear.exit": {
+              "before": 0.99,
+              "after": 0.995434631188401
+            },
+            "bear.max_hold": {
+              "before": 4,
+              "after": 5
+            },
+            "bear.acf_min": {
+              "before": 0.1,
+              "after": 0.10063647898827051
+            },
+            "regime_window": {
+              "before": 20,
+              "after": 19
+            },
+            "regime_threshold": {
+              "before": 0.0,
+              "after": -1.9503781889239074e-05
+            },
+            "confirmation.lookback": {
+              "before": 120,
+              "after": 118
+            },
+            "confirmation.threshold": {
+              "before": -0.2,
+              "after": -0.20451963537861248
+            }
+          },
+          "content_sha256": "0e427196f778ce2e44986d5ecde95d2455c6a028eb601b9889e34e1eea52eda4"
+        }
+      ],
+      "center_request_sha256": "5afaea364f6de5d5d4faa31933c989d12ae5d344ae5ded532874e2b315862253"
+    }
+  ],
+  "point_count": 64,
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "seed": 13
+  },
+  "selection": "Original C2132 and every new four-gate-qualified configuration; no neighbor performance filtering",
+  "historical_comparison": "S013 EX011 snapshot preserves historical S007-native domain references/hashes but not actual domain bytes. This new prospective domain is explicitly declared before viewing EX015 results; rerun original C2132 too. Historical 9.5670/11.3476pp must not be substituted as same-domain baseline.",
+  "reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX015_20261011"
+    },
+    "evidence_id": "3c3e667718eddab95609989bc0cd4c80c0920ef62386d5ef4f63f261d4691f6d.json",
+    "sha256": "3c3e667718eddab95609989bc0cd4c80c0920ef62386d5ef4f63f261d4691f6d",
+    "media_type": "application/json",
+    "name": "parameter-plan-manifest",
+    "schema": null,
+    "schema_version": null
+  }
+}
