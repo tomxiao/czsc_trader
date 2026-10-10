@@ -1,0 +1,59 @@
+{
+  "material_kind": "WORKING_USER_CONFIRMATION_AND_FUTURE_CONTRACT",
+  "batch_id": "S013",
+  "recorded_on": "2026-10-10",
+  "authorization_source": "current_user_conversation",
+  "confirmed_proposal": "采用统一1%合同，并据此制定复验方案",
+  "initial_user_reply": "同意",
+  "latest_user_instruction": "不用复验了，后续实验照此执行即可",
+  "effective_scope": "后续获准的S013新实验；历史账户、交付及结论不复验、不改写",
+  "formal_registry_record": false,
+  "formalization": "后续实验执行前通过公开API发布研究约定修订，并在实际评价请求中绑定合同",
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.01,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  },
+  "benchmark_sha256": "7c751496de5bc7cf108e28067a859666d42fd7687f37e08253778f49c7dc7099",
+  "strategy_buy_premium": 0.01,
+  "fixed_benchmark_during_search_and_parameter_perturbation": true,
+  "other_authorized_conditions": {
+    "symbol": "510500.SH",
+    "development_window": ["2020-01-01", "2026-09-30"],
+    "initial_cash": 1000000,
+    "one_way_standard_fee_rate": 0.001,
+    "price_basis": "HFQ_RESEARCH",
+    "timing": "T日已知参考价形成限价，T+1执行",
+    "exposure": "只做多，不加杠杆",
+    "negative_benchmark_year_gate": "按新基准实际年度收益确定触发年份；触发年份策略实际净收益严格大于0",
+    "other_economic_gates": "沿用MANDATE/5确认的整体净年化、逐自然年回撤和平均闭合交易频率条件"
+  },
+  "existing_normalized_identity_matches": [
+    {
+      "parent": "C9024",
+      "existing_target_after_one_percent_normalization": "C9018",
+      "full_payload_equal": true,
+      "source_bytes_equal": true,
+      "dependency_identity_equal": true
+    },
+    {
+      "parent": "C2003",
+      "existing_target_after_one_percent_normalization": "C2000",
+      "full_payload_equal": true,
+      "source_bytes_equal": true,
+      "dependency_identity_equal": true
+    }
+  ],
+  "verification_scope": "公开类型构造及五个既有候选认证加载；两组规范化内容、源文件与依赖一致性核验；未准备DFLS输入、未执行账户计算、未登记候选、未发布正式证据",
+  "historical_artifacts_preserved": ["MANDATE/5", "CANDIDATES/6", "ASSESSMENT/2"],
+  "current_C2132_PTE_decision": "不投入PTE，保持原决定",
+  "revalidation_requested": false
+}
