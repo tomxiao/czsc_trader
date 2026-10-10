@@ -179,7 +179,7 @@ def test_parameter_plan_allows_genuine_lookback_extension(managed_evaluation):
 
 @pytest.mark.parametrize("failure", ["source_contract", "raw_values"])
 def test_parameter_plan_rejects_changed_raw_signal_inputs(managed_evaluation, monkeypatch, failure):
-    from dataflows import canonical_frame_sha256
+    from dataflows import Dataflows, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
 
     research, request = managed_evaluation
     center, plan, _, children = parameter_plan(research, request)
@@ -193,25 +193,78 @@ def test_parameter_plan_rejects_changed_raw_signal_inputs(managed_evaluation, mo
         with pytest.raises(ValueError, match="raw input source contract differs"):
             research.evaluation.prepare(child)
     else:
+        original = child.input_bindings["full"]
+
+        def changed_source(source_request):
+            pinned = research.data.fetch(source_request, prepared=original.prepared)
+            assert pinned.ready
+            frame = pinned.dataframe.copy()
+            if str(source_request.dataset) == Dataset.ETF_SHARE_SIZE.value:
+                frame["Flow"] += 1
+                frame["TotalShare"] += 1
+            return frame, dict(pinned.identity.metadata)
+
+        flows = Dataflows(base_dir=research.data.binding.base_dir, space=research.data.binding.space,
+            providers=ProviderConfig(bindings={value.dataset: ProviderBinding("synthetic", "v1", changed_source)
+                for value in original.plan.requests.values()}))
+        prepared = flows.prepare(tuple(original.plan.requests.values()), policy=PreparePolicy.REFRESH)
+        assert prepared.ready and prepared.reference != original.prepared
+        child = replace(child, input_bindings={"full": replace(original, prepared=prepared.reference)})
         fetch = research.data.fetch
-        calls = 0
+        calls = []
 
-        def altered_fetch(request, *, prepared):
-            nonlocal calls
-            result = fetch(request, prepared=prepared)
-            if str(request.dataset) == "etf.share_size":
-                calls += 1
-                if calls % 2 == 0:
-                    frame = result.dataframe.copy()
-                    numeric = next(name for name in frame if name != "Date")
-                    frame[numeric] = frame[numeric] + 1
-                    return replace(result, dataframe=frame,
-                        identity=replace(result.identity, content_sha256=canonical_frame_sha256(frame)))
-            return result
+        def tracked(source_request, *, prepared):
+            calls.append((source_request.dataset, prepared))
+            return fetch(source_request, prepared=prepared)
 
-        monkeypatch.setattr(research.data, "fetch", altered_fetch)
+        monkeypatch.setattr(research.data, "fetch", tracked)
         with pytest.raises(ValueError, match="raw input source or values differ"):
             research.evaluation.prepare(child)
+        flow_reads = [reference for dataset, reference in calls if str(dataset) == Dataset.ETF_SHARE_SIZE.value]
+        assert flow_reads == [center.input_bindings["full"].prepared, prepared.reference]
+
+
+def test_equal_pinned_inputs_read_once_per_role_and_again_for_each_preparation(managed_evaluation, monkeypatch):
+    research, request = managed_evaluation
+    center, _, _, children = parameter_plan(research, request)
+    original = center.input_bindings["full"]
+    assert all(child.input_bindings["full"].prepared == original.prepared for child in children)
+    fetch = research.data.fetch
+    calls = []
+
+    def tracked(source_request, *, prepared):
+        calls.append((source_request, prepared))
+        return fetch(source_request, prepared=prepared)
+
+    monkeypatch.setattr(research.data, "fetch", tracked)
+    for index, child in enumerate((children[0], children[0], children[1]), start=1):
+        assert research.evaluation.prepare(child) is child
+        assert len(calls) == index * len(original.plan.requests)
+        assert all(reference == original.prepared for _, reference in calls)
+    assert sorted(source_request.dataset for source_request, _ in calls) == sorted([
+        source_request.dataset for source_request in original.plan.requests.values()
+    ] * 3)
+
+
+def test_equal_pinned_inputs_reject_corrupted_asset_after_success(managed_evaluation):
+    import sqlite3
+
+    research, request = managed_evaluation
+    center, _, _, children = parameter_plan(research, request)
+    original = center.input_bindings["full"]
+    assert children[0].input_bindings["full"].prepared == original.prepared
+    assert research.evaluation.prepare(children[0]) is children[0]
+    # Fault injection affects only this synthetic fixture's managed store.
+    path = research.data.binding.base_dir / research.data.binding.space.path / "assets.sqlite3"
+    with sqlite3.connect(path) as connection:
+        manifest = connection.execute("SELECT manifest FROM preparations WHERE preparation_id=?",
+                                      (str(original.prepared.preparation_id),)).fetchone()[0]
+        entries = json.loads(manifest)
+        connection.execute("UPDATE assets SET payload=? WHERE asset_id=?", (b"corrupt", entries[0]["asset_id"]))
+    raw = research.data.fetch(next(iter(original.plan.requests.values())), prepared=original.prepared)
+    assert not raw.ready and raw.error.code == "ASSET_CORRUPT"
+    with pytest.raises(ValueError, match="complete pinned inputs"):
+        research.evaluation.prepare(children[0])
 
 
 def test_unprepared_adapter_uses_authenticated_binding_after_source_cleanup(managed_evaluation):

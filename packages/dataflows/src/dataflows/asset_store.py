@@ -10,10 +10,11 @@ publication, retention or automatic deletion semantics.
 from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import fields, is_dataclass
 from datetime import UTC, date, datetime
 from enum import Enum
+from functools import lru_cache
 from hashlib import sha256
 import json
 import os
@@ -61,6 +62,24 @@ def _json_default(value: Any) -> Any:
 def _canonical(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=False, allow_nan=False, default=_json_default)
+
+
+_LINEAGE_CACHE_MAX_PAYLOAD = 8 * 1024 * 1024
+
+
+def _lineage_digest(identity: DataIdentity, warnings: tuple[str, ...]) -> str:
+    return sha256(_canonical({"identity": _plain(identity), "warnings": warnings}).encode("utf-8")).hexdigest()
+
+
+@lru_cache(maxsize=8)
+def _cached_lineage_digest(payload: bytes) -> str:
+    """Reuse only an immutable metadata digest for exactly identical stored bytes.
+
+    Callers still authenticate the current payload and numerical frame on every
+    read. No decoded dataframe, mutable metadata or validation outcome is retained.
+    """
+    _, identity_data, warnings = pickle.loads(payload)
+    return _lineage_digest(DataIdentity(**identity_data), tuple(warnings))
 
 
 @contextmanager
@@ -240,14 +259,15 @@ class AssetStore:
 
     @staticmethod
     def _asset_id(dataframe: pd.DataFrame, identity: DataIdentity,
-                  warnings: tuple[str, ...]) -> str:
+                  warnings: tuple[str, ...], *, lineage_payload: bytes | None = None) -> str:
         from .facade import canonical_frame_sha256
 
         actual = canonical_frame_sha256(dataframe)
         if actual != identity.content_sha256:
             raise StoreError("ASSET_CORRUPT", "dataframe content differs from data identity")
-        identity_data = {"identity": _plain(identity), "warnings": warnings}
-        return sha256(_canonical(identity_data).encode("utf-8")).hexdigest()
+        if lineage_payload is not None and len(lineage_payload) <= _LINEAGE_CACHE_MAX_PAYLOAD:
+            return _cached_lineage_digest(lineage_payload)
+        return _lineage_digest(identity, warnings)
 
     def put_asset(self, connection: sqlite3.Connection, *, key: str,
                   dataframe: pd.DataFrame, identity: DataIdentity,
@@ -320,7 +340,7 @@ class AssetStore:
                 identity = DataIdentity(**identity_data)
                 if not isinstance(frame, pd.DataFrame):
                     raise ValueError("asset payload does not contain a dataframe")
-                if self._asset_id(frame, identity, tuple(warnings)) != asset_id:
+                if self._asset_id(frame, identity, tuple(warnings), lineage_payload=payload) != asset_id:
                     raise StoreError("ASSET_CORRUPT", "data asset identity checksum differs")
                 return DataResult(DataStatus.READY, frame, identity, warnings=tuple(warnings))
             except StoreError:
@@ -346,10 +366,11 @@ class AssetStore:
                                (str(preparation_id), digest, manifest, datetime.now(UTC).isoformat()))
             return PreparedDataRef(self.space_id, preparation_id, digest)
 
-    def load_preparation(self, reference: PreparedDataRef) -> list[dict]:
+    def load_preparation(self, reference: PreparedDataRef,
+                         *, connection: sqlite3.Connection | None = None) -> list[dict]:
         if reference.space_id != self.space_id:
             raise StoreError("SPACE_MISMATCH", "preparation belongs to another data space")
-        with self._reader() as connection:
+        with (self._reader() if connection is None else nullcontext(connection)) as connection:
             row = connection.execute(
                 "SELECT manifest_sha256, manifest FROM preparations WHERE preparation_id=?",
                 (str(reference.preparation_id),),

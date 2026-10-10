@@ -1063,7 +1063,7 @@ class Dataflows:
                 reference = PreparedDataRef(self._store.space_id, UUID(preparation_id), manifest_sha256)
             except (TypeError, ValueError) as exc:
                 raise StoreError("PREPARATION_CORRUPT", "stored preparation identity is invalid") from exc
-            for entry in self._store.load_preparation(reference):
+            for entry in self._store.load_preparation(reference, connection=connection):
                 declared = {key: value for key, value in entry["request"].items()
                             if key not in {"coverage", "required_cutoff"}}
                 for row in tuple(missing):
@@ -1121,7 +1121,7 @@ class Dataflows:
                 if policy is PreparePolicy.REUSE:
                     cached = self._store.lookup_preparation(connection, prepare_key)
                     if cached is not None:
-                        cached_entries = self._store.load_preparation(cached)
+                        cached_entries = self._store.load_preparation(cached, connection=connection)
                         for entry in cached_entries:
                             self._require_contract_version(entry.get("data_contract_version"), location="preparation")
                         if ([entry["request"] for entry in cached_entries] != [row[2] for row in planned]

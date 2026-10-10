@@ -271,7 +271,9 @@ def _compare_raw_inputs(center, child, dataflows: Dataflows) -> None:
                     minimum_sessions=min(coverage.minimum_sessions, current_request.coverage.minimum_sessions))
             common = replace(original_request, start=max(original_request.start, current_request.start), coverage=coverage)
             old = dataflows.fetch(common, prepared=original.prepared)
-            new = dataflows.fetch(common, prepared=current.prepared)
+            # The same complete pinned identity and request denote one asset view.
+            # Reuse this verified read only within this role comparison.
+            new = old if original.prepared == current.prepared else dataflows.fetch(common, prepared=current.prepared)
             if not old.ready or not new.ready:
                 raise ValueError("parameter raw input comparison requires complete pinned inputs")
             if (old.identity.content_sha256, old.identity.source, old.identity.temporal_contract) != (
