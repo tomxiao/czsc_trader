@@ -1,0 +1,92 @@
+{
+  "status": "PROSPECTIVE_TECHNICAL_CORRECTION",
+  "finding": "Frozen original43 summary only recognises old41 two mechanisms and rejects new classified direction refusals. Detected by static review and synthetic reproduction before native analysis; not a native economic/account failure.",
+  "changes": "Only summarize receives four explicit selected category formulas and metadata domain checks; all other analysis_reference functions AST identical. v2 entry imports repaired summary; parameter helper keeps original source/geometry checks and adds successor hashes. Supplementary serialized structure describes all3 retained exit fields and selected strict BELOW/ABOVE category; public existing-control resolver now admits authorized EX041 origin. All runtime/13coordinates/gates/data/evaluations unchanged.",
+  "runtime_changed": false,
+  "new_account_evaluations": 0,
+  "original_geometry_sha256": "d508642461d6d3ab99fed0429c7a29c596d11000bcc859be867b5724e011d0fb",
+  "original_plan_sha256": "7beed71f67b643eba397a87ff360e384f66abc2940c44e07e2423a8acc8a20ae",
+  "original_source_files": {
+    "run_parameters.py": "c9fb9a873c5e19a466eae549fc6bc145ef292f79c0c814807f91e79122274ac6",
+    "parameter_analysis.py": "2406b1623bf2f6a280209215d12370490aea5ff2de50acad1c5c5df00f5f7a71",
+    "pair_parameters.py": "7f9a08f037576f8aea14b4497bcc2751d5e5e68993970d7475e8dd9e5172a368",
+    "declare_geometry.py": "367debc52215c67a3d757a407a269c11e200dc0ae2055946aa166f81fd43dc11",
+    "common.py": "c0ead2433eb938572e0ece2f812950cfd7e6f8502448f079f67483a26781bdb7",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e",
+    "direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "synthetic_checks.py": "216eaafa8bbf21bee9292111ffcf39915742dfc4f91a968d79ec9607744cfc6c",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef"
+  },
+  "successor_source_files": {
+    "analysis_reference_v2.py": "732f68bdc2e88200df2b384162f3d8800f9730d54142e0dda46971f709cb558a",
+    "analyze_v2.py": "e0334f8d6a6d08c0f73327ac62f8a110fabb40415400213500b65840995e895c",
+    "run_parameters_v2.py": "e64e270579950fa06658a47a411c6e7ade6a7e025b0b62af19fde25991eebe7e",
+    "parameter_analysis_v2.py": "ad375ed21ce14430dc444d8597259555309cf133c3f588212a68b075d2fb3cd0",
+    "pair_parameters_v2.py": "a58712965c6d251ab97d48be30db481e6d6c6996a6a477104e828f0297f1e419",
+    "technical_validation.py": "820c1bbf9810cd6c3f547b78cdac2f80b1a62ebcde5f6de178a5623de5f17de0",
+    "declare_correction.py": "10e533fd8e5576f8beb3841160309337d57a1fa039bab1709a60f56fb88268cf"
+  },
+  "helper_AST_check_source": "import ast\nfrom pathlib import Path\ns=Path('research/S013/experiments/EX043_20261011/src')\ncomparisons={('run_parameters.py','run_parameters_v2.py'):{'resolve_center','source_check','declare'},('parameter_analysis.py','parameter_analysis_v2.py'):set(),('pair_parameters.py','pair_parameters_v2.py'):set(),('analyze.py','analyze_v2.py'):{'main'}}\nfor (old,new),allowed in comparisons.items():\n def funcs(p):return {n.name:ast.dump(n,include_attributes=False) for n in ast.parse(p.read_text(encoding='utf-8')).body if isinstance(n,ast.FunctionDef)}\n a,b=funcs(s/old),funcs(s/new); assert a.keys()==b.keys()\n changed={k for k in a if a[k]!=b[k]};assert changed==allowed,(old,changed,allowed)\n print(old,sorted(changed))\nprint({'helper_functions':'EXACT_OTHER_AST','new_account_evaluations':0})\n",
+  "helper_AST_check_sha256": "394f9aebeb7994d5767b5ea4fce5dab5177e12faaecd3ca0e3024f4557b9cb7c",
+  "helper_AST_check": "PASS: parameter_analysis/pair functions unchanged; run_parameters changes only source_check/resolve_center/declare descriptive record; analyze only adds technical validation call.",
+  "pure_proof": {
+    "status": "PURE_PASS",
+    "new_account_evaluations": 0,
+    "account_bytes_read": 0,
+    "original_failure": {
+      "status": "EXPECTED_ASSERTION_FAILURE",
+      "scope": "Pure synthetic selected-category direction refusal only; no actual account failure",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "category": "BELOW",
+      "direction_equal": true
+    },
+    "same_structure_v2": "PASS",
+    "new_contract_cases": 116,
+    "legacy_exact_cases": 6,
+    "invalid_nonempty_categories_rejected": 16,
+    "mismatches_rejected": 4,
+    "unchanged_functions_ast": [
+      "annual",
+      "paired"
+    ],
+    "economic_fields_exact": [
+      "net_cagr",
+      "drawdown",
+      "closed_trades",
+      "frequency60",
+      "annual",
+      "benchmark_cagr",
+      "benchmark_annual",
+      "gates",
+      "qualified"
+    ],
+    "frozen_eight_helper_hashes_unchanged": {
+      "run_parameters.py": "c9fb9a873c5e19a466eae549fc6bc145ef292f79c0c814807f91e79122274ac6",
+      "parameter_analysis.py": "2406b1623bf2f6a280209215d12370490aea5ff2de50acad1c5c5df00f5f7a71",
+      "pair_parameters.py": "7f9a08f037576f8aea14b4497bcc2751d5e5e68993970d7475e8dd9e5172a368",
+      "declare_geometry.py": "367debc52215c67a3d757a407a269c11e200dc0ae2055946aa166f81fd43dc11",
+      "common.py": "c0ead2433eb938572e0ece2f812950cfd7e6f8502448f079f67483a26781bdb7",
+      "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+      "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+      "analysis_reference.py": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e"
+    },
+    "geometry_sha256": "d508642461d6d3ab99fed0429c7a29c596d11000bcc859be867b5724e011d0fb",
+    "source_sha256": {
+      "analysis_reference.py": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e",
+      "analysis_reference_v2.py": "732f68bdc2e88200df2b384162f3d8800f9730d54142e0dda46971f709cb558a",
+      "focused_checks.py": "8d956d88aa84d8f2091001751037ae7b6eebcc5356f4f0130c37f3d512f211a3"
+    },
+    "limits": "Fake signal-contract/cash fixtures; no actual account or economic inference. Runtime rules and all original frozen helpers untouched."
+  },
+  "pure_proof_sha256": "fa77a9adad8a3e50d16a566ab2d3fd9349a4ada092a950f55ab6d440cd5cb7d2",
+  "pure_source": "\"\"\"Pure EX043 analysis-contract correction proof; no native account reads.\"\"\"\nimport ast\nfrom hashlib import sha256\nimport importlib.util\nimport json\nfrom pathlib import Path\nfrom types import SimpleNamespace\n\nimport pandas as pd\n\n\nROOT = Path(__file__).resolve().parents[2]\nSRC = ROOT / 'research/S013/experiments/EX043_20261011/src'\nOUTPUT = Path(__file__).with_name('focused.json')\nMODES = ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',\n         'MEAN_BEAR_TIME_ABOVE_CLOSE', 'MEAN_BEAR_TIME_ABOVE_BODY')\n\n\ndef digest(path):\n    return sha256(path.read_bytes()).hexdigest()\n\n\ndef load(name):\n    spec = importlib.util.spec_from_file_location('_ex043_' + name, SRC / (name + '.py'))\n    result = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(result)\n    return result\n\n\ndef fixture(module, mode, category=None, direction=0, score_pass=True,\n            opportunity=True, regime='bear', last_reason='time', last_route='bear'):\n    # Financial rows are synthetic constants, unrelated to any stored account.\n    dates = pd.date_range('2020-01-02', '2026-09-30', periods=1636)\n    daily = pd.DataFrame({'date': dates, 'equity': 1_000_000., 'quantity': 0})\n    eligible_context = opportunity and regime == 'bear' and last_reason == 'time' and last_route == 'bear'\n    applies = eligible_context and (category == ('BELOW' if '_BELOW_' in mode else 'ABOVE'))\n    if mode in ('MEAN_BEAR_TIME_REENTRY_CLOSE', 'MEAN_BEAR_TIME_REENTRY_BODY'):\n        applies = eligible_context\n    reason = ('flat' if not opportunity else 'entry_direction_rejected' if applies and direction <= 0\n              else 'entry' if score_pass else 'confirmation_rejected')\n    frame = pd.DataFrame({'signal_date': [pd.Timestamp('2023-01-03')],\n        'confirmation_opportunity': [opportunity], 'confirmation_score': [.1 if score_pass else -.1],\n        'confirmation_pass': [score_pass], 'regime': [regime],\n        'last_exit_reason': pd.Series([last_reason], dtype=object),\n        'last_exit_route': pd.Series([last_route], dtype=object),\n        'last_exit_category': pd.Series([category], dtype=object),\n        'entry_signal_close': [100. + direction], 'previous_signal_close': [100.],\n        'entry_signal_open': [100.], 'entry_direction_up': [direction > 0],\n        'entry_direction_gate_applies': [applies], 'signal_reason': [reason]})\n    fills = pd.DataFrame({'side': pd.Series([], dtype=str), 'fees': pd.Series([], dtype=float)})\n    execution = SimpleNamespace(account_daily=daily, decisions=frame, fills=fills,\n        trades=pd.DataFrame({'status': pd.Series([], dtype=str)}),\n        orders=pd.DataFrame({'status': pd.Series([], dtype=str)}))\n    run = SimpleNamespace(execution=execution, buyhold=SimpleNamespace(account_daily=daily, execution=execution),\n                          observation=SimpleNamespace(net_cagr=0.))\n    result = SimpleNamespace(runs=[run], request_hash='PURE-REQUEST', result_hash='PURE-RESULT')\n    bound = SimpleNamespace(input_bindings={})\n    years = module.annual(daily)\n    annual_rows = [{'year': int(year), 'account_return': value['return']} for year, value in years.items()]\n    ledger = SimpleNamespace(inspect_run=lambda _: {'cycles': [], 'annual_account': annual_rows},\n        verify_account=lambda *_: {'status': 'PURE_STUB'}, annual_account=lambda _: (annual_rows,))\n    config = {'index': 0, 'background': 'MEAN', 'mode': 'M1', 'candidate_id': 'C4900',\n        'content_sha256': 'PURE-CONTENT', 'existing_identity': None, 'mechanism': mode,\n        'payload': {'parameters': {'confirmation': {'threshold': 0.}}}}\n    return bound, result, config, ledger, frame\n\n\ndef main():\n    old, new = load('analysis_reference'), load('analysis_reference_v2')\n    original_ast = ast.parse((SRC / 'analysis_reference.py').read_text(encoding='utf-8'))\n    corrected_ast = ast.parse((SRC / 'analysis_reference_v2.py').read_text(encoding='utf-8'))\n    original_nodes = {node.name: node for node in original_ast.body if isinstance(node, ast.FunctionDef)}\n    corrected_nodes = {node.name: node for node in corrected_ast.body if isinstance(node, ast.FunctionDef)}\n    assert original_nodes.keys() == corrected_nodes.keys()\n    unchanged = [name for name in original_nodes if name != 'summarize']\n    assert all(ast.dump(original_nodes[name]) == ast.dump(corrected_nodes[name]) for name in unchanged)\n    assert ast.dump(original_nodes['summarize']) != ast.dump(corrected_nodes['summarize'])\n    geometry_path = SRC.parent / 'protocols/geometry.json'\n    geometry = json.loads(geometry_path.read_text(encoding='utf-8-sig'))\n    assert len(geometry['helper_source_files']) == 8\n    for relative, expected in geometry['helper_source_files'].items():\n        assert digest(SRC / relative) == expected, 'Frozen helper changed: ' + relative\n    # Reproduce the discovered missing-branch assertion on one explicit fake path.\n    failing = fixture(old, MODES[0], category='BELOW', direction=0)\n    try:\n        old.summarize(*failing[:4])\n    except AssertionError:\n        original_failure = {'status': 'EXPECTED_ASSERTION_FAILURE',\n            'scope': 'Pure synthetic selected-category direction refusal only; no actual account failure',\n            'mechanism': MODES[0], 'category': 'BELOW', 'direction_equal': True}\n    else:\n        raise AssertionError('Old missing-branch defect was not reproduced')\n    repaired, _ = new.summarize(*failing[:4])\n    assert repaired['gate_counts']['state_rejected_opportunities'] == 1\n    economic_baseline, _ = old.summarize(*fixture(old, MODES[0], category='BELOW', direction=1)[:4])\n    economic_fields = ('net_cagr', 'drawdown', 'closed_trades', 'frequency60', 'annual',\n                       'benchmark_cagr', 'benchmark_annual', 'gates', 'qualified')\n    expected_economics = {name: economic_baseline[name] for name in economic_fields}\n    cases = 0\n    for mode in MODES:\n        for category in (None, 'BELOW', 'EQUAL', 'ABOVE'):\n            for direction in (-1, 0, 1):\n                for score_pass in (False, True):\n                    args = fixture(new, mode, category, direction, score_pass)\n                    row, frame = new.summarize(*args[:4])\n                    assert {name: row[name] for name in economic_fields} == expected_economics\n                    assert row['gate_counts']['state_rejected_opportunities'] == int(frame.signal_reason.eq('entry_direction_rejected').sum())\n                    assert row['gate_counts']['rejected_opportunities'] == int(frame.signal_reason.eq('confirmation_rejected').sum())\n                    cases += 1\n        for override in ({'opportunity': False}, {'regime': 'bull'}, {'last_reason': 'range'},\n                         {'last_route': 'bull'}, {'last_reason': None, 'last_route': None}):\n            args = fixture(new, mode, category='BELOW' if '_BELOW_' in mode else 'ABOVE', **override)\n            row, _ = new.summarize(*args[:4])\n            assert row['gate_counts']['state_rejected_opportunities'] == 0\n            cases += 1\n    legacy = 0\n    for mode in ('MEAN_BEAR_TIME_REENTRY_CLOSE', 'MEAN_BEAR_TIME_REENTRY_BODY'):\n        for direction in (-1, 0, 1):\n            args = fixture(old, mode, direction=direction)\n            before, _ = old.summarize(*args[:4])\n            after, _ = new.summarize(*args[:4])\n            assert before == after\n            legacy += 1\n    invalid = 0\n    for mode in MODES:\n        for category in ('NONE', 'below', 'OTHER', 1):\n            args = fixture(new, mode, category=category)\n            try:\n                new.summarize(*args[:4])\n            except AssertionError:\n                invalid += 1\n            else:\n                raise AssertionError('Invalid nonempty category accepted')\n    # Predicate and score mismatch must still fail, rather than hide bad state.\n    mismatches = 0\n    for column, value in (('entry_direction_gate_applies', False), ('entry_direction_up', True),\n                          ('confirmation_pass', False), ('signal_reason', 'entry')):\n        args = fixture(new, MODES[0], category='BELOW', direction=0)\n        args[4].loc[0, column] = value\n        try:\n            new.summarize(*args[:4])\n        except AssertionError:\n            mismatches += 1\n        else:\n            raise AssertionError('Bad direction/score contract accepted: ' + column)\n    output = {'status': 'PURE_PASS', 'new_account_evaluations': 0, 'account_bytes_read': 0,\n        'original_failure': original_failure, 'same_structure_v2': 'PASS',\n        'new_contract_cases': cases, 'legacy_exact_cases': legacy,\n        'invalid_nonempty_categories_rejected': invalid, 'mismatches_rejected': mismatches,\n        'unchanged_functions_ast': unchanged, 'economic_fields_exact': list(economic_fields),\n        'frozen_eight_helper_hashes_unchanged': geometry['helper_source_files'],\n        'geometry_sha256': digest(geometry_path),\n        'source_sha256': {'analysis_reference.py': digest(SRC / 'analysis_reference.py'),\n                          'analysis_reference_v2.py': digest(SRC / 'analysis_reference_v2.py'),\n                          'focused_checks.py': digest(Path(__file__))},\n        'limits': 'Fake signal-contract/cash fixtures; no actual account or economic inference. Runtime rules and all original frozen helpers untouched.'}\n    OUTPUT.write_text(json.dumps(output, ensure_ascii=False, indent=2, allow_nan=False) + '\\n', encoding='utf-8')\n    print({key: output[key] for key in ('status', 'new_contract_cases', 'legacy_exact_cases',\n        'invalid_nonempty_categories_rejected', 'mismatches_rejected', 'new_account_evaluations')})\n\n\nif __name__ == '__main__':\n    main()\n",
+  "pure_source_sha256": "8d956d88aa84d8f2091001751037ae7b6eebcc5356f4f0130c37f3d512f211a3",
+  "preservation": "Original frozen source and geometry remain unchanged; no replay/re-run of complete accounts. Original geometry all13 full32points unchanged, additive successor implementation frozen before any parameter preparation."
+}

@@ -1,0 +1,788 @@
+{
+  "name": "S013-EX043-complementary-bear-time-exit-category-directions",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-MEAN",
+      "index": 1,
+      "candidate_id": "C8701",
+      "content_sha256": "b3338ecd2c26c87eee387ea24cd3b15639b6a7d5f301cf73effce82c628fb073",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_ACF_CENTER_MEAN"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "119afcda26a82c1845e794491d594b058f85529feed1b5f165fb0d4e2e4434fc"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "BEAR_ACF_CENTER_MEAN",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-TIME",
+      "reuse_from": "EX028_20261011",
+      "reuse_label": "N1"
+    },
+    {
+      "label": "B0-TIME-CLOSE",
+      "index": 0,
+      "candidate_id": "C4800",
+      "content_sha256": "e1266bf56b680451316a9d32e74bea2733bbaee48241af20194de1a85349dccd",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_REENTRY_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "d5a6a86f75ac7ed677a9721c2c7a1260d61486e93ca8bc8aba6419ff50d12e9b"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_REENTRY_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX041_20261011",
+      "reuse_label": "N0"
+    },
+    {
+      "label": "B0-TIME-BODY",
+      "index": 1,
+      "candidate_id": "C4801",
+      "content_sha256": "7ca9d7e18fc0892ab271ffd9cbbb84c9d9950a542e39c36e19bff6bb07204191",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_REENTRY_BODY"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "d5a6a86f75ac7ed677a9721c2c7a1260d61486e93ca8bc8aba6419ff50d12e9b"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_REENTRY_BODY",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX041_20261011",
+      "reuse_label": "N1"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-MEAN"
+    },
+    {
+      "label": "N1",
+      "index": 1,
+      "candidate_id": "C4901",
+      "content_sha256": "967e681901b60da20b5424382bea74156ad3ac6e3a9e0da18826fc03abe5de2c",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_BODY"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_BODY",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-MEAN"
+    },
+    {
+      "label": "N2",
+      "index": 2,
+      "candidate_id": "C4902",
+      "content_sha256": "30b932e8374e00cd7141982a85a178f907d790ff5d471936d505347cb4fe9a06",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_ABOVE_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_ABOVE_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-MEAN"
+    },
+    {
+      "label": "N3",
+      "index": 3,
+      "candidate_id": "C4903",
+      "content_sha256": "9f96180a76e74d03679db5ee4756a2ff8f015d1959c7e9f7ea8f6a837af54b5d",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_ABOVE_BODY"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_ABOVE_BODY",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-MEAN"
+    }
+  ],
+  "cells": [
+    {
+      "background": "B0",
+      "mechanism": "TIME",
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "BEAR_ACF_CENTER_MEAN",
+      "label": "B0-MEAN",
+      "candidate_id": "C8701",
+      "content_sha256": "b3338ecd2c26c87eee387ea24cd3b15639b6a7d5f301cf73effce82c628fb073"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_REENTRY_CLOSE",
+      "label": "B0-TIME-CLOSE",
+      "candidate_id": "C4800",
+      "content_sha256": "e1266bf56b680451316a9d32e74bea2733bbaee48241af20194de1a85349dccd"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_REENTRY_BODY",
+      "label": "B0-TIME-BODY",
+      "candidate_id": "C4801",
+      "content_sha256": "7ca9d7e18fc0892ab271ffd9cbbb84c9d9950a542e39c36e19bff6bb07204191"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "label": "N0",
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_BODY",
+      "label": "N1",
+      "candidate_id": "C4901",
+      "content_sha256": "967e681901b60da20b5424382bea74156ad3ac6e3a9e0da18826fc03abe5de2c"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_ABOVE_CLOSE",
+      "label": "N2",
+      "candidate_id": "C4902",
+      "content_sha256": "30b932e8374e00cd7141982a85a178f907d790ff5d471936d505347cb4fe9a06"
+    },
+    {
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_ABOVE_BODY",
+      "label": "N3",
+      "candidate_id": "C4903",
+      "content_sha256": "9f96180a76e74d03679db5ee4756a2ff8f015d1959c7e9f7ea8f6a837af54b5d"
+    }
+  ],
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 38,
+    "content_sha256": "ce156acd84fadc1c4376fc0f80f7f8e7e4e7fe1cebd19a90ea31d8472d4f40e5"
+  },
+  "diagnosis_references": {
+    "prior-account-descriptive-diagnosis": {
+      "evidence_id": "26dad0baf35054808dca919a74d7537f2858de04f21b303c432c7b8c13a53135.json",
+      "experiment": {
+        "experiment_id": "EX016_20261011",
+        "strategy_id": "S013",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "prior-account-descriptive-diagnosis",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "26dad0baf35054808dca919a74d7537f2858de04f21b303c432c7b8c13a53135",
+      "type": "EvidenceRef"
+    },
+    "native-anchors": {
+      "evidence_id": "8902444f3a11c4764fc1b379ba49d3110f843e00112c236719108697b69c27a3.json",
+      "experiment": {
+        "experiment_id": "EX042_20261011",
+        "strategy_id": "S013",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "native-anchors",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "8902444f3a11c4764fc1b379ba49d3110f843e00112c236719108697b69c27a3",
+      "type": "EvidenceRef"
+    },
+    "research-decision": {
+      "evidence_id": "a081e8c9163c9041d3fb54e0cf98aa7cb55fe518c93227f650ba199b556e5838.json",
+      "experiment": {
+        "experiment_id": "EX042_20261011",
+        "strategy_id": "S013",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "research-decision",
+      "schema": null,
+      "schema_version": null,
+      "sha256": "a081e8c9163c9041d3fb54e0cf98aa7cb55fe518c93227f650ba199b556e5838",
+      "type": "EvidenceRef"
+    }
+  },
+  "hypothesis": "Uniform bearTIME direction gates failed2023. Complementary strict signal-exit price categories may retain recoveries that a uniform gate removes. Test both BELOW/ABOVE scopes and CLOSE/BODY predicates without presuming negative-price exits are harmful.",
+  "mechanism": "At T, only flat-before AND originaleligible AND rawregime=bear AND last final signal exit reason=time/route=bear AND last exit Close strictly BELOW or ABOVE its own signal entry Close anchor receives strict Close_T>previous daily Close or Close_T>Open_T gate before original score. Classify only final bearTIME exit. EQUAL/nonbearTIME/initial context=None; all unselected categories retain original MEAN score. Every any-route entry consumes/clears reason/route/category. Flat refusal, eligibility failure and raw change preserve all. No future price windows, magnitude/tolerance/threshold/year exception.",
+  "preserved": "All13 original numeric values/full domains, H8/H4 signal holding units, all holding exit priority/loss/trail/range/time/regime and original confirmation score retained. Existing strict-past-L centered bearACF and warmupL+21 remain; original execution/cost/data/benchmark/date calendar retained.",
+  "fixed_new_choices": "Four categorical scope+direction choices and exit-anchor memory outside13numeric coordinates. Strict price category does not equal actual trade PnL. No categorical robustness or independent validation claim.",
+  "strongest_counterevidence": "EX042 original2023 BELOW-source actual contribution+2.3049pp, MEAN/BODY2024 BELOW-source about+33.6747/+33.6749pp. Old-path groups cannot predict new-account deletion profit; categories change with endogenous signal path. EX041 both uniformTIME gates2023 about-1.25%, EX040 all-bear gates under110closed. No assumption that BELOW is adverse; complementaryABOVE controls mandatory.",
+  "selection_history": "Repeatedly exposed S013 development pool. Chosen after37-account complete native EXIT-anchor/cash diagnosis and EX016 prior short-window counterevidence. No new future window computed. Review found no exact source-plan bearTIME selected BELOW/ABOVE reentry gate; EX016 conditioned whether exits occur, EX041 gated allTIME reentries. Structural novelty is not evidence of profit.",
+  "predeclared_selection": "Four new complete business configurations/five actual evaluations inclN0serial-spawn exact duplicate;four old controls exact native reuse. Only new centers satisfying all4original economic gates receive32business/33actual originalfull13-domain points each. OriginalEX01532 exact native reuse once if anyqualifier. No failed center expansion, point replacement, narrowdomains or diagnostic veto. Qualifyingcenter plus absoluteQ10CAGR/Q90DD and both relative degradations improving against original required for improvement.",
+  "counts": {
+    "new_business_configurations": 4,
+    "new_evaluations": 5,
+    "reused_controls": 4
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "boundaries": "RSCH S013stage3; no adjacent batch bytes/newdata/dependencies/platform/freeze/PTE/prod/merge/tag/push.",
+  "source_files": {
+    "direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "synthetic_checks.py": "216eaafa8bbf21bee9292111ffcf39915742dfc4f91a968d79ec9607744cfc6c",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef"
+  },
+  "date_contract": "Frozen41v2 full bound-calendar pair audit retained exactly. No dropping endpoint T or requiring T+1 signal OHLC.",
+  "prospective_pure_verification": {
+    "status": "PURE_PASS",
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "mechanisms": [
+      "MEAN_BEAR_TIME_ABOVE_BODY",
+      "MEAN_BEAR_TIME_ABOVE_CLOSE",
+      "MEAN_BEAR_TIME_BELOW_BODY",
+      "MEAN_BEAR_TIME_BELOW_CLOSE"
+    ],
+    "parameter_points": 128,
+    "selection_states": 16,
+    "pair_panels": 15,
+    "points_per_center": 32,
+    "native_synthetic_oracle_audits": 160,
+    "state_drift_rejections": 187,
+    "signal_memory_checks": 35040,
+    "gate_opportunities": 2185,
+    "parameter_and_strict_price_boundaries": 57,
+    "native_parameter_rejections": 37,
+    "nullable_metadata_checks": 19,
+    "observed_exit_categories": [
+      "ABOVE",
+      "BELOW",
+      "EQUAL"
+    ],
+    "signal_reasons": [
+      "confirmation_rejected",
+      "entry",
+      "entry_direction_rejected",
+      "flat",
+      "hold",
+      "loss",
+      "range",
+      "regime",
+      "time",
+      "trailing"
+    ],
+    "calendar_oracle_AST_identical_to_EX041_v2": true,
+    "oracle_imports_SRT": false,
+    "limits": "Pure synthetic paths only. Declared13-domain boundary checks do not add new economic gates. No market result reads or profit forecast."
+  }
+}

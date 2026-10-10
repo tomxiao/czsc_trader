@@ -1,0 +1,110 @@
+{
+  "record": {
+    "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "mechanism": {
+          "after": "MEAN_BEAR_TIME_BELOW_CLOSE",
+          "background_is_qualified": false,
+          "background_reference": {
+            "evidence_id": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json",
+            "experiment": {
+              "experiment_id": "EX028_20261011",
+              "strategy_id": "S013",
+              "type": "ExperimentRef"
+            },
+            "media_type": "application/json",
+            "name": "information-mechanism-n1",
+            "schema": "account_evaluation",
+            "schema_version": 6,
+            "sha256": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32",
+            "type": "EvidenceRef"
+          },
+          "before": "BEAR_ACF_CENTER_MEAN",
+          "new_entry_gate": "Strict T Close>previous actual daily Close or T Close>Open, only original flat eligible raw-bear opportunities after last signal bear TIME exit of the selected strict BELOW/ABOVE own entry anchor category and before any new signal entry; direction refusal precedes unchanged score refusal.",
+          "preserved": "Bull entries and all holding exits unchanged; RAW original ACF or MEAN strict-past-L centered ACF; all13 original numeric coordinates, H units, execution and fees preserved."
+        },
+        "numeric_coordinates": "All13 original numeric values and domains retained; direction choices are fixed categorical mechanisms outside those coordinates."
+      },
+      "child": {
+        "candidate_id": "C4900",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "evidence": {
+        "path": "assets/candidates/C4900/derivation/bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+        "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C2132",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "protocol_sha256": "7beed71f67b643eba397a87ff360e384f66abc2940c44e07e2423a8acc8a20ae"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C4900",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX043_20261011/3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7.json",
+          "sha256": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7"
+        }
+      ],
+      "experiment_id": "EX043_20261011"
+    },
+    "payload": {
+      "path": "assets/candidates/C4900/payload/dbba078d0d2bc0d96b2c537f83ac5962f25506666836b1d903513d2a1a944f44.json",
+      "sha256": "dbba078d0d2bc0d96b2c537f83ac5962f25506666836b1d903513d2a1a944f44"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      },
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca"
+      },
+      {
+        "path": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime/strategies/__init__.py",
+        "sha256": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef"
+      }
+    ],
+    "source_root": "assets/candidates/C4900/source/9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44/strategy_runtime",
+    "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+  },
+  "record_sha256": "bcf6142540759930bea890ed961255fddc832422b10105638199f5a9d22904ea"
+}

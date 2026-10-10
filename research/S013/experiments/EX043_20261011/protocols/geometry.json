@@ -1,0 +1,122 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "mechanism",
+    "confirmation orientation/profile/scope/enabled",
+    "context entry_gate/volume_basis/weighting",
+    "exit_on_regime_change",
+    "null stops/trail/momentum",
+    "zero cooldown",
+    "execution limit premium .01",
+    "strict Close>previousClose or Close>Open only for selected BELOW/ABOVE exit-anchor category  at original eligible flat rawbear opportunity whose last signal exit was bear TIME and has no subsequent signal entry; direction/category/scope outside13numeric coordinates; original H units and existing MEAN baseline L preserved"
+  ],
+  "comparison": "Original C2132 and only each new four-gate-qualified targeted reentry center at identical numeric centers/all13 full domains/32point coordinates; original EX01532 exact native reuse. No outcome-based point replacement or added economic veto.",
+  "difference_from_historical": "Same full13 domain/totalL2=.05/PCG64seed13/HALF_EVEN/LINEAR32 as EX015. Earlier different-domain tails are not substitutes. Each qualifying new center receives32business/33actual including one technical serial/spawn duplicate; failed centers remain center-only.",
+  "reason": "Preserve original business-valid full domains and paired original13 points rather than narrow domains or drop coordinates.",
+  "candidate_reservation": "C3600..C3727, valid four-digit IDs; existing S013 paths and historical prospective parameter helpers checked before declaration. At actual preparation registry/assets absence must also hold.",
+  "helper_source_files": {
+    "run_parameters.py": "c9fb9a873c5e19a466eae549fc6bc145ef292f79c0c814807f91e79122274ac6",
+    "parameter_analysis.py": "2406b1623bf2f6a280209215d12370490aea5ff2de50acad1c5c5df00f5f7a71",
+    "pair_parameters.py": "7f9a08f037576f8aea14b4497bcc2751d5e5e68993970d7475e8dd9e5172a368",
+    "declare_geometry.py": "367debc52215c67a3d757a407a269c11e200dc0ae2055946aa166f81fd43dc11",
+    "common.py": "c0ead2433eb938572e0ece2f812950cfd7e6f8502448f079f67483a26781bdb7",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e"
+  },
+  "direction_oracle_sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+  "implementation_parent_authentication": "Exact native original C2132 account and public registry identity are IMPLEMENTATION registration anchor; MEAN EX028/N1 is disclosed intermediate unqualified background evidence only. Qualified EX043 native center is PARAMETERS parent. Authenticate exact source/dependencies/runtime-binding/parameters/formal ledgers and identity; no unqualified background promotion or invented registry parent."
+}
