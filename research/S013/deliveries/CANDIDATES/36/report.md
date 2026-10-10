@@ -1,0 +1,119 @@
+# S013：下跌入场反弹方向最小完整账户对照
+
+RSCH阶段三，用户授权自主推进，无需逐轮评审。原数据与四项经济门保持，不增加诊断否决门。
+
+EX039精确复用35个账户的逐日诊断：原中心57次下跌买入均通过确认，但较前收上涨23次、收高于开盘22次；原33依赖账户2014次下跌买入对应765/769次。原生2023下跌10次入场两个门各保留6次，2024的10次中保留3/2次。原确认通过不等于反弹已经开始；这些计数不是新策略收益。
+
+本轮四新配置为RAW/MEAN自相关背景×两个严格方向门。RAW原自相关ACF20与阈值保持；MEAN精确继承EX028 current ACF减严格过去L估计均值，L为原确认lookback。只对决策T空仓、原资格合格、rawregime=bear的机会，附加Close>前一实际日Close或Close>当日Open；等号和负方向拒绝，方向拒绝优先于原确认拒绝。bull和所有持仓loss/trailing/range/time/regime退出、原H8/H4、确认分与阈值保持。无额外BODY上涨背景、风险退出、等待或日期例外。
+
+所有13原数值中心及完整域保持。方向谓词是两种新类别选择，未增加幅度阈值；类别本身不在13数值扰动中，不能宣称其稳定性。previous-regime诊断要求W+2历史，但不影响当前rawbear入场门；全部已声明32原域点已有充分原预热。MEAN的L+21基准预热保持。
+
+510500.SH、2020-01-02至2026-09-30、1636交易日、100万元、HFQ信号/统一执行价口径、整手100、T决策/T+1执行、单边0.1%费用、策略与可执行LimitBuyHold统一1%限买溢价。原四门：年化≥正基准1.5倍；每自然年回撤严格低于基准；每60日≥4闭合交易（至少110笔）；基准亏损年2022/2023实际连续账户收益正。全窗回撤是诊断，不替代年度门。
+
+四新业务配置、五实际完整评价（N0串行/spawn严格一致重复），两旧完整原生背景精确复用。全部失败路径保留，独立重算完整特征、方向、机会、持仓状态及现金/数量/费用账本，六账户五基准账本一致。最强反证是限制入场可能错失恢复、减少交易并伤害薄弱年份利润；原112笔仅比110门多两笔，2023仅+0.2841%。本轮使用已见诊断选择机制，属于开发池研究，不是独立验证。
+
+|账户|候选|年化|全窗回撤|闭合交易|2022收益|2023收益|原四门|
+|---|---|---:|---:|---:|---:|---:|---|
+|B0-TIME|C2132|16.1572%|14.1599%|112|+12.1687%|+0.2841%|通过|
+|B0-MEAN|C8701|13.5405%|23.9087%|123|+11.4638%|+0.5481%|annual_drawdown|
+|N0|C5200|11.3928%|14.3459%|96|-0.1349%|-1.8693%|frequency、negative_buyhold_year_profit|
+|N1|C5201|9.5058%|16.6953%|95|+2.7809%|-1.5228%|return、frequency、negative_buyhold_year_profit|
+|N2|C5202|10.0447%|17.4014%|106|+10.8190%|-2.2972%|return、frequency、negative_buyhold_year_profit|
+|N3|C5203|11.0403%|24.8712%|105|+15.2397%|-1.9514%|annual_drawdown、frequency、negative_buyhold_year_profit|
+
+|账户|自然年|收益|回撤|基准回撤|年度回撤门|
+|---|---:|---:|---:|---:|---|
+|B0-TIME|2020|+16.7355%|6.1272%|14.9712%|通过|
+|B0-TIME|2021|+9.9101%|2.7008%|9.7035%|通过|
+|B0-TIME|2022|+12.1687%|9.7680%|28.4105%|通过|
+|B0-TIME|2023|+0.2841%|5.6722%|17.2665%|通过|
+|B0-TIME|2024|+64.9989%|10.0213%|18.5736%|通过|
+|B0-TIME|2025|+11.0774%|3.5332%|13.7975%|通过|
+|B0-TIME|2026|-0.0384%|4.5425%|18.7646%|通过|
+|B0-MEAN|2020|+17.3786%|6.1272%|14.9712%|通过|
+|B0-MEAN|2021|+12.0902%|2.2401%|9.7035%|通过|
+|B0-MEAN|2022|+11.4638%|12.9741%|28.4105%|通过|
+|B0-MEAN|2023|+0.5481%|6.7438%|17.2665%|通过|
+|B0-MEAN|2024|+50.4429%|19.7899%|18.5736%|未通过|
+|B0-MEAN|2025|+10.7206%|3.5336%|13.7975%|通过|
+|B0-MEAN|2026|-7.1506%|10.1152%|18.7646%|通过|
+|N0|2020|+14.5967%|6.1278%|14.9712%|通过|
+|N0|2021|+8.7190%|3.0244%|9.7035%|通过|
+|N0|2022|-0.1349%|14.1709%|28.4105%|通过|
+|N0|2023|-1.8693%|6.5942%|17.2665%|通过|
+|N0|2024|+55.4577%|6.1575%|18.5736%|通过|
+|N0|2025|+8.7542%|2.1223%|13.7975%|通过|
+|N0|2026|-2.4010%|4.9662%|18.7646%|通过|
+|N1|2020|+8.2440%|8.2921%|14.9712%|通过|
+|N1|2021|+7.3869%|3.1669%|9.7035%|通过|
+|N1|2022|+2.7809%|14.1652%|28.4105%|通过|
+|N1|2023|-1.5228%|6.5945%|17.2665%|通过|
+|N1|2024|+46.3396%|10.4977%|18.5736%|通过|
+|N1|2025|+7.3029%|2.1224%|13.7975%|通过|
+|N1|2026|-2.4000%|4.9653%|18.7646%|通过|
+|N2|2020|+14.6500%|6.1278%|14.9712%|通过|
+|N2|2021|+8.2660%|3.4284%|9.7035%|通过|
+|N2|2022|+10.8190%|11.8840%|28.4105%|通过|
+|N2|2023|-2.2972%|7.0017%|17.2665%|通过|
+|N2|2024|+36.8822%|12.1817%|18.5736%|通过|
+|N2|2025|+8.4510%|2.1223%|13.7975%|通过|
+|N2|2026|-6.6956%|8.3112%|18.7646%|通过|
+|N3|2020|+9.9804%|7.8657%|14.9712%|通过|
+|N3|2021|+8.2641%|3.4291%|9.7035%|通过|
+|N3|2022|+15.2397%|11.8830%|28.4105%|通过|
+|N3|2023|-1.9514%|7.0018%|17.2665%|通过|
+|N3|2024|+46.9321%|20.1234%|18.5736%|未通过|
+|N3|2025|+7.0040%|2.1223%|13.7975%|通过|
+|N3|2026|-6.6951%|8.3098%|18.7646%|通过|
+
+四新中心无一通过原四门，按事前方案不扩展新增参数账户。没有参数敏感性改善证据。
+
+四个新完整账户均未满足原四门。RAW-CLOSE年化11.3928%、96笔、2022-0.1349%/2023-1.8693%；RAW-BODY年化9.5058%、95笔、2023-1.5228%；MEAN-CLOSE年化10.0447%、106笔、2023-2.2972%；MEAN-BODY年化11.0403%、105笔、2023-1.9514%。四者交易次数均不足110笔，2023均亏损。
+
+RAW-CLOSE、RAW-BODY、MEAN-CLOSE每自然年回撤门通过，说明反弹门可改变风险路径；但完整账户证明其代价是交易次数或薄弱年份盈利，不能只展示回撤改善。MEAN-BODY仍未通过2024年度回撤。
+
+原确认在下跌机会直接拒绝很少，却不能因此认为严格的价格上涨门会更好。EX040下跌价格门在两种背景的完整账户中，均损害2023盈利并减少闭合交易。此结果否定全体下跌空仓资格机会统一加此门的改善假说，不是否定一切价格信息用途。
+
+全部未达标账户已正式留证，无新候选登记；按事前方案零新增参数账户。原13完整域和原四经济要求保持，参数敏感性改善目标尚未达成。
+
+原日期审计将T+1错误地要求存在于截止T的信号行情。原失败与冻结源码保留，独立v2使用同prepared公共日历、完整signal_dates和执行日期核对1636对会话。特征和全状态逻辑AST相同，账户结果未重跑、未增加数据、未删除末端信号。v2完整诊断与现金账本通过。
+
+停止全体下跌买入的严格方向门扩展。下一轮最小对照聚焦均值居中自相关背景中，下跌TIME退出后尚未再次买入的机会，分别要求Close>前收或Close>Open；其他首次/非TIME机会保留原入场，全部持仓退出与原13数值域不变。该条件需明确记住上次退出路线及原因，不按年份或旧交易盈亏选择。两新完整配置、三实际评价、两旧背景精确复用，只有原四门达标才做原32点参数比较。先查精确重复、冻结新方法和明确先前刷新等待/全体方向门失败反证，再自主执行；不重新调风险退出宽度。
+
+技术修正保留：原日期oracle将T+1错误地要求存在于截止T的信号行情，因末端09-29决策/09-30执行而失败。冻结原源码、方案、几何与完整账户结果保持不可变；独立v2在事前技术方法中绑定原失败和全部源码哈希，以同prepared公共日历/完整signal_dates/执行日期核对1636对会话。12组合成末端检查、34非法日期或绑定拒绝及特征/状态/统计AST一致性证明通过，实际v2全路径审计通过；零重跑账户、零数据扩展、零删日。
+
+全部年份、失败路径和不可变证据保留。FULL只核验证据完整性，不证明经济达标、独立验证或未来表现。未推进阶段四、冻结、PTE或生产。
+
+## 正式证据引用
+
+- [B0-TIME](../../../assets/deliveries/CANDIDATES/36/evidence/bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json)
+- [B0-MEAN](../../../assets/deliveries/CANDIDATES/36/evidence/f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json)
+- [N0](../../../assets/deliveries/CANDIDATES/36/evidence/0eccee14aa4a277c025cab64a5d783cff2b239e883b65f0ed9f4fe904e3091d6.json)
+- [N1](../../../assets/deliveries/CANDIDATES/36/evidence/0619696934ebfdec0b546a90242a4490cd7e1f4e3a915cbc19c683bbe12656c5.json)
+- [N2](../../../assets/deliveries/CANDIDATES/36/evidence/8f80a9a15ebb60e040cccb62dc6a7e010fb49ac7cbd68e313f8c301fe0302b68.json)
+- [N3](../../../assets/deliveries/CANDIDATES/36/evidence/0136f8959478be4bc4a3a20f12db515beeb7b049ae2d687571ee5db904dab402.json)
+- [plan](../../../assets/deliveries/CANDIDATES/36/evidence/c8475d86d251227aeba8f471f6dbd2d248410338de7bdf9754c3e99401f602dc.json)
+- [authorization](../../../assets/deliveries/CANDIDATES/36/evidence/4075bdb831064fa3bd7b1d964816858bd60ee8c7c47d0636c293b2e73d0612f5.json)
+- [previous39-native-direction](../../../assets/deliveries/CANDIDATES/36/evidence/4c34f10a3e0ce2880b9e4189399e94f49f3601a97580ef42aff168b9c19a1a1a.json)
+- [previous39-research-decision](../../../assets/deliveries/CANDIDATES/36/evidence/d10fd808bf19dea63aa30dcc05aa26e3ec1ad29ccfbdeb2b24fe6e2bcc92d821.json)
+- [geometry](../../../assets/deliveries/CANDIDATES/36/evidence/a5a2811bff6e0c105dfe38173503fd74c43da979d1c36f7029c89b53b06b9f27.json)
+- [original-analysis-failure](../../../assets/deliveries/CANDIDATES/36/evidence/6d4163e18fcda6a44edf54cf585d29b0878012baa31a2668f69b8ab4ed5f6f4d.json)
+- [focused-calendar-correction](../../../assets/deliveries/CANDIDATES/36/evidence/a93fb3cf9721efb14c9f639de2e744e8035b0f6b2282c25bd6aaf2420a00cd59.json)
+- [explicit-technical-correction](../../../assets/deliveries/CANDIDATES/36/evidence/4824cf206efc51533029a65b71013d35e202c0e1ce8f5f5d88cde979898b41d9.json)
+- [protocols-decision](../../../assets/deliveries/CANDIDATES/36/evidence/4539dff497ebc94c64e717cdd84cecca52549bf79818bcadf32a8dff0f6ab032.json)
+- [protocols-geometry-reference](../../../assets/deliveries/CANDIDATES/36/evidence/61b02244d6b86b566a77f163bdd99c5bde2cffe7d6204bfce5bae7747d93bb5c.json)
+- [protocols-parameter-plans](../../../assets/deliveries/CANDIDATES/36/evidence/c32169c16c13b17f0e5e22eec55f9466356153fbffa99d63e983e215b6468a7c.json)
+- [protocols-plan-references](../../../assets/deliveries/CANDIDATES/36/evidence/ac4f1cb835afa0ab4fefc3e45704b0ee9ccbec4a9199f61ef988e8850d071942.json)
+- [protocols-publish-failure](../../../assets/deliveries/CANDIDATES/36/evidence/b65efb26ad22f6017e2234da74cb08f6ed4f539f44fd45ce73efc56a6be80884.json)
+- [protocols-technical-correction-reference](../../../assets/deliveries/CANDIDATES/36/evidence/91438ccfc76360bb2e9ae87579280d6d8afb5e01c5b2d50e7e7e868a1c3a08a5.json)
+- [protocols-technical-proof-references](../../../assets/deliveries/CANDIDATES/36/evidence/5aa7b67ab0bc874d051d36f895b291a8def199a83f0c70ed30829f95283e3fcd.json)
+- [runs-account-references](../../../assets/deliveries/CANDIDATES/36/evidence/7a80c5d1aa3ccc2cf23038d28933df08285011ce5bad8d058c19d9e11221db85.json)
+- [runs-analysis](../../../assets/deliveries/CANDIDATES/36/evidence/439c0d02fd4631f1024f7ec71bc369ef1c2ad4862a2596b5d4de9016c092b7e5.json)
+- [runs-conclusion](../../../assets/deliveries/CANDIDATES/36/evidence/e42dabb57ad7f9f8e7197793dd7cf1f6088f96f706436e831c6ddf392375aeae.json)
+- [runs-matrix](../../../assets/deliveries/CANDIDATES/36/evidence/72da5e9307987693bc32e46c29eebff60e52b4a045a2e57fd80231aea4e1a572.json)
+- [runs-parameter-analysis](../../../assets/deliveries/CANDIDATES/36/evidence/fdad1bfa0f85b2b8f27a82ee5d81c75e4970564954790270a929aa5195456b13.json)
+- [runs-parameter-pairs](../../../assets/deliveries/CANDIDATES/36/evidence/d2507df3887b688c5297b1cfdf3decea4f8c6ba081b6772fa5c9df6ea0d4193f.json)
+- [runs-precheck](../../../assets/deliveries/CANDIDATES/36/evidence/c655b940d7104565515df0939cfc30c425cd706ee2c415e9b83d920e89c53a00.json)
+- [runs-registration](../../../assets/deliveries/CANDIDATES/36/evidence/d4ccfa778e01fc4bec5483b3ebb573d53a374103667c38590b37b14e65ad9ef9.json)
+- [runs-reproduction](../../../assets/deliveries/CANDIDATES/36/evidence/8b40cea0b67b5d606753c4cf322ae2c2d5b65582d7806ca62eafcc1b60badbfc.json)
+- [runs-synthetic-check](../../../assets/deliveries/CANDIDATES/36/evidence/bc7bc343f45332780fcac535e42d0c4648c2229191cf0cb421b1332d537f6884.json)

@@ -1,0 +1,11 @@
+{
+  "status": "FAILED",
+  "source": "src/analyze.py",
+  "oracle": "src/direction_oracle.py",
+  "phase": "post-evaluation-independent-signal-audit",
+  "error": {"type": "AssertionError", "message": "Complete next-session date coverage required", "oracle_line": 152},
+  "account_evaluations": "Four business configurations successfully evaluated; original native results remain immutable",
+  "cause_under_audit": "Original oracle assumed bound signal OHLC included every T+1 row, including after its last T; signal-input end boundary and execution-calendar contract require separate verification",
+  "policy": "Preserve original source/plan/geometry/account results and this failure. No runtime change, account rerun, data extension, provider fallback, dropped date or suppressed assertion. Explicit independent technical correction before successor diagnosis.",
+  "objective_achieved": false
+}
