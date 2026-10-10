@@ -1,0 +1,252 @@
+{
+  "name": "S013-EX034-bear-time-entry-refresh",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C6100",
+      "content_sha256": "4f4b53b934058871e31afd000e844aa3c1b50dd42b59208b55b99852256a37a7",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_TIME_ENTRY_REFRESH"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.entry_refresh_range",
+          "qualname": "EntryRefreshRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/entry_refresh_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "8227168da46319f24f5f3a0ec5416cf8c966880f4ee227aed9644ece00625934"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_TIME_ENTRY_REFRESH",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "cells": [
+    {
+      "background": "B0",
+      "mechanism": "TIME",
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_TIME_ENTRY_REFRESH",
+      "label": "N0",
+      "candidate_id": "C6100",
+      "content_sha256": "4f4b53b934058871e31afd000e844aa3c1b50dd42b59208b55b99852256a37a7"
+    }
+  ],
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "diagnosis_references": {
+    "paths": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+      "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+      "media_type": "application/json",
+      "name": "native-exit-reentry-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "refresh": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "9f02897390a12003981b948a84fbf53b3bf2f84bbd3f8b78a5d4af582c1f6016.json",
+      "sha256": "9f02897390a12003981b948a84fbf53b3bf2f84bbd3f8b78a5d4af582c1f6016",
+      "media_type": "application/json",
+      "name": "one-step-refresh-diagnosis-v2",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 29,
+    "content_sha256": "bbe824ac5ff36a34573e572d9ea1ea1312fbbe962a852e038776067c14c8d7d0"
+  },
+  "hypothesis": "Repeated bear reentry during one persistent range-entry opportunity resets H and can amplify parameter-driven timing differences. A memory requiring opportunity refresh after bear TIME exit may reduce this path amplification.",
+  "mechanism": "Set pending only when active bear final original reason TIME and current rawbear and bear range<=entry. While flat release on rawroute!=bear or bear range>entry, before original eligibility check; release day may enter. While pending reject bear entry otherwise passing original eligibility+score. Equality to entry retains pending. NonTIME exits and bull untouched.",
+  "preserved": "All13 original numeric centers/full domains, original H8/H4 signal-session units, entry age0/no entry-day exit, ACF20, raw regime, confirmation score, ranges, loss>trailing>range>time>regime priority, execution and benchmark. New entry memory, not just an exit change; no fixed wait/new threshold/position smoothing.",
+  "predeclared_selection": "One new center, one old original native center exact reuse, 2actual evaluations including serial/spawn duplicate. If new center qualifies all4 original gates, run32 new complete-domain parameter accounts with32 original EX015 exactreuse, 33actual new parameter evaluations. Otherwise zero new parameter accounts. No point deletion, shrinking, replacement or economic gate added.",
+  "counts": {
+    "new_business_configurations": 1,
+    "new_evaluations": 2,
+    "reused_controls": 1
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "strongest_counterevidence": "Original112 closed trades barely exceed110; blocking profitable repetitions may harm return or frequency. Descriptive27/38 repeat events do not establish intervention profit. Inherited-state local classification is not isolated parameter causality.",
+  "selection_history": "Repeatedly seen S013 EX012..33. Mechanism selected from EX033 whole-account/state diagnosis, not from a specific year/trade/date; no external data or independent verification claimed.",
+  "boundaries": "S013 stage3 only, no newdata/dependencies/platform/phase4 handoff/freeze/PTE/production; no merge/tag/push.",
+  "source_files": {
+    "original/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "original/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "original/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "original/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/entry_refresh_range.py": "2123a2a6e9f4dba5296ec02df4d88c472bc05a4283113985148c0c0203602d75",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "9a60174b633d0f3556b58ded3548c69885efbb2d6505c0ff051c7f8dc45fda94"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": "FAILED",
+  "phase": "undeclared center id availability check",
+  "cause": "Missing candidate registration is reported by StrategyRegistry.get_candidate as RegistryError rather than KeyError; the availability check wrongly assumed KeyError.",
+  "correction": "Explicitly assert the exact S013 candidate registration and retained candidate asset paths are absent. Geometry declaration already published remains unchanged.",
+  "precheck_followup": "Dependent precheck attempted to read absent plan and stopped before prepare/evaluate; no market account was started.",
+  "new_account_evaluations": 0,
+  "parameter_and_source_change": "No strategy, numeric parameter, geometry, data or economic criteria change."
+}
