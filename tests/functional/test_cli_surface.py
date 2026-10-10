@@ -27,6 +27,7 @@ PUBLIC_API = {
     "create_research_batch", "update_research_intent", "create_research_context", "create_experiment",
     "ResearchBatchRequest", "ResearchIntentUpdate", "ExperimentRequest", "publish_evidence", "validate_catalog", "list_catalog",
     "show_catalog", "validate_templates", "list_templates", "show_template", "instantiate_template",
+    "publish_evidence_many",
     "BacktestRequest", "BacktestEvaluation", "run_backtest", "list_installed_strategies", "strategy_info", "deploy_strategy",
     "validate_release_package",
 }
