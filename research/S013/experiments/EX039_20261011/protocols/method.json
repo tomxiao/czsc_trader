@@ -1,0 +1,76 @@
+{
+  "name": "Complete retained-account native entry-direction diagnosis",
+  "inputs": {
+    "original33": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+      "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+      "media_type": "application/json",
+      "name": "native-exit-reentry-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "mean_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX028_20261011"
+      },
+      "evidence_id": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json",
+      "sha256": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "body_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX029_20261011"
+      },
+      "evidence_id": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30.json",
+      "sha256": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "source_files": {
+    "direction_diagnosis.py": "4dc966b94eec1686a43754b5df7c89438000f8c0c4ba932ac67db6162e3f356d",
+    "focused_checks.py": "3c57d7dbe4543e3ab5d07b2f60202df5f5cc0f2546782cda76d0389e1995dc63",
+    "common.py": "e9fe3fd3e10aa3248a44f6f5d3abafc7d3746aa2a14e25f6e918e958f8636f6a"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX036_20261011/src/confirmation_diagnosis_v2.py": "fbecc5fccc6b98d36ea9475eee5e2e14a280814d63d591f48735c531894204e8",
+    "research/S013/experiments/EX033_20261011/src/diagnose.py": "04e3bb090498cdb9dd9a20815ab933272d4a2c2e54ca16ce87e5c0e5aa710ed1",
+    "research/S013/experiments/EX035_20261011/src/common.py": "03d7acee0bab55757b52358f9705ed971447023b1652522d7dd671af04cf06af",
+    "research/S013/experiments/EX035_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX035_20261011/src/analysis_reference.py": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+    "research/S013/experiments/EX035_20261011/src/ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed"
+  },
+  "method": "Authenticate original center plus all32 original joint full-domain points and MEAN/BODY centers, exact native identity, lineage, prepared binding, benchmark and cash ledgers. Independently reconstruct all causal ACF/rank/score/range/regime/full-state fields. At unchanged native opportunities and entries describe strict Close>previousClose and Close>Open; equality and negative cases retained. ALL and every native signal year, both routes and empty groups retained, including2019 signal for2020 execution. Preserve every original signal day and no state/cash counterfactual.",
+  "unique_native_accounts": 35,
+  "new_account_evaluations": 0,
+  "limits": "Posthoc mechanism diagnosis on repeatedly seen S013 development pool. Original33 observations share one market path and are dependent. Predicate refusal counts cannot predict modified trades, profit, frequency or causal effect. No direction threshold search, economic veto, date removal or independent validation."
+}
