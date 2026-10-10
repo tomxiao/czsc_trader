@@ -1,0 +1,296 @@
+{
+  "name": "S013-EX031-market-volatility-time",
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C6400",
+      "content_sha256": "5f278731659472b0dd640dbd7d2a30d04ba55084b60306663a0c748e0449cf0a",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_VOLATILITY_TIME"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.volatility_time_range",
+          "qualname": "VolatilityTimeRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/volatility_time_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "13552968f1b6e446ba8ec2092dc1c07b9c82d776dadc8e39289be905a39f8a34"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_VOLATILITY_TIME",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    },
+    {
+      "label": "N1",
+      "index": 1,
+      "candidate_id": "C6401",
+      "content_sha256": "1f1c5854a8163a7fed1e784aeadfe3160e2a65ba72cbc59f1909134504cdb5ae",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "ALL_VOLATILITY_TIME"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.volatility_time_range",
+          "qualname": "VolatilityTimeRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/volatility_time_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "13552968f1b6e446ba8ec2092dc1c07b9c82d776dadc8e39289be905a39f8a34"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "ALL_VOLATILITY_TIME",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    }
+  ],
+  "cells": [
+    {
+      "background": "B0",
+      "mechanism": "TIME",
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_VOLATILITY_TIME",
+      "label": "N0",
+      "candidate_id": "C6400",
+      "content_sha256": "5f278731659472b0dd640dbd7d2a30d04ba55084b60306663a0c748e0449cf0a"
+    },
+    {
+      "background": "B0",
+      "mechanism": "ALL_VOLATILITY_TIME",
+      "label": "N1",
+      "candidate_id": "C6401",
+      "content_sha256": "1f1c5854a8163a7fed1e784aeadfe3160e2a65ba72cbc59f1909134504cdb5ae"
+    }
+  ],
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "hypotheses": {
+    "bear_clock": "Only bearholding timeexit uses accumulated relativevolatility progress >= original integer H; bulltimeexit keeps original elapsedage.",
+    "all_clock": "Bothroutes timeexit use same accumulatedprogress >= own originalH; rawregime/entry and all other exits untouched."
+  },
+  "prospective_control_reuse": "OriginalTIME EX015 exactnative center reuse only. If either new center qualifies, BOTH new centers each32 newfullaccounts andoriginalEX01532 exactreuse; unqualifiedcenter onlyprospectivediagnostic, no promotion. Noqualifiers=>zero parameteraccounts.",
+  "predeclared_selection": "2new/1old completecenters, originalfour economicgates only. All13numericcenters/originalcompletedomains/32pointcoordinates exactlysame; radius.05 seed13 PCG64 HALF_EVENinteger/LINEARquantiles. No replacement/narrowing/newgate.",
+  "counts": {
+    "new_business_configurations": 2,
+    "new_evaluations": 3,
+    "reused_controls": 1
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "preserved": "Originalraw route/flatentry, buyconfirmation, ACF.1, range, stops/trail/regime andexitpriority loss>trailing>range>time>regime, binarytargets andexecution contract. H numeric bull8/bear4 andintegertype retained, but its selectedroute meaning changes from elapsedtradingdays to relativevolatilitybudget.",
+  "signal_units": "v_t=max(High-Low,abs(High-prevClose),abs(Low-prevClose))/prevClose using HFQ. Increment=v_t/strictlyprevious20finitev mean; denominatorpositive required, no fill/clip/cap. Full daily before sessionsreindex, currentbar known atTclose. Entryclock0, eachsubsequentholdingsession adds increment, exitkeepsfinalclock/flatkeepsrecent/newentryresets, no actualfillreset. Clockdiagnostic accumulates in bothroutes; onlyselectedroute replaces timecondition.",
+  "warmup": "max(parent,22) supplies 20strictlypast v pluscurrent andpreviousClose; parentmin60, center180 unchanged. Fixed20 adopts existing20component scale as newstructural role, not searched/numericaldimension. Missingexistingasset explicitFAILED no download/fallback.",
+  "information_hypothesis": "Original32 firstdivergence27holdingexits/5entry,18time related, descriptive not singleparametercausal. H4->3 changesbuy/sell timing sharply andoldconfirm/delete/conditionaltimer/priceanchor/stateexit experiments failed. Test whether calendar days are a poor measure of cumulative priceactivity, with bear-only versus all-route isolation.",
+  "selection_history": "Alreadyseen S013EX012..30; fixed20 relativeTrueRange chosen prospectively after calendar/exitdelay negatives. No newyearcondition or tradepatch, no window/ratio/H search. Same repeatedlyresearchedpool, noindependentvalidation.",
+  "limits": "NewH units are not samephysicalquantity despite samenumericgeometry. Quiet periods can extendactual holding beyondH without calendarcap, strongvolatility can sell reboundearly, originalACF/rawroute fragility mayremain. Zero20daymean rejects ratherthan stalls silently. No newdata/dependencies/platform/phase4/PTE.",
+  "source_files": {
+    "original/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "original/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "original/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "original/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/volatility_time_range.py": "85c0f3bf8d52f3f352d89504ae4a274a6adedab5e233b66fc4f58dc2889a7c46",
+    "strategy_runtime/strategies/__init__.py": "1d49d8f8aa35ac81adf6ffbc1e98a407c84dce02e820a3180256a6bc767c2af8"
+  }
+}
