@@ -1,0 +1,1019 @@
+{
+  "source": "research/S013/assets/runs/EX013_20261011/analysis.json",
+  "source_sha256": "cddce33ee547641b28e6a9468881a166fb837d132cda340b9dd82906faab184e",
+  "scope": "Descriptive observations of completed EX013/EX012 accounts only. Future exits and cycle returns are labels; decision predicates use contemporaneous closes. No new strategy account or policy attribution.",
+  "backgrounds": {
+    "B0-M1": {
+      "no_timer_label": "N1",
+      "source_account_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX013_20261011"
+        },
+        "evidence_id": "7874e234a9141792742157e25da36132018572e4cf5155310dd59f6a0b1cab33.json",
+        "sha256": "7874e234a9141792742157e25da36132018572e4cf5155310dd59f6a0b1cab33",
+        "media_type": "application/json",
+        "name": "ablation-account-n1",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "prepared_reference": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "da842c3b-b087-475e-9233-561fb075e1c7",
+        "manifest_sha256": "3ababef123ed353be0cb1e14be6e29524a73659e6fce9cf61c0267df9b5e1547"
+      },
+      "daily_request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-10",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "parameter_type": "NoParameters",
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 180,
+          "minimum_sessions": 180,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "input_binding_sha256": "3c2df40565e943227cf24eeadadfc87e8e89b745140b2698134151d3c837536e",
+      "closed_bear_cycles": 29,
+      "extended_beyond_day4": 18,
+      "deadline_directions": {
+        "down": 12,
+        "up": 6
+      },
+      "below_entry_signal_close_at_day4": 8,
+      "extended_group_description": {
+        "down": {
+          "n": 12,
+          "positive_final_cycles": 7,
+          "mean_final_cycle_return": 0.006864655217951593
+        },
+        "up": {
+          "n": 6,
+          "positive_final_cycles": 4,
+          "mean_final_cycle_return": 0.017962055053251096
+        }
+      },
+      "same_entry_original_time_exit_pairs": 18,
+      "paired_groups": {
+        "up": {
+          "n": 6,
+          "improved_cycles": 4,
+          "worsened_cycles": 2,
+          "mean_cycle_return_difference": 0.016456047289291478
+        },
+        "down": {
+          "n": 12,
+          "improved_cycles": 9,
+          "worsened_cycles": 3,
+          "mean_cycle_return_difference": 0.012026919071516736
+        }
+      },
+      "extended_cycles": [
+        {
+          "entry_signal_date": "2020-02-07T00:00:00",
+          "exit_signal_date": "2020-02-17T00:00:00",
+          "exit_reason": "range",
+          "holding_sessions": 6,
+          "net_return": 0.05427638842188077,
+          "deadline_signal_date": "2020-02-13",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.01647589316684006
+        },
+        {
+          "entry_signal_date": "2020-09-03T00:00:00",
+          "exit_signal_date": "2020-10-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 22,
+          "net_return": -0.009704581133152562,
+          "deadline_signal_date": "2020-09-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.045820264557480006
+        },
+        {
+          "entry_signal_date": "2020-10-21T00:00:00",
+          "exit_signal_date": "2020-11-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": -0.01913108350876591,
+          "deadline_signal_date": "2020-10-27",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.02367370222475751
+        },
+        {
+          "entry_signal_date": "2021-02-25T00:00:00",
+          "exit_signal_date": "2021-03-05T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.0026386396934053643,
+          "deadline_signal_date": "2021-03-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.0006930006930006005
+        },
+        {
+          "entry_signal_date": "2021-03-09T00:00:00",
+          "exit_signal_date": "2021-04-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.027539932594877723,
+          "deadline_signal_date": "2021-03-15",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010172490048651062
+        },
+        {
+          "entry_signal_date": "2021-10-11T00:00:00",
+          "exit_signal_date": "2021-11-09T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 21,
+          "net_return": -0.003378711591514977,
+          "deadline_signal_date": "2021-10-15",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006162746824298626
+        },
+        {
+          "entry_signal_date": "2022-02-16T00:00:00",
+          "exit_signal_date": "2022-03-01T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": 0.010872664642897533,
+          "deadline_signal_date": "2022-02-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002367175170962632
+        },
+        {
+          "entry_signal_date": "2022-03-08T00:00:00",
+          "exit_signal_date": "2022-04-14T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 25,
+          "net_return": -0.05417569981885338,
+          "deadline_signal_date": "2022-03-14",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.014019988895058288
+        },
+        {
+          "entry_signal_date": "2022-05-12T00:00:00",
+          "exit_signal_date": "2022-05-23T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.0334577378136227,
+          "deadline_signal_date": "2022-05-18",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010376335759640698
+        },
+        {
+          "entry_signal_date": "2022-09-16T00:00:00",
+          "exit_signal_date": "2022-10-21T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": -0.00032068771564561883,
+          "deadline_signal_date": "2022-09-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.00235057085292123
+        },
+        {
+          "entry_signal_date": "2022-12-20T00:00:00",
+          "exit_signal_date": "2023-01-16T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 18,
+          "net_return": 0.040218664584146954,
+          "deadline_signal_date": "2022-12-26",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.007788689468337107
+        },
+        {
+          "entry_signal_date": "2023-04-24T00:00:00",
+          "exit_signal_date": "2023-06-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 35,
+          "net_return": -0.010819941871050958,
+          "deadline_signal_date": "2023-04-28",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.008029548739360903
+        },
+        {
+          "entry_signal_date": "2023-10-30T00:00:00",
+          "exit_signal_date": "2023-11-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 10,
+          "net_return": 0.00968488765579918,
+          "deadline_signal_date": "2023-11-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006205673758865049
+        },
+        {
+          "entry_signal_date": "2023-12-28T00:00:00",
+          "exit_signal_date": "2024-02-22T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 33,
+          "net_return": -0.04189621988088564,
+          "deadline_signal_date": "2024-01-04",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.00529680365296803
+        },
+        {
+          "entry_signal_date": "2024-11-22T00:00:00",
+          "exit_signal_date": "2024-12-02T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.029194887094118462,
+          "deadline_signal_date": "2024-11-28",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.003082191780821919
+        },
+        {
+          "entry_signal_date": "2024-12-03T00:00:00",
+          "exit_signal_date": "2024-12-12T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.017564163411339727,
+          "deadline_signal_date": "2024-12-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002821108529704741
+        },
+        {
+          "entry_signal_date": "2025-01-02T00:00:00",
+          "exit_signal_date": "2025-02-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.03469836069398532,
+          "deadline_signal_date": "2025-01-08",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.0163207379811956
+        },
+        {
+          "entry_signal_date": "2026-03-23T00:00:00",
+          "exit_signal_date": "2026-04-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 16,
+          "net_return": 0.06942879184872101,
+          "deadline_signal_date": "2026-03-27",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.03873801916932895
+        }
+      ],
+      "same_entry_pairs": [
+        {
+          "entry_signal_date": "2020-02-07T00:00:00",
+          "exit_signal_date": "2020-02-17T00:00:00",
+          "exit_reason": "range",
+          "holding_sessions": 6,
+          "net_return": 0.05427638842188077,
+          "deadline_signal_date": "2020-02-13",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.01647589316684006,
+          "original_net_return": 0.014328518679371275,
+          "cycle_return_difference": 0.039947869742509495
+        },
+        {
+          "entry_signal_date": "2020-09-03T00:00:00",
+          "exit_signal_date": "2020-10-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 22,
+          "net_return": -0.009704581133152562,
+          "deadline_signal_date": "2020-09-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.045820264557480006,
+          "original_net_return": -0.0321362311158228,
+          "cycle_return_difference": 0.022431649982670235
+        },
+        {
+          "entry_signal_date": "2020-10-21T00:00:00",
+          "exit_signal_date": "2020-11-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": -0.01913108350876591,
+          "deadline_signal_date": "2020-10-27",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.02367370222475751,
+          "original_net_return": -0.022557699810918774,
+          "cycle_return_difference": 0.003426616302152862
+        },
+        {
+          "entry_signal_date": "2021-02-25T00:00:00",
+          "exit_signal_date": "2021-03-05T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.0026386396934053643,
+          "deadline_signal_date": "2021-03-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.0006930006930006005,
+          "original_net_return": 0.01022587155207183,
+          "cycle_return_difference": -0.007587231858666466
+        },
+        {
+          "entry_signal_date": "2021-03-09T00:00:00",
+          "exit_signal_date": "2021-04-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.027539932594877723,
+          "deadline_signal_date": "2021-03-15",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010172490048651062,
+          "original_net_return": 0.0016576829763642951,
+          "cycle_return_difference": 0.025882249618513428
+        },
+        {
+          "entry_signal_date": "2021-10-11T00:00:00",
+          "exit_signal_date": "2021-11-09T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 21,
+          "net_return": -0.003378711591514977,
+          "deadline_signal_date": "2021-10-15",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006162746824298626,
+          "original_net_return": -0.010909854828858765,
+          "cycle_return_difference": 0.0075311432373437875
+        },
+        {
+          "entry_signal_date": "2022-02-16T00:00:00",
+          "exit_signal_date": "2022-03-01T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": 0.010872664642897533,
+          "deadline_signal_date": "2022-02-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002367175170962632,
+          "original_net_return": 0.0010226646626173982,
+          "cycle_return_difference": 0.009849999980280135
+        },
+        {
+          "entry_signal_date": "2022-03-08T00:00:00",
+          "exit_signal_date": "2022-04-14T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 25,
+          "net_return": -0.05417569981885338,
+          "deadline_signal_date": "2022-03-14",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.014019988895058288,
+          "original_net_return": -0.026430416056972033,
+          "cycle_return_difference": -0.02774528376188135
+        },
+        {
+          "entry_signal_date": "2022-05-12T00:00:00",
+          "exit_signal_date": "2022-05-23T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.0334577378136227,
+          "deadline_signal_date": "2022-05-18",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010376335759640698,
+          "original_net_return": -0.005697731369649849,
+          "cycle_return_difference": 0.03915546918327255
+        },
+        {
+          "entry_signal_date": "2022-09-16T00:00:00",
+          "exit_signal_date": "2022-10-21T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": -0.00032068771564561883,
+          "deadline_signal_date": "2022-09-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.00235057085292123,
+          "original_net_return": -0.0006561505721169059,
+          "cycle_return_difference": 0.0003354628564712871
+        },
+        {
+          "entry_signal_date": "2022-12-20T00:00:00",
+          "exit_signal_date": "2023-01-16T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 18,
+          "net_return": 0.040218664584146954,
+          "deadline_signal_date": "2022-12-26",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.007788689468337107,
+          "original_net_return": -0.006388535322545523,
+          "cycle_return_difference": 0.04660719990669248
+        },
+        {
+          "entry_signal_date": "2023-04-24T00:00:00",
+          "exit_signal_date": "2023-06-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 35,
+          "net_return": -0.010819941871050958,
+          "deadline_signal_date": "2023-04-28",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.008029548739360903,
+          "original_net_return": 0.004097156459740751,
+          "cycle_return_difference": -0.01491709833079171
+        },
+        {
+          "entry_signal_date": "2023-10-30T00:00:00",
+          "exit_signal_date": "2023-11-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 10,
+          "net_return": 0.00968488765579918,
+          "deadline_signal_date": "2023-11-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006205673758865049,
+          "original_net_return": -0.0016439750387959268,
+          "cycle_return_difference": 0.011328862694595107
+        },
+        {
+          "entry_signal_date": "2023-12-28T00:00:00",
+          "exit_signal_date": "2024-02-22T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 33,
+          "net_return": -0.04189621988088564,
+          "deadline_signal_date": "2024-01-04",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.00529680365296803,
+          "original_net_return": -0.009285347730035521,
+          "cycle_return_difference": -0.03261087215085012
+        },
+        {
+          "entry_signal_date": "2024-11-22T00:00:00",
+          "exit_signal_date": "2024-12-02T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.029194887094118462,
+          "deadline_signal_date": "2024-11-28",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.003082191780821919,
+          "original_net_return": -0.002338907889719211,
+          "cycle_return_difference": 0.031533794983837675
+        },
+        {
+          "entry_signal_date": "2024-12-03T00:00:00",
+          "exit_signal_date": "2024-12-12T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.017564163411339727,
+          "deadline_signal_date": "2024-12-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002821108529704741,
+          "original_net_return": 0.04110507432766573,
+          "cycle_return_difference": -0.023540910916326006
+        },
+        {
+          "entry_signal_date": "2025-01-02T00:00:00",
+          "exit_signal_date": "2025-02-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.03469836069398532,
+          "deadline_signal_date": "2025-01-08",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.0163207379811956,
+          "original_net_return": -0.020958622343565318,
+          "cycle_return_difference": 0.055656983037550636
+        },
+        {
+          "entry_signal_date": "2026-03-23T00:00:00",
+          "exit_signal_date": "2026-04-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 16,
+          "net_return": 0.06942879184872101,
+          "deadline_signal_date": "2026-03-27",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.03873801916932895,
+          "original_net_return": 0.01365538376214534,
+          "cycle_return_difference": 0.055773408086575674
+        }
+      ]
+    },
+    "B1-M1": {
+      "no_timer_label": "N3",
+      "source_account_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX013_20261011"
+        },
+        "evidence_id": "cf5d108a336aa9874c2b144f825ecd70818f49dd7d0e662ee56f95678c38b95c.json",
+        "sha256": "cf5d108a336aa9874c2b144f825ecd70818f49dd7d0e662ee56f95678c38b95c",
+        "media_type": "application/json",
+        "name": "ablation-account-n3",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "prepared_reference": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "da842c3b-b087-475e-9233-561fb075e1c7",
+        "manifest_sha256": "3ababef123ed353be0cb1e14be6e29524a73659e6fce9cf61c0267df9b5e1547"
+      },
+      "daily_request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-10",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "parameter_type": "NoParameters",
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 180,
+          "minimum_sessions": 180,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "input_binding_sha256": "1e26006b7e47edc0a44025fb8ccbf71ec9035b7971c06f0755c905dd8215ce0a",
+      "closed_bear_cycles": 34,
+      "extended_beyond_day4": 21,
+      "deadline_directions": {
+        "down": 13,
+        "up": 8
+      },
+      "below_entry_signal_close_at_day4": 12,
+      "extended_group_description": {
+        "down": {
+          "n": 13,
+          "positive_final_cycles": 8,
+          "mean_final_cycle_return": 0.006544760748678852
+        },
+        "up": {
+          "n": 8,
+          "positive_final_cycles": 7,
+          "mean_final_cycle_return": 0.022839224658130302
+        }
+      },
+      "same_entry_original_time_exit_pairs": 21,
+      "paired_groups": {
+        "up": {
+          "n": 8,
+          "improved_cycles": 6,
+          "worsened_cycles": 2,
+          "mean_cycle_return_difference": 0.018019891676318886
+        },
+        "down": {
+          "n": 13,
+          "improved_cycles": 10,
+          "worsened_cycles": 3,
+          "mean_cycle_return_difference": 0.01573282073232051
+        }
+      },
+      "extended_cycles": [
+        {
+          "entry_signal_date": "2020-02-07T00:00:00",
+          "exit_signal_date": "2020-02-17T00:00:00",
+          "exit_reason": "range",
+          "holding_sessions": 6,
+          "net_return": 0.05427638842188077,
+          "deadline_signal_date": "2020-02-13",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.01647589316684006
+        },
+        {
+          "entry_signal_date": "2020-09-03T00:00:00",
+          "exit_signal_date": "2020-10-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 22,
+          "net_return": -0.009704581133152562,
+          "deadline_signal_date": "2020-09-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.045820264557480006
+        },
+        {
+          "entry_signal_date": "2020-10-21T00:00:00",
+          "exit_signal_date": "2020-11-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": -0.01913108350876591,
+          "deadline_signal_date": "2020-10-27",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.02367370222475751
+        },
+        {
+          "entry_signal_date": "2021-02-25T00:00:00",
+          "exit_signal_date": "2021-03-05T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.0026386396934053643,
+          "deadline_signal_date": "2021-03-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.0006930006930006005
+        },
+        {
+          "entry_signal_date": "2021-03-09T00:00:00",
+          "exit_signal_date": "2021-04-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.027539932594877723,
+          "deadline_signal_date": "2021-03-15",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010172490048651062
+        },
+        {
+          "entry_signal_date": "2021-09-29T00:00:00",
+          "exit_signal_date": "2021-11-09T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 24,
+          "net_return": 0.002420729175947392,
+          "deadline_signal_date": "2021-10-12",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.012661433274246514
+        },
+        {
+          "entry_signal_date": "2022-02-10T00:00:00",
+          "exit_signal_date": "2022-03-01T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 13,
+          "net_return": 0.0033465750550389695,
+          "deadline_signal_date": "2022-02-16",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.009766896731345232
+        },
+        {
+          "entry_signal_date": "2022-03-08T00:00:00",
+          "exit_signal_date": "2022-04-14T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 25,
+          "net_return": -0.054175699818853285,
+          "deadline_signal_date": "2022-03-14",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.014019988895058288
+        },
+        {
+          "entry_signal_date": "2022-05-11T00:00:00",
+          "exit_signal_date": "2022-05-23T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 8,
+          "net_return": 0.04020606259412214,
+          "deadline_signal_date": "2022-05-17",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.01456912585244896
+        },
+        {
+          "entry_signal_date": "2022-09-16T00:00:00",
+          "exit_signal_date": "2022-10-21T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": -0.00032068771564562273,
+          "deadline_signal_date": "2022-09-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.00235057085292123
+        },
+        {
+          "entry_signal_date": "2022-12-20T00:00:00",
+          "exit_signal_date": "2023-01-16T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 18,
+          "net_return": 0.040218664584146864,
+          "deadline_signal_date": "2022-12-26",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.007788689468337107
+        },
+        {
+          "entry_signal_date": "2023-03-09T00:00:00",
+          "exit_signal_date": "2023-04-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 17,
+          "net_return": 0.023310182640326235,
+          "deadline_signal_date": "2023-03-15",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.010149064383127349
+        },
+        {
+          "entry_signal_date": "2023-04-21T00:00:00",
+          "exit_signal_date": "2023-06-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 36,
+          "net_return": -0.018862056164782093,
+          "deadline_signal_date": "2023-04-27",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.01339926623065879
+        },
+        {
+          "entry_signal_date": "2023-10-30T00:00:00",
+          "exit_signal_date": "2023-11-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 10,
+          "net_return": 0.009684887655799265,
+          "deadline_signal_date": "2023-11-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006205673758865049
+        },
+        {
+          "entry_signal_date": "2023-12-26T00:00:00",
+          "exit_signal_date": "2024-02-22T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 35,
+          "net_return": -0.020620916683614918,
+          "deadline_signal_date": "2024-01-02",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.026325616131441354
+        },
+        {
+          "entry_signal_date": "2024-04-10T00:00:00",
+          "exit_signal_date": "2024-04-26T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 12,
+          "net_return": 0.02287723520856967,
+          "deadline_signal_date": "2024-04-16",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.015109121432568373
+        },
+        {
+          "entry_signal_date": "2024-11-22T00:00:00",
+          "exit_signal_date": "2024-12-02T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.029194887094118452,
+          "deadline_signal_date": "2024-11-28",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.003082191780821919
+        },
+        {
+          "entry_signal_date": "2024-12-03T00:00:00",
+          "exit_signal_date": "2024-12-12T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.01756416341133952,
+          "deadline_signal_date": "2024-12-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002821108529704741
+        },
+        {
+          "entry_signal_date": "2025-01-02T00:00:00",
+          "exit_signal_date": "2025-02-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.034698360693985186,
+          "deadline_signal_date": "2025-01-08",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.0163207379811956
+        },
+        {
+          "entry_signal_date": "2025-04-07T00:00:00",
+          "exit_signal_date": "2025-05-08T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": 0.08217084120698566,
+          "deadline_signal_date": "2025-04-11",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.055492424242424176
+        },
+        {
+          "entry_signal_date": "2026-03-17T00:00:00",
+          "exit_signal_date": "2026-04-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": 0.00046316199213865505,
+          "deadline_signal_date": "2026-03-23",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.07006684822975973
+        }
+      ],
+      "same_entry_pairs": [
+        {
+          "entry_signal_date": "2020-02-07T00:00:00",
+          "exit_signal_date": "2020-02-17T00:00:00",
+          "exit_reason": "range",
+          "holding_sessions": 6,
+          "net_return": 0.05427638842188077,
+          "deadline_signal_date": "2020-02-13",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.01647589316684006,
+          "original_net_return": 0.014328518679371275,
+          "cycle_return_difference": 0.039947869742509495
+        },
+        {
+          "entry_signal_date": "2020-09-03T00:00:00",
+          "exit_signal_date": "2020-10-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 22,
+          "net_return": -0.009704581133152562,
+          "deadline_signal_date": "2020-09-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.045820264557480006,
+          "original_net_return": -0.0321362311158228,
+          "cycle_return_difference": 0.022431649982670235
+        },
+        {
+          "entry_signal_date": "2020-10-21T00:00:00",
+          "exit_signal_date": "2020-11-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 9,
+          "net_return": -0.01913108350876591,
+          "deadline_signal_date": "2020-10-27",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.02367370222475751,
+          "original_net_return": -0.022557699810918652,
+          "cycle_return_difference": 0.0034266163021527407
+        },
+        {
+          "entry_signal_date": "2021-02-25T00:00:00",
+          "exit_signal_date": "2021-03-05T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.0026386396934053643,
+          "deadline_signal_date": "2021-03-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.0006930006930006005,
+          "original_net_return": 0.010225871552071707,
+          "cycle_return_difference": -0.007587231858666343
+        },
+        {
+          "entry_signal_date": "2021-03-09T00:00:00",
+          "exit_signal_date": "2021-04-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.027539932594877723,
+          "deadline_signal_date": "2021-03-15",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.010172490048651062,
+          "original_net_return": 0.0016576829763642951,
+          "cycle_return_difference": 0.025882249618513428
+        },
+        {
+          "entry_signal_date": "2021-09-29T00:00:00",
+          "exit_signal_date": "2021-11-09T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 24,
+          "net_return": 0.002420729175947392,
+          "deadline_signal_date": "2021-10-12",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.012661433274246514,
+          "original_net_return": -0.016769189065204207,
+          "cycle_return_difference": 0.0191899182411516
+        },
+        {
+          "entry_signal_date": "2022-02-10T00:00:00",
+          "exit_signal_date": "2022-03-01T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 13,
+          "net_return": 0.0033465750550389695,
+          "deadline_signal_date": "2022-02-16",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.009766896731345232,
+          "original_net_return": -0.009428267657107784,
+          "cycle_return_difference": 0.012774842712146753
+        },
+        {
+          "entry_signal_date": "2022-03-08T00:00:00",
+          "exit_signal_date": "2022-04-14T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 25,
+          "net_return": -0.054175699818853285,
+          "deadline_signal_date": "2022-03-14",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.014019988895058288,
+          "original_net_return": -0.026430416056972113,
+          "cycle_return_difference": -0.027745283761881172
+        },
+        {
+          "entry_signal_date": "2022-05-11T00:00:00",
+          "exit_signal_date": "2022-05-23T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 8,
+          "net_return": 0.04020606259412214,
+          "deadline_signal_date": "2022-05-17",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.01456912585244896,
+          "original_net_return": 0.015224980243636999,
+          "cycle_return_difference": 0.024981082350485143
+        },
+        {
+          "entry_signal_date": "2022-09-16T00:00:00",
+          "exit_signal_date": "2022-10-21T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": -0.00032068771564562273,
+          "deadline_signal_date": "2022-09-22",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.00235057085292123,
+          "original_net_return": -0.0006561505721168217,
+          "cycle_return_difference": 0.00033546285647119894
+        },
+        {
+          "entry_signal_date": "2022-12-20T00:00:00",
+          "exit_signal_date": "2023-01-16T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 18,
+          "net_return": 0.040218664584146864,
+          "deadline_signal_date": "2022-12-26",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.007788689468337107,
+          "original_net_return": -0.006388535322545413,
+          "cycle_return_difference": 0.04660719990669228
+        },
+        {
+          "entry_signal_date": "2023-03-09T00:00:00",
+          "exit_signal_date": "2023-04-03T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 17,
+          "net_return": 0.023310182640326235,
+          "deadline_signal_date": "2023-03-15",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.010149064383127349,
+          "original_net_return": -0.010274892571543272,
+          "cycle_return_difference": 0.03358507521186951
+        },
+        {
+          "entry_signal_date": "2023-04-21T00:00:00",
+          "exit_signal_date": "2023-06-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 36,
+          "net_return": -0.018862056164782093,
+          "deadline_signal_date": "2023-04-27",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.01339926623065879,
+          "original_net_return": -0.014089210645882089,
+          "cycle_return_difference": -0.004772845518900004
+        },
+        {
+          "entry_signal_date": "2023-10-30T00:00:00",
+          "exit_signal_date": "2023-11-13T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 10,
+          "net_return": 0.009684887655799265,
+          "deadline_signal_date": "2023-11-03",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": -0.006205673758865049,
+          "original_net_return": -0.001643975038795864,
+          "cycle_return_difference": 0.01132886269459513
+        },
+        {
+          "entry_signal_date": "2023-12-26T00:00:00",
+          "exit_signal_date": "2024-02-22T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 35,
+          "net_return": -0.020620916683614918,
+          "deadline_signal_date": "2024-01-02",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.026325616131441354,
+          "original_net_return": 0.02239801624015113,
+          "cycle_return_difference": -0.043018932923766046
+        },
+        {
+          "entry_signal_date": "2024-04-10T00:00:00",
+          "exit_signal_date": "2024-04-26T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 12,
+          "net_return": 0.02287723520856967,
+          "deadline_signal_date": "2024-04-16",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.015109121432568373,
+          "original_net_return": -0.010975531215411198,
+          "cycle_return_difference": 0.03385276642398087
+        },
+        {
+          "entry_signal_date": "2024-11-22T00:00:00",
+          "exit_signal_date": "2024-12-02T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 6,
+          "net_return": 0.029194887094118452,
+          "deadline_signal_date": "2024-11-28",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.003082191780821919,
+          "original_net_return": -0.002338907889719318,
+          "cycle_return_difference": 0.03153379498383777
+        },
+        {
+          "entry_signal_date": "2024-12-03T00:00:00",
+          "exit_signal_date": "2024-12-12T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 7,
+          "net_return": 0.01756416341133952,
+          "deadline_signal_date": "2024-12-09",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": 0.002821108529704741,
+          "original_net_return": 0.041105074327665775,
+          "cycle_return_difference": -0.023540910916326256
+        },
+        {
+          "entry_signal_date": "2025-01-02T00:00:00",
+          "exit_signal_date": "2025-02-06T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 19,
+          "net_return": 0.034698360693985186,
+          "deadline_signal_date": "2025-01-08",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.0163207379811956,
+          "original_net_return": -0.020958622343565318,
+          "cycle_return_difference": 0.055656983037550505
+        },
+        {
+          "entry_signal_date": "2025-04-07T00:00:00",
+          "exit_signal_date": "2025-05-08T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": 0.08217084120698566,
+          "deadline_signal_date": "2025-04-11",
+          "deadline_close_direction": "up",
+          "deadline_close_vs_entry_signal_close": 0.055492424242424176,
+          "original_net_return": 0.05492869329465705,
+          "cycle_return_difference": 0.02724214791232861
+        },
+        {
+          "entry_signal_date": "2026-03-17T00:00:00",
+          "exit_signal_date": "2026-04-15T00:00:00",
+          "exit_reason": "regime",
+          "holding_sessions": 20,
+          "net_return": 0.00046316199213865505,
+          "deadline_signal_date": "2026-03-23",
+          "deadline_close_direction": "down",
+          "deadline_close_vs_entry_signal_close": -0.07006684822975973,
+          "original_net_return": -0.06611132394116365,
+          "cycle_return_difference": 0.0665744859333023
+        }
+      ]
+    }
+  }
+}
