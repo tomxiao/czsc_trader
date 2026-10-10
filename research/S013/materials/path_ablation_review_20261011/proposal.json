@@ -1,0 +1,156 @@
+{
+  "status": "PENDING_USER_REVIEW_NOT_EXECUTED",
+  "objective": "研究如何改善策略的参数敏感性",
+  "role": "RSCH",
+  "stage": 3,
+  "batch": "S013",
+  "purpose": "通过取消单条规则及同时取消两条规则，检验下跌过滤与定时退出的必要收益、路径代价和交互；不是通过删除坐标宣称稳健。",
+  "hypothesis": "已观察弱点可能来自不稳定的交易筛选/退出规则；如果规则没有必要经济价值，机制简化可能形成更稳健的候选。",
+  "strong_counterevidence": "边界新增交易有赚有亏、提前退出有好有坏；取消规则可能降低收益、扩大损失持有期并破坏交易频率。原确认门收益仍保留。",
+  "inputs": {
+    "symbol": "510500.SH",
+    "window": [
+      "2020-01-02",
+      "2026-09-30"
+    ],
+    "initial_cash": 1000000,
+    "lot_size": 100,
+    "units": "HFQ_RESEARCH",
+    "fee_each_side": 0.001,
+    "strategy_and_limit_buyhold_premium": 0.01,
+    "source_scope": "existing S013 assets only; no new data or adjacent batches"
+  },
+  "preserved": "原上涨路径、原水平买入确认、价格区间进出场、状态变化退出、T决策T+1成交、固定冷却0及其他参数。",
+  "mechanisms": {
+    "ORIGINAL": "原规则，复用EX012相应完整账户。",
+    "NO_BEAR_ACF": "仅bear.acf_min=None，不再按自相关筛选下跌买入；其他机会与确认规则保持。",
+    "NO_BEAR_TIMER": "仅bear.max_hold=None，取消age触发的下跌时间退出；区间/状态退出保持。上涨max_hold仍为8。",
+    "NEITHER": "同时取消上述两条下跌规则。"
+  },
+  "implementation": "无过滤沿用原实现允许的None；无定时退出采用研究空间新源码及强类型可空参数，明确跳过age条件，不能用60天等大数字冒充关闭。所有关闭值在生成身份前归一，重复格共享同一身份。",
+  "cells": [
+    {
+      "background": "B0",
+      "mechanism": "ORIGINAL",
+      "bear_acf_min": 0.1,
+      "bear_max_hold": 4,
+      "unique_configuration": "acf=0.1;hold=4",
+      "reuse_existing_ex012": true
+    },
+    {
+      "background": "B0",
+      "mechanism": "NO_BEAR_ACF",
+      "bear_acf_min": null,
+      "bear_max_hold": 4,
+      "unique_configuration": "acf=None;hold=4",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B0",
+      "mechanism": "NO_BEAR_TIMER",
+      "bear_acf_min": 0.1,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=0.1;hold=None",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B0",
+      "mechanism": "NEITHER",
+      "bear_acf_min": null,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=None;hold=None",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B1",
+      "mechanism": "ORIGINAL",
+      "bear_acf_min": 0.045,
+      "bear_max_hold": 4,
+      "unique_configuration": "acf=0.045;hold=4",
+      "reuse_existing_ex012": true
+    },
+    {
+      "background": "B1",
+      "mechanism": "NO_BEAR_ACF",
+      "bear_acf_min": null,
+      "bear_max_hold": 4,
+      "unique_configuration": "acf=None;hold=4",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B1",
+      "mechanism": "NO_BEAR_TIMER",
+      "bear_acf_min": 0.045,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=0.045;hold=None",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B1",
+      "mechanism": "NEITHER",
+      "bear_acf_min": null,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=None;hold=None",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B2",
+      "mechanism": "ORIGINAL",
+      "bear_acf_min": 0.1,
+      "bear_max_hold": 3,
+      "unique_configuration": "acf=0.1;hold=3",
+      "reuse_existing_ex012": true
+    },
+    {
+      "background": "B2",
+      "mechanism": "NO_BEAR_ACF",
+      "bear_acf_min": null,
+      "bear_max_hold": 3,
+      "unique_configuration": "acf=None;hold=3",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B2",
+      "mechanism": "NO_BEAR_TIMER",
+      "bear_acf_min": 0.1,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=0.1;hold=None",
+      "reuse_existing_ex012": false
+    },
+    {
+      "background": "B2",
+      "mechanism": "NEITHER",
+      "bear_acf_min": null,
+      "bear_max_hold": null,
+      "unique_configuration": "acf=None;hold=None",
+      "reuse_existing_ex012": false
+    }
+  ],
+  "counts": {
+    "displayed_cells": 12,
+    "unique_configurations": 8,
+    "existing_controls": 3,
+    "new_full_accounts": 5
+  },
+  "economic_acceptance": "沿用MANDATE/6四项经济目标；不得增添稳健性/支持度/持仓期等硬门。",
+  "diagnostics": [
+    "完整账户净年化、全窗及逐年回撤、交易频率、负基准年净收益",
+    "交易与实际持仓路径、费用、空仓/未完成尾仓及无定时退出的持仓长度",
+    "取消过滤后3/4日差异、取消定时退出后两门槛差异，及双删的交互"
+  ],
+  "interpretation": "五账户全部留证；无达标或改善来自明显经济代价时呈现负面结果，不追加事后阈值。局部敏感性只能覆盖生效坐标；不可将被删除坐标的不变性当成全参数稳定性。",
+  "next_review": "如出现达标改善候选，另行评审覆盖全部生效数值参数的5%/32点自检；阶段四推进需用户批准。",
+  "technical_checks": [
+    "原控制身份与12既有账户绑定、基准完全一致",
+    "合成前缀因果性、关闭/等值条件与退出优先级、非法可空参数",
+    "串行/并行确定性和成交到现金/持仓/费用的完整对账"
+  ],
+  "search": "Optuna固定5配置队列，种子13，不搜索阈值或期限；8进程上限、各进程1原生线程、请求workers=1；先公共preflight。",
+  "limits": "设计已参考已见开发池；没有独立样本外证据，不选型、不冻结、不启动PTE或生产。取消时间退出可能使亏损持仓持续更久。",
+  "review_required_reason": "用户明确要求先评审方案再启动新实验；此前批准已完成的EX012，未批准本删项方案。",
+  "references": {
+    "source_analysis": "../../assets/runs/EX012_20261011/analysis_r1.json",
+    "report": "../../deliveries/CANDIDATES/7/report.md",
+    "mandate": "../../deliveries/MANDATE/6/report.md"
+  }
+}
