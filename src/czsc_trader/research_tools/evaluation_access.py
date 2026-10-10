@@ -162,27 +162,36 @@ class EvaluationAccess:
         # Contract errors reject the call. Data/preparation failures belong to their item.
         contracts = tuple(_request_contract(item, require_execution=False)[0] for item in requests)
         outcomes = [None] * len(requests)
-        prepared = []
         def fail(error):
             raise error
-        for index, (item, contract) in enumerate(zip(requests, contracts, strict=True)):
-            try:
-                prepared.append((index, self.prepare(item)))
-            except Exception as exc:
-                outcomes[index] = EvaluationOutcome(EvaluationStatus.FAILED,
-                    canonical_sha256(contract), error=EvaluationError(type(exc).__name__, str(exc) or type(exc).__name__))
+
+        def prepared_requests():
+            for index, (item, contract) in enumerate(zip(requests, contracts, strict=True)):
+                try:
+                    prepared = self.prepare(item)
+                except Exception as exc:
+                    outcomes[index] = EvaluationOutcome(EvaluationStatus.FAILED,
+                        canonical_sha256(contract), error=EvaluationError(
+                            type(exc).__name__, str(exc) or type(exc).__name__))
+                else:
+                    yield index, prepared
+
         if self.resources.max_workers == 1:
             with threadpool_limits(limits=self.resources.native_threads_per_worker):
-                for index, item in prepared:
+                for index, item in prepared_requests():
                     outcomes[index] = self._outcome(item, lambda item=item: self._batch_evaluator(item))
-        elif prepared:
-            # Validate private transport before starting workers; it is never loaded from evidence.
-            payloads = tuple(pack((self._batch_evaluator, item, self.resources.native_threads_per_worker))
-                             for _, item in prepared)
-            with ProcessPoolExecutor(max_workers=min(len(prepared), self.resources.max_workers),
+        else:
+            # All caller contracts passed preflight. Submit each prepared item
+            # immediately so worker computation overlaps the next preparation.
+            with ProcessPoolExecutor(max_workers=min(len(requests), self.resources.max_workers),
                                      mp_context=get_context("spawn")) as pool:
                 pending = []
-                for (index, item), payload in zip(prepared, payloads, strict=True):
+                for index, item in prepared_requests():
+                    try:
+                        payload = pack((self._batch_evaluator, item, self.resources.native_threads_per_worker))
+                    except Exception as exc:
+                        outcomes[index] = self._outcome(item, lambda exc=exc: fail(exc))
+                        continue
                     try:
                         pending.append((index, item, pool.submit(compute, payload)))
                     except Exception as exc:

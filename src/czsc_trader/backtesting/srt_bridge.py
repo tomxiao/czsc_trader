@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataflows import Dataflows, PreparePolicy, Dataset, canonical_frame_sha256
+from dataflows import Dataflows, DataResult, PreparePolicy, Dataset, canonical_frame_sha256
 
 from hashlib import sha256
 from pathlib import Path
 from collections.abc import Mapping
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, replace
 from datetime import date
 import re
 
@@ -16,6 +16,7 @@ import pandas as pd
 from strategy_runtime import (
     TradableWindow,
     ExecutionPolicy,
+    ExecutionPricing,
     StrategyInit,
     StrategyRelease,
     StrategyRuntime,
@@ -252,8 +253,25 @@ def prepare_srt_input_binding(
     return binding
 
 
-def _validate_execution_binding(flows, execution_data, prepared):
+def _execution_frames_for_authentication(
+    results: Mapping[str, DataResult], pricing: ExecutionPricing,
+) -> dict[str, pd.DataFrame]:
+    """Rebuild authenticated numerical frames without duplicating quality metadata.
+
+    DFLS identities and coverage were checked on the original results. These detached
+    DataFrame containers have empty attrs; the ordinary conversion and public pricing
+    algorithm still produce every value that participates in the frame hash.
+    """
     from .execution_data import _execution_frames
+
+    numerical = {
+        name: replace(result, dataframe=pd.DataFrame(result.dataframe, copy=False))
+        for name, result in results.items()
+    }
+    return _execution_frames(numerical, pricing)
+
+
+def _validate_execution_binding(flows, execution_data, prepared):
     if not execution_data.requests or not execution_data.input_identities:
         raise RuntimeContractError("execution data has no authenticated input list")
     asset = execution_data.asset_type
@@ -298,7 +316,7 @@ def _validate_execution_binding(flows, execution_data, prepared):
     })
     if execution_data.fingerprint != fingerprint:
         raise RuntimeContractError("execution data fingerprint differs from bound inputs")
-    frames = _execution_frames(results, execution_data.pricing)
+    frames = _execution_frames_for_authentication(results, execution_data.pricing)
     frames["adjusted_daily"].insert(1, "symbol", execution_data.symbol)
     for name, frame in frames.items():
         actual = getattr(execution_data, name)

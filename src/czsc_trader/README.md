@@ -15,7 +15,7 @@ TDR 为研究员提供批次上下文、账户评价、回测、结果留证、�
 | 批次能力与实验分配 | `create_research_context`、`create_experiment` | `ResearchContext`、`ExperimentRef` |
 | 账户评价 | `research.evaluation.prepare/evaluate/evaluate_many` | 绑定输入、计算各窗口／成本场景及逐项结果 |
 | 完整回测 | `run_backtest` | `BacktestEvaluation`，包含账户、基准、指标和审计 |
-| 结果留证 | `publish_evidence` | `EvidenceRef`，显式保存选定材料或完整评价事实 |
+| 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
 | 自检与比较 | `build_assessment_evidence`；SE `assess_candidates/compare_candidates` | 数值事实适配、自检和比较 |
@@ -150,7 +150,8 @@ result = research.evaluation.evaluate(bound_request)
 | `UNKNOWN` | 工作进程等异常导致结果无法确认，有错误，无结果 |
 
 批量请求为非空 tuple，各自 `workers=1`，批次并行数来自 `EvaluationResources.max_workers`。
-主进程绑定输入，子进程以 `spawn` 计算；单项准备失败不妨碍其他项。非法类型或批量契约拒绝整次调用。
+先预检全部请求契约；主进程逐项绑定输入，准备完成即提交给 `spawn` 子进程，
+使后续准备与已经提交的账户计算重叠。单项准备或传输失败不妨碍其他项；非法类型或批量契约在计算前拒绝整次调用。
 平台不自动重试、管理 Optuna study 或决定搜索预算；调用方根据逐项结果组织后续研究。
 
 ### 研究库与并行执行
@@ -239,6 +240,33 @@ account_evidence = publish_evidence(
     research, EvaluationEvidenceWrite(experiment, "baseline-account", bound_request, result),
 )
 evaluation_reference = EvaluationEvidenceRef(account_evidence)
+```
+
+多项留证使用 `publish_evidence_many(research, requests)`，`requests` 必须是非空
+`tuple[EvidenceWriteRequest, ...]`，返回与输入顺序一致的 `tuple[PublicationOutcome, ...]`。
+账户认证及 JSON 序列化按 `research.evaluation.resources` 的进程数和原生线程预算计算；
+子进程只返回证据字节，主进程逐项原子发布，已完成项无需等待前面的慢项。材料字节由主进程直接发布。
+`max_workers=1` 明确采用串行计算；多进程失败不重试或切换串行计算。
+
+批量调用先检查全部请求类型、批次、已分配实验和数据空间归属；非法调用整体抛出异常，且不发布任何项。
+账户结果认证、序列化和实际写入失败按项返回，不撤销其他已发布项。
+`PublicationOutcome.index` 是输入的零起始位置，`status` 使用 `PublicationStatus`：
+`PUBLISHED` 只携带 `reference`，`FAILED`、`CANCELLED`、`UNKNOWN` 只携带 `PublicationError(code, message)`。
+计算进程失败时正式证据尚未写入，返回 `FAILED`；计算取消返回 `CANCELLED`。
+若原子写入之后发生异常，或无法确认写入状态，返回 `UNKNOWN`，不会自动重试。
+
+```python
+from czsc_trader.application import publish_evidence_many
+from czsc_trader.research_tools import PublicationStatus
+
+publications = publish_evidence_many(research, (
+    EvaluationEvidenceWrite(experiment, "baseline-account", bound_request, result),
+))
+for item in publications:
+    if item.status is PublicationStatus.PUBLISHED:
+        retained = item.reference
+    else:
+        print(item.index, item.status.value, item.error.code, item.error.message)
 ```
 
 `EvaluationEvidenceRef.evaluation_ids` 为空表示引用该结果全部评价；可显式指定其中的评价ID。
@@ -335,7 +363,8 @@ child_result = research.evaluation.evaluate(child_request)
 普通评价可以不提供该绑定；带绑定的评价必须核验计划已经发布、文件字节一致、点序号及实际载荷匹配。
 
 参数计划读取每次核验计划及两份材料的实际字节。内部只复用最近一份已验证内容的不可变解析结果，
-不缓存文件核验成功状态；交付账户JSON直接解析本次哈希核验的字节，FULL交付仍独立复算SE面板与比较结果。
+不缓存文件核验成功状态。一次交付发布或校验内，相同实际账户字节可复用已通过的解析、账本认证及结构化事实，
+仍在每次引用时重新读取文件、核验哈希和证据归属。不同公开调用各自认证，FULL交付仍独立复算SE面板与比较结果。
 
 计划和实际评价固定源码、依赖、非参数结构、标的、窗口、截止日、资金、费用场景、价格单位、基准和频率口径。
 同时核验 SRT 实际执行政策、订单能力及决策时间规则，不能通过参数切换执行契约。

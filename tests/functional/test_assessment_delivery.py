@@ -149,6 +149,70 @@ def prepare(completed):
                                incomplete_items=("压力与扰动实验尚未完成",))
 
 
+def test_delivery_certifies_each_unique_account_once_per_operation(completed, monkeypatch):
+    from czsc_trader.research_tools import evaluation
+
+    definition, value = prepare(completed)
+    context = completed[0]
+    original = evaluation.validate_evaluation_evidence
+    calls = []
+
+    def tracked(document):
+        calls.append(document["result_hash"])
+        return original(document)
+
+    monkeypatch.setattr(evaluation, "validate_evaluation_evidence", tracked)
+    receipt = assemble_delivery(context, definition, value)
+    assert len(calls) == 1
+    assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
+    assert len(calls) == 2
+    assert validate_delivery(context, receipt.reference, scope=d.DeliveryValidationScope.INTEGRITY).status is d.ValidationStatus.PASS
+    assert len(calls) == 3
+
+
+def test_account_reuse_still_checks_current_file_and_reference_owner(completed):
+    from czsc_trader.application import delivery_service
+
+    context, _, _, _, evaluation = completed
+    reference = evaluation.evidence
+    root = context.root / ".tmp/account-authentication"
+    target = root / reference.path
+    target.parent.mkdir(parents=True)
+    target.write_bytes(reference.resolve(context.root).read_bytes())
+    cache = {}
+    first = delivery_service._account_document(root, reference, cache)
+    wrong_owner = replace(reference, experiment=ExperimentRef("S900", "EX999_20261001"))
+    with pytest.raises(d.DeliveryValidationError, match="origin differs"):
+        delivery_service._account_document(root, wrong_owner, cache)
+    assert delivery_service._account_document(root, reference, cache) == first
+    target.write_bytes(target.read_bytes() + b" ")
+    with pytest.raises(d.DeliveryValidationError, match="hash differs"):
+        delivery_service._account_document(root, reference, cache)
+
+
+def test_assembly_rechecks_account_bytes_after_cached_certification(completed, monkeypatch):
+    from czsc_trader.application import delivery_service
+
+    definition, value = prepare(completed)
+    original = delivery_service._manifest
+    reference = completed[4].evidence
+    corrupted = False
+
+    def tamper_after_certification(root):
+        nonlocal corrupted
+        target = root / reference.path
+        if not corrupted and root.parent.name == "delivery" and target.exists():
+            target.write_bytes(target.read_bytes() + b" ")
+            corrupted = True
+        return original(root)
+
+    monkeypatch.setattr(delivery_service, "_manifest", tamper_after_certification)
+    with pytest.raises(d.DeliveryValidationError, match="hash differs"):
+        assemble_delivery(completed[0], definition, value)
+    assert corrupted
+    assert not (completed[0].root / "research/S900/assets/deliveries/ASSESSMENT/1").exists()
+
+
 def test_adapter_authenticates_requests_and_does_not_reload_source(completed):
     _, execution, request, result, _ = completed
 

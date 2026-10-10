@@ -5,11 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date
 from enum import StrEnum
+from functools import lru_cache
 from hashlib import sha256
 import json
 import math
 import re
-from types import UnionType
+from types import MappingProxyType, UnionType
 from typing import Union, get_args, get_origin, get_type_hints
 
 from .models import ValidationError
@@ -61,6 +62,12 @@ def matches(value, annotation):
     return type(value) is annotation and (annotation is not float or math.isfinite(value))
 
 
+@lru_cache(maxsize=256)
+def _record_hints(record_type: type):
+    """Resolve immutable record schemas once; values are validated on every use."""
+    return MappingProxyType(get_type_hints(record_type))
+
+
 def decode(value, annotation):
     origin = get_origin(annotation)
     if origin in (Union, UnionType):
@@ -77,7 +84,7 @@ def decode(value, annotation):
         names = {f.name for f in fields(annotation)}
         require(type(value) is dict and set(value) == names | {"type"}, "record fields differ")
         require(value["type"] == annotation.__name__, "record discriminator differs")
-        hints = get_type_hints(annotation)
+        hints = _record_hints(annotation)
         return annotation(**{k: decode(value[k], hints[k]) for k in names})
     if isinstance(annotation, type) and issubclass(annotation, StrEnum):
         require(type(value) is str, "enum requires string")
@@ -88,7 +95,7 @@ def decode(value, annotation):
 
 class ResearchRecord:
     def __post_init__(self):
-        for name, annotation in get_type_hints(type(self)).items():
+        for name, annotation in _record_hints(type(self)).items():
             value = getattr(self, name)
             if not matches(value, annotation):
                 raise TypeError(f"{type(self).__name__}.{name} requires {annotation}")

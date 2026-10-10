@@ -1,5 +1,5 @@
 """Parallel account evaluation exposes results and errors without process persistence."""
-from concurrent.futures import CancelledError
+from concurrent.futures import CancelledError, Future
 from dataclasses import dataclass, replace
 from pathlib import Path
 import os
@@ -92,3 +92,43 @@ def test_batch_data_preparation_failure_is_returned_for_only_the_failed_item(man
     assert outcomes[0].status is EvaluationStatus.SUCCEEDED
     assert outcomes[1].status is EvaluationStatus.FAILED and outcomes[1].result is None
     assert outcomes[1].error.code
+
+
+def test_batch_submits_prepared_account_before_preparing_the_next(managed_evaluation, monkeypatch):
+    from czsc_trader.research_tools import evaluation_access as module
+
+    context, request = managed_evaluation
+    bound = context.evaluation.prepare(request)
+    result = context.evaluation.evaluate(bound)
+    access = EvaluationAccess(dataflows=context.data, resources=EvaluationResources(2), strategy_id="S900")
+    events = []
+
+    def prepare(item):
+        events.append("prepare")
+        if len(events) == 3:
+            assert events == ["prepare", "submit", "prepare"]
+        return item
+
+    class InlinePool:
+        def __init__(self, **kwargs):
+            assert kwargs["max_workers"] == 2
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def submit(self, operation, payload):
+            from czsc_trader.research_tools._evaluation_workers import pack
+
+            events.append("submit")
+            future = Future()
+            future.set_result(pack(result))
+            return future
+
+    monkeypatch.setattr(access, "prepare", prepare)
+    monkeypatch.setattr(module, "ProcessPoolExecutor", InlinePool)
+    outcomes = access.evaluate_many((bound, bound))
+    assert events == ["prepare", "submit", "prepare", "submit"]
+    assert all(x.status is EvaluationStatus.SUCCEEDED for x in outcomes)

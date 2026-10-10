@@ -82,26 +82,36 @@ def _references(content):
     return tuple(dict.fromkeys(x for x in _walk(content) if isinstance(x, EvidenceRef)))
 
 
-def _account_evidence(root, ref):
-    return _account_document(root, ref)[1]
+def _account_evidence(root, ref, account_cache=None):
+    return _account_document(root, ref, account_cache)[1]
 
 
-def _account_document(root, ref):
+def _account_document(root, ref, account_cache=None):
     from ..research_tools.evaluation import validate_evaluation_evidence
 
     if (ref.schema, ref.schema_version) != ("account_evaluation", 6):
         _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 6 required")
-    value = _decode_json(_read_evidence(root, ref).decode("utf-8"))
-    validate_evaluation_evidence(value)
+    # Always authenticate the current file. Only immutable, identical bytes may
+    # reuse account decoding/certification within this publication or validation.
+    data = _read_evidence(root, ref)
+    cached = None if account_cache is None else account_cache.get(data)
+    if cached is None:
+        value = _decode_json(data.decode("utf-8"))
+        validate_evaluation_evidence(value)
+        records = tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+    else:
+        value, records = cached
     request = value["request_identity"]
     if (request["experiment_id"] != ref.experiment.experiment_id
         or not request["strategy_reference"].startswith(ref.experiment.strategy_id + "-")):
         _fail("EVALUATION_REFERENCE", ref.path, "evaluation origin differs from its evidence owner")
-    return value, tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+    if account_cache is not None and cached is None:
+        account_cache[data] = (value, records)
+    return value, records
 
 
-def _check_evaluation(root, ref, candidate):
-    records = _account_evidence(root, ref.evidence)
+def _check_evaluation(root, ref, candidate, account_cache=None):
+    records = _account_evidence(root, ref.evidence, account_cache)
     key = candidate.key
     if any((item.candidate.candidate_id, item.candidate.content_sha256) != (
         f"{key.strategy_id}-{key.candidate_id}", candidate.content_sha256,
@@ -111,7 +121,10 @@ def _check_evaluation(root, ref, candidate):
         _fail("EVALUATION_REFERENCE", ref.evidence.path, "evaluation ID absent from saved result")
 
 
-def _validate_content(definition, content, root, context, scope=d.DeliveryValidationScope.FULL):
+def _validate_content(definition, content, root, context, scope=d.DeliveryValidationScope.FULL,
+                      *, account_cache=None):
+    if account_cache is None:
+        account_cache = {}
     expected = {
         d.DeliveryStage.MANDATE: d.ResearchMandate,
         d.DeliveryStage.COMPONENTS: d.ComponentPanel,
@@ -144,9 +157,9 @@ def _validate_content(definition, content, root, context, scope=d.DeliveryValida
                 _fail("CANDIDATE_EVIDENCE", candidate.identity.key.candidate_id,
                       "candidate requires a published account evaluation")
             for ref in candidate.evaluations:
-                _check_evaluation(root, ref, candidate.identity)
+                _check_evaluation(root, ref, candidate.identity, account_cache)
     elif isinstance(payload, d.CandidateAssessmentDelivery):
-        _validate_assessment_delivery(definition, payload, root, context, content, scope)
+        _validate_assessment_delivery(definition, payload, root, context, content, scope, account_cache)
     elif isinstance(payload, d.CandidateInspectionDelivery):
         _validate_inspection_delivery(definition, content, root, context)
 
@@ -225,7 +238,7 @@ def _assessment_recomputation_matches(recomputed: AssessmentPanel, published: As
     return True
 
 
-def _validate_assessment_delivery(definition, payload, root, context, content, scope):
+def _validate_assessment_delivery(definition, payload, root, context, content, scope, account_cache):
     for ref in (payload.source_candidates, payload.source_mandate):
         if ref not in definition.predecessors:
             _fail("ASSESSMENT_SOURCE", "predecessors", "assessment sources must be predecessors")
@@ -281,7 +294,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     saved_policies = {}
     for reference in _references(content):
         if (reference.schema, reference.schema_version) == ("account_evaluation", 6):
-            account, records = _account_document(root, reference)
+            account, records = _account_document(root, reference, account_cache)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
                                                           for x in account["runs"])
@@ -290,7 +303,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     predecessor_root = _delivery_path(context, payload.source_candidates)
     for candidate in candidates.candidates:
         for reference in candidate.evaluations:
-            account, records = _account_document(predecessor_root, reference.evidence)
+            account, records = _account_document(predecessor_root, reference.evidence, account_cache)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
                                                           for x in account["runs"])
@@ -381,7 +394,9 @@ def _validate_public_copy(context, reference, root):
 
 
 def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidationScope.INTEGRITY,
-                   *, published=True):
+                   *, published=True, account_cache=None):
+    if account_cache is None:
+        account_cache = {}
     identity = (reference.batch, reference.stage, reference.revision)
     if identity in visited:
         _fail("DELIVERY_CYCLE", "predecessors", "cyclic delivery references")
@@ -400,8 +415,9 @@ def _read_delivery(context, reference, root, visited, scope=d.DeliveryValidation
     if (definition.batch, definition.stage, definition.revision) != identity:
         _fail("DELIVERY_IDENTITY", "definition", "definition differs from reference")
     for predecessor in definition.predecessors:
-        _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited)
-    _validate_content(definition, content, root, context, scope)
+        _read_delivery(context, predecessor, _delivery_path(context, predecessor), visited,
+                       account_cache=account_cache)
+    _validate_content(definition, content, root, context, scope, account_cache=account_cache)
     if _resolve(root, "report.md").read_bytes() != content.report.encode("utf-8"):
         _fail("REPORT_CONTENT", "report.md", "report differs from the submitted research report")
     if published:
@@ -460,6 +476,7 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
 
 
 def _assemble_delivery(context, definition, content):
+    account_cache = {}
     staging = public_staging = None
     installed_package = installed_public = completed = False
     destination = public_destination = None
@@ -475,10 +492,11 @@ def _assemble_delivery(context, definition, content):
             if _read_json(_resolve(destination, "delivery.json")) != document:
                 raise d.DeliveryConflictError("delivery revision contains different content")
             receipt = d.DeliveryReceipt.from_dict(_read_json(_resolve(destination, "receipt.json")))
-            return _read_delivery(context, receipt.reference, destination, set())
+            return _read_delivery(context, receipt.reference, destination, set(), account_cache=account_cache)
         _validate_handoff(context, content)
         for predecessor in definition.predecessors:
-            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set())
+            _read_delivery(context, predecessor, _delivery_path(context, predecessor), set(),
+                           account_cache=account_cache)
         _resolve(context.root, ".tmp/delivery")
         staging = create_temporary_directory(context.root, "delivery")
 
@@ -497,24 +515,24 @@ def _assemble_delivery(context, definition, content):
         for reference in _references(content):
             if reference.experiment.strategy_id != definition.strategy_id:
                 _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
-            copy(reference.resolve(context.root).read_bytes(), reference.path, reference.sha256)
+            copy(reference._read_verified(context.root)[1], reference.path, reference.sha256)
         if isinstance(content.payload, d.CandidateAssessmentDelivery):
             from ..research_tools.parameter_evaluation import read_parameter_plan
 
             for reference in content.payload.parameter_plans:
                 plan = read_parameter_plan(reference, context.root)
                 for material in (plan.mapping_evidence, plan.feasibility_evidence):
-                    copy(material.resolve(context.root).read_bytes(), material.path, material.sha256)
+                    copy(material._read_verified(context.root)[1], material.path, material.sha256)
         for reference in _support_references(context, content):
             copy(reference.resolve(context.root).read_bytes(), f"support/{reference.sha256}", reference.sha256)
-        _validate_content(definition, content, staging, context)
+        _validate_content(definition, content, staging, context, account_cache=account_cache)
         (staging / "delivery.json").write_bytes(d._canonical(document))
         (staging / "report.md").write_bytes(content.report.encode("utf-8"))
         files = _manifest(staging)
         reference = d.DeliveryReference(definition.batch, definition.stage, definition.revision, d._digest(files))
         receipt = d.DeliveryReceipt(reference, files)
         (staging / "receipt.json").write_bytes(d._canonical(receipt))
-        _read_delivery(context, reference, staging, set(), published=False)
+        _read_delivery(context, reference, staging, set(), published=False, account_cache=account_cache)
         public_staging = create_temporary_directory(context.root, "delivery-public")
         for name in ("report.md", "receipt.json"):
             shutil.copyfile(staging / name, public_staging / name)

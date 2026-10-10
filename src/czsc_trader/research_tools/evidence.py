@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from hashlib import sha256
 from pathlib import Path
 import re
@@ -119,3 +120,39 @@ class EvaluationEvidenceWrite:
 
 
 EvidenceWriteRequest = MaterialEvidenceWrite | EvaluationEvidenceWrite
+
+
+class PublicationStatus(str, Enum):
+    PUBLISHED = "PUBLISHED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    UNKNOWN = "UNKNOWN"
+
+
+@dataclass(frozen=True, slots=True)
+class PublicationError:
+    code: str
+    message: str
+
+    def __post_init__(self):
+        _text(self.code, "publication error code")
+        _text(self.message, "publication error message")
+
+
+@dataclass(frozen=True, slots=True)
+class PublicationOutcome:
+    index: int
+    status: PublicationStatus
+    reference: EvidenceRef | None = None
+    error: PublicationError | None = None
+
+    def __post_init__(self):
+        if type(self.index) is not int or self.index < 0:
+            raise ValueError("publication index must be a nonnegative integer")
+        if type(self.status) is not PublicationStatus:
+            raise TypeError("publication status requires PublicationStatus")
+        if self.status is PublicationStatus.PUBLISHED:
+            if type(self.reference) is not EvidenceRef or self.error is not None:
+                raise ValueError("published outcome requires only an evidence reference")
+        elif self.reference is not None or type(self.error) is not PublicationError:
+            raise ValueError("unsuccessful publication requires only an error")

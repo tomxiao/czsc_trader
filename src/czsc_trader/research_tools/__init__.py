@@ -60,6 +60,9 @@ from .evidence import (
     MaterialEvidenceWrite,
     EvaluationEvidenceWrite,
     EvidenceWriteRequest,
+    PublicationStatus,
+    PublicationError,
+    PublicationOutcome,
 )
 
 from .evaluation import (
@@ -139,6 +142,9 @@ __all__ = [
     'MaterialEvidenceWrite',
     'EvaluationEvidenceWrite',
     'EvidenceWriteRequest',
+    'PublicationStatus',
+    'PublicationError',
+    'PublicationOutcome',
     'METRIC_SEMANTICS_VERSION',
     'BuyHoldReplay',
     'EvaluationBenchmark',

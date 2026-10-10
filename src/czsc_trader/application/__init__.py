@@ -28,6 +28,7 @@ _EXPORTS = {
     "ResearchIntentUpdate": "research_governance_service",
     "ExperimentRequest": "research_governance_service",
     "publish_evidence": "evidence_service",
+    "publish_evidence_many": "evidence_service",
     "create_research_batch": "research_governance_service",
     "update_research_intent": "research_governance_service",
     "validate_catalog": "catalog_service",
