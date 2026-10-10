@@ -1,0 +1,83 @@
+{
+  "name": "S013-EX042-exact-native-date-unit-comparison-v2",
+  "new_account_evaluations": 0,
+  "runtime_changed": false,
+  "change": "At one account.date versus signal valid_session Index comparison only, convert both DatetimeIndexes to ns before exact equality. Native date values/order/count/all covered years are unchanged; different or missing sessions still fail. No timestamp rounding, date deletion, state or financial comparison change.",
+  "failure_path": "research/S013/experiments/EX042_20261011/protocols/diagnosis_failure.json",
+  "failure_sha256": "8830d65c270d9c95b189b7991a488a2054a1734f7a3c21fbc6b3af4fcc9a901a",
+  "original_plan_sha256": "a87651231d88073928ffa03c8e136cbccd04ce421dd83eb906c845bd9645b2ee",
+  "original_source_files": {
+    "native_diagnosis.py": "c9712eeacd38767ee2fd89d420cef3478494103404f1f69bc4ea10fe45d85ba7",
+    "native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "anchor_diagnosis.py": "d22772d7406db2234e6b265afc0268f1085cd9346bad9540be07048ab6ffb470",
+    "focused_checks.py": "c431b0cb2d1c1a9657903dd0264fdade86f34141e8f2d34f1c0286be3fbc5eb6",
+    "source_checks.py": "fd997c950c03c61b5eb16c23a0b948b987ca908fb1a9d907a03cd85a1a2d8a5c",
+    "common.py": "ddcd3c0273418eea9f4496895fcc5b70ec6e14b143557e60199d66506051790f"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX039_20261011/src/direction_diagnosis.py": "4dc966b94eec1686a43754b5df7c89438000f8c0c4ba932ac67db6162e3f356d",
+    "research/S013/experiments/EX036_20261011/src/confirmation_diagnosis_v2.py": "fbecc5fccc6b98d36ea9475eee5e2e14a280814d63d591f48735c531894204e8",
+    "research/S013/experiments/EX033_20261011/src/diagnose.py": "04e3bb090498cdb9dd9a20815ab933272d4a2c2e54ca16ce87e5c0e5aa710ed1",
+    "research/S013/experiments/EX041_20261011/src/direction_oracle_v2.py": "29b27c2bd54de4eae981230e97b6711dd2d36302b5a021578a3595267732c5ed",
+    "research/S013/experiments/EX035_20261011/src/common.py": "03d7acee0bab55757b52358f9705ed971447023b1652522d7dd671af04cf06af",
+    "research/S013/experiments/EX035_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX035_20261011/src/analysis_reference.py": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+    "research/S013/experiments/EX035_20261011/src/ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed"
+  },
+  "source_files": {
+    "anchor_diagnosis_v2.py": "3641b1aa0f49fd55ff509073b10a190e0e46f3af22d1ba7727e43782fe0cfd5f",
+    "native_diagnosis_v2.py": "44d3b843b6e642cecd4a2da43867be8088f01360913a0abd283d3fad9cd6cb09",
+    "focused_checks_v2.py": "89eb301604342033421a596eb1701bef14c03a205106c49b629d516fa5cdb232",
+    "technical_validation.py": "dfe13ea3c798ddae2d5cf4c701f6f01dbc1650dd7a3a4fac8c2f44f97a2024db",
+    "declare_correction.py": "1addd1914777d6fac61340c57de321472bc73b97cfb5389cfda0976e27b74169"
+  },
+  "focused_proof": {
+    "status": "PURE_PASS",
+    "new_account_evaluations": 0,
+    "retained_account_reads": 0,
+    "date_precision_cases": 9,
+    "illegal_date_rejections": 2,
+    "single_line_only_change": true,
+    "all_other_functions_AST_identical": true,
+    "original_focused_successor": {
+      "status": "PURE_PASS",
+      "new_account_evaluations": 0,
+      "retained_account_reads": 0,
+      "checks": {
+        "full_signal_and_cash_days": 15,
+        "bear_time_sign_categories": 3,
+        "cash_years_plus_ALL": 3,
+        "actual_cycles_including_OPEN": 5,
+        "endpoint_paths": 2,
+        "signal_vs_execution_years": 1,
+        "invalid_state_price_cash_rejections": 10
+      },
+      "source_sha256": "3641b1aa0f49fd55ff509073b10a190e0e46f3af22d1ba7727e43782fe0cfd5f"
+    }
+  },
+  "pure_checks_source": {
+    "path": ".tmp/ex042-date-v2/focused_checks.py",
+    "sha256": "5b4e4a1fe8d51e1ef7253106bc24d0659b990c65a3e72ee4474a76fb15c209ef",
+    "source": "import ast\nfrom copy import deepcopy\nfrom pathlib import Path\nimport sys\nimport pandas as pd\n\nroot = Path(__file__).resolve().parents[2]\nsrc = root / 'research/S013/experiments/EX042_20261011/src'\nsys.path.insert(0, str(src))\nfrom common import read, write, file_hash\nfrom focused_checks_v2 import fixture\nfrom anchor_diagnosis_v2 import diagnose_account\n\nold_text = (src / 'anchor_diagnosis.py').read_text(encoding='utf-8')\nnew_text = (src / 'anchor_diagnosis_v2.py').read_text(encoding='utf-8')\nexpected = old_text.replace(\n    \"pd.DatetimeIndex(account.date), pd.DatetimeIndex([record['valid_session'] for record in records])\",\n    \"pd.DatetimeIndex(account.date).as_unit('ns'), pd.DatetimeIndex([record['valid_session'] for record in records]).as_unit('ns')\")\nassert new_text == expected\nold_funcs = {n.name: ast.dump(n, include_attributes=False) for n in ast.parse(old_text).body if isinstance(n, ast.FunctionDef)}\nnew_funcs = {n.name: ast.dump(n, include_attributes=False) for n in ast.parse(new_text).body if isinstance(n, ast.FunctionDef)}\nassert old_funcs.keys() == new_funcs.keys()\nfor name in old_funcs.keys() - {'actual_cash'}:\n    assert old_funcs[name] == new_funcs[name]\nplan = read(src.parent / 'protocols/plan.json')\nfor name, digest in plan['source_files'].items():\n    assert file_hash(src / name) == digest\ncases, rejects = 0, 0\nfor record_unit in ('s', 'us', 'ns'):\n    for account_unit in ('s', 'us', 'ns'):\n        values, execution = fixture()\n        values['valid_session'] = pd.to_datetime(values.valid_session).dt.as_unit(record_unit)\n        execution.decisions['valid_session'] = pd.to_datetime(execution.decisions.valid_session).dt.as_unit(record_unit)\n        execution.account_daily['date'] = pd.to_datetime(execution.account_daily.date).dt.as_unit(account_unit)\n        result = diagnose_account(values, execution)\n        assert result['summary']['native_signal_days'] == len(values)\n        assert result['summary']['cash_partitions'] == 'BOTH_EXACT_COMPLETE'\n        cases += 1\nfor change in ('shift', 'drop'):\n    values, execution = fixture()\n    if change == 'shift':\n        execution.account_daily.loc[0, 'date'] += pd.Timedelta(days=1)\n    else:\n        execution.account_daily = execution.account_daily.iloc[:-1].copy()\n    try:\n        diagnose_account(values, execution)\n    except AssertionError:\n        rejects += 1\n    else:\n        raise AssertionError('Different/missing native date accepted')\nproof = {'status': 'PURE_PASS', 'new_account_evaluations': 0, 'retained_account_reads': 0,\n         'date_precision_cases': cases, 'illegal_date_rejections': rejects,\n         'single_line_only_change': True, 'all_other_functions_AST_identical': True,\n         'original_focused_successor': read(root / '.tmp/ex042-diagnosis/focused_v2.json')}\nwrite(root / '.tmp/ex042-date-v2/focused.json', proof)\nprint({'date_precision_checks': 'PURE_PASS', 'cases': cases, 'illegal_dates_rejected': rejects})\n"
+  },
+  "unchanged": "All anchor/state/category/statistics functions AST identical. Actual_cash differs only in one exact date-comparison dtype normalization. Original method, failure and native37 evidence retained; no new or rerun complete account, policy/data/13-domain/four-gate change.",
+  "limits": "Technical diagnostic correction only; no economic improvement inferred."
+}

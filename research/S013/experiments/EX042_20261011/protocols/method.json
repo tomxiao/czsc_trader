@@ -1,0 +1,148 @@
+{
+  "name": "Complete retained-account causal signal exit-anchor context diagnosis",
+  "inputs": {
+    "original33": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+      "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+      "media_type": "application/json",
+      "name": "native-exit-reentry-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "mean_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX028_20261011"
+      },
+      "evidence_id": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json",
+      "sha256": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "body_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX029_20261011"
+      },
+      "evidence_id": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30.json",
+      "sha256": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "time_close": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX041_20261011"
+      },
+      "evidence_id": "225c77a01b03d8e3858f790a935f971d3ccec5ec9c4d8a7fcd626aeda95217c6.json",
+      "sha256": "225c77a01b03d8e3858f790a935f971d3ccec5ec9c4d8a7fcd626aeda95217c6",
+      "media_type": "application/json",
+      "name": "bear-time-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "time_body": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX041_20261011"
+      },
+      "evidence_id": "65a233dafec5ebb2ee2ffcfbf00fad9530245ab1b35d9efed6125eeb799edc4a.json",
+      "sha256": "65a233dafec5ebb2ee2ffcfbf00fad9530245ab1b35d9efed6125eeb799edc4a",
+      "media_type": "application/json",
+      "name": "bear-time-reentry-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "source_files": {
+    "native_diagnosis.py": "c9712eeacd38767ee2fd89d420cef3478494103404f1f69bc4ea10fe45d85ba7",
+    "native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "anchor_diagnosis.py": "d22772d7406db2234e6b265afc0268f1085cd9346bad9540be07048ab6ffb470",
+    "focused_checks.py": "c431b0cb2d1c1a9657903dd0264fdade86f34141e8f2d34f1c0286be3fbc5eb6",
+    "source_checks.py": "fd997c950c03c61b5eb16c23a0b948b987ca908fb1a9d907a03cd85a1a2d8a5c",
+    "common.py": "ddcd3c0273418eea9f4496895fcc5b70ec6e14b143557e60199d66506051790f"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX039_20261011/src/direction_diagnosis.py": "4dc966b94eec1686a43754b5df7c89438000f8c0c4ba932ac67db6162e3f356d",
+    "research/S013/experiments/EX036_20261011/src/confirmation_diagnosis_v2.py": "fbecc5fccc6b98d36ea9475eee5e2e14a280814d63d591f48735c531894204e8",
+    "research/S013/experiments/EX033_20261011/src/diagnose.py": "04e3bb090498cdb9dd9a20815ab933272d4a2c2e54ca16ce87e5c0e5aa710ed1",
+    "research/S013/experiments/EX041_20261011/src/direction_oracle_v2.py": "29b27c2bd54de4eae981230e97b6711dd2d36302b5a021578a3595267732c5ed",
+    "research/S013/experiments/EX035_20261011/src/common.py": "03d7acee0bab55757b52358f9705ed971447023b1652522d7dd671af04cf06af",
+    "research/S013/experiments/EX035_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX035_20261011/src/analysis_reference.py": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+    "research/S013/experiments/EX035_20261011/src/ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed"
+  },
+  "pure_prechecks": {
+    "focused": {
+      "status": "PURE_PASS",
+      "new_account_evaluations": 0,
+      "retained_account_reads": 0,
+      "checks": {
+        "full_signal_and_cash_days": 15,
+        "bear_time_sign_categories": 3,
+        "cash_years_plus_ALL": 3,
+        "actual_cycles_including_OPEN": 5,
+        "endpoint_paths": 2,
+        "signal_vs_execution_years": 1,
+        "invalid_state_price_cash_rejections": 10
+      },
+      "source_sha256": "d22772d7406db2234e6b265afc0268f1085cd9346bad9540be07048ab6ffb470"
+    },
+    "source_checks": {
+      "status": "PURE_PASS",
+      "new_account_evaluations": 0,
+      "frozen_reference_functions_AST_identical": [
+        "bound_bars",
+        "direction_fields",
+        "enrich_original",
+        "json_standard",
+        "load_original_oracle",
+        "reconstruct_extra",
+        "validate_days",
+        "verified_json"
+      ],
+      "native_diagnosis_sha256": "c9712eeacd38767ee2fd89d420cef3478494103404f1f69bc4ea10fe45d85ba7",
+      "limits": "Reference-source identity and zero-evaluation orchestration only; full native accounts are audited after declaration."
+    }
+  },
+  "method": "Authenticate original center plus all32 original joint full-domain points and MEAN/BODY/TIME-CLOSE/TIME-BODY centers: exact native identity, lineage, prepared binding, full formal account, benchmark and cash ledgers. Independently reconstruct all causal features/full-state and bound-calendar signal-to-execution pairs. Reconstruct signal entry anchors and classify every bear TIME exit T Close strictly below/equal/above that signal anchor, at time of exit. Preserve every date, all exits, subsequent flat opportunities/refusals/any-route entries, nonTIME/NONE context, terminal no-reentry/open states and all years/empty groups. Remember causal signal context until any signal entry. Describe actual cash/fees and closed/open cycles by entry-source context; group sums must reproduce original complete actual daily/annual/whole account. No modified signals, cash replay or historical-profit deletion.",
+  "unique_native_accounts": 37,
+  "new_account_evaluations": 0,
+  "limits": "Posthoc diagnosis on repeatedly seen S013 development pool. Original33 share one market path and are dependent, not independent trials. Signal exit price relative to signal anchor differs from actual cycle PnL including fills/fees. All categories and all years retained, including2019 signal for2020 execution. Actual cash grouping is descriptive, not profit of a changed policy; cross-year cycle PnL is not calendar-year return. No threshold search, successful-year selection, added economic veto or independent validation."
+}

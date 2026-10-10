@@ -1,0 +1,185 @@
+{
+  "name": "S013-EX042-complete-native-signal-exit-anchor-diagnosis",
+  "method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX042_20261011"
+    },
+    "evidence_id": "b34e58be12cfc603bc8c52be0cfc2b9388c7d204fdd3e6ba4916d6ccd77ea9c3.json",
+    "sha256": "b34e58be12cfc603bc8c52be0cfc2b9388c7d204fdd3e6ba4916d6ccd77ea9c3",
+    "media_type": "application/json",
+    "name": "prospective-anchor-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "input_references": {
+    "original33": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+      "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+      "media_type": "application/json",
+      "name": "native-exit-reentry-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "mean_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX028_20261011"
+      },
+      "evidence_id": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json",
+      "sha256": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "body_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX029_20261011"
+      },
+      "evidence_id": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30.json",
+      "sha256": "976de84cea65318f55203724ee8a7b2c5b4fa0805be1bfb9587b85927773db30",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "time_close": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX041_20261011"
+      },
+      "evidence_id": "225c77a01b03d8e3858f790a935f971d3ccec5ec9c4d8a7fcd626aeda95217c6.json",
+      "sha256": "225c77a01b03d8e3858f790a935f971d3ccec5ec9c4d8a7fcd626aeda95217c6",
+      "media_type": "application/json",
+      "name": "bear-time-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "time_body": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX041_20261011"
+      },
+      "evidence_id": "65a233dafec5ebb2ee2ffcfbf00fad9530245ab1b35d9efed6125eeb799edc4a.json",
+      "sha256": "65a233dafec5ebb2ee2ffcfbf00fad9530245ab1b35d9efed6125eeb799edc4a",
+      "media_type": "application/json",
+      "name": "bear-time-reentry-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX039_20261011/src/direction_diagnosis.py": "4dc966b94eec1686a43754b5df7c89438000f8c0c4ba932ac67db6162e3f356d",
+    "research/S013/experiments/EX036_20261011/src/confirmation_diagnosis_v2.py": "fbecc5fccc6b98d36ea9475eee5e2e14a280814d63d591f48735c531894204e8",
+    "research/S013/experiments/EX033_20261011/src/diagnose.py": "04e3bb090498cdb9dd9a20815ab933272d4a2c2e54ca16ce87e5c0e5aa710ed1",
+    "research/S013/experiments/EX041_20261011/src/direction_oracle_v2.py": "29b27c2bd54de4eae981230e97b6711dd2d36302b5a021578a3595267732c5ed",
+    "research/S013/experiments/EX035_20261011/src/common.py": "03d7acee0bab55757b52358f9705ed971447023b1652522d7dd671af04cf06af",
+    "research/S013/experiments/EX035_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX035_20261011/src/analysis_reference.py": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+    "research/S013/experiments/EX035_20261011/src/ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+    "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+    "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+    "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed"
+  },
+  "source_files": {
+    "native_diagnosis.py": "c9712eeacd38767ee2fd89d420cef3478494103404f1f69bc4ea10fe45d85ba7",
+    "native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "anchor_diagnosis.py": "d22772d7406db2234e6b265afc0268f1085cd9346bad9540be07048ab6ffb470",
+    "focused_checks.py": "c431b0cb2d1c1a9657903dd0264fdade86f34141e8f2d34f1c0286be3fbc5eb6",
+    "source_checks.py": "fd997c950c03c61b5eb16c23a0b948b987ca908fb1a9d907a03cd85a1a2d8a5c",
+    "common.py": "ddcd3c0273418eea9f4496895fcc5b70ec6e14b143557e60199d66506051790f"
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 37,
+    "content_sha256": "54e870e265b750278dc43cf6c7eb1442b0fa5703d4a5ae7b7157dd8ea79c48fa"
+  },
+  "unique_native_accounts_reused": 37,
+  "new_account_evaluations": 0,
+  "new_business_configurations": 0,
+  "economic_targets": "Four original economic gates and all13 numeric full domains unchanged. Diagnostics report-only.",
+  "prior_anchor_counterevidence": {
+    "reference": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX016_20261011"
+      },
+      "evidence_id": "26dad0baf35054808dca919a74d7537f2858de04f21b303c432c7b8c13a53135.json",
+      "sha256": "26dad0baf35054808dca919a74d7537f2858de04f21b303c432c7b8c13a53135",
+      "media_type": "application/json",
+      "name": "prior-account-descriptive-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "scope": "EX016 already examined signal-relative exit price. Its2023 raw-bear TIME dedup excludes same-day raw-route changes; negative30 events next3signal-days averaged+.3690%, positive36 averaged-.1261%, with direction reversing at10days. Those overlapping future-window associations do not predict a changed account. EX042 retains route-changed exits too, everyyear and own37 native paths, actual calendar cash, and does not optimize future windows."
+  },
+  "duplicate_review": {
+    "result": "No exact retained adverse-price-at-bear-TIME-exit entry-context gate found in S013 plan/strategy source review. EX041 gates all bearTIME reentries without anchor category; EX016 EXIT_NONPOSITIVE/NONNEGATIVE condition whether TIME exit occurs, preserving reentries.",
+    "closest_sources": {
+      "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+      "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/mechanism_range.py": "7739c95baaa76021e20b6e775827faf200aa2f8a624b328948790a5e079bafb3"
+    },
+    "limits": "Source/protocol review and near-mechanism evidence; no claim that adverse-price reentry gating is effective or conceptually novel outside S013."
+  },
+  "strongest_counterevidence": "EX034/35 refresh waits and EX040 all-bear directions failed. EX041 narrow bearTIME reentry directions preserved116trades but made2023 about-1.25%; CLOSE passed annualDD while BODY still failed2024. A prior adverse signal-price state may also mark profitable recoveries; state classifications and actual PnL groups cannot predict the cash path or establish a reliable gate.",
+  "selection_history": "After complete EX041 negative evidence stop unconditional bearTIME direction expansion. Inspect causal exit-anchor category before choosing any successor; no date/threshold/predicate optimization from future outcomes. All original13 parameter points and failed extra centers retained.",
+  "boundaries": "RSCH S013 stage3 only; no prepare/eval/newdata/adjacentbatch/dependency/platform/freeze/PTE/prod/merge/tag/push.",
+  "objective_achieved": false
+}
