@@ -47,6 +47,10 @@ def _public_delivery_path(context: RepositoryContext, reference) -> Path:
 
 
 def _read_json(path: Path):
+    return _decode_json(path.read_text(encoding="utf-8"))
+
+
+def _decode_json(text: str):
     def pairs(items):
         result = {}
         for key, value in items:
@@ -54,7 +58,7 @@ def _read_json(path: Path):
                 raise ValueError(f"duplicate JSON key: {key}")
             result[key] = value
         return result
-    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=pairs)
+    return json.loads(text, object_pairs_hook=pairs)
 
 
 def _read_evidence(root, reference):
@@ -79,18 +83,21 @@ def _references(content):
 
 
 def _account_evidence(root, ref):
+    return _account_document(root, ref)[1]
+
+
+def _account_document(root, ref):
     from ..research_tools.evaluation import validate_evaluation_evidence
 
     if (ref.schema, ref.schema_version) != ("account_evaluation", 6):
         _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 6 required")
-    _read_evidence(root, ref)
-    value = _read_json(_resolve(root, ref.path))
+    value = _decode_json(_read_evidence(root, ref).decode("utf-8"))
     validate_evaluation_evidence(value)
     request = value["request_identity"]
     if (request["experiment_id"] != ref.experiment.experiment_id
         or not request["strategy_reference"].startswith(ref.experiment.strategy_id + "-")):
         _fail("EVALUATION_REFERENCE", ref.path, "evaluation origin differs from its evidence owner")
-    return tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
+    return value, tuple(AssessmentEvidence.from_dict(item) for item in value["assessment_evidence"])
 
 
 def _check_evaluation(root, ref, candidate):
@@ -274,20 +281,20 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     saved_policies = {}
     for reference in _references(content):
         if (reference.schema, reference.schema_version) == ("account_evaluation", 6):
-            account = _read_json(_resolve(root, reference.path))
+            account, records = _account_document(root, reference)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
                                                           for x in account["runs"])
-            for evidence in _account_evidence(root, reference):
+            for evidence in records:
                 saved[evidence.evaluation_id] = evidence
     predecessor_root = _delivery_path(context, payload.source_candidates)
     for candidate in candidates.candidates:
         for reference in candidate.evaluations:
-            account = _read_json(_resolve(predecessor_root, reference.evidence.path))
+            account, records = _account_document(predecessor_root, reference.evidence)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]
                                                           for x in account["runs"])
-            for evidence in _account_evidence(predecessor_root, reference.evidence):
+            for evidence in records:
                 previous = saved.setdefault(evidence.evaluation_id, evidence)
                 if previous != evidence:
                     _fail("ASSESSMENT_EVIDENCE", evidence.evaluation_id, "conflicting saved account facts")

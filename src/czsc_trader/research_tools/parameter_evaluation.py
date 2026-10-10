@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from functools import lru_cache
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -154,10 +155,16 @@ class ParameterEvaluationPlan(_Record):
 def read_parameter_plan(reference: EvidenceRef, repository_root: Path) -> ParameterEvaluationPlan:
     if type(reference) is not EvidenceRef or reference.media_type != "application/json":
         raise TypeError("parameter plan requires published JSON EvidenceRef")
-    plan = ParameterEvaluationPlan.from_dict(json.loads(reference.resolve(repository_root).read_text(encoding="utf-8")))
+    plan = _decode_parameter_plan(reference._read_verified(repository_root)[1])
     plan.mapping_evidence.resolve(repository_root)
     plan.feasibility_evidence.resolve(repository_root)
     return plan
+
+
+@lru_cache(maxsize=1)
+def _decode_parameter_plan(data: bytes) -> ParameterEvaluationPlan:
+    """Reuse immutable decoding only; each caller still verifies all evidence bytes."""
+    return ParameterEvaluationPlan.from_dict(json.loads(data.decode("utf-8")))
 
 
 def validate_parameter_contract(contract: dict, plan: ParameterEvaluationPlan,

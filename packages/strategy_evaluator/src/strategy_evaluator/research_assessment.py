@@ -10,7 +10,7 @@ import math
 import numpy as np
 
 from . import research_models as m
-from .bootstrap import paired_stationary_bootstrap
+from .bootstrap import _paired_stationary_bootstrap_cagr
 from .audit_models import ReturnMatrixEvidence
 from .search_bias import annualized_sharpe, calculate_dsr_bundle, cscv_pbo, effective_trial_count
 
@@ -151,7 +151,7 @@ def _family(request):
     )
     append("PBO", lambda: cscv_pbo(evidence, request.protocol.pbo_blocks).pbo)
 
-    def dsr(kind):
+    try:
         sharpes = np.array([annualized_sharpe(matrix[:, i]) for i in range(matrix.shape[1])])
         selected = matrix[:, family.candidates.index(family.selected)]
         bundle = calculate_dsr_bundle(
@@ -160,10 +160,14 @@ def _family(request):
             raw_count=family.raw_trial_count,
             effective_count=effective_trial_count(matrix),
         )
-        return getattr(bundle, kind).probability
-
-    append("DSR_RAW", lambda: dsr("raw"))
-    append("DSR_EFFECTIVE", lambda: dsr("effective"))
+    except (ValueError, FloatingPointError, ZeroDivisionError) as exc:
+        for name in ("DSR_RAW", "DSR_EFFECTIVE"):
+            values.append(
+                m.FamilyDiagnostic(name, m.DiagnosticStatus.INSUFFICIENT_DATA, None, str(exc))
+            )
+    else:
+        append("DSR_RAW", lambda: bundle.raw.probability)
+        append("DSR_EFFECTIVE", lambda: bundle.effective.probability)
     return tuple(values), family.limitations
 
 
@@ -362,19 +366,17 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     sources=(base,),
                 )
                 if len(base.account) >= 2:
-                    result = paired_stationary_bootstrap(
+                    result = _paired_stationary_bootstrap_cagr(
                         _returns(base),
                         benchmark[1:] / benchmark[:-1] - 1,
-                        champion_id=center.candidate_id,
-                        comparator_id="benchmark",
                         repetitions=p.bootstrap_repetitions,
                         mean_block_length=p.bootstrap_block_length,
                         seed=p.seed,
                     )
                     interval = m.UncertaintyInterval(
                         m.DiagnosticStatus.AVAILABLE,
-                        result.cagr.lower_95,
-                        result.cagr.upper_95,
+                        result.lower_95,
+                        result.upper_95,
                         None,
                     )
                 else:

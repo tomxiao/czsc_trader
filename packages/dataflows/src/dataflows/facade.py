@@ -856,6 +856,7 @@ def _date_bounds(
     request: DataRequest,
     metadata: Mapping[str, Any],
 ) -> tuple[str, str]:
+    dataframe = pd.DataFrame(dataframe, copy=False)
     if "Date" not in dataframe.columns:
         raise DataContractError("published dataframe is missing Date column")
     timestamps = pd.to_datetime(dataframe["Date"], errors="coerce")
@@ -977,6 +978,7 @@ def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
     coverage = request.coverage
     if coverage is None:
         return
+    frame = pd.DataFrame(frame, copy=False)
     if coverage.observations_through is not None:
         frame = frame.loc[
             pd.to_datetime(frame["Date"], errors="raise")
@@ -1223,14 +1225,17 @@ class Dataflows:
                 if start > end:
                     continue
                 hashes = []
-                common_dates = (set(pd.to_datetime(previous.dataframe["Date"]))
-                                & set(pd.to_datetime(current.dataframe["Date"])))
+                previous_values = pd.DataFrame(previous.dataframe, copy=False)
+                current_values = pd.DataFrame(current.dataframe, copy=False)
+                common_dates = (set(pd.to_datetime(previous_values["Date"]))
+                                & set(pd.to_datetime(current_values["Date"])))
                 for result in (previous, current):
-                    dates = pd.to_datetime(result.dataframe["Date"])
+                    numerical = pd.DataFrame(result.dataframe, copy=False)
+                    dates = pd.to_datetime(numerical["Date"])
                     selected = dates.between(start, end)
                     if moneyflow:
                         selected &= dates.isin(common_dates)
-                    overlap = result.dataframe.loc[selected].reset_index(drop=True)
+                    overlap = numerical.loc[selected].reset_index(drop=True)
                     hashes.append(canonical_frame_sha256(overlap))
                 if hashes[0] != hashes[1]:
                     raise StoreError("INCONSISTENT_PREPARATION", "overlapping source data disagree")
@@ -1254,6 +1259,7 @@ class Dataflows:
             for entry in matching:
                 self._require_contract_version(entry.get("data_contract_version"), location="preparation")
             results = []
+            winning_attrs = None
             for asset_id in sorted({entry["asset_id"] for entry in matching}):
                 stored = self._store.read(asset_id)
                 self._require_contract_version(stored.identity.metadata.get("data_contract_version"), location="asset")
@@ -1263,7 +1269,6 @@ class Dataflows:
                 if isinstance(request.parameters, MoneyflowParameters):
                     selected &= dates.dt.strftime("%Y-%m-%d").isin(request.parameters.trading_dates)
                 frame = numerical.loc[selected].copy().reset_index(drop=True)
-                frame.attrs = deepcopy(stored.dataframe.attrs)
                 if frame.empty:
                     return self._failure(DataStatus.EMPTY, "EMPTY_DATA",
                                          "prepared asset has no observations in this range", request)
@@ -1275,6 +1280,8 @@ class Dataflows:
                                    data_start=selected_dates.iloc[0].isoformat(),
                                    data_cutoff=selected_dates.iloc[-1].isoformat())
                 result = DataResult(DataStatus.READY, frame, identity, warnings=stored.warnings)
+                if not results:
+                    winning_attrs = stored.dataframe.attrs
                 results.append(result)
             if len({result.identity.content_sha256 for result in results}) != 1:
                 return self._failure(DataStatus.FAILED, "AMBIGUOUS_PREPARED_DATA",
@@ -1285,6 +1292,7 @@ class Dataflows:
             # reading a pinned asset never acquires or repairs supplier data.
             _validate_coverage(result.dataframe, request)
             _date_bounds(result.dataframe, request, result.identity.metadata)
+            result.dataframe.attrs = deepcopy(winning_attrs)
             return replace(result, prepared=prepared)
         except StoreError as exc:
             return self._failure(DataStatus.FAILED, exc.code, str(exc), request)

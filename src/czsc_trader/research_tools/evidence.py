@@ -62,12 +62,17 @@ class EvidenceRef(_Record):
         return f"research/{self.experiment.strategy_id}/assets/evidence/{self.experiment.experiment_id}/{self.evidence_id}"
 
     def resolve(self, repository_root: Path) -> Path:
+        return self._read_verified(repository_root)[0]
+
+    def _read_verified(self, repository_root: Path) -> tuple[Path, bytes]:
+        """Read once so internal consumers decode the bytes that were verified."""
         target = managed_path(repository_root, self.repository_path)
         if not target.is_file():
             raise FileNotFoundError(f"published evidence is missing: {self.evidence_id}")
-        if sha256(target.read_bytes()).hexdigest() != self.sha256:
+        data = target.read_bytes()
+        if sha256(data).hexdigest() != self.sha256:
             raise ValueError("published evidence content differs from its reference")
-        return target
+        return target, data
 
 
 def _name(value: str):

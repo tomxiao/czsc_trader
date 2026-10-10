@@ -221,3 +221,51 @@ def test_unprepared_adapter_uses_authenticated_binding_after_source_cleanup(mana
     shutil.rmtree(request.strategy.source_root)
     evidence = build_assessment_evidence(request, result)
     assert evidence[0].request_sha256 == result.request_hash
+
+
+def test_parameter_plan_reuses_decoding_but_rechecks_all_published_bytes(managed_evaluation, monkeypatch):
+    from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan, _decode_parameter_plan
+
+    research, request = managed_evaluation
+    _, plan, reference, _ = parameter_plan(research, request)
+    _decode_parameter_plan.cache_clear()
+    original = ParameterEvaluationPlan.from_dict
+    calls = []
+
+    def decode(cls, value):
+        calls.append(value)
+        return original(value)
+
+    monkeypatch.setattr(ParameterEvaluationPlan, "from_dict", classmethod(decode))
+    assert read_parameter_plan(reference, request.repository_root) == plan
+    assert read_parameter_plan(reference, request.repository_root) == plan
+    assert len(calls) == 1
+    for item in (plan.mapping_evidence, plan.feasibility_evidence, reference):
+        path = item.resolve(request.repository_root)
+        data = path.read_bytes()
+        path.write_bytes(b"corrupt")
+        with pytest.raises(ValueError, match="content differs"):
+            read_parameter_plan(reference, request.repository_root)
+        path.write_bytes(data)
+    _decode_parameter_plan.cache_clear()
+
+
+def test_bound_preparation_checks_calendars_without_copying_frame_metadata(managed_evaluation, monkeypatch):
+    import pandas.core.generic as generic
+
+    research, request = managed_evaluation
+    bound = research.evaluation.prepare(request)
+    frames = (bound.execution_data.adjusted_daily, bound.execution_data.execution_daily)
+    originals = tuple(frame.attrs for frame in frames)
+    copies = []
+    original = generic.deepcopy
+
+    def tracked(value, *args, **kwargs):
+        if any(value is metadata for metadata in originals):
+            copies.append(value)
+        return original(value, *args, **kwargs)
+
+    monkeypatch.setattr(generic, "deepcopy", tracked)
+    assert research.evaluation.prepare(bound) is bound
+    assert copies == []
+    assert all(frame.attrs is metadata for frame, metadata in zip(frames, originals, strict=True))

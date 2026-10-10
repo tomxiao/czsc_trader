@@ -12,6 +12,9 @@ from strategy_evaluator import (
     CandidateProfile,
 )
 from strategy_evaluator import research_models as m
+from strategy_evaluator import research_assessment as assessment
+from strategy_evaluator import search_bias
+from strategy_evaluator import bootstrap
 
 
 def candidate(name="C0001", digest="a"):
@@ -547,7 +550,7 @@ def test_pareto_rejects_intersection_comparison_and_duplicates():
     assert pareto_layers(()) == ()
 
 
-def test_family_statistics_bind_return_matrix_and_do_not_affect_ranks():
+def family_request():
     req = request()
     matrix = tuple(
         tuple(
@@ -564,10 +567,90 @@ def test_family_statistics_bind_return_matrix_and_do_not_affect_ranks():
         12,
         ("shared development samples",),
     )
-    panel = assess_candidates(replace(req, family_returns=family))
+    return replace(req, family_returns=family)
+
+
+def test_family_statistics_bind_return_matrix_and_do_not_affect_ranks():
+    req = family_request()
+    family = req.family_returns
+    panel = assess_candidates(req)
     assert {x.name for x in panel.family_diagnostics} == {"PBO", "DSR_RAW", "DSR_EFFECTIVE"}
     assert panel.family_limitations == family.limitations
     assert all(x.value is None or math.isfinite(x.value) for x in panel.family_diagnostics)
     tampered = replace(family, returns=((0.1, 0.2), *family.returns[1:]))
     with pytest.raises(ValueError, match="returns differ"):
         assess_candidates(replace(req, family_returns=tampered))
+
+
+def test_family_dsr_bundle_and_effective_count_are_computed_once(monkeypatch):
+    req = family_request()
+    matrix = np.asarray(req.family_returns.returns)
+    sharpes = np.asarray([search_bias.annualized_sharpe(x) for x in matrix.T])
+    selected = matrix[:, req.family_returns.candidates.index(req.family_returns.selected)]
+    expected = search_bias.calculate_dsr_bundle(
+        selected, sharpes, raw_count=req.family_returns.raw_trial_count,
+        effective_count=search_bias.effective_trial_count(matrix),
+    )
+    calls = {"sharpe": 0, "effective_count": 0, "bundle": 0}
+
+    def counted(name, original):
+        def wrapped(*args, **kwargs):
+            calls[name] += 1
+            return original(*args, **kwargs)
+        return wrapped
+
+    monkeypatch.setattr(assessment, "annualized_sharpe", counted("sharpe", search_bias.annualized_sharpe))
+    monkeypatch.setattr(assessment, "effective_trial_count", counted("effective_count", search_bias.effective_trial_count))
+    monkeypatch.setattr(assessment, "calculate_dsr_bundle", counted("bundle", search_bias.calculate_dsr_bundle))
+    diagnostics = {x.name: x for x in assess_candidates(req).family_diagnostics}
+    assert diagnostics["DSR_RAW"].value == expected.raw.probability
+    assert diagnostics["DSR_EFFECTIVE"].value == expected.effective.probability
+    assert calls == {"sharpe": matrix.shape[1], "effective_count": 1, "bundle": 1}
+
+
+@pytest.mark.parametrize("exception", [ValueError, FloatingPointError, ZeroDivisionError])
+@pytest.mark.parametrize("operation", ["effective_trial_count", "calculate_dsr_bundle"])
+def test_family_dsr_expected_failure_is_shared_without_affecting_pbo(monkeypatch, exception, operation):
+    calls = []
+
+    def failed(*args, **kwargs):
+        calls.append(operation)
+        raise exception("declared statistical failure")
+
+    monkeypatch.setattr(assessment, operation, failed)
+    diagnostics = {x.name: x for x in assess_candidates(family_request()).family_diagnostics}
+    assert calls == [operation]
+    assert diagnostics["PBO"].status is m.DiagnosticStatus.AVAILABLE
+    for name in ("DSR_RAW", "DSR_EFFECTIVE"):
+        assert diagnostics[name].status is m.DiagnosticStatus.INSUFFICIENT_DATA
+        assert diagnostics[name].value is None
+        assert diagnostics[name].reason == "declared statistical failure"
+
+
+def test_family_dsr_unexpected_error_is_not_converted_to_diagnostic(monkeypatch):
+    def failed(*args, **kwargs):
+        raise RuntimeError("unexpected implementation failure")
+
+    monkeypatch.setattr(assessment, "calculate_dsr_bundle", failed)
+    with pytest.raises(RuntimeError, match="unexpected implementation failure"):
+        assess_candidates(family_request())
+
+
+def test_stage_four_interval_matches_original_without_sampled_drawdown(monkeypatch):
+    req = request()
+    base = req.evidence[0]
+    benchmark = np.r_[base.initial_cash, base.benchmark_equity]
+    expected = bootstrap.paired_stationary_bootstrap(
+        assessment._returns(base), benchmark[1:] / benchmark[:-1] - 1,
+        champion_id=req.centers[0].candidate_id, comparator_id="benchmark",
+        repetitions=req.protocol.bootstrap_repetitions,
+        mean_block_length=req.protocol.bootstrap_block_length, seed=req.protocol.seed,
+    ).cagr
+
+    def unused(*args):
+        raise AssertionError("stage four only needs the CAGR interval")
+
+    monkeypatch.setattr(bootstrap, "_row_metrics", unused)
+    interval = assess_candidates(req).rows[0].uncertainty
+    assert interval.status is m.DiagnosticStatus.AVAILABLE
+    assert (interval.lower_95, interval.upper_95) == (expected.lower_95, expected.upper_95)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -18,6 +19,8 @@ class ExecutionPriceBasis(StrEnum):
 
 
 def _factors(raw: pd.DataFrame, adjusted: pd.DataFrame) -> pd.Series:
+    raw = pd.DataFrame(raw, copy=False)
+    adjusted = pd.DataFrame(adjusted, copy=False)
     columns = ["open", "high", "low", "close"]
     for frame in (raw, adjusted):
         if not {"dt", *columns}.issubset(frame.columns):
@@ -103,8 +106,10 @@ class ExecutionPricing:
     def apply(self, frame: pd.DataFrame, *, raw_daily: pd.DataFrame,
               adjusted_daily: pd.DataFrame) -> pd.DataFrame:
         """Convert admitted raw quotes into this account's price/volume units."""
-        result = frame.copy()
+        numerical = pd.DataFrame(frame, copy=False)
+        result = numerical.copy()
         if self.basis is ExecutionPriceBasis.UNADJUSTED:
+            result.attrs = deepcopy(frame.attrs)
             return result
         factors = _factors(raw_daily, adjusted_daily)
         anchor = pd.Timestamp(self.anchor_date)
@@ -112,7 +117,7 @@ class ExecutionPricing:
             float(factors.loc[anchor]), self.anchor_factor, rel_tol=1e-10, abs_tol=0
         ):
             raise RuntimeContractError("HFQ anchor differs from admitted daily prices")
-        dates = pd.to_datetime(frame["dt"], errors="raise").dt.normalize()
+        dates = pd.to_datetime(numerical["dt"], errors="raise").dt.normalize()
         scales = dates.map(factors) / self.anchor_factor
         if scales.isna().any():
             raise RuntimeContractError("HFQ factors do not cover execution quote sessions")
@@ -121,4 +126,5 @@ class ExecutionPricing:
                 result[column] = result[column].to_numpy(dtype=float) * scales.to_numpy()
         if "vol" in result:
             result["vol"] = result["vol"].to_numpy(dtype=float) / scales.to_numpy()
+        result.attrs = deepcopy(frame.attrs)
         return result

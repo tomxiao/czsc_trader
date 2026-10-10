@@ -266,9 +266,9 @@ def _prepare_evaluation_workspace(
             dataflows=context._dataflows,
         )
     cutoff = pd.Timestamp(protocol.development_cutoff).normalize()
-    dates = pd.DatetimeIndex(pd.to_datetime(execution_data.adjusted_daily["dt"])).normalize()
+    dates = pd.DatetimeIndex(pd.to_datetime(pd.DataFrame(execution_data.adjusted_daily, copy=False)["dt"])).normalize()
     execution_dates = pd.DatetimeIndex(
-        pd.to_datetime(execution_data.execution_daily["dt"])
+        pd.to_datetime(pd.DataFrame(execution_data.execution_daily, copy=False)["dt"])
     ).normalize()
     for label, index in (("research market", dates), ("execution", execution_dates)):
         if index.empty or index.max() != cutoff:
@@ -401,9 +401,8 @@ def _observation(context, candidate_id, window, tier, scenario, result, executio
     if int(opening["quantity_before"]) > 0:
         if execution_data is None:
             raise ValueError("opening holdings require an execution-price ledger")
-        prior = execution_data.execution_daily.loc[
-            execution_data.execution_daily["dt"] < opening["date"]
-        ]
+        prices = pd.DataFrame(execution_data.execution_daily, copy=False)
+        prior = prices.loc[prices["dt"] < opening["date"]]
         if prior.empty:
             raise ValueError("opening holdings have no pre-window execution price")
         gross = int(opening["quantity_before"]) * float(prior.iloc[-1]["close"])
@@ -450,11 +449,10 @@ def _validate_execution_result(
     if not required.issubset(account.columns) or account.empty:
         raise ValueError("TXE account ledger is incomplete")
     dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
+    prices = pd.DataFrame(execution_data.execution_daily, copy=False)
     expected = pd.DatetimeIndex(
         pd.to_datetime(
-            execution_data.execution_daily.loc[
-                execution_data.execution_daily["dt"].between(start, end), "dt"
-            ]
+            prices.loc[prices["dt"].between(start, end), "dt"]
         )
     ).normalize()
     if dates.has_duplicates or not dates.is_monotonic_increasing or not dates.equals(expected):
@@ -504,11 +502,10 @@ def _validate_buyhold(
     if account.empty or not {"date", "equity"}.issubset(account.columns):
         raise ValueError("BuyHold account ledger is incomplete")
     dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
+    prices = pd.DataFrame(execution_data.execution_daily, copy=False)
     expected = pd.DatetimeIndex(
         pd.to_datetime(
-            execution_data.execution_daily.loc[
-                execution_data.execution_daily["dt"].between(start, end), "dt"
-            ]
+            prices.loc[prices["dt"].between(start, end), "dt"]
         )
     ).normalize()
     if not dates.equals(expected):
@@ -673,10 +670,10 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
         if re.fullmatch(r"[0-9a-f]{64}", data.fingerprint) is None:
             raise ValueError("execution data fingerprint must be lowercase SHA-256")
         adjusted_sessions = pd.DatetimeIndex(
-            pd.to_datetime(data.adjusted_daily["dt"])
+            pd.to_datetime(pd.DataFrame(data.adjusted_daily, copy=False)["dt"])
         ).normalize()
         execution_sessions = pd.DatetimeIndex(
-            pd.to_datetime(data.execution_daily["dt"])
+            pd.to_datetime(pd.DataFrame(data.execution_daily, copy=False)["dt"])
         ).normalize()
         if (
             adjusted_sessions.empty
@@ -724,7 +721,7 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
     if any(item.end > request.data_cutoff for item in request.windows):
         raise ValueError("evaluation window violates cutoff")
     if data is not None:
-        sessions = pd.DatetimeIndex(pd.to_datetime(data.execution_daily["dt"])).normalize()
+        sessions = execution_sessions
         for item in request.windows:
             start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
             if start > end or start not in sessions or end not in sessions:

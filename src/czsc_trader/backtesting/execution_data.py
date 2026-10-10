@@ -147,7 +147,7 @@ def _require_execution_frequencies(
         frame = data.execution_intraday if frequency == "30m" else data.execution_five_minute
         if frame is None or frame.empty:
             raise ValueError(f"execution data has no required {frequency} prices")
-        observed = pd.DatetimeIndex(pd.to_datetime(frame["dt"])).normalize()
+        observed = pd.DatetimeIndex(pd.to_datetime(pd.DataFrame(frame, copy=False)["dt"])).normalize()
         if not data.evaluation_sessions.isin(observed).all():
             raise ValueError(f"execution {frequency} prices do not cover evaluation sessions")
 
@@ -279,10 +279,10 @@ def _prepare_backtest_execution_data(
     execution_daily = frames["execution_daily"]
     execution_intraday = frames["execution_intraday"]
     execution_five_minute = frames.get("execution_five_minute")
-    adjusted_sessions = pd.DatetimeIndex(adjusted_daily["dt"].dt.normalize())
+    adjusted_sessions = pd.DatetimeIndex(pd.DataFrame(adjusted_daily, copy=False)["dt"].dt.normalize())
     if not prior[-prior_sessions:].isin(adjusted_sessions).all():
         raise ValueError("adjusted daily prices do not cover declared prior sessions")
-    execution_sessions = pd.DatetimeIndex(execution_daily["dt"].dt.normalize())
+    execution_sessions = pd.DatetimeIndex(pd.DataFrame(execution_daily, copy=False)["dt"].dt.normalize())
     if not prior[-1:].append(sessions).isin(execution_sessions).all():
         required = prior[-1:].append(sessions)
         missing = required[~required.isin(execution_sessions)]

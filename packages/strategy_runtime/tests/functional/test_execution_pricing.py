@@ -1,9 +1,21 @@
 from datetime import date
+from copy import deepcopy
 
 import pandas as pd
 import pytest
 
 from strategy_runtime import ExecutionPriceBasis, ExecutionPricing, RuntimeContractError
+
+
+class MetadataProbe(dict):
+    copies = 0
+
+    def __deepcopy__(self, memo):
+        type(self).copies += 1
+        result = type(self)()
+        memo[id(self)] = result
+        result.update({key: deepcopy(value, memo) for key, value in self.items()})
+        return result
 
 
 def _daily():
@@ -47,3 +59,42 @@ def test_hfq_research_pricing_rejects_inconsistent_admitted_market_data(fault):
         pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2025, 12, 31), 2.)
     with pytest.raises(RuntimeContractError):
         pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted)
+
+
+@pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])
+def test_price_conversion_copies_retained_metadata_once_and_isolates_numeric_units(basis):
+    raw = _daily()
+    adjusted = pd.DataFrame(raw, copy=True)
+    columns = ["open", "high", "low", "close"]
+    adjusted[columns] = adjusted[columns].mul(pd.Series([1., 2., 2.]), axis=0)
+    raw.attrs = {"quality": MetadataProbe({"sessions": ["2025-12-31", "2026-01-02", "2026-01-05"]})}
+    adjusted.attrs = {"quality": MetadataProbe({"source": "adjusted"})}
+    MetadataProbe.copies = 0
+    pricing = ExecutionPricing.from_daily(basis, raw, adjusted, date(2025, 12, 31))
+    assert MetadataProbe.copies == 0
+    converted = pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted)
+    assert MetadataProbe.copies == 1
+    assert converted.attrs == raw.attrs
+    assert converted.iat[1, 4] == (5. if basis is ExecutionPriceBasis.UNADJUSTED else 10.)
+    converted.attrs["quality"]["sessions"].append("local annotation")
+    converted.iat[0, 4] = 99.
+    assert raw.iat[0, 4] == 10.
+    assert len(raw.attrs["quality"]["sessions"]) == 3
+
+
+@pytest.mark.parametrize("fault", ["nonpositive_quote", "missing_session", "wrong_anchor"])
+def test_failed_price_conversion_validates_numeric_inputs_before_copying_metadata(fault):
+    raw = _daily()
+    adjusted = pd.DataFrame(raw, copy=True)
+    if fault == "nonpositive_quote":
+        raw.iat[0, 4] = 0.
+    elif fault == "missing_session":
+        adjusted = adjusted.iloc[:-1]
+    raw.attrs = {"quality": MetadataProbe({"source": "raw"})}
+    adjusted.attrs = {"quality": MetadataProbe({"source": "adjusted"})}
+    pricing = ExecutionPricing(ExecutionPriceBasis.HFQ_RESEARCH, date(2025, 12, 31),
+                               2. if fault == "wrong_anchor" else 1.)
+    MetadataProbe.copies = 0
+    with pytest.raises(RuntimeContractError):
+        pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted)
+    assert MetadataProbe.copies == 0

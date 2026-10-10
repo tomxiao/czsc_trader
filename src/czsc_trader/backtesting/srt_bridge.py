@@ -331,7 +331,7 @@ def build_srt_signal_replay(
     if end.normalize() > pd.Timestamp(execution_data.cutoff):
         raise RuntimeContractError("backtest window exceeds the published cutoff")
     sessions = pd.DatetimeIndex(
-        pd.to_datetime(execution_data.adjusted_daily["dt"]).dt.normalize(), name="dt"
+        pd.to_datetime(pd.DataFrame(execution_data.adjusted_daily, copy=False)["dt"]).dt.normalize(), name="dt"
     )
     evaluation = sessions[(sessions >= start.normalize()) & (sessions <= end.normalize())]
     if evaluation.empty:

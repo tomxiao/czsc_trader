@@ -72,8 +72,12 @@ def performance_metrics(returns: np.ndarray) -> PerformanceMetrics:
     return PerformanceMetrics(cagr, maximum_drawdown, float(calmar))
 
 
+def _row_cagr(values: np.ndarray) -> np.ndarray:
+    return np.exp(np.log1p(values).sum(axis=1) * 252.0 / values.shape[1]) - 1.0
+
+
 def _row_metrics(values: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    cagr = np.exp(np.log1p(values).sum(axis=1) * 252.0 / values.shape[1]) - 1.0
+    cagr = _row_cagr(values)
     wealth = np.cumprod(1.0 + values, axis=1)
     wealth = np.column_stack([np.ones(len(values)), wealth])
     peaks = np.maximum.accumulate(wealth, axis=1)
@@ -168,16 +172,7 @@ def stationary_bootstrap_performance(
     )
 
 
-def paired_stationary_bootstrap(
-    champion_returns: np.ndarray,
-    comparator_returns: np.ndarray,
-    *,
-    champion_id: str,
-    comparator_id: str,
-    repetitions: int = 10_000,
-    mean_block_length: int = 21,
-    seed: int = 0,
-) -> BootstrapComparison:
+def _paired_returns(champion_returns, comparator_returns, repetitions, mean_block_length):
     champion = np.asarray(champion_returns, dtype=float)
     comparator = np.asarray(comparator_returns, dtype=float)
     if champion.shape != comparator.shape or champion.ndim != 1 or len(champion) < 2:
@@ -188,21 +183,61 @@ def paired_stationary_bootstrap(
         raise ValueError("daily returns must be greater than -1")
     if repetitions < 1 or mean_block_length < 1:
         raise ValueError("repetitions and mean block length must be positive")
+    return champion, comparator
 
+
+def _paired_sample_indices(observations, repetitions, mean_block_length, seed):
+    """Retain the original chunk boundaries and all stationary-bootstrap RNG draws."""
     rng = np.random.default_rng(seed)
-    champion_metrics = [[], [], []]
-    comparator_metrics = [[], [], []]
     chunk_size = min(256, repetitions)
     for start in range(0, repetitions, chunk_size):
         count = min(chunk_size, repetitions - start)
-        indices = np.empty((count, len(champion)), dtype=np.int32)
-        indices[:, 0] = rng.integers(0, len(champion), size=count)
-        for column in range(1, len(champion)):
+        indices = np.empty((count, observations), dtype=np.int32)
+        indices[:, 0] = rng.integers(0, observations, size=count)
+        for column in range(1, observations):
             restart = rng.random(count) < 1.0 / mean_block_length
             indices[:, column] = np.where(
-                restart, rng.integers(0, len(champion), size=count),
-                (indices[:, column - 1] + 1) % len(champion),
+                restart, rng.integers(0, observations, size=count),
+                (indices[:, column - 1] + 1) % observations,
             )
+        yield indices
+
+
+def _paired_stationary_bootstrap_cagr(
+    champion_returns: np.ndarray,
+    comparator_returns: np.ndarray,
+    *,
+    repetitions: int = 10_000,
+    mean_block_length: int = 21,
+    seed: int = 0,
+) -> BootstrapMetric:
+    """Compute the stage-four CAGR summary without sampled drawdown or Calmar arrays."""
+    champion, comparator = _paired_returns(
+        champion_returns, comparator_returns, repetitions, mean_block_length,
+    )
+    differences = []
+    for indices in _paired_sample_indices(len(champion), repetitions, mean_block_length, seed):
+        differences.append(_row_cagr(champion[indices]) - _row_cagr(comparator[indices]))
+    point = performance_metrics(champion).cagr - performance_metrics(comparator).cagr
+    return _summary("cagr", point, np.concatenate(differences))
+
+
+def paired_stationary_bootstrap(
+    champion_returns: np.ndarray,
+    comparator_returns: np.ndarray,
+    *,
+    champion_id: str,
+    comparator_id: str,
+    repetitions: int = 10_000,
+    mean_block_length: int = 21,
+    seed: int = 0,
+) -> BootstrapComparison:
+    champion, comparator = _paired_returns(
+        champion_returns, comparator_returns, repetitions, mean_block_length,
+    )
+    champion_metrics = [[], [], []]
+    comparator_metrics = [[], [], []]
+    for indices in _paired_sample_indices(len(champion), repetitions, mean_block_length, seed):
         for target, values in ((champion_metrics, champion[indices]), (comparator_metrics, comparator[indices])):
             computed = _row_metrics(values)
             for metric_index, metric_values in enumerate(computed):
