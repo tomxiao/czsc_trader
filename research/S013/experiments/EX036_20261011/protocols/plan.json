@@ -1,0 +1,111 @@
+{
+  "name": "S013-EX036-complete-path-confirmation-drawdown-diagnosis",
+  "new_account_evaluations": 0,
+  "unique_native_accounts_reused": 34,
+  "method_references": {
+    "confirmation": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX036_20261011"
+      },
+      "evidence_id": "74a4813161d7206b2e42412b26a3b12a89b160fdb004133e31460d049ae612dd.json",
+      "sha256": "74a4813161d7206b2e42412b26a3b12a89b160fdb004133e31460d049ae612dd",
+      "media_type": "application/json",
+      "name": "prospective-confirmation-method",
+      "schema": null,
+      "schema_version": null
+    },
+    "drawdown": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX036_20261011"
+      },
+      "evidence_id": "966d43859b0f2aaade5e82a5733b1f4b8fa7f96cab62b60bbff32983f1a08397.json",
+      "sha256": "966d43859b0f2aaade5e82a5733b1f4b8fa7f96cab62b60bbff32983f1a08397",
+      "media_type": "application/json",
+      "name": "prospective-drawdown-method",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "input_references": {
+    "original33": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX033_20261011"
+      },
+      "evidence_id": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b.json",
+      "sha256": "aef297c6fb506885121aa9bc4e6fc4f6975127c852af1647bd62984ff127279b",
+      "media_type": "application/json",
+      "name": "native-exit-reentry-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "mean_center": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX028_20261011"
+      },
+      "evidence_id": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32.json",
+      "sha256": "f47132856172896f6ecd570c266d73d154e182019ebe5340055427b455e0ee32",
+      "media_type": "application/json",
+      "name": "information-mechanism-n1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 31,
+    "content_sha256": "d3131e3d3ef079deb1f48c18f4f7e2aec766a257eea1cdcd3087d292df852fbb"
+  },
+  "source_files": {
+    "common.py": "94c1e83c937d053d07b3213f847426e85e155d5b1e30006b14d99e123346cc02",
+    "confirmation_diagnosis.py": "d4f758f5b233af08a395559911ede90e0c1e4169af4c8921845753198ae14b1e",
+    "declare.py": "2c9e0ad255face6f11524c4693532795ad9ac6fa112596bd9c3a8eb1397c02e9",
+    "drawdown_diagnosis.py": "95cb162d07aa1e308cdb75daa6f92f5302f4fd5b6c1ef86f1247f397dd554a8b",
+    "publish.py": "e01eb89a544a0006ef9cdd8226e5d75c09511f0683bd84ff605733596b307655"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX035_20261011/src/common.py": "03d7acee0bab55757b52358f9705ed971447023b1652522d7dd671af04cf06af",
+    "research/S013/experiments/EX035_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX035_20261011/src/ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "research/S013/experiments/EX035_20261011/src/analysis_reference.py": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+    "research/S013/experiments/EX035_20261011/src/run_parameters.py": "385259e4900f119cd39947e7a3fe3ef0ec2a604272e628071a80d19ee4fa22fd",
+    "research/S013/experiments/EX033_20261011/src/diagnose.py": "04e3bb090498cdb9dd9a20815ab933272d4a2c2e54ca16ce87e5c0e5aa710ed1"
+  },
+  "economic_targets": "Four unchanged original economic gates; all13 domains/units retained. No hard diagnostic veto added.",
+  "selection_history": "Stop repeated-entry waiting after EX034/35 negative full-account evidence. Diagnose original confirmation and previously near-qualified C8701 on entire existing authorized pool before choosing next structural test.",
+  "boundaries": "RSCH S013 stage3 only; zero new prepare/eval/data/dependency/platform/prod/PTE/merge/tag/push; no adjacent batch bytes.",
+  "objective_achieved": false
+}

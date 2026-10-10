@@ -1,0 +1,50 @@
+{
+  "status": "FAILED",
+  "new_account_evaluations": 0,
+  "method_references": {
+    "confirmation": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX036_20261011"
+      },
+      "evidence_id": "74a4813161d7206b2e42412b26a3b12a89b160fdb004133e31460d049ae612dd.json",
+      "sha256": "74a4813161d7206b2e42412b26a3b12a89b160fdb004133e31460d049ae612dd",
+      "media_type": "application/json",
+      "name": "prospective-confirmation-method",
+      "schema": null,
+      "schema_version": null
+    },
+    "drawdown": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX036_20261011"
+      },
+      "evidence_id": "966d43859b0f2aaade5e82a5733b1f4b8fa7f96cab62b60bbff32983f1a08397.json",
+      "sha256": "966d43859b0f2aaade5e82a5733b1f4b8fa7f96cab62b60bbff32983f1a08397",
+      "media_type": "application/json",
+      "name": "prospective-drawdown-method",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "sources": {
+    "confirmation_diagnosis.py": "d4f758f5b233af08a395559911ede90e0c1e4169af4c8921845753198ae14b1e",
+    "drawdown_diagnosis.py": "95cb162d07aa1e308cdb75daa6f92f5302f4fd5b6c1ef86f1247f397dd554a8b"
+  },
+  "confirmation": {
+    "failure": "AssertionError at authenticate: EvaluationIdentity object compared with CandidateContentIdentity object",
+    "artifact": ".tmp/ex036-diagnosis/confirmation.json",
+    "artifact_sha256": "9a5d6182b92948f847cb98fcc752e89d29f303f48b93462f79e8bac3c2867c29",
+    "input_exposure": "Full original center and original33 input manifest read; no completed confirmation statistics"
+  },
+  "drawdown": {
+    "failure": "ValueError: Out of range float values are not JSON compliant: nan at final strict JSON write",
+    "output_exists": false,
+    "input_exposure": "Two existing full native centers read; 14 annual native DD checks completed before output serialization; no PASS artifact produced"
+  },
+  "policy": "Original source/method/failure artifacts retained; correction is technical and must be explicitly declared before recomputation. No economic, weights, years, point, state or account modification."
+}
