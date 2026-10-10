@@ -1,7 +1,7 @@
 # PTE发布与运维
 
 本文说明获授权后的生产发布、账户操作、服务管理和恢复方法。
-DEV职责与工程决策见[DEV Agent](DEV_AGENT.md)，公共观察能力见
+DEV工作方法与工程约束见[DEV 工作指南](DEV_AGENT.md)，公共观察能力见
 [PTE使用说明](../packages/paper_trading_engine/README.md)。所有命令从仓库根目录执行。
 命令示例不构成生产操作授权；操作前确认具体目标、活动发布和共享状态。
 

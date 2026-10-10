@@ -16,7 +16,7 @@ CZSC Trader 面向量化策略研究与模拟交易，连接受控数据、策�
 | RSCH 目标、研究方法、权限和交付 | [研究员 Agent](research/RSCH_AGENT.md) |
 | 批次上下文、评价、回测、证据及冻结 API | [TDR 使用说明](src/czsc_trader/README.md) |
 | 旧实验原件的保存边界 | [历史实验说明](experiments/README.md) |
-| DEV 架构与工程决策、开发环境 | [DEV Agent](docs/DEV_AGENT.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
+| DEV 工作流程、工程约束、技术沟通与开发环境 | [DEV 工作指南](docs/DEV_AGENT.md)；[测试治理](docs/TEST_GOVERNANCE.md) |
 | PTE 发布、账户、服务与恢复 | [PTE 运维手册](docs/PTE_OPERATIONS.md) |
 
 ## 子包使用说明
