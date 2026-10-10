@@ -1,0 +1,472 @@
+{
+  "name": "S013-EX028-bear-lagged-acf-centering",
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C8700",
+      "content_sha256": "264796131ca740524c838d4db6aaf2ad57e3e67a6023614ec32f3dfdad54156d",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_ACF_CENTER_MEDIAN"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "119afcda26a82c1845e794491d594b058f85529feed1b5f165fb0d4e2e4434fc"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_ACF_CENTER_MEDIAN",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    },
+    {
+      "label": "N1",
+      "index": 1,
+      "candidate_id": "C8701",
+      "content_sha256": "b3338ecd2c26c87eee387ea24cd3b15639b6a7d5f301cf73effce82c628fb073",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_ACF_CENTER_MEAN"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "119afcda26a82c1845e794491d594b058f85529feed1b5f165fb0d4e2e4434fc"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_ACF_CENTER_MEAN",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-SHORT_MEDIAN",
+      "index": 0,
+      "candidate_id": "C8900",
+      "content_sha256": "9ef82241b00bbeb0d2282c30e71209f2ce67af67abb257a591834c3e91abbc72",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_ACF_MEDIAN3"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "6235a95ea1f0b63b0ce27eb10f112877a4de2f5a60d5ee758751e7dbe494ab0a"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_ACF_MEDIAN3",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-TIME",
+      "reuse_from": "EX027_20261011",
+      "reuse_label": "N0"
+    },
+    {
+      "label": "B0-SHORT_MEAN",
+      "index": 1,
+      "candidate_id": "C8901",
+      "content_sha256": "07ddbd665433e311605535a5831e257e46e27aec83efab56960a8cbc8956bd09",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_ACF_MEAN3"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.acf_range",
+          "qualname": "AcfRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/acf_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "6235a95ea1f0b63b0ce27eb10f112877a4de2f5a60d5ee758751e7dbe494ab0a"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "B0",
+      "mechanism": "BEAR_ACF_MEAN3",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-TIME",
+      "reuse_from": "EX027_20261011",
+      "reuse_label": "N1"
+    }
+  ],
+  "cells": [
+    {
+      "background": "B0",
+      "mechanism": "TIME",
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_ACF_MEDIAN3",
+      "label": "B0-SHORT_MEDIAN",
+      "candidate_id": "C8900",
+      "content_sha256": "9ef82241b00bbeb0d2282c30e71209f2ce67af67abb257a591834c3e91abbc72"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_ACF_MEAN3",
+      "label": "B0-SHORT_MEAN",
+      "candidate_id": "C8901",
+      "content_sha256": "07ddbd665433e311605535a5831e257e46e27aec83efab56960a8cbc8956bd09"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_ACF_CENTER_MEDIAN",
+      "label": "N0",
+      "candidate_id": "C8700",
+      "content_sha256": "264796131ca740524c838d4db6aaf2ad57e3e67a6023614ec32f3dfdad54156d"
+    },
+    {
+      "background": "B0",
+      "mechanism": "BEAR_ACF_CENTER_MEAN",
+      "label": "N1",
+      "candidate_id": "C8701",
+      "content_sha256": "b3338ecd2c26c87eee387ea24cd3b15639b6a7d5f301cf73effce82c628fb073"
+    }
+  ],
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_path_diagnosis": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX028_20261011"
+    },
+    "evidence_id": "b16bd163f9d65b84c7e0bf364ebc94a43ce505e1e6c37af8d42caf69035ad067.json",
+    "sha256": "b16bd163f9d65b84c7e0bf364ebc94a43ce505e1e6c37af8d42caf69035ad067",
+    "media_type": "application/json",
+    "name": "previous-path-diagnosis",
+    "schema": null,
+    "schema_version": null
+  },
+  "hypotheses": {
+    "median": "Only bear entry ACF value becomes current originalACF20 minus median of strictly previous L=confirmation.lookback finite originalACF20 estimates. Keep current value unsmoothed; compare same original bear.acf_min in correlation-difference units.",
+    "mean": "Same strictly lagged L-mean baseline as paired counterexample: distinguish recent baseline adaptation from outlier resistance. No new numerical coordinate, threshold or reference-length search."
+  },
+  "prospective_control_reuse": "Original TIME and EX027 shortmedian/shortmean native complete centers exact reuse. If any new qualifier original EX01532 native parameters reuse and bothnew centers all32; unqualified one prospectively symmetric diagnostic only, no registration. No qualifiers => zero new parameters.",
+  "predeclared_selection": "Two new centers plus3 old controls allreported. Original fourgates only. All13 numericcenters and32pointcoordinates identical. Full domains, no outcome point replacement, narrowing or new economic gate.",
+  "counts": {
+    "new_business_configurations": 2,
+    "new_evaluations": 3,
+    "reused_controls": 3
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "preserved": "OriginalbullH8/bearH4, bear threshold.1, original rawregime/confirmation/bullACF/ranges/exits, binarypositions, costs/window/benchmark. Only bear ACF input centered against causal past baseline. All13original coordinates active.",
+  "information_hypothesis": "Absolute ACF cutoff may conflate varying recent level with current departure. EX027 short smoothing failed and can delay actual state changes. Centering retains current estimate instead of smoothing it; local reference uses existing confirmation lookback, not a result-selected new window.",
+  "selection_history": "Already exposed S013 EX012..27 evidence. Plan formed after negative short smoothing, before new accounts. Previous account path diagnostic is descriptive, joint perturbations cannot isolate individual parameter causality. Repeated seen development pool, no independentvalidation.",
+  "new_coupling": "confirmation.lookback controls both original confirmation normalization and laggedACF baseline. Same configurable coordinate, no redundant dimension; extra interaction and changed gate interpretation disclosed. bear.acf_min compares current-minusbaseline ACF units instead of raw absolute ACF units.",
+  "warmup": "L preceding complete ACF20 estimates plus current requires L+21 prices; max(parent,L+21). Center still180; full numericdomain may add1 warmup vsparent. Public existing-only binding must fail clearly if not reusable, no download/fallback.",
+  "limits": "Reference can adapt to genuine persistent signal and admit poor opportunities, subtractingbaseline can worsen integerH/regime coupling. Same-coordinate perturbations compare mechanisms, not identical semantic thresholds or futureprobability. Stronger center, smoother gate or weakerrelative degradation alone cannot prove economicrobustness.",
+  "source_files": {
+    "original/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "original/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "original/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "original/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed"
+  }
+}
