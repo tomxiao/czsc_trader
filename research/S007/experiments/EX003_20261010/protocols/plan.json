@@ -1,0 +1,1164 @@
+{
+  "version": "S007-four-diagnostics-v1",
+  "declared_before_new_account_evaluations": true,
+  "authorization": {
+    "human_scope": "S007-v1与S013-C2132四维诊断补证；用户批准后转主会话执行，后明确在当前分支执行",
+    "relay_thread": "01a1241b-479e-7e32-a7cf-074970a434b9",
+    "current_branch": "codex/s007-v1-robustness",
+    "excluded": [
+      "新增截止日或封存样本",
+      "新增经济门",
+      "综合评分或总体赢家",
+      "统计或互补性补充研究",
+      "冻结部署PTE生产",
+      "合并tag推送",
+      "平台修改"
+    ]
+  },
+  "center": {
+    "candidate_id": "S007-C9000",
+    "original_candidate_id": "S007-C001",
+    "interpretation": "当前C+4位公共契约下的复算别名，已认证S007-v1冻结实现与原参数；不登记、不改原候选或运行身份",
+    "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2",
+    "content_sha256": "3e83ab42da292aec97bc6c5f6e2cbc1feb5866db465fd491d48527e87832efa3",
+    "parameters": {
+      "candidate_source": {
+        "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+        "candidate_id": "S007-C001",
+        "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+        "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+      },
+      "rule": {
+        "data_source": {
+          "format": "S007_SELECTED_FEATURE_SEED_V1",
+          "package": "strategy_runtime",
+          "path": "resources/s007_v1_seed.csv.gz",
+          "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+        },
+        "execution": {
+          "capital": {
+            "allocation_fraction": 1.0,
+            "fee_rate": 0.001,
+            "mode": "full_available_cash",
+            "target_scope": "entry_cycle"
+          },
+          "entry": {
+            "limit_family": "previous_close_ratio",
+            "limit_parameter": 0.2,
+            "order_type": "LIMIT",
+            "price_rounding": "floor"
+          },
+          "exit": {
+            "limit_ratio": 0.2,
+            "order_type": "LIMIT",
+            "price_rounding": "nearest_half_up"
+          },
+          "instrument": {
+            "asset_type": "etf",
+            "lot_size": 100,
+            "market": "CN",
+            "maximum_order_quantity": 1000000,
+            "price_limit_ratio": 0.2,
+            "price_tick": 0.001,
+            "symbol": "588080.SH"
+          },
+          "virtual_fill": {
+            "buy_intraday": "low_strictly_below_limit",
+            "buy_open": "open_at_or_below_limit",
+            "liquidity_check": "diagnostic_only",
+            "sell": "marketable_limit_at_open",
+            "touch_only": "uncertain_unfilled"
+          }
+        },
+        "normalization": {
+          "lookback_sessions": 252,
+          "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+          "minimum_observations": 20
+        },
+        "score": {
+          "base_weights": {
+            "price_close_vwap_deviation": 0.28658573721959246,
+            "price_intraday_range": 0.06350436740892215,
+            "risk_chinext_turnover_z20": 0.3057021379837475,
+            "risk_global_spx_return": 0.20014784300885136,
+            "risk_shibor_on_change_5d": 0.14405991437888652
+          },
+          "confirmation_threshold": -0.012073272333918687,
+          "confirmation_weights": {
+            "micro_share_change_5d_lag1": 0.4069229172274985,
+            "tsfresh__log_volume_change__mean__lb20": 0.5930770827725015
+          },
+          "entry_threshold": 0.10449974411727908,
+          "exit_threshold": 0.047857421473087296,
+          "orientations": {
+            "micro_share_change_5d_lag1": -1,
+            "price_close_vwap_deviation": -1,
+            "price_intraday_range": 1,
+            "risk_chinext_turnover_z20": 1,
+            "risk_global_spx_return": 1,
+            "risk_shibor_on_change_5d": -1,
+            "tsfresh__log_volume_change__mean__lb20": 1
+          }
+        },
+        "symbol": "588080.SH"
+      },
+      "strategy_kind": "causal_feature_gate",
+      "symbol": "588080.SH"
+    },
+    "coordinates": {
+      "risk_context_total": 0.20756428178780867,
+      "opportunity_share_nonrisk": 0.6383482841155161,
+      "opp_spx_fraction": 0.39566640413055526,
+      "confirm_share_fraction": 0.4069229172274985,
+      "risk_shibor_fraction": 0.6940496367585914,
+      "entry_threshold": 0.10449974411727908,
+      "exit_threshold": 0.047857421473087296,
+      "confirmation_threshold": -0.012073272333918687
+    }
+  },
+  "parameter_design": {
+    "seed": 13,
+    "count": 8,
+    "direction_pairs": 4,
+    "coordinate_order": [
+      "risk_context_total",
+      "opportunity_share_nonrisk",
+      "opp_spx_fraction",
+      "confirm_share_fraction",
+      "risk_shibor_fraction",
+      "entry_threshold",
+      "exit_threshold",
+      "confirmation_threshold"
+    ],
+    "scales": {
+      "risk_context_total": 0.0125,
+      "opportunity_share_nonrisk": 0.015,
+      "opp_spx_fraction": 0.025,
+      "confirm_share_fraction": 0.025,
+      "risk_shibor_fraction": 0.025,
+      "entry_threshold": 0.01,
+      "exit_threshold": 0.01,
+      "confirmation_threshold": 0.01
+    },
+    "bounds": {
+      "risk_context_total": [
+        0.1,
+        0.35
+      ],
+      "opportunity_share_nonrisk": [
+        0.5,
+        0.8
+      ],
+      "opp_spx_fraction": [
+        0.25,
+        0.75
+      ],
+      "confirm_share_fraction": [
+        0.25,
+        0.75
+      ],
+      "risk_shibor_fraction": [
+        0.25,
+        0.75
+      ],
+      "entry_threshold": [
+        -0.5,
+        0.5
+      ],
+      "exit_threshold": [
+        -0.5,
+        0.5
+      ],
+      "confirmation_threshold": [
+        -0.5,
+        0.5
+      ]
+    },
+    "weights_basis": "EX27显式分组权重映射；五个坐标沿用EX28历史域，每坐标扰动历史域宽度5%",
+    "threshold_basis": "三个冻结数值阈值各±0.01，即归一化分数理论宽度1%；不重估发现期分位阈值",
+    "legality": "事前按合法域、权重总和、单权重<=0.35、exit<entry校验全部点；无收益筛选",
+    "failures": "经济未达标点保留；技术失败单列，不填零，不换点，不改尺度",
+    "s013_comparability": "双方种子13与8点相同，参数结构/维数/尺度不同，不能解释为同等强度压力",
+    "fixed": [
+      "标的",
+      "方向",
+      "归一化252/20",
+      "执行规则",
+      "价格角色",
+      "资本",
+      "成本",
+      "日期",
+      "特征及方向"
+    ],
+    "quantile": "LINEAR",
+    "return_degradation": "max(0, center_net_cagr - Q10(neighborhood_net_cagr))",
+    "drawdown_worsening": "max(0, Q90(neighborhood_drawdown_magnitude) - center_drawdown_magnitude)"
+  },
+  "account": {
+    "symbol": "588080.SH",
+    "start": "2021-01-05",
+    "cutoff": "2026-09-02",
+    "feature_start": "2021-01-04",
+    "cash": 100000,
+    "lot": 100,
+    "signal_prices": "HFQ/immutable feature seed",
+    "account_prices": "UNADJUSTED",
+    "entry": "LIMIT previous_close*1.2 floor tick .001",
+    "exit": "LIMIT previous_close*.8 nearest_half_up; marketable_limit_at_open",
+    "benchmark": "NextOpenBuyHold(100)",
+    "costs": {
+      "baseline": 0.001,
+      "stress": 0.002
+    },
+    "stress_method": "FULL account rerun; affordable quantity responds to fees/cash, not fixed-quantity rededuction"
+  },
+  "profit_concentration": "top ceil(10% * positive closed cycle count) CASH net profit / all positive closed cycle CASH net profit",
+  "time_stability": {
+    "window": 126,
+    "step": 21,
+    "quantile": "LINEAR Q10",
+    "formula": "own[start+126]/own[start] - own_BH[start+126]/own_BH[start]",
+    "initial_cash_prefix": true
+  },
+  "center_precondition": "Authenticate source/input/execution/metrics; reproduce both original centers before interpreting new results",
+  "sample_limits": "Both original development pools already used in selection; different instruments/capital/windows/benchmarks/environments; no unseen validation",
+  "resources": {
+    "workers": 4,
+    "per_account_workers": 1,
+    "native_threads": 1
+  },
+  "sources": [
+    {
+      "path": "strategies/S007/versions/v1.json",
+      "sha256": "6a87136bfc7a81bb7aaebc0a8c39b15efb5ce00ec640d2066f59498213b31477",
+      "bytes": 4057
+    },
+    {
+      "path": "strategies/S007/releases/v1/runtime_binding.json",
+      "sha256": "c6278697074604686a00894221dde2f8d735887250cd972bed1743920cf9090f",
+      "bytes": 633
+    },
+    {
+      "path": "strategies/S007/releases/v1/release_manifest.json",
+      "sha256": "c9c2477c4e46cef9bf5a38a0524dc103bde17112987c92ce3793625fb1e9eb8c",
+      "bytes": 1128
+    },
+    {
+      "path": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+      "sha256": "d4c2b6b68de30f1a8e18bc3a8d06d53f96a8dad0864456eae8077fad66257cf7",
+      "bytes": 2725
+    },
+    {
+      "path": "experiments/S007/20260915_S007_EX27/run_experiment.py",
+      "sha256": "efbd8b63cab0ba58be62068ba22109d59450b49f41250f1e6e132cfa87f32470",
+      "bytes": 37324
+    },
+    {
+      "path": "research/S013/experiments/EX008_20261010/protocols/plan.json",
+      "sha256": "30c87d82fe3caefa016a0cba381a91d453000b0779250967d81559c8e75dd1fc",
+      "bytes": 2658017
+    },
+    {
+      "path": "strategies/S007/releases/v1/runtime/strategy_runtime/strategies/s007_v1.py",
+      "sha256": "20228a4f4573345da5e7cb11108802d1fcee9c075386a8f4e7fb62601c45eda8",
+      "bytes": 18264
+    },
+    {
+      "path": "strategies/S007/releases/v1/runtime/strategy_runtime/calculation.py",
+      "sha256": "edd27ec4d3d5641320ada2774a5661520b35639dc704bcf9e71cf1162dc25571",
+      "bytes": 10348
+    },
+    {
+      "path": "strategies/S007/releases/v1/runtime/strategy_runtime/execution_rules.py",
+      "sha256": "1e6811b991c5b8e836e633a4c73e68fc68240899e75cd0950dbbd95798b62549",
+      "bytes": 10569
+    },
+    {
+      "path": "strategies/S007/releases/v1/runtime/strategy_runtime/resources/s007_v1_seed.csv.gz",
+      "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39",
+      "bytes": 72547
+    }
+  ],
+  "cases": [
+    {
+      "candidate_id": "C9001",
+      "index": 0,
+      "coordinates": {
+        "risk_context_total": 0.22006428178780868,
+        "opportunity_share_nonrisk": 0.6533482841155162,
+        "opp_spx_fraction": 0.4206664041305553,
+        "confirm_share_fraction": 0.43192291722749854,
+        "risk_shibor_fraction": 0.6690496367585914,
+        "entry_threshold": 0.11449974411727908,
+        "exit_threshold": 0.0578574214730873,
+        "confirmation_threshold": -0.02207327233391869
+      },
+      "sign_vector": [
+        1,
+        1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.2703660549978534,
+              "price_intraday_range": 0.07283035399413498,
+              "risk_chinext_turnover_z20": 0.29521082533594434,
+              "risk_global_spx_return": 0.21435883787839363,
+              "risk_shibor_on_change_5d": 0.1472339277936737
+            },
+            "confirmation_threshold": -0.02207327233391869,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.43192291722749854,
+              "tsfresh__log_volume_change__mean__lb20": 0.5680770827725015
+            },
+            "entry_threshold": 0.11449974411727908,
+            "exit_threshold": 0.0578574214730873,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "5870e2da503bab6b4fd41370d1bdb75308343daaa342f426b612b9a4fa1ec7fb",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9002",
+      "index": 1,
+      "coordinates": {
+        "risk_context_total": 0.19506428178780866,
+        "opportunity_share_nonrisk": 0.6233482841155161,
+        "opp_spx_fraction": 0.37066640413055524,
+        "confirm_share_fraction": 0.3819229172274985,
+        "risk_shibor_fraction": 0.7190496367585915,
+        "entry_threshold": 0.09449974411727909,
+        "exit_threshold": 0.037857421473087294,
+        "confirmation_threshold": -0.002073272333918687
+      },
+      "sign_vector": [
+        -1,
+        -1,
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.3031804194413313,
+              "price_intraday_range": 0.054803380823709315,
+              "risk_chinext_turnover_z20": 0.31577146642201304,
+              "risk_global_spx_return": 0.18598383234884713,
+              "risk_shibor_on_change_5d": 0.14026090096409935
+            },
+            "confirmation_threshold": -0.002073272333918687,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.3819229172274985,
+              "tsfresh__log_volume_change__mean__lb20": 0.6180770827725015
+            },
+            "entry_threshold": 0.09449974411727909,
+            "exit_threshold": 0.037857421473087294,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "b0ce7c85572021e7072b1d6c91b60eccbfa65c5c2af2080d7773ae8d673104ad",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9003",
+      "index": 2,
+      "coordinates": {
+        "risk_context_total": 0.19506428178780866,
+        "opportunity_share_nonrisk": 0.6233482841155161,
+        "opp_spx_fraction": 0.4206664041305553,
+        "confirm_share_fraction": 0.43192291722749854,
+        "risk_shibor_fraction": 0.7190496367585915,
+        "entry_threshold": 0.11449974411727908,
+        "exit_threshold": 0.0578574214730873,
+        "confirmation_threshold": -0.02207327233391869
+      },
+      "sign_vector": [
+        -1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.3031804194413313,
+              "price_intraday_range": 0.054803380823709315,
+              "risk_chinext_turnover_z20": 0.29068370148347,
+              "risk_global_spx_return": 0.21107159728739014,
+              "risk_shibor_on_change_5d": 0.14026090096409935
+            },
+            "confirmation_threshold": -0.02207327233391869,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.43192291722749854,
+              "tsfresh__log_volume_change__mean__lb20": 0.5680770827725015
+            },
+            "entry_threshold": 0.11449974411727908,
+            "exit_threshold": 0.0578574214730873,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "6ae4f3ef428d470c8b8f9ace598c9de3863e06d976ee4d17e4b423a12ca84c73",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9004",
+      "index": 3,
+      "coordinates": {
+        "risk_context_total": 0.22006428178780868,
+        "opportunity_share_nonrisk": 0.6533482841155162,
+        "opp_spx_fraction": 0.37066640413055524,
+        "confirm_share_fraction": 0.3819229172274985,
+        "risk_shibor_fraction": 0.6690496367585914,
+        "entry_threshold": 0.09449974411727909,
+        "exit_threshold": 0.037857421473087294,
+        "confirmation_threshold": -0.002073272333918687
+      },
+      "sign_vector": [
+        1,
+        1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.2703660549978534,
+              "price_intraday_range": 0.07283035399413498,
+              "risk_chinext_turnover_z20": 0.3206893084966613,
+              "risk_global_spx_return": 0.18888035471767672,
+              "risk_shibor_on_change_5d": 0.1472339277936737
+            },
+            "confirmation_threshold": -0.002073272333918687,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.3819229172274985,
+              "tsfresh__log_volume_change__mean__lb20": 0.6180770827725015
+            },
+            "entry_threshold": 0.09449974411727909,
+            "exit_threshold": 0.037857421473087294,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "c542c65d8dfaaffdf0479d5dd48a5d6f11673dc3cbf5e7a8f730605b26ef6134",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9005",
+      "index": 4,
+      "coordinates": {
+        "risk_context_total": 0.22006428178780868,
+        "opportunity_share_nonrisk": 0.6533482841155162,
+        "opp_spx_fraction": 0.37066640413055524,
+        "confirm_share_fraction": 0.43192291722749854,
+        "risk_shibor_fraction": 0.7190496367585915,
+        "entry_threshold": 0.09449974411727909,
+        "exit_threshold": 0.037857421473087294,
+        "confirmation_threshold": -0.002073272333918687
+      },
+      "sign_vector": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.2703660549978534,
+              "price_intraday_range": 0.06182713990474453,
+              "risk_chinext_turnover_z20": 0.3206893084966613,
+              "risk_global_spx_return": 0.18888035471767672,
+              "risk_shibor_on_change_5d": 0.15823714188306415
+            },
+            "confirmation_threshold": -0.002073272333918687,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.43192291722749854,
+              "tsfresh__log_volume_change__mean__lb20": 0.5680770827725015
+            },
+            "entry_threshold": 0.09449974411727909,
+            "exit_threshold": 0.037857421473087294,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "f7218f645c389fa03c357c0a04800eaf38a19e33d441772fd2e4b877307417c0",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9006",
+      "index": 5,
+      "coordinates": {
+        "risk_context_total": 0.19506428178780866,
+        "opportunity_share_nonrisk": 0.6233482841155161,
+        "opp_spx_fraction": 0.4206664041305553,
+        "confirm_share_fraction": 0.3819229172274985,
+        "risk_shibor_fraction": 0.6690496367585914,
+        "entry_threshold": 0.11449974411727908,
+        "exit_threshold": 0.0578574214730873,
+        "confirmation_threshold": -0.02207327233391869
+      },
+      "sign_vector": [
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.3031804194413313,
+              "price_intraday_range": 0.06455659491309976,
+              "risk_chinext_turnover_z20": 0.29068370148347,
+              "risk_global_spx_return": 0.21107159728739014,
+              "risk_shibor_on_change_5d": 0.1305076868747089
+            },
+            "confirmation_threshold": -0.02207327233391869,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.3819229172274985,
+              "tsfresh__log_volume_change__mean__lb20": 0.6180770827725015
+            },
+            "entry_threshold": 0.11449974411727908,
+            "exit_threshold": 0.0578574214730873,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "2028fe169b248fc1be4fd0b1891fe62e969e2ace0117be6fac007f35425d291f",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9007",
+      "index": 6,
+      "coordinates": {
+        "risk_context_total": 0.22006428178780868,
+        "opportunity_share_nonrisk": 0.6233482841155161,
+        "opp_spx_fraction": 0.4206664041305553,
+        "confirm_share_fraction": 0.3819229172274985,
+        "risk_shibor_fraction": 0.6690496367585914,
+        "entry_threshold": 0.11449974411727908,
+        "exit_threshold": 0.0578574214730873,
+        "confirmation_threshold": -0.02207327233391869
+      },
+      "sign_vector": [
+        1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        1,
+        -1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.2937641265442192,
+              "price_intraday_range": 0.07283035399413498,
+              "risk_chinext_turnover_z20": 0.28165553641057767,
+              "risk_global_spx_return": 0.20451605525739447,
+              "risk_shibor_on_change_5d": 0.1472339277936737
+            },
+            "confirmation_threshold": -0.02207327233391869,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.3819229172274985,
+              "tsfresh__log_volume_change__mean__lb20": 0.6180770827725015
+            },
+            "entry_threshold": 0.11449974411727908,
+            "exit_threshold": 0.0578574214730873,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "38984741b2eeb75e5d11e2ade283f51c2bcc96cb205ac58c17e7a16692b69e21",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    },
+    {
+      "candidate_id": "C9008",
+      "index": 7,
+      "coordinates": {
+        "risk_context_total": 0.19506428178780866,
+        "opportunity_share_nonrisk": 0.6533482841155162,
+        "opp_spx_fraction": 0.37066640413055524,
+        "confirm_share_fraction": 0.43192291722749854,
+        "risk_shibor_fraction": 0.7190496367585915,
+        "entry_threshold": 0.09449974411727909,
+        "exit_threshold": 0.037857421473087294,
+        "confirmation_threshold": -0.002073272333918687
+      },
+      "sign_vector": [
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        -1,
+        1
+      ],
+      "parameters": {
+        "candidate_source": {
+          "candidate_hash": "eef64c7c2e18c4158a4d23f66e63efee9553948defc060f69a79eda0bbd2b5cd",
+          "candidate_id": "S007-C001",
+          "definition": "experiments/S007/20260915_S007_EX31/candidate_payload.json",
+          "machine_evaluation": "experiments/S007/20260916_S007_EX35/artifacts/machine_evaluation_report.json"
+        },
+        "rule": {
+          "data_source": {
+            "format": "S007_SELECTED_FEATURE_SEED_V1",
+            "package": "strategy_runtime",
+            "path": "resources/s007_v1_seed.csv.gz",
+            "sha256": "32282766b0f65be661dfad9bd0f0f5c683ef84eef4ae2817a195730d03b59a39"
+          },
+          "execution": {
+            "capital": {
+              "allocation_fraction": 1.0,
+              "fee_rate": 0.001,
+              "mode": "full_available_cash",
+              "target_scope": "entry_cycle"
+            },
+            "entry": {
+              "limit_family": "previous_close_ratio",
+              "limit_parameter": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "floor"
+            },
+            "exit": {
+              "limit_ratio": 0.2,
+              "order_type": "LIMIT",
+              "price_rounding": "nearest_half_up"
+            },
+            "instrument": {
+              "asset_type": "etf",
+              "lot_size": 100,
+              "market": "CN",
+              "maximum_order_quantity": 1000000,
+              "price_limit_ratio": 0.2,
+              "price_tick": 0.001,
+              "symbol": "588080.SH"
+            },
+            "virtual_fill": {
+              "buy_intraday": "low_strictly_below_limit",
+              "buy_open": "open_at_or_below_limit",
+              "liquidity_check": "diagnostic_only",
+              "sell": "marketable_limit_at_open",
+              "touch_only": "uncertain_unfilled"
+            }
+          },
+          "normalization": {
+            "lookback_sessions": 252,
+            "method": "CAUSAL_ROLLING_PERCENTILE_CENTERED",
+            "minimum_observations": 20
+          },
+          "score": {
+            "base_weights": {
+              "price_close_vwap_deviation": 0.2790323478949655,
+              "price_intraday_range": 0.054803380823709315,
+              "risk_chinext_turnover_z20": 0.3309686591216,
+              "risk_global_spx_return": 0.1949347111956259,
+              "risk_shibor_on_change_5d": 0.14026090096409935
+            },
+            "confirmation_threshold": -0.002073272333918687,
+            "confirmation_weights": {
+              "micro_share_change_5d_lag1": 0.43192291722749854,
+              "tsfresh__log_volume_change__mean__lb20": 0.5680770827725015
+            },
+            "entry_threshold": 0.09449974411727909,
+            "exit_threshold": 0.037857421473087294,
+            "orientations": {
+              "micro_share_change_5d_lag1": -1,
+              "price_close_vwap_deviation": -1,
+              "price_intraday_range": 1,
+              "risk_chinext_turnover_z20": 1,
+              "risk_global_spx_return": 1,
+              "risk_shibor_on_change_5d": -1,
+              "tsfresh__log_volume_change__mean__lb20": 1
+            }
+          },
+          "symbol": "588080.SH"
+        },
+        "strategy_kind": "causal_feature_gate",
+        "symbol": "588080.SH"
+      },
+      "content_sha256": "d1900b4d63f6e224b6fccefbd0213948aa0e57f1673d7f5cef20985bfb85f203",
+      "source_sha256": "e5007b0bb1d6021d5f0d0561320fc95dc25f30353e2f92d8da3f3685b98854d2"
+    }
+  ]
+}
