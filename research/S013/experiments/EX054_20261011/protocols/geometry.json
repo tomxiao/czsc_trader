@@ -1,0 +1,132 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "RAW_BEAR_TIME_BELOW_BODY fixed structure on original C2132 rawACF20 background; only originaleligible flatrawbear after finalbearTIME strictBELOW own signal-entry anchor additionally requires currentClose>currentSignalOpen",
+    "Only final reason=time and exit-before active_route=bear classifies BELOW/EQUAL/ABOVE with strict signalClose versus own episode signal-entry anchor. All other exits category=None; no epsilon, threshold/day search or fill-PnL labels",
+    "Beforedecision last_exit_reason/route/category object None initially; flat failures, direction refusals and rawroute changes preserve context, any route signalentry clears all three. EQUAL/ABOVE/NONE never acquire direction gate",
+    "Original eligible opportunity and confirmation_pass retain original meaning; direction refusal precedes originalscore rejection only within selected BELOW scope. No holding exit or same-day exit/entry behavior changes",
+    "Original rawACF20 eligibility/confirmation, bull rules, range/time/regime/loss/trail priority, held-session H and all13 numerical coordinates remain active and unchanged; L only in original confirmation score",
+    "All13 original numerical domains/centers and original32 coordinates retained; no statistic replacement, threshold/unit remapping, narrowing, new numeric dimensions or point reselection",
+    "Original parent warmup unchanged exactly, including W60/L40/ranges21 minimum61 and center180; BODY uses current signalClose/Open without extra warmup; complete daily shift1 diagnostic remains causal, no previous_regime/momentum diagnostic or W+2 requirement",
+    "Original positive2023 BELOW-category cash contribution+2.3049pp is strongest counterevidence; rejecting reentries can lose favorable rebound/frequency, persistent context may be stale across rawbull. Contributions describe old path, never deletion-profit predictions"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at original C2132 numeric centers/full13domains/coordinates. Coupled cohort is historical counterevidence with multiple structural differences.",
+  "candidate_reservation": {
+    "first": 7840,
+    "last": 7871
+  },
+  "prospective_identity_note": "Prospective center C7880 and parameters C7840..7871 selected by root; current root registry/assets collision check passed. Pure tests authenticate strong ID/type/geometry contracts and do not write registry/assets or certify future collision freedom.",
+  "helper_source_files": {
+    "run_parameters.py": "b965d7222d92d123d9c2b7c44ee3e74f9e01789e557986b480ceb7b5e9793391",
+    "parameter_analysis.py": "4e9dec1398ad32d9e8207d455d7ef749f6ad4813b25008e30e25316250ec438c",
+    "pair_parameters.py": "60f7dc28f0b4c6091ae288c293811586a253f58d66845fe39d7c6adcdd383bfe",
+    "declare_geometry.py": "c8781897f8f35a8c7e9ddad7114f46f42b491988d5a951729489ea51333eed2f",
+    "common.py": "85a5253520cf9a5b235dcf405b7361af53db8017e3bbedaa4152dfaedea33857",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "11845befa9db40dd26df7f8351a5b79e1e2c6d5e9d61a48166c245c822f7686c"
+  },
+  "raw_body_oracle_sha256": "d5984e4fcbd2377c9014b3deae08be51db3f9a7063fb8ff7ac213bd5bdde72d6",
+  "legacy_direction_oracle": {
+    "path": "research/S013/experiments/EX043_20261011/src/direction_oracle.py",
+    "sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5"
+  },
+  "selection_history": "After repeated MEAN/category and robust-ACF routes failed to satisfy joint original goals, return to original RAW ACF background and isolate the existing BELOW-body gate. EX042 original2023 BELOW-source contribution+2.3049pp is positive counterevidence, not a chosen loss-year exception or deletable profit. All years retained; adaptive exposed development pool, no independent validation or category/window optimization.",
+  "counts": "If qualified:64 old controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key aliases preserve native labels/IDs/source/plans/lineage/account references. Registered original C2132 is IMPLEMENTATION parent; own new center is PARAMETERS parent. Coupled C4900 is historical control only.",
+  "diagnostic_controls": "RAW CLOSE C7580, MEAN BODY C4901 and MEAN no-gate C8701 appear only in plan.diagnostic_controls/analysis.rows; not controls, selected center, reused parameter cohort or SE/pair panel. No extra economic condition or veto; all5 old centers plus newN0 form6 center-only comparisons.",
+  "economic_policy": "Only four original economic gates qualify center; all neighbor gates remain diagnostics, no additional veto. AbsoluteQ10/Q90 and relative degradation jointly inform improvement."
+}
