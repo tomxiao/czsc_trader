@@ -1,0 +1,6296 @@
+{
+  "name": "S013-EX052-raw-winsor-consensus-conditional-state",
+  "source_sha256": "51af76ce8a6b68a5895b09a5cc95db18a49258ce34f29e95f4e1781c3d838e1b",
+  "source": "\"\"\"Project a two-statistic AND on authenticated conditional original33 states.\"\"\"\nfrom pathlib import Path\nimport sys\nimport math\nROOT = Path(__file__).resolve().parents[1]\nsys.path.insert(0, str(ROOT / 'research/S013/experiments/EX047_20261011/src'))\nfrom common import context, read, write, file_hash, SOURCE_CALLS\nfrom native_reference import verified_json\nfrom czsc_trader.research_tools.context import ExperimentRef\nfrom czsc_trader.application import publish_evidence\nfrom czsc_trader.research_tools import MaterialEvidenceWrite\n\n\ndef summarize(rows):\n    return {'days': len(rows), 'bear_filter_changes': sum(r['raw_bear_filter'] != r['consensus_bear_filter'] for r in rows),\n        'conditional_target_changes': sum(r['actual'][0] != r['conditional_probe'][0] for r in rows),\n        'conditional_reason_changes': sum(r['actual'][1] != r['conditional_probe'][1] for r in rows),\n        'conditional_next_state_changes': sum(r['actual'][::2] != r['conditional_probe'][::2] or r['actual'][3] != r['conditional_probe'][3] for r in rows),\n        'gained_targets': sum(r['actual'][0] == 0 and r['conditional_probe'][0] == 1 for r in rows),\n        'lost_targets': sum(r['actual'][0] == 1 and r['conditional_probe'][0] == 0 for r in rows)}\n\n\ndef main():\n    exp = ExperimentRef('S013', 'EX052_20261011')\n    protocols = exp.resolve(ROOT) / 'protocols'\n    method_ref = read(protocols / 'effect_method_reference.json')\n    method = verified_json(method_ref)\n    assert method['source_sha256'] == file_hash(Path(__file__))\n    source = verified_json(method['input_reference'])\n    assert source['status'] == 'PASS' and source['summary']['observed_native_paths'] == 33\n    assert source['summary']['new_account_evaluations'] == source['summary']['new_account_preparations'] == source['summary']['cash_replays'] == 0\n    source_method = verified_json(source['method_reference'])\n    assert source['input_reference'] == source_method['input_reference']\n    original = verified_json(source['input_reference'])\n    assert original['status'] == 'PASS' and original['summary']['unique_native_accounts'] == 33\n    accounts = {}\n    for key, account in source['accounts'].items():\n        p, rows = account['parameters'], []\n        for old in account['all_days']:\n            raw, win = old['raw_acf'], old['winsor_acf']\n            assert math.isfinite(raw) and math.isfinite(win)\n            threshold = p['bear']['acf_min']\n            rp, wp = raw >= threshold, win >= threshold\n            assert rp == old['raw_bear_filter'] and wp == old['winsor_bear_filter']\n            value = min(raw, win)\n            passed = value >= threshold\n            assert passed == (rp and wp) and value <= raw\n            decision = old['conditional_probe'] if rp and not wp else old['actual']\n            if decision != old['actual']:\n                assert old['observed_before'][0] == 0\n                assert old['actual'][1] in (1, 6) and decision[0] == 0 and decision[1] == 0\n            if old['observed_before'][0]:\n                assert old['actual'] == old['conditional_probe'] == decision\n            assert not (old['actual'][0] == 0 and decision[0] == 1)\n            rows.append({'signal_date': old['signal_date'], 'execution_date': old['execution_date'],\n                'observed_before': old['observed_before'], 'raw_acf': raw, 'winsor_acf': win, 'consensus_acf': value,\n                'raw_bear_filter': rp, 'consensus_bear_filter': passed,\n                'actual': old['actual'], 'conditional_probe': decision})\n        assert len(rows) == 1636\n        partitions = {year: summarize([r for r in rows if r['signal_date'].startswith(year)])\n            for year in sorted(set(r['signal_date'][:4] for r in rows))}\n        summary = summarize(rows)\n        assert sum(r['days'] for r in partitions.values()) == 1636\n        assert sum(r['conditional_target_changes'] for r in partitions.values()) == summary['conditional_target_changes']\n        accounts[key] = {'native_reference': account['native_reference'], 'parameters': p, 'all_days': rows, 'summary': summary, 'signal_years': partitions}\n    assert len(accounts) == 33 and not SOURCE_CALLS\n    summary = {'observed_native_paths': 33, 'signal_days': 33 * 1636, 'center': accounts['center']['summary'],\n        'point_conditional_target_changes': sum(a['summary']['conditional_target_changes'] for k, a in accounts.items() if k != 'center'),\n        'new_account_evaluations': 0, 'new_account_preparations': 0, 'cash_replays': 0}\n    out = ROOT / '.tmp/ex052-consensus-acf-effect/diagnosis.json'\n    assert not out.exists()\n    write(out, {'status': 'PASS', 'method_reference': method_ref, 'input_reference': method['input_reference'],\n        'original_input_reference': source['input_reference'], 'accounts': accounts, 'summary': summary,\n        'provider_calls': SOURCE_CALLS, 'limits': method['limits']})\n    ref = publish_evidence(context(1), MaterialEvidenceWrite(exp, 'consensus-acf-observed-state-effect', out.read_bytes(), 'application/json', 'json'))\n    write(protocols / 'effect_reference.json', ref.to_dict())\n    print({'status': 'PASS', **summary})\n\n\nif __name__ == '__main__':\n    main()\n",
+  "input_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX051_20261011"
+    },
+    "evidence_id": "a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380.json",
+    "sha256": "a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380",
+    "media_type": "application/json",
+    "name": "winsor-acf-observed-state-effect",
+    "schema": null,
+    "schema_version": null
+  },
+  "duplicate_check": {
+    "status": "PROSPECTIVE_CONSENSUS_METHOD_REVIEW_ONLY",
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "cash_replays": 0,
+    "market_or_new_native_finance_bytes_read": false,
+    "runtime_implemented": false,
+    "candidate": {
+      "prospective_only": true,
+      "description": "Bear entry requires rawACF20>=originalbearcutoff AND fixed one-per-tail winsorACF20>=samecutoff; equivalently min(raw,winsor)>=cutoff.",
+      "original_dimensions": 13,
+      "original_threshold_center": 0.1,
+      "original_threshold_domain": [
+        -0.6,
+        0.5
+      ],
+      "original32": "Exact prospective joint coordinates preserved, not executed.",
+      "unchanged": "Original rawACF confirmation/routing/range/H/holding exits; only flat-bear eligibility can tighten.",
+      "undefined": "Required winsor nonfinite/incomplete/np.isclose variance0 remains strict refusal, even if raw filter alone would reject; no shortcircuit fallback.",
+      "semantics": "One cutoff used on two different amplitude statistics. No shrink/rescale/unit map; geometry equivalence is not equal filtering strength."
+    },
+    "duplicate_check": {
+      "result": "NO_EXACT_RAW_WINSOR_AND_CONSENSUS_IDENTIFIED",
+      "scope": "Authorized S013 experiments PY/MD/JSON only; excluded assets/__pycache__ except specifically authorized effect/method EvidenceRefs.",
+      "indexed_files": 1659,
+      "queries": [
+        "consensus|MIN_RAW|raw.?winsor|winsor...AND/minimum/min|min...winsor",
+        "prior51 implementation eligible and originalconfirmation predicates"
+      ],
+      "near_match": "EX051 applies winsor only to bear.acf_min; unchanged rawACF-based confirmation uses a different aggregate/threshold and is not rawACF>=samebearcutoff consensus. np.minimum in51 is sample clipping, not a two-statistic entry gate.",
+      "no_go_if_exact_prior_found": true,
+      "finance_started": false
+    },
+    "authentication": {
+      "effect_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX051_20261011"
+        },
+        "evidence_id": "a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380.json",
+        "sha256": "a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380",
+        "media_type": "application/json",
+        "name": "winsor-acf-observed-state-effect",
+        "schema": null,
+        "schema_version": null
+      },
+      "effect_method_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX051_20261011"
+        },
+        "evidence_id": "816c8d1250a3381678875debc4fe41286bcfb276123fe68eca336257d1019951.json",
+        "sha256": "816c8d1250a3381678875debc4fe41286bcfb276123fe68eca336257d1019951",
+        "media_type": "application/json",
+        "name": "prospective-winsor-acf-observed-method",
+        "schema": null,
+        "schema_version": null
+      },
+      "formal_paths": {
+        "effect": "research/S013/assets/evidence/EX051_20261011/a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380.json",
+        "effect_method": "research/S013/assets/evidence/EX051_20261011/816c8d1250a3381678875debc4fe41286bcfb276123fe68eca336257d1019951.json"
+      },
+      "effect_local_path": ".tmp/ex051-winsor-acf-effect/diagnosis.json",
+      "effect_sha256": "a9d0dd26f497ec8b3b1ac7cf52895102cd5637840a10e1628e7f1a4afc692380",
+      "method_source_sha256": "299800c4a0d1a9ccf23ae5cec8590ffb37b316b390346380a708fcd969b1bbce",
+      "source_input_reference": {
+        "evidence_id": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4.json",
+        "experiment": {
+          "experiment_id": "EX047_20261011",
+          "strategy_id": "S013",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "complete-single-coordinate-observed-state",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4",
+        "type": "EvidenceRef"
+      },
+      "formal_and_local_effect_hash": "EXACT_EQUAL",
+      "method_sha_source_and_input_reference": "EXACT_EQUAL",
+      "original33_reference_authentication": "Inherited frozen original33 authentication; account references preserved below, underlying native bytes not reread."
+    },
+    "input_accounts": {
+      "center": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX012_20261011"
+        },
+        "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+        "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+        "media_type": "application/json",
+        "name": "mechanism-final-account-b0-m1",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P00": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "2a17b21d364d6e36cba15fefa9020c1504d9c0e20419ccd9d0affd38ccf11476.json",
+        "sha256": "2a17b21d364d6e36cba15fefa9020c1504d9c0e20419ccd9d0affd38ccf11476",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p00",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P01": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "798fbb3f120942c151d779903d84d6de0e219800fa62dfe7230a3a85bf18b688.json",
+        "sha256": "798fbb3f120942c151d779903d84d6de0e219800fa62dfe7230a3a85bf18b688",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p01",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P02": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "426b7382f2d8cd4f2a420d3817c5862f6628c678bc62b103d49bff715e9c3e37.json",
+        "sha256": "426b7382f2d8cd4f2a420d3817c5862f6628c678bc62b103d49bff715e9c3e37",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p02",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P03": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "ae32c030a2b7c61dd86c050ec22d178724dd3adaef19c47122a8cbf78352b47f.json",
+        "sha256": "ae32c030a2b7c61dd86c050ec22d178724dd3adaef19c47122a8cbf78352b47f",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p03",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P04": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "e7e50e6c122a2101bd6ac86f8a6a1d3b52e95064a2c3e36660137908bf818130.json",
+        "sha256": "e7e50e6c122a2101bd6ac86f8a6a1d3b52e95064a2c3e36660137908bf818130",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p04",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P05": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "f29488548e9bf49436ed2b1f6da3db9fa81fcbfe4e7af54097d3eab656d3bf2c.json",
+        "sha256": "f29488548e9bf49436ed2b1f6da3db9fa81fcbfe4e7af54097d3eab656d3bf2c",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p05",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P06": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "9b25ea2e58dfece70898bdc3fc1caf2da7c76c9d627bb6be461dac7e87ee7bc1.json",
+        "sha256": "9b25ea2e58dfece70898bdc3fc1caf2da7c76c9d627bb6be461dac7e87ee7bc1",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p06",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P07": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "0c2e0127bc6688e3d756f34448c91aed6af605ebf83d2d32da85c977bbd8f26f.json",
+        "sha256": "0c2e0127bc6688e3d756f34448c91aed6af605ebf83d2d32da85c977bbd8f26f",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p07",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P08": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "7629cd0d00d12d660dad69bc2f99f485aa792d48b1bbefaff63273962ea7e147.json",
+        "sha256": "7629cd0d00d12d660dad69bc2f99f485aa792d48b1bbefaff63273962ea7e147",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p08",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P09": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "561d5fbe5b13905942229136063aeedaf9e3bd1b0335d390dd45099827563822.json",
+        "sha256": "561d5fbe5b13905942229136063aeedaf9e3bd1b0335d390dd45099827563822",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p09",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P10": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "792091e15396969a0fe616bc9712b1fd0f3aa1413498df8b5b1eaafc3b633cd1.json",
+        "sha256": "792091e15396969a0fe616bc9712b1fd0f3aa1413498df8b5b1eaafc3b633cd1",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p10",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P11": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "e4ed01f394116dbed5b6cae89365ca9f2c245fc5f744286bbfa6c470a95d1309.json",
+        "sha256": "e4ed01f394116dbed5b6cae89365ca9f2c245fc5f744286bbfa6c470a95d1309",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p11",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P12": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "1823fc2fcc62e4f0ec96703495ee2ed78c19593e9c276af539fce6c825e1e76b.json",
+        "sha256": "1823fc2fcc62e4f0ec96703495ee2ed78c19593e9c276af539fce6c825e1e76b",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p12",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P13": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "df6026c13464264190b7d85bcf57c54a3c20c1b29787c5eb2a998073fd8c62ce.json",
+        "sha256": "df6026c13464264190b7d85bcf57c54a3c20c1b29787c5eb2a998073fd8c62ce",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p13",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P14": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "980fb6ccc1ae7fa1c28e071747b6a2db526a4541e7f07f5ad82129eaf9dbb76e.json",
+        "sha256": "980fb6ccc1ae7fa1c28e071747b6a2db526a4541e7f07f5ad82129eaf9dbb76e",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p14",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P15": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "f6e3b4db7397729d6b25e4f448d67a5c829a20bdc796e5bc94f8f3225a519e2a.json",
+        "sha256": "f6e3b4db7397729d6b25e4f448d67a5c829a20bdc796e5bc94f8f3225a519e2a",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p15",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P16": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "eeaa368ef2091d7b0a37158c56f1b463cbfa70e0b950daf79153764dc1a48cb9.json",
+        "sha256": "eeaa368ef2091d7b0a37158c56f1b463cbfa70e0b950daf79153764dc1a48cb9",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p16",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P17": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "d7d0a6d212269efa36028175454b984fa7a5218b9814069f987185c47e6b7495.json",
+        "sha256": "d7d0a6d212269efa36028175454b984fa7a5218b9814069f987185c47e6b7495",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p17",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P18": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "6f566a31016b9f8f5e5c39bbeec80da94391910af15aa8fed00095135a5ca14d.json",
+        "sha256": "6f566a31016b9f8f5e5c39bbeec80da94391910af15aa8fed00095135a5ca14d",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p18",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P19": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "40934ec002aad435489d4f2359f30897d3f3901b47f72224b3b75b8c571a4962.json",
+        "sha256": "40934ec002aad435489d4f2359f30897d3f3901b47f72224b3b75b8c571a4962",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p19",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P20": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "aaa3dceda2655956b3439e90a76c448d3d76446a7b0841724d192729bd4be898.json",
+        "sha256": "aaa3dceda2655956b3439e90a76c448d3d76446a7b0841724d192729bd4be898",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p20",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P21": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "a3feaa09bcc24f43a2ee4fca9da21519b9e53a0bda8dbb2df3ff76a8808f6680.json",
+        "sha256": "a3feaa09bcc24f43a2ee4fca9da21519b9e53a0bda8dbb2df3ff76a8808f6680",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p21",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P22": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "34c50144cd8cc83be92ad028741b47ab958ce2853b677af683c1b834e8076ca6.json",
+        "sha256": "34c50144cd8cc83be92ad028741b47ab958ce2853b677af683c1b834e8076ca6",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p22",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P23": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "78234b5f2d2a90052f09e6cd0512ac15da1b57a34abf9404cdbda434328592da.json",
+        "sha256": "78234b5f2d2a90052f09e6cd0512ac15da1b57a34abf9404cdbda434328592da",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p23",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P24": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "81830f8d1c5e411a0daa7984ba298e490706d5d113f99e408e18af1b930c56b4.json",
+        "sha256": "81830f8d1c5e411a0daa7984ba298e490706d5d113f99e408e18af1b930c56b4",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p24",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P25": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "4131f5fa795b8e9c148bbeb34b4e92743cc392469f73fd28c8a677f8fae5f585.json",
+        "sha256": "4131f5fa795b8e9c148bbeb34b4e92743cc392469f73fd28c8a677f8fae5f585",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p25",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P26": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "cc91a3ef429b37c3e24103de959c0e12a6fb8d9ea7e0733e997a5b68a0a059a6.json",
+        "sha256": "cc91a3ef429b37c3e24103de959c0e12a6fb8d9ea7e0733e997a5b68a0a059a6",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p26",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P27": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "f7560a75c6e197752ab29fe313c037a5d99485f12bfb52eb0ec91be9a117c663.json",
+        "sha256": "f7560a75c6e197752ab29fe313c037a5d99485f12bfb52eb0ec91be9a117c663",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p27",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P28": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "231c844524e94a90aa42c37fcfe4cc4d79bc97e33e012415fef56355fc929051.json",
+        "sha256": "231c844524e94a90aa42c37fcfe4cc4d79bc97e33e012415fef56355fc929051",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p28",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P29": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "137cadf7c3a8bdc94f65b8a62d804d3083ab415ddb50114dac120653ba2cad9d.json",
+        "sha256": "137cadf7c3a8bdc94f65b8a62d804d3083ab415ddb50114dac120653ba2cad9d",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p29",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P30": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "892e6c3a65a2d591cc72ed82d8dfb985d956c2f0cee0cde2aa54058204cd7b21.json",
+        "sha256": "892e6c3a65a2d591cc72ed82d8dfb985d956c2f0cee0cde2aa54058204cd7b21",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p30",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      },
+      "P31": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX015_20261011"
+        },
+        "evidence_id": "9b09a6ef303d404e7a1c780a55cd075dbb4c08d7cda4ca8ab0962c2fb31c3c86.json",
+        "sha256": "9b09a6ef303d404e7a1c780a55cd075dbb4c08d7cda4ca8ab0962c2fb31c3c86",
+        "media_type": "application/json",
+        "name": "parameter-account-b0-time-p31",
+        "schema": "account_evaluation",
+        "schema_version": 6
+      }
+    },
+    "count_columns": [
+      "year",
+      "days",
+      "winsor_only_gained_target",
+      "winsor_only_lost_target",
+      "consensus_gained_target",
+      "consensus_lost_target",
+      "raw_pass_winsor_fail_days",
+      "raw_fail_winsor_pass_days"
+    ],
+    "accounts": {
+      "center": {
+        "same_original_threshold": 0.1,
+        "counts": [
+          "ALL",
+          1636,
+          28,
+          5,
+          0,
+          5,
+          37,
+          49
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            2
+          ],
+          [
+            2022,
+            242,
+            1,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            2
+          ],
+          [
+            2022,
+            242,
+            1,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P00": {
+        "same_original_threshold": 0.10590168512423424,
+        "counts": [
+          "ALL",
+          1636,
+          32,
+          6,
+          0,
+          6,
+          38,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P01": {
+        "same_original_threshold": 0.09453100723548666,
+        "counts": [
+          "ALL",
+          1636,
+          31,
+          9,
+          0,
+          9,
+          39,
+          46
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            4,
+            0,
+            4,
+            14,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            4,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            4,
+            0,
+            4,
+            14,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            4,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P02": {
+        "same_original_threshold": 0.08759118184806992,
+        "counts": [
+          "ALL",
+          1636,
+          33,
+          4,
+          0,
+          4,
+          39,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            13,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            13,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ]
+      },
+      "P03": {
+        "same_original_threshold": 0.08870471275704692,
+        "counts": [
+          "ALL",
+          1636,
+          30,
+          4,
+          0,
+          4,
+          39,
+          50
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            14,
+            1
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            4,
+            4
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            14,
+            1
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            4,
+            4
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ]
+      },
+      "P04": {
+        "same_original_threshold": 0.09571111183532614,
+        "counts": [
+          "ALL",
+          1636,
+          33,
+          5,
+          0,
+          5,
+          39,
+          46
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            14,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            14,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P05": {
+        "same_original_threshold": 0.1052059414490505,
+        "counts": [
+          "ALL",
+          1636,
+          33,
+          6,
+          0,
+          6,
+          38,
+          54
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P06": {
+        "same_original_threshold": 0.10699670197241276,
+        "counts": [
+          "ALL",
+          1636,
+          34,
+          5,
+          0,
+          5,
+          38,
+          55
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            7,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            7,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P07": {
+        "same_original_threshold": 0.08591873224670925,
+        "counts": [
+          "ALL",
+          1636,
+          33,
+          4,
+          0,
+          4,
+          42,
+          51
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            2,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            2,
+            5
+          ]
+        ]
+      },
+      "P08": {
+        "same_original_threshold": 0.12557803153570518,
+        "counts": [
+          "ALL",
+          1636,
+          42,
+          3,
+          0,
+          3,
+          42,
+          60
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            14,
+            4
+          ],
+          [
+            2021,
+            243,
+            2,
+            0,
+            0,
+            0,
+            10,
+            5
+          ],
+          [
+            2022,
+            242,
+            10,
+            1,
+            0,
+            1,
+            7,
+            14
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            2
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            14,
+            4
+          ],
+          [
+            2021,
+            243,
+            2,
+            0,
+            0,
+            0,
+            10,
+            5
+          ],
+          [
+            2022,
+            242,
+            10,
+            1,
+            0,
+            1,
+            7,
+            14
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            2
+          ]
+        ]
+      },
+      "P09": {
+        "same_original_threshold": 0.0985855063122219,
+        "counts": [
+          "ALL",
+          1636,
+          31,
+          6,
+          0,
+          6,
+          38,
+          46
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            4,
+            1,
+            0,
+            1,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            4,
+            1,
+            0,
+            1,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P10": {
+        "same_original_threshold": 0.06866323599856888,
+        "counts": [
+          "ALL",
+          1636,
+          15,
+          6,
+          0,
+          6,
+          52,
+          40
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            17,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            7,
+            3,
+            0,
+            3,
+            4,
+            12
+          ],
+          [
+            2023,
+            242,
+            1,
+            1,
+            0,
+            1,
+            7,
+            3
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            11,
+            5
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            6
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            17,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            7,
+            3,
+            0,
+            3,
+            4,
+            12
+          ],
+          [
+            2023,
+            242,
+            1,
+            1,
+            0,
+            1,
+            7,
+            3
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            11,
+            5
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            6
+          ]
+        ]
+      },
+      "P11": {
+        "same_original_threshold": 0.07686597864378579,
+        "counts": [
+          "ALL",
+          1636,
+          15,
+          6,
+          0,
+          6,
+          45,
+          44
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            15,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            10,
+            3
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            5,
+            9
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            6,
+            4
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            7,
+            11
+          ],
+          [
+            2026,
+            180,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            15,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            10,
+            3
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            5,
+            9
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            6,
+            4
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            7,
+            11
+          ],
+          [
+            2026,
+            181,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ]
+      },
+      "P12": {
+        "same_original_threshold": 0.10875266730083051,
+        "counts": [
+          "ALL",
+          1636,
+          32,
+          5,
+          0,
+          5,
+          39,
+          56
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            7,
+            10
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            7,
+            10
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P13": {
+        "same_original_threshold": 0.11716953426197646,
+        "counts": [
+          "ALL",
+          1636,
+          38,
+          5,
+          0,
+          5,
+          41,
+          58
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            11,
+            6
+          ],
+          [
+            2022,
+            242,
+            8,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            11,
+            6
+          ],
+          [
+            2022,
+            242,
+            8,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ]
+      },
+      "P14": {
+        "same_original_threshold": 0.08371591519225163,
+        "counts": [
+          "ALL",
+          1636,
+          26,
+          6,
+          0,
+          6,
+          44,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            15,
+            3
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            1,
+            0,
+            1,
+            3,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            15,
+            3
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            1,
+            0,
+            1,
+            3,
+            5
+          ]
+        ]
+      },
+      "P15": {
+        "same_original_threshold": 0.08608281451146134,
+        "counts": [
+          "ALL",
+          1636,
+          35,
+          4,
+          0,
+          4,
+          41,
+          51
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            1,
+            0,
+            0,
+            0,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            1,
+            0,
+            0,
+            0,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            7,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ]
+      },
+      "P16": {
+        "same_original_threshold": 0.11062739383793134,
+        "counts": [
+          "ALL",
+          1636,
+          34,
+          9,
+          0,
+          9,
+          40,
+          55
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            1,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            3,
+            0,
+            3,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            5,
+            4,
+            0,
+            4,
+            6,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            2,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            1,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            3,
+            0,
+            3,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            5,
+            4,
+            0,
+            4,
+            6,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            2,
+            3
+          ]
+        ]
+      },
+      "P17": {
+        "same_original_threshold": 0.11893604540166611,
+        "counts": [
+          "ALL",
+          1636,
+          43,
+          5,
+          0,
+          5,
+          39,
+          59
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            4
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            10,
+            6
+          ],
+          [
+            2022,
+            242,
+            9,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            9,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            4
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            10,
+            6
+          ],
+          [
+            2022,
+            242,
+            9,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            9,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P18": {
+        "same_original_threshold": 0.11126593730666252,
+        "counts": [
+          "ALL",
+          1636,
+          34,
+          6,
+          0,
+          6,
+          42,
+          56
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            6,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            3,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            7,
+            2,
+            0,
+            2,
+            6,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            3,
+            7
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ]
+      },
+      "P19": {
+        "same_original_threshold": 0.10546804081092373,
+        "counts": [
+          "ALL",
+          1636,
+          34,
+          7,
+          0,
+          7,
+          38,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            4,
+            0,
+            4,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            10,
+            4
+          ],
+          [
+            2022,
+            242,
+            6,
+            4,
+            0,
+            4,
+            7,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P20": {
+        "same_original_threshold": 0.10419064621945795,
+        "counts": [
+          "ALL",
+          1636,
+          28,
+          5,
+          0,
+          5,
+          36,
+          53
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            9,
+            4
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            6,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            9,
+            4
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            6,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P21": {
+        "same_original_threshold": 0.08479158480053237,
+        "counts": [
+          "ALL",
+          1636,
+          26,
+          4,
+          0,
+          4,
+          42,
+          51
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            14,
+            3
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            2,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            0,
+            0,
+            0,
+            14,
+            3
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            5
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            17,
+            0,
+            0,
+            0,
+            5,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            2,
+            5
+          ]
+        ]
+      },
+      "P22": {
+        "same_original_threshold": 0.11658257324613455,
+        "counts": [
+          "ALL",
+          1636,
+          34,
+          6,
+          0,
+          6,
+          41,
+          58
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            2,
+            0,
+            2,
+            11,
+            6
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            2,
+            0,
+            2,
+            11,
+            6
+          ],
+          [
+            2022,
+            242,
+            3,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            5,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ]
+      },
+      "P23": {
+        "same_original_threshold": 0.10266129530270406,
+        "counts": [
+          "ALL",
+          1636,
+          30,
+          5,
+          0,
+          5,
+          36,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            9,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            1,
+            0,
+            1,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            2,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            2
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            9,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            1,
+            0,
+            1,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            2,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            2,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P24": {
+        "same_original_threshold": 0.11546917713144976,
+        "counts": [
+          "ALL",
+          1636,
+          37,
+          5,
+          0,
+          5,
+          41,
+          57
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            6,
+            1,
+            0,
+            1,
+            5,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            1,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            3,
+            0,
+            3,
+            12,
+            3
+          ],
+          [
+            2021,
+            243,
+            2,
+            1,
+            0,
+            1,
+            11,
+            5
+          ],
+          [
+            2022,
+            242,
+            6,
+            1,
+            0,
+            1,
+            5,
+            9
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            8
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            1,
+            10
+          ],
+          [
+            2025,
+            243,
+            19,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            3,
+            3
+          ]
+        ]
+      },
+      "P25": {
+        "same_original_threshold": 0.0798881111250835,
+        "counts": [
+          "ALL",
+          1636,
+          28,
+          7,
+          0,
+          7,
+          46,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            1,
+            1,
+            0,
+            1,
+            16,
+            4
+          ],
+          [
+            2021,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            5,
+            4
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            1,
+            0,
+            1,
+            3,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            1,
+            1,
+            0,
+            1,
+            16,
+            4
+          ],
+          [
+            2021,
+            243,
+            0,
+            2,
+            0,
+            2,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            5,
+            4
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            1,
+            0,
+            1,
+            3,
+            5
+          ]
+        ]
+      },
+      "P26": {
+        "same_original_threshold": 0.07666976007422542,
+        "counts": [
+          "ALL",
+          1636,
+          16,
+          6,
+          0,
+          6,
+          45,
+          45
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            15,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            10,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            6,
+            4
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            7,
+            11
+          ],
+          [
+            2026,
+            180,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            15,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            10,
+            3
+          ],
+          [
+            2022,
+            242,
+            6,
+            2,
+            0,
+            2,
+            5,
+            10
+          ],
+          [
+            2023,
+            242,
+            2,
+            1,
+            0,
+            1,
+            6,
+            4
+          ],
+          [
+            2024,
+            242,
+            4,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            4,
+            0,
+            0,
+            0,
+            7,
+            11
+          ],
+          [
+            2026,
+            181,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ]
+      },
+      "P27": {
+        "same_original_threshold": 0.1083024642544108,
+        "counts": [
+          "ALL",
+          1636,
+          38,
+          7,
+          0,
+          7,
+          39,
+          56
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            4
+          ],
+          [
+            2022,
+            242,
+            10,
+            3,
+            0,
+            3,
+            7,
+            10
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            11,
+            3
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            11,
+            4
+          ],
+          [
+            2022,
+            242,
+            10,
+            3,
+            0,
+            3,
+            7,
+            10
+          ],
+          [
+            2023,
+            242,
+            4,
+            0,
+            0,
+            0,
+            2,
+            7
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            10
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            7,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            3
+          ]
+        ]
+      },
+      "P28": {
+        "same_original_threshold": 0.09929244149529204,
+        "counts": [
+          "ALL",
+          1636,
+          32,
+          8,
+          0,
+          8,
+          40,
+          49
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            3,
+            0,
+            3,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            2,
+            0,
+            2,
+            13,
+            0
+          ],
+          [
+            2021,
+            243,
+            1,
+            2,
+            0,
+            2,
+            12,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            3,
+            0,
+            3,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            5,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      },
+      "P29": {
+        "same_original_threshold": 0.07934471928081716,
+        "counts": [
+          "ALL",
+          1636,
+          23,
+          4,
+          0,
+          4,
+          45,
+          46
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            1,
+            0,
+            0,
+            0,
+            16,
+            4
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            8,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            1,
+            1,
+            0,
+            1,
+            5,
+            4
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            10,
+            0,
+            0,
+            0,
+            6,
+            13
+          ],
+          [
+            2026,
+            180,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            1,
+            0,
+            0,
+            0,
+            16,
+            4
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            3
+          ],
+          [
+            2022,
+            242,
+            8,
+            1,
+            0,
+            1,
+            4,
+            8
+          ],
+          [
+            2023,
+            242,
+            1,
+            1,
+            0,
+            1,
+            5,
+            4
+          ],
+          [
+            2024,
+            242,
+            3,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          [
+            2025,
+            243,
+            10,
+            0,
+            0,
+            0,
+            6,
+            13
+          ],
+          [
+            2026,
+            181,
+            0,
+            1,
+            0,
+            1,
+            2,
+            5
+          ]
+        ]
+      },
+      "P30": {
+        "same_original_threshold": 0.08842823637515858,
+        "counts": [
+          "ALL",
+          1636,
+          28,
+          4,
+          0,
+          4,
+          39,
+          52
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            14,
+            2
+          ],
+          [
+            2021,
+            243,
+            0,
+            1,
+            0,
+            1,
+            11,
+            2
+          ],
+          [
+            2022,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            9
+          ],
+          [
+            2023,
+            242,
+            3,
+            1,
+            0,
+            1,
+            4,
+            5
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            2025,
+            243,
+            16,
+            0,
+            0,
+            0,
+            5,
+            18
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            5
+          ]
+        ]
+      },
+      "P31": {
+        "same_original_threshold": 0.10063647898827051,
+        "counts": [
+          "ALL",
+          1636,
+          33,
+          4,
+          0,
+          4,
+          37,
+          51
+        ],
+        "signal_years": [
+          [
+            2019,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            1
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            180,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ],
+        "execution_years": [
+          [
+            2020,
+            243,
+            0,
+            1,
+            0,
+            1,
+            12,
+            1
+          ],
+          [
+            2021,
+            243,
+            1,
+            1,
+            0,
+            1,
+            10,
+            2
+          ],
+          [
+            2022,
+            242,
+            5,
+            2,
+            0,
+            2,
+            6,
+            7
+          ],
+          [
+            2023,
+            242,
+            3,
+            0,
+            0,
+            0,
+            2,
+            6
+          ],
+          [
+            2024,
+            242,
+            6,
+            0,
+            0,
+            0,
+            0,
+            12
+          ],
+          [
+            2025,
+            243,
+            18,
+            0,
+            0,
+            0,
+            6,
+            19
+          ],
+          [
+            2026,
+            181,
+            0,
+            0,
+            0,
+            0,
+            1,
+            4
+          ]
+        ]
+      }
+    },
+    "aggregate": {
+      "signal_year": [
+        [
+          2019,
+          33,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2020,
+          8019,
+          4,
+          52,
+          0,
+          52,
+          431,
+          72
+        ],
+        [
+          2021,
+          8019,
+          29,
+          42,
+          0,
+          42,
+          357,
+          112
+        ],
+        [
+          2022,
+          7986,
+          192,
+          62,
+          0,
+          62,
+          179,
+          287
+        ],
+        [
+          2023,
+          7986,
+          101,
+          20,
+          0,
+          20,
+          105,
+          188
+        ],
+        [
+          2024,
+          7986,
+          149,
+          0,
+          0,
+          0,
+          6,
+          332
+        ],
+        [
+          2025,
+          8019,
+          544,
+          0,
+          0,
+          0,
+          208,
+          583
+        ],
+        [
+          2026,
+          5940,
+          0,
+          5,
+          0,
+          5,
+          51,
+          132
+        ]
+      ],
+      "execution_year": [
+        [
+          2020,
+          8019,
+          4,
+          52,
+          0,
+          52,
+          431,
+          72
+        ],
+        [
+          2021,
+          8019,
+          29,
+          42,
+          0,
+          42,
+          357,
+          112
+        ],
+        [
+          2022,
+          7986,
+          192,
+          62,
+          0,
+          62,
+          179,
+          287
+        ],
+        [
+          2023,
+          7986,
+          101,
+          20,
+          0,
+          20,
+          105,
+          188
+        ],
+        [
+          2024,
+          7986,
+          149,
+          0,
+          0,
+          0,
+          6,
+          332
+        ],
+        [
+          2025,
+          8019,
+          544,
+          0,
+          0,
+          0,
+          208,
+          583
+        ],
+        [
+          2026,
+          5973,
+          0,
+          5,
+          0,
+          5,
+          51,
+          132
+        ]
+      ],
+      "counts": [
+        "ALL",
+        53988,
+        1019,
+        181,
+        0,
+        181,
+        1337,
+        1706
+      ]
+    },
+    "derivation": "At each certified original before-state: holding decisions unchanged; winsor-only target losses become consensus losses; winsor-only gains disappear because raw filter failed. Thus consensus gains0 and consensus losses exactly the winsor-only lost target count on these endogenous observed states. No future-state propagation.",
+    "state_partition_assertions": "All33x1636 dates accounted for; complete signal years2019..2026 and execution years2020..2026; gain+loss matches51 reported conditional_target_changes; full filter crossings match prior summaries; all zero groups retained.",
+    "limits": [
+      "Observed-state one-step predicates only, not new closed-trade frequency or profit paths.",
+      "A stricter entry gate can lose profitable opportunities or frequency; no removed-old-trade PnL subtraction or gain prediction.",
+      "Prior51 actual financial center failed2022/2023 profitability per root; preserved as context, not read or re-estimated here.",
+      "Repeated reuse of development evidence informs the hypothesis; not independent validation."
+    ],
+    "decision": {
+      "exact_duplicate_no_go": false,
+      "next_step": "Prospective pure implementation/oracle review may be considered by root; this check does not createEX052 or authorize finance."
+    }
+  },
+  "duplicate_check_sha256": "0995debced14558356249328fea1943ba3977db3be56956076f3c1519ccba39a",
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 47,
+    "content_sha256": "98049920814344854cd6eb88c3e472407f879752d6467330648a9093fa0fa3d8"
+  },
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. RSCH S013 stage3, existing data, original economic gates and full13 parameter comparability retained.",
+  "method": "Authenticate immutable EX051 conditional original33 effect and original input reference. All53988 rows retain original own before states, parameters, raw/winsor values and frozen original versus winsor-only single-step decisions. Recompute both predicate thresholds and min statistic exactly. If raw passes and winsor fails, consensus uses authenticated winsor-only conditional result; otherwise uses original result. This is exact AND only for the changed eligibility input, no state propagation or cash. Assert changed cases flat-before with original entry or confirmation rejection; holding steps cannot change. Preserve all dates/years/original33 refs. Native new account independently computes min/raw/winsor formulas and the entire endogenous path.",
+  "counts": {
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "observed_native_paths": 33
+  },
+  "external_sources": {
+    "research/S013/experiments/EX047_20261011/src/common.py": "884d50ba79ce6489d04325c28d4713b402637458009c6aac4d117d2d9fe4c2cd",
+    "research/S013/experiments/EX047_20261011/src/native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "research/S013/experiments/EX047_20261011/src/transition.py": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26"
+  },
+  "limits": "Dependent original endogenous states; exact conditional predicate projection is not a new path/frequency/profit prediction. Full13 domains/units/same32 preserved, sharedcutoff on different amplitude estimators means stronger filter, not equivalent strength. Fixed structural AND and each-tail1 winsor; no search, weighted blend, domain contraction, unit transform or fallback. Required undefined winsor remains strict refusal even if raw rejects."
+}
