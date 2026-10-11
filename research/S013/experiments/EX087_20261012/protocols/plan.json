@@ -1,0 +1,261 @@
+{
+  "status": "ROOT_FROZEN_BEFORE_REAL_STUDY",
+  "role": "RSCH",
+  "stage": 2,
+  "quota_slot": 9,
+  "authorization": "原自主研究和EX079–EX088十轮额度，每实验保存正式报告副本",
+  "question": "有用的赚幅预测是否被概率/亏幅抵消，拆项净收益能否解释当前组合失败并提供可执行线索？",
+  "basis": "EX086原14盈利幅度MSE约改善6.02%，条件性区间正且五相位点估计正；合成净MSE却更差、两下跌年未解决。保留局部支持，需要匹配拆项归因，不能把整体失败当所有组成无效或事后选择phase3。",
+  "strongest_prior_counter": "两个原14赚幅反证年份2022/2026更差；选中真实盈利子集的幅度预测不能识别哪笔会盈利。固定历史概率仍可能漏掉下跌年变化；拆项改善也可能只是少交易/大涨交易/时钟选择，原样本长期反复使用。",
+  "original_four_hard_gates_changed": false,
+  "new_economic_hard_gates": false,
+  "fixed_design": {
+    "reuse": "精确复用EX084概率和EX086赚/亏幅、固定年度幅度及控制净预测，0新拟合，不更新训练支持或数据",
+    "axis": "原1635T/原h4净HFQ OPEN标签，原训练成熟身份和尾部缺标签保持",
+    "coordinates": "每信息族所有P/G/L三位组合000..111，0=当年成熟训练固定概率或固定幅度，1=冻结的当前特征条件预测；确认单列及原14各8",
+    "new_values": "16表达坐标，000在两族完全相同为共享对照，实际15不同表达，其中10新增净预测列；非16新候选/账户/模型或独立样本",
+    "combination": "p*gain-(1-p)*loss，严格>0选择；000精确复用training_mean，100复用旧固定幅度净预测，111复用旧条件双幅度净预测，先核对恒等再精确赋旧控制，非兜底",
+    "matched": "所有组合共享相同预测T、过去成熟年度训练、资金费用/标签。每个年度、五相位、24条相同背景仅切换一项的边都完整报告；背景不当独立样本",
+    "primary": "每族固定7量：赚幅单独/加入概率/概率加入赚幅的净MSE增量，赚幅单独/概率+赚幅选中净均值，加入赚幅/最后加入亏幅的选中均值差；共14，不根据结果换量",
+    "quantities": [
+      "confirmation_gain_only_mse_vs_constant",
+      "confirmation_gain_given_probability_mse",
+      "confirmation_probability_given_gain_mse",
+      "confirmation_gain_only_positive_mean",
+      "confirmation_probability_gain_positive_mean",
+      "confirmation_gain_given_probability_mean_difference",
+      "confirmation_loss_given_probability_gain_mean_difference",
+      "original14_gain_only_mse_vs_constant",
+      "original14_gain_given_probability_mse",
+      "original14_probability_given_gain_mse",
+      "original14_gain_only_positive_mean",
+      "original14_probability_gain_positive_mean",
+      "original14_gain_given_probability_mean_difference",
+      "original14_loss_given_probability_gain_mean_difference"
+    ],
+    "edges": "全24单项替换边，原始全窗、全部年和五相位都报告净MSE和选中均值增量；这是模型诊断，非账户因果利润",
+    "clocks": "冻结EX083贪心和i%5所有五组，共16×6=96坐标；重复000时钟不重复计独立信息，不挑赢家相位/组，不是32标准扰动",
+    "bootstrap": "原1635T轴500次重叠40日块seed13，固定预测不重拟合；原始/重抽样至少20、至少400有效、LINEAR95CI；14量全部留证，未经研究历史和多重比较校正",
+    "forecast": "2020无预测，尾部未来truth缺失仍保留已知输入预测；不增加未来全年数量门，不用未来标签更换组合"
+  },
+  "scope": "原510500已见开发池/HFQ固定锚/无现金分红叠加/资金费用整手/1%合同；0模型拟合、账户、provider、新市场数据、平台或生产变更",
+  "stopping": "完整识别有利和不利，若只是少数时钟/薄余量/下跌年仍负，不升级为账户；若有一致净经济支持，剩余最后额度可进入最小原生验证。无参数、方向、期限或相位救援。诊断不新增经济硬门。",
+  "source_files": {
+    ".tmp/s013-payoff-legs/kernel.py": "5d8adfb382aeb0234efd46785c6aabde28392932f6a8885fd1d6e17e31a840e0",
+    ".tmp/s013-payoff-legs/audit.py": "9c73add9412e87dae8b195e059b7e2bb08242130dce2613b10cebd9c0c51ec66",
+    ".tmp/s013-payoff-legs/focused_checks.py": "323ad19ccec2aac6f57a83fa20c9c649796540f42e6faec989df45a9653ba265",
+    ".tmp/s013-payoff-legs/focused_checks.json": "35f53baa9113c3a72e8b05b522f47ae66ca73247e04987e7ae21b29ea3ca139d",
+    ".tmp/s013_legs_driver.py": "fccac2fe5f6c5f2e68ad2efadce193ae5f0c382555fbae7e2c8c39494ac8029d",
+    ".tmp/s013_legs_freeze.py": "2c9899ccc7f8ea3ef0e9247125fd2062b551982854312009842f3c47981c6934",
+    ".tmp/s013_build_legs_audit.py": "7b90d2b3de13da9aef2d1e8f53d00011c85a11b38cf78d1efd97a1e9439effef",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX086_20261012/src/audit.py": "d827a506990570e82cbdca0eba19766adb6dc8597a23e1b53aa899c10e3d962b",
+    "research/S013/experiments/EX083_20261012/src/kernel.py": "769044707f3759cc988ca8ec7176b2ea9bee87fd0211bc76193377532a5e0212",
+    "research/S013/experiments/EX083_20261012/src/audit.py": "6bd2709191e56f731da894af84190a0051a450753686e1b06e8bab2aec75b486"
+  },
+  "input_references": {
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "probabilities.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX084_20261012"
+      },
+      "evidence_id": "0740f9ce0e6f1a0d52e3833049697480bc628309f2939d4bb70f58acc6a8b195.csv",
+      "sha256": "0740f9ce0e6f1a0d52e3833049697480bc628309f2939d4bb70f58acc6a8b195",
+      "media_type": "text/csv",
+      "name": "confirm-net-probabilities",
+      "schema": null,
+      "schema_version": null
+    },
+    "magnitudes.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "f95330d83ce1358d3bfa611cdd55c21120ff62f5cf92c6012e7cca316a76c33f.csv",
+      "sha256": "f95330d83ce1358d3bfa611cdd55c21120ff62f5cf92c6012e7cca316a76c33f",
+      "media_type": "text/csv",
+      "name": "confirm-net-magnitudes",
+      "schema": null,
+      "schema_version": null
+    },
+    "constants.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "e6a3acfb14dc419da526cca1a82d03377859158cc3dc278a4614ae91461b0116.csv",
+      "sha256": "e6a3acfb14dc419da526cca1a82d03377859158cc3dc278a4614ae91461b0116",
+      "media_type": "text/csv",
+      "name": "confirm-net-constant-magnitudes",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_forecasts.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "8e627e52bb78b248c6631e77f540ae9915c282263a2eb65075912d325119686e.csv",
+      "sha256": "8e627e52bb78b248c6631e77f540ae9915c282263a2eb65075912d325119686e",
+      "media_type": "text/csv",
+      "name": "confirm-net-forecasts",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "e4d9836500a7f2decc0d33f0a39f77c1768018b748077dd3ecca262e015e3dbc.json",
+      "sha256": "e4d9836500a7f2decc0d33f0a39f77c1768018b748077dd3ecca262e015e3dbc",
+      "media_type": "application/json",
+      "name": "confirm-net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "66284deda86b4a80d8ef0c5cc2e9ddc788237ae9b2fd63b379471c2008b64b5a.json",
+      "sha256": "66284deda86b4a80d8ef0c5cc2e9ddc788237ae9b2fd63b379471c2008b64b5a",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "7d3e3228e2928f8a3470f6caf2082aaa211bf1e8f48061056c441ed5851fd0bf.json",
+      "sha256": "7d3e3228e2928f8a3470f6caf2082aaa211bf1e8f48061056c441ed5851fd0bf",
+      "media_type": "application/json",
+      "name": "confirm-net-root-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_plan.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "1541912c9c4e79e6ae59dea3e0dada2d1c3cf6d73c9dea043483a6edd8c1ea81.json",
+      "sha256": "1541912c9c4e79e6ae59dea3e0dada2d1c3cf6d73c9dea043483a6edd8c1ea81",
+      "media_type": "application/json",
+      "name": "confirm-net-plan",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_budget.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX086_20261012"
+      },
+      "evidence_id": "589e4a94c3e97b78b782998f64362e8f7bb5d9a6cf6b278b07127bca965f1c80.json",
+      "sha256": "589e4a94c3e97b78b782998f64362e8f7bb5d9a6cf6b278b07127bca965f1c80",
+      "media_type": "application/json",
+      "name": "confirm-net-budget-receipt",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "clock_source": "research/S013/experiments/EX083_20261012/src/kernel.py",
+  "clock_audit_source": "research/S013/experiments/EX083_20261012/src/audit.py",
+  "continuation_budget_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX078_20261012"
+    },
+    "evidence_id": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c.json",
+    "sha256": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c",
+    "media_type": "application/json",
+    "name": "vol-continuation_budget",
+    "schema": null,
+    "schema_version": null
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "report_copy": {
+    "target": "others/report.md",
+    "source": "corresponding formal delivery report.md",
+    "verification": "exact bytes andSHA256",
+    "human_authorization": "RSCH，请在后续的每个实验目录下保存一份report副本"
+  },
+  "resources": {
+    "new_annual_models": 0,
+    "new_accounts": 0,
+    "provider_calls": 0,
+    "schedules": 96,
+    "bootstrap": 500,
+    "new_net_prediction_columns": 10
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX087_20261012"
+  }
+}
