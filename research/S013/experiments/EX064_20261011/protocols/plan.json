@@ -1,0 +1,364 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX064_20261011"
+  },
+  "role": "RSCH",
+  "stage": 2,
+  "objective": "原四门中心达标，抗扰动更强；提高32点联合及逐项达标率、提高净CAGR Q10及降低全区间DD Q90。最好标准扰动仍达标；不把32/32新增为硬门。",
+  "economic_targets_unchanged": true,
+  "new_economic_hard_gates": false,
+  "method": {
+    "status": "SOURCE_ONLY_PROSPECTIVE_METHOD_NOT_PUBLIC_OR_EXECUTED",
+    "role": "RSCH",
+    "stage": 2,
+    "formal_experiment_created": false,
+    "version": "s013-gap-expression-v1",
+    "components": {
+      "negative_gap_repair": "if Open<PrevClose: max(0,min(Close,PrevClose)-Open)/TR; otherwise0",
+      "positive_gap_fade": "if Open>PrevClose: max(0,Open-max(Close,PrevClose))/TR; otherwise0"
+    },
+    "tr": "max(High-Low,abs(High-PrevClose),abs(Low-PrevClose)) in consistent HFQ units",
+    "zero_tr": "Exactly zero legal flat TR gives both0; no epsilon, denominator fallback or price repair.",
+    "meaning": {
+      "negative_gap_repair": "Amount of a negative opening gap recovered by T close, capped at prior close and normalized by T true range.",
+      "positive_gap_fade": "Amount of a positive opening gap faded by T close, capped at prior close and normalized by T true range."
+    },
+    "novelty": "Nonlinear interactions of already-observed daily prices, not independent new information; overnight_gap/intraday_return remain old controls.",
+    "hypotheses_fixed_before_actual_statistics": {
+      "negative_gap_repair": "Higher value predicts stronger return after next open, primarily horizons3/5.",
+      "positive_gap_fade": "Higher value predicts weaker post-next-open return and/or higher subsequent downside.",
+      "do_not_reverse_on_failure": true
+    },
+    "strongest_competition": "The14 existing controls already fully explain these expressions; any apparent increment comes from nonlinear model form, common market paths, ties or development selection rather than new information.",
+    "api": "gap_expression.build_features(daily:DataFrame,signal_sessions:DatetimeIndex)->DataFrame(two named columns)",
+    "input_contract": {
+      "columns": [
+        "Open",
+        "High",
+        "Low",
+        "Close"
+      ],
+      "price_basis": "Authenticated same-unit HFQ; no actual input read in this module task.",
+      "index": "Unique increasing finite timezone-naive normalized session dates; caller supplies complete authorized full trading calendar.",
+      "previous": "Full daily Close.shift(1) before signal reindex. First requested signal requires real prior session. No fill or prior selected-signal substitution.",
+      "validation": "All supplied daily prices strictly positive, finite, real numeric; High>=max(Open,Close), Low<=min(Open,Close), High>=Low. Reject invalid OHLC unchanged."
+    },
+    "availability": "T complete daily OHLC and prior Close available at T close under existing publication policy; earliest hypothetical entry T+1 open. No claim of independent historical timestamp verification.",
+    "parameters": "None. No fitted window/threshold/epsilon/range/weight; one prior session is data dependency only.",
+    "output_contract": "Exactly both components, original requested signal sessions retained including all zeros. Bounds[0,1] follow valid OHLC/segment lengths, not output clipping.",
+    "statistics_prospective": {
+      "version": "s013-gap-expression-statistics-prospective",
+      "components": [
+        "negative_gap_repair",
+        "positive_gap_fade"
+      ],
+      "controls": [
+        "momentum20",
+        "range_position60",
+        "acf1",
+        "volatility20",
+        "intraday_return",
+        "overnight_gap",
+        "intraday_energy20",
+        "intraday_rms20",
+        "confirmation_score",
+        "daily_close_location",
+        "feature_intraday_down_energy20",
+        "feature_overnight_down_energy20",
+        "turnover20",
+        "volume_ratio20"
+      ],
+      "labels": {
+        "return_1": 1,
+        "return_3": 3,
+        "return_5": 5,
+        "downside_1": 1,
+        "downside_3": 3,
+        "downside_5": 5
+      },
+      "label_contract": {
+        "return_h": "Open[T+1+h]/Open[T+1]-1; h complete sessions held",
+        "downside_h": "max(0,1-min(Low[T+1:T+h])/Open[T+1])",
+        "negative_gap_next": "Not tested: next open gap is already realized before proposed entry",
+        "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+      },
+      "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all fourteen controls; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+      "minimum_correlation_n": 20,
+      "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+      "bootstrap": {
+        "replicates": 500,
+        "block_sessions": 40,
+        "seed": 13,
+        "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+        "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+        "scope": "full-pool and opportunity-pool only; descriptive, no search-selection correction"
+      },
+      "walk_forward": {
+        "test_years": [
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "initial_train_year": 2020,
+        "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+        "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+        "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+        "models": [
+          "controls",
+          "controls+negative_gap_repair",
+          "controls+positive_gap_fade",
+          "controls+both"
+        ],
+        "common_model_rows": "all 16 feature columns finite, target finite, training target mature; identical model rows",
+        "minimum_train_n": 40,
+        "minimum_test_n": 20,
+        "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+      },
+      "scope": "all rows and optional original strategy ex-ante eligibility; no profitable-row selection",
+      "limitations": [
+        "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+        "No hyperparameter search; all labels, years, phases, components and failures retained.",
+        "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+        "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+      ]
+    },
+    "opportunity_pool": "Auxiliary original C8880 ex-ante entry_eligible on its original path; main full pool. Never profitable-row or best-year selection.",
+    "label_profit_boundary": "Return_h=Open[T+1+h]/Open[T+1]-1. Next-open gap Close[T] to Open[T+1] precedes proposed entry and is not earned holding return. Labels are not fees-inclusive executable-account PnL.",
+    "counterevidence": [
+      "No consistent fixed-sign partial rank IC or chronological model gain beyond controls weakens usefulness.",
+      "Repair may describe short-lived exhaustion; fade may be consolidation before further rise. Predeclared signs are not flipped.",
+      "Shared denominator and zero-mass ties can mimic significance; retain ties, all phases/years/failures and control-matched rows.",
+      "Positive statistical results still require future authorized complete-account mechanism tests and original hard goals."
+    ],
+    "history": "Root has observed EX063 fixed-management centers failing economic gates; this author did not read actual price/account result files for this component preparation.",
+    "limits": [
+      "Already-seen development pool; annual matured-label chronological ridge is not sealed independent validation.",
+      "500x40 seed13 block intervals descriptive only, not multiple-selection correction.",
+      "Future input identity/calendar/publication authentication and statistics execution belong to separately authorized root driver.",
+      "Pure validation tests numerical definitions and time dependency only; no predictiveness, profitability or goal achievement established."
+    ],
+    "prior_source_references": {
+      "research/S013/experiments/EX061_20261011/protocols/plan.json": "1a5776fea86484f38cdb64807336206089b8421597a843db63312af239bf2ab5",
+      "research/S013/experiments/EX061_20261011/src/opportunity_statistics.py": "326e269450d6d61168d4571861d946ca2753ddcd6daf951c14c679adcd0a07af",
+      "research/S013/experiments/EX061_20261011/src/run_opportunity_study.py": "335b2d3f552c53b07f42fc22641031fe88b3f8e77921cb3a5638f2fa45d5ec20"
+    },
+    "real_price_reads": 0,
+    "new_account_preparations": 0,
+    "new_account_evaluations": 0,
+    "provider_calls": []
+  },
+  "statistics": {
+    "version": "s013-gap-expression-statistics-v1",
+    "components": [
+      "negative_gap_repair",
+      "positive_gap_fade"
+    ],
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20"
+    ],
+    "labels": {
+      "return_1": 1,
+      "return_3": 3,
+      "return_5": 5,
+      "downside_1": 1,
+      "downside_3": 3,
+      "downside_5": 5
+    },
+    "label_contract": {
+      "return_h": "Open[T+1+h]/Open[T+1]-1; h complete sessions held",
+      "downside_h": "max(0,1-min(Low[T+1:T+h])/Open[T+1])",
+      "negative_gap_next": "Not tested: next open gap is already realized before proposed entry",
+      "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+    },
+    "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all fourteen controls; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+    "minimum_correlation_n": 20,
+    "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+      "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+      "scope": "full-pool and opportunity-pool only; descriptive, no search-selection correction"
+    },
+    "walk_forward": {
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_train_year": 2020,
+      "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+      "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+      "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+      "models": [
+        "controls",
+        "controls+negative_gap_repair",
+        "controls+positive_gap_fade",
+        "controls+both"
+      ],
+      "common_model_rows": "all 16 feature columns finite, target finite, training target mature; identical model rows",
+      "minimum_train_n": 40,
+      "minimum_test_n": 20,
+      "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+    },
+    "scope": "all rows and optional original strategy ex-ante eligibility; no profitable-row selection",
+    "nonlinear_expression_scope": {
+      "existing_information": "overnight_gap and intraday_return already remain in original fourteen controls",
+      "claim": "Test nonlinear expression usefulness; not newly independent information or a new market dataset",
+      "feature_module": ".tmp/s013-gap-expression/gap_expression.py build_features(daily, signal_sessions)",
+      "direction_contract": "negative_gap_repair return positive; positive_gap_fade return negative and/or downside positive; negative_gap_repair downside diagnostic with no fixed sign. Retain original raw columns, do not invert a failed hypothesis.",
+      "zero_mass": "Keep exact-zero rows in all original scopes/models/groups; report zero counts and quantile-group overlap. Never condition on an active/nonzero trigger after observing returns."
+    },
+    "mean_net_cost_proxy": {
+      "formula": "(1+grossReturn)*(1-.001)/(1+.001)-1",
+      "scope": "Observed return-label means for full/eligible pools and chronological low/high groups; all original IC/model targets remain gross labels",
+      "one_way_fee": 0.001,
+      "limits": "Proxy only: no full account, cash, lot rounding, position interaction, limit-fill feasibility, or executable strategy return claim"
+    },
+    "limitations": [
+      "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+      "No hyperparameter search; all labels, years, phases, components and failures retained.",
+      "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+      "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+    ]
+  },
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "c555100471d51e1e34f8f050e91cfa11d6b7fe8c7b21243d79fe3e4dc6038346.csv",
+      "sha256": "c555100471d51e1e34f8f050e91cfa11d6b7fe8c7b21243d79fe3e4dc6038346",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "93f4b58fdfbdeef844922137302d8f457c4cb1deb3d927ea667f4fac7651e40b.csv",
+      "sha256": "93f4b58fdfbdeef844922137302d8f457c4cb1deb3d927ea667f4fac7651e40b",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "opportunity.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1.csv",
+      "sha256": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1",
+      "media_type": "text/csv",
+      "name": "opportunity",
+      "schema": null,
+      "schema_version": null
+    },
+    "input_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "e236498c1e4626a412dbe241de940080d8447184cd6ac3ecc6dd8a9d1de165dd.json",
+      "sha256": "e236498c1e4626a412dbe241de940080d8447184cd6ac3ecc6dd8a9d1de165dd",
+      "media_type": "application/json",
+      "name": "input-checks",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "predecessors": [
+    {
+      "type": "DeliveryReference",
+      "batch": {
+        "type": "ResearchBatchRef",
+        "strategy_id": "S013"
+      },
+      "stage": "MANDATE",
+      "revision": 6,
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+    },
+    {
+      "type": "DeliveryReference",
+      "batch": {
+        "type": "ResearchBatchRef",
+        "strategy_id": "S013"
+      },
+      "stage": "COMPONENTS",
+      "revision": 3,
+      "content_sha256": "45f7b3c71d7e39f079a793ce8c488cfeeac6fbf77bd3da70a72dbebabb441add"
+    },
+    {
+      "type": "DeliveryReference",
+      "batch": {
+        "type": "ResearchBatchRef",
+        "strategy_id": "S013"
+      },
+      "stage": "CANDIDATES",
+      "revision": 56,
+      "content_sha256": "73244e15907035cf82b62ae0827316c6f6a54b0f81c9de91f0033143d0189e0b"
+    }
+  ],
+  "source_files": {
+    ".tmp/s013-gap-expression/focused_checks.py": "98389acdfefff920651575a866fc25c0b7832fed04d0d3131b3c5885f1f0b3ec",
+    ".tmp/s013-gap-expression/gap_expression.py": "189f576340f6148b13d5bfae743aba0c7aae6855ac85afca0faf709ee3bb917f",
+    ".tmp/s013-gap-expression/seal_source.py": "bb706272ef1b18edec186cb0acc72488c2674bf88cf828dec658b4892f8f2d43",
+    ".tmp/s013-gap-statistics/opportunity_statistics.py": "7d9915eff4a7f6a61ddc7de8444567aab3ca487e606b8c4e7ec153d28d5c5f77",
+    ".tmp/s013-gap-statistics/statistics_checks.py": "3dadef70e76ac8101c119661ab029e45928fd895070c1211d5694188a3ddb951",
+    ".tmp/s013-gap-statistics/adapt_source.py": "8c5ddaee2f417dc031809ca8464976f08efd71044d3f3654f18a36fa15d18280",
+    ".tmp/s013-gap-driver/driver.py": "ae639e85ef4b7d61a92f7bf89fcf156fe1317db64f0cc19095b883d112519aa0",
+    ".tmp/s013-gap-driver/focused_checks.py": "16b79be21e3a290b8ac6df348b8282e745c54407f51fbb39e5e126f44f3d4aae",
+    ".tmp/s013-gap-driver/seal_source.py": "2defb6af182199a17c3595df368778d13b877c138ee0ab7f57a0d3d893359e21",
+    ".tmp/s013-gap-driver/verification.py": "9154fdbd92c6dcd30f860fda80997334d614b30bbfd42662608b6c10b93e6492",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b"
+  },
+  "evidence_files": {
+    ".tmp/s013-gap-expression/method.json": "1fb9ead823a4bd9e8e1bac9e5580ef4924b931e8783a31f4cde77ded5dc35cd9",
+    ".tmp/s013-gap-expression/focused.json": "ca50b286133df72787ecc37cb9cdcc103b5b0e22a3af782bd80eebec3ea5064e",
+    ".tmp/s013-gap-statistics/statistics_checks.json": "f2f6a616a10c4f5bda8cdd07e02865dce58cb30dabec9965ea9f060ef797418d",
+    ".tmp/s013-gap-driver/focused_v3.json": "36a3dbe5cedd7cc2d7dc3e93b2d0ad9dcdc487b36a1cd1a3545c36ce5a76afe3",
+    "research/S013/deliveries/CANDIDATES/56/receipt.json": "3491c8e92b2250e0f019deccc2d7dc09be44aab3365b67f4dff6771d7367e698",
+    "research/S013/experiments/EX063_20261011/protocols/delivery_validation.json": "bd0057ceb55fde659a48ba7cb2570078a916fd1411de36c84485c0e027e1e03c"
+  },
+  "selection_history": "Root observed EX063 fixed-management hard-gate failures. Pure component/driver authors did not read new prices/accounts. Reused seen development pool is not independent validation.",
+  "new_account_preparations": 0,
+  "new_account_evaluations": 0,
+  "provider_revision": "S013-EX058-existing-only",
+  "native_input_cache": ".tmp/s013-mechanism-EX058/N0.pkl.gz",
+  "stop": "No direction/window/threshold rescue in this fixed study; predictive diagnostics grant no strategy qualification."
+}

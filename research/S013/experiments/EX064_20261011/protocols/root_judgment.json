@@ -1,0 +1,24 @@
+{
+  "status": "ROOT_REVIEWED_FIXED_HYPOTHESES",
+  "statistics_sha256": "1f24f113c9d46c1d2ff61f0afdad8dffeb283abf9ee202e1234f99f8a5873a1a",
+  "strategy_goal_achieved": false,
+  "new_economic_hard_gates": false,
+  "components": {
+    "negative_gap_repair": {
+      "test_status": "INEFFECTIVE",
+      "judgment": "停止本轮预声明的正向买入假说：全池3/5日原始相关均为负；5日控制后相关−0.05445，描述性95%块区间[−0.09950,−0.00640]，六个不重叠相位中五个为负，构成直接反证。保留最强正面证据：原C8880机会池3日高组收益比低组高0.03039个百分点，费用代理均值仍为正，且2023/2025/2026部分相关为正；但机会池控制后区间跨零、年份/相位不稳，新增组件使3/5日年度顺序模型误差增加。全池5日模型误差仅微小下降，原正向收益方向不成立，不能把反向线索直接改成已证实交易规则。"
+    },
+    "positive_gap_fade": {
+      "test_status": "INEFFECTIVE",
+      "judgment": "停止直接交易化：全池5日控制后相关−0.03096，六个不重叠相位均为负，且单加组件使全池5日模型误差下降约4.60e−7，是保留的局部正面证据；但描述性95%块区间[−0.08132,0.01867]跨零，3日没有稳定改善，机会池5日模型误差反而增加。风险相关的区间也跨零，机会池3/5日风险相关与预期相反。全池84.04%、机会池85.74%观测为零，年度Q75常为零使高低组大量重叠，组均值不能当作独立交易优势。尚不足以支持稳定的回吐过滤或盈利机制。"
+    }
+  },
+  "conclusion": "EX064完成固定缺口非线性表达检验：原1635日全池及512日原事前资格机会池、14项对照、6个标签均保留；150项独立核验通过，0新账户。两个预声明组件均没有足够一致的增量证据支持直接交易化，全部局部正面证据、反证、零值与分组重叠、年度及相位失败保留。停止这两条固定路线，不反转方向或挑期限补救。本轮没有获得新的中心硬门达标且抗扰动更强的策略，目标保持未达成。已见开发池的描述性统计不是封存独立验证，费用代理不是完整账户利润。",
+  "researcher_decision": "STOP_BOTH_FIXED_COMPONENT_TRANSLATIONS",
+  "scope_limits": [
+    "INEFFECTIVE means insufficient support for the predeclared strategy translation; it is not proof the components contain exactly zero information.",
+    "The negative five-day repair effect is a prospective reverse-mechanism clue only; it does not authorize retrospective sign inversion inside this study.",
+    "No prediction interval or component verdict is an additional user economic hard gate.",
+    "No new financial account, parameter point, fee stress account, sealed validation or external source."
+  ]
+}
