@@ -1,0 +1,97 @@
+{
+  "key": {
+    "strategy_id": "S013",
+    "candidate_id": "C9070"
+  },
+  "content_sha256": "e6d7ed9e34ea61de48db1a7e9c50b7072d327a7f14609ac8e0af7432c61e4517",
+  "source_sha256": "ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c",
+  "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+  "payload": {
+    "path": "assets/candidates/C9070/payload/7d26c03ac347c56b6363eafd8034af01f1a403fada89d5dd197b18670ccbd743.json",
+    "sha256": "7d26c03ac347c56b6363eafd8034af01f1a403fada89d5dd197b18670ccbd743"
+  },
+  "source_files": [
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/__init__.py",
+      "sha256": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/adaptive_range.py",
+      "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/boundary_bear_recovery_range.py",
+      "sha256": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/confirmed_range.py",
+      "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/range_reversion.py",
+      "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/reentry_confirmed_range.py",
+      "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+    },
+    {
+      "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/short_alternative_range.py",
+      "sha256": "eac7ebecf6ec453e6f8205741e2641c3f5a94b403147fcfff5929da2c68c53a1"
+    }
+  ],
+  "source_root": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime",
+  "dependencies": [
+    [
+      "czsc-strategy-runtime",
+      "0.1.0"
+    ],
+    [
+      "numpy",
+      "2.5.2"
+    ],
+    [
+      "pandas",
+      "3.0.5"
+    ]
+  ],
+  "origin": {
+    "experiment_id": "EX070_20261011",
+    "evidence": [
+      {
+        "path": "assets/evidence/EX070_20261011/d625ceca27e318bc2993df929e7277084b74b772683033d96c633fe2a26c0201.json",
+        "sha256": "d625ceca27e318bc2993df929e7277084b74b772683033d96c633fe2a26c0201"
+      }
+    ]
+  },
+  "derivation": {
+    "parent": {
+      "strategy_id": "S013",
+      "candidate_id": "C8880"
+    },
+    "parent_content_sha256": "e30430f290a802a01d27018535e5f4d137ab94c74b7f84908ad46492ada39fb6",
+    "child": {
+      "strategy_id": "S013",
+      "candidate_id": "C9070"
+    },
+    "child_content_sha256": "e6d7ed9e34ea61de48db1a7e9c50b7072d327a7f14609ac8e0af7432c61e4517",
+    "kind": "IMPLEMENTATION",
+    "changes": {
+      "mechanism": {
+        "before": "RAW_BULL_BOUNDARY_BODY_BEAR_BELOW_BODY_ACF_RECOVERY",
+        "after": "RAW_BULL_BOUNDARY_BODY_BEAR_BELOW_BODY_ACF_RECOVERY_SHORT_ALT"
+      },
+      "short_confirmation_lookback4": {
+        "before": null,
+        "after": 4
+      }
+    },
+    "protocol_sha256": "e1642d4a11bc46eef00113b189cd906d38fe887dcfbfd063b3148385d25a1dca",
+    "evidence": {
+      "path": "assets/candidates/C9070/derivation/2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e"
+    }
+  },
+  "schema_version": 3,
+  "identity_schema_version": 2
+}
