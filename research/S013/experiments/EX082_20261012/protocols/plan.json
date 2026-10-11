@@ -1,0 +1,243 @@
+{
+  "status": "ROOT_FROZEN_BEFORE_REAL_STUDY",
+  "role": "RSCH",
+  "stage": 2,
+  "quota_slot": 4,
+  "authorization": "原自主研究及EX079–EX088十轮额度；后续每个实验保存report副本",
+  "original_four_hard_gates_changed": false,
+  "new_economic_hard_gates": false,
+  "question": "决策T已知的自然月内位置，能否对四日净价格机会提供超出原价量信号的增量信息？",
+  "basis": "前轮价格方向重表达无效，转向不同信息通道。原14控制项没有自然日期的位置；历史论文提供月内时间结构线索。成因未知，不声称月末资金流入已获证明。先验证原开发池，不能直接搬用外部市场的效果或日期窗口。",
+  "strongest_prior_counter": "EX079确认支持有限且2022/2026净均值负，原14线性联合无优势；EX080真实账户只过频率；EX081确认与方向相加/交互无稳定增量。旧样本长期反复使用、模型复杂度和薄净盈利余量均是主要反证。文献是异地/异期研究，且自然周期与窄交易日窗口不同。",
+  "fixed_design": {
+    "common_rows": "与EX079/81完全相同原14完整行，1635T 2020-01-02..2026-09-29，不选择有利年份或新数据",
+    "calendar": "phase=(T自然日序号-1)/T所在自然月天数，固定一阶(.5sin(2pi phase),.5cos(2pi phase))；闰年可知，幅度.5固定，仅用T日期，不查看未来交易是否开放",
+    "new_models": [
+      "calendar_only",
+      "confirmation_calendar",
+      "original14_calendar"
+    ],
+    "controls": "calendar_only对training_mean；confirmation_calendar对原confirmation_only；original14_calendar对原original14_joint。三个旧模型全部原预测精确复用；新模型只增同样两个日期基函数，目的为机制增量对照，非事后挑赢家。",
+    "scale": "原价量每列年度成熟训练ECDF中点秩-.5；日期直接固定±.5，不训练日期CDF/相位/尺度；ridge10，截距不惩罚。",
+    "label": "原HFQ native Open[T+5]/Open[T+1]*(.999/1.001)-1，固定h4、双侧0.1%净价格代理；不是真实账户",
+    "training": "2020<=Tyear<testyear，label_end严格早于本测试年首T，全14有限且truth有限，至少40；年度2021..2026、ridge10、非惩罚截距；不以未来测试全年样本数控制当前可用性",
+    "forecast": "全完整T包括缺少未来truth的尾部，2020无预测；选择阈值严格>0，其他<=0；test标签只用于事后检验",
+    "reports": "全部年度2020–26、原涨跌/零状态、原位置mod5全五相位，新增自然phase四等分全部组；仅描述，不挑组训练/交易。",
+    "primary": "新日期项在三个嵌套对照的后续年度配对误差与正预测净均值增量；完整报告误报、年度尤其2022/2023盈利余量、非重叠代理及训练系数。不以单个MSE或CI作新硬门。",
+    "bootstrap": "共享完整1635T索引500次重叠块40、seed13、每量原始及重抽样有效n>=20、至少400有效才报LINEAR95区间，全部500记录/10事前数量；既有年度预测不重拟合，条件性区间未校正历史选择偏差",
+    "quantities": [
+      "calendar_mse_improvement_vs_mean",
+      "confirmation_calendar_mse_improvement_vs_confirmation",
+      "original14_calendar_mse_improvement_vs_original14",
+      "calendar_positive_mean",
+      "confirmation_calendar_positive_mean",
+      "original14_calendar_positive_mean",
+      "calendar_positive_mean_minus_all",
+      "confirmation_calendar_positive_mean_minus_confirmation",
+      "original14_calendar_positive_mean_minus_original14",
+      "original14_calendar_mse_improvement_vs_mean"
+    ],
+    "policy_proxy": "全T按预测>0贪心接受四日episode、到期优先/次T才可重入，保留未成熟最后episode；只描述非重叠OPEN代理，不计作真实闭合交易/硬门或实盘账户"
+  },
+  "scope": "仅原510500.SH已见开发池/HFQ固定锚/无现金分红叠加/原资金费用整手固定1%执行合同；0账户/0provider/0新增市场数据。文献仅机制依据，不引入其数据。",
+  "selection_history": "同一已见开发池适应性探索。自然月信息通道未做过本轮统计，引用文献不构成独立样本；固定仅第一谐波，不扫描相位、谐波阶数、窗口、年份、h、alpha、阈值。",
+  "stopping": "本轮只做预声明组件对照，不追加账户。若新增日期信息不能改善净机会且下跌年份余量不足，完整交付反证并停止当前平滑表达。若有一致经济线索，后续额度再验证可执行账户；不根据事后日期图择日救援。不推断所有月内规律均无效，不新增经济硬门。",
+  "source_files": {
+    ".tmp/s013-calendar-phase/kernel.py": "6048b2b6772a3eb4bc54e350bacca60b722db7310e6df4cc9a0d596926524f5e",
+    ".tmp/s013-calendar-phase/audit.py": "2043a04d5ab95ca6c3565bd13c30fe401a81e662e7beb724e3a3dedafde31069",
+    ".tmp/s013-calendar-phase/focused_checks.py": "d84433a838d87a0072af650388affec2aa36afebb056b9df65454257cbcfa0b7",
+    ".tmp/s013-calendar-phase/focused_checks.json": "aca16d86ab361980ac3b5b9e25e4c58f3237b939348c6e627930b8fb0cd02536",
+    ".tmp/s013-calendar-phase/literature_basis.json": "3d03f7901adee38e2f846e7f6efc93cbfac12de7c839cc4d1577ae5eac9e7caf",
+    ".tmp/s013_calendar_driver.py": "9923126621db81574a1222e75b2b815ffce63080968c7f9a8873f99cd5a74544",
+    ".tmp/s013_calendar_freeze.py": "9cf86154b9d90b7e882bf666f0622d62a674aa2cf3867175e5bb3ed89c4510a0",
+    ".tmp/s013_build_calendar.py": "a8f3b6b16179c97fc03f1d35d6ea1f276525081e69539455e14b7dcf921ea20b",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b"
+  },
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a.csv",
+      "sha256": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a",
+      "media_type": "text/csv",
+      "name": "net-features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_scores.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6.json",
+      "sha256": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6",
+      "media_type": "application/json",
+      "name": "net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_input_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "dc5a219d77284034294cb1d84f68e471dc31734a22dcd6524f8c5ce774903898.json",
+      "sha256": "dc5a219d77284034294cb1d84f68e471dc31734a22dcd6524f8c5ce774903898",
+      "media_type": "application/json",
+      "name": "net-input-checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX080_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX080_20261012"
+      },
+      "evidence_id": "5b8b22603076168f96bd021c6666bed06af7b96fcf2b8a88427c0e0ccc15c25a.json",
+      "sha256": "5b8b22603076168f96bd021c6666bed06af7b96fcf2b8a88427c0e0ccc15c25a",
+      "media_type": "application/json",
+      "name": "confirm-net-root-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX080_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX080_20261012"
+      },
+      "evidence_id": "972a75d94f47ebcb1021dba6b67ce9f3114d3f6ea561fa78dabc989e6ca99f60.json",
+      "sha256": "972a75d94f47ebcb1021dba6b67ce9f3114d3f6ea561fa78dabc989e6ca99f60",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX081_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX081_20261012"
+      },
+      "evidence_id": "c46c62e041f31cbb955126d6f428ab7c175d78b7ddb08fa7ee87f99c4b14baae.json",
+      "sha256": "c46c62e041f31cbb955126d6f428ab7c175d78b7ddb08fa7ee87f99c4b14baae",
+      "media_type": "application/json",
+      "name": "confirm-net-root-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX081_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX081_20261012"
+      },
+      "evidence_id": "5edc15aa5d0feadab0c40ca8ea1ba41f5f10fcedc0610440debe5deeec0b583b.json",
+      "sha256": "5edc15aa5d0feadab0c40ca8ea1ba41f5f10fcedc0610440debe5deeec0b583b",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_budget.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX081_20261012"
+      },
+      "evidence_id": "855177635a6aba0718462f4dca673a261ca9ac243329e0939883c931ddc2c567.json",
+      "sha256": "855177635a6aba0718462f4dca673a261ca9ac243329e0939883c931ddc2c567",
+      "media_type": "application/json",
+      "name": "confirm-net-budget-receipt",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "continuation_budget_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX078_20261012"
+    },
+    "evidence_id": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c.json",
+    "sha256": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c",
+    "media_type": "application/json",
+    "name": "vol-continuation_budget",
+    "schema": null,
+    "schema_version": null
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "report_copy": {
+    "target": "others/report.md",
+    "source": "corresponding formal delivery report.md",
+    "verification": "exact bytes andSHA256",
+    "human_authorization": "RSCH，请在后续的每个实验目录下保存一份report副本"
+  },
+  "resources": {
+    "new_annual_models": 18,
+    "new_accounts": 0,
+    "provider_calls": 0,
+    "bootstrap": 500
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX082_20261012"
+  }
+}

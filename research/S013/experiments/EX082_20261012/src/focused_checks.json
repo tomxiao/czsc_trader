@@ -1,0 +1,38 @@
+{
+  "status": "PASS",
+  "artificial_signals": 400,
+  "checks": [
+    "Training ECDF midpoint ties/extremes",
+    "Known civil date phase incl leap years and prefix independent of future trading calendar",
+    "Independent scalar annual centered ridge and all groups",
+    "All500 bootstrap records/10quantities",
+    "Strict maturity and prefix with only1current test row",
+    "Future features do not alter past",
+    "Future test labels do not alter same-year forecasts",
+    "2020unavailable and feature-only tail retained",
+    "Fourday exit priority, no same-signal reentry, missing terminal truth preserved"
+  ],
+  "refusals": 4,
+  "independent": {
+    "status": "PASS",
+    "new_accounts": 0,
+    "annual_models": 6,
+    "forecast_rows": 400,
+    "strict_positive_flags": "EXACT",
+    "panels_checked": 20,
+    "bootstrap_quantities": 10,
+    "bootstrap_replicates": 500,
+    "scalar_normal_equations": true,
+    "policy_clock_independent": true
+  },
+  "files": {
+    "kernel.py": "6048b2b6772a3eb4bc54e350bacca60b722db7310e6df4cc9a0d596926524f5e",
+    "audit.py": "2043a04d5ab95ca6c3565bd13c30fe401a81e662e7beb724e3a3dedafde31069",
+    "focused_checks.py": "d84433a838d87a0072af650388affec2aa36afebb056b9df65454257cbcfa0b7"
+  },
+  "real_inputs": 0,
+  "real_statistics": 0,
+  "new_accounts": 0,
+  "experiment_allocation": 0,
+  "publication": 0
+}
