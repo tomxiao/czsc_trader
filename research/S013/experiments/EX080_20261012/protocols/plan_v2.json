@@ -1,0 +1,266 @@
+{
+  "status": "ROOT_FROZEN_BEFORE_ALLOCATION_PREPARATION_AND_ACCOUNT",
+  "question": "EX079 unchanged confirmation-only positive net forecast under original executable nonoverlapping h4 capital policy",
+  "budget_slot": 2,
+  "new_centre_accounts": 1,
+  "no_automatic_financial_repeat": true,
+  "source_files": {
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    ".tmp/s013_confirm_freeze.py": "484efbc6a22beceaac7663d987be174c9d683785d57d8fdf9640fc38ed757ee6",
+    ".tmp/s013-confirm-net-execution/confirm_kernel.py": "ef0e346443ff977a2b41068a95e1da48e6ae9fb88e56080bbd83569228a62ae0",
+    ".tmp/s013-confirm-net-execution/confirm_net.py": "746e36d2f0a6371811b54e3a95f9fa46ded29fbf0c9bffbaa0a3af267194710c",
+    ".tmp/s013-confirm-net-execution/focused_checks.py": "22cd509dc996fb6b3e56ba9aa2505361c4eabb8dfc15c678d747017be5ee1934",
+    ".tmp/s013-confirm-net-execution/focused_checks.json": "0bb067b63e6a89841f1d96a869b5c9aa0674d5c4186b8ff899411b3d0cc879cb",
+    ".tmp/s013-confirm-net-execution/scientific_plan.json": "77ab96f6ac6a4c0b203ab4372583575b0f6535b6904edace47becd73f8b067dc",
+    ".tmp/s013-confirm-net-execution/original_binding_metadata.json": "1f1767d4481f9f6142870fb31eb47d73e8d29abef2f54564c63bd36899eb64ff",
+    ".tmp/s013-confirm-net-execution-audit/audit.py": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+    ".tmp/s013-confirm-net-execution-audit/synthetic.py": "a3a0360eef574815087b2c4642bbe3adb86ab919484beff8b9fe94eadccf4dd5",
+    ".tmp/s013-confirm-net-execution-audit/synthetic.json": "161f298c178764993bf580946e24c6f68378bd45ff826f790f0f441f02fb4c44",
+    ".tmp/s013-confirm-net-execution-audit/freeze.json": "62daa02a4455dbfa66f6cbc37ffa9dca41cc5152415562dd4522b852815ef5f8",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a",
+    "research/S013/experiments/EX074_20261011/src/economics_reference.py": "caf12faeededd7f511528545b03fbe40fffdd38fa1796b11af6aa47f12d0b877",
+    "research/S013/experiments/EX074_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX074_20261011/src/execution_links.py": "b7aa3220794b93000cffbde4410c97b95f3cc798f7348244b4113cbf7d5da198",
+    ".tmp/s013_confirm_execution_v3.py": "02c394b35938f5ebc6e3fb7d3e44a07ee32428ca9a7904fb6802d149c6822048",
+    ".tmp/s013_confirm_binding_revision.py": "a01a2c83355af35abb6f36fbffbc9e35ffb75b1f335329fa7c00593189a3ee3f",
+    ".tmp/s013-confirm-net-execution-v2/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    ".tmp/s013-confirm-net-execution-v2/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f"
+  },
+  "native_cache_sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "net_statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6.json",
+      "sha256": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6",
+      "media_type": "application/json",
+      "name": "net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "f2069025ef28722b22bf37482ba876374b74ad471053b0aebf74025e9ee22560.json",
+      "sha256": "f2069025ef28722b22bf37482ba876374b74ad471053b0aebf74025e9ee22560",
+      "media_type": "application/json",
+      "name": "net-root-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_budget.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "67a851f9b14c5ac49b4c03925c35842cc8f59f4b883047db184ce268f5cfab83.json",
+      "sha256": "67a851f9b14c5ac49b4c03925c35842cc8f59f4b883047db184ce268f5cfab83",
+      "media_type": "application/json",
+      "name": "net-budget-receipt",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "53895befcbd69da5622d76c3a65a353736bcbf97c8cd314cfa7bbcfed451a5e0.json",
+      "sha256": "53895befcbd69da5622d76c3a65a353736bcbf97c8cd314cfa7bbcfed451a5e0",
+      "media_type": "application/json",
+      "name": "net-verification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "continuation_budget_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX078_20261012"
+    },
+    "evidence_id": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c.json",
+    "sha256": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c",
+    "media_type": "application/json",
+    "name": "vol-continuation_budget",
+    "schema": null,
+    "schema_version": null
+  },
+  "report_copy": {
+    "target": "others/report.md",
+    "source": "corresponding formal delivery report.md",
+    "verification": "exact bytes andSHA256",
+    "human_authorization": "RSCH，请在后续的每个实验目录下保存一份report副本"
+  },
+  "parameters": {
+    "confirmation_lookback": 120,
+    "holding_sessions": 4,
+    "ridge_alpha": 10.0
+  },
+  "effective_parameter_domains": [
+    {
+      "name": "confirmation_lookback",
+      "kind": "INTEGER",
+      "centre": 120,
+      "lower": 40,
+      "upper": 120,
+      "basis": "Exact original C8880 lookback120 and original admissible[40,120]; retain actual upper boundary, never recenter domain to make perturbation easier. Changes causal normalized score and its annualfit."
+    },
+    {
+      "name": "holding_sessions",
+      "kind": "INTEGER",
+      "centre": 4,
+      "lower": 1,
+      "upper": 60,
+      "basis": "Original S013 TIME hold admissible integer1..60; centre4 exactlyEX079 label horizon. Changes training target horizon/maturity and live episode expiry jointly, not exits alone."
+    },
+    {
+      "name": "ridge_alpha",
+      "kind": "CONTINUOUS",
+      "centre": 10.0,
+      "lower": 1.0,
+      "upper": 100.0,
+      "basis": "Proposed positive absolute regularizationdomain1..100 around fixedEX079 alpha10; includes meaningful 10x weaker/stronger shrinkage. No performance-based rangechoice; root must pre-account confirm."
+    }
+  ],
+  "fixed_method": "Original ADJUSTED120 EQUAL_BLOCKS score; original14 allfinite; annual strictly mature2020+ train ECDF ridge10 with train>=40; score>0;2020cash; h4 policy clock independent of fills; expiry blocks same-signal reentry; full1636 acceptance",
+  "causality": "No future test-count runtime gate; actual historical common14/forecasts/strict positive flags must equal EX079 before account; original exact prepared five requests only; no provider",
+  "acceptance": "Original overall CAGR>=1.5BH positive CAGR, each natural-year DD strictly<BH including prior close, >=4 actual closed/60 full sessions, actual BH-negative year strategy strictlypositive. No gate changed.",
+  "stop": "Any centre gate failure stops this expression; no new32,fee,neighbor,threshold,horizon or ridge rescue. If centre passes, separately prospectively declare standard32 and fee under these pre-frozen effective domains.",
+  "diagnostics": "Three existing-ledger checks permitted;32/fee unavailable until actually run; never claim all five complete or robust objective achieved.",
+  "science_limit": "EX079 weak same seen-pool support with all CIs crossingzero, 2022/2026 selectionmean negative; one executable realization test, not new statistical alpha proof.",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX080_20261012"
+  },
+  "payload": {
+    "parameters": {
+      "confirmation_lookback": 120,
+      "holding_sessions": 4,
+      "ridge_alpha": 10.0
+    },
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.confirm_net",
+      "qualname": "ConfirmNet",
+      "source_files": [
+        "strategies/confirm_kernel.py",
+        "strategies/confirm_net.py"
+      ],
+      "source_sha256": "7a4e5f108bd7ded86fba1505aac9e3cbf7774ecb62a84ba6699dfac3369e94b5"
+    }
+  },
+  "content_sha256": "beecf4917d7dace595455325689267748da494e277e835c783cbb2bb15ede043",
+  "declared_utc": "2026-10-11T17:23:21.208222+00:00",
+  "baseline_native": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX058_20261011"
+    },
+    "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+    "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+    "media_type": "application/json",
+    "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+    "schema": "account_evaluation",
+    "schema_version": 6
+  },
+  "baseline_execution_fingerprint": "378989bfdf0c7ab6bd4f348ff5d247fcef6c8befc490e3d52dcfabc9a18a0c55",
+  "benchmark": {
+    "benchmark_id": "BuyHold",
+    "kind": "BUYHOLD",
+    "execution_version": "buyhold-execution-v1",
+    "execution": {
+      "type": "LimitBuyHold",
+      "lot_size": 100,
+      "premium": 0.01,
+      "price_tick": 0.001,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 1000000
+    }
+  },
+  "pricing": {
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT",
+    "anchor_date": "2019-12-31",
+    "anchor_factor": 0.2803
+  },
+  "input_contract_revision": {
+    "status": "ROOT_REVIEWED_PRE_ACCOUNT_INPUT_CONTRACT_REPAIR",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX080_20261012"
+    },
+    "failed_candidate": "C9079",
+    "successor_candidate": "C9080",
+    "failed_stage": "StrategyInstance.prepare_data._pricing rejected duplicate raw daily input before signal replay and _evaluate_prepared; no execution account or complete native result",
+    "error": "RuntimeContractError: strategy input contract must declare one adjusted and one execution price",
+    "actual_accounts_before": 0,
+    "failed_evaluate_invocations_before_account": 1,
+    "financial_repeats": 0,
+    "fix": "Remove redundant native_daily. Reconstruct HFQ native daily from the original execution input already covering every signal day. Keep original adjusted daily/execution/calendar requests and exact original30m promoted request. Only consume through latest signal.",
+    "numeric_fix": "Detached pandas containers drop nonnumerical attrs before pure math to avoid expensive metadata copies; source/input identity authentication remains before detachment. Every historical feature/forecast/positiveflag must reequal original EX079 and prior EX080 proof.",
+    "unchanged": "Three parameters/effective domains, original14 definitions, annual mature train/ECDF/ridge, threshold0, h4 clock/turnaround, all original hardgates and execution contract",
+    "new_allocation": 0,
+    "new_provider": 0,
+    "new_scientific_hypothesis": 0,
+    "input_contract_check": "4 inputs; exactly1 adjusted daily and1 raw daily",
+    "retained_original_plan_reference": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX080_20261012"
+      },
+      "evidence_id": "a81227ad34c8997a3987053a04c411c03fc75de7365bac07b57e8a3e9a2accb7.json",
+      "sha256": "a81227ad34c8997a3987053a04c411c03fc75de7365bac07b57e8a3e9a2accb7",
+      "media_type": "application/json",
+      "name": "confirm-net-plan",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}
