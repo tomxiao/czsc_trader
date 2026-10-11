@@ -1,0 +1,336 @@
+{
+  "status": "PROSPECTIVE_DECLARED",
+  "execution_contract": "S013_CURVATURE4_SINGLE_STATISTICS_FIXED",
+  "source_freeze_sha256": "5d78a36fe638e55f3ecae0e794d28b4fefef159ac2e76b43dfc26632b33410d7",
+  "source_files": {
+    "component.py": "d46e2958b65e3d127749088eb30601a74b50f430e615a936e9ee16658398b362",
+    "labels.py": "d44dba8b50de07d2bfa054845e8335a93f0395062199010925623606de96967d",
+    "curvature_statistics.py": "617d9aa588e1fc5606ef588b841dff957ad57fe0a23d8e1f60b5efe371e9a42d",
+    "build_source.py": "f54f119f79358f6a1e4aacd901596b9a0fea93e52526503f6bafee4fb50e8606",
+    "pure_checks.py": "fab695375f32ddcd3544406e98c9519bd9d13f3e00820c0e67d6cccde756192b",
+    "prospective_plan.json": "e3e0bd389ccb90e4be952b134ff4b7f0068efd667dd29fe04b65a288e20b33bd",
+    "pureproof.json": "8f27107632820ce5c3b451e698773f71acabb25d7bbaf9e0a55446226f610bf2",
+    "freeze.json": "aa43e2b3afbc70908941e8ef30a54975c9efcac43a83fc8f4403de7f027ab1b8",
+    "input_authentication.py": "b64dd5d0fe8efb644b09e4cb1b65241fa33943574dc676a9a29598b9abf7b37c",
+    "reading.py": "988525c8ca8e350cbfc90cc4651f41200adfb3b4aa76fbea17a6059b09165037",
+    "driver.py": "b06256637a54da35d30207be0290f3ff5143b40699d7da6e2f9e44876c4c546b",
+    "execution_checks.py": "01b15d2724e271fe5f290347ed276ba76001f1e5e777e24b21c8f14e711cf76b",
+    "execution_pureproof.json": "cb0b542aa2212a03c7a3a16757bf72fa3b673b5919851da0def94a1a0efa17a8",
+    "execution_binding_plan.json": "493184afc3a01c9999e4faab5302ccff29ba77cfbf081a8323a1dd6fd7233349",
+    "input_references.json": "a3a5b383141b0aece5724b4203a4119578f8322d41a82db827f691487023b450"
+  },
+  "input_references": {
+    "old66_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "old66_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "original_prices": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "old61_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "c555100471d51e1e34f8f050e91cfa11d6b7fe8c7b21243d79fe3e4dc6038346.csv",
+      "sha256": "c555100471d51e1e34f8f050e91cfa11d6b7fe8c7b21243d79fe3e4dc6038346",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "old69_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c.csv",
+      "sha256": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "warm69_prices": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263.csv",
+      "sha256": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263",
+      "media_type": "text/csv",
+      "name": "daily-prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "native_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "native_cache": {
+    "path": ".tmp/s013-mechanism-EX058/N0.pkl.gz",
+    "sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+    "common_path": "research/S013/experiments/EX058_20261011/src/common.py",
+    "common_sha256": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b"
+  },
+  "component": "curvature4 fixed positive-return4 direction; fixed17controls; original all/policy-flat scopes",
+  "science_reading": "reading.py exact frozen fixed prior categories; risk diagnostic only, no gates/automatic accounts",
+  "scope_and_statistics": "prospective_plan.json exact frozen historical method; execution_binding_plan.json exact current known-history/phase binding",
+  "known_history": {
+    "EX075": "Root reports completed independent review and COMPONENTS11 FULL PASS, commit cbf3a42a. Fixed down_volume_cov return/OC-risk both NO_INCREMENT_OBSERVED: partial CI crosses zero, pooled OOS MSE improves neither18controls nor pastmean;0 new accounts.",
+    "provenance": "Root message only; noEX075 actualCSV/statistics/cache read by this author",
+    "immutability": "Original curvature prospective_plan.json remains the historical plan made whileEX075 actual statistics were unknown. This current historical disclosure does not change curvature formula/positive direction/17controls/two scopes/statistical settings."
+  },
+  "root_required_before_execution": "allocate/declaration separately; enrich/public method EvidenceRef and setstatus PROSPECTIVE_DECLARED after final review; source preparation is not phase execution",
+  "new_accounts": 0,
+  "provider_calls": 0,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX076_20261011"
+  },
+  "declared_utc": "2026-10-11T15:36:18.435880+00:00",
+  "prospective_definition": {
+    "status": "SOURCE_ONLY_PROSPECTIVE_NOT_EXECUTION_AUTHORIZATION",
+    "research_scope": "S013 only; no new experiment, real-data read, statistics run, provider, account, registry or publication",
+    "hypothesis": "在相同四日总变化和近期波动下，最近两日相对前两日加速上涨的时间结构，可能给未来四个完整持有日的净费用收益代理提供正向增量信息。",
+    "component": {
+      "name": "curvature4",
+      "formula": "(log(C[T])-2*log(C[T-2])+log(C[T-4]))/(volatility20*sqrt(4))",
+      "volatility20": "sample std(ddof=1) of latest20 Close.pct_change(fill_method=None); min_periods=20",
+      "primary_return_direction": "positive fixed before real statistics",
+      "risk_role": "diagnostic only; no fixed sign, exit role, economic gate or opposite-direction rescue",
+      "information_class": "existing daily Close nonlinear temporal expression, not a new input information source",
+      "unavailable": "insufficient or missing20-return history and zero volatility remain null with reason; no epsilon, warmup fill or forward fill",
+      "input_authentication_boundary": "caller must authenticate full causal daily session history, HFQ source/identity and positive observed Close; the pure formula does not infer missing exchange sessions"
+    },
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20",
+      "late_recovery",
+      "early_volume_reclaim",
+      "short_stretch4"
+    ],
+    "control_provenance": {
+      "original14": "EX066 inherited controls",
+      "original2": "EX061 late_recovery and early_volume_reclaim",
+      "short_stretch4": "EX069 exact positive (log(C[T])-log(C[T-4]))/(volatility20*sqrt(4)); not negated",
+      "purpose": "retain same four-day total change, volatility, prior confirmation and intraday expressions; test curvature increment without control selection"
+    },
+    "labels": {
+      "primary": "return4_net",
+      "return4_net": "0.999*Open[T+5]/(1.001*Open[T+1])-1",
+      "downside4_oc": "max(0,1-min(all Open/Close[T+1..T+4],Open[T+5])/Open[T+1])",
+      "label_end4": "T+5 OPEN; four complete execution sessions after T+1 OPEN entry",
+      "role": "ideal OPEN price and one-way0.1% fee proxies, not 1% LimitBuyHold fill, lot/cash ledger, account return or account drawdown",
+      "unmatured": "retain original signal rows; unavailable targets remain null and no future price extrapolation"
+    },
+    "samples": {
+      "primary": "all original1635 signal sessions 2020-01-02..2026-09-29; authenticated price sessions extend only through2026-09-30",
+      "auxiliary_name": "causal_original_policy_flat_eligible",
+      "auxiliary_predicate": "original N0 entry_eligible[T] and original N0 target_position[T-1]==0",
+      "auxiliary_meaning": "original confirmation_opportunity while prior signal/policy target is flat; not actual filled account position, future fill or realized-PnL selection",
+      "auxiliary_authentication": "derive previous target on authenticated complete original decision prefix before reindexing to1635T; helper initial0 is allowed only for original full policy-history start, never force subset first row flat",
+      "scope_exclusion": "mask label values to null on excluded original rows; keep full original T-axis, dates, maturity, bootstrap blocks and phase positions",
+      "no_selection": "no selected year, threshold, window, direction, neighboring pool, DEV data or position sizing"
+    },
+    "statistics": {
+      "models": "fixed17 controls; fixed17+curvature4; same matured-train target mean",
+      "model_rows": "all models within each scope/label use same finite18-column rows and matured train labels",
+      "walk_forward": "fixed test years2021..2026, earlier years from2020; label_end4 strictly earlier than first original actual signal of test year",
+      "transform": "each feature empirical CDF fitted only on same mature train; no future refit",
+      "ridge_alpha": 10,
+      "train_min": 40,
+      "test_min": 20,
+      "bootstrap": "500 replicates, contiguous40-original-T blocks, seed13, sampled before finite/scope filtering; retain every replicate status",
+      "ci": "95% linear quantiles only with at least400 valid replicates; report-only, not automatic hard gate",
+      "partial": "Spearman average ties; all17 controls retained; actual rank/residual df reported; sample<20 or residual df<10 or constant/explained residual yields explicit null",
+      "reports": "raw/partial IC and CI, all calendar years2020..2026, all original-position modulo5 nonoverlapping phases, every fixed walk-forward year, pooled OOS predictions/MSE and both comparator deltas",
+      "thin_sample": "null with explicit status; thin auxiliary OOS cannot create a new economic gate",
+      "native_blas_threads": {
+        "OPENBLAS_NUM_THREADS": 1,
+        "MKL_NUM_THREADS": 1,
+        "OMP_NUM_THREADS": 1,
+        "NUMEXPR_NUM_THREADS": 1
+      }
+    },
+    "falsification_and_limits": {
+      "strongest_counterevidence": "Existing related price expressions have unstable years/phases and can lose apparent incremental association after controls or out-of-sample prediction; sparse original policy-flat opportunities make inference especially weak.",
+      "scientific_review": "Positive prior must be assessed together with fixed-year/phase direction, common-row OOS MSE versus17controls and mature-train mean, and sample adequacy; no single CI or auxiliary cell grants strategy eligibility.",
+      "stop": "If positive-return incremental evidence does not survive the declared controls and causal OOS review, stop this fixed hypothesis. Do not reverse sign, adjust4/20 windows, scan thresholds, remove controls or turn diagnostic risk into an unannounced trading role.",
+      "economic_unknown": "No executable account, annual2022/2023 net gain, >=110 closed trades, original four-gate eligibility,32-point joint rate,Q10 return orQ90 drawdown conclusion follows from this source-only package.",
+      "selection_bias": "Previously seen S013 development evidence informed this hypothesis; repeated family selection is not statistically corrected and is not independent unseen validation.",
+      "EX075": "Pure formulas and kernels are frozen references. Its actual statistics are unknown to this package; no economic or statistical finding is prefilled."
+    },
+    "interfaces": {
+      "component.py": "build_features(daily)->DataFrame; causal_flat_eligible(entry_eligible,target_position,*,initial_target_position)->Boolean Series",
+      "labels.py": "fee_labels4(prices,signal_index)->DataFrame, exact frozen source function",
+      "curvature_statistics.py": "analyze(features,labels,price_calendar,*,flat_eligible)->dict of two declared scopes; pure in-memory only",
+      "execution": "root review and separately declared actual input/provenance binding required before real invocation"
+    }
+  },
+  "binding_definition": {
+    "status": "SOURCE_ONLY_READY_NOT_ACTUAL_PHASE_EXECUTION",
+    "execution_contract": "S013_CURVATURE4_SINGLE_STATISTICS_FIXED",
+    "public_method_required_fields": [
+      "status=PROSPECTIVE_DECLARED",
+      "execution_contract",
+      "source_freeze_sha256",
+      "source_files",
+      "input_references",
+      "native_cache"
+    ],
+    "method_reference_cli": "Local JSON containing exact S013 public prospective method EvidenceRef; root publishes/declares separately",
+    "input_references": {
+      "old66_features": "EX066 protocols/input_references.json features.csv",
+      "old66_labels": "EX066 protocols/input_references.json labels.csv",
+      "original_prices": "EX066 protocols/input_references.json prices.csv; all six original OHLCV/amount fields, float64 round-trip CSV",
+      "old61_features": "EX061 protocols/input_references.json features.csv",
+      "old69_features": "EX069 protocols/input_references.json features.csv",
+      "warm69_prices": "EX069 protocols/input_references.json daily_prices.csv;2019-04-10..2026-09-29",
+      "native_ref": "EX058 original account_references.json N0; account_evaluation schema6"
+    },
+    "native_cache": {
+      "path": ".tmp/s013-mechanism-EX058/N0.pkl.gz",
+      "sha256": "root binds exact current immutable cache SHA before actual invocation",
+      "common_path": "research/S013/experiments/EX058_20261011/src/common.py",
+      "common_sha256": "root binds original exact source SHA"
+    },
+    "authentication": {
+      "native_identity": "full serialize_evaluation_evidence(old bound,result) exact original public JSON, not selected projections or request fingerprints",
+      "native_cache_use": "read only existing C8880/510500 cache; original full1636 decisions; no financial output recalculation",
+      "datetime": "lossless s/us/ns unit canonicalization to ns with exact roundtrip and same timestamp values; non-midnight/timezone/missing/duplicate axes rejected, no normalize() mutation",
+      "substantive_values": "public complete native price/Open/High/Low/Close/Volume/Amount and dtype exact after explicit CSV float64 schema, no dropped monetary fields",
+      "warmup_identity": "complete old HFQ warm-price file SHA; overlap checked with originalEX069 anchor arithmetic rtol1e-13/atol1e-13; source units never replaced",
+      "old_controls": "EX06614=EX06114=EX06914 exact; EX061 pair=EX069 pair exact; EX066 inverse pair exact; warm recomputed volatility20 and positive short_stretch4 exact originals",
+      "labels": "frozen exact h4 fee/OC-risk formula on exact original native prices; fee return and T+5 maturity cross-check oldEX066 h4 return. OriginalEX066 HL-risk is not reused as OC-risk.",
+      "policy_scope": "all1636 original decisions authenticated; complete prefix previous target then reindex1635, predicate exact original confirmation_opportunity. Not filled-account empty position.",
+      "outputs": [
+        "features.csv",
+        "labels.csv",
+        "flat_eligible.csv",
+        "price_calendar.csv",
+        "authentication.json"
+      ],
+      "terminal_failure": "authentication_attempt.json prohibits repeat; explicit failure preserved; no automatic technical retry or fallback"
+    },
+    "study": {
+      "calls": "one analyze call only after full authentication hash/method/source match",
+      "outputs": [
+        "study_attempt.json",
+        "statistics.json",
+        "reading.json",
+        "study_completed.json"
+      ],
+      "failure": "study_failure.json preserved; attempt blocks repeat and cannot silently replace prior partial output",
+      "not_implemented": "no provider/fetch/prepare/evaluate/registration/publish or new accounts",
+      "threads": "root sets OPENBLAS_NUM_THREADS=MKL_NUM_THREADS=OMP_NUM_THREADS=NUMEXPR_NUM_THREADS=1 before process launch; driver refuses otherwise"
+    },
+    "fixed_scientific_reading": {
+      "separate_scopes": [
+        "all",
+        "causal_original_policy_flat_eligible"
+      ],
+      "precedence": "declared thin/unavailable n/df/OOS => INSUFFICIENT; structural explained/constant => NO_INCREMENT; unavailable partial CI or MSE => INSUFFICIENT; otherwise below fixed direction/MSE categories",
+      "LIMITED_INCREMENT": "strictly positive partial CI lower bound AND pooled fixed OOS augmented MSE strictly lower than both17controls and same mature-train pastmean",
+      "OPPOSITE_DIRECTION_COUNTEREVIDENCE": "strictly negative partial CI upper bound; preserve counterevidence, do not reverse direction",
+      "CORRELATED_WITHOUT_CONFIRMED_PREDICTIVE_INCREMENT": "positive partial CI but not strictly better than both MSE comparators",
+      "INCONCLUSIVE_PREDICTIVE_ONLY": "CI includes zero and both MSE comparators strictly improved",
+      "NO_INCREMENT": "otherwise fixed positive-direction/predictive-increment condition unsupported; does not prove all conceivable designs impossible",
+      "risk": "diagnostic only, no fixed sign, new trading role or gate",
+      "report_all": "all fixed years and five original-axis phases retained; cannot pick best scope/year to replace another; no extra hidden hard gate",
+      "economic_role": "all tags are descriptive scientific evidence only; LIMITED_INCREMENT neither starts accounts nor proves original four economic gates/closed frequency/annual gains/32-point robustness",
+      "bias": "already-seen development pool and uncorrected repeated family selection; neither CI nor point OOS MSE guarantees future performance"
+    },
+    "known_history_at_execution_preparation": {
+      "EX075": "Root reports completed independent review and COMPONENTS11 FULL PASS, commit cbf3a42a. Fixed down_volume_cov return/OC-risk both NO_INCREMENT_OBSERVED: partial CI crosses zero, pooled OOS MSE improves neither18controls nor pastmean;0 new accounts.",
+      "provenance": "Root message only; noEX075 actualCSV/statistics/cache read by this author",
+      "immutability": "Original curvature prospective_plan.json remains the historical plan made whileEX075 actual statistics were unknown. This current historical disclosure does not change curvature formula/positive direction/17controls/two scopes/statistical settings."
+    },
+    "CLI": [
+      ".venv/Scripts/python.exe .tmp/s013-cross-day-curvature/driver.py authenticate --method-reference <root_public_method_ref.json> --source-freeze-sha256 <execution_freeze_SHA> --work .tmp/<root_chosen_actual_work>",
+      ".venv/Scripts/python.exe .tmp/s013-cross-day-curvature/driver.py study --method-reference <same_ref.json> --source-freeze-sha256 <same_SHA> --work .tmp/<same_work>"
+    ],
+    "next": "root review, separate actual method/input/source declaration and phase invocation; source author stops after synthetic proof/freeze"
+  },
+  "independent_arithmetic_freeze_sha256": "5cc196f03485938de2d75f362c4304a3de43e57b3ace6ffd8431e2f948a2ae08",
+  "original_four_hard_gates_changed": false,
+  "objective_achieved": false,
+  "root_declaration_source_sha256": "a8a53fa8d780d6a1d79550a7589f4e53f2abe34ece8843aff5321bbf778eae05",
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ]
+}
