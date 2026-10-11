@@ -1,0 +1,355 @@
+{
+  "status": "PROSPECTIVE_DECLARED",
+  "role": "RSCH",
+  "stage": 2,
+  "frozen_utc": "2026-10-11T16:54:25.230412+00:00",
+  "authorization": "用户授权自主研究；EX078完成后追加10轮；每个后续实验保存report副本",
+  "objective": "原四门不变，寻找扣费后机会识别依据，最终改善标准32点CAGR_Q10/DD_Q90；本轮仅价格机会诊断",
+  "original_four_hard_gates_changed": false,
+  "new_hard_gates": false,
+  "quota_slot": 1,
+  "maximum_additional_experiments": 10,
+  "pause_after_EX088": true,
+  "continuation_budget_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX078_20261012"
+    },
+    "evidence_id": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c.json",
+    "sha256": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c",
+    "media_type": "application/json",
+    "name": "vol-continuation_budget",
+    "schema": null,
+    "schema_version": null
+  },
+  "scientific_definition": {
+    "status": "SOURCE_ONLY_IMPLEMENTED_FIXED_PROSPECTIVE_METHOD_AWAITING_ROOT_DECLARATION",
+    "intended_round": "EX079 of authorized EX079..EX088 budget; no round allocated or used by this draft",
+    "question": "Can already-known original14 features prospectively identify fixed4-session fresh-entry price opportunities that exceed original two-sided fees? No new factor, holding rule or account test.",
+    "features": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20"
+    ],
+    "label": {
+      "name": "return_4",
+      "formula": "Open[T+5]/Open[T+1]*(.999/1.001)-1",
+      "maturity": "finalOpen at T+5",
+      "fee": ".001 each side, fractional next-open fresh-entry proxy",
+      "missing_tail": "NaN/NaT preserved; no zero fill"
+    },
+    "models": {
+      "training_mean": "Same matured training target mean; prediction can be positive for every eligible test row or none; disclose both",
+      "confirmation_only": "Training-ECDF midpoint rank of confirmation_score; ridge alpha10/intercept unpenalized",
+      "original14_joint": "All original14 training-ECDF midpoint ranks; ridge alpha10/intercept unpenalized"
+    },
+    "common_rows": "All3 models use same all14-complete/mature target training rows; forecasts use current feature-complete rows WITHOUT future-label filtering. Evaluation alone uses same available-prediction/label-valid rows.",
+    "walk_forward": {
+      "axis": "original1635 signalT2020-01-02..2026-09-29",
+      "initial_train_year": 2020,
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "training": "2020<=signalyear<testyear AND label_end_return_4 strictly before first actual full-axis test-year signal date",
+      "test": "All14-feature-complete current test-year rows; no future-label requirement for prediction. Minimumtest20 means feature-complete forecast rows; immature tails retain forecasts plus unavailabletruth flags.",
+      "minimum_train": 40,
+      "minimum_test": 20,
+      "ECDF": "fit on common matured training rows only; equal ties midpoint; no target transformation",
+      "no_prediction": "All2020 and unavailable yearly fits remain NaN. Feature-complete immature tails may have forecasts but unavailable target/maturity evaluation flag; never fill forecasts or target with zero."
+    },
+    "forecast_groups": {
+      "positive": "prediction>0 only; fixed net breakeven threshold, never optimized",
+      "nonpositive": "prediction<=0; preserve exact zero count and strictly negative count, not omitted",
+      "all": "All available OOS forecasts on identical feature-complete rows; distinct forecastcoverage and label-valid evaluation counts, complete1635T records"
+    },
+    "group_fields": [
+      "eligible_common_OOS_n",
+      "selected_n",
+      "selected_coverage",
+      "true_net_mean",
+      "true_positive_n_and_rate(target>0)",
+      "false_positive_n_and_rate_among_positive_predictions(target<=0)",
+      "strict_negative_score_n",
+      "zero_score_n",
+      "missing_or_unpredicted_n"
+    ],
+    "descriptive_panels": {
+      "all": "Primary whole OOS pool for each model's all/positive/nonpositive groups",
+      "years": "All original2020..2026;2020 explicit unavailable, no fabricated forecast",
+      "phases": "Five original full-axis positions mod5 set before common/OOS/group filtering",
+      "auxiliary_mask": "Original causal signal-policy flat confirmation_opportunity at signalT, supplied from authenticated original C8880 decisions. Reporting coverage/group descriptors only; never train/refit/select threshold in this subset; not actual-account-held state."
+    },
+    "prediction_quality": "Whole common OOS MSE and Spearman IC for all3 models, improvement against training_mean. Common shared rows and predictions fixed. Numeric IC rank/constant rules inherited; not economic acceptance.",
+    "concentration": "Descriptive equal-sized price-proxy gain concentration for positive forecast group: top ceil10percent of strictly positive realized net labels divided by all strictly positive label gains; null if no gains. Not actual account PnL concentration or a new gate.",
+    "positive_mean_bootstrap": {
+      "replicates": 500,
+      "block_length": 40,
+      "seed": 13,
+      "axis": "full original1635T including2020/unavailable/tail positions",
+      "procedure": "Sample full-axis overlapping contiguous blocks, truncate original length, then select existing OOS prediction>0 rows; never refit models and never use realized label to form group",
+      "primary": "Same500full-axis block samples jointly compute8 fixed quantities:3 positive-group means,3 positive-minus-common-label-valid-whole-pool means,joint14-positive-minus-confirmation-positive mean,joint14-positive-minus-trainingmean-positive mean. No year/phase/auxiliary CI.",
+      "minimum_original_selected_n": 20,
+      "replicate_minimum_selected_n": 20,
+      "minimum_valid_replicates": 400,
+      "CI": "linear2.5/97.5 percent quantiles; retain every500 replicate status/n/value and failures, thin groups explicitnull",
+      "difference_null_rule": "Every required original comparison group>=20 and corresponding sampled groups>=20; otherwise explicit unavailable reason. Atleast400valid per quantity, all500statuses retained; overlapping selections/time dependence share same sample indices; no refit."
+    },
+    "prior_overlap": "EX066 had original14-controls ridge and trainingmean as baselines, but trained on16 jointly finite features incl2 proposed components and reported feature-quartile groups/multiple horizons. Exact original14-common-row confirmation-only/zero-forecast groups/full-axis mean-CI trio is not the same declared expression. Reuse previous evidence if a future exact input/request/prediction contract comparison proves equivalence, otherwise no scientific claim of wholly independent unseen research.",
+    "numeric_dependencies": {
+      "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a"
+    },
+    "proposed_interface": {
+      "inputs.construct": "old14_features,original_labels_return4,original_confirmation_opportunity -> aligned features,labels,auxmask,proof; strict original1635T endpoints; root binds original fullcalendar/source/hash/native before call",
+      "focused_checks": "Pure artificial training/maturity/ECDF/intercept/ridge commonrows; positive/no positive/all positive/zero forecast; exact target0 false-positive;2020/tailNaN; phase before filtering; future test-label mutation cannot alter predictions/groups; full-axis bootstrap mean/status boundaries",
+      "net_statistics.analyze": "features,labels,aux_mask,prior14_records -> one result with allaxisforecasts/fit_years/quality/panels/paired_mean_bootstrap8summaries+500records"
+    },
+    "scientific_limits": [
+      "Adaptive already-seen development pool and repeated research choices; chronological pseudoOOS is not sealed validation.",
+      "Next-open fractional fee labels omit1percent limit-fill selection, lots, nonoverlapping capital, real exits and cash paths. Forecast group mean is not an executable strategy return.",
+      "Ridge minimum prediction error need not rank positive opportunities well; positive predictions may be a broad weak sign of the training mean.",
+      "2020 has no prospective forecast; do not claim original full-window account coverage or110closed.",
+      "Original four gates and32point Q10/Q90 remain unproven; no hard gate changes, account escalation, sign reversal, threshold/window/ridge search or EX077 rescue."
+    ],
+    "current_actions": {
+      "real_CSV_or_cache_reads": 0,
+      "real_statistics": 0,
+      "account": 0,
+      "allocation": 0,
+      "publication": 0,
+      "provider": 0,
+      "implementation": "3sourcefiles andartificialfocusedchecks implemented; true research/EX/publication awaitroot"
+    },
+    "amendment": "v1 preserved. Root scientific clarification:futurelabel masks evaluation only,never prediction selection; positivemean>0 alone is not evidence of selection alpha,comparewholepool/fixed3expressions without introducingeconomicgates.",
+    "actual_reuse_contract": "Mandatory prior14_records original EX066 fullscope return_4 walk_forward.prediction_records.controls list:signaldate,target,prediction,baseline. Root has verified old14/16 complete masks equal and1388 prior rows. Kernel copies oldmature joint14/mean; checks samecurrent maturetraining mean/target/record axis; no matured refit. Featureonly2026unlabelledtail joint coefficients reconstructed on unchangedoldtrain,mean copies knownyearbaseline. Newconfirmation onlyfit. This technicaltailextension andoldMSE notnewfinancial/scientificevidence.",
+    "delivery_report_copy": "FromEX079 root closeout placesbyteexact copy of formal delivery report at experiments/EXxxx_YYYYMMDD/others/report.md, preservesformalimmutableevidence,checksSHAequal,usesrelativepaths; noextraEX/round."
+  },
+  "method": {
+    "method": {
+      "version": "s013-original14-net-opportunity-fixedh4-v1",
+      "features": [
+        "momentum20",
+        "range_position60",
+        "acf1",
+        "volatility20",
+        "intraday_return",
+        "overnight_gap",
+        "intraday_energy20",
+        "intraday_rms20",
+        "confirmation_score",
+        "daily_close_location",
+        "feature_intraday_down_energy20",
+        "feature_overnight_down_energy20",
+        "turnover20",
+        "volume_ratio20"
+      ],
+      "models": [
+        "training_mean",
+        "confirmation_only",
+        "original14_joint"
+      ],
+      "label": "Open[T+5]/Open[T+1]*(.999/1.001)-1, matureT+5; fractional nextOpen proxy, not native fill/account",
+      "training": "All14complete/finite target;2020<=year<testyear; label_end strictly before first full-axis testT; common rows,train40",
+      "prediction": "2021..26 annual fixedmodels; testfeaturecomplete>=20; predict everycompletefeatureT independent of futurelabels, including immaturetail;2020 unavailable",
+      "transform": "trainingECDF midpoint ties; fixedalpha10/unpenalized intercept; originalEX066 numerical methods authenticated bysourceSHA",
+      "groups": "positive score>0,nonpositive<=0,all;zero explicit;falsepositive truth<=0;futurelabel onlyevaluation",
+      "panels": "all/year2020..26/originalaxisposmod5/causalconfirmation_opportunity auxiliary only; no subgroup fitting",
+      "bootstrap": "SharedfullTaxis500overlap40 seed13 once; group aftersampling existingOOS predictions;8fixedquantities;originalandrep requiredgroupn>=20,400valid LINEAR95CI,all500statuses",
+      "quantities": [
+        "training_mean_positive_mean",
+        "confirmation_only_positive_mean",
+        "original14_joint_positive_mean",
+        "training_mean_positive_minus_all",
+        "confirmation_only_positive_minus_all",
+        "original14_joint_positive_minus_all",
+        "joint_minus_confirmation_positive",
+        "joint_minus_training_mean_positive"
+      ],
+      "reuse": "Actual study requires exact EX066 fullscope return4 controls prediction records (original14 and original16 finite masks equal). Matured joint14/mean predictions are copied, not refitted; yearly training_dates/maturity/target/baseline checked. Only missing feature-only2026tail joint scores use samefixed training coefficient reconstruction; mean tail copies prior sameyearbaseline. Only confirmation model newlyfit.",
+      "limits": "Positiveproxymean alone notalpha. No full2020forecasts, no110closed/nativeprofit/DD/4gates/32Q10Q90proof. Adaptive seenpool, no sign/window/threshold/model search or account escalation. MSE/IC/group/concentration are diagnostic,notnew economicgates.",
+      "delivery": "FromEX079 root closeout copies formaldelivery report byte-exact to experiment others/report.md withSHAcomparison; no extraEX/round",
+      "numeric_dependency": {
+        "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a"
+      }
+    },
+    "source_sha256": {
+      "inputs.py": "318cd51f2df0d52f8fafbeec0ba72fc33c60a547f008de53249290f28c5a365a",
+      "net_statistics.py": "fdd68057f9d1f03fc8c15928c466f5b882a183caea01fa3e39557e6494b23793",
+      "focused_checks.py": "202d88f1976d310a1677368a332fa16ce7b0ed0fb0643bbec616b9c6253b4079"
+    },
+    "numeric_dependency": {
+      "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a"
+    }
+  },
+  "selection_history": "同一已见开发池，EX066同口径14项联合/均值预测复用1388条，不称新发现；EX078固定退出组件无支持。本轮新确认单分数模型及正预测机会组/共享区间，未校正反复研究选择。",
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "opportunity.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1.csv",
+      "sha256": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1",
+      "media_type": "text/csv",
+      "name": "opportunity",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "fc409a8cd0d432cc16afc86d6fc3a385724029366ae431ef3fc1cfcf4e51e86a.json",
+      "sha256": "fc409a8cd0d432cc16afc86d6fc3a385724029366ae431ef3fc1cfcf4e51e86a",
+      "media_type": "application/json",
+      "name": "statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "input_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aeacca69fc4caf1f6e8e96c0f51abe2dff205230d332ca4efacce52aba71f388.json",
+      "sha256": "aeacca69fc4caf1f6e8e96c0f51abe2dff205230d332ca4efacce52aba71f388",
+      "media_type": "application/json",
+      "name": "input-checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "native": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "source_files": {
+    ".tmp/s013-base-net-opportunity/focused_checks.py": "202d88f1976d310a1677368a332fa16ce7b0ed0fb0643bbec616b9c6253b4079",
+    ".tmp/s013-base-net-opportunity/inputs.py": "318cd51f2df0d52f8fafbeec0ba72fc33c60a547f008de53249290f28c5a365a",
+    ".tmp/s013-base-net-opportunity/net_statistics.py": "fdd68057f9d1f03fc8c15928c466f5b882a183caea01fa3e39557e6494b23793",
+    ".tmp/s013_net_research.py": "5dc857c0515e7ad81ae8753ed2bab8954c215ba50c9f774790d8fd4565e06638",
+    ".tmp/s013_net_plan.py": "f49dbbc7d988e8c8d510a467c265bbe469d25ebd03b6fa5e8ec0e53bbf1306c3",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a"
+  },
+  "audit_source_files": {
+    ".tmp/s013-base-net-audit/audit.py": "8b31573915dc3d46232d1c6dc47b287e1b76898ac7744cd066e70778f06ff2df",
+    ".tmp/s013-base-net-audit/freeze.json": "b2c21cec3bb2eaff7957782e24390e8d865d587874097b41970d6684e9f68039",
+    ".tmp/s013-base-net-audit/synthetic.json": "552e781179ad69dbc49e63af276f790711d4d9d3cff2075545881139f1513adc",
+    ".tmp/s013-base-net-audit/synthetic.py": "d5c65029f230dd04f07900e3561fa508227d5780d8c3ba9ccf7d445c987b7e46"
+  },
+  "auxiliary_origin": "EX066 opportunity.csv is entry_eligible; check against native same metadata, but derive planned policy-flat auxiliary from authenticated complete C8880 decisions.confirmation_opportunity including2019anchor prefix, never rename old eligibility as flat opportunity",
+  "native_cache": {
+    ".tmp/s013-mechanism-EX058/N0.pkl.gz": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c"
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "resources": {
+    "workers": 1,
+    "blas_threads": 1,
+    "new_confirmation_year_fits": 6,
+    "reused_mean_joint_models": true,
+    "statistics_calls": 1,
+    "new_accounts": 0,
+    "provider_calls": 0
+  },
+  "report_copy": {
+    "target": "others/report.md",
+    "source": "corresponding formal delivery report.md",
+    "verification": "exact bytes andSHA256",
+    "human_authorization": "RSCH，请在后续的每个实验目录下保存一份report副本"
+  },
+  "stopping": "固定h4/alpha10/阈值0/三表达/8区间，未得到可识别净机会依据则不自动追加账户；不改窗口、翻符号或挑年份救援",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX079_20261012"
+  },
+  "declared_utc": "2026-10-11T16:54:37.447071+00:00"
+}
