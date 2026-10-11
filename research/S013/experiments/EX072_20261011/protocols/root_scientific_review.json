@@ -1,0 +1,56 @@
+{
+  "status": "ROOT_SCIENTIFIC_REVIEWED",
+  "analysis_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX072_20261011"
+    },
+    "evidence_id": "b9baf657c5d7364d7a1f485c6916b1640c0677f303cb99c68ba007f3131243fb.json",
+    "sha256": "b9baf657c5d7364d7a1f485c6916b1640c0677f303cb99c68ba007f3131243fb",
+    "media_type": "application/json",
+    "name": "overnight-filter-centre-failed-frequency-complete-refutation",
+    "schema": null,
+    "schema_version": null
+  },
+  "analysis_sha256": "b9baf657c5d7364d7a1f485c6916b1640c0677f303cb99c68ba007f3131243fb",
+  "objective_achieved": false,
+  "conclusion": "EX072固定入场过滤失败。2023净收益由0.9181%提高到1.9863%，但整体净年化由17.1346%降至13.9851%，全期回撤由13.6187%升至15.0419%，闭合交易116降至107、低于110硬门。保留该年局部改善和其他三门通过事实；不把全期回撤变差误称年度回撤硬门失败。停止32点、双费用、整数邻域及参数救援，不登记C9072，保留Candidate58。不能据此泛化此标记为有效入场风险信息；标准扰动与五项新自检未运行，不当成通过或零。整体稳健目标尚未达成。",
+  "counts": {
+    "new_financial_accounts": 1,
+    "baseline_financial_reuse": 1,
+    "new_standard32": 0,
+    "new_fee": 0,
+    "new_neighbours": 0,
+    "new_technical_financial": 0,
+    "registration": 0,
+    "delivery_assembly": 0
+  },
+  "four_gates": {
+    "return": true,
+    "annual_drawdown": true,
+    "frequency": false,
+    "negative_buyhold_year_profit": true
+  },
+  "raw_counts": {
+    "signal_days": 1636,
+    "pressure_dominant_all_days": 434,
+    "own_flat_bear_pressure_rejected": 31,
+    "signal_buy_entries": 108,
+    "actual_buy_fills": 108,
+    "actual_sell_fills": 107,
+    "raw_trade_rows": 108,
+    "closed_cycles": 107,
+    "open_cycles": 1
+  },
+  "next_direction": "停止固定隔夜压力的直接过滤/半仓/提前退出策略救援。只做一次已声明的真实原bear入场第3至4日增量纯组件收口，薄样本如实不足；无账户、无阈值或期限优化。动态风险预算仅接口需求，当前不申请DEV实施，不视为金融发现。",
+  "mechanism_status": "INEFFECTIVE_FOR_FOUR_GATE_AND_ABSOLUTE_ROBUSTNESS_OBJECTIVE",
+  "root_independent_economic_checks": "1636 sessions、107真实闭合/108原生行/1OPEN、年度闭合计数、252交易日CAGR、四门逐项和2022/2023实际负基准年份重新计算一致；无账户重跑",
+  "limitations": [
+    "重复已见S013开发池，没有封存验证或选择偏差校正",
+    "自身31次拒绝与原15次静态触发不能解释为同量交易移除",
+    "周期行数含OPEN，闭合频率经济计算一直为107；原误标签不可变证据保留",
+    "技术审计PASS只说明计算与证据一致，不能保证未来投资表现"
+  ]
+}
