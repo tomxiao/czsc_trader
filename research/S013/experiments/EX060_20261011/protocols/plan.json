@@ -1,0 +1,52 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX060_20261011"
+  },
+  "role": "RSCH",
+  "phase": 2,
+  "authorization": [
+    "我更看重扰动后的绝对收益和回撤，达标且稳健的策略才是我追求的结果。如果你判断当前策略表达不足以达成要求，可以重新做设计和验证，甚至可以回到阶段二重新挖掘组件。",
+    "先改善收益Q10和回撤Q90，并报告32点逐项达标率；暂不新增硬门"
+  ],
+  "economic_targets": "原四项目标不变；Q10收益越高、Q90全区间回撤越低优先；中心相对退化仅诊断，不要求同步改善",
+  "original_account_period": [
+    "2020-01-02",
+    "2026-09-30",
+    1636
+  ],
+  "component_signal_grid": [
+    "2020-01-02",
+    "2026-09-29",
+    1635
+  ],
+  "grid_reason": "沿用C8880原生决策日期并排除开发池前2019-12-31；最后2026-09-30仅用于价格标签，不新增未计算确认分的信号；不是缩短账户验收区间",
+  "data": "仅S013已经固定的daily/30m/calendar公开DFLS资产；截止2026-09-30；禁止外部provider",
+  "warmup": "daily原180+确认120历史；30m资产始于2020-01-02，无更早30m；首19日组件保持缺失，不补造",
+  "pricing": "原HFQ_RESEARCH/2019-12-31 anchor；公开ExecutionPricing重新转换并与原生执行数据核对；不另加现金分红",
+  "controls": {
+    "momentum20": "Close/Close.shift(20)-1",
+    "range_position60": "(Close-minLow60)/(maxHigh60-minLow60)",
+    "acf1": "原S013 Close simple pct_change rolling20 mean-centered unbiased lag1 divided by population variance",
+    "volatility20": "Close simple pct_change rolling20 sample standard deviation ddof1",
+    "intraday_return": "Close/Open-1",
+    "overnight_gap": "log(Open/Close.shift(1))",
+    "intraday_energy20": "sqrt(rolling20 mean(sum of squared within-day 30m log returns))",
+    "intraday_rms20": "sqrt(rolling20 mean(log(Close/Open)^2))",
+    "confirmation_score": "EX058 N0/C8880 authenticated unchanged original decision field"
+  },
+  "opportunity": "原C8880事前entry_eligible；仅辅助组内诊断，受旧持仓状态路径影响，不按盈利样本筛选",
+  "availability": "T日全部8根30m完结/日线T17政策；T+1执行。历史发布及修订的真实时间未独立验证",
+  "known_quality": "旧5个30m High/Low偏差原样保留；新组件只用Open/Close，标签用原daily Low；核对每日首Open/末Close一致",
+  "scope": "固定2组件、5标签、9controls、4模型；不优化窗长/权重，不启动新机制账户。组件判断充分后才决定策略表达。",
+  "stop": "若新增信息不稳定/只是已知波动或方向重复，则关闭这两条路线，避免用门槛扫参挽救弱证据",
+  "limitations": "已见开发池；逐年训练预测是开发池时间顺序检验，非独立封存验证；价格标签不是费用后限价成交账户收益",
+  "source_hashes": {
+    "component_definitions.py": "573f3be2a9ac71f76a09d7687ae926906895b472e435ce855a78fd5634bff9f7",
+    "component_statistics.py": "e5f7126d2bd8ae92086742840ed72d8c0e5f33bce4b8ef96d887d63112f2b83f",
+    "component_checks.py": "ade8ed4f45e8529503d8e6a1e4279d0456d92f9c0e7bd30fa3bf8c16a58f243a",
+    "component_statistics_focused.py": "28d93806d5f142d75bbe645f351998ae3a5cb75b46cf479dd2fdadf468e6f0d1",
+    "run_study.py": "48793ee427ce34f2a6c54b1d9d3478c7f05fc795901beb380285a019f2880a2c"
+  }
+}
