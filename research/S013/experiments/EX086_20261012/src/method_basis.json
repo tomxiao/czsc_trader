@@ -1,0 +1,12 @@
+{
+  "kind": "METHOD_ONLY_NOT_ALPHA_EVIDENCE",
+  "source": "https://www.statsmodels.org/stable/generated/statsmodels.genmod.families.family.Gamma.html",
+  "accessed": "2026-10-12",
+  "primary_fact": "Gamma GLM permits a log mean link; default is inverse, not log",
+  "actual_method": "Explicit convex conditional-mean criterion sum(eta+m*exp(-eta))+5*sum(slopes^2); positive mean exp(eta)",
+  "derivation": "For fixed x, expected eta+m exp(-eta) is minimized at exp(eta)=E[m|x]. Thus estimates arithmetic conditional mean, not exp(mean(log m)).",
+  "zero_magnitudes": "m=0 allowed by this mean criterion. Do not claim Gamma density at zero or a fitted true distribution. A group mean <=0 is explicitly refused, not epsilon-filled.",
+  "market_data_imported": false,
+  "new_dependency_installed": false,
+  "guarantees_profitability": false
+}
