@@ -1,0 +1,278 @@
+{
+  "role": "RSCH",
+  "stage": 2,
+  "prospective_frozen_utc": "2026-10-11T12:44:14.070815+00:00",
+  "authorization": "用户授权自主研究；root已认可源码/四scope并授权完成前瞻冻结后执行EX071固定统计与独立核验",
+  "economic_targets_unchanged": true,
+  "new_hard_gates": false,
+  "new_accounts": 0,
+  "question": "EX066/067的late_weakness持有池线索是否在真实成交持仓与已知持仓年龄/盈亏控制后仍有继续持有信息，尤其2023？",
+  "selection_history": "已见EX066/067/068/069/070开发池结论；复用已发现的单一固定组件，结果为条件线索确认而非封存验证，置信区间未纠正研究选择偏差",
+  "feature_method": {
+    "version": "s013-actual-held-continuation-prospective-v1",
+    "status": "SOURCE_ONLY_NO_EXPERIMENT_ALLOCATION_OR_REAL_STATISTICS",
+    "component": "late_weakness=-EX061 late_recovery=-log(C8/C6); positive return and negative risk hypotheses fixed",
+    "state_time": "account_daily.date=T quantity is post T fills, marked with T close, known at T17; account_daily.signal_date is prior execution-plan signal and must not align T features",
+    "actual_held": "quantity[T]>0, not target_position or entry_eligible",
+    "signal_before": "decision.target_position keyed by valid_session=T; previous signal already formed before T",
+    "signal_after": "decision.target_position keyed by signal_date=T; intended next-session target, not current holdings",
+    "known_controls": {
+      "holding_age": "number of actual execution sessions since first BUY in current position including entry day; entry day=1",
+      "entry_mark_pnl": "Close[T]/remaining known cost-weighted gross entry price-1; BUY fees excluded; only fills on/before T used",
+      "known_falling": "original known momentum20[T]<0, not realized annual return"
+    },
+    "labels": {
+      "continue_open_h": "(1-f)*Open[T+1+h]/((1-f)*Open[T+1])-1 = futureOpen/nextOpen-1; hold versus sell next open, same quantity/sell fee, no new BUY fee",
+      "risk_open_h": "max(0,1-min(Open/Close at T+1..T+h and final Open[T+1+h])/Open[T+1]); fixed daily observations, excludes initial Tclose->nextOpen gap",
+      "marked_close_net_h": "(1-f)*Open[T+1+h]/Close[T]-1; remaining holding liquidation from Tclose mark, exactly one future SELL fee and no sunk BUY fee",
+      "risk_close_h": "max(0,1-same_future_observed_min/Close[T]); includes initial next-open movement; price risk not fee-adjusted",
+      "immediate_close_net": "(1-f)*Open[T+1]/Close[T]-1; companion showing next-open liquidation and unavoidable first overnight",
+      "increment_mark_h": "marked_close_net_h-immediate_close_net = (1-f)*(futureOpen-nextOpen)/Close[T]",
+      "maturity": "all horizon labels mature at final Open[T+1+h]; missing tails remain missing, no extension",
+      "statistical_primary": [
+        "return_4",
+        "downside_4"
+      ],
+      "statistical_auxiliary": [
+        "return_8",
+        "downside_8"
+      ],
+      "accounting_companions_only": "close-mark labels, risk_close, immediate liquidation and increment_mark retained but no additional model/IC searches"
+    },
+    "fee": 0.001,
+    "risk_limit": "OPEN/CLOSE observation downside omits intraday extremes and is not actual path or account maximum drawdown; High/Low deliberately unused",
+    "counterfactual": "fixed T quantity hypothetically retained across future old strategy exits; not old realized account return and not a proposed execution rule",
+    "strongest_counterargument": "next-open continuation return is affine-equivalent to old fee-adjusted fresh-entry label; fee removal cannot create predictive ordering; novelty is actual-held pool and causal holding controls",
+    "selection": "retain every requested T row; flat age/PnL remain NaN, not zero; future label or future trade exit cannot select population"
+  },
+  "statistics": {
+    "version": "s013-actual-held-continuation-df-v1",
+    "components": [
+      "late_weakness"
+    ],
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20",
+      "early_volume_reclaim",
+      "total_down",
+      "total_up",
+      "early_down_share",
+      "max_down_run_share",
+      "holding_age",
+      "entry_mark_pnl",
+      "known_falling"
+    ],
+    "labels": {
+      "return_4": 4,
+      "return_8": 8,
+      "downside_4": 4,
+      "downside_8": 8
+    },
+    "label_contract": {
+      "return_h": "Open[T+1+h]/Open[T+1]-1; same future/current SELL fee cancels, no new BUY fee",
+      "downside_h": "max(0,1-min(Open/Close T+1..T+h and finalOpen[T+1+h])/Open[T+1]); fixed daily observation downside, not path/account DD",
+      "negative_gap_next": "Initial Tclose-to-nextOpen gap retained for accounting attribution only; both T+1 decision alternatives share it",
+      "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+    },
+    "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all twenty-two controls, explicitly excluding component linear opposite late_recovery, partial residual DF n-rank(design)>=10 required; otherwise unavailable, recording design_rank/residual_df; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+    "minimum_correlation_n": 20,
+    "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+      "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+      "scope": "all four predeclared scopes; descriptive, no search-selection correction"
+    },
+    "walk_forward": {
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_train_year": 2020,
+      "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+      "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+      "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+      "models": [
+        "controls",
+        "controls+late"
+      ],
+      "common_model_rows": "all 23 feature columns finite, target finite, training target mature; identical model rows",
+      "minimum_train_n": 40,
+      "minimum_test_n": 20,
+      "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+    },
+    "scope": "actual_held, declining_actual_held, actual_signal_continue, actual_signal_exit; no flat zero imputation; no profitable-row selection",
+    "limitations": [
+      "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+      "No hyperparameter search; all labels, years, phases, components and failures retained.",
+      "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+      "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+    ]
+  },
+  "hypothesis_signs": {
+    "late_weakness": "positive return4, negative downside4; h8 auxiliary same direction; never reverse on result"
+  },
+  "primary": [
+    "return_4",
+    "downside_4"
+  ],
+  "auxiliary": [
+    "return_8",
+    "downside_8"
+  ],
+  "controls": [
+    "momentum20",
+    "range_position60",
+    "acf1",
+    "volatility20",
+    "intraday_return",
+    "overnight_gap",
+    "intraday_energy20",
+    "intraday_rms20",
+    "confirmation_score",
+    "daily_close_location",
+    "feature_intraday_down_energy20",
+    "feature_overnight_down_energy20",
+    "turnover20",
+    "volume_ratio20",
+    "early_volume_reclaim",
+    "total_down",
+    "total_up",
+    "early_down_share",
+    "max_down_run_share",
+    "holding_age",
+    "entry_mark_pnl",
+    "known_falling"
+  ],
+  "control_exclusion": "原20去late_recovery，因其是组件的精确线性反向；按代数预先排除，不按表现挑选；其余19固定控制加holding_age/entry_mark_pnl/known_falling，共22",
+  "fixed_scopes": [
+    "actual_held",
+    "declining_actual_held",
+    "actual_signal_continue",
+    "actual_signal_exit"
+  ],
+  "scope_definition": "T account_daily.date收盘 quantity>0；declining用T momentum20<0；continue/exit用T signal_date当前target1/0（已知下一日计划，不是未来实际成交）；before状态分歧仅审计计数；T+1成交成功不能选样本",
+  "accounting_companions": "marked_close_net/risk_close/increment/immediate只作逐行账目解释，不追加IC/拟合；两端相同SELL费用取消，绝不扣新BUY费",
+  "partial_df": "n-rank(intercept+rankcontrols)>=10且n>=20；否则null及reason/rank/df；常数known_falling/同池约束按实际rank计算；不放低DF或合并薄scope",
+  "price_and_time": "EX058 C8880 authenticatednative cache/public full evidence exact equality；仅native固定HFQ execution_daily OPEN/CLOSE（2019-12-31..2026-09-30），原1635 T信号网格；原warmup控制已在EX069features；0新增fetch/provider",
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c.csv",
+      "sha256": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "old_labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "predecessor_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81.json",
+      "sha256": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX058_20261011"
+    },
+    "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+    "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+    "media_type": "application/json",
+    "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+    "schema": "account_evaluation",
+    "schema_version": 6
+  },
+  "source_files": {
+    "continuation_core.py": "752ebc55ce9cd401645410d57508fc0a2633df3ac1a1f386ae9bcd0df50cc2cf",
+    "driver.py": "6820cf33bf13c9670d5d059a3cd6c66cd5055f10fc7ad8c696b4d7d175d9feff",
+    "focused_checks.py": "d460cca291a4945e1b45358e9a5cf9fcae73e1887744d796262f2e991a2e2714",
+    "freeze_plan.py": "3a4adcd3f849734071008b668f7cbdb20841d555864458f7ca5400ba745e9233",
+    "independent_inputs.py": "3ea0db23d360553e3abb8732d270da1c18999aed7106c320c8efa668f1f52997",
+    "independent_statistics.py": "59eb424a2e8adf7739cbe444a64262fdcd267f09d8ff4b556dc8fbe4572d5218",
+    "opportunity_statistics.py": "05f2d98f9245ac0a56009343b2e22ece5680f22312530bba3777b234af3b43a5",
+    "prepare_statistics.py": "2feb277496dc70c3d676be9f412d50e60839d606f2933d182ce4df19e147c027",
+    "prepare_verifier.py": "a288a872ba458f3fd365a6b30dfa91dcb67906110e98ec3caa2424458c0749f8"
+  },
+  "common_sha256": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+  "independent_check": "真实fill逐T含T当天重建数量/成本/age/PnL，date而非prior signal_date；信号intent逐T；每行h4/h8收益与EX066仿射恒等式，close liquidation-immediate=increment；独立OPEN/CLOSE风险/maturity；各scope/year/phase rank/DF、成熟共同模型样本、truth/modelMSE/训练均值baselineMSE",
+  "resource_budget": {
+    "workers": 1,
+    "blas_threads": 1,
+    "components": 1,
+    "scopes": 4,
+    "labels": 4,
+    "fixed_models": 2,
+    "max_yearly_fits": 192,
+    "bootstrap_replicates": 500,
+    "block_sessions": 40,
+    "seed": 13,
+    "ridge_alpha": 10,
+    "market_provider_requests": 0,
+    "new_accounts": 0,
+    "parameter_trials": 0
+  },
+  "stop": "固定结果薄/反向/无增量则保留并停止；无窗口/期限/方向/阈值救援，无持有管理实现、无账户、无经济达标宣称；parent作最终科学裁决与交付",
+  "limitations": [
+    "继续持有价格标签与旧新买标签为仿射同信息，不能把费用重表达当新证据",
+    "old actualholding和currenttarget由原策略内生，scope不是独立随机试验",
+    "日OPEN/CLOSE观察风险非路径/账户最大回撤且忽略盘中极值",
+    "固定T数量反事实持有穿过原退出，不是旧账户实现收益",
+    "2022/23年、各相位与已知退出小池会薄，null如实保留",
+    "过往阶段三定时延迟/普通gapexit已有失败，不重复，不直接据相关性改退出规则"
+  ],
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX071_20261011"
+  },
+  "declared_utc": "2026-10-11T12:44:45.897222+00:00"
+}
