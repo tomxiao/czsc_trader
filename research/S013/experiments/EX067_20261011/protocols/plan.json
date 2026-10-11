@@ -1,0 +1,241 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX067_20261011"
+  },
+  "role": "RSCH",
+  "stage": 2,
+  "authorization": "认同你的观点。请你重新设定研究目标，并自主研究",
+  "economic_targets_unchanged": true,
+  "new_hard_gates": false,
+  "objective": "辨明条件性盈利信息的职责；有真实空仓增量才考虑入场机制；持仓恢复线索不能直接作为入场过滤或卖出信号。",
+  "inputs": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "opportunity.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1.csv",
+      "sha256": "090742cf2ffbbc15d382569717debb45898ee5eb877d0310fab48899047133d1",
+      "media_type": "text/csv",
+      "name": "opportunity",
+      "schema": null,
+      "schema_version": null
+    },
+    "input_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aeacca69fc4caf1f6e8e96c0f51abe2dff205230d332ca4efacce52aba71f388.json",
+      "sha256": "aeacca69fc4caf1f6e8e96c0f51abe2dff205230d332ca4efacce52aba71f388",
+      "media_type": "application/json",
+      "name": "input-checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "judgment.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "fbeae9cf3594d62ca44e8c0d6f4082d1c2d64d7ef9c4ef2524da7f772f3134d4.json",
+      "sha256": "fbeae9cf3594d62ca44e8c0d6f4082d1c2d64d7ef9c4ef2524da7f772f3134d4",
+      "media_type": "application/json",
+      "name": "judgment",
+      "schema": null,
+      "schema_version": null
+    },
+    "statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "fc409a8cd0d432cc16afc86d6fc3a385724029366ae431ef3fc1cfcf4e51e86a.json",
+      "sha256": "fc409a8cd0d432cc16afc86d6fc3a385724029366ae431ef3fc1cfcf4e51e86a",
+      "media_type": "application/json",
+      "name": "statistics",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_files": {
+    "prepare.py": "1b5fa952441b6296c8692860960accd2f4893585489334260f2a227242d22ffa",
+    "opportunity_statistics.py": "9bf38138faab433d3ccec05b6a276c565e9479120392c7387c43e4a1f24bf45b",
+    "driver.py": "a6c6a21b0e4bc47d6bef7d8fa60659855cd7c53696614f3e250a95ef53cf4ef8"
+  },
+  "common_sha256": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+  "state_definition": "原entry_eligible=range/momentum/(ACF or recovery) evenwhile holding; 原confirmation_opportunity=not holding AND eligible. Independent check uses previous original target_position to verify not holding; not actual account quantity.",
+  "fixed_scopes": [
+    "flat_eligible",
+    "held_eligible",
+    "declining_flat",
+    "declining_held"
+  ],
+  "declining": "原信号过去20日momentum<0，不等同全年亏损；所有年份保留。",
+  "component": "only late_weakness=-EX061 last60min logreturn; earlyreclaim stopped, not re-tested",
+  "statistics": {
+    "version": "s013-true-flat-held-split-v1",
+    "components": [
+      "late_weakness"
+    ],
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20"
+    ],
+    "labels": {
+      "return_4": 4,
+      "return_8": 8,
+      "downside_4": 4,
+      "downside_8": 8
+    },
+    "label_contract": {
+      "return_h": "Open[T+1+h]/Open[T+1]*(1-.001)/(1+.001)-1; fractional open-fill fee proxy; h complete sessions held",
+      "downside_h": "max(0,1-min(Low[T+1:T+h])/Open[T+1])",
+      "negative_gap_next": "Not tested: next open gap is already realized before proposed entry",
+      "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+    },
+    "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all fourteen controls; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+    "minimum_correlation_n": 20,
+    "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+      "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+      "scope": "full-pool and opportunity-pool only; descriptive, no search-selection correction"
+    },
+    "walk_forward": {
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_train_year": 2020,
+      "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+      "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+      "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+      "models": [
+        "controls",
+        "controls+late"
+      ],
+      "common_model_rows": "all 15 feature columns finite, target finite, training target mature; identical model rows",
+      "minimum_train_n": 40,
+      "minimum_test_n": 20,
+      "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+    },
+    "scope": "all rows and optional original strategy ex-ante eligibility; no profitable-row selection",
+    "limitations": [
+      "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+      "No hyperparameter search; all labels, years, phases, components and failures retained.",
+      "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+      "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+    ]
+  },
+  "common_predictor_transfer": "并行复用EX066机会池/下跌资格池controls与controls+late的已留存逐年预测及同一训练Q25/Q75，在真实空仓/持仓两组分别评价；不重新拟合，不以组结果重选阈值。独立小组拟合与共用模型分组结论分别呈现。",
+  "controls": [
+    "momentum20",
+    "range_position60",
+    "acf1",
+    "volatility20",
+    "intraday_return",
+    "overnight_gap",
+    "intraday_energy20",
+    "intraday_rms20",
+    "confirmation_score",
+    "daily_close_location",
+    "feature_intraday_down_energy20",
+    "feature_overnight_down_energy20",
+    "turnover20",
+    "volume_ratio20"
+  ],
+  "labels": "精确复用EX0664/8日净开盘收益代理和downside；已持仓组仍用同一假想fresh-entry标签，不称实际继续持有收益。",
+  "selection_history": "已见EX066条件子集正面结果后提出；范围拆分是自适应开发研究，非独立验证；不扫阈值、期限或方向。",
+  "stop": "若正证仅持仓组成立或空仓薄组不可验证，不能授予入场策略资格。持仓线索仅保留，实际退出须独立账户验证。",
+  "boundaries": "仅S013既有数据及原合同；无新账户、32点、外部数据、封存、平台DEV/PTE/生产；原硬门保持。",
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "c4aa950bed685f0176c0496a11796749978e488c6d45c1bc881e4a654d73191c",
+      "revision": 5,
+      "stage": "COMPONENTS",
+      "type": "DeliveryReference"
+    },
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "988808bd57d48576a46c5f2fa04c6c0a5d68bc0555043898d1dd7afe308d4336",
+      "revision": 57,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    }
+  ]
+}

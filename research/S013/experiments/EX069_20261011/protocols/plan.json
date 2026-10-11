@@ -1,0 +1,321 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX069_20261011"
+  },
+  "role": "RSCH",
+  "stage": 2,
+  "authorization": "认同你的观点。请你重新设定研究目标，并自主研究",
+  "economic_targets_unchanged": true,
+  "new_hard_gates": false,
+  "objective": "寻找扣费后做多盈利信息，为原四门与抗扰动目标提供组件证据，不把统计显著性或样本量变成经济硬门",
+  "selection_history": "已见EX066-068机会供给、状态和顺序组件结果后的固定新假说；仍是反复研究开发池，不是封存验证",
+  "feature_method": {
+    "version": "s013-four-session-pressure-v1",
+    "status": "PROSPECTIVE_PURE_IMPLEMENTATION_NO_MARKET_STATISTICS",
+    "features": {
+      "short_stretch4": "(log(C_T)-log(C_(T-4)))/(volatility20_T*sqrt(4)); volatility20=simple Close pct_change rolling20 sample std ddof1",
+      "overnight_down_share4": "sum_s(T-3..T)max(-(log(O_s)-log(C_(s-1))),0) divided by same overnight sum plus sum_s(T-3..T)max(-(log(C_s)-log(O_s)),0)"
+    },
+    "hypotheses": {
+      "short_stretch4": "negative relation to next-open-entry h4 net-return proxy",
+      "overnight_down_share4": "positive relation to that label"
+    },
+    "semantics": {
+      "window": "four complete sessions T-3..T, endpoint close T-4; no future rows",
+      "volatility": "exact original20 simple-return sample std; no epsilon replacement",
+      "unavailable": "short_stretch4 is NaN with explicit short_stretch_reason when20-return history incomplete or volatility=0; retained rows, not economic gate",
+      "no_down": "if complete4-session denominator=0 share=0; means no negative overnight/intraday change, not repair",
+      "magnitude": "sum negative logarithmic price changes, not squared return energy",
+      "zero_interrupt": "not applicable to these aggregate expressions"
+    },
+    "input": {
+      "index": "finite unique strictly increasing timezone-naive daily-midnight DatetimeIndex; caller validates calendar",
+      "required_columns": [
+        "Open",
+        "Close"
+      ],
+      "values": "positive finite prices in consistent HFQ units; High/Low/Volume unused"
+    },
+    "output": {
+      "index": "Date",
+      "columns": [
+        "short_stretch4",
+        "overnight_down_share4",
+        "volatility20",
+        "overnight_down4",
+        "intraday_down4",
+        "short_stretch_reason"
+      ],
+      "availability": "all T daily observations formed, earliest T+1 execution",
+      "warmup": "20 previous sessions needed for20 returns; first4 sessions lack pressure windows"
+    },
+    "parameters": "none; fixed4/20 periods and fixed directions, no optimization",
+    "limitations": [
+      "Price patterns do not identify funds, trading pressure or intent.",
+      "The overnight move is before proposed T+1 entry and not a tradable label.",
+      "Definition and synthetic tests provide no predictive/profit evidence."
+    ]
+  },
+  "statistics": {
+    "version": "s013-four-session-pressure-df-v1",
+    "components": [
+      "short_stretch4",
+      "overnight_down_share4"
+    ],
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20",
+      "late_recovery",
+      "early_volume_reclaim",
+      "total_down",
+      "total_up",
+      "early_down_share",
+      "max_down_run_share"
+    ],
+    "labels": {
+      "return_4": 4,
+      "return_8": 8,
+      "downside_4": 4,
+      "downside_8": 8
+    },
+    "label_contract": {
+      "return_h": "Open[T+1+h]/Open[T+1]*(1-.001)/(1+.001)-1; fractional open-fill fee proxy; h complete sessions held",
+      "downside_h": "max(0,1-min(Low[T+1:T+h])/Open[T+1])",
+      "negative_gap_next": "Not tested: next open gap is already realized before proposed entry",
+      "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+    },
+    "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all twenty controls, partial residual DF n-rank(design)>=10 required; otherwise unavailable, recording design_rank/residual_df; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+    "minimum_correlation_n": 20,
+    "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+      "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+      "scope": "all four predeclared scopes; descriptive, no search-selection correction"
+    },
+    "walk_forward": {
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_train_year": 2020,
+      "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+      "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+      "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+      "models": [
+        "controls",
+        "controls+stretch",
+        "controls+overnight",
+        "controls+both"
+      ],
+      "common_model_rows": "all 22 feature columns finite, target finite, training target mature; identical model rows",
+      "minimum_train_n": 40,
+      "minimum_test_n": 20,
+      "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+    },
+    "scope": "all, past20_declining, true original signal-flat eligible, declining-flat; no profitable-row selection",
+    "limitations": [
+      "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+      "No hyperparameter search; all labels, years, phases, components and failures retained.",
+      "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+      "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+    ]
+  },
+  "hypothesis_signs": {
+    "short_stretch4": "negative return4",
+    "overnight_down_share4": "positive return4"
+  },
+  "primary": [
+    "return_4",
+    "downside_4"
+  ],
+  "auxiliary": [
+    "return_8",
+    "downside_8"
+  ],
+  "controls": [
+    "momentum20",
+    "range_position60",
+    "acf1",
+    "volatility20",
+    "intraday_return",
+    "overnight_gap",
+    "intraday_energy20",
+    "intraday_rms20",
+    "confirmation_score",
+    "daily_close_location",
+    "feature_intraday_down_energy20",
+    "feature_overnight_down_energy20",
+    "turnover20",
+    "volume_ratio20",
+    "late_recovery",
+    "early_volume_reclaim",
+    "total_down",
+    "total_up",
+    "early_down_share",
+    "max_down_run_share"
+  ],
+  "fixed_scopes": [
+    "all",
+    "past20_declining",
+    "flat_eligible",
+    "declining_flat"
+  ],
+  "scope_definition": "EX068 exact scopes; original confirmation_opportunity=eligible AND NOT previous target_position, not actual filled quantity; declining=causal original20daymomentum<0",
+  "labels": "EX0664/8 net-open labels .999/1.001 and paired downside unchanged byte reuse, not native limit/lot/account returns",
+  "partial_residual_df": "OLS rank-control design includes intercept; compute actual design rank; n-rank(design)>=10 and original n>=20 required, otherwise explicit unavailable with rank/df; no +/-1 thin-phase claims; bootstrap500x40seed13 unchanged",
+  "inputs": "EX06820 exact old observations, EX066labels, originalEX058native priced daily plus originalbound.input_bindings.full daily HFQ request2019-04-10..2026-09-29 including original warmup, only existing public assets",
+  "price_units": "original public HFQ daily units, constant divide by original anchor.2803 only for overlap authentication; feature ratios and originalvol20 recomputed without rounding",
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX068_20261011"
+      },
+      "evidence_id": "303943c0042045db2e45a2319fc548f6931d977576febf8a81e67f90797f01fb.csv",
+      "sha256": "303943c0042045db2e45a2319fc548f6931d977576febf8a81e67f90797f01fb",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "scopes.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX068_20261011"
+      },
+      "evidence_id": "123bfd64696b97d2d0c0806527d6003e8d3471c8999a8f4e257a73f245c4e855.csv",
+      "sha256": "123bfd64696b97d2d0c0806527d6003e8d3471c8999a8f4e257a73f245c4e855",
+      "media_type": "text/csv",
+      "name": "scopes",
+      "schema": null,
+      "schema_version": null
+    },
+    "input_checks.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX068_20261011"
+      },
+      "evidence_id": "a6bc0cb63574ba62e39ec56be6b8121593404a7f93d808dae4c1c1a18b794825.json",
+      "sha256": "a6bc0cb63574ba62e39ec56be6b8121593404a7f93d808dae4c1c1a18b794825",
+      "media_type": "application/json",
+      "name": "input-checks",
+      "schema": null,
+      "schema_version": null
+    },
+    "verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX068_20261011"
+      },
+      "evidence_id": "1f0d0a4b8ebfdf96dc7d407c3a023fee450baa797256cff6b68119e64397bbfb.json",
+      "sha256": "1f0d0a4b8ebfdf96dc7d407c3a023fee450baa797256cff6b68119e64397bbfb",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX058_20261011"
+    },
+    "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+    "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+    "media_type": "application/json",
+    "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+    "schema": "account_evaluation",
+    "schema_version": 6
+  },
+  "source_files": {
+    "pressure_component.py": "c0b3d87baf51cca6c145e51d91ecaf995190931be8895afee70a42a4e5008a5c",
+    "focused_checks.py": "d03b9e13111da801778c4da25e8c678cf601064fd4d4903bff9fab37f84b17b9",
+    "prepare_statistics.py": "29e3c38fe602e2f8478a87b3f7cf3d814b87a1ed1cc662c2e5d5d9f322fc78ca",
+    "prepare_driver.py": "af00ba6438cfe720a6693f0b705939b3ec287bcfe68b712bc80698f67fcd96fc",
+    "opportunity_statistics.py": "676e5fc24f9bf08caa50a09b47887c30e834bfbf2afadbb12fad2ea05fc316e1",
+    "statistics_checks.py": "1a0c8cb8ec93bf7da1070044627fe4acda88981300b4758823b2cb2554990e2c",
+    "driver.py": "7d43ebe235b018bc4a0485d9a8fd984f5dfc59368db6d8032b2659a4e1b166e6"
+  },
+  "common_sha256": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+  "ex068_plan_sha256": "053ccd1ade20b79a6f0c2ce4a4586838c8a4fae59331e5791f8d56d4fbc40842",
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "c4aa950bed685f0176c0496a11796749978e488c6d45c1bc881e4a654d73191c",
+      "revision": 5,
+      "stage": "COMPONENTS",
+      "type": "DeliveryReference"
+    },
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "988808bd57d48576a46c5f2fa04c6c0a5d68bc0555043898d1dd7afe308d4336",
+      "revision": 57,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    }
+  ],
+  "stop": "无稳定增量则停止固定方向，不扫期限/窗口/方向/阈值；保留局部正反事实及样本不足",
+  "boundaries": "仅S013现有数据至2026-09-30及原warmup，不新provider/外部/跨族/封存/DEV/PTE/生产/账户/参数搜索/32点",
+  "limitations": "首19日旧控制缺失保留，零vol不可用；时间顺序非独立封存；市场价标签代理不含限价/整手；真实发布时间修订未验证"
+}
