@@ -1,0 +1,477 @@
+{
+  "status": "PROSPECTIVELY_DECLARED_ZERO_ACCOUNTS_AWAITING_INPUT_AUTHENTICATION",
+  "role": "RSCH",
+  "scope": "S013 only, original510500 development grid through2026-09-30 and original authorizedwarmup; no real data read at this stage",
+  "question": "Can same-day concentration of volume on negative own-bar bodies add independent next-open four-day net-return/observed-risk information beyond previous observations and normal volume timing?",
+  "component": {
+    "name": "down_volume_cov",
+    "body": "d_i=max(log(Open_i)-log(Close_i),0), i=1..8; own-bar BODY not close-to-previous-close transition",
+    "expression": "cov_population(V_i,d_i)/mean(V_i)=sum_i p_i*d_i-mean_i(d_i), p_i=V_i/sumV; population divisor8 fixed",
+    "hypothesis": "negative return4_net, positive downside4_oc; selling-pressure hypothesis only, neither flow nor absorption measured",
+    "availability": "all eight T bars complete, T17 decision, earliest executionT+1; no historical publication/revision timestamp independent verification",
+    "no_down": "all d_i=0 => component0 and nuisances0 when profile available; not recovery evidence"
+  },
+  "nuisance_controls": {
+    "mean_negative_body": "mean_i(d_i) at T: removes total average negative-body magnitude",
+    "past_volume_shape_projection": "q_i,T=mean(p_i,s for s=T-20..T-1), exact fixed8bar clock mapping; b_T=sum_i q_i,T*d_i,T-mean_i(d_i,T), captures ordinary volume U-shape coinciding with negative-body timing",
+    "profile_history": "rolling20(min_periods20).mean().shift(1), full completed sessions strictly before T; first20 unavailable, no fallback/zero or interpolation; full authorizedcalendar must authenticate complete-session coverage before construction"
+  },
+  "controls": [
+    "momentum20",
+    "range_position60",
+    "acf1",
+    "volatility20",
+    "intraday_return",
+    "overnight_gap",
+    "intraday_energy20",
+    "intraday_rms20",
+    "confirmation_score",
+    "daily_close_location",
+    "feature_intraday_down_energy20",
+    "feature_overnight_down_energy20",
+    "turnover20",
+    "volume_ratio20",
+    "late_recovery",
+    "early_volume_reclaim",
+    "mean_negative_body",
+    "past_volume_shape_projection"
+  ],
+  "control_n": 18,
+  "old_observations": {
+    "late_recovery": "log(C8)-log(C6), exact final60minutes",
+    "early_volume_reclaim": "sum(Vj*sign(C8-Cj),j1..6)/sum(Vj,j1..6), first-six close levels are proxies, not VWAP/orderflow",
+    "formal_source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX061_20261011"
+      },
+      "evidence_id": "3cd87ec20d4bd8f043aaf5448fc85ba8f486350d65cf0828249cf8650c9ea54e.py",
+      "sha256": "3cd87ec20d4bd8f043aaf5448fc85ba8f486350d65cf0828249cf8650c9ea54e",
+      "media_type": "text/x-python",
+      "name": "late-recovery-component",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX066": "late_weakness=-late_recovery and early_reclaim_weakness=-early_volume_reclaim; same information, do not include both an original and its exact inverse"
+  },
+  "confirmation_source_derivation": {
+    "C8880": "profileall/orientation+1/ADJUSTED/EQUAL_BLOCKS/lookback120",
+    "raw": "acf1; turnover=Amount/rolling20meanAmount; volume=rolling20mean(diff(log dailyVolume))",
+    "rank": "trailing120 centered midrank each raw series including T",
+    "score": ".5*rank_acf+.25*rank_turnover+.25*rank_volume",
+    "exact_nonredundancy": "Daily inputs/ACF, total dailyVolume and Amount can remain identical while within-day volumes are redistributed. Confirmation_score then unchanged. With C8 above all first-six closes, early_volume_reclaim remains+1 for any early redistribution; fixed C6/C8 holds late_recovery unchanged, yet down_volume_cov changes. Synthetic example demonstrates this and unchanged nuisance mean/body/past shape at T. Thus x is not an exact algebraic copy of these observables. Likewise changing interior closeC6 or early close levels while daily O/C/V/Amount/history fixed can change each EX061 observable without changing daily confirmation_score.",
+    "approximate_redundancy": "Cannot quantify from source. Plausible shared daily price/volume drivers, original turnaround/energy/score controls may explain most x; daily turnover appears both as raw control and one score constituent, but time-varying trailing ranks are not a fixed global linear duplicate. Keep all18, record actual designrank/df/residual magnitude/conditioning; never select/drop controls by performance."
+  },
+  "pure_source_sha256": {
+    "research/S013/experiments/EX061_20261011/src/late_recovery_component.py": "3cd87ec20d4bd8f043aaf5448fc85ba8f486350d65cf0828249cf8650c9ea54e",
+    "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "research/S013/experiments/EX066_20261011/src/driver.py": "0ef78f2ff09d582e0007623d0d08eae4152f07210020650544b47721467f22c4"
+  },
+  "labels": {
+    "primary": [
+      "return4_net",
+      "downside4_oc"
+    ],
+    "return4_net": "(.999*Open[T+5])/(1.001*Open[T+1])-1, fixed10bp buy/sell proxy, h4 only",
+    "downside4_oc": "max(0,1-min(O/C[T+1..T+4],Open[T+5])/Open[T+1]); initial Tclose-nextOpen excluded, no HL or actualaccountDD",
+    "maturity": "T+5 OPEN; missing tail unavailable, never extend; independently build from native anchoredHFQ O/C, prove public/native anchor conversion and ratio invariance before future statistics",
+    "independence": "labels derived only from futureprices, never component outputs or old realizedtrades; ideal open-fill price/fee labels not1% limit realaccount",
+    "no_auxiliary": "no alternatehorizon/label rescue"
+  },
+  "future_fixed_statistics": {
+    "scope": "one full original1635-session T grid; no year/outcome-selected partition, actualentry/held or strategyuse not established by this fullpool test",
+    "raw_partial": "average-tie Spearman; partial residual rank OLS intercept+18 controls, n>=20 and n-rank>=10; otherwise null withreason/rank/df; residual norm<=1e-10 originalcentered norm explainednull",
+    "bootstrap": "500replicate40fullcalendaraxis blocks seed13, filter finite only aftersampling; allreplicate counts/reasons/rank/df retained; descriptive2.5/97.5interval only>=400valid; no searchselection correction",
+    "chronological_test": "years2021..2026, training2020..year-1 AND alltraining label_end<T firstyearsignal strictly; no global ECDF/scaling or label leakage",
+    "fixed_models": "controls18 and controls18+x, train-only empiricalCDF midpoint ties thenridgealpha10 with intercept unpenalized; same19-feature finite train/testrows for both, mintrain40/minouttest20; contemporaneous training-mean baseline onexactsame rows; reporttest MSE andIC, no hyperparameter tuning",
+    "diagnostics": "all fixedyears and five full-axis phases mod5; thin reportnull, no subset rescuing; raw/partial sample masks and first20profile unavailability distinct; diagnostics not neweconomic gates",
+    "thresholds": "none: no quantile grouping, signal threshold, yearlyselection, volume profile lookback20 tuning or other direction/horizon",
+    "maturity_authentication": "Explicit authenticated full native pricecalendar;T+5 may lie outside signalfeatureaxis. Bootstrap continues originalcomplete signalTaxis, excludes2019pricewarmup"
+  },
+  "refusal_rules": [
+    "invalid/nonpositive/nonfinite O/C/V",
+    "wrong clocks, missing/extra/duplicate bar or untrustedcomplete-session calendar",
+    "inconsistentasset/HFQ identity/anchor or dates beyondauthorized pool",
+    "missing oldcontrol provenance or unequal publicEX061/66 values after eventualauthentication",
+    "incompletepast20profile explicitly unavailable; no replacement with currentday or zeros",
+    "thin/fully explainedrankresidual or insufficientmaturetrain => diagnosticunavailable; do not lowercriteria",
+    "any real provider/study/signal/account/allocation/publication before separate rootauthorization"
+  ],
+  "strongest_counterarguments": [
+    "tradevolume does not identify seller-initiatedvolume: high V downbody may be absorption and thenrecover, oppositehypothesis",
+    "ownbar BODY omits betweenbar/overnight movements and intrabar tradevolume-at-price; source independent does not implypredictive independent",
+    "shared severity or regular U-shape could explain feature fully despite proposednuisances",
+    "mean past20 shape may be stale during liquidityregime changes; no knownoptimal window claim",
+    "EX061/66 previous no durableentryalpha and EX073 selected after repeatedfailed research; allalreadyseen developmental selection bias disclosed",
+    "fullpool incrementalprediction would not prove realbear-entry, held-exit, fourhardgate or perturbationqualification"
+  ],
+  "stop": "if fixedcomponent has no consistent increment beyond18controls/meanbaseline, stop without reversing sign, changing window/profile, droppingnuisances or sweeping thresholds. Any laterfinancialtest requires independentmechanismauthorization, fullparameter coverage andnativeaccount audits.",
+  "budget": {
+    "current_real_data_reads": 0,
+    "current_real_statistics": 0,
+    "current_signals": 0,
+    "new_accounts": 0,
+    "allocation": 0,
+    "publication": 0,
+    "DEV_writes": 0,
+    "future_proposed_workers": 1,
+    "future_bootstrap": 500,
+    "future_block_sessions": 40,
+    "future_seed": 13,
+    "future_models": 2,
+    "future_years": 6,
+    "future_max_fits": 24
+  },
+  "draft_source_sha256": {
+    "component_draft.py": "21b8d20cea9ba67d6b45128dc764329d89f9f20dfe89baa49ed9a4b85dce6521",
+    "synthetic_draft.py": "9ffc73cfeb34df6bb3e8834dfe3b105b60b731311ee22b6939e3c6af0e2f413c"
+  },
+  "draft_version": 5,
+  "v1_plan_sha256": "f5d46272187986a4dba2b2dbf2df2fe7c8cd2e80c5c6bae9e365ed8ad046e704",
+  "scientific_reading_rules": {
+    "version": "standby-volume-body-scientific-reading-v3-order-amendment",
+    "status": "SOURCE_ONLY_NOT_FORMALLY_DECLARED_NO_REAL_RUN",
+    "v1_reference": {
+      "path": ".tmp/s013-volume-body-interaction/draft_plan.json",
+      "sha256": "f5d46272187986a4dba2b2dbf2df2fe7c8cd2e80c5c6bae9e365ed8ad046e704"
+    },
+    "applies_to": "two primary labels independently: return4_net negative relation; downside4_oc positive relation. These are diagnostic scientific reading rules, no new economic acceptance gates or existing target changes.",
+    "signs_fixed": {
+      "return4_net": -1,
+      "downside4_oc": 1,
+      "prohibition": "Never reverse a failed direction, select years/phases or change feature/body/18controls/profile20/label4/ridge10 to claim success."
+    },
+    "mandatory_report": {
+      "correlation": "raw Spearman and 18-control partial rank correlation, their exact finite sample counts/masks, all18 columns unchanged, designrank/residualDF, component and label residual-norm fractions separately, fullcalendar500x40seed13 descriptive95CI, every replicate/status and invalid count/reason.",
+      "rank": "actual rank of intercept+all18 rankedcontrols; n-rank>=10, n>=20; constants and exact dependencies retained with actual rank, no performance-based removal. Report rank singular-value/conditioning diagnostic, no extra conditioning hard gate.",
+      "oos": "For each label, report identical-row OOS MSE for controls18, controls18+x, past-training-mean; alpha10 train-onlyECDF and same mature19-feature finite samples for both models. Report each fixedyear2021..2026 train/test/maturity coverage and nullreasons, modelIC and MSE; no model or threshold search.",
+      "mse_comparison": "delta_controls=MSE_controls-MSE_augmented; delta_pastmean=MSE_pastmean-MSE_augmented. Positive indicates improvement. Exact zero indicates tie, never positive. Point comparisons only; no new significance claim or new MSE confidence/bootstrap added.",
+      "mse_aggregate": "Concatenate all actually valid predeclared yearly out-of-time prediction records on identical rows and compute one pooled per-row MSE; never average year MSE equally, fill a skippedyear with0 or choose a subset of betteryears. Pastmean is separately computed from exactly the same label-mature train rows of each corresponding year, never future/global mean.",
+      "diagnostics": "All predefined years and5 fullaxis phases reported; thin/constant/DF/maturity unavailable remain null with counts/reason. They do not contribute a manufactured0 estimate or determine preferred years/phases. No grouped quantiles or trading threshold.",
+      "limitations": "Already seen development pool, adaptive research history, descriptive intervals uncorrected for selection; OOS here chronological development check rather than sealed validation. MSE improvement direction alone is not a confidence statement, causal identification or account evidence."
+    },
+    "precedence_and_classification": [
+      {
+        "order": 1,
+        "name": "INSUFFICIENT_DATA_OR_UNAVAILABLE",
+        "when": "Primary partial n<20 or residualDF<10, or no eligible common mature annualOOS prediction set reaches the alreadydeclared20-row evaluation minimum. This stage does not inspect CI availability.",
+        "action": "null unavailable pieces with exactreason, no epsilon, fill, relaxedDF, year merge or control removal. Incomplete valid-year coverage must be disclosed even when aggregate is calculable."
+      },
+      {
+        "order": 2,
+        "name": "FULLY_EXPLAINED_COMPONENT",
+        "when": "On the declared partial common rows and adequate n/DF, component centered-rank residual norm <=1e-10 times its original centered-rank norm after all18 control projection.",
+        "action": "Component information is redundant in this scope; partial null EXPLAINED_COMPONENT. Augmented ridge may still change MSE because duplicated information changes effective regularization; that cannot be described as new information. Do not drop nuisance or retunealpha to rescue.",
+        "constant_case": "Adequate n/DF/OOS first: CONSTANT_COMPONENT and CONSTANT_TARGET explicit. Component residual fraction<=1e-10 is FULLY_EXPLAINED_COMPONENT; target residual fraction<=1e-10 is TARGET_EXPLAINED_OR_CONSTANT. Structural null precedes general CI availability even when all500 partialreplicates null."
+      },
+      {
+        "order": 3,
+        "name": "INSUFFICIENT_DATA_OR_UNAVAILABLE",
+        "when": "After structural null checks, fewer400 valid partial bootstrap replicates, missing partialCI or missing nonstructural partial estimate prevents directional reading.",
+        "action": "Preserve exact unavailable reason, all500 states and any raw facts. Do not fill a missingCI with0. RawCI missing remains null and no rawdirection assertion is made; original support definitions otherwise unchanged."
+      },
+      {
+        "order": 4,
+        "name": "OPPOSITE_DIRECTION_COUNTEREVIDENCE",
+        "when": "Estimable partial descriptive95CI lies strictly on the opposite side ofzero: return4_net CI lower>0 or downside4_oc CI upper<0.",
+        "action": "Original fixed role fails on this evidence. Even lower augmented MSE does not permit reversed-direction success. Report point/MSE facts and competing explanation, not rescue."
+      },
+      {
+        "order": 5,
+        "name": "INCONCLUSIVE_RAW_PARTIAL_CONFLICT",
+        "when": "PartialCI is strictly expected-direction but rawCI is strictly opposite-direction, or vice versa.",
+        "action": "Report conditioning/suppression and different finite masks as unresolved competitive explanations; not general support or automatic alpha. Do not seek a selectedscope to resolve it afterseeingresults."
+      },
+      {
+        "order": 6,
+        "name": "LIMITED_FULL_POOL_RETURN_INFORMATION",
+        "label": "return4_net",
+        "when": "PartialCI upper<0, raw does not have a strictlypositive oppositeCI, component not fullyexplained, and common matureOOS augmented MSE is strictlylower than both controls18 and pastmean. Annual/phase evidence retained without new all-yearsign gate.",
+        "meaning": "Limited evidence for a fixed negative return-information role in this alreadyseen fullpool. PointMSE evidence and describedCI jointly meet a predeclared scientific support category, not user strategy acceptance. Missingyears/phase null preclude claiming across-year stability."
+      },
+      {
+        "order": 7,
+        "name": "LIMITED_FULL_POOL_RISK_INFORMATION",
+        "label": "downside4_oc",
+        "when": "PartialCI lower>0, raw does not have a strictlynegative oppositeCI, component not fullyexplained, and common matureOOS augmented MSE is strictlylower than both controls18 and pastmean. No returnlabelcompensation.",
+        "meaning": "Limited evidence for fixed positive risk-information role in fullpool. Does not prove a negative-return role, an exit/risk-budget policy, actualmaximumDD reduction or fourgatequalification."
+      },
+      {
+        "order": 8,
+        "name": "CORRELATED_WITHOUT_CONFIRMED_PREDICTIVE_INCREMENT",
+        "when": "PartialCI strictlyexpected-direction, but augmentation fails strict MSE improvement against either controls18 or pastmean (including exactties).",
+        "action": "Keep supported association and name exactlywhich baselinefailed; stop claiming reliable predictiveincrement. A betterthancontrols model that remainsworse thanpastmean is not new useful prediction. Treat role not supported for strategyprogression."
+      },
+      {
+        "order": 9,
+        "name": "INCONCLUSIVE_PREDICTIVE_ONLY",
+        "when": "PartialCI crosses/includes0 but augmentation MSE improves strictlyagainst both baselines.",
+        "action": "Keep pointprediction improvement while directional association remains uncertain; no fixed risk/returnrole support, no opposite sign or thresholdchange. EqualityatCIzero is not directional CI support."
+      },
+      {
+        "order": 10,
+        "name": "NO_INCREMENT_OBSERVED",
+        "when": "PartialCI crosses/includes0 and augmentation does not improve strictlyagainst both baselines, and no explicit fullyexplained/unavailable/oppositesign earliercase applies.",
+        "action": "Report no predeclared incremental evidence for this label and stop this fixedrole; not a proof all economicuses impossible. Negative/smallpoint estimates never promoted by favorableyears."
+      }
+    ],
+    "role_combination": {
+      "independent": "Return andrisk roles classified separately, each with its own raw/partialCI and the same two-baseline MSE checks; no combinedscore, OR pass, risk-good compensating returnfailure, or subsetyearselection.",
+      "only_risk_support": "Report risk-only observation; returndirection unsupported status remains, no claim profitable entryfilter.",
+      "only_return_support": "Report returninformation-only; risk/maximumdrawdown improvements remain unproven.",
+      "both_support": "At most limited fullpool information for both roles. Neither causal executionresponsibility nor economic/robuststrategy qualification established."
+    },
+    "next_step_ceiling": "Any fullpool support at most motivates a separately authorized fixed test in an actually decision-relevant state (for example trulyflat original eligible or actualheld), defined prospectively without choosing a favorable year/phase. Fullpool study itself cannot directly justify an accounttest, entrythreshold, exitshortening, dynamicposition or newstrategy. Insufficient/opposite/noincrement closes the fixedrole without parameter rescue.",
+    "current_budget": {
+      "real_data_reads": 0,
+      "real_statistics": 0,
+      "signals": 0,
+      "accounts": 0,
+      "allocate": 0,
+      "publish": 0,
+      "DEV": 0
+    },
+    "old_source_sha256_unchanged": {
+      "component_draft.py": "21b8d20cea9ba67d6b45128dc764329d89f9f20dfe89baa49ed9a4b85dce6521",
+      "synthetic_draft.py": "9ffc73cfeb34df6bb3e8834dfe3b105b60b731311ee22b6939e3c6af0e2f413c"
+    },
+    "predeclared_after_source_only_review_utc": "2026-10-11T13:57:09.007230+00:00",
+    "v2_reference": {
+      "path": ".tmp/s013-volume-body-interaction/scientific_reading_rules_v2.json",
+      "sha256": "31d794eb0af3c93f335a5c034e38b1cf4529ad5b167122cd03007d0c83069ad0"
+    },
+    "classification_source_sha256": {
+      "reading_classifier_v3.py": "e2af27e514ef9fb9d5f50dbfd46581ccc1efb2e6746a0d92b715d895571ea7b9",
+      "reading_classifier_synthetic_v3.py": "315f6227cb97314273af4dec4fa15040a0f88a61c496bcd904dd26384a86e3bb",
+      "reading_classifier_synthetic_v3.json": "b224d2b7dce7c8111d76ebaf93bcdcf631568f5f1f8afd9ff453bbb8174bb454"
+    },
+    "amendment_scope": "Pure pre-run interpretation order correction requested byroot review: no scientific definition, sample/DF/explained/CI threshold, signs, labels,18controls,bootstrap,OOS model or economic gate changed; oldv2/statisticsdraft/source/proofs preserved."
+  },
+  "v1_preserved": true,
+  "v2_plan_sha256": "48175b88d417a10ccac62df7b7e37c25479fe782c5ce47a72ecf4efb94b7a683",
+  "reading_order_technical_amendment_reference": {
+    "path": ".tmp/s013-volume-body-interaction/reading_order_technical_amendment_v3.json",
+    "sha256": "98b76a662fc79f11259b8a8856a3e903a647398a34efcb7d35cf41f3a7ff8323"
+  },
+  "v3_preserved": true,
+  "source_only_progress": "EX074 completed public summary and root negative review now known; volume feature/18controls/labels/500x40/ridge10/classification unchanged; actualphase still unauthorized",
+  "input_references": {
+    "native_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "old66_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "old69_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c.csv",
+      "sha256": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "old66_labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50.csv",
+      "sha256": "ade6c0b45a0de547ac941b0585a6e24a381bee87a8ac56b95f44b20c4be6af50",
+      "media_type": "text/csv",
+      "name": "labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "native73_prices": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX073_20261011"
+      },
+      "evidence_id": "499377d8075acbed61555029809b7449dc5703e24ad04bbc6abf8e095c479a0e.csv",
+      "sha256": "499377d8075acbed61555029809b7449dc5703e24ad04bbc6abf8e095c479a0e",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "warm69_prices": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263.csv",
+      "sha256": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263",
+      "media_type": "text/csv",
+      "name": "daily-prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "status": "PREPARED_REFERENCES_ONLY_ACTUAL_INPUTS_NOT_READ",
+    "provenance": {
+      "old14": "EX066 old14 exact reused; compare EX069 identical14",
+      "old_EX061_pair": "EX069 late_recovery/early_volume_reclaim exactly recomputed originalEX061 definition; EX066 exactinverse checked",
+      "intraday": "Original EX058 cache via EX069 native_ref; authenticate prepared original requests and priced execution_intraday, originalforbidden provider callback; no newprovider",
+      "daily": "EX073 normalized native-priced daily compared cache exactly; EX069 publicHFQ warmup overlap anchor .2803; futurelabels full native sessioncalendar",
+      "warmup": "Original authorized existing2019daily warmup only. 20sessionintraday profile requires exactly complete cached originalcalendar, no new warmup or zero/fill"
+    }
+  },
+  "input_phase_protocol": "Separate NEW root_*_authorization_v2.json phases bound to source_freeze_v2.json. One EX075 allocation or stop retaining allocated ref; no actualphase authorized by source preparation or EX074approval",
+  "maturity_calendar_amendment": {
+    "path": "maturity_calendar_technical_amendment.json",
+    "sha256": "c3a02b1ce2a50108c1913605337f29725b17c3ec1f2cad68f44f5634c891d71a"
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "lineage": "Independent pure stage-two single-component supplement, MANDATE6 stage permission only; actualEX066/69/73 inputs and sources explicitlybound, not replacement ofoldfullcomponentpanel",
+  "v4_plan_sha256": "8091f7d1d480c2d2dcfb972c6753372fc23113316bba8929d0333e2f7393d49f",
+  "known_history_reference": {
+    "path": "known_history_v5.json",
+    "sha256": "9bfceeb0c792b4316fff3908871067cd4b321f3333b60304d3db5e1170534078"
+  },
+  "known_public_references": {
+    "EX074_analysis": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX074_20261011"
+      },
+      "evidence_id": "3442fe27127a19d92b8bc10c45d2e73df781688fa56a1a810a2f64ea9b079d57.json",
+      "sha256": "3442fe27127a19d92b8bc10c45d2e73df781688fa56a1a810a2f64ea9b079d57",
+      "media_type": "application/json",
+      "name": "pressure-early-exit-complete-native-analysis-fivechecks",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX074_root_review": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX074_20261011"
+      },
+      "evidence_id": "bc1c924843ca050812570c685d894649120facf7cd9f80d61ee2ed2f85348d7c.json",
+      "sha256": "bc1c924843ca050812570c685d894649120facf7cd9f80d61ee2ed2f85348d7c",
+      "media_type": "application/json",
+      "name": "root-fixed-early-time-scientific-root-scientific-review-json",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX073_root_review": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX073_20261011"
+      },
+      "evidence_id": "c6f13f90eb4801a163b875c5adf487bb554db470c2743f1c08cfbb2519c28498.json",
+      "sha256": "c6f13f90eb4801a163b875c5adf487bb554db470c2743f1c08cfbb2519c28498",
+      "media_type": "application/json",
+      "name": "root-review",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "prior_draft_status": "STANDBY_SOURCE_ONLY_NOT_DECLARED_NOT_AUTHORIZED_TO_RUN",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX075_20261011"
+  },
+  "source_files": {
+    "adapter_guard_synthetic.json": "96f6667f664f7f1a36a48579022f8e02d8a4e2afc0dfeed4de1171c8d1e38f7a",
+    "adapter_guard_synthetic.py": "61f2a94ca94d791806f5901a5031845993834c5675b6a7fc4a00fab702aeb95c",
+    "authorized_driver_draft.py": "8bb7d6eb4a849b25a02a3b8e5fa4bfba10b89b78f67b1b65c52360ed04beb3e6",
+    "authorized_driver_draft_v2.py": "6c787291a26abc472fd8ee74c6957d4734e074affe42ef21985f9f6e2a689832",
+    "authorized_driver_draft_v3.py": "cd65deb69df111def360bbd72154e8d7ba70bd216d2cf6eb88eebccd14e6b23c",
+    "authorized_driver_draft_v4.py": "0700f91778d5adc5e29ea4ed7746f8ceaa9c8d445047d00ba0aea34337028dfc",
+    "component_draft.py": "21b8d20cea9ba67d6b45128dc764329d89f9f20dfe89baa49ed9a4b85dce6521",
+    "declaration_status_amendment_v3.json": "50e8f35aa2a872054d9d4a1ab3c89522a9e4e0da6ccf1fa8946d9007f3b8f7e6",
+    "declaration_status_checks_v3.json": "f715a745af2fb275b824bb68386ce263fb4b9f8315f4f45b476cf75d38b8824e",
+    "declaration_status_checks_v3.py": "e9a8bb56abdf7e7a7caa0457a21c10efb9375419a16f3b07c12cf0141cb5379c",
+    "draft_plan.json": "f5d46272187986a4dba2b2dbf2df2fe7c8cd2e80c5c6bae9e365ed8ad046e704",
+    "draft_plan_v2.json": "48175b88d417a10ccac62df7b7e37c25479fe782c5ce47a72ecf4efb94b7a683",
+    "draft_plan_v3.json": "38180b58b8675ba29eb885c117a67c06d4c8deb0b01f078f65e9c08409bbca44",
+    "draft_plan_v4.json": "8091f7d1d480c2d2dcfb972c6753372fc23113316bba8929d0333e2f7393d49f",
+    "draft_plan_v5.json": "d9e934eea5e7892a94a8c6d183fdc68236bc5bbd867c8c16d1230eb812dec8e7",
+    "history_guard_checks_v5.json": "9c8204592542f717e64e386a4014b1d6d3158dae761b5c850f081fe393d5a50f",
+    "history_guard_checks_v5.py": "c59c10944e284af81072545eb4dc592e29840cd059a17fb4b012c2a13d98f1c7",
+    "input_adapter_draft.py": "1d4c83191c9e948ad66c2c939af8a1e557400592a15c44807845379cf3f4493d",
+    "input_adapter_draft_v2.py": "f2fbcb38518df7f54b7da9ae79b1bc44acf4645af25f15ea98408f9b8029365f",
+    "input_bindings_draft.json": "9b56892446e52061708ec62b1b8e309d0e174b5a51106f9eca4d1a9f14f19f3c",
+    "known_history_v5.json": "9bfceeb0c792b4316fff3908871067cd4b321f3333b60304d3db5e1170534078",
+    "known_history_writer_v5.py": "6395dd3224b0f33483a68037b309cf4143927d24dd4d471e1027b5c44760d9d0",
+    "maturity_calendar_technical_amendment.json": "c3a02b1ce2a50108c1913605337f29725b17c3ec1f2cad68f44f5634c891d71a",
+    "native_calendar_checks_v4.json": "3292fa8ea8b47a4536fc096820ca35f5920ef1c67f42d5d855675a307e513205",
+    "native_calendar_checks_v4.py": "f094ab11a60486bcf08aff35260e09382d96c3ab9df0e70f763a7c4280256fe3",
+    "native_calendar_technical_amendment_v4.json": "118a31fbb749a7c7de6aaa53199cb5d4cc675b0e25c3d0e6bc7ed05dfd375159",
+    "reading_classifier_synthetic_v3.json": "b224d2b7dce7c8111d76ebaf93bcdcf631568f5f1f8afd9ff453bbb8174bb454",
+    "reading_classifier_synthetic_v3.py": "315f6227cb97314273af4dec4fa15040a0f88a61c496bcd904dd26384a86e3bb",
+    "reading_classifier_v3.py": "e2af27e514ef9fb9d5f50dbfd46581ccc1efb2e6746a0d92b715d895571ea7b9",
+    "reading_order_technical_amendment_v3.json": "98b76a662fc79f11259b8a8856a3e903a647398a34efcb7d35cf41f3a7ff8323",
+    "scientific_reading_rules_v2.json": "31d794eb0af3c93f335a5c034e38b1cf4529ad5b167122cd03007d0c83069ad0",
+    "scientific_reading_rules_v3.json": "03c10af4fb6fe531d730c4ba79b092c66be4b7a7a8967dfc2f819d667249c1ee",
+    "source_freeze.json": "264d512fb41adedfd4946981e42f46a401ff1dd4dffa57c7ea126dfb34f5f87f",
+    "source_freeze_v2.json": "08d57bec52b816e904bf448538b3563b3a54ab8510e1d02e14860b9d83f8222d",
+    "source_freeze_v3.json": "65559cb920a0cec408cb3dd7e4804a50b84259b1a1cc26fbb5f8f6d18557066d",
+    "statistics_draft.py": "946e2a22ea57172dcb0dead07322e748392b8641641223e974bcf3c18bcde2cf",
+    "statistics_draft_v2.py": "efb3e3db5ef14cee38aa74a39873b54506e6c3071d9b442d45d410435e023708",
+    "statistics_source_only_manifest.json": "c09cfad60590c3856e5722a4267f577a3e25f23d4e0ec6e53deec8dfc2ac7905",
+    "statistics_synthetic.json": "0c1a5a938d1d7c26745bb8ffe2e090a730b3d9e78cfa7d4d2b2e986611676eb9",
+    "statistics_synthetic.py": "f927a922ccad2c01e30e5fda3fede230d47fd42766d106ba4452294dd8166465",
+    "statistics_synthetic_v2.json": "4dac0977f9ad9991e8a09c2387e18a35871a6a66d58234cea084b1964a7f9d3a",
+    "statistics_synthetic_v2.py": "4834312fd9665d9f500c246b0d3c6f74ce83b504c8f83c99f770a7cfa6e9f708",
+    "synthetic_draft.json": "3ae4e942b508c5b61f2b952636e07a5ff339389d55df3530d83dc96aa7fe6641",
+    "synthetic_draft.py": "9ffc73cfeb34df6bb3e8834dfe3b105b60b731311ee22b6939e3c6af0e2f413c"
+  },
+  "declared_utc": "2026-10-11T14:57:56.894186+00:00",
+  "source_freeze_sha256": "52938a2d75f5cf0e58ffb1e56d0cec4283ec1ba9b6da0c936dc0a1274d683fc6",
+  "statistics_authorized": false
+}
