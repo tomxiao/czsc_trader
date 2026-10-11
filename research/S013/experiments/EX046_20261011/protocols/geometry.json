@@ -1,0 +1,124 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "MEAN_BEAR_TIME_BELOW_SEGMENT_CLOSE fixed structural enum; original strictly past actual-L rawACF20 MEAN baseline, not current/future values",
+    "confirmation lookback remains active in original score and bear MEAN baseline; all13 original numerical coordinates retained",
+    "Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor in its uninterrupted rawbear segment requires strict Close>previousClose before original score",
+    "Rawbull on final bearTIME exit prevents category carry; later flat rawbull clears category before decision, preserving original last reason/route and confirmation context",
+    "EQUAL/ABOVE/None unchanged; any entry clears all3 exit fields, flat refusal/ineligibility/rawbear preserve current category; original signal H and all holding exits unchanged",
+    "Original confirmation profile/orientation/scope/enabled, context, null stops/trail/momentum, cooldown0, H units, exit priority, execution and fees"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at same numeric centers/full13domains/coordinates. No failed center expansion.",
+  "candidate_reservation": {
+    "first": 3900,
+    "last": 3931
+  },
+  "helper_source_files": {
+    "run_parameters.py": "b4cfdc57788628f79c2a06648a909a6d944a9f06e4c895c953edd81b81f6c1ff",
+    "parameter_analysis.py": "b21293cfdc1436bc61ee182ad0112086c9076bd66390272df331fe7c6804b2e1",
+    "pair_parameters.py": "5dd84b564de78998804a59c615c6c01e4b5bb3406b615cd5f2f4d5056add1d1c",
+    "declare_geometry.py": "c739bb00402c98d79a69f9feb5ac7274c9c8ba11f95881bbe3162ad12fe2c760",
+    "common.py": "f76a69fa0c8101afeea973859058501048b63195d901c34ba6e376d3028a6043",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61"
+  },
+  "direction_oracle_sha256": "e92b91d68464e71195ec19cc97857fbc786e1cf8e342408c881705844e29a527",
+  "selection_history": "After EX043/45 parameter tails failed and the zero-new-account full66 native context diagnosis found cross-rawbull incremental direction refusals, test one segment-expiry structure on the coupled background. Repeatedly exposed S013 development paths, not independent validation, profit prediction or a categorical/window search.",
+  "counts": "If qualified:64 old32+32 controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key cache aliases do not replace native labels/IDs/source/plans/lineage/account references. Registered coupled center is implementation parent; new center is PARAMETERS parent.",
+  "economic_policy": "Only four original economic gates qualify center; all points retain all four diagnostic gates, no added veto. AbsoluteQ10/Q90 and relative degradations jointly inform improvement."
+}
