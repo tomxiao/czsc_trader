@@ -1,0 +1,151 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX061_20261011"
+  },
+  "role": "RSCH",
+  "stage": 2,
+  "authorization": "我的要求已经说很清楚了，请给你自己定个目标，然后开始研究吧；用户允许自主设计验证并回到阶段二",
+  "objective": "原四门中心达标，抗扰动更强；提高32点联合及逐项达标率、提高净CAGR Q10及降低全区间DD Q90。最好标准扰动仍达标；不把32/32新增为硬门。",
+  "boundaries": "仅S013固定510500.SH数据至2026-09-30和原warmup；不外部取数、不封存验证、不跨族、不平台DEV、不冻结/PTE/生产/推送/合并",
+  "branch": "codex/s013-mechanism-robustness already authorized; reuse",
+  "hypothesis": "尾盘回升及收复早段成交量集中close代理价位，提供全天BODY、日量确认和无序能量之外的新盈利信息；是待证假说",
+  "fixed_components": {
+    "late_recovery": "log(C8/C6), last two30m bars; no time-window optimization",
+    "early_volume_reclaim": "sum(Vj*sign(C8-Cj),j1..6)/sum(Vj,j1..6); proxy close levels, not VWAP or order flow"
+  },
+  "controls": [
+    "momentum20",
+    "range_position60",
+    "acf1",
+    "volatility20",
+    "intraday_return",
+    "overnight_gap",
+    "intraday_energy20",
+    "intraday_rms20",
+    "confirmation_score",
+    "daily_close_location",
+    "feature_intraday_down_energy20",
+    "feature_overnight_down_energy20",
+    "turnover20",
+    "volume_ratio20"
+  ],
+  "additional_control_definition": {
+    "daily_close_location": "(2Close-High-Low)/(High-Low), trusted daily OHLC",
+    "turnover20": "Amount/rolling20mean(Amount)",
+    "volume_ratio20": "Volume/rolling20mean(Volume)"
+  },
+  "labels": {
+    "return_1": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)",
+    "return_3": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)",
+    "return_5": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)",
+    "downside_1": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)",
+    "downside_3": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)",
+    "downside_5": "T signal, entry Open[T+1], exit Open[T+1+h]; downside uses Low[T+1:T+h], max(0,1-minLow/entryOpen)"
+  },
+  "primary": "return3/5 after next open, paired 1/3/5-day risk; return1 is declared auxiliary to detect only short-lived effect; never treat next open gap as tradable return",
+  "signal_grid": [
+    "2020-01-02",
+    "2026-09-29",
+    1635
+  ],
+  "account_acceptance_grid": [
+    "2020-01-02",
+    "2026-09-30",
+    1636
+  ],
+  "price_basis": "Original HFQ_RESEARCH/2019-12-31 anchor0.2803; no cash dividend overlay; public conversion exact-checked",
+  "availability": "all eight T30m bars complete, original dailyT17 policy; no independently verified historical publication/revision times",
+  "warmup": "New two components available each full day; old energy20 controls have first19 missing as published, not filled",
+  "opportunity": "C8880 entry_eligible original state-dependent ex-ante subset for auxiliary within-scope tests; main test is full pool",
+  "statistics": {
+    "version": "s013-tail-opportunity-statistics-v1",
+    "components": [
+      "late_recovery",
+      "early_volume_reclaim"
+    ],
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20"
+    ],
+    "labels": {
+      "return_1": 1,
+      "return_3": 3,
+      "return_5": 5,
+      "downside_1": 1,
+      "downside_3": 3,
+      "downside_5": 5
+    },
+    "label_contract": {
+      "return_h": "Open[T+1+h]/Open[T+1]-1; h complete sessions held",
+      "downside_h": "max(0,1-min(Low[T+1:T+h])/Open[T+1])",
+      "negative_gap_next": "Not tested: next open gap is already realized before proposed entry",
+      "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+    },
+    "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all fourteen controls; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+    "minimum_correlation_n": 20,
+    "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+      "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+      "scope": "full-pool and opportunity-pool only; descriptive, no search-selection correction"
+    },
+    "walk_forward": {
+      "test_years": [
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026
+      ],
+      "initial_train_year": 2020,
+      "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+      "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+      "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+      "models": [
+        "controls",
+        "controls+late",
+        "controls+reclaim",
+        "controls+both"
+      ],
+      "common_model_rows": "all 16 feature columns finite, target finite, training target mature; identical model rows",
+      "minimum_train_n": 40,
+      "minimum_test_n": 20,
+      "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+    },
+    "scope": "all rows and optional original strategy ex-ante eligibility; no profitable-row selection",
+    "limitations": [
+      "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+      "No hyperparameter search; all labels, years, phases, components and failures retained.",
+      "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+      "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+    ]
+  },
+  "stop": "No stable incremental post-open return evidence: stop these fixed components. No inverted direction/time-window/threshold search to rescue failed hypothesis. Positive local evidence is retained.",
+  "next_policy": "Only sufficient incremental evidence permits new independent opportunity expression with public binary SRT and full account validation; no trade deletion inference",
+  "limitations": "Seen development pool, annual chronological prediction not sealed validation; overlaps and group ties disclosed; labels not fees-inclusive or executable account profit",
+  "source_hashes": {
+    "late_recovery_component.py": "3cd87ec20d4bd8f043aaf5448fc85ba8f486350d65cf0828249cf8650c9ea54e",
+    "late_recovery_focused.py": "897083bb0b3cb263a760449ea00bda55fc0d74f143f0dfef38888b1dde6e7bcf",
+    "opportunity_statistics.py": "326e269450d6d61168d4571861d946ca2753ddcd6daf951c14c679adcd0a07af",
+    "statistics_checks.py": "f0e713ce2214d5f6eb49a38a84072caf44cd799ca4c6caf1e16d555f5722e231",
+    "run_opportunity_study.py": "335b2d3f552c53b07f42fc22641031fe88b3f8e77921cb3a5638f2fa45d5ec20"
+  }
+}
