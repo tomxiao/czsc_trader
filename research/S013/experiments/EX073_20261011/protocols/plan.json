@@ -1,0 +1,339 @@
+{
+  "role": "RSCH",
+  "stage": 2,
+  "prospective_frozen_utc": "2026-10-11T13:19:06.080369+00:00",
+  "authorization": "root授权前瞻源码/声明EX073，实际统计须root下一明确启动；用户自主研究范围内S013-only",
+  "question": "最后一次固定压力职责收口：真实原bear入场后第3-4日继续持有是否负收益/更大下行风险？",
+  "economic_targets_unchanged": true,
+  "new_hard_gates": false,
+  "component_method": {
+    "version": "s013-pressure-entry-late-continuation-v1",
+    "entry": "Replay first positive BUY from flat; freeze flag and original controls at its fill.signal_date T; BUY must match original T action/regime and execute valid_session=T+1. No future SELL/trade-exit population selection.",
+    "pressure": "Last4 complete sessions including T: sum max(-log(Open[s]/Close[s-1]),0) > sum max(-log(Close[s]/Open[s]),0); equality or no down => false; missing warmup unavailable, never false fallback.",
+    "primary": {
+      "late_return": "Open[T+5]/Open[T+3]-1; fixed quantity and same single SELL fee cancel; no fresh BUY fee",
+      "late_downside": "max(0,1-min(Open/Close[T+3,T+4],Open[T+5])/Open[T+3]); initial unavoidable overnight excluded, no HL, not actual account/path DD"
+    },
+    "companions": "first2=Open[T+3]/Open[T+1]-1; full4=Open[T+5]/Open[T+1]-1; (1+first2)*(1+late_return)=1+full4. Descriptive algebra only, no IC/CI/model.",
+    "maturity": "late/full/risk mature at T+5 OPEN; first2 at T+3 OPEN; missing end stays NaN/NaT, no extension",
+    "counterfactual": "hypothetical continuation across old actual exits, not native account PnL or a proposed exit implementation",
+    "quantity": "first entry-session filled quantity documented only; labels normalized price returns, no quantity or future exit selection"
+  },
+  "statistics": {
+    "version": "s013-entry-pressure-fixed-statistics-v1",
+    "component": "pressure_flag binary 1 versus 0",
+    "scope": "all first actual C8880 bear entries only; no future-exit selections",
+    "controls": [
+      "momentum20",
+      "range_position60",
+      "acf1",
+      "volatility20",
+      "intraday_return",
+      "overnight_gap",
+      "intraday_energy20",
+      "intraday_rms20",
+      "confirmation_score",
+      "daily_close_location",
+      "feature_intraday_down_energy20",
+      "feature_overnight_down_energy20",
+      "turnover20",
+      "volume_ratio20"
+    ],
+    "primary": [
+      "late_return",
+      "late_downside"
+    ],
+    "hypothesis": "flag positively associated with late_downside and negatively with late_return; retain original EX069 reversal hypothesis failure, this is new risk-role hypothesis",
+    "correlation": "Spearman average ties; partial OLS rank residuals on intercept+14 controls. Require n>=20 and residual df=n-rank(design)>=10; record rank/df, otherwise null reason. Rank residual norms <=1e-10 times original centered norm => explicitly explained/null.",
+    "finite": "raw uses finite flag and label, partial additionally all14 controls finite; retain missing counts, no control dropping or filling",
+    "bootstrap": {
+      "replicates": 500,
+      "block_sessions": 40,
+      "seed": 13,
+      "sampling": "uniform overlapping starts on full original1635-session T axis, concatenate full blocks and truncate, then filter actual bear entry pool; no event-axis bootstrap",
+      "interval": "2.5/97.5 linear quantiles only when >=400 valid replicates; all500 statuses/n/group counts/rank/df and failure reasons retained, no replacements"
+    },
+    "year_phase": "Every signal year2019..2026; five phases T full original session index mod5 before filtering, matching T+5 full maturity. Report n,flag/clear, raw/partial/rank/df; thin null, no fitting/CI per year/phase.",
+    "groups": "Observed means/descriptive only. Either group n<20 => NOT_RELIABLE_GROUP_EVIDENCE; no grouped CI, outcome-selected partitions, significance or economic gate.",
+    "companions": "first2/full4 algebra and descriptive means only, no correlations, bootstrap, models or added horizons",
+    "selection": "Already seen S013 development data and EX069/071/072 failure selected this final responsibility question; intervals uncorrected for that history; no sealed validation or hardgate claim"
+  },
+  "single_scope": "first actual C8880 bear BUY fills, align original signal_date T, include original early exits hypothetically; no future exit or outcome selection",
+  "entry_selection_caveat": "actual fill realization occurs T+1, so this conditional realized-entry population is not a T-deployable filter; only flag/controls were known at T. Record unfilled/other route identities; no future old exit selector.",
+  "hypothesis_signs": {
+    "pressure_flag": "negative late_return, positive late_downside; never invert or rescue window/ratio/year"
+  },
+  "known_selected_information": {
+    "EX069": "original positive recovery hypothesis failed despite negative return/positive risk association",
+    "EX071": "actual-held lateweak continuation ineffective including2023 reversal; no exit change supported",
+    "EX072": "fixed filter failed closed107<110; CAGR13.9851 vs17.1346 and fullDD15.0419 vs13.6187 worse; 2023 improvement alone not rescue",
+    "old_signal_trigger_audit": "bear64, flagged15,2022flag4,2023flag3; actual fill-authenticated counts may differ and are not forced"
+  },
+  "control_availability_at_T": {
+    "momentum20": "Close[T]/Close[T-20]-1",
+    "range_position60": "(Close[T]-minLow60)/(maxHigh60-minLow60) through T; original range H/L limitations retained",
+    "acf1": "original simple pct_change rolling20 mean-centered unbiased lag1 divided by population variance through T",
+    "volatility20": "Close simple pct_change rolling20 sample standard deviation ddof1 through T",
+    "intraday_return": "T Close/Open-1",
+    "overnight_gap": "log(T Open/past session Close)",
+    "intraday_energy20": "original trailing20 complete8bar intraday total squared-log-return energy root",
+    "intraday_rms20": "sqrt(rolling20 mean(log(Close/Open)^2)) through T",
+    "confirmation_score": "original C8880 T complete daily/intraday causal confirmation",
+    "daily_close_location": "(2Close-High-Low)/(High-Low) on T; original HL limitations retained, not used for new risk labels",
+    "feature_intraday_down_energy20": "rolling20 sum(within-day negative logreturn squared energy)/rolling20 sum(total within-day squared energy) through T; original first19 missing",
+    "feature_overnight_down_energy20": "sqrt(rolling20 mean(min(log(Open/priorClose),0)^2)) through T",
+    "turnover20": "T Amount/rolling20 mean Amount including T",
+    "volume_ratio20": "T Volume/rolling20 mean Volume including T"
+  },
+  "control_implementation_sources": [
+    "research/S013/experiments/EX060_20261011/src/component_definitions.py",
+    "research/S013/experiments/EX060_20261011/src/run_study_v4.py",
+    "research/S013/experiments/EX061_20261011/src/run_opportunity_study.py",
+    "research/S013/experiments/EX066_20261011/src/driver.py"
+  ],
+  "inputs": "EX058 authenticated original C8880 native cache exact public evidence; EX066 old14 features exact aligned withEX069; EX069 already public HFQ daily O/C warmup for pressure; native priced execution daily for labels. No provider/fetch.",
+  "input_references": {
+    "old_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "pressure_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c.csv",
+      "sha256": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "warm_prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263.csv",
+      "sha256": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263",
+      "media_type": "text/csv",
+      "name": "daily-prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "predecessor_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81.json",
+      "sha256": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX058_20261011"
+    },
+    "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+    "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+    "media_type": "application/json",
+    "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+    "schema": "account_evaluation",
+    "schema_version": 6
+  },
+  "delivery_lineage": {
+    "permitted_stage_predecessor": {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "purpose": "standalone single fixed pressure-responsibility component supplement, not replacement of original complete component panel",
+    "excluded_unused_candidate_dependency": "No full CANDIDATES58 or COMPONENTS9 delivery ancestor; all actually used inputs and known counterevidence explicit EvidenceRefs"
+  },
+  "known_counterevidence_references": {
+    "EX069_statistics": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "064197fc69cc4571fdbe66b82db4e3ea001d832b35131698bd1a1a578517a149.json",
+      "sha256": "064197fc69cc4571fdbe66b82db4e3ea001d832b35131698bd1a1a578517a149",
+      "media_type": "application/json",
+      "name": "statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX069_verification": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81.json",
+      "sha256": "9d007a8bcfea18d85255180b06a60cb88e41d4b80367a54d869600ce5ca25f81",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX071_plan": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX071_20261011"
+      },
+      "evidence_id": "0ab0b925a3300cd870d92ccad7b3d5d3b581e8a4f51eefc5ff591e2966d177fe.json",
+      "sha256": "0ab0b925a3300cd870d92ccad7b3d5d3b581e8a4f51eefc5ff591e2966d177fe",
+      "media_type": "application/json",
+      "name": "plan",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX071_statistics": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX071_20261011"
+      },
+      "evidence_id": "04f600fc246836bebd2d53c586eea704b0d4a44607d1d2dd4549d1f32942153b.json",
+      "sha256": "04f600fc246836bebd2d53c586eea704b0d4a44607d1d2dd4549d1f32942153b",
+      "media_type": "application/json",
+      "name": "statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX071_verification": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX071_20261011"
+      },
+      "evidence_id": "c79a52e2d156347676da78f7bdd69e87f53391c7b1470f8c8520cc26b8671f5c.json",
+      "sha256": "c79a52e2d156347676da78f7bdd69e87f53391c7b1470f8c8520cc26b8671f5c",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX072_plan": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX072_20261011"
+      },
+      "evidence_id": "d430f6f7b2d96dc124b5b85b6f016ade210bb88a40221de19d11ad8cbfa56cdf.json",
+      "sha256": "d430f6f7b2d96dc124b5b85b6f016ade210bb88a40221de19d11ad8cbfa56cdf",
+      "media_type": "application/json",
+      "name": "prospective-fixed-overnight-filter-centre",
+      "schema": null,
+      "schema_version": null
+    },
+    "EX072_native_centre": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX072_20261011"
+      },
+      "evidence_id": "29a7e880e99e08b3c9363211f3d4a6fae8f520cc73af5a335a48aee160b1c958.json",
+      "sha256": "29a7e880e99e08b3c9363211f3d4a6fae8f520cc73af5a335a48aee160b1c958",
+      "media_type": "application/json",
+      "name": "overnight-filter-full-centre-native",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "EX072_verification": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX072_20261011"
+      },
+      "evidence_id": "b0abe4096a25ad3c595b17af0dce4020c3d8d60cc3817cca50ba2e86d466e410.json",
+      "sha256": "b0abe4096a25ad3c595b17af0dce4020c3d8d60cc3817cca50ba2e86d466e410",
+      "media_type": "application/json",
+      "name": "verification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_files": {
+    "driver.py": "4829abcd3fb6d7683358380a8581c65bf715dd39f47d349e157d3f8b296f24cd",
+    "entry_core.py": "3b5a73b7c5a6144f782ac056ca33c3c1c2830c23aa665dda6d27d8a14336a855",
+    "entry_statistics.py": "359f7a72470b9479d1c491f9b39f89960ef701567b16223fb6fbefb385b7ebc1",
+    "focused_checks.py": "cd7617050d55b2d746506e974e0ce302386f5f4469aacc524afbd2d851d8d430",
+    "freeze_plan.py": "e2d9237bd9cb8118e8e83868feccb165553a754c41b6adf8af5d706e78978c76",
+    "independent_checks.py": "781e185987643c543cdf9205230d8493c0252911bcce5abeecc9db366e54b8a3"
+  },
+  "common_sha256": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+  "limitations": [
+    "same repeatedly seen development pool; bootstrap not selection corrected",
+    "64/15 signal counts thin; annual3/4 flagged cannot establish independent confidence",
+    "partial controls rank may explain flag or exhaust residualdf; retain null without control removal",
+    "binary minority less20 means grouped evidence unreliable even if raw/partial overall calculable",
+    "O/C risk ignores intraday extremes, no HL/path/account DD",
+    "price counterfactual across native old exits, no current strategy economic claim",
+    "fullaxis temporal blocks with sparse entries may produce unusable replicates; all statuses retained",
+    "HFQ excludes dividend overlay; original historical revision/publication times not independently verified"
+  ],
+  "independent_check": "fill replay zero-to-positive and T action/valid date/quantity identity; pressure direct past4 arithmetic and unchangedEX069share; old14 allrows exact; fixed Open endpoints, maturity, samefee identity, O/C risk, multiplicative decomposition; every overall/year/phase and all500x4 replicate correlation/rank/df/status and CI recalc",
+  "budget": {
+    "workers": 1,
+    "components": 1,
+    "scopes": 1,
+    "primary_labels": 2,
+    "raw_partial_bootstrap_sets": 4,
+    "bootstrap_per_set": 500,
+    "block_sessions": 40,
+    "seed": 13,
+    "maximum_correlations": 2056,
+    "predictive_models": 0,
+    "parameter_trials": 0,
+    "new_accounts": 0,
+    "provider_requests": 0,
+    "DEV_writes": 0
+  },
+  "startup": "declare only now; actual input/statistics require separate root_statistics_authorization.json after source review",
+  "stop": "One fixed run; weak/reversed/unavailable => preserve and stop pressure feature rescue. No strategy prototype, thresholds, ratio/lookback/horizon search, new economic gates or financial accounts.",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX073_20261011"
+  },
+  "declared_utc": "2026-10-11T13:19:32.771809+00:00"
+}
