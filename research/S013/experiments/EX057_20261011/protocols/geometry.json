@@ -1,0 +1,133 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "RAW_BEAR_TIME_BELOW_BODY_SUPPORTED_ACF_RECOVERY on original C2132 rawACF20: range_pass AND momentum_pass AND (original rawACFpass OR selected flatrawbear priorfinalbearTIME strictBELOW BODY-positive and originalscore>=0 supported recovery), followed by original confirmation score",
+    "Only final reason=time and exit-before active_route=bear classifies BELOW/EQUAL/ABOVE with strict signalClose versus own episode signal-entry anchor. All other exits category=None; no epsilon, threshold/day search or fill-PnL labels",
+    "Beforedecision last_exit_reason/route/category initially None; flat failures, score refusals and rawroute changes preserve context, any route signalentry clears all three. EQUAL/ABOVE/NONE never acquire recovery exception",
+    "Original rawACFpass eligible entries are fully preserved at identical beforestate regardless BODY/support. Actual recovery flag requires originalacf failure plus range/momentum/selectedcontext/body/support, includes fixed originalscore>=0 support, not originaltheta; enhanced opportunity equals flat AND enhancedeligible. No direction veto or direction refusal; originalconfirmation still required. Holding has no exception and no exit/same-day behavior changes",
+    "Original rawACF20 statistic/confirmation, bull rules, range/time/regime/loss/trail priority, held-session H and all13 numerical coordinates remain active and unchanged; L only in original confirmation score; undefined originalacf still refuses",
+    "Fixed0 support is structural, outside13 numeric domains; original confirmation.threshold remains active and distinct. OriginalACFpass negative scores are not vetoed; score0 equality supports only exception; theta>0 may still reject support. No claim of support-constant stability or independent validation",
+    "All13 original numerical domains/centers and original32 coordinates retained; no statistic replacement, threshold/unit remapping, narrowing, new numeric dimensions or point reselection",
+    "Original parent warmup unchanged exactly, including W60/L40/ranges21 minimum61 and center180; Supported BODY recovery uses current signalClose/Open and original composite score>=0 without extra warmup; complete daily shift1 diagnostic remains causal, no previous_regime/momentum diagnostic or W+2 requirement",
+    "Original positive2023 BELOW-category cash contribution+2.3049pp and failed broader ACF removal are counterevidence; locally adding ACF-failing supported BODY-positive entries may introduce losses/stale-context churn. Contributions describe old path, never deletion-profit predictions"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at original C2132 numeric centers/full13domains/coordinates. Coupled cohort is historical counterevidence with multiple structural differences.",
+  "candidate_reservation": {
+    "first": 8540,
+    "last": 8571
+  },
+  "prospective_identity_note": "Prospective center C8580 and parameters C8540..8571 selected by root; root still must verify registry/assets collisions before formal declaration. Pure tests authenticate strong ID/type/geometry contracts and do not write registry/assets or certify future collision freedom.",
+  "helper_source_files": {
+    "run_parameters.py": "848ced365610294d93093c83299d5ecf055c86da8306e4d283527a8e48f8fdf8",
+    "parameter_analysis.py": "9f4323c42c19c62a967b51f0d423f820943d3e34cfb7b3002adf286482ea749a",
+    "pair_parameters.py": "539a898958f0b949884a756cc3e9ddef0544bd98ded33fde0625ad19f568cd82",
+    "declare_geometry.py": "5818d82ceb527cbf66c8db2d2878d4d1a2cb7ce26b6c61f9c4711f1612015290",
+    "common.py": "3572abb17cd2ac9eeb6f39660c65471ab330a7800380e3cddb3e485ad5498959",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "154620c1c9ad458ea12e847e8265598e4aac1b2229c03d23166947eb2ece2391"
+  },
+  "supported_recovery_oracle_sha256": "a12b24616be3610b2f489a55c3852712f9b8342b96c67dc3d7c3a8df69bd042c",
+  "legacy_direction_oracle": {
+    "path": "research/S013/experiments/EX043_20261011/src/direction_oracle.py",
+    "sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5"
+  },
+  "selection_history": "Prior RAW BELOW CLOSE/BODY gates restricted alreadyeligible entries and failed frequency. Root-supplied EX055 BODY-only recovery passed return/DD/frequency but failed2023 (-0.0252056%). Fixed57 zero-score support is the mathematical neutral point of original EQUAL_BLOCKS rank score, not a fitted cutoff or extra numeric coordinate. It changes only local ACF-failing BODY recovery; originalACFpass opportunities retain originaltheta, even negative score. A supported exception must still pass originaltheta (which may exceed0). Stricter support can miss good entries or reduce frequency; no promise of fixing loss, no per-year rule. Only historical55 opportunities referenced, no57 actual opportunity projection. Adaptive exposed development pool, no independent validation or category/window optimization.",
+  "counts": "If qualified:64 old controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key aliases preserve native labels/IDs/source/plans/lineage/account references. Registered original C2132 is IMPLEMENTATION parent; own new center is PARAMETERS parent. Coupled C4900 is historical control only.",
+  "diagnostic_controls": "Prior RAW BODY-only ACF recovery C7980 appears only as B0-RAW-RECOVERY in plan.diagnostic_controls/analysis.rows; not controls, selected center, reused parameter cohort or SE/pair panel. No extra economic condition or veto; three old centers plus newN0 form four center-only comparisons; old recovery remains unqualified historical diagnostic, not parameter cohort.",
+  "economic_policy": "Only four original economic gates qualify center; all neighbor gates remain diagnostics, no additional veto. AbsoluteQ10/Q90 and relative degradation jointly inform improvement."
+}
