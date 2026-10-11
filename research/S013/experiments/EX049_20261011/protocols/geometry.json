@@ -1,0 +1,128 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "MEAN_MOMENTUM3 fixed arithmetic structure: mbar=(m_t+m_t-1+m_t-2)/3 with m=Close/Close.shift(W)-1",
+    "Full causal predecessor m values before reindex. W and theta retain original units/full13 domains/numeric centers; equality bull",
+    "Both flat route and immediate holding regime exit use mean-state. Locked holding route and original range/time/stop/trail precedence unchanged",
+    "Original raw ACF20/range/score/L/confirmation threshold remain active; no price smoothing, majority vote, deadband, standardized threshold or altered H units",
+    "Fixed3 is structural only, not a searched confirmation period. warmup=max(parent,W+3), no missing-history fill"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at original C2132 numeric centers/full13domains/coordinates. Coupled cohort is historical counterevidence with multiple structural differences.",
+  "candidate_reservation": {
+    "first": 6440,
+    "last": 6471
+  },
+  "prospective_identity_note": "New center C6480 and parameter C6440..6471 are prospective only; root must check all33 collisions before any declaration.",
+  "helper_source_files": {
+    "run_parameters.py": "3d68f1ffa056da454f326c522fd72fa20769519e102cefb28f8acf0c7c3fdde3",
+    "parameter_analysis.py": "0ebedb5893bc7dd6d8d43d6ac97bfd9e4f4c31336d7f930878fad4454256f102",
+    "pair_parameters.py": "2a0027fd46a97397b2fcfed0e106752a442dff45cfa21085e40ba0e0bccca937",
+    "declare_geometry.py": "7e56edcffe5fd6b31fed7d2d439741bb1bb379af6ed38946df2efbab2b1826f4",
+    "common.py": "8a6c8b5b5ad30e0abb209568586aa7ffba9fd7f8ab28db8d153f01f1667982ae",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61"
+  },
+  "regime_oracle_sha256": "0c6f39f2b60b1293cc83e7f640e398b88ef54df19a4af3638fb1390b75fb4f6a",
+  "legacy_direction_oracle": {
+    "path": "research/S013/experiments/EX043_20261011/src/direction_oracle.py",
+    "sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5"
+  },
+  "selection_history": "After FULL44 bear-exit delay frequency failure and existing original13 diagnosis; exact-prior-duplicate search found no mean of three original momentum implementation. One prospective fixed3 mechanism, no numerical optimization or independent validation.",
+  "counts": "If qualified:64 old controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key aliases preserve native labels/IDs/source/plans/lineage/account references. Registered original C2132 is IMPLEMENTATION parent; own new center is PARAMETERS parent. Coupled C4900 is historical control only.",
+  "economic_policy": "Only four original economic gates qualify center; all neighbor gates remain diagnostics, no additional veto. AbsoluteQ10/Q90 and relative degradation jointly inform improvement."
+}

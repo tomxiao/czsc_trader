@@ -1,0 +1,685 @@
+{
+  "name": "S013-EX049-three-original-momentum-mean-state",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-COUPLED",
+      "index": 0,
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "../../EX043_20261011/src/strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX043_20261011",
+      "reuse_label": "N0"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C6480",
+      "content_sha256": "ca679c20c2a4e5afceef1d6e826e5e052024f8e877358e0a8f0c0ff037a35a0b",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_MOMENTUM3"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mean_momentum_range",
+          "qualname": "MeanMomentumRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mean_momentum_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "789c9a1d30d72cef7087563a5ddd36c0e38932f46164d108e7a37786e2ca5046"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "ORIGINAL",
+      "mechanism": "MEAN_MOMENTUM3",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "control_references": {
+    "B0-TIME": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX012_20261011"
+      },
+      "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+      "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+      "media_type": "application/json",
+      "name": "mechanism-final-account-b0-m1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "B0-COUPLED": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX043_20261011"
+      },
+      "evidence_id": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7.json",
+      "sha256": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7",
+      "media_type": "application/json",
+      "name": "bear-time-category-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 44,
+    "content_sha256": "050123043aca91195259cc9d9efda0bae1d6b1b0382ddc402da0812cb38508f1"
+  },
+  "effect_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX049_20261011"
+    },
+    "evidence_id": "9953398b315504ca75cce0016d07cc35cbc2956ec3e72ab377e0700acd824d10.json",
+    "sha256": "9953398b315504ca75cce0016d07cc35cbc2956ec3e72ab377e0700acd824d10",
+    "media_type": "application/json",
+    "name": "mean-momentum-observed-state-effect",
+    "schema": null,
+    "schema_version": null
+  },
+  "effect_method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX049_20261011"
+    },
+    "evidence_id": "6d881a131fd88d9d71fd95372ccf525699d5c76d79a1aa31cbe8dca479ee0567.json",
+    "sha256": "6d881a131fd88d9d71fd95372ccf525699d5c76d79a1aa31cbe8dca479ee0567",
+    "media_type": "application/json",
+    "name": "prospective-mean-momentum-observed-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "pure_prototype_references": {
+    "runtime": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX049_20261011"
+      },
+      "evidence_id": "3ebc169a4a2f54997ef6db21716dde06d2e1394e95de53ef7eed9a5788426aa0.json",
+      "sha256": "3ebc169a4a2f54997ef6db21716dde06d2e1394e95de53ef7eed9a5788426aa0",
+      "media_type": "application/json",
+      "name": "runtime-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "oracle": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX049_20261011"
+      },
+      "evidence_id": "fea98e49db2634d273197c1f62320104e13e1461e42fff18c50e2f38bccdae86.json",
+      "sha256": "fea98e49db2634d273197c1f62320104e13e1461e42fff18c50e2f38bccdae86",
+      "media_type": "application/json",
+      "name": "oracle-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "parameter-checks": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX049_20261011"
+      },
+      "evidence_id": "de452d936d8d6719ff90a1974af956fd6e6ebaffecca266b7116f6094529798e.json",
+      "sha256": "de452d936d8d6719ff90a1974af956fd6e6ebaffecca266b7116f6094529798e",
+      "media_type": "application/json",
+      "name": "parameter-checks-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "hypothesis": "Use the arithmetic magnitude of three original momenta rather than a single near-threshold daily value, while keeping both entry route and immediate state exit consistent. This may reduce state-boundary path sensitivity without an extra waiting rule. It is not a majority of thresholded states or smoothing the reference prices.",
+  "mechanism": "m_t=Close_t/Close_t-W-1, mbar=(m_t+m_t-1+m_t-2)/3, then bull if mbar>=theta, equality bull. Compute predecessors on full daily history before reindex. Both flat route and instantaneous regime exit use mean state; held route stays locked. Original H in1..60 held-session units, range/rawACF20/score/L/gates/stop/trail/cooldown and exit priorities remain unchanged.",
+  "strongest_counterevidence": "EX021 smoothing reference prices and EX024 majority vote failed economic centers; EX005 band/confirmation reduced frequency/price returns, and EX048 delayed bear exit reduced112 to107 complete trades. Neither raw route stability nor a conditional observed-state count proves profitability or new trade frequency. Original13 diagnosis also identifies H/ACF sensitivity untouched here. Original center112 barely exceeds110. Mean magnitude may delay downside exits or magnify an outlier; repeated S013 development pool is not independent validation.",
+  "selection_history": "After FULL44 and independently authenticated post-publication112-to107 interval diagnosis. Exact-prior-duplicate search covered all S013 experiment sources/metadata and found no mean of three original momenta. One fixed3 structure at original numeric center; no day/window/threshold search, unit transformation, coordinate drop, economic relaxation or date/year exception.",
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. Existing RSCH S013 stage3 only; no stage4/freeze/PTE/production/newdata/platform/push.",
+  "predeclared_selection": "One new business center/two actual serial-spawn evaluations and2exact old centers. Only if new center passes original4economic gates, run32newbusiness/33actual original13full-domain same32joint5% points, reuse original32/coupled32; otherwisezero parameter accounts. Success requires qualifying center and improvement in absolute Q10CAGR/Q90DD AND both center-relative degradations versus originalC2132. No all32qualification veto.",
+  "parameter_candidate_reservation": {
+    "first": 6440,
+    "last": 6471
+  },
+  "required_warmup": "max(original parent, W+3), complete current plus two preceding original daily momenta with no history fill. Fixed3 is a structural choice, not a searched numerical coordinate.",
+  "source_files": {
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+    "analyze.py": "3177db7abe3b430f94c36c04e0ad058eb19eaa33a409062c4d768dd8dfe6f53b",
+    "common.py": "8a6c8b5b5ad30e0abb209568586aa7ffba9fd7f8ab28db8d153f01f1667982ae",
+    "declare.py": "dc35a443eca2ac39d72f25b8c023f386454529061c48113572b7248a1a9179fb",
+    "declare_geometry.py": "7e56edcffe5fd6b31fed7d2d439741bb1bb379af6ed38946df2efbab2b1826f4",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "pair_parameters.py": "2a0027fd46a97397b2fcfed0e106752a442dff45cfa21085e40ba0e0bccca937",
+    "parameter_analysis.py": "0ebedb5893bc7dd6d8d43d6ac97bfd9e4f4c31336d7f930878fad4454256f102",
+    "precheck.py": "658e0846c32ee945c52d38d22e9d45c8c1d69086e6f36e490fbc5afa4186e548",
+    "publish.py": "52379fec778cbcc8664f1b2a36dab0b9dcb105501604ac0e291bae5e749e0e8c",
+    "publish_accounts.py": "abd0b7817b94dabe7efab2cfc340b857bc379d272c32e8dd055c621d7f392e93",
+    "regime_oracle.py": "0c6f39f2b60b1293cc83e7f640e398b88ef54df19a4af3638fb1390b75fb4f6a",
+    "run_parameters.py": "3d68f1ffa056da454f326c522fd72fa20769519e102cefb28f8acf0c7c3fdde3",
+    "synthetic_checks.py": "0bce25bf3dee9fb7651e9e2629dc265c2869710f3be5c0416752dc7153b493cd",
+    "write_report.py": "16ac619233bd99ea7d9943a50978f0d51b400798e513f30964ade43536db222d",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/mean_momentum_range.py": "2c69aa871ff8a5a7fdc15bcd894e181eefb2856d5cb86cc61cef8e992a82f87c",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "cb65f2da5bb2fc348bbe7f0d24144381bb97d7b847c4d06fd8abe4c32a0b8b6a"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX043_20261011/src/direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "counts": {
+    "new_business_configurations": 1,
+    "new_evaluations": 2,
+    "reused_controls": 2
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "boundaries": "RSCH S013stage3; no adjacentbatch/newdata/dependency/platform/production/PTE/freeze/stageadvance/merge/tag/push",
+  "prospective_pure_verification": {
+    "status": "PURE_PASS",
+    "runtime_and_independent_oracle": [
+      {
+        "status": "PURE_PASS",
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "native_account_reads": 0,
+        "checks": [
+          "parent bytes exact range_reversion",
+          "parent bytes exact adaptive_range",
+          "parent bytes exact confirmed_range",
+          "parent bytes exact reentry_confirmed_range",
+          "center numeric parameters unchanged",
+          "center warmup remains180",
+          "public authenticated enum and numeric parameters",
+          "real synthetic original features/score exact",
+          "real full prefix and future OHLCVA mutation causal",
+          "full raw ratios and3-value mean independent algebra",
+          "first signal two previous momenta from full daily",
+          "bear held meanbull immediately exits no bear2 wait",
+          "meanbull exit despite previous rawbear",
+          "bull held meanbear immediately exits",
+          "mean versus majority positive magnitude",
+          "one large positive outweighs two negatives",
+          "mean versus majority negative magnitude",
+          "one large negative outweighs two positives",
+          "mean threshold equality belongs bull",
+          "exact binary arithmetic equality",
+          "flat raw/effective route is current mean not raw",
+          "disabled switch leaves time unchanged",
+          "time H1 before meanbull regime",
+          "range equality before meanbull regime",
+          "loss before range",
+          "trailing before range",
+          "loss before trailing",
+          "bear score refusal unchanged",
+          "bear ACF below original gate remains flat",
+          "bear ACF and score equality entry",
+          "unchanged effective state paths preserve original state/entry/score/H",
+          "native entire original decision loop AST exact",
+          "W60 minimal warmup exactly63",
+          "63 prices supply three W60 rawmomenta",
+          "62 prices cannot fill missing second previous W60 rawmomentum",
+          "missing previous raw input rejected",
+          "invalid fixed enum None",
+          "invalid fixed enum 'REGIME_MAJORITY3'",
+          "invalid fixed enum 'MEAN_MOMENTUM5'",
+          "disabled buy confirmation rejected",
+          "original13 valid endpoint bull.range_window=21",
+          "original13 valid endpoint bull.range_window=360",
+          "original13 valid endpoint bull.entry=0.0",
+          "infeasible domain endpoint bull.entry=1.0",
+          "infeasible domain endpoint bull.exit=0.0",
+          "original13 valid endpoint bull.exit=1.0",
+          "original13 valid endpoint bull.max_hold=1",
+          "original13 valid endpoint bull.max_hold=60",
+          "original13 valid endpoint bear.range_window=21",
+          "original13 valid endpoint bear.range_window=360",
+          "original13 valid endpoint bear.entry=0.0",
+          "infeasible domain endpoint bear.entry=1.0",
+          "infeasible domain endpoint bear.exit=0.0",
+          "original13 valid endpoint bear.exit=1.0",
+          "original13 valid endpoint bear.max_hold=1",
+          "original13 valid endpoint bear.max_hold=60",
+          "original13 valid endpoint bear.acf_min=-0.6",
+          "original13 valid endpoint bear.acf_min=0.5",
+          "original13 valid endpoint regime_window=5",
+          "original13 valid endpoint regime_window=60",
+          "original13 valid endpoint regime_threshold=-0.2",
+          "original13 valid endpoint regime_threshold=0.2",
+          "original13 valid endpoint confirmation.lookback=40",
+          "original13 valid endpoint confirmation.lookback=120",
+          "original13 valid endpoint confirmation.threshold=-0.5",
+          "original13 valid endpoint confirmation.threshold=0.5"
+        ],
+        "check_count": 66,
+        "public_authenticated_describe": true,
+        "mechanism": "MEAN_MOMENTUM3",
+        "center_warmup": 180,
+        "minimal_W60_warmup": 63,
+        "source_files": {
+          "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+          "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+          "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+          "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+          "strategies/mean_momentum_range.py": "2c69aa871ff8a5a7fdc15bcd894e181eefb2856d5cb86cc61cef8e992a82f87c",
+          "strategies/__init__.py": "cb65f2da5bb2fc348bbe7f0d24144381bb97d7b847c4d06fd8abe4c32a0b8b6a"
+        },
+        "focused_source_sha256": "c58ec2e9bb19c4e783dec8bb9084b5384a3ff80d6dc119a7950fc35605e732b3",
+        "implementation_sha256": "789c9a1d30d72cef7087563a5ddd36c0e38932f46164d108e7a37786e2ca5046",
+        "limits": [
+          "Pure synthetic histories with actual native loop; controlled features are explicit fixture inputs.",
+          "Only arithmetic mean of three original raw W-day returns changes regime; it affects flat route and both immediate holding regime exits.",
+          "Fixed3 and unchanged raw-return threshold/domain; no Close/ACF/score smoothing, day-count search or new numerical coordinate.",
+          "Mean state can lag genuine shocks, retain a wrong route or reduce frequency; three overlapping W-day returns are not independent observations; no financial or robustness claim.",
+          "Describe is source authentication only, not account preparation or candidate registration."
+        ]
+      },
+      {
+        "status": "PURE_PASS",
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "financial_account_reads": 0,
+        "provider_calls": [],
+        "new_runtime_imports": 0,
+        "original_dimensions": 13,
+        "parameter_points": 32,
+        "all_date_parameter_formula_paths": 33,
+        "check_count": 88,
+        "refusal_checks": 17,
+        "checks": [
+          "date audit AST exact frozen EX043",
+          "oracle no SRT or new strategy import",
+          "original13 whole domains seed13 .05L2 32 public points",
+          "full all-date parameter point explicit three-close formula 0",
+          "full all-date parameter point explicit three-close formula 1",
+          "full all-date parameter point explicit three-close formula 2",
+          "full all-date parameter point explicit three-close formula 3",
+          "full all-date parameter point explicit three-close formula 4",
+          "full all-date parameter point explicit three-close formula 5",
+          "full all-date parameter point explicit three-close formula 6",
+          "full all-date parameter point explicit three-close formula 7",
+          "full all-date parameter point explicit three-close formula 8",
+          "full all-date parameter point explicit three-close formula 9",
+          "full all-date parameter point explicit three-close formula 10",
+          "full all-date parameter point explicit three-close formula 11",
+          "full all-date parameter point explicit three-close formula 12",
+          "full all-date parameter point explicit three-close formula 13",
+          "full all-date parameter point explicit three-close formula 14",
+          "full all-date parameter point explicit three-close formula 15",
+          "full all-date parameter point explicit three-close formula 16",
+          "full all-date parameter point explicit three-close formula 17",
+          "full all-date parameter point explicit three-close formula 18",
+          "full all-date parameter point explicit three-close formula 19",
+          "full all-date parameter point explicit three-close formula 20",
+          "full all-date parameter point explicit three-close formula 21",
+          "full all-date parameter point explicit three-close formula 22",
+          "full all-date parameter point explicit three-close formula 23",
+          "full all-date parameter point explicit three-close formula 24",
+          "full all-date parameter point explicit three-close formula 25",
+          "full all-date parameter point explicit three-close formula 26",
+          "full all-date parameter point explicit three-close formula 27",
+          "full all-date parameter point explicit three-close formula 28",
+          "full all-date parameter point explicit three-close formula 29",
+          "full all-date parameter point explicit three-close formula 30",
+          "full all-date parameter point explicit three-close formula 31",
+          "full all-date parameter point explicit three-close formula 32",
+          "three future perturbations cannot revise features/locked route/age/targets",
+          "complete first warmup W5",
+          "mean differs from majority both directions W5 bull",
+          "mean differs from majority both directions W5 bear",
+          "complete first warmup W60",
+          "W60 only62 closes lacks second previous full momentum",
+          "mean differs from majority both directions W60 bull",
+          "mean differs from majority both directions W60 bear",
+          "mean threshold strict below/equal/above np.float64(0.037412592309363474)",
+          "mean threshold strict below/equal/above 0.03741259230936348",
+          "mean threshold strict below/equal/above np.float64(0.03741259230936349)",
+          "held route locked despite current selection; both route changes immediate",
+          "original loss/trail/range/time/regime priorities and dynamic score threshold retained",
+          "valid13 domain endpoint bull.range_window=21.0",
+          "valid13 domain endpoint bull.range_window=360.0",
+          "valid13 domain endpoint bull.entry=0.0",
+          "infeasible13 domain endpoint bull.entry",
+          "infeasible13 domain endpoint bull.exit",
+          "valid13 domain endpoint bull.exit=1.0",
+          "valid13 domain endpoint bull.max_hold=1.0",
+          "valid13 domain endpoint bull.max_hold=60.0",
+          "valid13 domain endpoint bear.range_window=21.0",
+          "valid13 domain endpoint bear.range_window=360.0",
+          "valid13 domain endpoint bear.entry=0.0",
+          "infeasible13 domain endpoint bear.entry",
+          "infeasible13 domain endpoint bear.exit",
+          "valid13 domain endpoint bear.exit=1.0",
+          "valid13 domain endpoint bear.max_hold=1.0",
+          "valid13 domain endpoint bear.max_hold=60.0",
+          "valid13 domain endpoint bear.acf_min=-0.6",
+          "valid13 domain endpoint bear.acf_min=0.5",
+          "valid13 domain endpoint regime_window=5.0",
+          "valid13 domain endpoint regime_window=60.0",
+          "valid13 domain endpoint regime_threshold=-0.2",
+          "valid13 domain endpoint regime_threshold=0.2",
+          "valid13 domain endpoint confirmation.lookback=40.0",
+          "valid13 domain endpoint confirmation.lookback=120.0",
+          "valid13 domain endpoint confirmation.threshold=-0.5",
+          "valid13 domain endpoint confirmation.threshold=0.5",
+          "single invalid parameter regime_window=4",
+          "single invalid parameter regime_window=61",
+          "single invalid parameter regime_window=True",
+          "single invalid parameter regime_threshold=-0.200001",
+          "single invalid parameter regime_threshold=0.200001",
+          "single invalid parameter mechanism=MAJORITY3",
+          "missing preceding full daily Close refuses",
+          "full prepared-binding audit and final T+1 calendar pair retained",
+          "audit refuses single field drift regime_momentum",
+          "audit refuses single field drift raw_regime_momentum",
+          "audit refuses single field drift previous_regime_momentum",
+          "audit refuses single field drift second_previous_regime_momentum",
+          "final valid_session T must not substitute T+1"
+        ],
+        "source_files": {
+          "regime_oracle.py": "9c0d41cce43c9e90370d9da7d05d1bea74f0f18915cf2e88829e6ce049ea10d4",
+          "focused_checks.py": "fb04e84289c2bd26d7f1f5f9f685c6af30b6f0903632e4b006f52ac8a47fb2ce"
+        },
+        "limits": [
+          "Independent synthetic oracle only; no native runtime mutual check until source is supplied and separately authorized.",
+          "Original mean-momentum definition differs from rawroute majority; synthetic counterexamples do not claim financial improvement.",
+          "Formal promotion must bind SOURCE_CALLS to formal common and retain all original published source evidence."
+        ]
+      },
+      {
+        "status": "PURE_PASS",
+        "checks": [
+          "original complete geometry unchanged protocol",
+          "original complete geometry unchanged coordinates",
+          "original complete geometry unchanged origins",
+          "original complete geometry unchanged mapping",
+          "original complete geometry unchanged feasibility",
+          "new exit oracle vs frozen legacy oracle distinct",
+          "prospective reservation consistent",
+          "registered implementation parent is original",
+          "all33 IDs strong CandidateKey contract only, not collision approval",
+          "public plan methods exist",
+          "public lineage supports derivation and parameter binding",
+          "public full13 three-center same32 coordinates",
+          "all32 materialization preserves types and original base",
+          "native alias cache isolation",
+          "invalid cache label",
+          "invalid control alias",
+          "32 unique fixed Optuna trials 4batches8 no alias mutation",
+          "trial outside fixed32 63",
+          "trial outside fixed32 96",
+          "mutating reused count not accepted",
+          "center selection only original four-gate flag False",
+          "center selection only original four-gate flag True",
+          "historical coupled is not implementation parent",
+          "unqualified declaration zero preparations/evaluations/reuse",
+          "unqualified analysis/pair without native cache reads",
+          "never audit oldcoupled using new oracle",
+          "new oracle N0 only, frozen legacy coupled only",
+          "three pair comparisons each complete32 strict coordinates",
+          "pair exact coordinates reject alteration",
+          "pair no partial31 comparison",
+          "unchanged immutable helper function economic",
+          "unchanged immutable helper function materialize",
+          "unchanged immutable helper function feasible",
+          "unchanged immutable helper function trial_index",
+          "unchanged immutable helper function authenticate_center",
+          "unchanged immutable helper function reuse_parameter_control",
+          "unchanged immutable helper function equal_results",
+          "no financial read/prepare/eval invoked"
+        ],
+        "check_count": 38,
+        "financial_calls": [],
+        "new_account_preparations": 0,
+        "new_account_evaluations": 0,
+        "native_account_reads": 0,
+        "public_evidence_publications": 0,
+        "source_files": {
+          "run_parameters.py": "3d68f1ffa056da454f326c522fd72fa20769519e102cefb28f8acf0c7c3fdde3",
+          "parameter_analysis.py": "0ebedb5893bc7dd6d8d43d6ac97bfd9e4f4c31336d7f930878fad4454256f102",
+          "pair_parameters.py": "2a0027fd46a97397b2fcfed0e106752a442dff45cfa21085e40ba0e0bccca937",
+          "declare_geometry.py": "7e56edcffe5fd6b31fed7d2d439741bb1bb379af6ed38946df2efbab2b1826f4"
+        },
+        "limits": [
+          "Pure metadata/types/mock capabilities and in-memory Optuna only; no full-account input read.",
+          "Prospective IDs require root collision checks; qualified branch requires root frozen plan/common/oracle/account references.",
+          "C4900 is multi-structure historical counterevidence, not an isolated bear-exit mechanism control.",
+          "All four economic gates unchanged; complete absolute and relative tails are required to assess the intended improvement."
+        ]
+      }
+    ],
+    "original_numeric_center_exact": true,
+    "original_full13_domains_32_coordinates": true,
+    "new_account_evaluations": 0,
+    "adaptation": "Independent oracle SOURCE_CALLS bound to EX049 forbidden-provider context; formulas/functions unchanged"
+  }
+}
