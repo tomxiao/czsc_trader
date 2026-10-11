@@ -1,0 +1,211 @@
+{
+  "status": "COMPLETE_WITH_PUBLIC_AUDIT_LIMITATION",
+  "business_accounts": 68,
+  "technical_duplicates": 2,
+  "start": "2021-04-23",
+  "end": "2026-09-08",
+  "cash": 1000000.0,
+  "price_basis": "HFQ_RESEARCH",
+  "costs": {
+    "baseline": 0.001,
+    "stress": 0.002
+  },
+  "strategies": {
+    "S013": {
+      "label": "C2132",
+      "values": {
+        "FULL_SAMPLE_FREQUENCY": 4.091954022988506,
+        "NET_ANNUAL_RETURN": 0.16652696135874656,
+        "DRAWDOWN_MAGNITUDE": 0.1415929304668686,
+        "FREQUENCY_MEDIAN": 3.5,
+        "FREQUENCY_Q10": 1.0,
+        "PARAMETER_RETURN_DEGRADATION": 0.12800073384963265,
+        "PARAMETER_DRAWDOWN_DEGRADATION": 0.16345100197834617,
+        "ROLLING_EXCESS_Q10": -0.1655442147469468,
+        "STRESS_ANNUAL_LOSS": 0.03903398044482209,
+        "PROFIT_CONCENTRATION": 0.44100255602661886
+      },
+      "closed_trades": 89,
+      "sessions": 1305,
+      "ending_equity": 2220339.5810360713,
+      "parameter_cagr_q10": 0.03852622750911392,
+      "parameter_drawdown_q90": 0.30504393244521477,
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.056563659295238496,
+        "upper_95": 0.2800422079168081,
+        "reason": null
+      },
+      "benchmark": {
+        "NET_ANNUAL_RETURN": 0.05484470285168941,
+        "DRAWDOWN_MAGNITUDE": 0.39119844527655734
+      },
+      "parameter_context": {
+        "type": "ParameterDiagnosticContext",
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "design_sha256": "35b262400a9fe5e8b65011e8aa8847754f56fa9cac2645644e5ee5d42776756f",
+        "space_sha256": "472d82360591596d6b4bffad6af518986f5db9129b4f0bea5e85da29c87df6c2",
+        "dimension": 13,
+        "prescribed_points": 32,
+        "valid_points": 32
+      },
+      "family_diagnostics": [
+        {
+          "type": "FamilyDiagnostic",
+          "name": "PBO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        },
+        {
+          "type": "FamilyDiagnostic",
+          "name": "DSR_RAW",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        },
+        {
+          "type": "FamilyDiagnostic",
+          "name": "DSR_EFFECTIVE",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        }
+      ],
+      "coverage_gaps": [],
+      "assessment_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S013",
+          "experiment_id": "EX059_20261011"
+        },
+        "evidence_id": "497a3d7ff845ff5f615672487de7c8c2b16c904143fce98758111899a6437bfa.json",
+        "sha256": "497a3d7ff845ff5f615672487de7c8c2b16c904143fce98758111899a6437bfa",
+        "media_type": "application/json",
+        "name": "latest-five-self-checks",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    "S003": {
+      "label": "S003-v1",
+      "values": {
+        "FULL_SAMPLE_FREQUENCY": 12.505747126436782,
+        "NET_ANNUAL_RETURN": 0.030891933422852125,
+        "DRAWDOWN_MAGNITUDE": 0.21779711108206168,
+        "FREQUENCY_MEDIAN": 12.0,
+        "FREQUENCY_Q10": 10.0,
+        "PARAMETER_RETURN_DEGRADATION": 0.014227658415480838,
+        "PARAMETER_DRAWDOWN_DEGRADATION": 0.03083015707637468,
+        "ROLLING_EXCESS_Q10": -0.11439953408773594,
+        "STRESS_ANNUAL_LOSS": 0.03942382000277722,
+        "PROFIT_CONCENTRATION": 0.3531316424144127
+      },
+      "closed_trades": 272,
+      "sessions": 1305,
+      "ending_equity": 1170644.9507650717,
+      "parameter_cagr_q10": 0.016664275007371287,
+      "parameter_drawdown_q90": 0.24862726815843636,
+      "uncertainty": {
+        "type": "UncertaintyInterval",
+        "status": "AVAILABLE",
+        "lower_95": -0.13805406013823412,
+        "upper_95": 0.0600275323351445,
+        "reason": null
+      },
+      "benchmark": {
+        "NET_ANNUAL_RETURN": 0.05484470285168941,
+        "DRAWDOWN_MAGNITUDE": 0.39119844527655734
+      },
+      "parameter_context": {
+        "type": "ParameterDiagnosticContext",
+        "protocol": {
+          "type": "ParameterPerturbationProtocol",
+          "radius": 0.05,
+          "point_count": 32,
+          "seed": 13,
+          "max_attempts": 100000,
+          "distance_tolerance": 1e-10,
+          "version": "parameter-total-domain-l2-v1",
+          "random_generator": "PCG64",
+          "integer_rounding": "HALF_EVEN",
+          "quantile_method": "LINEAR"
+        },
+        "design_sha256": "0f9956c29425b28554ed8f2e5f1b4c7e83e5409925e82c6939c161e6b6248827",
+        "space_sha256": "fac7ed51946478eef6c6e458487b3adea12cca01ef75610b6e9485684f51288c",
+        "dimension": 2,
+        "prescribed_points": 32,
+        "valid_points": 32
+      },
+      "family_diagnostics": [
+        {
+          "type": "FamilyDiagnostic",
+          "name": "PBO",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        },
+        {
+          "type": "FamilyDiagnostic",
+          "name": "DSR_RAW",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        },
+        {
+          "type": "FamilyDiagnostic",
+          "name": "DSR_EFFECTIVE",
+          "status": "INSUFFICIENT_DATA",
+          "value": null,
+          "reason": "FAMILY_RETURN_MATRIX_NOT_SUPPLIED"
+        }
+      ],
+      "coverage_gaps": [],
+      "assessment_reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S003",
+          "experiment_id": "EX001_20261011"
+        },
+        "evidence_id": "aea6b064823c03de51b4f916b069932487bf289bd057dbbfb7ce5943f6a52c87.json",
+        "sha256": "aea6b064823c03de51b4f916b069932487bf289bd057dbbfb7ce5943f6a52c87",
+        "media_type": "application/json",
+        "name": "latest-five-self-checks",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  },
+  "bias_limit": "同统一口径完整历史研究族矩阵不存在，PBO/DSR不可比；未填零或以两策略代替完整族。",
+  "historical_bias_sources": [
+    {
+      "path": "research/S013/experiments/EX008_20261010/others/report.md",
+      "scope": "旧1636日/原费用价格协议/79筛选中心/1536历史尝试；不作为统一口径结果"
+    },
+    {
+      "path": "experiments/S003/20260911_S003_EX47/artifacts/corrected_statistical_summary.json",
+      "scope": "旧日内优势及费用、142尝试135有效路径；不作为统一口径结果"
+    }
+  ],
+  "scope": "原策略比较；不优化参数，不改变冻结源，不启动新机制；完成后暂停",
+  "account_audit_limit": "S003公开审计未通过：校验器使用后复权价直接取整限价，并将正确未成交及依赖阻断判为异常。原FAIL保持；独立逐笔补充验证另列，不视为原生审计PASS。",
+  "plain_findings": [
+    "共同条件下，C2132年化16.65%、最大回撤14.16%；S003-v1为3.09%、21.78%。C2132中心收益更高，最大跌幅更小。",
+    "32点参数扰动后，C2132年化退化12.80个百分点、回撤恶化16.35个百分点；S003分别为1.42、3.08个百分点。结合各自参数域解释，不能把同一几何距离当作相同经济冲击。",
+    "费用加倍后，C2132年化为12.75%，S003为-0.85%。两者绝对年化费用损失都接近4个百分点，S003原本利润空间较薄，已转为负收益。"
+  ]
+}

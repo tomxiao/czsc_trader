@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "checks": [
+    "CENTER_STRICT_PASS_WITH_ORIGINAL_NATIVE_FAIL",
+    "PUBLISHED_BYTES_AUTHENTICATED",
+    "ORIGINAL_VALUE_AND_PUBLISHED_BYTES_UNCHANGED"
+  ],
+  "refusals": [
+    {
+      "mutation": "limit",
+      "status": "FAIL",
+      "finding_codes": [
+        "RAW_GRID_HFQ_LIMIT",
+        "UNEXPLAINED_PUBLIC_REASON"
+      ]
+    },
+    {
+      "mutation": "price",
+      "status": "FAIL",
+      "finding_codes": [
+        "ACCOUNT_CLOSE_STATE",
+        "ACCOUNT_MARKED_EQUITY",
+        "ACCOUNT_OPENING",
+        "CHECKPOINT_FILL_PRICE",
+        "UNEXPLAINED_PUBLIC_REASON"
+      ]
+    },
+    {
+      "mutation": "fee",
+      "status": "FAIL",
+      "finding_codes": [
+        "ACCOUNT_CLOSE_STATE",
+        "ACCOUNT_MARKED_EQUITY",
+        "ACCOUNT_OPENING",
+        "FILL_FEE",
+        "UNEXPLAINED_PUBLIC_REASON"
+      ]
+    },
+    {
+      "mutation": "cash",
+      "status": "FAIL",
+      "finding_codes": [
+        "ACCOUNT_CLOSE_STATE",
+        "UNEXPLAINED_PUBLIC_REASON"
+      ]
+    },
+    {
+      "mutation": "unfilled",
+      "status": "FAIL",
+      "finding_codes": [
+        "BUY_FILL_ELIGIBILITY"
+      ]
+    },
+    {
+      "mutation": "time",
+      "status": "FAIL",
+      "finding_codes": [
+        "FILL_TIME_TRIGGER"
+      ]
+    }
+  ],
+  "source_sha256": "e4b9bf71cfad3a18277f5ca1dcc113c74ee2fa5291263a6de9cf4ec8459d55d2",
+  "test_source_sha256": "f329032a0f5a8acbfef69780f24c268b0ab885164636421f5aaa2d5c351623b5",
+  "reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S003",
+      "experiment_id": "EX001_20261011"
+    },
+    "evidence_id": "77844357c24b10a1e71f71e96cbc79a9cbc2ca28a81026af757b979fd28bf968.json",
+    "sha256": "77844357c24b10a1e71f71e96cbc79a9cbc2ca28a81026af757b979fd28bf968",
+    "media_type": "application/json",
+    "name": "original-center",
+    "schema": "account_evaluation",
+    "schema_version": 6
+  },
+  "native_public_audit": {
+    "status": "FAIL",
+    "evidence_hash": "8436e12ced78cf101f440f4d9710c8dc0e09f8e8eef98dff762ff5f6a8c60036",
+    "checks": [
+      "EVALUATION_SESSION_COVERAGE",
+      "INTRADAY_ORDER_CONTRACT",
+      "INTRADAY_CHECKPOINT_PRICES",
+      "T_PLUS_ONE_CORE_ROTATION_LEDGER",
+      "INTRADAY_TRADE_PAIRING",
+      "INTRADAY_METRICS"
+    ],
+    "reason_codes": [
+      "INTRADAY_ORDER_NOT_FILLED",
+      "INVALID_INTRADAY_ORDER_PAIR",
+      "INTRADAY_FILL_MISMATCH"
+    ]
+  },
+  "read_scope": "Only already authenticated S003 center and receipts; mutations only deepcopied memory",
+  "new_evaluations": 0,
+  "new_preparations": 0,
+  "financial_replays": 0
+}

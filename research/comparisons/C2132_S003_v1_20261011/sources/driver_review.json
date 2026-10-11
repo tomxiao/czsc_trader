@@ -1,0 +1,44 @@
+{
+  "status": "STATIC_REVIEW_COMPLETE_WITH_ONE_RESUME_BINDING_FINDING",
+  "scope": "Prospective driver and public Python contracts only; no driver import, prepare, evaluate, publish, account-cache or market reads",
+  "new_account_evaluations": 0,
+  "preparations": 0,
+  "publications": 0,
+  "findings": [
+    {
+      "severity": "P1",
+      "category": "CACHE_RESUME_PLAN_BINDING",
+      "source": ".tmp/c2132-s003-compare/run_compare.py",
+      "location": "evaluate_cached and parameter group cache loading immediately before publish_evidence_many",
+      "problem": "A parameter cache hit is loaded and published as its stored request/result without comparing the request to the current bound point. A self-consistent cached result from an older plan can therefore be published under the current experiment and point index. Center cache checking also omits parts of the request and the result identity/request contract.",
+      "necessary_fix": "Before using each cached pair, authenticate it against the current expected prepared request, including canonical candidate payload/content/source/dependencies, current parameter-plan point binding and lineage, complete window/cost/benchmark/cash/pricing/data contract, and result request/runtime/data identities. Compare complete public serialized evidence to retained evidence where already available. Do not publish a cached request merely because its cache filename and stored result agree.",
+      "boundary": "This concerns resume integrity; a genuinely empty fresh directory does not itself trigger stale-cache reuse. It does not justify new financial evaluation or changing original rules."
+    }
+  ],
+  "resolved_during_review": [
+    {
+      "issue": "CandidateContentIdentity has no to_dict method",
+      "verified_fix": "Driver declaration now writes explicit candidate/content/source fields instead of identity.to_dict()",
+      "contract": "packages/strategy_runtime/src/strategy_runtime/identity.py: CandidateContentIdentity"
+    },
+    {
+      "issue": "Historical S003 C001 is rejected by modern CandidateKey C-plus-four-digits contract",
+      "verified_fix": "Driver now uses C9900 as an explicitly unregistered transport of the unchanged frozen S003-v1 payload and source, preserving C001 in provenance rather than fabricating historical registration",
+      "contract": "packages/strategy_manager/src/strategy_manager/candidates.py: CandidateKey; src/czsc_trader/research_tools/evaluation.py: EvaluationIdentity construction"
+    }
+  ],
+  "checked_without_execution": {
+    "request_construction": "EvaluationRequest positional order and keyword contracts match the public dataclass; common fee override is implemented by public evaluation replay.",
+    "business_account_count": "2 families x (1 original baseline center + 1 stressed center + 32 baseline parameter points) = 68",
+    "actual_evaluations_if_fresh": "68 business accounts + one serial/spawn duplicate per family = 70; reused P00 baseline is not counted twice as business",
+    "parameter_plan": "ParameterEvaluationPlan.create receives the prepared center and 32 prepared children; each intended request receives plan.bind_point and PARAMETERS lineage before evaluation. Resume authentication is the separate finding above.",
+    "benchmark": "LimitBuyHold has a common BuyHold identity, fixed benchmark contract and the explicit common fee. The compared account_daily schema has no strategy candidate identity column; therefore do not preemptively weaken its exact frame assertion.",
+    "HFQ_anchor": "Driver explicitly asserts exact pricing records and exact adjusted_daily/execution_daily frames between families. This is a valid fail-closed comparability guard; its actual satisfaction has not been tested in this review.",
+    "S003_identity": "Modern transport does not by itself establish registered historical C001 lineage; its frozen release/source and content mapping must remain explicit evidence. No historical candidate or registration was changed."
+  },
+  "limits": [
+    "Static/public-contract review only; not account authenticity or economic validation.",
+    "No claim that actual cross-family daily calendars, normalization or benchmark ledgers are already equal.",
+    "No new mechanism, optimization, numerical retuning or parameter-domain recommendation."
+  ]
+}

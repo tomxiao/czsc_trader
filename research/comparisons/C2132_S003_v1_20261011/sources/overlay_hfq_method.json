@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_READY",
+  "scope": "Exactly S003 center/stress/32 original typed parameter receipts; read-only",
+  "files": {
+    "overlay_hfq_validation.py": "e4b9bf71cfad3a18277f5ca1dcc113c74ee2fa5291263a6de9cf4ec8459d55d2",
+    "overlay_hfq_focused.py": "f329032a0f5a8acbfef69780f24c268b0ab885164636421f5aaa2d5c351623b5",
+    "overlay_hfq_focused.json": "ffadf6cd43cde5bd2d46aa10fd16b82029fb507a8fec26eed145fb4bd566b0bc",
+    "verify_overlay_hfq.py": "f73f4c2c1cb8d63acf07da32a6062e16190f876081498868a958eef49f234340"
+  },
+  "receipt_path": "research/comparisons/C2132_S003_v1_20261011/account_receipts.json",
+  "receipt_sha256": "c5a7aabe4fd8f12f9789b2bd866a4eec2ac42473aa2a1c8cb401783ad3fa5b60",
+  "rules": [
+    "Native public audit always preserved unchanged",
+    "Correct BUY limit floors raw signal-day close times 1.10 on .001 raw grid then multiplies signal-day HFQ scale",
+    "UNFILLED BUY only when original exact limit/cash predicates fail; dependent exit BLOCKED not submitted",
+    "All side quantity checkpoint price fee timestamp trade cash equity and eight native metrics independently checked",
+    "Unexpected native reason or any strict finding rejects completion",
+    "Full identity projections and result hashes additionally proven by root public serialize_evaluation_evidence exact whole object comparison"
+  ],
+  "focused_checks": 3,
+  "fault_injection_refusals": 6,
+  "new_evaluations": 0,
+  "new_preparations": 0,
+  "financial_replays": 0,
+  "market_provider_reads": 0,
+  "platform_changes": 0
+}
