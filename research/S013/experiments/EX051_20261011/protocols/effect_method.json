@@ -1,0 +1,184 @@
+{
+  "name": "S013-EX051-winsor-acf-conditional-state",
+  "source_sha256": "299800c4a0d1a9ccf23ae5cec8590ffb37b316b390346380a708fcd969b1bbce",
+  "source": "\"\"\"Only conditional steps on original33 authenticated states; zero new finance.\"\"\"\nfrom dataclasses import replace\nfrom pathlib import Path\nimport sys\nimport numpy as np\nimport pandas as pd\n\nROOT = Path(__file__).resolve().parents[1]\nsys.path.insert(0, str(ROOT / 'research/S013/experiments/EX047_20261011/src'))\nfrom common import SOURCE_CALLS, context, read, write, cache_read, file_hash, TRANSPORT\nfrom native_reference import verified_json, bound_bars\nfrom transition import SignalKind, Feature, SignalState, validate_parameters, step\nfrom czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, validate_evaluation_evidence\nfrom czsc_trader.research_tools.context import ExperimentRef\nfrom czsc_trader.application import publish_evidence\nfrom czsc_trader.research_tools import MaterialEvidenceWrite\n\nREASONS = ('flat', 'entry', 'hold', 'range', 'time', 'regime', 'confirmation_rejected')\nROUTES = (None, 'bull', 'bear')\n\n\ndef winsor_acf(values):\n    assert len(values) == 20 and np.isfinite(values).all()\n    ordered = sorted(float(v) for v in values)\n    lo, hi = ordered[1], ordered[-2]\n    transformed = np.array([max(lo, min(float(v), hi)) for v in values])\n    centered = transformed - transformed.mean()\n    variance = np.mean(centered ** 2)\n    if np.isclose(variance, 0):\n        return float('nan')\n    result = np.dot(centered[1:], centered[:-1]) / 19 / variance\n    assert np.isfinite(result)\n    return float(result)\n\n\ndef encode(decision):\n    return [decision.target, REASONS.index(decision.reason), ROUTES.index(decision.next_state.route), decision.next_state.age]\n\n\ndef main():\n    exp = ExperimentRef('S013', 'EX051_20261011')\n    protocols = exp.resolve(ROOT) / 'protocols'\n    method = verified_json(read(protocols / 'effect_method_reference.json'))\n    assert method['source_sha256'] == file_hash(Path(__file__))\n    source = verified_json(method['input_reference'])\n    native_refs = read(ROOT / 'research/S013/experiments/EX047_20261011/protocols/plan.json')['input_accounts']\n    assert source['status'] == 'PASS' and source['summary']['unique_native_accounts'] == 33\n    center = next(r for r in cache_read(TRANSPORT / 'prepared.pkl.gz') if r['label'] == 'B0-TIME')\n    matrix = read(ROOT / 'research/S013/assets/runs/EX043_20261011/parameter_matrix_v3.json')\n    points = sorted((r for r in matrix['rows'] if r['center'] == 'B0-TIME'), key=lambda r: r['point_index'])\n    assert [r['point_index'] for r in points] == list(range(32))\n    ctx, accounts = context(1), {}\n    for item in [None, *points]:\n        key = 'center' if item is None else f\"P{item['point_index']:02d}\"\n        bound, result = (center['center'], center['result']) if item is None else cache_read(TRANSPORT / (item['label'] + '.pkl.gz'))\n        formal = verified_json(native_refs[key])\n        validate_evaluation_evidence(formal)\n        assert serialize_evaluation_evidence(bound, result) == formal\n        pair = source['pairs']['P00'] if item is None else source['pairs'][key]\n        p = pair['center_parameters'] if item is None else pair['point_parameters']\n        assert p == bound.strategy.payload['parameters']\n        frame = result.runs[0].execution.decisions\n        dates = pd.DatetimeIndex(pd.to_datetime(frame.signal_date)).normalize()\n        close = bound_bars(ctx, bound).Close.astype(float)\n        ret = close / close.shift(1) - 1\n        winsor = ret.rolling(20, min_periods=20).apply(winsor_acf, raw=True).reindex(dates).to_numpy()\n        assert np.isfinite(winsor).all()\n        rules = validate_parameters(SignalKind.ORIGINAL_TIME, p)\n        before_name, actual_index = ('center_before', 0) if item is None else ('point_before', 3)\n        rows = []\n        for i, (record, row) in enumerate(zip(pair['all_days'], frame.itertuples(), strict=True)):\n            before = record[before_name]\n            state = SignalState(bool(before[0]), ROUTES[before[1]], before[2])\n            feature = Feature(str(row.regime), float(row.close), float(row.close),\n                float(row.bull_range_position), float(row.bear_range_position), float(row.acf1), float(row.acf1),\n                float(row.confirmation_score), p['confirmation']['threshold'], *rules)\n            original = encode(step(SignalKind.ORIGINAL_TIME, state, feature))\n            assert original == record['full_four'][actual_index]\n            assert original[0] == int(row.target_position) and REASONS[original[1]] == row.signal_reason\n            alternate = encode(step(SignalKind.ORIGINAL_TIME, state, replace(feature, bear_acf_value=float(winsor[i]))))\n            rows.append({'signal_date': record['signal_date'], 'execution_date': record['execution_date'],\n                'observed_before': before, 'raw_acf': float(row.acf1), 'winsor_acf': float(winsor[i]),\n                'raw_bear_filter': bool(row.acf1 >= p['bear']['acf_min']), 'winsor_bear_filter': bool(winsor[i] >= p['bear']['acf_min']),\n                'actual': original, 'conditional_probe': alternate})\n        assert len(rows) == 1636\n        def summarize(subset):\n            return {'days': len(subset), 'bear_filter_changes': sum(r['raw_bear_filter'] != r['winsor_bear_filter'] for r in subset),\n                'conditional_target_changes': sum(r['actual'][0] != r['conditional_probe'][0] for r in subset),\n                'conditional_reason_changes': sum(r['actual'][1] != r['conditional_probe'][1] for r in subset),\n                'conditional_next_state_changes': sum(r['actual'][::2] != r['conditional_probe'][::2] or r['actual'][3] != r['conditional_probe'][3] for r in subset)}\n        partitions = {str(year): summarize([r for r in rows if int(r['signal_date'][:4]) == year]) for year in sorted(set(dates.year))}\n        summary = summarize(rows)\n        assert sum(x['days'] for x in partitions.values()) == 1636\n        assert sum(x['conditional_target_changes'] for x in partitions.values()) == summary['conditional_target_changes']\n        accounts[key] = {'native_reference': native_refs[key], 'parameters': p, 'all_days': rows, 'summary': summary, 'signal_years': partitions}\n    assert not SOURCE_CALLS\n    output = ROOT / '.tmp/ex051-winsor-acf-effect/diagnosis.json'\n    assert not output.exists()\n    summary = {'observed_native_paths': len(accounts), 'signal_days': 33 * 1636, 'center': accounts['center']['summary'],\n        'point_conditional_target_changes': sum(v['summary']['conditional_target_changes'] for k, v in accounts.items() if k != 'center'),\n        'new_account_evaluations': 0, 'new_account_preparations': 0, 'cash_replays': 0}\n    write(output, {'status': 'PASS', 'method_reference': read(protocols / 'effect_method_reference.json'),\n        'input_reference': method['input_reference'], 'accounts': accounts, 'summary': summary, 'limits': method['limits'], 'provider_calls': SOURCE_CALLS})\n    ref = publish_evidence(ctx, MaterialEvidenceWrite(exp, 'winsor-acf-observed-state-effect', output.read_bytes(), 'application/json', 'json'))\n    write(protocols / 'effect_reference.json', ref.to_dict())\n    print({'status': 'PASS', **summary})\n\n\nif __name__ == '__main__':\n    main()\n",
+  "input_reference": {
+    "evidence_id": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4.json",
+    "experiment": {
+      "experiment_id": "EX047_20261011",
+      "strategy_id": "S013",
+      "type": "ExperimentRef"
+    },
+    "media_type": "application/json",
+    "name": "complete-single-coordinate-observed-state",
+    "schema": null,
+    "schema_version": null,
+    "sha256": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4",
+    "type": "EvidenceRef"
+  },
+  "duplicate_check": {
+    "status": "PROSPECTIVE_MECHANISM_REVIEW_ONLY",
+    "role": "RSCH",
+    "research_batch": "S013",
+    "stage": 3,
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "providers_called": 0,
+    "actual_account_or_market_bytes_read": false,
+    "runtime_implemented": false,
+    "candidate": {
+      "prospective_only": true,
+      "description_zh": "只替换bear入场ACF的收益幅度缩尾估计；原rawACF20列和买入确认保留。",
+      "structure": "Fixed20 original simple returns, at most one strictly external value per tail replaced by second order statistic; preserve20 temporal observations/ties.",
+      "window": 20,
+      "pairs": 19,
+      "threshold_center": 0.1,
+      "threshold_domain": [
+        -0.6,
+        0.5
+      ],
+      "original_dimensions": 13,
+      "coordinates": "All original numeric center/domain/fixed32 planned unchanged; not implemented or financially tested.",
+      "semantic_warning_zh": "共同数值坐标与几何可比，不表示缩尾ACF与原ACF的0.1具有同一过滤强度。"
+    },
+    "definition": {
+      "returns": "r_i = Close_i/Close_(i-1)-1, twenty complete causal simple returns in original order.",
+      "bounds": "Let sorted values be r_(1)..r_(20); lower=r_(2), upper=r_(19).",
+      "transformed": "w_i = max(lower,min(r_i,upper)); select bounds by sorting, retain original i ordering for correlation.",
+      "statistic": "mu=sum(w_i)/20; v=sum((w_i-mu)^2)/20; cov=sum_(i=2..20)((w_i-mu)*(w_(i-1)-mu))/19; a=cov/v.",
+      "ties": "Only values strictly below lower or above upper change; duplicate minima/maxima retain their ties. At most2 values change, possibly0.",
+      "not_allowed": [
+        "drop endpoints or change20 to18",
+        "sort transformed sequence before correlation",
+        "interpolated percentiles in place of second-smallest/second-largest",
+        "threshold remap/scaling/abs/domain shrink",
+        "zero-variance fill0 or oldACF fallback"
+      ],
+      "degeneracy": "Any required nonfinite/incomplete input rejects. Preserve original variance test np.isclose(v,0), then explicit unavailable/FAILED at requiredT; no silently accepted/rejected entry from undefined statistic."
+    },
+    "counterexamples": [
+      {
+        "case": "19 equal returns c plus one distinct a",
+        "result": "Original raw20 variance>0 can yield finite ACF; bounds both c, all winsorized returns c, new variance0 => explicit failure."
+      },
+      {
+        "case": "18 zeros plus one positive and one negative endpoint",
+        "result": "Second-smallest=second-largest=0; both nonzero endpoints replaced, all-zero variance => explicit failure."
+      },
+      {
+        "case": "Both extrema have ties, e.g. ten -0.01 and ten +0.01",
+        "result": "Bounds equal original extrema, transformed window exactly unchanged; statistic equals original, so not generally a new signal on everyT."
+      },
+      {
+        "case": "A real isolated jump is the unique extremum",
+        "result": "Its magnitude is removed regardless of whether it is noise or economically informative; can miss useful entries or permit bad entries. No profitability direction is implied."
+      }
+    ],
+    "duplicate_review": {
+      "result": "NO_EXACT_DUPLICATE_IDENTIFIED_IN_AUTHORIZED_SCOPE",
+      "scope": "research/S013/experiments PY/MD/JSON; excluded assets and __pycache__; no S007 or adjacent batches.",
+      "indexed_files": 1620,
+      "file_extension_counts": {
+        ".py": 1041,
+        ".md": 93,
+        ".json": 486
+      },
+      "queries": [
+        "winsori|温莎|温索|截尾|缩尾|clip.?return|return..clip",
+        "clip/partition/quantile/percentile/sort in range strategy PY sources"
+      ],
+      "near_hits": [
+        {
+          "path": "research/S013/experiments/EX050_20261011/protocols/plan.json",
+          "line": 517,
+          "meaning": "Explicitly says no clipping/scaling, not a winsorized implementation."
+        },
+        {
+          "path": "research/S013/experiments/EX044_20261011/src/focused_checks.py",
+          "line": 290,
+          "meaning": "Clip perturbed range-position fixture into[0,1], not return amplitude."
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/src/followup.py",
+          "line": 63,
+          "meaning": "Sort training feature for empirical rank, not current20-return winsorization."
+        }
+      ],
+      "mathematical_equivalence": "Not generally equivalent to rawACF, three-ACF mean/median, strictly-past centering or Spearman. Specific tied-extrema windows can be identical; no blanket equivalence found.",
+      "limitation": "Scoped source/metadata search establishes no identified exact duplicate, not an unrestricted proof over other batches or unexamined implementations."
+    },
+    "strongest_neighbor_counterevidence": [
+      {
+        "source": "Root current authorized message; certified EX050 center metrics provided, no underlying account bytes read by this review",
+        "mechanism": "BEAR_RANK_ACF20",
+        "cagr": 0.106801098,
+        "whole_drawdown": 0.139134756,
+        "closed_trades": 110,
+        "required_cagr": 0.108289579,
+        "return_gate": false,
+        "negative_benchmark_year_profit_gate": false,
+        "annual_2022": -0.033703824,
+        "annual_2023": 0.006647627,
+        "interpretation_zh": "同样抗异常幅度的秩替换未满足原收益门及2022盈利门；缩尾保留中间幅度有所不同，但不能把抗极值预先当经济改善。"
+      },
+      {
+        "source": "research/S013/experiments/EX027_20261011/others/report.md",
+        "mechanisms": "MEDIAN3/MEAN3 existing rawACF estimators",
+        "closed_trades": [
+          109,
+          109
+        ],
+        "annual_2023": [
+          -0.009355,
+          -0.032123
+        ],
+        "interpretation_zh": "抗异常聚合或平滑已损害频率和弱盈利年份；这些不是缩尾的直接结果预测。"
+      },
+      {
+        "source": "research/S013/experiments/EX015_20261011/others/report.md",
+        "original_same_domain32_qualified": 0,
+        "original_return_q10": 0.058974,
+        "original_drawdown_q90": 0.305044,
+        "interpretation_zh": "入场统计量替换仍留下原整数H、路由阈值与联合参数脆弱性，不能只凭较弱中心的相对退化宣布改善。"
+      }
+    ],
+    "decision": {
+      "duplicate_or_general_math_equivalence_no_go": false,
+      "next_step": "PROSPECTIVE_PURE_METHOD_REVIEW_ONLY",
+      "finance_authorization_given_by_this_review": false,
+      "statement_zh": "未发现重复或一般数学等价，可作为不同的幅度处理假设供事前纯评审。先固定退化拒绝与原13共同域，不实施、不启动新实验；经济依据弱，完整反证必须保留。"
+    },
+    "references": {
+      "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+      "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/acf_range.py": "722c3ddd11d910893d66873dbb6f654351fdd7884b1a2e9eeba7e2ba14513276",
+      "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+      "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/bear_rank_range.py": "f5c2d6cf756b2b33332f0dc25a5b5e148fcc6ba3a1060fa45be40eb10f5147cc",
+      "research/S013/experiments/EX027_20261011/others/report.md": "e8bc9b63421c1ae1e4c363ba2029e7639dd878aa29ca8603ada0a1748baf1716",
+      "research/S013/experiments/EX015_20261011/others/report.md": "9913154d564e69e6bbc3a273aea70be327e60af533a9b28aaee6fc985844c393"
+    }
+  },
+  "duplicate_check_sha256": "78cb216e7ca02b736575008a149fa79b988405c96ba73987d8d35ce707dce079",
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 46,
+    "content_sha256": "c1dec188bb850c1ec49b40ad306209e3f9dc3cb6968c523fc63c386afa4da1fb"
+  },
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. RSCH S013 stage3, existing data, original economic gates and full13 parameter comparability retained.",
+  "method": "Authenticate original33 complete native serializations and EX047 before states. Existing prepared bound daily assets only. Fixed20 simple returns, sorted only to select second-smallest/second-largest bounds; clamp each value in original time order, preserve20 observations. Compute common20mean covariance19 divided by variance20 using original np.isclose(var,0) undefined policy, no fallback. At each requiredT reject incomplete/nonfinite/undefined. Certify original target/reason/next state exact; replace only bear_acf_value. Keep raw route/range/H/rawacf/confirmation exact. Retain1636 dates/year partitions, no alternative state propagation/cash replay/evaluation.",
+  "counts": {
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "observed_native_paths": 33
+  },
+  "external_sources": {
+    "research/S013/experiments/EX047_20261011/src/common.py": "884d50ba79ce6489d04325c28d4713b402637458009c6aac4d117d2d9fe4c2cd",
+    "research/S013/experiments/EX047_20261011/src/native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "research/S013/experiments/EX047_20261011/src/transition.py": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26"
+  },
+  "limits": "Posthoc endogenous observed states, not profitability/future frequency. Original13 numeric domains/units/same32 retained but statistic meaning and filtering strength differ. Fixed each-tail1 replacement structural, no optimization; preserves interior magnitudes but may remove informative jump. Degenerate required windows fail explicitly; no18 trimming/interpolated quantile/abs/output clipping/threshold remap/fallback."
+}

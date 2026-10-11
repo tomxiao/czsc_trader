@@ -1,0 +1,130 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "BEAR_WINSOR_ACF20 fixed structure: twenty original simple returns; sort only for second-smallest/second-largest bounds, retain original time order using max(lower,min(r,upper))",
+    "Original common twenty-value mean/variance and nineteen-adjacent-pair covariance formula after winsorization; original np.isclose(variance,0) unavailable rule, requiredT strictly refused",
+    "Only bear entry ACF condition uses bear_acf_value>=original bear.acf_min. Original rawacf1 columns and original rawACF buy confirmation remain unchanged",
+    "Original raw regime routing/immediate exits, bull entry, range/time/stop/trail precedence and original signal-session H unchanged",
+    "Complete causal daily computation before reindex; exactly20 finite returns. No18-observation trimming, interpolated quantile, sequence sorting, output coefficient clipping, abs, fallback or threshold remapping",
+    "All13 original numerical domains/centers and original32 coordinates retained. Threshold0.1 is not equal filtering strength across estimators; both dimensionless but statistics differ",
+    "Fixed20 plus at most one strictly external observation per tail; no new numeric coordinate or length search; original parent warmup unchanged, estimate needs21 causal prices"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at original C2132 numeric centers/full13domains/coordinates. Coupled cohort is historical counterevidence with multiple structural differences.",
+  "candidate_reservation": {
+    "first": 6940,
+    "last": 6971
+  },
+  "prospective_identity_note": "New center C6980 and parameter C6940..6971 are prospective only; root must check all33 collisions before any declaration.",
+  "helper_source_files": {
+    "run_parameters.py": "4c0232d310a961046e4f9e6ff94e204259f34a1a45083eea22bf06494dddbcb4",
+    "parameter_analysis.py": "8a1886e494ad2f4a7840d7b17f874d013f2f708716314b8a7cea808b9661f525",
+    "pair_parameters.py": "72aa93c653e042078122ea388d9df51b53b83b97f8a6f08e80f4559bf85c1e18",
+    "declare_geometry.py": "b994dbc131be0392374decb86205889077372de6ea87fba36bb831922a58ab91",
+    "common.py": "6e71dbc47b2f0b359cf1131ae21c61be0ea2549e592984edf5b488e23f808917",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61"
+  },
+  "winsor_oracle_sha256": "d668e0becd2593e346e70f6f9b5ce4c3b54671ac7a314ea4375e196067bb6444",
+  "legacy_direction_oracle": {
+    "path": "research/S013/experiments/EX043_20261011/src/direction_oracle.py",
+    "sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5"
+  },
+  "selection_history": "After FULL46 EX050 rank-ACF center failed return and2022 profitability gates, bounded EX051 duplicate/statistical-contract review found no exact prior fixed second-order-bound winsor bear filter. Test one prospective amplitude-processing mechanism retaining middle magnitudes. Existing robust/smoothed ACF, rank and direction failures retained. Adaptive exposed development pool, no numerical optimization or independent validation.",
+  "counts": "If qualified:64 old controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key aliases preserve native labels/IDs/source/plans/lineage/account references. Registered original C2132 is IMPLEMENTATION parent; own new center is PARAMETERS parent. Coupled C4900 is historical control only.",
+  "economic_policy": "Only four original economic gates qualify center; all neighbor gates remain diagnostics, no additional veto. AbsoluteQ10/Q90 and relative degradation jointly inform improvement."
+}
