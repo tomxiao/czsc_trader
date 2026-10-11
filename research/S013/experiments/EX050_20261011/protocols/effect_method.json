@@ -1,0 +1,1059 @@
+{
+  "name": "S013-EX050-rank-acf-conditional-state",
+  "source_sha256": "526829f6468d644cda0af47334898b7f06260f507b9f065c63aeb5e2368f556d",
+  "source": "\"\"\"Only conditional steps on original33 authenticated states; zero new finance.\"\"\"\nfrom dataclasses import replace\nfrom pathlib import Path\nimport sys\nimport numpy as np\nimport pandas as pd\n\nROOT = Path(__file__).resolve().parents[1]\nsys.path.insert(0, str(ROOT / 'research/S013/experiments/EX047_20261011/src'))\nfrom common import SOURCE_CALLS, context, read, write, cache_read, file_hash, TRANSPORT\nfrom native_reference import verified_json, bound_bars\nfrom transition import SignalKind, Feature, SignalState, validate_parameters, step\nfrom czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, validate_evaluation_evidence\nfrom czsc_trader.research_tools.context import ExperimentRef\nfrom czsc_trader.application import publish_evidence\nfrom czsc_trader.research_tools import MaterialEvidenceWrite\n\nREASONS = ('flat', 'entry', 'hold', 'range', 'time', 'regime', 'confirmation_rejected')\nROUTES = (None, 'bull', 'bear')\n\n\ndef rank_rho(values):\n    assert len(values) == 20 and np.isfinite(values).all()\n    x, y = values[:-1], values[1:]\n    ranks = [np.array([1 + sum(v < z) + (sum(v == z) - 1) / 2 for z in v], dtype=float) for v in (x, y)]\n    dx, dy = [v - v.mean() for v in ranks]\n    vx, vy = np.dot(dx, dx), np.dot(dy, dy)\n    if vx == 0 or vy == 0:\n        raise ValueError('Undefined rank statistic; no fallback')\n    rho = np.dot(dx, dy) / np.sqrt(vx * vy)\n    assert np.isfinite(rho) and -1.000000000000001 <= rho <= 1.000000000000001\n    return float(rho)\n\n\ndef encode(decision):\n    return [decision.target, REASONS.index(decision.reason), ROUTES.index(decision.next_state.route), decision.next_state.age]\n\n\ndef main():\n    exp = ExperimentRef('S013', 'EX050_20261011')\n    protocols = exp.resolve(ROOT) / 'protocols'\n    method = verified_json(read(protocols / 'effect_method_reference.json'))\n    assert method['source_sha256'] == file_hash(Path(__file__))\n    source = verified_json(method['input_reference'])\n    native_refs = read(ROOT / 'research/S013/experiments/EX047_20261011/protocols/plan.json')['input_accounts']\n    assert source['status'] == 'PASS' and source['summary']['unique_native_accounts'] == 33\n    center = next(r for r in cache_read(TRANSPORT / 'prepared.pkl.gz') if r['label'] == 'B0-TIME')\n    matrix = read(ROOT / 'research/S013/assets/runs/EX043_20261011/parameter_matrix_v3.json')\n    points = sorted((r for r in matrix['rows'] if r['center'] == 'B0-TIME'), key=lambda r: r['point_index'])\n    assert [r['point_index'] for r in points] == list(range(32))\n    ctx, accounts = context(1), {}\n    for item in [None, *points]:\n        key = 'center' if item is None else f\"P{item['point_index']:02d}\"\n        bound, result = (center['center'], center['result']) if item is None else cache_read(TRANSPORT / (item['label'] + '.pkl.gz'))\n        formal = verified_json(native_refs[key])\n        validate_evaluation_evidence(formal)\n        assert serialize_evaluation_evidence(bound, result) == formal\n        pair = source['pairs']['P00'] if item is None else source['pairs'][key]\n        p = pair['center_parameters'] if item is None else pair['point_parameters']\n        assert p == bound.strategy.payload['parameters']\n        frame = result.runs[0].execution.decisions\n        dates = pd.DatetimeIndex(pd.to_datetime(frame.signal_date)).normalize()\n        close = bound_bars(ctx, bound).Close.astype(float)\n        ret = close / close.shift(1) - 1\n        ranks = ret.rolling(20, min_periods=20).apply(rank_rho, raw=True).reindex(dates).to_numpy()\n        assert np.isfinite(ranks).all()\n        rules = validate_parameters(SignalKind.ORIGINAL_TIME, p)\n        before_name, actual_index = ('center_before', 0) if item is None else ('point_before', 3)\n        rows = []\n        for i, (record, row) in enumerate(zip(pair['all_days'], frame.itertuples(), strict=True)):\n            before = record[before_name]\n            state = SignalState(bool(before[0]), ROUTES[before[1]], before[2])\n            feature = Feature(str(row.regime), float(row.close), float(row.close),\n                float(row.bull_range_position), float(row.bear_range_position), float(row.acf1), float(row.acf1),\n                float(row.confirmation_score), p['confirmation']['threshold'], *rules)\n            original = encode(step(SignalKind.ORIGINAL_TIME, state, feature))\n            assert original == record['full_four'][actual_index]\n            assert original[0] == int(row.target_position) and REASONS[original[1]] == row.signal_reason\n            alternate = encode(step(SignalKind.ORIGINAL_TIME, state, replace(feature, bear_acf_value=float(ranks[i]))))\n            rows.append({'signal_date': record['signal_date'], 'execution_date': record['execution_date'],\n                'observed_before': before, 'raw_acf': float(row.acf1), 'rank_acf': float(ranks[i]),\n                'raw_bear_filter': bool(row.acf1 >= p['bear']['acf_min']), 'rank_bear_filter': bool(ranks[i] >= p['bear']['acf_min']),\n                'actual': original, 'conditional_probe': alternate})\n        assert len(rows) == 1636\n        def summarize(subset):\n            return {'days': len(subset), 'bear_filter_changes': sum(r['raw_bear_filter'] != r['rank_bear_filter'] for r in subset),\n                'conditional_target_changes': sum(r['actual'][0] != r['conditional_probe'][0] for r in subset),\n                'conditional_reason_changes': sum(r['actual'][1] != r['conditional_probe'][1] for r in subset),\n                'conditional_next_state_changes': sum(r['actual'][::2] != r['conditional_probe'][::2] or r['actual'][3] != r['conditional_probe'][3] for r in subset)}\n        partitions = {str(year): summarize([r for r in rows if int(r['signal_date'][:4]) == year]) for year in sorted(set(dates.year))}\n        summary = summarize(rows)\n        assert sum(x['days'] for x in partitions.values()) == 1636\n        assert sum(x['conditional_target_changes'] for x in partitions.values()) == summary['conditional_target_changes']\n        accounts[key] = {'native_reference': native_refs[key], 'parameters': p, 'all_days': rows, 'summary': summary, 'signal_years': partitions}\n    assert not SOURCE_CALLS\n    output = ROOT / '.tmp/ex050-rank-acf-effect/diagnosis.json'\n    assert not output.exists()\n    summary = {'observed_native_paths': len(accounts), 'signal_days': 33 * 1636, 'center': accounts['center']['summary'],\n        'point_conditional_target_changes': sum(v['summary']['conditional_target_changes'] for k, v in accounts.items() if k != 'center'),\n        'new_account_evaluations': 0, 'new_account_preparations': 0, 'cash_replays': 0}\n    write(output, {'status': 'PASS', 'method_reference': read(protocols / 'effect_method_reference.json'),\n        'input_reference': method['input_reference'], 'accounts': accounts, 'summary': summary, 'limits': method['limits'], 'provider_calls': SOURCE_CALLS})\n    ref = publish_evidence(ctx, MaterialEvidenceWrite(exp, 'rank-acf-observed-state-effect', output.read_bytes(), 'application/json', 'json'))\n    write(protocols / 'effect_reference.json', ref.to_dict())\n    print({'status': 'PASS', **summary})\n\n\nif __name__ == '__main__':\n    main()\n",
+  "input_reference": {
+    "evidence_id": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4.json",
+    "experiment": {
+      "experiment_id": "EX047_20261011",
+      "strategy_id": "S013",
+      "type": "ExperimentRef"
+    },
+    "media_type": "application/json",
+    "name": "complete-single-coordinate-observed-state",
+    "schema": null,
+    "schema_version": null,
+    "sha256": "9f02253e2e2183981e84dd0f33f3294c20f026b8573bca1c7a74fa1a8b6483a4",
+    "type": "EvidenceRef"
+  },
+  "duplicate_check": {
+    "status": "READ_ONLY_CHECK_PASS",
+    "created_at_utc": "2026-10-11T01:11:23.619665+00:00",
+    "new_account_evaluations": 0,
+    "account_or_market_data_reads": 0,
+    "runtime_files_written": 0,
+    "scope": "仅research/S013/experiments内既有PY/MD/JSON；未扫描assets、未读取其他批次、未调用平台/账户接口；唯一写入本JSON。",
+    "candidate": "仅bear入场ACF门替换为20个原日收益的19相邻对、分样本平均同秩Spearman；原rawacf1继续用于原列与买入确认。",
+    "duplicate_check": {
+      "exact_duplicate_found": false,
+      "claim_limit": "在本次所列搜索边界及保留源码中未发现精确重复；不是对不可访问/未保存历史的断言。",
+      "scanned_files": 1582,
+      "inventory_sha256": "f475630c04b913a22c44eb51aba385edfd42655d4b223ebcc3eb4fdf700905f0",
+      "strategy_files": 310,
+      "distinct_strategy_source_hashes": 55,
+      "search_pattern": "spearman|斯皮尔|秩相关|rank.?corr|corr.{0,50}rank|rank.{0,50}corr|rankdata|\\.rank\\(",
+      "hits": [
+        {
+          "path": "research/S013/experiments/EX002_20261007/others/report.md",
+          "sha256": "10df9df8ebafe22d2dd1f68749fc826b4c557d4c6965c680cd5790c8a443b230",
+          "matches": [
+            {
+              "line": 17,
+              "text": "阈值逐年仅从过去已结束标签拟合，2021—2026逐年测试；2020只作初始探索。先检验年度和全池秩相关，再检验40日区块抽样、所有非重叠相位、趋势/相对波动分层及固定模型消融。补充检验在观察首轮结果后设计，明确属于自适应研究；未作研究族多重比较校正，无独立封存验证池。"
+            },
+            {
+              "line": 23,
+              "text": "秩相关（IC）衡量组件数值较大时，未来收益通常更高还是更低；负值支持相对低位回归，正值支持同向信息。下表的区间是重叠样本的40日移动区块诊断区间，全部跨零；不能把年度方向一致解释为已通过统计显著性检验。"
+            },
+            {
+              "line": 34,
+              "text": "区间位置定义为`(Close-60日最低Low)/(60日最高High-60日最低Low)`，只消费截至T的已形成历史。较低位置对应较高后续收益的关系在三个期限均为7年同向。它与60日涨幅相关0.7543，取更直接的区间状态表达；当前波动、趋势对照后的10日偏秩相关为-0.0588。"
+            },
+            {
+              "line": 36,
+              "text": "一阶相关性来自最近20日收益序列，度量相邻收益是否一起变动。其10日偏秩相关为0.1059，与区间位置相关-0.0344，有不同的信息职责。2026年收益关系反向，风险标签仅3/7年与全池同向，因此不作为稳定的风险屏蔽组件。"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/protocols/protocol.json",
+          "sha256": "bc8aee8915a0e4e9de18103894c6a24f9e1542bce83cb6ca64e41d9cc5b2fe88",
+          "matches": [
+            {
+              "line": 71,
+              "text": "    \"全池与逐年秩相关、年份一致性\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/src/followup.py",
+          "sha256": "dfe198e55ce1601d1492f190def575034cd0f9d6eabb32f7bda5c3528f7da73c",
+          "matches": [
+            {
+              "line": 8,
+              "text": "from scipy.stats import spearmanr"
+            },
+            {
+              "line": 19,
+              "text": "    return float(spearmanr(x,y).statistic)"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/src/price_sensitivity.py",
+          "sha256": "4ed6183294eb73baf8c23933a7487b4e938456196053dea5b5058e66aa065578",
+          "matches": [
+            {
+              "line": 6,
+              "text": "from scipy.stats import spearmanr"
+            },
+            {
+              "line": 41,
+              "text": "        output['raw_price'][feature]={'return10_ic':float(spearmanr(view.feature,view.label).statistic),"
+            },
+            {
+              "line": 43,
+              "text": "            'annual_ic':{str(y):float(spearmanr(g.feature,g.label).statistic) for y,g in view.groupby(view.Date.dt.year)}}"
+            },
+            {
+              "line": 47,
+              "text": "        output['raw_volume'][feature]={'return10_ic':float(spearmanr(mixed_features.loc[valid,feature],original.loc[valid,'return_10']).statistic),"
+            },
+            {
+              "line": 49,
+              "text": "            'feature_rank_correlation':float(spearmanr(mixed_features[feature],original[feature]).statistic),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/src/study.py",
+          "sha256": "bba3fefd5422b5ac1e19f130c611106385a12a9a0d8c5ed2a4e1a0b24facae54",
+          "matches": [
+            {
+              "line": 12,
+              "text": "from scipy.stats import spearmanr"
+            },
+            {
+              "line": 28,
+              "text": "    return float(spearmanr(x, y).statistic)"
+            },
+            {
+              "line": 32,
+              "text": "    ranks = frame.rank(pct=True)"
+            },
+            {
+              "line": 141,
+              "text": "    correlations = dataset[features.columns].corr(method='spearman')"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX002_20261007/src/verify.py",
+          "sha256": "a36a1dcbf618b60b5510f8db714cd77f99fca79221aa1dc6bccb14e4597aefd8",
+          "matches": [
+            {
+              "line": 9,
+              "text": "from scipy.stats import spearmanr"
+            },
+            {
+              "line": 61,
+              "text": "            np.testing.assert_allclose(spearmanr(data[name],data[label]).statistic,values[label]['ic'],rtol=1e-8,atol=1e-8)"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX049_20261011/protocols/oracle_prototype.json",
+          "sha256": "fea98e49db2634d273197c1f62320104e13e1461e42fff18c50e2f38bccdae86",
+          "matches": [
+            {
+              "line": 13,
+              "text": "      \"source\": \"{\\n  \\\"status\\\": \\\"FAILED\\\",\\n  \\\"new_account_evaluations\\\": 0,\\n  \\\"stage\\\": \\\"synthetic mean-versus-majority fixture\\\",\\n  \\\"assertion\\\": \\\"Full W+3 and causal feature/score warmup required\\\",\\n  \\\"cause\\\": \\\"Fixture assigned thirty preceding Close values to a constant; raw ACF variance became zero and complete original confirmation ranks were correctly unavailable. This was a synthetic input error, not a failure of the economic mechanism.\\\",\\n  \\\"correction\\\": \\\"Assign only the three W-lag denominator Closes to 100, preserving nonconstant complete ACF/rank prehistory.\\\"\\n}\\n\""
+            }
+          ]
+        }
+      ],
+      "strategy_hash_inventory": [
+        {
+          "sha256": "020e91b8aaf6681f2892272e625a07547b129d7f1b5459b958b1b7fcb69b0424",
+          "paths": [
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/price_confirmed_exit.py"
+          ]
+        },
+        {
+          "sha256": "0a773c016f98797f0b0546a1d18eaf4297d661cb185c6961fd502e61112e7339",
+          "paths": [
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "11adad5020639162fcf522ea81b4d7f9d14f6b2b9ec8dcfdab372194ae98d16f",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/reentry_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "1bb43525487e237488350297a8a44e15505bfa01106411f866e04e1941fb64dd",
+          "paths": [
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "1d49d8f8aa35ac81adf6ffbc1e98a407c84dce02e820a3180256a6bc767c2af8",
+          "paths": [
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "2123a2a6e9f4dba5296ec02df4d88c472bc05a4283113985148c0c0203602d75",
+          "paths": [
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/entry_refresh_range.py"
+          ]
+        },
+        {
+          "sha256": "249603c81a52cec1535956b47db28f7c2788b41d8fc194f9f1ee85fb69cf4898",
+          "paths": [
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/exit_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "25f9fe1863977d0fffaee0f9c267288b23a0f8123b60b6964e652ea9d4b89102",
+          "paths": [
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "2959305f2fb296c04971dbd3ecff46d36b39a9feef7d115405b22d2248fde5bc",
+          "paths": [
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "2bde348ded95c963e0dcb6548a61df1baab59fbae2a4967287422893b405bad8",
+          "paths": [
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "2be19d3acaa4c056e7d33eae60e8f1932a1ab845f12ebd6595ab49159b596a67",
+          "paths": [
+            "research/S013/experiments/EX003_20261007/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "2c69aa871ff8a5a7fdc15bcd894e181eefb2856d5cb86cc61cef8e992a82f87c",
+          "paths": [
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/mean_momentum_range.py"
+          ]
+        },
+        {
+          "sha256": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef",
+          "paths": [
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "54c17f2b9e1e0eccaf19970bc02b3d3f4b905e4adb6c3ebf04d92ee9c5b52f64",
+          "paths": [
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "5d7891c50cf34692ed7f77a02d1eb24a45b15e3bf020453f666da48a8773ecae",
+          "paths": [
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+          "paths": [
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "6b8b51a38180064c51824feb56aad411f5844948b70f10a93eeee8489492297d",
+          "paths": [
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/regime_majority_range.py"
+          ]
+        },
+        {
+          "sha256": "6bf3f4ffb500468e7ba0e6ab71073f771c02e6ab217b5d48c52fb8d9fc3b371b",
+          "paths": [
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/stable_range.py"
+          ]
+        },
+        {
+          "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+          "paths": [
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "6fdbcaaebc51d1b666817bb93c628b69f49861179202943b319f444bd02e1bea",
+          "paths": [
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "722c3ddd11d910893d66873dbb6f654351fdd7884b1a2e9eeba7e2ba14513276",
+          "paths": [
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "747050bc3a7dd7f1e54df91aaf1532e30d04be890d97138ee234f64ddc2a92c5",
+          "paths": [
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_risk_one_range.py"
+          ]
+        },
+        {
+          "sha256": "7739c95baaa76021e20b6e775827faf200aa2f8a624b328948790a5e079bafb3",
+          "paths": [
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+          "paths": [
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "7fb3aed8742a7a209cb7cd3a6ec0f0ef5b7c11d8541b84f23da3edcef9f81dad",
+          "paths": [
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/midpoint_volatility_time_range.py"
+          ]
+        },
+        {
+          "sha256": "8216102550da7e8898775273988970f1a4bb14b2aa485ce4589f75f329a0f3eb",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "85c0f3bf8d52f3f352d89504ae4a274a6adedab5e233b66fc4f58dc2889a7c46",
+          "paths": [
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/volatility_time_range.py"
+          ]
+        },
+        {
+          "sha256": "871a0b1ad164f22ff603561cac1b68f04638cd8f06876f0e544194eae51692c2",
+          "paths": [
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/adaptive_range/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX004_20261007/src/extended_window/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "8e857d028d8361171a8aee156b1ea8d38d3335c25d3da3bd4ab43271a8725ef5",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "950c0ff10fd773cf5e2d932e45ee4833a17627f17d35ff9ee25b3afdf51b1fa5",
+          "paths": [
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "99635e970e79c7d95051411e8a026feac3f0b9d8bbe38d177a8ff729d9247093",
+          "paths": [
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/score_change_range.py"
+          ]
+        },
+        {
+          "sha256": "9a60174b633d0f3556b58ded3548c69885efbb2d6505c0ff051c7f8dc45fda94",
+          "paths": [
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "9b8230bee36d04865a7236c3271739416326542ffe766e3132e4b36d45cebaa6",
+          "paths": [
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "9d28a8ea74363720c0767e263a3e9e00a41bf8d72bce0f4c1e6b66d323539172",
+          "paths": [
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+          "paths": [
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "b1815cd8fb087742e96b425ed951d0fe2765da0f0479e882ed47cfe810a586cf",
+          "paths": [
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+          "paths": [
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "bccb2974e5db0c6f7fe3310d2af5401e1513c90833951755ea3a1060af353488",
+          "paths": [
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+          "paths": [
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/acf_background_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_background_range.py"
+          ]
+        },
+        {
+          "sha256": "c368ceb5c325458e81e5927533d8cfbf8af79b88d379d87bd19a9230a86d8b3d",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/adaptive_range.py"
+          ]
+        },
+        {
+          "sha256": "c5d5550206d933677a1313bdf3ce31976ad4efd123618ff98bc09c17576ff18c",
+          "paths": [
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/eligibility_refresh_range.py"
+          ]
+        },
+        {
+          "sha256": "c5edcfa64d0db8df12a998e805cbacbfdd42d689c3ddc8cd2ca9219c1a55cc3d",
+          "paths": [
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "cb65f2da5bb2fc348bbe7f0d24144381bb97d7b847c4d06fd8abe4c32a0b8b6a",
+          "paths": [
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+          "paths": [
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "ce93e525c75cdc86b9910a3429af963a576ee5da9404fd16044e56451b2c6676",
+          "paths": [
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/score_change_range.py"
+          ]
+        },
+        {
+          "sha256": "d277da001495e032b5d3908825c5ce0c39668994e119bdcbc3af17f3e42e33dc",
+          "paths": [
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "d4f55756c8244c490932f7190b46224efda29b7f30d05fcd989bcdb419553873",
+          "paths": [
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "dafea6ef91a8a377bf313e2ac8097d312792e965a2ebbe2b7c8e4257745e866c",
+          "paths": [
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "e9f5479aaac663424ca66f3c0f9c0c095ec7197c624f22079bc76dab15a397a2",
+          "paths": [
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "ecc19135d97f2bf620bd8a16f22c825fedb3f04757df5bb744a7d2e3d92d79a5",
+          "paths": [
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/adaptive_range/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/adaptive_range.py"
+          ]
+        },
+        {
+          "sha256": "f623e4fdff5b43dddf9c5aefb599f3eadaa56b91374740fc22f0a252ec7fd58d",
+          "paths": [
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/exit_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "f75b7f71c1731204342f5c9445e5e0a9dfccd5945cc39d11df24ff9722093a1f",
+          "paths": [
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/complement_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "fe8f369a167d535cf9565d1c15954f3e1ca2ab48073327ab7effaed624511831",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        }
+      ],
+      "existing_spearman": "EX002组件诊断的feature-vs-future-label IC/组件间相关；不是局部20收益相邻19对，也未作为bear入场门。EX002的未来标签禁止进入候选当时计算。"
+    },
+    "precise_contract": {
+      "returns": "在完整有序daily HFQ Close上先计算r_t=Close_t/Close_(t-1)-1；每个T取r_(T-19)..r_T共20有限收益（21个Close）。不截短数据后才计算、不使用未来价。",
+      "pairs": "x=(r_(T-19)..r_(T-1)),y=(r_(T-18)..r_T)，各19项；分别在x和y内部用average ties作1..19秩。不能先rank全部20收益再截两段。",
+      "statistic": "rho=sum((rank(x)-mean(rank(x)))*(rank(y)-mean(rank(y)))) / sqrt(sum(dx^2)*sum(dy^2))。它是两个19秩向量的Pearson相关；不使用无同秩假设的1-6sum(d^2)/(n(n^2-1))简式。",
+      "finite_contract": "19对全部有限且两秩向量方差严格正；常数/同秩导致未定义时显式拒绝，不dropna缩样本、不填0、不缩放阈值、不裁剪相关值。单边19常数而20收益非恒定也必须识别。",
+      "warmup": "该统计本身需21价格，与原ACF20相同；原父range/confirmation/regime依赖保持。不得借此减少热身或新增数据。",
+      "scope": "仅原bear eligible中的ACF条件使用bear_acf_value>=bear.acf_min（等号通过），原rawacf1及confirmation原样；bull门、区间、H、rawregime路由、退出/费用/执行合同保持。",
+      "diagnostics": "bear_acf_value注明新秩统计，原acf1不覆盖；entry_acf_value/pass若输出应按实际route注明bear新值与bull原值。",
+      "original_estimator": "原components并非两个19样本分别中心化的Pearson相关：20收益共同均值centered，dot(centered[1:],centered[:-1])/19除以20项共同mean(centered^2)，原np.isclose零方差判定保留。",
+      "parameters": "原bear.acf_min完整[-0.6,0.5]及中心0.1，其余12数字坐标原域/中心不变；无阈值或秩变换再标定。原rawACF继续参与score意味着秩门并未消除原确认中的幅度信息/退化输入约束。"
+    },
+    "comparability": {
+      "verdict": "披露统计量替换、保留完整原域及相同点坐标时，不构成单位/域造假；属于同数字几何、不同估计器的机制对照。",
+      "required_disclosure": "两者均无量纲、表达相邻收益依赖，但定义/有限样本归一化不同；Spearman范围[-1,1]，相同0.1不代表过滤强度/通过比例相同。原阈值与5%归一化参数距离只在各自机制内定义。",
+      "prohibited_claims": [
+        "新值与原ACF逐点数值等价",
+        "0.1对应相同机会或相关性强度",
+        "同域32点等于等过滤力度/相同经济风险",
+        "秩化天然修复H或regime窗口敏感性",
+        "把新source/runtime身份覆盖为旧账户身份"
+      ],
+      "geometry": [
+        [
+          "bull.range_window",
+          21.0,
+          360.0,
+          "INTEGER"
+        ],
+        [
+          "bull.entry",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bull.exit",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bull.max_hold",
+          1.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "bear.range_window",
+          21.0,
+          360.0,
+          "INTEGER"
+        ],
+        [
+          "bear.entry",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bear.exit",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bear.max_hold",
+          1.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "bear.acf_min",
+          -0.6,
+          0.5,
+          "CONTINUOUS"
+        ],
+        [
+          "regime_window",
+          5.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "regime_threshold",
+          -0.2,
+          0.2,
+          "CONTINUOUS"
+        ],
+        [
+          "confirmation.lookback",
+          40.0,
+          120.0,
+          "INTEGER"
+        ],
+        [
+          "confirmation.threshold",
+          -0.5,
+          0.5,
+          "CONTINUOUS"
+        ]
+      ],
+      "algebra_examples": [
+        {
+          "case": "increasing_small",
+          "returns": [
+            -0.01,
+            -0.008947368421052631,
+            -0.007894736842105263,
+            -0.006842105263157895,
+            -0.005789473684210527,
+            -0.004736842105263158,
+            -0.00368421052631579,
+            -0.0026315789473684214,
+            -0.001578947368421053,
+            -0.0005263157894736855,
+            0.0005263157894736838,
+            0.001578947368421053,
+            0.0026315789473684206,
+            0.003684210526315788,
+            0.004736842105263157,
+            0.005789473684210527,
+            0.006842105263157894,
+            0.007894736842105262,
+            0.00894736842105263,
+            0.01
+          ],
+          "original_acf": 0.894736842105263,
+          "spearman": 1.0,
+          "original_threshold_0_1_pass": true,
+          "spearman_threshold_0_1_pass": true,
+          "purpose": "纯代数例，不是行情、账户或经济有效性证明"
+        },
+        {
+          "case": "increasing_terminal_jump",
+          "returns": [
+            -0.01,
+            -0.008944444444444444,
+            -0.00788888888888889,
+            -0.006833333333333334,
+            -0.005777777777777778,
+            -0.004722222222222223,
+            -0.003666666666666667,
+            -0.002611111111111112,
+            -0.0015555555555555566,
+            -0.0005000000000000004,
+            0.0005555555555555539,
+            0.00161111111111111,
+            0.002666666666666666,
+            0.0037222222222222205,
+            0.004777777777777777,
+            0.005833333333333331,
+            0.006888888888888887,
+            0.007944444444444443,
+            0.009,
+            0.18
+          ],
+          "original_acf": 0.06939633241776987,
+          "spearman": 1.0,
+          "original_threshold_0_1_pass": false,
+          "spearman_threshold_0_1_pass": true,
+          "purpose": "纯代数例，不是行情、账户或经济有效性证明"
+        }
+      ]
+    },
+    "mechanism_distinctions": {
+      "EX019": "只加bull价格方向门；原收益ACF统计不变。",
+      "EX022": "仅提前1天bear条件time退出，可叠加bull边界BODY；原ACF估计器不变。",
+      "EX027": "对三个相继ACF20估计值median/mean聚合，不是对单个20收益内相邻19对分别平均秩相关。",
+      "EX028": "rawACF20减严格过去L个ACF基准median/mean，不是Spearman；原raw确认不变。",
+      "EX037_EX038": "在MEAN居中背景加1/2/3单位逆向TR退出，不改变入场统计为秩相关。",
+      "EX040": "RAW或MEAN背景加bear入场Close/Body方向门；并未变ACF20成秩相关。"
+    },
+    "strongest_counterevidence": {
+      "existing_report_rows": {
+        "EX027_20261011": [
+          {
+            "line": 25,
+            "text": "|TIME|C2132|16.1572%|14.1599%|112|12.1687%|0.2841%|通过|"
+          },
+          {
+            "line": 27,
+            "text": "|BEAR_ACF_MEDIAN3|C8900|12.6646%|12.6916%|109|2.6125%|-0.9355%|frequency、negative_buyhold_year_profit|"
+          },
+          {
+            "line": 28,
+            "text": "|BEAR_ACF_MEAN3|C8901|13.2949%|15.4463%|109|-6.0190%|-3.2123%|frequency、negative_buyhold_year_profit|"
+          }
+        ],
+        "EX028_20261011": [
+          {
+            "line": 29,
+            "text": "|BEAR_ACF_CENTER_MEAN|C8701|13.5405%|23.9087%|123|11.4638%|0.5481%|annual_drawdown|"
+          }
+        ],
+        "EX040_20261011": [
+          {
+            "line": 19,
+            "text": "|N0|C5200|11.3928%|14.3459%|96|-0.1349%|-1.8693%|frequency、negative_buyhold_year_profit|"
+          },
+          {
+            "line": 20,
+            "text": "|N1|C5201|9.5058%|16.6953%|95|+2.7809%|-1.5228%|return、frequency、negative_buyhold_year_profit|"
+          }
+        ]
+      },
+      "nearby_result": "EX027中位数3/均值3均109闭合，低于110频率门；2023分别-0.9355%/-3.2123%。这反驳“鲁棒化或平滑统计自然带来经济稳健”，但不直接证伪未运行的新Spearman。EX040原RAW bear方向门两中心96/95闭合且2023均负，也说明改变bear筛选可能删掉有价值反弹。",
+      "mechanical_risks": [
+        "秩化丢失幅度信息，大冲击可能恰是有用信号；上例大末端收益的原ACF<0.1而Spearman=1，故秩化并非更保守。",
+        "19相邻对高度重叠，不是19个独立样本；同秩/顺序置换使阈值附近呈离散跳变，0.1未必更稳定。",
+        "原时间H与rawregime参数的状态连锁敏感性均未处理，原确认仍消费rawACF。",
+        "原中心112笔只比至少110门多2笔，2023原盈利0.2841%余量很小，门替换可同时损频率或亏损年盈利。",
+        "EX002原ACF风险标签方向仅3/7年一致、2026收益关系反向；已有证据没有证明秩相关能改变这一不稳定关系。"
+      ],
+      "limits": "邻近负面对照不是新估计器的完整账户结果；不以旧交易利润删项相加预测增益，不把同开发数据的多轮选择当独立验证。"
+    },
+    "references": [
+      {
+        "path": "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "research/S013/experiments/EX002_20261007/src/study.py",
+        "sha256": "bba3fefd5422b5ac1e19f130c611106385a12a9a0d8c5ed2a4e1a0b24facae54"
+      },
+      {
+        "path": "research/S013/experiments/EX002_20261007/others/report.md",
+        "sha256": "10df9df8ebafe22d2dd1f68749fc826b4c557d4c6965c680cd5790c8a443b230"
+      },
+      {
+        "path": "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "2959305f2fb296c04971dbd3ecff46d36b39a9feef7d115405b22d2248fde5bc"
+      },
+      {
+        "path": "research/S013/experiments/EX019_20261011/others/report.md",
+        "sha256": "177cff383c1232515ea8622d7fc6c9bce0a6fc197d1cd6e68b8ed44407877cba"
+      },
+      {
+        "path": "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "5d7891c50cf34692ed7f77a02d1eb24a45b15e3bf020453f666da48a8773ecae"
+      },
+      {
+        "path": "research/S013/experiments/EX022_20261011/others/report.md",
+        "sha256": "1960a2cb27b4a37467539912e8ecf215bbc37e06bfd19142158833bc12274590"
+      },
+      {
+        "path": "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "722c3ddd11d910893d66873dbb6f654351fdd7884b1a2e9eeba7e2ba14513276"
+      },
+      {
+        "path": "research/S013/experiments/EX027_20261011/others/report.md",
+        "sha256": "e8bc9b63421c1ae1e4c363ba2029e7639dd878aa29ca8603ada0a1748baf1716"
+      },
+      {
+        "path": "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b"
+      },
+      {
+        "path": "research/S013/experiments/EX028_20261011/others/report.md",
+        "sha256": "978a21ed77c41e0374d2ec0f98fe59a214aeeb0f2981329a012a326f096e0779"
+      },
+      {
+        "path": "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "747050bc3a7dd7f1e54df91aaf1532e30d04be890d97138ee234f64ddc2a92c5"
+      },
+      {
+        "path": "research/S013/experiments/EX037_20261011/others/report.md",
+        "sha256": "59bbfbc99d964e3ca25d587efa70d13fae89d30b5e1d2dd9af9ef10c5be3cfe1"
+      },
+      {
+        "path": "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "ecc19135d97f2bf620bd8a16f22c825fedb3f04757df5bb744a7d2e3d92d79a5"
+      },
+      {
+        "path": "research/S013/experiments/EX038_20261011/others/report.md",
+        "sha256": "526e2b88be72a51f91c1db655913ef47b69ce2a5815179238c4c6b94ed8bef27"
+      },
+      {
+        "path": "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "871a0b1ad164f22ff603561cac1b68f04638cd8f06876f0e544194eae51692c2"
+      },
+      {
+        "path": "research/S013/experiments/EX040_20261011/others/report.md",
+        "sha256": "8962271e348ded059c9f86276cd0bf49f2ec931710ba6d5a9991c64c79fffa65"
+      },
+      {
+        "path": "research/S013/experiments/EX046_20261011/protocols/geometry.json",
+        "sha256": "c8ea6038fcd47c19f75bb6de2b47c05a4f58b3135725b19bb68bbf3481e45ca7"
+      }
+    ],
+    "next_step": "先由根会话决定是否采用并固定上述19对/平均同秩/退化拒绝契约；本任务到此停止，不启动或编写新机制。若采用仍须完整账户四门及原13同域32点绝对/相对尾部，不能因纯统计鲁棒性宣告目标达成。"
+  },
+  "duplicate_check_sha256": "40a83cdf6525ef53149f6eff71849d6cf25d0cbd6ab9d5e7861f05bd5f7b9d00",
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 45,
+    "content_sha256": "be0f73b451fa57a21e4881f0e5f50876d4e16d64aacfc0371a1f3d31e675af2a"
+  },
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. RSCH S013 stage3, existing data, original economic gates and full13 parameter comparability retained.",
+  "method": "Authenticate all original33 complete native serializations and EX047 before-states. Fetch only existing prepared bound daily assets. Each T uses20 simple daily returns from full history: rank first19 and last19 separately using average ties; rho=dot(centered ranks)/sqrt(sum squares products). Reject zero rank variance or nonfinite, preserve negative values, no clipping/abs/scaling/filling. On each own observed state certify original target/reason/nextstate exact; replace only bear_acf_value with rho keeping raw route/range/H/rawACF/confirmation exact. Retain all1636 dates/year partitions. No alternative path propagation, cash replay or financial evaluation.",
+  "counts": {
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "observed_native_paths": 33
+  },
+  "external_sources": {
+    "research/S013/experiments/EX047_20261011/src/common.py": "884d50ba79ce6489d04325c28d4713b402637458009c6aac4d117d2d9fe4c2cd",
+    "research/S013/experiments/EX047_20261011/src/native_reference.py": "6ffa0c097d5538e4565558a28b0772410add409e3b003841c927d3ecabac6507",
+    "research/S013/experiments/EX047_20261011/src/transition.py": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26"
+  },
+  "limits": "Posthoc endogenous observed states, not profitability or future frequency. Full13 numeric domains/units/same32 unchanged, but Spearman statistic meaning differs from raw common-mean covariance20; same threshold is not equivalent strength. Fixed20 structural definition; amplitude information removed, ordering can jump. No new gate or fallback."
+}

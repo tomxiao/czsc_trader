@@ -1,0 +1,708 @@
+{
+  "name": "S013-EX050-bear-rank-acf20",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-COUPLED",
+      "index": 0,
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "../../EX043_20261011/src/strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX043_20261011",
+      "reuse_label": "N0"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C6680",
+      "content_sha256": "3f18b7b30de2077f2798f9e53aab39a3396a73ef087d8503d7de5ad92e2d0714",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_RANK_ACF20"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.bear_rank_range",
+          "qualname": "BearRankRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/bear_rank_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "38b127867deaadffe6571c22572237881c55ef1b51d2698e892c2427d2194c84"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "ORIGINAL",
+      "mechanism": "BEAR_RANK_ACF20",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "control_references": {
+    "B0-TIME": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX012_20261011"
+      },
+      "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+      "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+      "media_type": "application/json",
+      "name": "mechanism-final-account-b0-m1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "B0-COUPLED": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX043_20261011"
+      },
+      "evidence_id": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7.json",
+      "sha256": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7",
+      "media_type": "application/json",
+      "name": "bear-time-category-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 45,
+    "content_sha256": "be0f73b451fa57a21e4881f0e5f50876d4e16d64aacfc0371a1f3d31e675af2a"
+  },
+  "effect_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX050_20261011"
+    },
+    "evidence_id": "f1fe4bbeec3e9eadd6f4348833dcc1d49c528ba618a42c1d95eb748cb26d9630.json",
+    "sha256": "f1fe4bbeec3e9eadd6f4348833dcc1d49c528ba618a42c1d95eb748cb26d9630",
+    "media_type": "application/json",
+    "name": "rank-acf-observed-state-effect",
+    "schema": null,
+    "schema_version": null
+  },
+  "effect_method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX050_20261011"
+    },
+    "evidence_id": "2504b6af4a09714f3966aeebb2ffe5a08a6c5fa9c675ce03b24c363a04dedabc.json",
+    "sha256": "2504b6af4a09714f3966aeebb2ffe5a08a6c5fa9c675ce03b24c363a04dedabc",
+    "media_type": "application/json",
+    "name": "prospective-rank-acf-observed-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "pure_prototype_references": {
+    "runtime": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX050_20261011"
+      },
+      "evidence_id": "5bd740749c5818dfa0883d40f70a03359bdaaf2eca33fd44650fda27af6d8edc.json",
+      "sha256": "5bd740749c5818dfa0883d40f70a03359bdaaf2eca33fd44650fda27af6d8edc",
+      "media_type": "application/json",
+      "name": "runtime-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "oracle": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX050_20261011"
+      },
+      "evidence_id": "b2d38a2523031b5a1a89797486b5a234b449d6def77998235c1b679e4ada06d9.json",
+      "sha256": "b2d38a2523031b5a1a89797486b5a234b449d6def77998235c1b679e4ada06d9",
+      "media_type": "application/json",
+      "name": "oracle-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "parameter-checks": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX050_20261011"
+      },
+      "evidence_id": "f0ed4076ace42c567053c15005f534726345eda85242c704b29d0572cc366273.json",
+      "sha256": "f0ed4076ace42c567053c15005f534726345eda85242c704b29d0572cc366273",
+      "media_type": "application/json",
+      "name": "parameter-checks-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "hypothesis": "Rank ordering may reduce amplitude domination of a few returns in bear entry filtering, while preserving original confirmation and other state/path mechanisms. This is a testable estimator replacement, not a claim of smoother paths or equal filter strength.",
+  "mechanism": "Fixed20 original simple daily returns; first19 and last19 separately average-tie ranked. rho=dot(centered ranks)/sqrt(sum squares product); legal negatives retained, threshold equality passes. Zero rank variance/nonfinite required values reject; no abs/clipping/filling/fallback/threshold scaling. Full history before reindex; only eligible bear entry ACF uses rho. Original rawacf1 and all old schema/confirmation/state/ranges/H/exit priorities remain exact.",
+  "strongest_counterevidence": "EX013 removing bear ACF weakened negative-year protection, while EX027 time aggregation and EX028 centering raw ACF failed economic constraints. Spearman removes amplitude and rank can jump; same numeric .1 is not same filtering strength. Original center112 barely passes110. Original regime/H sensitivity untouched; repeated development pool not independent validation.",
+  "selection_history": "After FULL45 mean-momentum center failed. S013 bounded1582 source/metadata duplicate search found no exact rank19-pair entry implementation. EX002 future-label Spearman diagnostic is not used in runtime. One fixed20 mechanism, original numeric center, no rank-window/threshold optimization or units mapping/domain contraction/date exception.",
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. Existing RSCH S013 stage3 only; no stage4/freeze/PTE/production/newdata/platform/push.",
+  "predeclared_selection": "One new business center/two actual serial-spawn evaluations and2exact old centers. Only if center passes original4economic gates, run32newbusiness/33actual original13full-domain same32joint5% points, reuse original32/coupled32; otherwisezero parameter accounts. Success requires qualifying center and improvement in absolute Q10CAGR/Q90DD AND both center-relative degradations versus originalC2132. No all32qualification veto.",
+  "parameter_candidate_reservation": {
+    "first": 6640,
+    "last": 6671
+  },
+  "required_warmup": "Original parent unchanged; fixed20 original returns require21 closes already covered by original ACF20. Zero required rank variance explicitly refuses. Fixed20 is structural, not searched coordinate.",
+  "source_files": {
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+    "analyze.py": "0cd1e3dbb4d15d3dc49bb4affe31056652f88e0bd9a68901266103cbd7d84b62",
+    "common.py": "0aa06ec9fbe552e6f4f7fd636389338a0983bd7783455dc1e331a9eecdd3f0e2",
+    "declare.py": "56c389df8f2b341ced3d2847a64d35d09061d331db3a3501f68298997b81435e",
+    "declare_geometry.py": "de1d12641390959cb185316772c1d704216e555b0a132dde0ae1d4448539656c",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "pair_parameters.py": "465170a69bce972cab06141e67c64f2cf2791bccdd2d5702c4e868967ef7ee86",
+    "parameter_analysis.py": "0e2e4ec2be3d8193ca294e2f1e904f92bdf686ad638458354c45263bcfe38b45",
+    "precheck.py": "01f901d0f73a0f237d7bd1fa00393254568204182a61f2a6d0244e209a7e2400",
+    "publish.py": "5052733707ab2d2c7921c3153e2b2e4d71ee6dfbe6883d5f407f2dba30dfed9d",
+    "publish_accounts.py": "2ad3938e8e725e78da78f1497b1a96dab36b776cb15b5551b2ec39dcc7e8068d",
+    "rank_oracle.py": "53c4ac68ef0cd8952cd4f41c86aaea2d7761d6d94d557c49691115909b8efff2",
+    "run_parameters.py": "3911d248e29ba765b33a5f7b0112924039ee038422af4a81feacde68843a0413",
+    "synthetic_checks.py": "a26480fed0fc18268da331e0c5e0cb560e6420d8361d6e1567a88e7b75827d61",
+    "write_report.py": "62fb395e64ce5ffaa52aa5ec99ab4b3d6b946e08c45de803b026e27c5c1f6394",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/bear_rank_range.py": "f5c2d6cf756b2b33332f0dc25a5b5e148fcc6ba3a1060fa45be40eb10f5147cc",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "2554be4b3e2110299953ef75bba7c9c5f415ac257bdc0aa49622844a6d02f98e"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX043_20261011/src/direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "counts": {
+    "new_business_configurations": 1,
+    "new_evaluations": 2,
+    "reused_controls": 2
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "boundaries": "RSCH S013stage3; no adjacentbatch/newdata/dependency/platform/production/PTE/freeze/stageadvance/merge/tag/push",
+  "prospective_pure_verification": {
+    "status": "PURE_PASS",
+    "runtime_and_independent_oracle": [
+      {
+        "status": "PURE_PASS",
+        "check_count": 84,
+        "checks": [
+          "parent source byte exact range_reversion",
+          "parent source byte exact adaptive_range",
+          "parent source byte exact confirmed_range",
+          "parent source byte exact reentry_confirmed_range",
+          "numeric center and warmup unchanged180",
+          "public source authenticated enum without registration",
+          "independent scipy nineteen-pair average-tie ranks 0",
+          "independent scipy nineteen-pair average-tie ranks 1",
+          "independent scipy nineteen-pair average-tie ranks 2",
+          "independent scipy nineteen-pair average-tie ranks 3",
+          "legal negative rank correlation retained not abs",
+          "strict increasing pair rank correlation equality1",
+          "nonlinear amplitude map same ordering/ties retains statistic",
+          "separate19 sample rank differs from rank20 then slice",
+          "undefined or incomplete rank explicit refusal nineteen",
+          "undefined or incomplete rank explicit refusal twentyone",
+          "undefined or incomplete rank explicit refusal nan",
+          "undefined or incomplete rank explicit refusal inf",
+          "undefined or incomplete rank explicit refusal constant20",
+          "undefined or incomplete rank explicit refusal constantleft19",
+          "undefined or incomplete rank explicit refusal constantright19",
+          "schema adds only bear_acf_value",
+          "all raw features/current rawregime and original score exact",
+          "full synthetic daily rolling uses exact20 returns and19 adjacent pairs",
+          "real native prefix and future OHLCVA change causal",
+          "first selectedT uses actual preceding full-history returns",
+          "selected incomplete daily return window rejected no fill",
+          "bear rankbelow rejects despite rawACFpass",
+          "bear rankabove entry despite rawACFbelow",
+          "bear threshold equality passes",
+          "raw confirmation rejection retains priority",
+          "raw score equality passes",
+          "bull no bear filter despite negative statistic",
+          "legal negative threshold and negative statistic",
+          "matching eligibility original full bear history exact",
+          "bull complete path exact despite statistic difference",
+          "bear immediate rawbull regime no waiting",
+          "bull immediate rawbear regime unchanged",
+          "entry day never same-day exit even H1",
+          "original bear H1",
+          "original bear H2",
+          "original bear H4",
+          "original bear H60",
+          "range before time and regime",
+          "time before regime",
+          "loss before trailing/range/time/regime",
+          "trailing before range/time",
+          "regime switch disabled keeps holding",
+          "invalid mechanism None",
+          "invalid mechanism 'BEAR_RANK_ACF19'",
+          "invalid mechanism 'BEAR_ACF_MEDIAN3'",
+          "disabled original confirmation",
+          "native entire decision loop AST only bear eligible ACF substitution",
+          "full13 original endpoint bull.range_window=21",
+          "full13 original endpoint bull.range_window=360",
+          "full13 original endpoint bull.entry=0.0",
+          "parent infeasible domain endpoint bull.entry=1.0",
+          "parent infeasible domain endpoint bull.exit=0.0",
+          "full13 original endpoint bull.exit=1.0",
+          "full13 original endpoint bull.max_hold=1",
+          "full13 original endpoint bull.max_hold=60",
+          "full13 original endpoint bear.range_window=21",
+          "full13 original endpoint bear.range_window=360",
+          "full13 original endpoint bear.entry=0.0",
+          "parent infeasible domain endpoint bear.entry=1.0",
+          "parent infeasible domain endpoint bear.exit=0.0",
+          "full13 original endpoint bear.exit=1.0",
+          "full13 original endpoint bear.max_hold=1",
+          "full13 original endpoint bear.max_hold=60",
+          "full13 original endpoint bear.acf_min=-0.6",
+          "full13 original endpoint bear.acf_min=0.5",
+          "full13 original endpoint regime_window=5",
+          "full13 original endpoint regime_window=60",
+          "full13 original endpoint regime_threshold=-0.2",
+          "full13 original endpoint regime_threshold=0.2",
+          "full13 original endpoint confirmation.lookback=40",
+          "full13 original endpoint confirmation.lookback=120",
+          "full13 original endpoint confirmation.threshold=-0.5",
+          "full13 original endpoint confirmation.threshold=0.5",
+          "public original13 domain fixed32 design complete",
+          "all32 public numeric centers and integer types source constructor valid",
+          "minimum parent warmup61 not enlarged or reduced",
+          "61 prices minimum all required features complete",
+          "60 prices W60 missing rejects"
+        ],
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "native_account_reads": 0,
+        "public_authenticated_describe": true,
+        "mechanism": "BEAR_RANK_ACF20",
+        "center_warmup": 180,
+        "minimal_W60_warmup": 61,
+        "source_files": {
+          "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+          "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+          "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+          "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+          "strategies/bear_rank_range.py": "f5c2d6cf756b2b33332f0dc25a5b5e148fcc6ba3a1060fa45be40eb10f5147cc",
+          "strategies/__init__.py": "2554be4b3e2110299953ef75bba7c9c5f415ac257bdc0aa49622844a6d02f98e"
+        },
+        "implementation_sha256": "38b127867deaadffe6571c22572237881c55ef1b51d2698e892c2427d2194c84",
+        "focused_source_sha256": "30aba85bc8095cff238ab487369e54c827e6979889eb866e34d098c20d2f48bf",
+        "limits": [
+          "Average ranks of two separately ranked19 samples within twenty simple returns; no absolute value, clipping or threshold scaling.",
+          "Same original numeric domain/center/32 geometry does not imply equal filter strength or economically equivalent correlation thresholds.",
+          "Only bear eligibility ACF input changed; rawACF confirmation, all holding exits/H and rawregime remain.",
+          "Pure synthetic actual-native histories and explicit controlled fixtures; no financial robustness claim or candidate registration."
+        ]
+      },
+      {
+        "status": "PURE_PASS",
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "financial_account_reads": 0,
+        "provider_calls": [],
+        "new_runtime_imports": 0,
+        "original_dimensions": 13,
+        "parameter_points": 32,
+        "all_date_parameter_formula_paths": 33,
+        "check_count": 90,
+        "refusal_checks": 23,
+        "checks": [
+          "date audit AST exact frozen EX043",
+          "oracle no SRT or new strategy import",
+          "original13 whole domains seed13 .05L2 32 public points",
+          "pairwise average ranks agree separate sorted-tie reference for five cases",
+          "monotone adjacent ranks +1 and tied alternating ranks legal -1",
+          "strict order-preserving nonlinear amplitude transform leaves rank correlation exact",
+          "strict undefined input no drop/zero/abs/fallback all20constant",
+          "strict undefined input no drop/zero/abs/fallback first19constant20nonconstant",
+          "strict undefined input no drop/zero/abs/fallback last19constant20nonconstant",
+          "strict undefined input no drop/zero/abs/fallback containsNaN",
+          "strict undefined input no drop/zero/abs/fallback containsInf",
+          "strict undefined input no drop/zero/abs/fallback length19",
+          "all-date original feature/rawACF/rank/state point 0",
+          "all-date original feature/rawACF/rank/state point 1",
+          "all-date original feature/rawACF/rank/state point 2",
+          "all-date original feature/rawACF/rank/state point 3",
+          "all-date original feature/rawACF/rank/state point 4",
+          "all-date original feature/rawACF/rank/state point 5",
+          "all-date original feature/rawACF/rank/state point 6",
+          "all-date original feature/rawACF/rank/state point 7",
+          "all-date original feature/rawACF/rank/state point 8",
+          "all-date original feature/rawACF/rank/state point 9",
+          "all-date original feature/rawACF/rank/state point 10",
+          "all-date original feature/rawACF/rank/state point 11",
+          "all-date original feature/rawACF/rank/state point 12",
+          "all-date original feature/rawACF/rank/state point 13",
+          "all-date original feature/rawACF/rank/state point 14",
+          "all-date original feature/rawACF/rank/state point 15",
+          "all-date original feature/rawACF/rank/state point 16",
+          "all-date original feature/rawACF/rank/state point 17",
+          "all-date original feature/rawACF/rank/state point 18",
+          "all-date original feature/rawACF/rank/state point 19",
+          "all-date original feature/rawACF/rank/state point 20",
+          "all-date original feature/rawACF/rank/state point 21",
+          "all-date original feature/rawACF/rank/state point 22",
+          "all-date original feature/rawACF/rank/state point 23",
+          "all-date original feature/rawACF/rank/state point 24",
+          "all-date original feature/rawACF/rank/state point 25",
+          "all-date original feature/rawACF/rank/state point 26",
+          "all-date original feature/rawACF/rank/state point 27",
+          "all-date original feature/rawACF/rank/state point 28",
+          "all-date original feature/rawACF/rank/state point 29",
+          "all-date original feature/rawACF/rank/state point 30",
+          "all-date original feature/rawACF/rank/state point 31",
+          "all-date original feature/rawACF/rank/state point 32",
+          "three future perturbations cannot revise original/rank features or locked signal-state",
+          "original warmup retained W5 first61",
+          "original warmup retained W60 first61",
+          "bear rank low/equal/high; bull raw unchanged; legal negatives and null threshold retained",
+          "original immediate route/H/exit priority and unchanged dynamic raw-based confirmation preserved",
+          "valid13 domain endpoint bull.range_window=21.0",
+          "valid13 domain endpoint bull.range_window=360.0",
+          "valid13 domain endpoint bull.entry=0.0",
+          "infeasible13 domain endpoint bull.entry",
+          "infeasible13 domain endpoint bull.exit",
+          "valid13 domain endpoint bull.exit=1.0",
+          "valid13 domain endpoint bull.max_hold=1.0",
+          "valid13 domain endpoint bull.max_hold=60.0",
+          "valid13 domain endpoint bear.range_window=21.0",
+          "valid13 domain endpoint bear.range_window=360.0",
+          "valid13 domain endpoint bear.entry=0.0",
+          "infeasible13 domain endpoint bear.entry",
+          "infeasible13 domain endpoint bear.exit",
+          "valid13 domain endpoint bear.exit=1.0",
+          "valid13 domain endpoint bear.max_hold=1.0",
+          "valid13 domain endpoint bear.max_hold=60.0",
+          "valid13 domain endpoint bear.acf_min=-0.6",
+          "valid13 domain endpoint bear.acf_min=0.5",
+          "valid13 domain endpoint regime_window=5.0",
+          "valid13 domain endpoint regime_window=60.0",
+          "valid13 domain endpoint regime_threshold=-0.2",
+          "valid13 domain endpoint regime_threshold=0.2",
+          "valid13 domain endpoint confirmation.lookback=40.0",
+          "valid13 domain endpoint confirmation.lookback=120.0",
+          "valid13 domain endpoint confirmation.threshold=-0.5",
+          "valid13 domain endpoint confirmation.threshold=0.5",
+          "single invalid parameter regime_window=4",
+          "single invalid parameter regime_window=61",
+          "single invalid parameter regime_window=True",
+          "single invalid parameter regime_threshold=-0.200001",
+          "single invalid parameter regime_threshold=0.200001",
+          "single invalid parameter mechanism=ABS_RANK_ACF20",
+          "nonfinite Close before required window rejects",
+          "incomplete parent score/range warmup rejects",
+          "complete prepared-date API fixture retains final T+1",
+          "audit refuses single rank/original field drift bear_acf_value",
+          "audit refuses single rank/original field drift acf1",
+          "audit refuses single rank/original field drift regime_momentum",
+          "audit refuses single rank/original field drift confirmation_score",
+          "final valid_session T instead of T+1 rejected"
+        ],
+        "source_files": {
+          "rank_oracle.py": "d85b50178380449829c6a17b0d700a3aeacf8ec57c97fe8e755638262e7cd85d",
+          "focused_checks.py": "110d7823fa7664e2f453d052e48f5e0d6c8b8dd2102bd11ef3561fddb6b9a8e6"
+        },
+        "limits": [
+          "Independent pair-count rank formulas/state/date synthetic checks; no financial reads or native strategy import.",
+          "Original13 numeric coordinates/domain retained; Spearman threshold semantics differ from rawACF. No unit remap or strength-equivalence claim.",
+          "Formal promotion must bind SOURCE_CALLS to formal common. Cash/fees audit belongs to existing public ledger, not this signal oracle."
+        ]
+      },
+      {
+        "status": "PURE_PASS",
+        "checks": [
+          "original complete geometry unchanged protocol",
+          "original complete geometry unchanged coordinates",
+          "original complete geometry unchanged origins",
+          "original complete geometry unchanged mapping",
+          "original complete geometry unchanged feasibility",
+          "new rank oracle vs frozen legacy oracle distinct",
+          "prospective reservation consistent",
+          "registered implementation parent is original",
+          "all33 IDs strong CandidateKey contract only, not collision approval",
+          "public plan methods exist",
+          "public lineage supports derivation and parameter binding",
+          "public full13 three-center same32 coordinates",
+          "all32 materialization preserves types and original base",
+          "native alias cache isolation",
+          "invalid cache label",
+          "invalid control alias",
+          "32 unique fixed Optuna trials 4batches8 no alias mutation",
+          "trial outside fixed32 63",
+          "trial outside fixed32 96",
+          "mutating reused count not accepted",
+          "center selection only original four-gate flag False",
+          "center selection only original four-gate flag True",
+          "historical coupled is not implementation parent",
+          "unqualified declaration zero preparations/evaluations/reuse",
+          "unqualified analysis/pair without native cache reads",
+          "never audit oldcoupled using new oracle",
+          "new oracle N0 only, frozen legacy coupled only",
+          "three pair comparisons each complete32 strict coordinates",
+          "pair exact coordinates reject alteration",
+          "pair no partial31 comparison",
+          "unchanged immutable helper function economic",
+          "unchanged immutable helper function materialize",
+          "unchanged immutable helper function feasible",
+          "unchanged immutable helper function trial_index",
+          "unchanged immutable helper function authenticate_center",
+          "unchanged immutable helper function reuse_parameter_control",
+          "unchanged immutable helper function equal_results",
+          "rank statistic full-domain disclosure and original warmup",
+          "original bear.acf_min full domain preserved",
+          "all33 valid ID fixtures actually iterated",
+          "no financial read/prepare/eval invoked"
+        ],
+        "check_count": 41,
+        "financial_calls": [],
+        "new_account_preparations": 0,
+        "new_account_evaluations": 0,
+        "native_account_reads": 0,
+        "public_evidence_publications": 0,
+        "focused_source_sha256": "47259106d9ac4164c42595eb6eaeca00c03666344a43fcf4242a446afd5970b8",
+        "source_files": {
+          "run_parameters.py": "3911d248e29ba765b33a5f7b0112924039ee038422af4a81feacde68843a0413",
+          "parameter_analysis.py": "0e2e4ec2be3d8193ca294e2f1e904f92bdf686ad638458354c45263bcfe38b45",
+          "pair_parameters.py": "465170a69bce972cab06141e67c64f2cf2791bccdd2d5702c4e868967ef7ee86",
+          "declare_geometry.py": "de1d12641390959cb185316772c1d704216e555b0a132dde0ae1d4448539656c"
+        },
+        "limits": [
+          "Pure metadata/types/mock capabilities and in-memory Optuna only; no full-account input read.",
+          "Prospective IDs require root collision checks; qualified branch requires root frozen plan/common/oracle/account references.",
+          "C4900 is multi-structure historical counterevidence, not an isolated rank-estimator mechanism control.",
+          "All four economic gates unchanged; complete absolute and relative tails are required to assess the intended improvement."
+        ]
+      }
+    ],
+    "original_numeric_center_exact": true,
+    "original_full13_domains_32_coordinates": true,
+    "new_account_evaluations": 0,
+    "adaptation": "Independent oracle SOURCE_CALLS bound to EX050 forbidden-provider context; formulas/functions unchanged"
+  }
+}
