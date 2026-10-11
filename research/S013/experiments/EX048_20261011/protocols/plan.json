@@ -1,0 +1,598 @@
+{
+  "name": "S013-EX048-bear-only-two-rawbull-regime-exit",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-COUPLED",
+      "index": 0,
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "../../EX043_20261011/src/strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX043_20261011",
+      "reuse_label": "N0"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C5980",
+      "content_sha256": "175eaf395591e5377351945e4601abe57de855ffb26341547814e1dd80a2843d",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "BEAR_EXIT_BULL2"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.exit_confirmed_range",
+          "qualname": "ExitConfirmedRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/exit_confirmed_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "1ededaf17055e897cc71a07e6da3cde7f25ae6ac20f4ff64e8751c0cd41a3691"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "ORIGINAL",
+      "mechanism": "BEAR_EXIT_BULL2",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-TIME"
+    }
+  ],
+  "control_references": {
+    "B0-TIME": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX012_20261011"
+      },
+      "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+      "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+      "media_type": "application/json",
+      "name": "mechanism-final-account-b0-m1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "B0-COUPLED": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX043_20261011"
+      },
+      "evidence_id": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7.json",
+      "sha256": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7",
+      "media_type": "application/json",
+      "name": "bear-time-category-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 43,
+    "content_sha256": "491f9e58bdc379043fef8c25470c4c4eba4344365a2cb23bf56877123f225d40"
+  },
+  "effect_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX048_20261011"
+    },
+    "evidence_id": "9c268395eca233a25cf31b5c35798a61e7f9a3ccda14db3cfde2338e34943e9b.json",
+    "sha256": "9c268395eca233a25cf31b5c35798a61e7f9a3ccda14db3cfde2338e34943e9b",
+    "media_type": "application/json",
+    "name": "bear-only-two-rawbull-observed-effect",
+    "schema": null,
+    "schema_version": null
+  },
+  "effect_method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX048_20261011"
+    },
+    "evidence_id": "d198fc23dbcb9a8a39b59db96e0daa3146f9502a302daebb76c6b939d218be7a.json",
+    "sha256": "d198fc23dbcb9a8a39b59db96e0daa3146f9502a302daebb76c6b939d218be7a",
+    "media_type": "application/json",
+    "name": "prospective-bear-only-observed-effect-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "pure_prototype_references": {
+    "runtime": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX048_20261011"
+      },
+      "evidence_id": "b465449e6b6528a76239434f652060a7c293183ed8aa28e36a791bd009ad602f.json",
+      "sha256": "b465449e6b6528a76239434f652060a7c293183ed8aa28e36a791bd009ad602f",
+      "media_type": "application/json",
+      "name": "runtime-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "oracle": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX048_20261011"
+      },
+      "evidence_id": "77e7ce7be9aeb9a2db94ed402d9437716d8685a32eaa6694ea04ba7bcac36b9b.json",
+      "sha256": "77e7ce7be9aeb9a2db94ed402d9437716d8685a32eaa6694ea04ba7bcac36b9b",
+      "media_type": "application/json",
+      "name": "oracle-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    },
+    "parameter-checks": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX048_20261011"
+      },
+      "evidence_id": "a479a326439afa03557dad95f4e96b4b4f196ccee52095536204169f5bdd140f.json",
+      "sha256": "a479a326439afa03557dad95f4e96b4b4f196ccee52095536204169f5bdd140f",
+      "media_type": "application/json",
+      "name": "parameter-checks-pure-prototype",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "hypothesis": "Do not force a short bear rebound holding to exit on its first single rawbull, while retaining immediate bull-to-bear downside exit and original range/time maximum. This may reduce forced-exit timing differences under regimeW/threshold shifts. It is distinct from already failed bull-only2/3 exit delay and global3 majority.",
+  "mechanism": "Held bear regime exit requires current AND previous full-daily rawbull; held bull current rawbear remains immediate. Complete daily causal raw momentum Close_t/Close_t-W minus1 >= original return threshold, equality bull. Entry classification/range/ACF20/score and all13 numeric parameters unchanged. loss>trail>range>time>regime, maxhold original1..60 days. No entry-day forced exit; no state wait latch/filled-price anchor/category. switchFalse disables this regime exit as original.",
+  "strongest_counterevidence": "Original32 one-coordinate diagnostic shows H and ACF also matter, which this exit delay does not fix. Prior delayed bull exits/globalmajority failed frequency and negative-benchmark-year profit. Original center112 closed barely exceeds110; delay can reduce frequency or extend losses. Original heldbear cannot survive previous rawbull by design, so every old finalbear regime exit is a first-rawbull event; 17center/570pooled old conditional effects describe this endogenous rule, not a profit edge or revised policy trade count. The same repeated S013 development pool is not independent evidence.",
+  "selection_history": "After FULL43 original33 complete13coordinate forward/reverse conditional diagnosis and duplicate rawmedian3 rejection. One new fixed2 bear-only structure, original numeric center, no H/threshold/window/date selection; all negative experiments retained. Existing C4900 is historical multi-structure counterevidence, not an isolated fixed2 control; only versusC2132 isolates exit change.",
+  "predeclared_selection": "Only one new center1business/2actual serial-spawn,2oldcenters reused. If new four original economic gates pass, run32newbusiness/33actual at exact original13full domains/numeric centers/same32joint5% coordinates, reuseoriginal32/coupled32 exactly; otherwisezero params. Goal requires qualifying center and improvement in absolute Q10CAGR/Q90DD AND both center-relative degradations versusC2132. No all32qualification veto, dropped/narrowed coordinate or unit normalization.",
+  "parameter_candidate_reservation": {
+    "first": 5940,
+    "last": 5971
+  },
+  "required_warmup": "max(original parent, regimeW+2), actual complete preceding daily momentum, no fill; center180. Fixed2 is a categorical structure, no new numeric coordinate.",
+  "source_files": {
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "analysis_reference.py": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+    "analyze.py": "1a10f880213105acabe7b3f9857dedbfab471191518884b421596558e3f5d8f1",
+    "common.py": "8f6d850fba841818b38439b4a5a44517a6df13d41e63fa0f91103aca9c16c4ab",
+    "declare.py": "1120eb017acf5c549c854566cac39a0e18ed0c59d35c87c67985c7fcf789a69f",
+    "declare_geometry.py": "5541d1a2c4655301f32ed5c4f3582bf2a4f14431e10e2a0deca37cdc13dca16d",
+    "exit_oracle.py": "5f22663ddc33349eb834d7d6cafd2b63c81d4272128c95bf619ebb4171695525",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "pair_parameters.py": "095f7946c87139cdf1535297f44a6fef822bede47fb6143f44dd0d9120668088",
+    "parameter_analysis.py": "11a66f4c725550ac72b5c36915409e9e04bf6f6e247f5d9e51945f981b0bbf79",
+    "precheck.py": "a5134223780e8c8e9207d4466ef25d7385fecd9865f9ed81299e98914622d5b5",
+    "publish_accounts.py": "e2136d9a5e401e6ccd00350ffd53d1914666e62eee2473250a3f9156cc86c62f",
+    "run_parameters.py": "0e49bfcc22d0cd8e03c848d1ea52f647915048201966bf03993516ce046a2177",
+    "synthetic_checks.py": "063a60cdf5218e909c587a79d75374004e0b3275a9113acc3ed853d1f5662cef",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/exit_confirmed_range.py": "f623e4fdff5b43dddf9c5aefb599f3eadaa56b91374740fc22f0a252ec7fd58d",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "9d28a8ea74363720c0767e263a3e9e00a41bf8d72bce0f4c1e6b66d323539172"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX043_20261011/src/direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  },
+  "counts": {
+    "new_business_configurations": 1,
+    "new_evaluations": 2,
+    "reused_controls": 2
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "boundaries": "RSCH S013stage3; no adjacentbatch/newdata/dependency/platform/production/PTE/freeze/stageadvance/merge/tag/push",
+  "prospective_pure_verification": {
+    "status": "PURE_PASS",
+    "runtime_and_independent_oracle": [
+      {
+        "status": "PURE_PASS",
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "native_account_reads": 0,
+        "checks": [
+          "parent bytes exact range_reversion",
+          "parent bytes exact adaptive_range",
+          "parent bytes exact confirmed_range",
+          "parent bytes exact reentry_confirmed_range",
+          "center numeric parameters unchanged",
+          "center warmup remains180",
+          "public authenticated enum and numeric parameters",
+          "real synthetic original features/score exact",
+          "real full prefix and future OHLCVA mutation causal",
+          "previous raw before first session uses full daily",
+          "bear first bull held second bull exits",
+          "bear first bull held second bull exits no entry same-day forced exit",
+          "old bear first bull immediately exited",
+          "bear confirmation exact flags",
+          "isolated bull separated by bear does not accumulate",
+          "isolated bull separated by bear does not accumulate no entry same-day forced exit",
+          "bull held rawbear immediately exits",
+          "bull held rawbear immediately exits no entry same-day forced exit",
+          "both rawmomentum equal threshold count bull",
+          "both rawmomentum equal threshold count bull no entry same-day forced exit",
+          "regime threshold equality actual mean return",
+          "disabled regime switch preserves time",
+          "disabled regime switch preserves time no entry same-day forced exit",
+          "disabled mechanism no economic column drift",
+          "first bull time H1 not delayed",
+          "first bull time H1 not delayed no entry same-day forced exit",
+          "time H1 overrides unconfirmed regime",
+          "second bull time H2 higher priority",
+          "second bull time H2 higher priority no entry same-day forced exit",
+          "confirmed exit predicate not trigger when time higher",
+          "range equality beats confirmed regime",
+          "range equality beats confirmed regime no entry same-day forced exit",
+          "range covered trigger false",
+          "loss higher priority than range time regime",
+          "loss higher priority than range time regime no entry same-day forced exit",
+          "trailing higher priority than range",
+          "trailing higher priority than range no entry same-day forced exit",
+          "loss before trailing",
+          "loss before trailing no entry same-day forced exit",
+          "bear rawstable score refusal unchanged",
+          "bear rawstable score refusal unchanged no entry same-day forced exit",
+          "bear ACF below original gate remains flat",
+          "bear ACF below original gate remains flat no entry same-day forced exit",
+          "bear ACF equality and score equality entry",
+          "bear ACF equality and score equality entry no entry same-day forced exit",
+          "stable bear and bull paths exact original",
+          "W60 minimal warmup exactly62",
+          "62 prices supply two W60 rawstates",
+          "61 prices cannot fill missing previous W60 rawstate",
+          "missing previous raw input rejected",
+          "invalid fixed enum None",
+          "invalid fixed enum 'EXIT_CONFIRM'",
+          "invalid fixed enum 'BEAR_EXIT_BULL3'",
+          "disabled buy confirmation rejected",
+          "original13 valid endpoint bull.range_window=21",
+          "original13 valid endpoint bull.range_window=360",
+          "original13 valid endpoint bull.entry=0.0",
+          "infeasible domain endpoint bull.entry=1.0",
+          "infeasible domain endpoint bull.exit=0.0",
+          "original13 valid endpoint bull.exit=1.0",
+          "original13 valid endpoint bull.max_hold=1",
+          "original13 valid endpoint bull.max_hold=60",
+          "original13 valid endpoint bear.range_window=21",
+          "original13 valid endpoint bear.range_window=360",
+          "original13 valid endpoint bear.entry=0.0",
+          "infeasible domain endpoint bear.entry=1.0",
+          "infeasible domain endpoint bear.exit=0.0",
+          "original13 valid endpoint bear.exit=1.0",
+          "original13 valid endpoint bear.max_hold=1",
+          "original13 valid endpoint bear.max_hold=60",
+          "original13 valid endpoint bear.acf_min=-0.6",
+          "original13 valid endpoint bear.acf_min=0.5",
+          "original13 valid endpoint regime_window=5",
+          "original13 valid endpoint regime_window=60",
+          "original13 valid endpoint regime_threshold=-0.2",
+          "original13 valid endpoint regime_threshold=0.2",
+          "original13 valid endpoint confirmation.lookback=40",
+          "original13 valid endpoint confirmation.lookback=120",
+          "original13 valid endpoint confirmation.threshold=-0.5",
+          "original13 valid endpoint confirmation.threshold=0.5"
+        ],
+        "check_count": 80,
+        "public_authenticated_describe": true,
+        "mechanism": "BEAR_EXIT_BULL2",
+        "center_warmup": 180,
+        "minimal_W60_warmup": 62,
+        "source_files": {
+          "strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+          "strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+          "strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+          "strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+          "strategies/exit_confirmed_range.py": "f623e4fdff5b43dddf9c5aefb599f3eadaa56b91374740fc22f0a252ec7fd58d",
+          "strategies/__init__.py": "9d28a8ea74363720c0767e263a3e9e00a41bf8d72bce0f4c1e6b66d323539172"
+        },
+        "focused_source_sha256": "e98a42026df42981af341b78bb8bbb71f9a2c7a6700702959bb83c08551284b4",
+        "implementation_sha256": "1ededaf17055e897cc71a07e6da3cde7f25ae6ac20f4ff64e8751c0cd41a3691",
+        "limits": [
+          "Pure synthetic histories with actual native loop; controlled features are explicit fixture inputs.",
+          "Only held-bear raw-bull regime exits change. Previous raw state includes full-daily history before entry.",
+          "Fixed2 and current thresholds are not selected from a new financial evaluation.",
+          "Waiting can prolong a wrong route, miss a rebound or reduce transaction frequency; no profitability/robustness claim.",
+          "Describe is source authentication only, not account preparation or candidate registration."
+        ]
+      },
+      {
+        "status": "PURE_PASS",
+        "new_account_evaluations": 0,
+        "new_account_preparations": 0,
+        "native_account_reads": 0,
+        "native_synthetic_audits": 54,
+        "parameter_points": 32,
+        "original_numeric_dimensions": 13,
+        "refusal_checks": 16,
+        "check_count": 52,
+        "checks": [
+          "complete two-calendar date audit exact frozen EX043 AST",
+          "independent oracle imports only numpy/pandas",
+          "all original13 domains 32 seed13 radius .05 coordinates",
+          "center and full32 native signal paths audited exact all fields",
+          "first previous regime comes from complete daily pre-window",
+          "full audit refuses native drift target_position",
+          "full audit refuses native drift signal_reason",
+          "full audit refuses native drift exit_regime_confirmed",
+          "full audit refuses native drift previous_regime",
+          "full audit refuses native drift entry_regime_confirmed",
+          "final execution date T instead of T+1 refused",
+          "final T+1 execution-calendar omission refused",
+          "three future OHLCVA perturbations cannot rewrite any earlier state/feature",
+          "bear first rawbull retained second consecutive rawbull exits",
+          "separated bull does not accumulate; bull-held bear immediate; exact raw threshold equality bull",
+          "disabled switch does not disable diagnostic confirmation or original time",
+          "time original H1/H2 outranks even confirmed regime",
+          "range equality overrides confirmed regime",
+          "loss > trailing > range > time > regime retained",
+          "low/equal/high score rawACF range and changed threshold original-entry boundaries",
+          "minimum W60 warmup62 includes two complete rawstates",
+          "oracle missing previous W60 prewarmup explicit failure",
+          "native missing previous W60 prewarmup explicit failure",
+          "original13 valid domain endpoint bull.range_window=21.0",
+          "original13 valid domain endpoint bull.range_window=360.0",
+          "original13 valid domain endpoint bull.entry=0.0",
+          "oracle original infeasible endpoint bull.entry",
+          "oracle original infeasible endpoint bull.exit",
+          "original13 valid domain endpoint bull.exit=1.0",
+          "original13 valid domain endpoint bull.max_hold=1.0",
+          "original13 valid domain endpoint bull.max_hold=60.0",
+          "original13 valid domain endpoint bear.range_window=21.0",
+          "original13 valid domain endpoint bear.range_window=360.0",
+          "original13 valid domain endpoint bear.entry=0.0",
+          "oracle original infeasible endpoint bear.entry",
+          "oracle original infeasible endpoint bear.exit",
+          "original13 valid domain endpoint bear.exit=1.0",
+          "original13 valid domain endpoint bear.max_hold=1.0",
+          "original13 valid domain endpoint bear.max_hold=60.0",
+          "original13 valid domain endpoint bear.acf_min=-0.6",
+          "original13 valid domain endpoint bear.acf_min=0.5",
+          "original13 valid domain endpoint regime_window=5.0",
+          "original13 valid domain endpoint regime_window=60.0",
+          "original13 valid domain endpoint regime_threshold=-0.2",
+          "original13 valid domain endpoint regime_threshold=0.2",
+          "original13 valid domain endpoint confirmation.lookback=40.0",
+          "original13 valid domain endpoint confirmation.lookback=120.0",
+          "original13 valid domain endpoint confirmation.threshold=-0.5",
+          "original13 valid domain endpoint confirmation.threshold=0.5",
+          "invalid independent parameter regime_window",
+          "invalid independent parameter regime_threshold",
+          "invalid independent parameter mechanism"
+        ],
+        "source_files": {
+          "exit_oracle.py": "88444f4b3279b3302add7f99244e508736d4506dc8c5dcfd828fc6dc4d14e3af",
+          "focused_checks.py": "cc14137820aaac1fa30a735c0d463d68f2db298289988cfc75cc8eb258b317d6"
+        },
+        "runtime_source_sha256": "f623e4fdff5b43dddf9c5aefb599f3eadaa56b91374740fc22f0a252ec7fd58d",
+        "limits": [
+          "Synthetic formulas/state/calendar only; no financial result reads, candidate registration or account evaluation.",
+          "Fixed two-day rawbull structure is a hypothesis; no robustness or profitability claim.",
+          "Temporary oracle SOURCE_CALLS is local; formal promotion must bind the formal common provider-call audit."
+        ]
+      }
+    ],
+    "original_numeric_center_exact": true,
+    "original_full13_domains_32_coordinates": true,
+    "new_account_evaluations": 0,
+    "adaptation": "Independent oracle SOURCE_CALLS bound to EX048 forbidden-provider context; formulas/functions unchanged"
+  }
+}
