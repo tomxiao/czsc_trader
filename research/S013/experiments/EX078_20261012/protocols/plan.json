@@ -1,0 +1,210 @@
+{
+  "status": "PROSPECTIVE_DECLARED",
+  "role": "RSCH",
+  "stage": 2,
+  "frozen_utc": "2026-10-11T16:27:32.124323+00:00",
+  "authorization": "用户明确授权重设研究目标并自主研究；原S013数据及执行合同内",
+  "objective": "寻找扣费后仍有盈利余量的做多机会及可交易风险信息，最终保持原四门并改善32点CAGR_Q10/DD_Q90；此项只检验信息，不证明策略目标",
+  "original_four_hard_gates_changed": false,
+  "new_hard_gates": false,
+  "selection_history": "已见截至EX077原开发池证据；EX077整策略未达收益/频率门并停止，本组件不是其退出改装或救援。此前EX071风险方向跨年冲突，EX073风险线索的EX074交易化恶化Q10/Q90；已见选择偏差未被区间校正。",
+  "hypothesis": "4日波动在20日中集中可能辨明持仓近期不稳定；原Close的不同时间分布表达，不是新数据。预定观察下行风险正向，继续收益负向。高波动也可能放大反弹是最强反证。",
+  "component": "std(logCloseReturn last4, population ddof0)/std(logCloseReturn last20, population ddof0); fixed4/20; zero denominator/unavailable explicitly NaN, no fill/epsilon",
+  "scope": "唯一actual_signal_continue:原C8880账本T收盘实际quantity>0，且T当前signal_date决策target1。不能以T+1实际成交、未来退出或标签选池。原1635全T轴后mask。",
+  "controls": "原EX07122控制，恢复late_recovery并加入20日log-return population std本身(log_sigma20)，共24；保留原simple-return volatility20，不因共线性按结果删项",
+  "labels": {
+    "return_4": "Open[T+5]/Open[T+1]-1；相同两端SELL费用抵消；无新BUY费用。原持仓假想延长，不是原真实交易收益",
+    "downside_4": "max(0,1-min(O/C T+1..T+4,final O T+5)/O[T+1])；不含已无法逃避的Tclose到nextOPEN变化；不是账户最大回撤"
+  },
+  "prior_direction": {
+    "return_4": "negative",
+    "downside_4": "positive"
+  },
+  "method": {
+    "method": {
+      "version": "s013-held-vol-concentration-fixed4-20-v1",
+      "components": [
+        "vol_concentration"
+      ],
+      "controls": [
+        "momentum20",
+        "range_position60",
+        "acf1",
+        "volatility20",
+        "intraday_return",
+        "overnight_gap",
+        "intraday_energy20",
+        "intraday_rms20",
+        "confirmation_score",
+        "daily_close_location",
+        "feature_intraday_down_energy20",
+        "feature_overnight_down_energy20",
+        "turnover20",
+        "volume_ratio20",
+        "early_volume_reclaim",
+        "total_down",
+        "total_up",
+        "early_down_share",
+        "max_down_run_share",
+        "holding_age",
+        "entry_mark_pnl",
+        "known_falling",
+        "late_recovery",
+        "log_sigma20"
+      ],
+      "labels": {
+        "return_4": 4,
+        "downside_4": 4
+      },
+      "component_definition": "vol_concentration=population std of last4 complete Close logreturns / population std of last20 complete Close logreturns; fixed windows4/20, no fitted thresholds; insufficient/zero20 denominator NaN",
+      "nuisance_definition": "log_sigma20 is std20 OF LOGRETURNS, NOT logarithm of std20; positive available sigma20 only",
+      "expected_signs": {
+        "return_4": "negative",
+        "downside_4": "positive"
+      },
+      "interpretation": "Observed O/C price downside is not native account DD or executable profitability. Return not clearly harmed is only a subsequent research clue, never a new acceptance gate. Negative/boundary evidence retained; no sign flip, window search, account escalation or EX077 rescue.",
+      "label_contract": {
+        "return_h": "Open[T+1+h]/Open[T+1]-1; same future/current SELL fee cancels, no new BUY fee",
+        "downside_h": "max(0,1-min(Open/Close T+1..T+h and finalOpen[T+1+h])/Open[T+1]); fixed daily observation downside, not path/account DD",
+        "negative_gap_next": "Initial Tclose-to-nextOpen gap retained for accounting attribution only; both T+1 decision alternatives share it",
+        "maturity_columns": "label_end_<label>; first test signal strictly after train label maturity"
+      },
+      "correlation": "Spearman average ties; partial rank IC uses OLS residuals with intercept and all twenty-four fixed controls, restoring late_recovery and adding log_sigma20, partial residual DF n-rank(design)>=10 required; otherwise unavailable, recording design_rank/residual_df; residual norm <=1e-10 of original centered-rank norm is explained/unavailable",
+      "minimum_correlation_n": 20,
+      "non_overlap": "h+1 phases fixed by original full signal index positions before finite/opportunity filtering",
+      "bootstrap": {
+        "replicates": 500,
+        "block_sessions": 40,
+        "seed": 13,
+        "sampling": "overlapping full-time-axis blocks, uniform starts, truncate to original length; filter opportunity after sampling",
+        "interval": "2.5/97.5% linear quantiles; at least 400 valid replicates",
+        "scope": "only actual_signal_continue predeclared scope; descriptive, no search-selection correction"
+      },
+      "walk_forward": {
+        "test_years": [
+          2021,
+          2022,
+          2023,
+          2024,
+          2025,
+          2026
+        ],
+        "initial_train_year": 2020,
+        "train": "2020 <= signal year < test year AND label_end_label < first actual test-year signaldate",
+        "groups": "train feature Q25/Q75 linear; test low <= Q25, high >= Q75; original label means",
+        "ridge": "rank features via train empirical CDF midpoint ties; original target; intercept unpenalized; alpha=10",
+        "models": [
+          "controls",
+          "controls+concentration"
+        ],
+        "common_model_rows": "all 25 feature columns finite, target finite, training target mature; identical model rows",
+        "minimum_train_n": 40,
+        "minimum_test_n": 20,
+        "baseline": "training target mean on identical training rows; compare test MSE and Spearman IC"
+      },
+      "scope": "actual_signal_continue only; actualT quantity>0 AND currentT next-session target1; no flat zero imputation; no profitable-row selection",
+      "limitations": [
+        "Already-seen development pool; chronological pseudo-out-of-sample, not sealed independent validation.",
+        "No hyperparameter search; all labels, years, phases, components and failures retained.",
+        "Future labels never enter feature columns, ECDF, thresholds, or fitting before maturity.",
+        "Intervals are descriptive diagnostics and do not correct development-pool selection bias."
+      ]
+    },
+    "source_sha256": "1d961783ad677bd72f9e0e5d04f30787d1e076a8b63362ba428c658fb264a83b",
+    "method_sha256": "3063e8044f0574b1d4d885251d494124fc39dea18f369c5a6278423f587c0f61"
+  },
+  "interpretation": "全组/年度/原5相位及成熟年份伪样本外与24控制/训练均值两基准完整报告；区间跨零、不稳定或样本外无新增用途会削弱该固定用途。仅风险预测不能证明扣费退出改善，不能自动进入账户。研究诊断不增经济硬门。",
+  "stopping": "本项只有1组件1scope两个h4标签的一次统计。无4/20窗口优化、翻符号、挑年份/相位、退出阈值或账户自动救援。若固定用途无依据则止步，不追加同族账户。",
+  "price_and_execution": "510500.SH原开发2020-01-02..2026-09-30及原2019 warmup；HFQ原anchor2019-12-31/.2803；无分红叠加；原1%LimitBuyHold合同/1m/lot100/.001费用保持；0新账户",
+  "input_references": {
+    "old_features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c.csv",
+      "sha256": "e1e2dc88675e953364369833d1e8731e8c39061e723498e50d46ddefaace764c",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "warm_prices": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX069_20261011"
+      },
+      "evidence_id": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263.csv",
+      "sha256": "71319e1c9ea6543849f809a0996bd6978636d76848cbb3c8aaf962f302c27263",
+      "media_type": "text/csv",
+      "name": "daily-prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "native": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "source_files": {
+    ".tmp/s013-vol-concentration/component.py": "fbe438037ab818960439d3f8b003d490fb96aaa4defecbbbcf7b60b8d5a54994",
+    ".tmp/s013-vol-concentration/focused_checks.py": "dc568327b857b1abc28221a68777e89dc5317c9dc6643ff22f3ec57ccdb57e0f",
+    ".tmp/s013-vol-concentration/inputs.py": "4ce59f2af95d64b9343d0194434552b74f5f5b65032cbfe88a083a054cff751c",
+    ".tmp/s013-vol-concentration/vol_statistics.py": "1d961783ad677bd72f9e0e5d04f30787d1e076a8b63362ba428c658fb264a83b",
+    ".tmp/s013_vol_research.py": "c8709a41ade87f0c952fd05301d964eba579378790f34a1d8fec928da09e9de4",
+    "research/S013/experiments/EX071_20261011/src/continuation_core.py": "752ebc55ce9cd401645410d57508fc0a2633df3ac1a1f386ae9bcd0df50cc2cf",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b"
+  },
+  "native_cache": {
+    ".tmp/s013-mechanism-EX058/N0.pkl.gz": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c"
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "resources": {
+    "workers": 1,
+    "blas_threads": 1,
+    "component": 1,
+    "scope": 1,
+    "labels": 2,
+    "statistics_calls": 1,
+    "new_accounts": 0,
+    "providers": 0
+  },
+  "limitations": [
+    "已见同一开发池，chronological伪样本外并非封存验证",
+    "固定原策略持仓池有内生选择，不代表任何新策略的持仓池",
+    "反事实固定4日延长可能跨过旧策略未来退出，不是已实际发生的账户盈亏",
+    "日Open/Close风险忽略盘中极值；4日std估计噪声大",
+    "若风险信息存在，仍需独立可执行退出实验确认反弹机会成本/费用/交易次数/32点表现"
+  ],
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX078_20261012"
+  },
+  "declared_utc": "2026-10-11T16:27:58.070338+00:00"
+}
