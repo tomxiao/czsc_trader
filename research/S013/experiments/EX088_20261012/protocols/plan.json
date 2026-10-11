@@ -1,0 +1,216 @@
+{
+  "status": "ROOT_FROZEN_BEFORE_REAL_STUDY",
+  "role": "RSCH",
+  "stage": 2,
+  "quota_slot": 10,
+  "authorization": "原自主研究和EX079–EX088十轮额度；EX088收尾后暂停，不启动EX089；每实验保存正式报告副本",
+  "question": "有净选择增量的概率+赚幅预测，按已知强度提高入场选择是否改善机会占用和下跌年经济余量？",
+  "basis": "EX087原14概率背景加入赚幅选中均值改善0.1825pp且条件性区间正，贪心选中均值0.1158%不及被占用的0.1813%；确认对照关系相反。需检验因果可得强度，不事后选好相位或假设被错过都更好。",
+  "strongest_prior_counter": "EX010分数改善及EX017等待已暴露收益/频率代价。净预测强度可能只是更高波动、模型年度更新或旧确认变化重表达；先等强度可能错过好机会、减少数量，不保证未来四日最强预测。",
+  "original_four_hard_gates_changed": false,
+  "new_economic_hard_gates": false,
+  "fixed_design": {
+    "inputs": "仅EX087两族110原概率+赚幅净预测，精确复用，0新拟合、0标签/市场数据扩展",
+    "gate": "当前净预测严格>0并严格高于此前4个实际交易T已发布预测的最大值；必须当前和此前完整4个都有限，不足不入场。过去窗口排除当前T、不用未来4天、等于不通过。",
+    "lookback_basis": "固定4对应当前入场后四日期限将占用的后续决策跨度，只是因果强度代理，不保证未来竞争预测更差；无窗口/阈值/方向扫描。",
+    "controls": "每族保留历史原控制、需要相同过去4完整支持的匹配控制、record4。历史原控制与EX087所有时钟精确一致；比较门作用以匹配控制为主，不把删除暖启动4T当增量。",
+    "interpretation": "原净预测不变；decision_scores只为时钟资格适配器，拒绝时0是拒绝标记而非新预测回报，缺完整信息为NaN，不用0作缺失兜底。无新预测MSE统计。",
+    "annual_boundaries": "跨年继续用当时实际发布的预测，不年度重置、不用新模型回填旧T；保存年模型切换标记，可能跳变为反证。",
+    "labels": "原h4扣费HFQ OPEN标签Open[T+5]/Open[T+1]*.999/1.001-1，2020无预测、尾部缺truth仍保留决策。",
+    "primary": "两族各门后选中净均值/相对匹配差、门后贪心净均值/相对匹配贪心差/相对被占用正机会差，共10预先固定；数量、全年度、五相位、所有时钟完整报告，不按一个正值取舍。",
+    "quantities": [
+      "confirmation_record_positive_mean",
+      "confirmation_record_positive_minus_matched",
+      "confirmation_record_greedy_mean",
+      "confirmation_record_greedy_minus_matched_greedy",
+      "confirmation_record_greedy_minus_blocked",
+      "original14_record_positive_mean",
+      "original14_record_positive_minus_matched",
+      "original14_record_greedy_mean",
+      "original14_record_greedy_minus_matched_greedy",
+      "original14_record_greedy_minus_blocked"
+    ],
+    "clocks": "冻结EX083原贪心和i%5五组，两族各3表达×6=36时钟，h4/冷却不变；不选好相位、非标准32点。",
+    "bootstrap": "原1635T轴500次重叠40日块seed13，固定实际门和全窗时钟选择，不在拼接块重新模拟时钟；至少20样本、400有效，LINEAR95CI，未校正研究历史和多重比较。",
+    "frequency": "原频率硬门按完整1636账户执行T至少110实际闭合交易；本轮机会意图数仅供给诊断，不替代成交/账户频率。"
+  },
+  "scope": "原510500已见开发池/HFQ固定锚/无现金分红叠加/原资金费用整手/1%合同；不动平台、PTE或生产",
+  "stopping": "没有一致经济支持则停止本固定强度路线；如有新增一致经济依据，可在同EX088另冻结原生账户对照计划后验证，中心四门通过才做最新五自检；不强行用账户填额度。全部收尾后按用户额度暂停，不称目标达成。",
+  "source_files": {
+    ".tmp/s013-entry-strength/kernel.py": "be249c0d60767338aa0b9639460c5bc6ff37da08f911ffdfe5eb29680d952143",
+    ".tmp/s013-entry-strength/audit.py": "7cd6ccfdad3853f194a81e12e979476367fcd1f02587e87c21a59555d1037e30",
+    ".tmp/s013-entry-strength/focused_checks.py": "b2b0e4769c6c043eec39f1ba4634f3b9c5c13b1c659f2f93aee64a00b01face4",
+    ".tmp/s013-entry-strength/focused_checks.json": "347987f741e76191bf86452b7d1dbadc37c17f44466761638b500887349c9057",
+    ".tmp/s013-entry-strength/duplicate_review.json": "d9feeb9922ff5e3b0408d8524cfe31778a3761db0bc9bbb8fa0db2ef8aa56d3a",
+    ".tmp/s013_strength_driver.py": "8f6bd0d819f591598d77b4237290e6ea459eda173df9b39ed637c60a604f381d",
+    ".tmp/s013_strength_freeze.py": "bab3d5059be15191a6ad7822b00a7f2894a451fac0b8ea63058607344768a460",
+    ".tmp/s013_build_strength_audit.py": "8ec5d77ea5360752bf0993f06bdae3511fd8803a611b05f3d75b26fe6570e40b",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX087_20261012/src/audit.py": "9c73add9412e87dae8b195e059b7e2bb08242130dce2613b10cebd9c0c51ec66",
+    "research/S013/experiments/EX083_20261012/src/kernel.py": "769044707f3759cc988ca8ec7176b2ea9bee87fd0211bc76193377532a5e0212",
+    "research/S013/experiments/EX083_20261012/src/audit.py": "6bd2709191e56f731da894af84190a0051a450753686e1b06e8bab2aec75b486"
+  },
+  "input_references": {
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "scores.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462.csv",
+      "sha256": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462",
+      "media_type": "text/csv",
+      "name": "confirm-net-forecasts",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1.json",
+      "sha256": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1",
+      "media_type": "application/json",
+      "name": "confirm-net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb.json",
+      "sha256": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "2a206718360b20cb6917075344fa8b9bd054b1f21e2348dd2a0f14a2e7931d9e.json",
+      "sha256": "2a206718360b20cb6917075344fa8b9bd054b1f21e2348dd2a0f14a2e7931d9e",
+      "media_type": "application/json",
+      "name": "confirm-net-root-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_plan.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "1ca4ff09fac224e963710f5c707fde2a7cbc01c8c21b922215c9f554c4cc11f1.json",
+      "sha256": "1ca4ff09fac224e963710f5c707fde2a7cbc01c8c21b922215c9f554c4cc11f1",
+      "media_type": "application/json",
+      "name": "confirm-net-plan",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_budget.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "30dba35fc7a535aeb79fcddc889c1265f78d02e565fa5dbbfe6a38642f4a34f1.json",
+      "sha256": "30dba35fc7a535aeb79fcddc889c1265f78d02e565fa5dbbfe6a38642f4a34f1",
+      "media_type": "application/json",
+      "name": "confirm-net-budget-receipt",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "clock_source": "research/S013/experiments/EX083_20261012/src/kernel.py",
+  "clock_audit_source": "research/S013/experiments/EX083_20261012/src/audit.py",
+  "continuation_budget_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX078_20261012"
+    },
+    "evidence_id": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c.json",
+    "sha256": "234191c726d97aff62477d345a340310fefc900d6f23f5b79229dc2dd8b7774c",
+    "media_type": "application/json",
+    "name": "vol-continuation_budget",
+    "schema": null,
+    "schema_version": null
+  },
+  "predecessors": [
+    {
+      "batch": {
+        "strategy_id": "S013",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46",
+      "revision": 6,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    }
+  ],
+  "report_copy": {
+    "target": "others/report.md",
+    "source": "corresponding formal delivery report.md",
+    "verification": "exact bytes andSHA256",
+    "human_authorization": "RSCH，请在后续的每个实验目录下保存一份report副本"
+  },
+  "resources": {
+    "new_annual_models": 0,
+    "component_new_accounts": 0,
+    "provider_calls": 0,
+    "schedules": 36,
+    "bootstrap": 500,
+    "native_followup": "Only if supported after review; new prospective account plan required within EX088 before any account"
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX088_20261012"
+  }
+}

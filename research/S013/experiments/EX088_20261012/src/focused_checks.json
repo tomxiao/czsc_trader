@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "checks": [
+    "Scalar all record windows and matched controls independent",
+    "Strict ties do not qualify",
+    "Full four issued predictions required; missingness no fallback",
+    "Historical controls exact",
+    "Prefix and future scores leave past unchanged",
+    "Future labels never alter states or decisions",
+    "2020 unavailable and feature-only tail retained",
+    "All36 clocks and5000 bootstrap quantities"
+  ],
+  "refusals": 4,
+  "artificial_signals": 400,
+  "real_inputs": 0,
+  "real_statistics": 0,
+  "new_annual_models": 0,
+  "new_accounts": 0,
+  "experiment_allocation": 0,
+  "independent": {
+    "status": "PASS",
+    "new_annual_models": 0,
+    "new_accounts": 0,
+    "forecast_rows": 400,
+    "positive_flags": "EXACT",
+    "historical_controls": "EXACT",
+    "causal_windows": 800,
+    "matched_controls": "VERIFIED",
+    "schedules": 36,
+    "bootstrap_checks": 5000
+  },
+  "files": {
+    "kernel.py": "be249c0d60767338aa0b9639460c5bc6ff37da08f911ffdfe5eb29680d952143",
+    "audit.py": "7cd6ccfdad3853f194a81e12e979476367fcd1f02587e87c21a59555d1037e30",
+    "focused_checks.py": "b2b0e4769c6c043eec39f1ba4634f3b9c5c13b1c659f2f93aee64a00b01face4"
+  }
+}
