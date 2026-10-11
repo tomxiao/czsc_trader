@@ -1,0 +1,42 @@
+{
+  "status": "TECHNICAL_TEXT_CLARIFICATION",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX058_20261011"
+  },
+  "plan_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX058_20261011"
+    },
+    "evidence_id": "12d2301b33f896b46fb541cd1150b7211ae09cc0017938b1e025b07f4402cfa9.json",
+    "sha256": "12d2301b33f896b46fb541cd1150b7211ae09cc0017938b1e025b07f4402cfa9",
+    "media_type": "application/json",
+    "name": "prospective-raw-recovery-reentry-plan",
+    "schema": null,
+    "schema_version": null
+  },
+  "source": {
+    "path": "src/run_parameters.py",
+    "sha256": "399e7f30f15335c80a894294b1c6018c86c39be77551b48e39a04f8aaf2da5aa"
+  },
+  "field": "parameter manifest historical_comparison description only",
+  "superseded_clause": "original rawACFpass opportunities are unrestricted by BODY/bullboundary",
+  "correct_scope": "Original ACFpassing BEAR opportunities have no additional BODY gate. Stable BULL opportunities are original. At rawbear-to-rawbull boundary, flat originaleligible BULL opportunities additionally require currentClose>Open, even though bull acf_min=None makes original ACFpass true. The BEAR BELOW TIME BODY recovery is a separate eligibility OR exception. No original confirmation score0 gate.",
+  "diagnostic_centers": [
+    "C7980 raw bear recovery only",
+    "C9102 raw bull boundary BODY only"
+  ],
+  "parameter_cohorts": [
+    "C2132 original",
+    "C4900 historical coupled",
+    "C8880 joint"
+  ],
+  "economic_and_identity_changes": 0,
+  "frozen_source_changes": 0,
+  "threshold_or_domain_changes": 0,
+  "basis": "Prospective method and complete runtime/oracle/proofs already specify the correct scope. This disambiguates a contradictory inherited reporting clause only; original four economic gates, full13 same32 and both absolute/relative tails remain exact. Frozen center source/result and parameter procedure are unchanged."
+}

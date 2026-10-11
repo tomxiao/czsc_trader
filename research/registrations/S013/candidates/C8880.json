@@ -1,0 +1,93 @@
+{
+  "record": {
+    "content_sha256": "e30430f290a802a01d27018535e5f4d137ab94c74b7f84908ad46492ada39fb6",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "bear_reentry_gate": {
+          "after": "Only flat rawbear after finalbearTIME BELOW signal anchor and currentClose>Open recovers original ACF failure; original range/momentum and score still required, original ACFpassing bear opportunities unsuppressed; bull boundary independently adds BODY guard, rawbear-to-rawbull flat eligible entry additionally requires currentClose>Open; all holding rules unchanged",
+          "before": "Original rawACF20 and confirmation, no conditional price-direction gate"
+        },
+        "preserved": "Original13 numeric centers/full domains/same32; all original rawACF/confirmation/state/range/H/exit/execution/data. Category is signal price, not actual netPnL. Fixed direction/category structures are not numerical32 robustness proof."
+      },
+      "child": {
+        "candidate_id": "C8880",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "e30430f290a802a01d27018535e5f4d137ab94c74b7f84908ad46492ada39fb6",
+      "evidence": {
+        "path": "assets/candidates/C8880/derivation/bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+        "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C2132",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "protocol_sha256": "12d2301b33f896b46fb541cd1150b7211ae09cc0017938b1e025b07f4402cfa9"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C8880",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX058_20261011/2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+          "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e"
+        }
+      ],
+      "experiment_id": "EX058_20261011"
+    },
+    "payload": {
+      "path": "assets/candidates/C8880/payload/85cfcbaa7aed49b3c36eb7d102f3b9c05d8e42ad72176551ea6c2b9ff9c89c41.json",
+      "sha256": "85cfcbaa7aed49b3c36eb7d102f3b9c05d8e42ad72176551ea6c2b9ff9c89c41"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      },
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/boundary_bear_recovery_range.py",
+        "sha256": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8"
+      },
+      {
+        "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/__init__.py",
+        "sha256": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1"
+      }
+    ],
+    "source_root": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime",
+    "source_sha256": "74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674"
+  },
+  "record_sha256": "bf7f02c942e91c8300cb59337132f8c09fba9ed8394c6d48d8688f1b5fc9dd45"
+}
