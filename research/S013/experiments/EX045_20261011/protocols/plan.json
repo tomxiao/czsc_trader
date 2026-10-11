@@ -1,0 +1,412 @@
+{
+  "name": "S013-EX045-fixed120-bear-acf-baseline-split",
+  "controls": [
+    {
+      "index": 1,
+      "background": "B0",
+      "mode": "M1",
+      "candidate_id": "C2132",
+      "existing_identity": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.reentry_confirmed_range",
+          "qualname": "ReentryConfirmedRange",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py"
+          ],
+          "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+        }
+      },
+      "label": "B0-TIME",
+      "mechanism": "TIME",
+      "source_directory": "original/strategy_runtime",
+      "reused": true,
+      "reuse_from": "EX015_20261011",
+      "reuse_label": "B0-TIME"
+    },
+    {
+      "label": "B0-COUPLED",
+      "index": 0,
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "9938cbad482797c7d952056fbe37256cd59a58107c5808f7a4a3f59d3a879f44"
+        }
+      },
+      "source_directory": "../../EX043_20261011/src/strategy_runtime",
+      "background": "MEAN",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": true,
+      "parent_control": "B0-MEAN",
+      "reuse_from": "EX043_20261011",
+      "reuse_label": "N0"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "N0",
+      "index": 0,
+      "candidate_id": "C5300",
+      "content_sha256": "f0c92ea6e022b3d9603c31cd4a94183fcf9e360d4ad9599ae35da0e0f6c45263",
+      "payload": {
+        "parameters": {
+          "bear": {
+            "acf_min": 0.1,
+            "cooldown": 0,
+            "entry": 0.9,
+            "exit": 0.99,
+            "limit_premium": 0.01,
+            "max_hold": 4,
+            "momentum_min": null,
+            "range_window": 120,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "bull": {
+            "acf_min": null,
+            "cooldown": 0,
+            "entry": 0.675,
+            "exit": 0.95,
+            "limit_premium": 0.01,
+            "max_hold": 8,
+            "momentum_min": null,
+            "range_window": 180,
+            "stop_loss": null,
+            "trailing_stop": null
+          },
+          "confirmation": {
+            "enabled": true,
+            "lookback": 120,
+            "orientation": 1,
+            "profile": "all",
+            "scope": "both",
+            "threshold": -0.2
+          },
+          "context": {
+            "entry_gate": "all",
+            "volume_basis": "ADJUSTED",
+            "weighting": "EQUAL_BLOCKS"
+          },
+          "exit_on_regime_change": true,
+          "regime_threshold": 0.0,
+          "regime_window": 20,
+          "mechanism": "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE"
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.mechanism_range",
+          "qualname": "MechanismRange",
+          "source_files": [
+            "strategies/range_reversion.py",
+            "strategies/adaptive_range.py",
+            "strategies/confirmed_range.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/mechanism_range.py",
+            "strategies/__init__.py"
+          ],
+          "source_sha256": "6d1a315e5f99f55d64636ea55b4979e301ac808f000236b7b46086355b685a79"
+        }
+      },
+      "source_directory": "strategy_runtime",
+      "background": "COUPLED",
+      "mechanism": "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE",
+      "mode": "M1",
+      "existing_identity": null,
+      "reused": false,
+      "parent_control": "B0-COUPLED"
+    }
+  ],
+  "cells": [
+    {
+      "label": "B0-TIME",
+      "candidate_id": "C2132",
+      "content_sha256": "939e07357e59fa00b3123a5f0e775303ca1fdd9295c22bbca3f014ffda4aa8ad",
+      "mechanism": "TIME",
+      "background": "B0"
+    },
+    {
+      "label": "B0-COUPLED",
+      "candidate_id": "C4900",
+      "content_sha256": "2f652d079e603a0bde7da6823743ddb7506d04914e466420dfc8f12e8b1e3a37",
+      "mechanism": "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "background": "MEAN"
+    },
+    {
+      "label": "N0",
+      "candidate_id": "C5300",
+      "content_sha256": "f0c92ea6e022b3d9603c31cd4a94183fcf9e360d4ad9599ae35da0e0f6c45263",
+      "mechanism": "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE",
+      "background": "COUPLED"
+    }
+  ],
+  "control_references": {
+    "B0-TIME": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX012_20261011"
+      },
+      "evidence_id": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86.json",
+      "sha256": "bcc9e99b4a0e2d0854e63570a8b6846ddca26debddac364c74246264ac288b86",
+      "media_type": "application/json",
+      "name": "mechanism-final-account-b0-m1",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "B0-COUPLED": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX043_20261011"
+      },
+      "evidence_id": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7.json",
+      "sha256": "3aa193c1e7a1ae35f96dec4a7dbf88167fd2ecfd8b9aad14b4e662bd4483ddb7",
+      "media_type": "application/json",
+      "name": "bear-time-category-reentry-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 6,
+    "content_sha256": "e2128159814ccf64784aa50588379e802a581d6e5867349069b0fb0fc751af46"
+  },
+  "authorization": {
+    "date": "2026-10-11",
+    "source": "direct human instruction in this conversation",
+    "exact_user_message": "授权你可以自主完成目标，无需评审",
+    "scope": "Autonomously design and execute mechanisms and necessary parameter-sensitivity diagnostics toward the existing objective; prior per-experiment review requirement waived. Existing S013 data, contract and four economic gates remain.",
+    "boundaries": "No production, PTE, freeze, new external data/dependencies, merge/tag/push or adjacent batch reads."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 40,
+    "content_sha256": "f0c216c7a9a71244cf7ffe5a9129c6dab0f842a24b5e4478681969a854ab16c6"
+  },
+  "diagnosis_reference": {
+    "evidence_id": "28965bd4fdceef53981e5410315ba9dec6573ceb79b168273614dbba87323127.json",
+    "experiment": {
+      "experiment_id": "EX044_20261011",
+      "strategy_id": "S013",
+      "type": "ExperimentRef"
+    },
+    "media_type": "application/json",
+    "name": "complete-native-input-state",
+    "schema": null,
+    "schema_version": null,
+    "sha256": "28965bd4fdceef53981e5410315ba9dec6573ceb79b168273614dbba87323127",
+    "type": "EvidenceRef"
+  },
+  "hypothesis": "Original confirmationL also moves strictpast bearACF mean. Splitting that baseline to original-center120 may reduce extra sensitivity while original scoreL remains active. EX044 one-step probe changed36fullstates/14of33native paths, so mechanism is testable but no profit implication.",
+  "mechanism": "Only new MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE uses strictpast120mean raw20ACF; original confirmation score uses actual confirmation.lookback and all13coordinates active. Original eligible rawbear after retained BELOW-category finalbearTIME gets strictClose>previousClose gate exactly as EX043N0. Original holding H/range/regime priority and entry/exit context retained.",
+  "fixed_structural_choice": "120 is original center L, predeclared, no grid or year exception. Fixed baseline window outside13 numeric domain; scoreL remains original coordinate and threshold units remain centered ACF. This is distinct structural mechanism, not a narrowed old coordinate domain.",
+  "strongest_counterevidence": "EX043 N0 center qualifies4gates but Q10CAGR1.7843/Q90DD34.6163 worse original5.8974/30.5044. EX044 about50% actualnewtarget differences reproduced by priorstate alone and9397physical-resynced days retain differentmemory; fixed window may leave dominant state sensitivity untouched. Its36probe nextstates cannot predict new financial path.",
+  "center_expectation": "At actual center L120 both baseline formulas exact same. Authenticate new distinct runtime identity and own public native evaluation; compare full causal signal/features and economic ledgers to coupled center. Do not relabel prior account as new.",
+  "predeclared_selection": "One new center business/two actual serial+spawn; original/coupled2 exactnativecenter reuse. Only if center4originalgates pass then32newbusiness/33actual matched original13full-domain points. Reuseoriginal32/coupled32 exactly. No coordinate omission/domain narrowing/point replacement/diagnostic veto. Goal requires qualifying center and better absoluteQ10return/Q90DD AND both relative degradations vsoriginal.",
+  "parameter_candidate_reservation": "C3800..C3831",
+  "counts": {
+    "new_business_configurations": 1,
+    "new_evaluations": 2,
+    "reused_controls": 2
+  },
+  "resources": {
+    "max_workers": 8,
+    "native_threads": 1,
+    "request_workers": 1,
+    "seed": 13
+  },
+  "required_warmup": "max(parent,141,regimeW+2); original actual score L needs own L+20 preserved. No shortened baseline or data fallback.",
+  "source_files": {
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "analysis_reference.py": "b99bb3d3ad5c3ba9354e615cedc132e861655868fe15ee87427794f374880f58",
+    "analyze.py": "2ced877fb8b9a6357b4ee922b2d8d9b46d6ecb0296bc173995f379cc10f2e25a",
+    "common.py": "a3b331631cc2aa3b13bce4d1732bba4c615def5338bb9cf256176f6aaa70e0a8",
+    "declare.py": "28c3bb71124f8c6665bf5c1dae6d5fa1fc5e98eab9d5540c7fd5f975a99bbd57",
+    "direction_oracle.py": "9de045ca2222a517a75d48b1c16d59a6911ef8b6abbab5c158590f6eaadae2de",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "precheck.py": "61919fca5994f4eb8e86795327a953ad006b6d3e62922119bbb97b5b8d916d4d",
+    "publish_accounts.py": "6c3a95b7877a005fc331c3015bc39e8cae727a09f28b6379ea6aa991b5fa2a91",
+    "synthetic_checks.py": "9288bc8460ba014cfcbc47dfabb39aed677f41368bb3307c1b3ae4beed50d904",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/mechanism_range.py": "25f9fe1863977d0fffaee0f9c267288b23a0f8123b60b6964e652ea9d4b89102",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/__init__.py": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef"
+  },
+  "external_source_files": {
+    "research/S013/experiments/EX043_20261011/src/direction_oracle.py": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+    "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+    "research/S013/experiments/EX043_20261011/src/analysis_reference_v2.py": "732f68bdc2e88200df2b384162f3d8800f9730d54142e0dda46971f709cb558a"
+  },
+  "prospective_pure_verification": {
+    "status": "PURE_PASS",
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "mechanism": "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE",
+    "supported_mechanisms": [
+      "MEAN_BEAR_TIME_ABOVE_BODY",
+      "MEAN_BEAR_TIME_ABOVE_CLOSE",
+      "MEAN_BEAR_TIME_BELOW_BODY",
+      "MEAN_BEAR_TIME_BELOW_CLOSE",
+      "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE"
+    ],
+    "parameter_points": 32,
+    "coordinates": 13,
+    "points_per_center": 32,
+    "native_synthetic_oracle_audits": 56,
+    "state_drift_rejections": 85,
+    "signal_memory_checks": 5544,
+    "gate_opportunities": 343,
+    "parameter_and_strict_price_boundaries": 48,
+    "native_parameter_rejections": 37,
+    "nullable_metadata_checks": 19,
+    "observed_exit_categories": [
+      "ABOVE",
+      "BELOW",
+      "EQUAL"
+    ],
+    "signal_reasons": [
+      "confirmation_rejected",
+      "entry",
+      "entry_direction_rejected",
+      "flat",
+      "hold",
+      "loss",
+      "range",
+      "regime",
+      "time",
+      "trailing"
+    ],
+    "calendar_oracle_AST_identical_to_EX043": true,
+    "oracle_imports_SRT": false,
+    "center_L120_old_runtime_and_oracle_exact": 1,
+    "old_mechanism_compatibility_cases": 4,
+    "fixed120_vs_scoreL_cases": 6,
+    "integer_boundary_cases": 12,
+    "minimal_141_price_warmup_rejections": 4,
+    "future_invariance_native_oracle_signal_rows": 51,
+    "strict_past_current_shock_baseline_unchanged": true,
+    "economic_state_loop_AST_exact43": true,
+    "limits": "Pure synthetic paths only. Declared13-domain boundary checks do not add new economic gates. No market result reads or profit forecast."
+  },
+  "selection_history": "Repeated S013 development pool after zero-new66 fullstate diagnosis. No independent sample, actual economic control follow original complete panel, no selecting14changedpaths only.",
+  "boundaries": "RSCH S013stage3; no adjacentbatch/newdata/dependencies/platform/freeze/PTE/prod/merge/tag/push."
+}

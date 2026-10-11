@@ -1,0 +1,123 @@
+{
+  "version": "S013-common-domain-mechanism-diagnostic-v1",
+  "protocol": {
+    "radius": 0.05,
+    "point_count": 32,
+    "seed": 13
+  },
+  "coordinates": [
+    [
+      "bull.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bull.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bull.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.range_window",
+      21.0,
+      360.0,
+      "INTEGER"
+    ],
+    [
+      "bear.entry",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.exit",
+      0.0,
+      1.0,
+      "CONTINUOUS"
+    ],
+    [
+      "bear.max_hold",
+      1.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "bear.acf_min",
+      -0.6,
+      0.5,
+      "CONTINUOUS"
+    ],
+    [
+      "regime_window",
+      5.0,
+      60.0,
+      "INTEGER"
+    ],
+    [
+      "regime_threshold",
+      -0.2,
+      0.2,
+      "CONTINUOUS"
+    ],
+    [
+      "confirmation.lookback",
+      40.0,
+      120.0,
+      "INTEGER"
+    ],
+    [
+      "confirmation.threshold",
+      -0.5,
+      0.5,
+      "CONTINUOUS"
+    ]
+  ],
+  "origins": {
+    "route_domains": "EX014 original range_reversion.py:39-44 complete source business-valid domains",
+    "acf_domain": "EX004 src/search.py:26,29 existing S013 extended search [-.60,.50]; source itself only checks finite",
+    "regime_domains": "EX014 original adaptive_range.py:19-24",
+    "confirmation_domains": "EX014 original confirmed_range.py:52-57"
+  },
+  "mapping": "payload.parameters dotted paths; int casts only INTEGER coordinates, float otherwise; all other payload and source unchanged per center.",
+  "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; domain and integer constraints enforced by SE.",
+  "fixed_or_categorical": [
+    "MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE fixed structural enum; strictpast120 full rawACF20 estimates, not current/future values",
+    "confirmation lookback remains active in original score; all13 original numerical coordinates retained",
+    "Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor applies strict Close>previousClose before original score",
+    "EQUAL/ABOVE/None unchanged; final exit saves reason/route/category, any entry clears all3, flat refusal/ineligibility/rawchange preserves all3",
+    "Original confirmation profile/orientation/scope/enabled, context, null stops/trail/momentum, cooldown0, H units, exit priority, execution and fees"
+  ],
+  "comparison": "Original EX01532 and coupled EX043N0 32 exact native reuse; only qualified newN0 gets32 new full points at same numeric centers/full13domains/coordinates. No failed center expansion.",
+  "candidate_reservation": {
+    "first": 3800,
+    "last": 3831
+  },
+  "helper_source_files": {
+    "run_parameters.py": "5af09ecd8305fa7cea28549b3cc5a0cb7c3e46ef8feaf68bed0f7933e89ebba7",
+    "parameter_analysis.py": "e9287bea7bf94672191b753557edef0614af196b53dd5cd37b76b67c7c4f7dd0",
+    "pair_parameters.py": "6896c00ef54263198abcf64520b42eac962bfab8af084559b033e22fb00806c2",
+    "declare_geometry.py": "4d617e400168e644eeb1e9a745b984299be5dd6123d2d7968a964a0dd2262a4a",
+    "common.py": "a3b331631cc2aa3b13bce4d1732bba4c615def5338bb9cf256176f6aaa70e0a8",
+    "account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "ledger_reference.py": "260093f27a9b59a28d925671906d2e89a7dd97dd665ec71ad597800171d2d568",
+    "analysis_reference.py": "b99bb3d3ad5c3ba9354e615cedc132e861655868fe15ee87427794f374880f58"
+  },
+  "direction_oracle_sha256": "9de045ca2222a517a75d48b1c16d59a6911ef8b6abbab5c158590f6eaadae2de",
+  "selection_history": "Fixed120 chosen from center lookback after EX044 full-state one-step diagnosis on repeatedly exposed S013 development paths; not independent validation or a search over baseline windows.",
+  "counts": "If qualified:64 old32+32 controls reused,32 newbusiness/33actual including one technical serial/spawn duplicate. If unqualified:zero parameter preparation/evaluation/reuse.",
+  "identity": "control_key cache aliases do not replace native labels/IDs/source/plans/lineage/account references. Registered coupled center is implementation parent; new center is PARAMETERS parent.",
+  "economic_policy": "Only four original economic gates qualify center; all points retain all four diagnostic gates, no added veto. AbsoluteQ10/Q90 and relative degradations jointly inform improvement."
+}
