@@ -1,0 +1,100 @@
+{
+  "record": {
+    "content_sha256": "e72e4e65093ad45b7314a769e74f75e5b8cc8e18db6c8707b404be5d7f16026f",
+    "dependencies": [
+      [
+        "czsc-strategy-runtime",
+        "0.1.0"
+      ],
+      [
+        "numpy",
+        "2.5.2"
+      ],
+      [
+        "pandas",
+        "3.0.5"
+      ]
+    ],
+    "dependency_sha256": "01af2d6e5fccd1df9972eafd23b160fad9eade94ea3626123278c2319690bc1b",
+    "derivation": {
+      "changes": {
+        "pressure_exit": {
+          "after": {
+            "early_hold_cap": 2,
+            "enabled": true,
+            "lookback": 4
+          },
+          "before": null
+        }
+      },
+      "child": {
+        "candidate_id": "C9074",
+        "strategy_id": "S013"
+      },
+      "child_content_sha256": "e72e4e65093ad45b7314a769e74f75e5b8cc8e18db6c8707b404be5d7f16026f",
+      "evidence": {
+        "path": "assets/candidates/C9074/derivation/2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+        "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e"
+      },
+      "kind": "IMPLEMENTATION",
+      "parent": {
+        "candidate_id": "C8880",
+        "strategy_id": "S013"
+      },
+      "parent_content_sha256": "e30430f290a802a01d27018535e5f4d137ab94c74b7f84908ad46492ada39fb6",
+      "protocol_sha256": "4d35186c08396f6956496e5c2edb2412fee00716a3e7248f2cdc1cc6fe668d31"
+    },
+    "identity_schema_version": 2,
+    "key": {
+      "candidate_id": "C9074",
+      "strategy_id": "S013"
+    },
+    "origin": {
+      "evidence": [
+        {
+          "path": "assets/evidence/EX074_20261011/3dd5daaeda8e163b23b7de7296968da8be3e1e07841657e4bce54aea0c116718.json",
+          "sha256": "3dd5daaeda8e163b23b7de7296968da8be3e1e07841657e4bce54aea0c116718"
+        }
+      ],
+      "experiment_id": "EX074_20261011"
+    },
+    "payload": {
+      "path": "assets/candidates/C9074/payload/83654308991d2a28459ffcaf28a28dfbc1158484d2cabdd845223a7b48e6f205.json",
+      "sha256": "83654308991d2a28459ffcaf28a28dfbc1158484d2cabdd845223a7b48e6f205"
+    },
+    "schema_version": 3,
+    "source_files": [
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/__init__.py",
+        "sha256": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/adaptive_range.py",
+        "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/boundary_bear_recovery_range.py",
+        "sha256": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/confirmed_range.py",
+        "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/pressure_early_exit_range.py",
+        "sha256": "d031ce426ed0c85fb6cb66a11bda450047b4eea5bfc1171746422e9a77374dc1"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/range_reversion.py",
+        "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+      },
+      {
+        "path": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      }
+    ],
+    "source_root": "assets/candidates/C9074/source/5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9/strategy_runtime",
+    "source_sha256": "5e45c184ae5858fb9852c5158a626bf2b05f61b9fca5b12cbfd9a71999de67c9"
+  },
+  "record_sha256": "f867df28b147c5294a970387573795be61499fa5442145808d50787e588806f7"
+}

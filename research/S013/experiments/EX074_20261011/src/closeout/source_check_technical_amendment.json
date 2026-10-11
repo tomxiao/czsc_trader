@@ -1,0 +1,26 @@
+{
+  "status": "SOURCE_ONLY_CHECK_INTERFACE_ASSERTIONS_CORRECTED",
+  "original_postprocess_source_sha256": "53982e30e79977ceecf7500bc24e945ed9e289e008ed9c8614cb074537bc73e6",
+  "postprocess_changed": false,
+  "first_failure": {
+    "command": ".venv/Scripts/python.exe -B -X utf8 .tmp/s013-pressure-early-exit/closeout/source_checks.py",
+    "source_path": ".tmp/s013-pressure-early-exit/closeout/revisions/source_checks_v1.py",
+    "source_sha256": "bd97b0f7f9996327aae2eb1394ffaa50265550858a4dd5710595e653163edc46",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\CodeBase\\czsc_trader\\.tmp\\s013-pressure-early-exit\\closeout\\source_checks.py\", line 54, in <module>\n    assert tuple(inspect.signature(register_candidate).parameters) == (\"repository\", \"request\")\nAssertionError",
+    "cause": "The actual official first argument is named context, not repository; existing positional dispatch API usage was correct."
+  },
+  "second_failure": {
+    "command": ".venv/Scripts/python.exe -B -X utf8 .tmp/s013-pressure-early-exit/closeout/source_checks.py",
+    "source_path": ".tmp/s013-pressure-early-exit/closeout/revisions/source_checks_v2.py",
+    "source_sha256": "1eb970c59044468b569aa49af66672d8e9222f9548b127681a37b1005f59c0b6",
+    "traceback": "Traceback (most recent call last):\n  File \"D:\\CodeBase\\czsc_trader\\.tmp\\s013-pressure-early-exit\\closeout\\source_checks.py\", line 98, in <module>\n    definition.validate()\nAttributeError: DeliveryDefinition object has no attribute validate. Did you mean: _validate?",
+    "cause": "Official delivery records validate in construction/from_dict; use exact typed roundtrip rather than nonexistent validate method."
+  },
+  "final_source_checks_sha256": "82c19b729547f9c99941159864253cf49ad430463ff5b353dc0a54348ba1733c",
+  "final_result_sha256": "afe449cc3574e73590c17b26412dda4b242fdf49f61a4dfd73ad9ccedb2d02cb",
+  "financial_runtime_changed": false,
+  "financial_runs": 0,
+  "statistics_runs": 0,
+  "registration": 0,
+  "assemble": 0
+}
