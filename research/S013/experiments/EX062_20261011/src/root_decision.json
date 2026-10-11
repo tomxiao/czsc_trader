@@ -1,0 +1,34 @@
+{
+  "role": "RSCH",
+  "status": "METHOD_APPROVED_BY_ROOT_PENDING_CODE_FREEZE",
+  "authorization": "用户要求自主设立目标并开始研究，允许重新设计验证和回到阶段二；本研究保留原硬门，不再逐轮请求评审。",
+  "research_question": "C8880附近是否存在中心通过原四门、标准32扰动绝对收益和回撤更好的参数区域？",
+  "novelty": "此前主要搜索单账户四门缺口或收益，再诊断邻域。本轮直接以邻域联合通过数量、净年化Q10、全期回撤Q90比较固定中心。",
+  "fixed_queue": "C8880；原EX058 P00/C8840、P20/C8860；C8880至每个端点分别取alpha=0.25,0.5,0.75，全13坐标线性插值，整数HALF_EVEN；共9中心。",
+  "why_endpoints": "此前仅两点在基准亏损年份都盈利，但中心年化均低于原收益硬门。用其作为已见反证引导的有限搜索锚点，不能视为新独立证据。",
+  "validation_geometry": "全部原13数值域，域宽标准化5%总欧氏距离、32点、seed13；每中心以真实参数重新生成公共SE设计，不沿用其他中心的点数值。",
+  "budget": {
+    "center_point_role_coordinates": 297,
+    "reused_native_role_coordinates": 35,
+    "reused_unique_native_accounts": 33,
+    "maximum_new_unique_business_accounts": 261,
+    "maximum_new_role_evaluations": 262,
+    "maximum_parameter_plan_binding_duplicates": 1,
+    "maximum_preflight_technical_duplicates": 1,
+    "maximum_separate_center_fee_pressure_accounts": 2
+  },
+  "additional_exact_duplicate": "纯设计发现P00邻域P21与P20邻域P00参数载荷相同。沿第一拥有者候选ID，分别在两份正式参数计划下执行原生评价并完整核对经济序列精确相同；分别保留parent/pointbinding/requesthash，不人工改SE事实。共297角色、294唯一业务配置、33旧唯一复用、261新唯一业务，262新角色评价及1串并行技术重复。",
+  "qualification": "仅原四项经济硬门决定中心候选资格。所有9中心都执行完整邻域，即使中心不达标，结果仍用于研究诊断。",
+  "selection_order": [
+    "先呈现全部9中心和其三目标Pareto，单列未过原四门者。",
+    "全部原四门合格中心均保留候选资格。",
+    "优先选择净年化Q10不低于C8880且全期DD Q90不高于C8880、至少一项改善的合格中心。",
+    "优选集合按邻域四门联合通过数量降序、Q10降序、Q90升序、固定队列顺序决胜。",
+    "没有优选则如实报告，不能把单项取舍伪装为已完成稳健目标。"
+  ],
+  "five_checks": "C8880与至多一个优选合格中心按当前公共SE完成参数、时间、集中性、独立2倍费用、统计不确定性诊断；其余合格中心资格不因未完成选型诊断被撤销。",
+  "strongest_counterevidence": "端点未过收益门；完整策略路径非线性，插值不保证折中；同一已见开发池和同一固定种子用来选优会过拟合该有限点集。没有新市场样本、封存验证或对全研究族选择的完整校正。",
+  "stop_for_this_experiment": "完成固定九中心后收口，不按结果追加alpha、反向外推、换种子、缩域、替换失败扰动点。必要技术修正保留旧证据并单独声明。",
+  "overall_goal": "持续研究原硬门达标且抗扰动更强的策略。单次有限研究收口不自动宣布整体目标完成。",
+  "boundaries": "仅S013既有数据和原暖启动、510500.SH截至2026-09-30、固定1%可执行基准、每侧0.1%费用、HFQ_RESEARCH；不修改平台，不跨族或访问封存验证，不冻结、PTE、生产、合并、tag、推送。"
+}

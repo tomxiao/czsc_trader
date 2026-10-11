@@ -1,0 +1,67 @@
+{
+  "version": "S013-EX062-five-independent-checks-v1",
+  "status": "PREPARED_NO_REAL_ACCOUNT_RESULTS",
+  "role": "RSCH",
+  "scope": "S013 only; public TDR/SE authenticated native contracts; no other research families or sealed data; helper performs no market fetch, account scheduling or publication",
+  "native_interface": {
+    "economic_native(request,result)": "Real EvaluationRequest/EvaluationResult original pair; not a stripped plan_center_view; full baseline authenticated with build_assessment_evidence; returns net_cagr/drawdown/closed_trades/frequency60/annual/benchmark_annual/gates/qualified/account_audit",
+    "assess_native": "keyword-only center NativeEvaluation, points tuple[32 NativeEvaluation], original typed ParameterPerturbationDesign, optional center-only stress NativeEvaluation; returns typed SelfcheckResult request/panel/economics/limitations",
+    "family": "optional public FamilyReturnEvidence plus additional nonduplicate authenticated AssessmentEvidence; no matrix invented from only the chosen center or perturbations",
+    "stress_none": "NOT_RUN recorded; public SE missing execution diagnostic retained; never runs a pressure account automatically"
+  },
+  "evaluation_grid": {
+    "dates": ["2020-01-02", "2026-09-30"],
+    "sessions": 1636,
+    "initial_cash": 1000000,
+    "frequency_window": 60,
+    "price_basis": "Original S013 HFQ_RESEARCH, same executable1% LimitBuyHold and approved daily/T+1 execution; no added cash dividend attribution"
+  },
+  "protocol": {
+    "baseline_window": "full",
+    "standard_scenario": "baseline",
+    "standard_one_way_cost": 0.001,
+    "stress_scenario": "stress_20bp_per_side",
+    "stress_one_way_cost": 0.002,
+    "stress_measurement_tier": "STRESS",
+    "rolling_window_days": 126,
+    "rolling_step_days": 21,
+    "minimum_rolling_windows": 20,
+    "quantile_method": "LINEAR",
+    "minimum_perturbations": 32,
+    "bootstrap_repetitions": 2000,
+    "bootstrap_block_length": 20,
+    "seed": 13,
+    "reconciliation_tolerance": 0.000001,
+    "pbo_blocks": 10,
+    "parameter_design": "Caller original design;32 points,total domain-normalized Euclidean radius.05,seed13; never redefine domains or replace failed points"
+  },
+  "cost_provenance": {
+    "verified_within_S013": "research/S013/experiments/EX008_20261010/src/declare.py: cost_scenarios stress_20bp_per_side .002; SelfCheckProtocol selects that scenario; standard .001 in common.py request_for",
+    "interpretation": "Retain approved2x fee factor only, not historical auxiliary3x; root controls whether latest reusable center pressure evidence exists or at most two new center pressure accounts are authorized and counted separately"
+  },
+  "five_items": {
+    "parameters": "max(0,center netCAGR-point netCAGR Q10),max(0,point fullDD Q90-center fullDD); all32 authentic PARAMETERS derivation bindings, full standard context. Also report absolute Q10/Q90 and original-four-goal point rates externally; no new qualification veto",
+    "time": "Paired126-session strategy minus same-window executable benchmark cumulative return,Q10,step21; reuse center account, no account replay per window",
+    "concentration": "Top ceil(.1*positive actual closed-cycle count) net-profit sum / all positive closed-cycle net-profit sum. No winners => NOT_APPLICABLE",
+    "execution": "standard center netCAGR minus unchanged-center .002 pressure netCAGR; negative values retained; no parameter-fee or time-fee cross",
+    "uncertainty": "PublicSE research-assessment-v3 paired stationary bootstrap CAGR excess95% interval,2000 replicates,mean block20,seed13. PBO/DSR only from explicitly supplied comparable family; absence is INSUFFICIENT_DATA, not zero"
+  },
+  "independent_economics": {
+    "account": "Actual fills fee=price*quantity*one_way_cost; cash/quantity accumulated in actual session order; no overselling; daily cash+quantity*close equals equity; all open/closed cash flows reconcile final profit",
+    "closed": "True closed cycles must match zero terminal cycle position exactly,actual last fill equals exit date; unclosed positions excluded from frequency",
+    "full_cagr": "(finalEquity/initialCash)^(252/sessionCount)-1",
+    "annual": "Natural-year continuous returns,openingEquity=prior year closingEquity; first year initial cash. Every year's DD includes that opening wealth",
+    "full_dd": "max(1-wealth/cummax(wealth)); initial cash included",
+    "original_gates": ["return", "annual_drawdown", "frequency", "negative_buyhold_year_profit"],
+    "original_formula": "netCAGR >=1.5*benchmarkCAGR if benchmarkCAGR>0 else netCAGR>0; each annualDD strictly<benchmark annualDD; actual closed*60/sessions>=4; benchmark negative years strategy annualreturn>0",
+    "limit": "No claim to independently audit limit-fill policy, causal signal logic or historical publication times"
+  },
+  "selection": "Only C8880 baseline and at most1 preferred final original-four-goal-qualified new center receive full five-item review; all newly original-four-qualified centers keep stage3 eligibility regardless of diagnostics. Helper never selects centers or excludes other qualified candidates",
+  "limitations": [
+    "Repeated S013 development-pool mechanism/parameter selection is not fully corrected; annual or bootstrap diagnostics are not sealed validation",
+    "Any supplied finite family matrix describes its declared members and cannot automatically correct the full research history",
+    "Bootstrap interval is not future return assurance or strategy success probability",
+    "No new hard gates, mandatory32/32 cutoff or replacement for original economic goals",
+    "Current helper has no real account results; fees stress budget and actual/reused/failed counts belong to root driver"
+  ]
+}

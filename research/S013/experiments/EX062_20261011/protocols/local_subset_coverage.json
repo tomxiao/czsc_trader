@@ -1,0 +1,4678 @@
+{
+  "status": "READONLY_COVERAGE_PASS",
+  "method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX062_20261011"
+    },
+    "evidence_id": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680.json",
+    "sha256": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680",
+    "media_type": "application/json",
+    "name": "fixed-nine-center-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_sha256": "2903fe2a9262b6a4a443f52c7cf27ea3fc52cf62620ee43caf2e8f4d98270e1b",
+  "sources": {
+    "calendar.trading_sessions": {
+      "request": {
+        "coverage": null,
+        "dataset": "calendar.trading_sessions",
+        "end": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "required_cutoff": "2026-09-30",
+        "start": "2018-01-12",
+        "symbol": "SSE"
+      },
+      "asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      }
+    },
+    "etf.ohlcv": {
+      "request": {
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 360,
+          "minimum_sessions": 360,
+          "observations_through": "2019-12-31"
+        },
+        "dataset": "etf.ohlcv",
+        "end": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "required_cutoff": "2026-09-29",
+        "start": "2018-07-12",
+        "symbol": "510500.SH"
+      },
+      "asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      }
+    },
+    "etf.unadjusted_daily": {
+      "request": {
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 60,
+          "observations_through": "2019-12-31"
+        },
+        "dataset": "etf.unadjusted_daily",
+        "end": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "required_cutoff": "2026-09-30",
+        "start": "2019-10-09",
+        "symbol": "510500.SH"
+      },
+      "asset_id": "fdc12c1fe6a8e94225aee7e4e07f42b0028d709c18e6f07612d2680e3767f6df",
+      "prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "ca4c91b9-982c-4dba-affe-3a27c5b4e741",
+        "manifest_sha256": "c56ab429810957b70d2a640b1216831c1d2f92a39dc01b23c91e8eba56ad9f1b"
+      }
+    },
+    "etf.unadjusted_intraday": {
+      "request": {
+        "coverage": null,
+        "dataset": "etf.unadjusted_intraday",
+        "end": "2026-09-30",
+        "frequency": "30m",
+        "parameters": {},
+        "required_cutoff": "2026-09-30",
+        "start": "2020-01-02",
+        "symbol": "510500.SH"
+      },
+      "asset_id": "0fd2aaffd1472b901b3c05a85c71a5aa4f4cc1eaa78445f8515bb8ef5b1f9f28",
+      "prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "e6664357-5cfb-4142-a61e-3fe44b15bd30",
+        "manifest_sha256": "d26ae2e7b3219a4d299980a1907bee876db90899b09a8fb555055eb5ef09b723"
+      }
+    }
+  },
+  "roles": [
+    {
+      "role": "BASE:center",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P00",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P01",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P02",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P03",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P04",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P05",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P06",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P07",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P08",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P09",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P10",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P11",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P12",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P13",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P14",
+      "warmup": 169,
+      "requests": [
+        "2ddf8aa8fe77f15e9c7a90f1e62b7dfcf5af3469f4c4e38a6a98b6679ca8284e",
+        "786dfef4a43edfbc727fc5f1f1c54a0911a9406113f86e88883f97c8b2644438",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P15",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P16",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P17",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P18",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P19",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P20",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P21",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P22",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P23",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P24",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P25",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P26",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P27",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P28",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P29",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P30",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "BASE:P31",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:center",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P00",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P01",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P02",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P03",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P04",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P05",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P06",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P07",
+      "warmup": 189,
+      "requests": [
+        "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+        "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P08",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P09",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P10",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P11",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P12",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P13",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P14",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P15",
+      "warmup": 172,
+      "requests": [
+        "db43a94d2c534e608ea171f87eb7fa01cc92e57a009b79a93ee6a164734e4716",
+        "c94966ab94281f615025682535ffd47546462342e74f92c689fa246e2ce333a8",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P16",
+      "warmup": 189,
+      "requests": [
+        "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+        "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P17",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P18",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P19",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P20",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P21",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P22",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P23",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P24",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P25",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P26",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P27",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P28",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P29",
+      "warmup": 189,
+      "requests": [
+        "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+        "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P30",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00:P31",
+      "warmup": 190,
+      "requests": [
+        "11732ef73928adfeb9cbdaae3fa78056ef267eb176d9d58f8fc03a59fbd68bbb",
+        "008755af7b0a3b3b2f609e3489fa18e0ba197b3215a292909544a2aa589b2464",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:center",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P00",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P01",
+      "warmup": 172,
+      "requests": [
+        "db43a94d2c534e608ea171f87eb7fa01cc92e57a009b79a93ee6a164734e4716",
+        "c94966ab94281f615025682535ffd47546462342e74f92c689fa246e2ce333a8",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P02",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P03",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P04",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P05",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P06",
+      "warmup": 172,
+      "requests": [
+        "db43a94d2c534e608ea171f87eb7fa01cc92e57a009b79a93ee6a164734e4716",
+        "c94966ab94281f615025682535ffd47546462342e74f92c689fa246e2ce333a8",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P07",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P08",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P09",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P10",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P11",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P12",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P13",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P14",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P15",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P16",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P17",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P18",
+      "warmup": 166,
+      "requests": [
+        "bfa73f726e35e927a7cba4486b0375bb39153b2166ae9d96cf8f5be97512d28d",
+        "9b0b8835d732fb73053632cbc598fbc4daf3ad843b5be67b3fb3fe786d4fcc0b",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P19",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P20",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P21",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P22",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P23",
+      "warmup": 172,
+      "requests": [
+        "db43a94d2c534e608ea171f87eb7fa01cc92e57a009b79a93ee6a164734e4716",
+        "c94966ab94281f615025682535ffd47546462342e74f92c689fa246e2ce333a8",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P24",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P25",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P26",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P27",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P28",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P29",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P30",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20:P31",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:center",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P00",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P01",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P02",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P03",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P04",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P05",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P06",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P07",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P08",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P09",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P10",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P11",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P12",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P13",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P14",
+      "warmup": 170,
+      "requests": [
+        "7922b8fb5b0793f305bc20978383cde915209a8b3b3653050717074675a268aa",
+        "61d360a974a4c216f7aa3c2e3b6a201a709d80a41f2526e694f8423aaec01603",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P15",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P16",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P17",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P18",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P19",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P20",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P21",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P22",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P23",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P24",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P25",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P26",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P27",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P28",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P29",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P30",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.25:P31",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:center",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P00",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P01",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P02",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P03",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P04",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P05",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P06",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P07",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P08",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P09",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P10",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P11",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P12",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P13",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P14",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P15",
+      "warmup": 171,
+      "requests": [
+        "b53f068e5f9f1d89a25278a88896900c42e6ecc227371249c474d24980609256",
+        "0be568d69405ecd5c273a8a4dde159a5a04b794ccea16ebb8b8f593401e1a273",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P16",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P17",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P18",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P19",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P20",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P21",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P22",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P23",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P24",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P25",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P26",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P27",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P28",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P29",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P30",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.5:P31",
+      "warmup": 189,
+      "requests": [
+        "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+        "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:center",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P00",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P01",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P02",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P03",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P04",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P05",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P06",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P07",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P08",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P09",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P10",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P11",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P12",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P13",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P14",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P15",
+      "warmup": 171,
+      "requests": [
+        "b53f068e5f9f1d89a25278a88896900c42e6ecc227371249c474d24980609256",
+        "0be568d69405ecd5c273a8a4dde159a5a04b794ccea16ebb8b8f593401e1a273",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P16",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P17",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P18",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P19",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P20",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P21",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P22",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P23",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P24",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P25",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P26",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P27",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P28",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P29",
+      "warmup": 188,
+      "requests": [
+        "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+        "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P30",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P00-A0.75:P31",
+      "warmup": 189,
+      "requests": [
+        "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+        "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:center",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P00",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P01",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P02",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P03",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P04",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P05",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P06",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P07",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P08",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P09",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P10",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P11",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P12",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P13",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P14",
+      "warmup": 168,
+      "requests": [
+        "e6923af4674e8529a0d524dd872440cb4c0406c969ba4fa3c273f64a9e4611b5",
+        "f4408942cf3de9a6ea61fccef38545dba3a7d22617862956460e1eced457dbec",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P15",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P16",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P17",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P18",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P19",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P20",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P21",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P22",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P23",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P24",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P25",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P26",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P27",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P28",
+      "warmup": 185,
+      "requests": [
+        "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+        "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P29",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P30",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.25:P31",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:center",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P00",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P01",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P02",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P03",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P04",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P05",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P06",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P07",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P08",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P09",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P10",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P11",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P12",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P13",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P14",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P15",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P16",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P17",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P18",
+      "warmup": 167,
+      "requests": [
+        "b26d49f2d6db0177c870168ac8556928c9922ced4c2e8d4a9fa134839a0790a6",
+        "cae984fa14d549ec556d4b788eeeeba22955ec311ff09f88e87d3c1618a040de",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P19",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P20",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P21",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P22",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P23",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P24",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P25",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P26",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P27",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P28",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P29",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P30",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.5:P31",
+      "warmup": 180,
+      "requests": [
+        "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+        "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:center",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P00",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P01",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P02",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P03",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P04",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P05",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P06",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P07",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P08",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P09",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P10",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P11",
+      "warmup": 174,
+      "requests": [
+        "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+        "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P12",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P13",
+      "warmup": 183,
+      "requests": [
+        "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+        "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P14",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P15",
+      "warmup": 179,
+      "requests": [
+        "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+        "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P16",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P17",
+      "warmup": 178,
+      "requests": [
+        "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+        "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P18",
+      "warmup": 167,
+      "requests": [
+        "b26d49f2d6db0177c870168ac8556928c9922ced4c2e8d4a9fa134839a0790a6",
+        "cae984fa14d549ec556d4b788eeeeba22955ec311ff09f88e87d3c1618a040de",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P19",
+      "warmup": 184,
+      "requests": [
+        "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+        "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P20",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P21",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P22",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P23",
+      "warmup": 173,
+      "requests": [
+        "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+        "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P24",
+      "warmup": 186,
+      "requests": [
+        "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+        "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P25",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P26",
+      "warmup": 175,
+      "requests": [
+        "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+        "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P27",
+      "warmup": 181,
+      "requests": [
+        "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+        "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P28",
+      "warmup": 176,
+      "requests": [
+        "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+        "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P29",
+      "warmup": 182,
+      "requests": [
+        "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+        "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P30",
+      "warmup": 187,
+      "requests": [
+        "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+        "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    },
+    {
+      "role": "P20-A0.75:P31",
+      "warmup": 177,
+      "requests": [
+        "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+        "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+        "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574"
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-07",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "71f51270c63dffe69ef2d5ed6d99dc60a15892888d954134199506423ebbb305",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "db08d1cb21f3d288c13e7ab21ccfe76db7528e97cdb3d2eb17bed23d94b2e2d6",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2824,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-10",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 180,
+          "minimum_sessions": 180,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "f713fc38d8488654fd9cebea20e8d7720064904886e4fb5a1c0a8e33f7fb552d",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "5723a0d0924e3e79ff18f6651a85f7f83f32e9e9046a8eda4333a126f3b588a5",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1815,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "510500.SH",
+        "start": "2019-12-31",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 1,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "94a0d353f3dc5659388f20bcdef42a8e7920585ccfb163bd63f2ff86a235c574",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "ca4c91b9-982c-4dba-affe-3a27c5b4e741",
+        "manifest_sha256": "c56ab429810957b70d2a640b1216831c1d2f92a39dc01b23c91e8eba56ad9f1b"
+      },
+      "source_asset_id": "fdc12c1fe6a8e94225aee7e4e07f42b0028d709c18e6f07612d2680e3767f6df",
+      "content_sha256": "c86d72501dce19d1e6012d02fab0cd4fc58b266a20715096448250d50ceb0520",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount"
+      ],
+      "observations": 1636,
+      "price_contract": {
+        "adjustment": "none"
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-01",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "430b60f761dce1c19e77e7ef3f3913e86b270be77bf5a1e59a1a4eb5a9b16277",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "df195e9f5d904ee54e69b20da674372fd80a7624d2720a0ce438ac24279a1444",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2830,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-04",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 183,
+          "minimum_sessions": 183,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "17b5bd97a73a21f0d4d30b72208acf57e0c52df9767a054bc5f341a324ba9b48",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "1754a654f74e9fa2f6c71be599966b2402f54e1ae02e9923d365a1662ce35f2d",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1818,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-17",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "ef3dfcbbf9c832ac57f3d42118beadf4522ea70619e017107c98bcb36c836129",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "b34c342fc57110b1244632ab0e78422cc7b3a48dd9e61b035e761400ff5e0ace",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2814,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-17",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 175,
+          "minimum_sessions": 175,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "e5af3ebda95e3cf7edfd5ea249d1ea467a482427644e4e06ddd7db6803404a07",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "48e72f6edaef4f29131c792eba3b3ba49863c2683a950a56a4df816f567cc17c",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1810,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-30",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "cc59cacbe74910a5d6c1b1ea7acd92a7fbd61f29bec52ad215653a3858a0f944",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "5c9d5d2e00f155e56f9ef2c10fb71f0c672f978fbe9aa490ad70828c4c1c327a",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2832,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-03",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 184,
+          "minimum_sessions": 184,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "ea7918add42d847127f614dc7bd656b044675f9b51e9a59f5051ed42c1a1aded",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "e139567868e5c6d94cf73c137ecc5558bec3573cf6d6ad5d562c9831b2b17471",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1819,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-09",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "97464253b2e0bc5e9e785f754c928af03f645fe7b28b4e7ba81226bcdf70c5b7",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "e451849676355868fcc4079ef7272d74662b0140f9dbdd4e443273e1583e5872",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2822,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-11",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 179,
+          "minimum_sessions": 179,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "8fdba7934596058aebd7ff5ab7bb3d7e94570aecb7dc2da881e5ffc3e4826b2d",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "c3e2c7bf434c36b54f7e4550c6ce82ea98d44e9e29f752e9f2381c8db2897315",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1814,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-28",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "671558ea3b9d26a407487c6ea8a4fb9661e4752d07f5b58ab4166fddaf9f2360",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "295a5624593f0b3a5dc7a48dd56fe3e8ccb68659f42561aabdc0460805e65632",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2834,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-02",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 185,
+          "minimum_sessions": 185,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "6c59c6377ccbf31089396ae58e32af95eb00e0676103f59f7661c451d02de956",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "3ef7b0a36354359be68c668945a9a549be917887f48f7e98b7f877d9b91f765d",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1820,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-05",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "a659e64aa199bc32118f58376323587c6ac523d630db39e44add0d1c3e75784c",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "69c4a58c0516c6aaa6727feab33e3e69a59f83621d67a43aa02a06044abbb516",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2826,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-09",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 181,
+          "minimum_sessions": 181,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "aae07542fc112c5aa552bfcf26d524f37e23b5c182b693edb749b71c875ec98a",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "2707498962c7c51977747825f7b6063780319aebb6937590275adf495383d0b9",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1816,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-26",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "1ce67468f2792ac48516524c96a88c24df08d18eeb4c2c0811f017f2a1fd7da8",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "614f1b0cc889e4bbc47bca0a3d24a0f4dc770304c78252fee8345de5d015fc46",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2836,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-01",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 186,
+          "minimum_sessions": 186,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "b4cf576de40dae31d579bb02f8c68a2a9e867d53a1cee90e49a78c33f3dd95e3",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "3dbccc24192462b6caa70c2666fe64c6453a022f2a360709fbdea521b36dcf1c",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1821,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-15",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "93a6e17513679bf6350722823a124f33b11858f86841bc3c7fb625adf596db0a",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "140bbbfccb669b8f379b42f742bc7d4f2b8aa92ea4372421e4f2732b135c0fe6",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2816,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-16",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 176,
+          "minimum_sessions": 176,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "3902a8a83aeffeb72ab87cb6090324f6b224b72fdce175573ffc519a5dbd95e1",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "f83a28cb68f51b660777a45f8a42875be844283a5656ff12ee491a16e21f7e59",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1811,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-13",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "f0a234eb5838235430e7095c8b68ad6307de96f2169df92fe80f82b6cb05fbe9",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "1e56776bc98733573090d844457cbec33a72a3abf745a370fca8f7b027828e0e",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2818,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-15",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 177,
+          "minimum_sessions": 177,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "250c54a4810028dc339e7c84b01f005534b5ab6acaec71b9542526b69a491902",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "7ab0b31bcdf14999e71d8f5425695f8ab9c21d03ab8e975067a97a98e965f59f",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1812,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-29",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "2ddf8aa8fe77f15e9c7a90f1e62b7dfcf5af3469f4c4e38a6a98b6679ca8284e",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "8e4df03f90e77cfd62124252448b316ddb79ea27a0d25b7a1d1f56fb60c84aae",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2802,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-25",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 169,
+          "minimum_sessions": 169,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "786dfef4a43edfbc727fc5f1f1c54a0911a9406113f86e88883f97c8b2644438",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "9680270cecdfd4f6cb0ed1102d9af1b13dfcdca929857c6ba5970f0f541569f6",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1804,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-11",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "d2f72bf872b652fdad2fa11ac5b59e88ecda5c1c12c0ffce1dee03b69c935bcc",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "05f40d4461ec287516ebb1aac044ea96efa1e6d96431dbfe331c039ff617a3d3",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2820,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-12",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 178,
+          "minimum_sessions": 178,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "457cded00a4573a75c150d684ff9119095abb74509bfdc666d95fd2c71517e45",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "878fe98a52d84d97ca300ea67fb94fd33b05086d26805b2a815f780ffe3417d9",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1813,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-03",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "cf8eb0cc3b1f6f72f7b2e4f3186147e8e0bc69ee69e1a66556f40e52d506df72",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "6d336f46b3213ec682e7a181be496c1af2a151a331d60866382c5991560d5edb",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2828,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-08",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 182,
+          "minimum_sessions": 182,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "1636003e2cf027f72220e788ae3b68f5d5a08506bb41ddee7215d8702da515bc",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "aa60ecf5db3216c5504541e5b461dc310dd463d7106f4b5e9145e29744b21d6c",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1817,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-24",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "3b950c8965b0192f7295aff2011ba1b50ca17128d2a242ad88b526ec92285cff",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "fc60c9c7168cde8629c7e368fe453fdf2dcb91980ecccf9d56e06fa41834495c",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2838,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-03-29",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 187,
+          "minimum_sessions": 187,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "4e7f43eef4d4c4ec315eea35ab3e22e95c19b83ee4ad44d6ea4b0d13d235776a",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "ca4119e9c81332e806342ce25263603cd57248a6bbe89fcec99efbda7170c896",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1822,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-22",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "0e9a472bdbbdeb6bc271a6d9134a6a220a14ce1d3c5ba1ed49dd3b8f71425f97",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "ceedd17f61337bda3b0e00bd2ad74d6df6398bcbc3bb26cc91ae9a9c97e796f1",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2840,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-03-28",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 188,
+          "minimum_sessions": 188,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "55e175d9af18798a20d29800c7399e7105122ce7697926c49fde470969c6d07c",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "982242ff67af8d267f0e1589c8d03d48fed8b109fcffdc58b8641010ded37647",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1823,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-20",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "a7fc5830ea5daf1545e9b023d5dbec689ed0ffc62ff6b800bb1a23c15b56ebb0",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "2baa95e769818e5f5277c2beb3d68e72c7749580c067839e74991316296b5e68",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2842,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-03-27",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 189,
+          "minimum_sessions": 189,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "20e96b6d24bfbde4bd16bdbd4bc03b6144364bbbec78cf1285c1738cd89b418c",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "f7ec1b5b91160e3b3fd17c55185b7ec9d3a668013c0f7fa400ccf11c69cd665c",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1824,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-23",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "db43a94d2c534e608ea171f87eb7fa01cc92e57a009b79a93ee6a164734e4716",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "14777cbb47b8edb46c91b08e082738a69f923ea30fed9db698d8f4cf2b2958c1",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2808,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-22",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 172,
+          "minimum_sessions": 172,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "c94966ab94281f615025682535ffd47546462342e74f92c689fa246e2ce333a8",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "838eb223cc9943869acd058e0939c1a576831d3365bbbea1a3a16d253b03e0bd",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1807,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2018-12-18",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "11732ef73928adfeb9cbdaae3fa78056ef267eb176d9d58f8fc03a59fbd68bbb",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "e79dc33608241ddb954077dc284d00c9971e12ae6114d88c2bc51b41e81debf9",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2844,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-03-26",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 190,
+          "minimum_sessions": 190,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "008755af7b0a3b3b2f609e3489fa18e0ba197b3215a292909544a2aa589b2464",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "664a5e9616d8749c5a09a7cb9ed5c03204cc1b95eead436d64c73ea455d4abae",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1825,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-21",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "2f9338ed6df67669ff167e4fd688e35951fae15bfe02ed3028c77b3e28a1769a",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "bcf4a423ce12ee118f58c8c64c8c0be7ab752991b611d9a29275cb354fe24973",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2810,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-19",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 173,
+          "minimum_sessions": 173,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "8eaee06826747d31dab705571a33e385c0fb895eaaba6a62be8e540ee5fa001a",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "4e562618fea09613e8f7d5286be68312332e8f612d39be64e6d3a8c0c2c1cc4f",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1808,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-19",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "8f58422ce22d1c45d77d3d83d7d7e2abbbca1770047d74788b672d5e1151a2c1",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "1d312c2fe14f70ab155a4aa1dffbdf39fbe62e39a6d25abb09761aa1f45f6043",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2812,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-18",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 174,
+          "minimum_sessions": 174,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "b5c5f8b56e2a777546166878f530745ec568718eba5de53ce1fe7ffc7e9618db",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "a5cfb565804af3167fbde5a79ccd0a8174f4977b7b9406f6c4e63a9a48c45b6b",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1809,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-02-04",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "bfa73f726e35e927a7cba4486b0375bb39153b2166ae9d96cf8f5be97512d28d",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "27b8ba3386197daefea2b4a726891e3187d3cbae81ec529fdcfab32ff15d5109",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2796,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-30",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 166,
+          "minimum_sessions": 166,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "9b0b8835d732fb73053632cbc598fbc4daf3ad843b5be67b3fb3fe786d4fcc0b",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "a641647cb721e94727b74397124094e00f9191d4e884d8c5189858c9d805fe77",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1801,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-27",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "7922b8fb5b0793f305bc20978383cde915209a8b3b3653050717074675a268aa",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "eb8e2a0e090849191ccfd717a042f2a57fdd2653d2f530e9900e815c9171d264",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2804,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-24",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 170,
+          "minimum_sessions": 170,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "61d360a974a4c216f7aa3c2e3b6a201a709d80a41f2526e694f8423aaec01603",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "8b5f7a79720bae1125007232ae23469f27bf2f0c552d88ce8b3da11739fc0fbe",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1805,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-25",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "b53f068e5f9f1d89a25278a88896900c42e6ecc227371249c474d24980609256",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "4c1cc7c22dc6ec42e6e5e2d38d098a99687db5c9aaf2bd2f85c08e3fa4bfe9ee",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2806,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-23",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 171,
+          "minimum_sessions": 171,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "0be568d69405ecd5c273a8a4dde159a5a04b794ccea16ebb8b8f593401e1a273",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "69fff418dac2f56e160f7e28a16040272f534117a190fb2eb74cfd1375676f8e",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1806,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-01-31",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "e6923af4674e8529a0d524dd872440cb4c0406c969ba4fa3c273f64a9e4611b5",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "66bc0001e829d75998988bef0d833d7441b5f9575a63ff2df418ce9f5ef78cc8",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2800,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-26",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 168,
+          "minimum_sessions": 168,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "f4408942cf3de9a6ea61fccef38545dba3a7d22617862956460e1eced457dbec",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "4238214d2144e5ebc302467f3427de5e5e5efe38b4b8f7aee74115f42fc10791",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1803,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-02-02",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "b26d49f2d6db0177c870168ac8556928c9922ced4c2e8d4a9fa134839a0790a6",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "00d36734-56de-44d7-8288-c9857eb9acaf",
+        "manifest_sha256": "bdae431536a11092d3cb205780a7f7e2b64141f9d348333746bab7f40501f485"
+      },
+      "source_asset_id": "b53d5064d741d1ab55fedaaed6a1b503a7e22d07a0ac883f59cac9b0bce7dfed",
+      "content_sha256": "3298f75f686741aadca2767e399efdc3f734e7e656bacf108e2661c6521a1f72",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "observations": 2798,
+      "price_contract": {}
+    },
+    {
+      "request": {
+        "dataset": "etf.ohlcv",
+        "symbol": "510500.SH",
+        "start": "2019-04-29",
+        "end": "2026-09-29",
+        "required_cutoff": "2026-09-29",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 167,
+          "minimum_sessions": 167,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "cae984fa14d549ec556d4b788eeeeba22955ec311ff09f88e87d3c1618a040de",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "bd5c9b30-98fb-455f-958a-04383bd8cacd",
+        "manifest_sha256": "2f124ba9a35c2900a31a74605bf8371920b625e23ed093ba8baccf1b3eaf9400"
+      },
+      "source_asset_id": "9657e8ba5989d5cfc0fa3375868bb954453fcc651275a78de6b105eed66ae5cf",
+      "content_sha256": "0eca47eb50516feb4a7b18c57b84c7f7db70838469aa2574e4c6ac3a83c03396",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 1802,
+      "price_contract": {
+        "adjustment": "hfq",
+        "adjustment_factor_source": "fund_adj",
+        "adjustment_factor_sha256": "03bdba6e5fa669a951d15d8a504646392005317bc9b2e3fd9a4eb7f319234b65",
+        "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",
+        "adjustment_factor_publication_timestamp_verified": false,
+        "adjustment_factor_revision_history_verified": false
+      }
+    },
+    {
+      "request": {
+        "dataset": "etf.unadjusted_daily",
+        "symbol": "510500.SH",
+        "start": "2019-10-09",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": {
+          "maximum_start_lag_days": null,
+          "minimum_observations": 1,
+          "minimum_sessions": 60,
+          "observations_through": "2019-12-31"
+        }
+      },
+      "request_sha256": "5b68ffd1f71b9042f4268735c082a18f98f6cdf7e00f99ce936274d4ff270fac",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "ca4c91b9-982c-4dba-affe-3a27c5b4e741",
+        "manifest_sha256": "c56ab429810957b70d2a640b1216831c1d2f92a39dc01b23c91e8eba56ad9f1b"
+      },
+      "source_asset_id": "fdc12c1fe6a8e94225aee7e4e07f42b0028d709c18e6f07612d2680e3767f6df",
+      "content_sha256": "457768b63765acc5046976a1d11697f92a1c4e9bcd50033f733e90d09e274432",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount"
+      ],
+      "observations": 1696,
+      "price_contract": {
+        "adjustment": "none"
+      }
+    },
+    {
+      "request": {
+        "dataset": "etf.unadjusted_intraday",
+        "symbol": "510500.SH",
+        "start": "2020-01-02",
+        "end": "2026-09-30",
+        "required_cutoff": "2026-09-30",
+        "frequency": "30m",
+        "parameters": {},
+        "coverage": null
+      },
+      "request_sha256": "f3f8091698f578b8b6426d14bd7ad679e6a501acef1240bd9d084ca980dc806b",
+      "source_prepared": {
+        "space_id": "24bb58bb-7fea-4e5f-8bd4-ac23474ced6a",
+        "preparation_id": "e6664357-5cfb-4142-a61e-3fe44b15bd30",
+        "manifest_sha256": "d26ae2e7b3219a4d299980a1907bee876db90899b09a8fb555055eb5ef09b723"
+      },
+      "source_asset_id": "0fd2aaffd1472b901b3c05a85c71a5aa4f4cc1eaa78445f8515bb8ef5b1f9f28",
+      "content_sha256": "3ecea090a7ecabc3f13706f1c6d99ef31efccf6fd7ae2bb3ce02695b03ba394f",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ],
+      "observations": 13088,
+      "price_contract": {
+        "adjustment": "none",
+        "availability_basis": "MARKET_BAR_CLOSE_ASSUMPTION"
+      }
+    }
+  ],
+  "role_count": 297,
+  "standard_unique_configurations": 294,
+  "unique_exact_requests": 53,
+  "failed_declare_sha256": "c0df543a4da94a0df9e33045c3f40f75fdc0ae6b3322403bee7ca93ead355db9",
+  "public_contracts": {
+    "packages\\dataflows\\src\\dataflows\\facade.py": "f9a7a0a59dd52214677dfe5135644879c301e08916994518a2938f34b3c4271f",
+    "packages\\dataflows\\src\\dataflows\\contract.py": "ddd1576979a4bf2a987fd3d3864c378af1dc6fa53961828df2fd37b8f4359454",
+    "research\\S013\\experiments\\EX058_20261011\\src\\strategy_runtime\\strategies\\range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+  },
+  "new_account_evaluations": 0,
+  "preparations": 0,
+  "external_provider_calls": 0,
+  "limits": "Read-only existing pinned data; no price normalization, repair, new sample or changed warmup/domain. Priming is separately root-invoked."
+}

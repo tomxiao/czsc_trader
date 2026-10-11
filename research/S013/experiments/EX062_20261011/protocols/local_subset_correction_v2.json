@@ -1,0 +1,96 @@
+{
+  "status": "PROSPECTIVE_TECHNICAL_CORRECTION_V2",
+  "method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX062_20261011"
+    },
+    "evidence_id": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680.json",
+    "sha256": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680",
+    "media_type": "application/json",
+    "name": "fixed-nine-center-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "materials": {
+    "factor-provenance-diagnosis": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "6143a2f4658c166fb39d3136ad88e7f252deac613a48435f1038f13e7a5f8abe.json",
+      "sha256": "6143a2f4658c166fb39d3136ad88e7f252deac613a48435f1038f13e7a5f8abe",
+      "media_type": "application/json",
+      "name": "factor-provenance-diagnosis",
+      "schema": null,
+      "schema_version": null
+    },
+    "factor-provenance-diagnosis-source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "1c675d08d4cb9faad796a65d4efe521873f5da334c8622e6c60fa09441261c4d.py",
+      "sha256": "1c675d08d4cb9faad796a65d4efe521873f5da334c8622e6c60fa09441261c4d",
+      "media_type": "text/x-python",
+      "name": "factor-provenance-diagnosis-source",
+      "schema": null,
+      "schema_version": null
+    },
+    "failed-subset-attempt1": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "978751c2fca49e3fd7deddbbf52bb3a1b4fefbc74805eccd3240e52cd0510d4b.json",
+      "sha256": "978751c2fca49e3fd7deddbbf52bb3a1b4fefbc74805eccd3240e52cd0510d4b",
+      "media_type": "application/json",
+      "name": "failed-subset-attempt1",
+      "schema": null,
+      "schema_version": null
+    },
+    "local-subset-materializer-v2-source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "c864f88e7f7e6832e6f7fb4eedeac4cf6fc7b09a267f2011aad2736c43fefb6f.py",
+      "sha256": "c864f88e7f7e6832e6f7fb4eedeac4cf6fc7b09a267f2011aad2736c43fefb6f",
+      "media_type": "text/x-python",
+      "name": "local-subset-materializer-v2-source",
+      "schema": null,
+      "schema_version": null
+    },
+    "local-subset-v2-publication-source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "209fb61cdf564b017801c10b76f376035608a5b9953b1390a85fb986006477c0.py",
+      "sha256": "209fb61cdf564b017801c10b76f376035608a5b9953b1390a85fb986006477c0",
+      "media_type": "text/x-python",
+      "name": "local-subset-v2-publication-source",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_sha256": "c864f88e7f7e6832e6f7fb4eedeac4cf6fc7b09a267f2011aad2736c43fefb6f",
+  "coverage_sha256": "6ea9953a4ac33a09167d02368ea74ebed7850b2f40ed7470815eace0cd852b4e",
+  "new_account_evaluations": 0,
+  "economic_method_changes": [],
+  "reason": "Existing narrow HFQ asset and wide source subset have exactly identical eight columns and dtypes, but factor-query provenance hashes describe different full date-series. First priming attempt made no provider calls before rejecting this existing provenance difference.",
+  "validation": "Every materialized full frame/content must remain exact; adjustment/basis/anchor/source/schedule remain exact. Record both factor-query hashes and their PreparedDataRef separately, never fabricate equal provenance. No re-adjustment or changed financial source/parameters/warmup/geometry.",
+  "preservation": "Retain v1 failed priming and prior failed declaration; no automatic replay, no omitted or replaced points."
+}

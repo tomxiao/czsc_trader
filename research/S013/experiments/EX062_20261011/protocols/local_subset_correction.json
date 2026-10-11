@@ -1,0 +1,83 @@
+{
+  "status": "PROSPECTIVE_TECHNICAL_CORRECTION",
+  "method_reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX062_20261011"
+    },
+    "evidence_id": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680.json",
+    "sha256": "cbb8a2773f00ef338c64e4e8d3e182ca8a470b9bfefe8730af52714501c66680",
+    "media_type": "application/json",
+    "name": "fixed-nine-center-method",
+    "schema": null,
+    "schema_version": null
+  },
+  "materials": {
+    "failed-declare-attempt0": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "c0df543a4da94a0df9e33045c3f40f75fdc0ae6b3322403bee7ca93ead355db9.json",
+      "sha256": "c0df543a4da94a0df9e33045c3f40f75fdc0ae6b3322403bee7ca93ead355db9",
+      "media_type": "application/json",
+      "name": "failed-declare-attempt0",
+      "schema": null,
+      "schema_version": null
+    },
+    "local-subset-coverage": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "6ea9953a4ac33a09167d02368ea74ebed7850b2f40ed7470815eace0cd852b4e.json",
+      "sha256": "6ea9953a4ac33a09167d02368ea74ebed7850b2f40ed7470815eace0cd852b4e",
+      "media_type": "application/json",
+      "name": "local-subset-coverage",
+      "schema": null,
+      "schema_version": null
+    },
+    "local-subset-materializer-source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "2903fe2a9262b6a4a443f52c7cf27ea3fc52cf62620ee43caf2e8f4d98270e1b.py",
+      "sha256": "2903fe2a9262b6a4a443f52c7cf27ea3fc52cf62620ee43caf2e8f4d98270e1b",
+      "media_type": "text/x-python",
+      "name": "local-subset-materializer-source",
+      "schema": null,
+      "schema_version": null
+    },
+    "local-subset-publication-source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX062_20261011"
+      },
+      "evidence_id": "49b354ccd39206357bedf6f499c4ed4bdeb5c9d394c1a4db8e68094e73bc1b5e.py",
+      "sha256": "49b354ccd39206357bedf6f499c4ed4bdeb5c9d394c1a4db8e68094e73bc1b5e",
+      "media_type": "text/x-python",
+      "name": "local-subset-publication-source",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_sha256": "2903fe2a9262b6a4a443f52c7cf27ea3fc52cf62620ee43caf2e8f4d98270e1b",
+  "coverage_sha256": "6ea9953a4ac33a09167d02368ea74ebed7850b2f40ed7470815eace0cd852b4e",
+  "new_account_evaluations_before_correction": 0,
+  "economic_method_changes": [],
+  "authorization": "用户授权自主完成S013研究；本修正仅从已授权旧资产显式准备所需子集，不访问外部数据，不改变经济规则。",
+  "reason": "Exact-request preparation cache lacked a narrower calendar key although pinned S013 assets fully cover all297 fixed roles.",
+  "execution": "Explicit separate public Dataflows materialization from pinned PreparedDataRef; compare every resulting frame exactly with old source, including adjustment metadata. Original financial driver/context remain unchanged and forbid provider calls.",
+  "failure_preservation": "Initial declaration FAILED before any financial evaluation; original failure retained as immutable evidence. No automatic retry, replacement or dropped point."
+}

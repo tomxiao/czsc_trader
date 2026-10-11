@@ -1,0 +1,1927 @@
+{
+  "status": "READ_ONLY_SOURCE_INVENTORY",
+  "experiment_directories": [
+    "EX004_20261007",
+    "EX005_20261009",
+    "EX012_20261011",
+    "EX013_20261011",
+    "EX014_20261011",
+    "EX015_20261011",
+    "EX016_20261011",
+    "EX017_20261011",
+    "EX018_20261011",
+    "EX019_20261011",
+    "EX020_20261011",
+    "EX021_20261011",
+    "EX022_20261011",
+    "EX023_20261011",
+    "EX024_20261011",
+    "EX025_20261011",
+    "EX026_20261011",
+    "EX027_20261011",
+    "EX028_20261011",
+    "EX029_20261011",
+    "EX030_20261011",
+    "EX031_20261011",
+    "EX032_20261011",
+    "EX033_20261011",
+    "EX034_20261011",
+    "EX035_20261011",
+    "EX036_20261011",
+    "EX037_20261011",
+    "EX038_20261011",
+    "EX039_20261011",
+    "EX040_20261011",
+    "EX041_20261011",
+    "EX042_20261011",
+    "EX043_20261011",
+    "EX044_20261011",
+    "EX045_20261011",
+    "EX046_20261011",
+    "EX047_20261011",
+    "EX048_20261011",
+    "EX049_20261011",
+    "EX050_20261011",
+    "EX051_20261011",
+    "EX052_20261011",
+    "EX053_20261011",
+    "EX054_20261011",
+    "EX055_20261011",
+    "EX056_20261011",
+    "EX057_20261011",
+    "EX058_20261011"
+  ],
+  "python_files_scanned": 1113,
+  "source_files_with_study_calls": [
+    {
+      "path": "research/S013/experiments/EX004_20261007/src/fixed_search.py",
+      "sha256": "e347db961a39897cad98a9f6212f3eb27e9cc050d8c0deaa5cf17bb62b1a3b3f",
+      "calls": [
+        {
+          "line": 29,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name=plan['name'])"
+        },
+        {
+          "line": 31,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 67,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 73,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX004_20261007/src/fixed_search_adaptive.py",
+      "sha256": "215cd25bb6abe09c2e3066ca7e4e7882584f564615228ee158dd52b9bfc22f5f",
+      "calls": [
+        {
+          "line": 29,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name=plan['name'])"
+        },
+        {
+          "line": 31,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 67,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 73,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX004_20261007/src/fixed_search_r4.py",
+      "sha256": "73b2cdb0a3cd89a3fb2e9278a65743f6630e826876efc26213c2dddcee8ce4ec",
+      "calls": [
+        {
+          "line": 29,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name=plan['name'])"
+        },
+        {
+          "line": 31,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 67,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 73,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX004_20261007/src/search.py",
+      "sha256": "c7b86f6eae769a2f592bdf5af4ae3137a32a5f50b60eea4c520f08cfba6af9d5",
+      "calls": [
+        {
+          "line": 56,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.TPESampler(seed=13 + 100 * (args.mode == 'expanded') + i, constant_liar=True, n_startup_trials=16), study_name=name)"
+        },
+        {
+          "line": 62,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial(study.trials[row['trial']].params, user_attrs={'explicit_retry_of': row['candidate_id'], 'reason': 'Windows spawn invalid-handle interruption; outcome unknown'})"
+        },
+        {
+          "line": 74,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(existing[digest]))"
+        },
+        {
+          "line": 90,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 95,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX004_20261007/src/stage4/run_batch.py",
+      "sha256": "ac8e7b1d50c23cfbe545114bae81846a2eb6ca45ce2e8ecf98e22963eb1c1f66",
+      "calls": [
+        {
+          "line": 32,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name=f'S013_stage4_batch_{args.batch:02}')"
+        },
+        {
+          "line": 35,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 71,
+          "name": "study.tell",
+          "expression": "study.tell(trial, result.runs[0].observation.net_cagr)"
+        },
+        {
+          "line": 74,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX005_20261009/src/run_search.py",
+      "sha256": "4908449e01f2ae83f4f0b1e5ccb2004b77899cdf67bb3c70a554ace8219495a9",
+      "calls": [
+        {
+          "line": 35,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name=plan['name'])"
+        },
+        {
+          "line": 39,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(completed[index]))"
+        },
+        {
+          "line": 77,
+          "name": "study.tell",
+          "expression": "study.tell(trial, search_value(row))"
+        },
+        {
+          "line": 81,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX012_20261011/src/correct_equal_scores.py",
+      "sha256": "68e4d862ddc40187fe87700860381feb14442e595d71b30b847672c69db67ec7",
+      "calls": [
+        {
+          "line": 114,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 117,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': i})"
+        },
+        {
+          "line": 134,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 137,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX012_20261011/src/run_matrix.py",
+      "sha256": "a3c6091c424f0ede2fa1f4ccb57a31eb68e95ece821bda0d8b1c780dd2445976",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 21,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 53,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 56,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX013_20261011/src/run_matrix.py",
+      "sha256": "7ffcce92957c614b43b4c5b347dd9288ff3c59626b42944cfffa19d7274c0f54",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX014_20261011/src/run_matrix.py",
+      "sha256": "059b4fa33b809d9b96f09e5c40bfec2452f52d272dc7b24ff58872edf1eb3d4d",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX015_20261011/src/run_matrix.py",
+      "sha256": "961dc28bf95deeb74314db09ed148845b7d58c3d1b6ecc6acd6219b0835d79f0",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX015_20261011/src/run_parameters.py",
+      "sha256": "8b7696ffe43bf25a1c6f2b23c2fcd50f89541850cde65a5d595e63ec3d100b32",
+      "calls": [
+        {
+          "line": 254,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX015-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 257,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 295,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX016_20261011/src/run_matrix.py",
+      "sha256": "91d7ea5ecec174af4db7721c81ef9c582cccdb69e1ed747ef11b0a71e6ae7d3d",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX016_20261011/src/run_parameters.py",
+      "sha256": "ffbe914b7914201d5c7f239d05965bbdb211fe02ad7a0642eae49d086285d37d",
+      "calls": [
+        {
+          "line": 254,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX016-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 257,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 295,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX017_20261011/src/run_matrix.py",
+      "sha256": "961dc28bf95deeb74314db09ed148845b7d58c3d1b6ecc6acd6219b0835d79f0",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX017_20261011/src/run_parameters.py",
+      "sha256": "75281e15b03cb874452a60dfc402f1d58010471f53395eeceeacb07e4b53f273",
+      "calls": [
+        {
+          "line": 322,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX017-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 325,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 333,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 368,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX018_20261011/src/run_matrix.py",
+      "sha256": "a43e70e7d9d2da16a8200d60b73dc9e48e8732c2ee1dd35f061fe876ffb7a023",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX018_20261011/src/run_parameters.py",
+      "sha256": "ac5419e6cd39bfb409d18917112da614e6f03b4a2a4db635b4743135bbcfe635",
+      "calls": [
+        {
+          "line": 322,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX018-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 325,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 333,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 368,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX019_20261011/src/run_matrix.py",
+      "sha256": "11e3ba9a8a7a6b4b85360b513e6d1a146c0e869c32e535e3a8345e2ad4d9475b",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX019_20261011/src/run_parameters.py",
+      "sha256": "46f84b35f2968b89d0c809cf84d9f70d2a558f8ec7e765d21162714130e16b84",
+      "calls": [
+        {
+          "line": 324,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX019-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 327,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 335,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 370,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX020_20261011/src/run_matrix.py",
+      "sha256": "11e3ba9a8a7a6b4b85360b513e6d1a146c0e869c32e535e3a8345e2ad4d9475b",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX020_20261011/src/run_parameters.py",
+      "sha256": "c7411404e51e5c46735570c1b35001b3b31366778401bfa36c227cdae41c42fd",
+      "calls": [
+        {
+          "line": 324,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX020-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 327,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 335,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 370,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX021_20261011/src/run_matrix.py",
+      "sha256": "b01905d5b5bceeb8760605d38da0dcadee7723b9889a07c783215ad7e2273e8c",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX021_20261011/src/run_parameters.py",
+      "sha256": "b88d4f41cd1ae46416637e042775334ce8af8b88d418fc3825b6d166428462f1",
+      "calls": [
+        {
+          "line": 324,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX021-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 327,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 335,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 370,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX022_20261011/src/run_matrix.py",
+      "sha256": "3c089e60e7ea082e765b283ab02043fff75e4a7ea587bd006bfe65ed9bea424d",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX022_20261011/src/run_parameters.py",
+      "sha256": "358d7b6fed1d1ac765ae8305aa584fe51123b2621318d0230db67c15c0192661",
+      "calls": [
+        {
+          "line": 324,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX022-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 327,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 335,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 370,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX023_20261011/src/run_matrix.py",
+      "sha256": "d47231c03eb87b9d61a84c80a522e32eb47ba89f90cccfbedbdcf50e450cceec",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX023_20261011/src/run_parameters.py",
+      "sha256": "32b2f7fbb77bdc989e67a9dc4c89d96f2af64c8f47372df921fc86ddb1882f0e",
+      "calls": [
+        {
+          "line": 334,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX023-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 337,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 347,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 382,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX024_20261011/src/run_matrix.py",
+      "sha256": "d47231c03eb87b9d61a84c80a522e32eb47ba89f90cccfbedbdcf50e450cceec",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX024_20261011/src/run_parameters.py",
+      "sha256": "39ea571db8bdb85dc38411ce36fa9fdf67145e1953cae9dd0b49c58b02a9760b",
+      "calls": [
+        {
+          "line": 345,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX024-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 348,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 360,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 395,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX025_20261011/src/run_matrix.py",
+      "sha256": "d47231c03eb87b9d61a84c80a522e32eb47ba89f90cccfbedbdcf50e450cceec",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX025_20261011/src/run_parameters.py",
+      "sha256": "fdb584c145ff829716933db66c15eb2d07cb3cc300eef1ec59cf97299f20b9b7",
+      "calls": [
+        {
+          "line": 344,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX025-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 347,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 357,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 392,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX026_20261011/src/run_matrix.py",
+      "sha256": "3acba301cd7ff3573522bd30136e32ca9a4d470b46bc233997772787f6aa3d9e",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX026_20261011/src/run_parameters.py",
+      "sha256": "027b29e6ef6413f8620d598b15a9620cd788a61068dc01e34547c2e38aae16e8",
+      "calls": [
+        {
+          "line": 344,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX026-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 347,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 357,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 392,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX027_20261011/src/run_matrix.py",
+      "sha256": "d47231c03eb87b9d61a84c80a522e32eb47ba89f90cccfbedbdcf50e450cceec",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX027_20261011/src/run_parameters.py",
+      "sha256": "5142cb4ee650e71a6ec3267f5151b7041812a96afdd04f0a7b6340f83a4043d5",
+      "calls": [
+        {
+          "line": 347,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX027-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 350,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 360,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 395,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX028_20261011/src/run_matrix.py",
+      "sha256": "46b2583d4c58c47cc09e65f8ba8db6051bb1fe5659fcf026dac34d6bfda9af64",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX028_20261011/src/run_parameters.py",
+      "sha256": "ca9f6cccfcc06bd7f649593ea3de23b0cc4f5f55e50f552e78d9e01bd552cc82",
+      "calls": [
+        {
+          "line": 365,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX028-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 368,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 378,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 413,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX029_20261011/src/run_matrix.py",
+      "sha256": "3acba301cd7ff3573522bd30136e32ca9a4d470b46bc233997772787f6aa3d9e",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX029_20261011/src/run_parameters.py",
+      "sha256": "1c41a692e7295b2bccc35fde1dcc7d34ef19ab1cf5fe6c5239f168c8cbe13e3d",
+      "calls": [
+        {
+          "line": 429,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX029-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 432,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 442,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 477,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX030_20261011/src/run_matrix.py",
+      "sha256": "46b2583d4c58c47cc09e65f8ba8db6051bb1fe5659fcf026dac34d6bfda9af64",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX030_20261011/src/run_parameters.py",
+      "sha256": "2efa8dc2354ec9afe0d5f3554df4d361caf502dc0a49a5a6a6e52224fe8992f0",
+      "calls": [
+        {
+          "line": 377,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX030-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 380,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 390,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 425,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX031_20261011/src/run_matrix.py",
+      "sha256": "ae28734590a8f88eb655cc9be56d1b338ed4ddc4dc4696109830458ff6cd1d59",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX031_20261011/src/run_parameters.py",
+      "sha256": "290d8eae2066845b26d705bf61c8ea482a73a967a30f869cac503afbea75fbea",
+      "calls": [
+        {
+          "line": 379,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX031-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 382,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 392,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 427,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX032_20261011/src/run_matrix.py",
+      "sha256": "46b2583d4c58c47cc09e65f8ba8db6051bb1fe5659fcf026dac34d6bfda9af64",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX032_20261011/src/run_parameters.py",
+      "sha256": "d6a8d0395ebe1c5cae3163d23028025f81bffa46e7c773897c25d5340eec8041",
+      "calls": [
+        {
+          "line": 419,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX032-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 422,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 432,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        },
+        {
+          "line": 467,
+          "name": "study.tell",
+          "expression": "study.tell(index, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX034_20261011/src/run_matrix.py",
+      "sha256": "90babf05690f75cc935fbd140f73d968bff5ee9e108bcdc03ce452b1660ac319",
+      "calls": [
+        {
+          "line": 10,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 11,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': 0})"
+        },
+        {
+          "line": 17,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX034_20261011/src/run_parameters.py",
+      "sha256": "dd901135d6ff3137da2d8d32379356cbef43268cb690ec30b70973cf26d876a5",
+      "calls": [
+        {
+          "line": 398,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX034-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 401,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 443,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX035_20261011/src/run_matrix.py",
+      "sha256": "c17f21cecdaea0070a60b19e288ec5554e0849b5d5f6fc174c6d76242ef66caa",
+      "calls": [
+        {
+          "line": 10,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 11,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': 0})"
+        },
+        {
+          "line": 17,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX035_20261011/src/run_parameters.py",
+      "sha256": "385259e4900f119cd39947e7a3fe3ef0ec2a604272e628071a80d19ee4fa22fd",
+      "calls": [
+        {
+          "line": 411,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX035-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 414,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 456,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX037_20261011/src/run_matrix.py",
+      "sha256": "46b2583d4c58c47cc09e65f8ba8db6051bb1fe5659fcf026dac34d6bfda9af64",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX037_20261011/src/run_parameters.py",
+      "sha256": "af1c5a107005c0c3ebcd26e2f76549619e017c4d96c97721fa256575a8f92f4c",
+      "calls": [
+        {
+          "line": 464,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX037-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 467,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 509,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX038_20261011/src/run_matrix.py",
+      "sha256": "2ad222e5c226663a7d56eac79895c20195ac9cffe64938da387e9fb3bf6e518c",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX038_20261011/src/run_parameters.py",
+      "sha256": "3499847fd028e9e81b960d111c5acdf9fcf150c328dcb2dcc21df17d12ff9c26",
+      "calls": [
+        {
+          "line": 474,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX038-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 477,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 519,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX040_20261011/src/run_matrix.py",
+      "sha256": "ae7cfc684b989ee179c41bc34ce452293e5b6be46eb7c55bb0c763f7b39932a9",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX040_20261011/src/run_parameters.py",
+      "sha256": "42748e27d529a53ed02b45e5552cda72ab41a14d1bc52986b59c23422bbfdd5e",
+      "calls": [
+        {
+          "line": 480,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX040-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 483,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 525,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX040_20261011/src/run_parameters_v2.py",
+      "sha256": "3a3f657a498c79af8d4eed996af1a5ab34fa6376767166bbb3b5ad0a87d9a67b",
+      "calls": [
+        {
+          "line": 482,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX040-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 485,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 527,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX041_20261011/src/run_matrix.py",
+      "sha256": "d47231c03eb87b9d61a84c80a522e32eb47ba89f90cccfbedbdcf50e450cceec",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX041_20261011/src/run_parameters.py",
+      "sha256": "a09be63e3a8de12be3fc362d4f6d8874a13d4734380db6401f15431617099fc8",
+      "calls": [
+        {
+          "line": 478,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX041-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 481,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 523,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX041_20261011/src/run_parameters_v2.py",
+      "sha256": "f8384639f6b735fbe7fdbd5bb42244b5f0b9263f53b0004e38d266cfcc0d2f63",
+      "calls": [
+        {
+          "line": 480,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX041-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 483,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 525,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX043_20261011/src/recover_parameters.py",
+      "sha256": "5a24e6bb0cf961e7f2c500bc7631e3f5c249bce4c752417e4073dcaa003d60cd",
+      "calls": [
+        {
+          "line": 44,
+          "name": "study.tell",
+          "expression": "study.tell(i, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX043_20261011/src/run_matrix.py",
+      "sha256": "74d878a9c8ac2143bf226eb39878c5614bc53542ae643bc5bdee18ab92e9ff5d",
+      "calls": [
+        {
+          "line": 17,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name=plan['name'], sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 19,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'configuration': index})"
+        },
+        {
+          "line": 48,
+          "name": "study.tell",
+          "expression": "study.tell(trial, float(row['net_cagr']))"
+        },
+        {
+          "line": 51,
+          "name": "study.tell",
+          "expression": "study.tell(trial, state=optuna.trial.TrialState.FAIL)"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX043_20261011/src/run_parameters.py",
+      "sha256": "c9fb9a873c5e19a466eae549fc6bc145ef292f79c0c814807f91e79122274ac6",
+      "calls": [
+        {
+          "line": 477,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX043-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 480,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 522,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX043_20261011/src/run_parameters_v2.py",
+      "sha256": "e64e270579950fa06658a47a411c6e7ade6a7e025b0b62af19fde25991eebe7e",
+      "calls": [
+        {
+          "line": 479,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', study_name='S013-EX043-fixed-parameter-diagnostic', sampler=optuna.samplers.RandomSampler(seed=13))"
+        },
+        {
+          "line": 482,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': index})"
+        },
+        {
+          "line": 524,
+          "name": "study.tell",
+          "expression": "study.tell(index - len(manifest['reused_rows']), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX043_20261011/src/run_parameters_v3.py",
+      "sha256": "6baae97f023ccbaad2ce98d06e77e83d8d11f6bd67e5f27f3136e839ef6926c4",
+      "calls": [
+        {
+          "line": 514,
+          "name": "study.tell",
+          "expression": "study.tell(index - reused_count, float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX045_20261011/src/run_parameters.py",
+      "sha256": "5af09ecd8305fa7cea28549b3cc5a0cb7c3e46ef8feaf68bed0f7933e89ebba7",
+      "calls": [
+        {
+          "line": 388,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX045-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 391,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 429,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX046_20261011/src/run_parameters.py",
+      "sha256": "b4cfdc57788628f79c2a06648a909a6d944a9f06e4c895c953edd81b81f6c1ff",
+      "calls": [
+        {
+          "line": 388,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX046-segment-context-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 391,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 429,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX048_20261011/src/run_parameters.py",
+      "sha256": "0e49bfcc22d0cd8e03c848d1ea52f647915048201966bf03993516ce046a2177",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX048-bear-bull2-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX049_20261011/src/run_parameters.py",
+      "sha256": "3d68f1ffa056da454f326c522fd72fa20769519e102cefb28f8acf0c7c3fdde3",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX049-bear-bull2-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX050_20261011/src/run_parameters.py",
+      "sha256": "3911d248e29ba765b33a5f7b0112924039ee038422af4a81feacde68843a0413",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX050-bear-rank-acf20-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX051_20261011/src/run_parameters.py",
+      "sha256": "4c0232d310a961046e4f9e6ff94e204259f34a1a45083eea22bf06494dddbcb4",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX051-bear-winsor-acf20-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX052_20261011/src/run_parameters.py",
+      "sha256": "571d0454361383f8968e57d8544342202b7340de210614482709f81a4433fcc3",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX052-bear-consensus-acf20-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX053_20261011/src/run_parameters.py",
+      "sha256": "a5b6dcd83ac81ca6ca39a578ed44ce29690d6937ad59b4935813c6e0820d104b",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX053-raw-bear-time-below-close-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX054_20261011/src/run_parameters.py",
+      "sha256": "b965d7222d92d123d9c2b7c44ee3e74f9e01789e557986b480ceb7b5e9793391",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX054-raw-bear-time-below-body-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX055_20261011/src/run_parameters.py",
+      "sha256": "ba6c54423fd85b43124e4ecdf2688150c7ac3bebc668ed20c1def34f050862c6",
+      "calls": [
+        {
+          "line": 392,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX055-raw-bear-time-below-body-acf-recovery-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 395,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 433,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX057_20261011/src/run_parameters.py",
+      "sha256": "848ced365610294d93093c83299d5ecf055c86da8306e4d283527a8e48f8fdf8",
+      "calls": [
+        {
+          "line": 678,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX057-raw-bear-time-below-body-close-acf-recovery-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 684,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 743,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    },
+    {
+      "path": "research/S013/experiments/EX058_20261011/src/run_parameters.py",
+      "sha256": "399e7f30f15335c80a894294b1c6018c86c39be77551b48e39a04f8aaf2da5aa",
+      "calls": [
+        {
+          "line": 678,
+          "name": "optuna.create_study",
+          "expression": "optuna.create_study(direction='maximize', sampler=optuna.samplers.RandomSampler(seed=13), study_name='S013-EX058-raw-bull-boundary-body-bear-below-body-acf-recovery-fixed-parameter-diagnostic')"
+        },
+        {
+          "line": 684,
+          "name": "study.enqueue_trial",
+          "expression": "study.enqueue_trial({'point': i})"
+        },
+        {
+          "line": 743,
+          "name": "study.tell",
+          "expression": "study.tell(trial_index(global_index, reused_count), float(result.runs[0].observation.net_cagr))"
+        }
+      ]
+    }
+  ],
+  "account_reads": 0,
+  "account_evaluations": 0,
+  "excluded": "assets, caches, other research families; no source imports"
+}

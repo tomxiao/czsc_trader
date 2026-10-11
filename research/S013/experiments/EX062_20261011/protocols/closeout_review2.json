@@ -1,0 +1,35 @@
+{
+  "status": "READY_FOR_INDEPENDENT_AUDIT_RERUN",
+  "scope": "Focused read-only review of benchmark annual summary schema correction. No real account/result/failure evidence was read.",
+  "blocking_findings": [],
+  "confirmed_correction": {
+    "previous_issue": "Independent economics computes opening/closing equity for both annual tables, but frozen selfcheck.economics benchmark_annual intentionally contains only return/drawdown. Iterating independent benchmark fields demanded absent opening_equity.",
+    "strategy_annual": "compare_economics explicitly compares return, drawdown, opening_equity, closing_equity in every actual strategy year.",
+    "benchmark_annual": "compare_economics explicitly compares return and drawdown in every actual benchmark year, exactly the frozen summary schema.",
+    "year_completeness": "Both annual and benchmark_annual retain exact actual/stored year-key set equality; missing years are never skipped.",
+    "numeric_checks": "All CAGR/full drawdown/frequency, actual closed-trade count, four-gate results and qualified flag checks remain unchanged. Return/drawdown tolerance1e-12 and opening/closing equity tolerance1e-9 remain unchanged.",
+    "frozen_summary_note": "Frozen strategy annual also includes sessions and closed_cycles metadata. This correction deliberately compares its four economic values; benchmark has only two. Global actual closed-cycle reconciliation and frequency checks remain separately enforced."
+  },
+  "independent_diff": "git diff --no-index confirms the only difference from retained327e55 auditor is compare_economics selecting the declared annual4/benchmark2 keys. No economic formula, selection, gate, role count, native authentication, point plan or source method logic changed.",
+  "source_hashes": {
+    "independent_audit.py": "33a9aadadc1a0cece1750aa9a66073b36f24889c4704bc690e34cad39610ae94",
+    "selfcheck.py": "caf12faeededd7f511528545b03fbe40fffdd38fa1796b11af6aa47f12d0b877",
+    "postprocess.py": "104a98df5c0815aea6e4fa951371396a4508d06588fe6e9ad71be84d0a02ffd9"
+  },
+  "pure_evidence": {
+    "path": "research/S013/experiments/EX062_20261011/protocols/independent_audit_schema_checks.json",
+    "status": "PURE_PASS",
+    "checks": 4,
+    "source_sha_matches_current": true,
+    "coverage": "Accepts strategy4/benchmark2 schema; refuses changed strategy closing_equity, benchmark return and benchmark drawdown.",
+    "financial_activity": 0,
+    "rerun_by_reviewer": false
+  },
+  "previous_failure": "Root-preserved failed_independent_audit_attempt1.json remains historical failure evidence. This source review neither erases it nor calls it a financial account failure.",
+  "source_changes_by_reviewer": 0,
+  "real_financial_result_reads": 0,
+  "account_evaluations": 0,
+  "preparations": 0,
+  "publications": 0,
+  "next_step": "Root may rerun only the33a9 independent result audit against the existing complete native run; no financial account rerun is needed. Preserve current-source formal PASS output before using unchanged104a98 postprocess closeout."
+}
