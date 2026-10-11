@@ -1,0 +1,2452 @@
+{
+  "name": "S013-EX053-raw-bear-time-below-close",
+  "status": "PROSPECTIVE_METHOD_DECLARED",
+  "review_sha256": "57c30c9f373719965ab6673a29d548c6eaa78dcc50eb3b705afb29739bda73c5",
+  "review": {
+    "status": "SOURCE_REVIEW_READY",
+    "role": "RSCH",
+    "research_batch": "S013",
+    "stage": 3,
+    "created_at_utc": "2026-10-11T01:48:19.278665+00:00",
+    "new_account_evaluations": 0,
+    "new_account_preparations": 0,
+    "registrations": 0,
+    "publications": 0,
+    "runtime_implemented": false,
+    "new_market_or_native_account_reads": false,
+    "candidate": {
+      "prospective_name": "RAW_BEAR_TIME_BELOW_CLOSE (description only, no registered enum/ID)",
+      "background": "Exact originalC2132 rawACF20 numeric parameters, original confirmation/ranges/regime/holding exits/H; no MEAN baseline.",
+      "hypothesis": "An originalraw bear TIME BELOW signal-price context may benefit from strict currentClose>previousActualTradingClose at a later originaleligible flatbear opportunity; usefulness might differ from the alreadytested MEAN background. Neither BELOW nor price direction is assumed harmful or profitable.",
+      "geometry": "All13 original numerical centers/full domains and fixed32 coordinates preserved; no new numeric threshold/window/weight/tolerance or year exception."
+    },
+    "bounded_duplicate_review": {
+      "result": "NO_LEGAL_EXACT_RAW_PLUS_BELOW_GATE_FOUND",
+      "exact_duplicate_found": false,
+      "file_count": 1307,
+      "metadata_size_cap_bytes": 262144,
+      "json_filenames": [
+        "authorization.json",
+        "decision.json",
+        "geometry.json",
+        "metadata.json",
+        "plan.json",
+        "protocol.json"
+      ],
+      "scope": "Only S013 experiments PY/MD and selected small metadata. No assets, account caches, other batches, new market data, prepare/evaluate/publish.",
+      "inventory_sha256": "9bd2a62330a4c5982a651e52f051e19c714a0a51e7e606e46cc2272f1b241ea3",
+      "unique_strategy_hashes": 61,
+      "search_pattern": "RAW_BEAR_TIME|RAW.{0,50}BELOW|BELOW.{0,50}RAW|MEAN_BEAR_TIME_BELOW_CLOSE|last_exit_category|selected_category|direction_applies",
+      "hits": [
+        {
+          "path": "research/S013/experiments/EX017_20261011/src/analysis_reference.py",
+          "sha256": "769d53edf07c655c459dcd2147370dceced7a287c363c425877aff903b8d8725",
+          "matches": [
+            {
+              "line": 63,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX018_20261011/src/analysis_reference.py",
+          "sha256": "769d53edf07c655c459dcd2147370dceced7a287c363c425877aff903b8d8725",
+          "matches": [
+            {
+              "line": 63,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX019_20261011/src/analysis_reference.py",
+          "sha256": "107aab52b2c18919b37bd7804e1f12619505792b64e8f48dfee2c68af068f93d",
+          "matches": [
+            {
+              "line": 66,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX020_20261011/src/analysis_reference.py",
+          "sha256": "25e06b09fdf42f8f473e31e077d75a8095d9eec81108de35f5371d27f3ce4e41",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX021_20261011/src/analysis_reference.py",
+          "sha256": "807eb08aeca9c6e38ff66e47c5f093e575c50a309324534beb53075f52b98310",
+          "matches": [
+            {
+              "line": 61,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX022_20261011/src/analysis_reference.py",
+          "sha256": "5781e1cfbbe98c80ab6829d06f2ccc740334e936768cc9e3a88f0844d4bbf36a",
+          "matches": [
+            {
+              "line": 67,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX023_20261011/src/analysis_reference.py",
+          "sha256": "25e06b09fdf42f8f473e31e077d75a8095d9eec81108de35f5371d27f3ce4e41",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX024_20261011/src/analysis_reference.py",
+          "sha256": "25e06b09fdf42f8f473e31e077d75a8095d9eec81108de35f5371d27f3ce4e41",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX025_20261011/src/analysis_reference.py",
+          "sha256": "3c61999c3f8e7aa8391450c96a4192e3443a8aa7c2f2e3fb31b31f2ecd78b1ee",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX026_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX026_20261011/src/precheck.py",
+          "sha256": "d2bb97caed36c0c3abf50838327b22cd9094f6caea0f7db17e9a6a1fc140b51d",
+          "matches": [
+            {
+              "line": 204,
+              "text": "            # At age2, two-close protection wins over range/time/raw-regime, below loss/trailing."
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX027_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX028_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX029_20261011/src/analysis_reference.py",
+          "sha256": "d3f4a77ecfbbe904ca628c6a2e4d88a98ef2eece839cb6cbadc728f74d532a44",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX030_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX031_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX032_20261011/src/analysis_reference.py",
+          "sha256": "c5b9f70e91b3ec20592b2e6c13074e2d2299c2bffaf03713891677dbc200c3c8",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX034_20261011/src/analysis_reference.py",
+          "sha256": "e65db3e51eebe37cfc13e049f4cbec754b2b6a7889856ffc5c165141ab00ed7e",
+          "matches": [
+            {
+              "line": 71,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX035_20261011/src/analysis_reference.py",
+          "sha256": "3599b4ee6918051d71b33dc4a1183dda8a914a9d9b7d0ca99c92d16aa33438d2",
+          "matches": [
+            {
+              "line": 71,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX035_20261011/src/pair_parameters.py",
+          "sha256": "7d1835f50301f0066bf91223e8cbfa60fb61cec6e1afa63994325651c9fbd3af",
+          "matches": [
+            {
+              "line": 15,
+              "text": "        'scope':'One complete32-point contrast shares all13 original full domains/numeric centers/point coordinates and physical units. Pending set remains EX034 exact active-bear/final-TIME/raw-bear/range<=entry. Only flat release expands to enabled original bear ACF/momentum strictly below thresholds, alongside old raw-route/range release; equality retains pending, confirmation score excluded. Equal numeric pairing does not remove shared entry/release threshold roles. Old range-refresh stays center-only without old parameters. Original opportunity/score/entry-age0/H units and exit priorities unchanged. Descriptive, non-independent S013 development evidence.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX035_20261011/src/parameter_analysis.py",
+          "sha256": "a50ba321b08a3ec6376f68da5b244d8b3c314e787b8f5e476acd9814960ff34b",
+          "matches": [
+            {
+              "line": 133,
+              "text": "        'comparison_basis_from_original': 'All13 original full domains/numeric centers/32 coordinates and physical units identical. Pending set exactly follows EX034 active-bear/final-TIME/raw-bear/range<=entry without ACF/momentum requirements. Only flat release expands to enabled bear ACF/momentum strictly below original thresholds, alongside old raw-route/range release; equality retains pending. Release precedes same-T original entry, score excluded. Original opportunity/score definitions, entry age0, H units and exit priorities unchanged; new shared threshold roles disclosed.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX035_20261011/src/run_parameters.py",
+          "sha256": "385259e4900f119cd39947e7a3fe3ef0ec2a604272e628071a80d19ee4fa22fd",
+          "matches": [
+            {
+              "line": 330,
+              "text": "        'original_comparison': 'Original bullH8/bearH4 TIME and N0 share original13 full domains, numeric centers,32 coordinates and original physical units. Pending set keeps EX034 exact active-bear/final-TIME/raw-bear/range<=entry condition, without new ACF/momentum requirements. Only flat release expands: old raw-route/range release or enabled ACF strictly below original threshold or enabled momentum strictly below original threshold; equality retains pending. This extends existing thresholds to a second state-control role; confirmation score excluded. Original opportunity/score meanings, entry age0, H held-session units and exit priorities unchanged. No new coordinate/domain. Exact numeric matching does not remove this coupling. EX034 C6100 native parent/source/ref/binding/all ledgers authenticated for root IMPLEMENTATION registration; parameter children derive from new EX035 N0.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX037_20261011/src/analysis_reference.py",
+          "sha256": "a1ecf448d28b0ff7010bddcce3cfb887f3ce7e15fa8334b3d9c5a3ccec44f2ff",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX038_20261011/src/analysis_reference.py",
+          "sha256": "0541fcec0948b10b3a8afc4a3b15d5820bf8bd1f1044e71638a2d3925514f461",
+          "matches": [
+            {
+              "line": 68,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX040_20261011/src/analysis_reference.py",
+          "sha256": "148ea9a380e22a39c1e8671a0608da3baac89cf11d5b2b33c34b92a932a59739",
+          "matches": [
+            {
+              "line": 75,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/acf_range.py",
+          "sha256": "871a0b1ad164f22ff603561cac1b68f04638cd8f06876f0e544194eae51692c2",
+          "matches": [
+            {
+              "line": 106,
+              "text": "            direction_applies = opportunity and regime == 'bear'"
+            },
+            {
+              "line": 107,
+              "text": "            direction_gate_applies.append(bool(direction_applies))"
+            },
+            {
+              "line": 130,
+              "text": "                if direction_applies and not direction[i]:"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX041_20261011/src/analysis_reference.py",
+          "sha256": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e",
+          "matches": [
+            {
+              "line": 75,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py",
+          "sha256": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+          "matches": [
+            {
+              "line": 110,
+              "text": "            direction_applies = (opportunity and regime == 'bear'"
+            },
+            {
+              "line": 112,
+              "text": "            direction_gate_applies.append(bool(direction_applies))"
+            },
+            {
+              "line": 136,
+              "text": "                if direction_applies and not direction[i]:"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX041_20261011/src/synthetic_checks.py",
+          "sha256": "d9b10c1cea2f61093144d741ebb2005e7fcc0a6687e68b688288180018441d94",
+          "matches": [
+            {
+              "line": 238,
+              "text": "    for invalid in (None, 'MEAN_BEAR_CLOSE', 'RAW_BEAR_TIME_REENTRY_BODY'):"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX042_20261011/src/focused_checks.py",
+          "sha256": "c431b0cb2d1c1a9657903dd0264fdade86f34141e8f2d34f1c0286be3fbc5eb6",
+          "matches": [
+            {
+              "line": 94,
+              "text": "    assert below['next_any_entry']['raw_route'] == 'bull' and below['next_any_entry']['signal_index'] == 4"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX042_20261011/src/focused_checks_v2.py",
+          "sha256": "89eb301604342033421a596eb1701bef14c03a205106c49b629d516fa5cdb232",
+          "matches": [
+            {
+              "line": 94,
+              "text": "    assert below['next_any_entry']['raw_route'] == 'bull' and below['next_any_entry']['signal_index'] == 4"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/others/report.md",
+          "sha256": "c00cb204ccbd1eaaecbbf14405900e931a717b0fed05beeacdbaa28bac216e00",
+          "matches": [
+            {
+              "line": 110,
+              "text": "合成验证保持完整13维32坐标、全部类别及16种中心资格组合。原41v2仅缺失分类metadata在独立期望None位置允许None/浮点NaN等价，真实非空类别和所有经济字段严格核对。新last_exit_category沿同一明确缺失契约；无 blanket NaN修复或金融值替换。"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/protocols/decision.json",
+          "sha256": "6c41243765cdb3b91b1a5ea3b7287d084400c860e0a2de46ebaae48c2712b107",
+          "matches": [
+            {
+              "line": 232,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 416,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 434,
+              "text": "            \"last_exit_category\": 1347"
+            },
+            {
+              "line": 471,
+              "text": "            \"last_exit_category\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/protocols/plan.json",
+          "sha256": "7beed71f67b643eba397a87ff360e384f66abc2940c44e07e2423a8acc8a20ae",
+          "matches": [
+            {
+              "line": 345,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 364,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 618,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 754,
+              "text": "      \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/analysis_reference.py",
+          "sha256": "c685038535dd8ace474e12b1932d91ad0f9f453637a66827d43756823bb3756e",
+          "matches": [
+            {
+              "line": 75,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/analysis_reference_v2.py",
+          "sha256": "732f68bdc2e88200df2b384162f3d8800f9730d54142e0dda46971f709cb558a",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 65,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 87,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/declare.py",
+          "sha256": "604b3044fb9bc4b23f422867de1fb42343e7a697c17fd79598b7202ded78fd67",
+          "matches": [
+            {
+              "line": 22,
+              "text": "    mechanisms = ('MEAN_BEAR_TIME_BELOW_CLOSE','MEAN_BEAR_TIME_BELOW_BODY',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/direction_oracle.py",
+          "sha256": "fb78e4a89611189047fff2e6ab973ed60c29bd41b641b3db4ddafc8ab40e6db5",
+          "matches": [
+            {
+              "line": 11,
+              "text": "MECHANISMS = frozenset(('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 109,
+              "text": "            'last_exit_category': category}"
+            },
+            {
+              "line": 133,
+              "text": "    for name in ('route_before', 'last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 195,
+              "text": "                  'last_exit_category': {'BELOW', 'EQUAL', 'ABOVE'}}"
+            },
+            {
+              "line": 230,
+              "text": "        if name in ('last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 266,
+              "text": "        'exit_category_counts': {key: int(expected.last_exit_category.eq(key).sum())"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/run_parameters.py",
+          "sha256": "c9fb9a873c5e19a466eae549fc6bc145ef292f79c0c814807f91e79122274ac6",
+          "matches": [
+            {
+              "line": 167,
+              "text": "    assert parameters.pop('mechanism') == {'N0': 'MEAN_BEAR_TIME_BELOW_CLOSE', 'N1': 'MEAN_BEAR_TIME_BELOW_BODY',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/run_parameters_v2.py",
+          "sha256": "e64e270579950fa06658a47a411c6e7ade6a7e025b0b62af19fde25991eebe7e",
+          "matches": [
+            {
+              "line": 169,
+              "text": "    assert parameters.pop('mechanism') == {'N0': 'MEAN_BEAR_TIME_BELOW_CLOSE', 'N1': 'MEAN_BEAR_TIME_BELOW_BODY',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/run_parameters_v3.py",
+          "sha256": "6baae97f023ccbaad2ce98d06e77e83d8d11f6bd67e5f27f3136e839ef6926c4",
+          "matches": [
+            {
+              "line": 171,
+              "text": "    assert parameters.pop('mechanism') == {'N0': 'MEAN_BEAR_TIME_BELOW_CLOSE', 'N1': 'MEAN_BEAR_TIME_BELOW_BODY',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+          "sha256": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+          "matches": [
+            {
+              "line": 14,
+              "text": "                'MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 90,
+              "text": "        last_exit_category = None"
+            },
+            {
+              "line": 91,
+              "text": "        selected_category = 'BELOW' if '_BELOW_' in p['mechanism'] else 'ABOVE'"
+            },
+            {
+              "line": 100,
+              "text": "            previous_exit_categories.append(last_exit_category)"
+            },
+            {
+              "line": 115,
+              "text": "            direction_applies = (opportunity and regime == 'bear'"
+            },
+            {
+              "line": 117,
+              "text": "                                 and last_exit_category == selected_category)"
+            },
+            {
+              "line": 118,
+              "text": "            direction_gate_applies.append(bool(direction_applies))"
+            },
+            {
+              "line": 138,
+              "text": "                    last_exit_category = ("
+            },
+            {
+              "line": 146,
+              "text": "                if direction_applies and not direction[i]:"
+            },
+            {
+              "line": 155,
+              "text": "                    last_exit_category = None"
+            },
+            {
+              "line": 175,
+              "text": "            last_exit_category=pd.Series(previous_exit_categories, index=sessions, dtype=object),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/synthetic_checks.py",
+          "sha256": "216eaafa8bbf21bee9292111ffcf39915742dfc4f91a968d79ec9607744cfc6c",
+          "matches": [
+            {
+              "line": 154,
+              "text": "            & frame.last_exit_route.eq('bear') & frame.last_exit_category.eq(required))"
+            },
+            {
+              "line": 161,
+              "text": "                assert all(nextrow[n] is None for n in ('last_exit_reason', 'last_exit_route', 'last_exit_category'))"
+            },
+            {
+              "line": 169,
+              "text": "                    assert nextrow.last_exit_category == wanted"
+            },
+            {
+              "line": 172,
+              "text": "                    assert nextrow.last_exit_category is None"
+            },
+            {
+              "line": 174,
+              "text": "                assert all(nextrow[n] == current[n] for n in ('last_exit_reason', 'last_exit_route', 'last_exit_category'))"
+            },
+            {
+              "line": 255,
+              "text": "                             'last_exit_category': ('BELOW', 'EQUAL', 'ABOVE')}.items():"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX043_20261011/src/write_report.py",
+          "sha256": "3798ccf77caebfc4b9c6951aae8a5bb8291884b1c1c8bda8dcd78372ee6c3a9b",
+          "matches": [
+            {
+              "line": 60,
+              "text": "    text += '\\n合成验证保持完整13维32坐标、全部类别及16种中心资格组合。原41v2仅缺失分类metadata在独立期望None位置允许None/浮点NaN等价，真实非空类别和所有经济字段严格核对。新last_exit_category沿同一明确缺失契约；无 blanket NaN修复或金融值替换。\\n'"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX044_20261011/src/diagnose.py",
+          "sha256": "ebb1586f294572cb355f6f6c26e9cc0909f61216488c934cefe7e4ac52120114",
+          "matches": [
+            {
+              "line": 51,
+              "text": "            kind = SignalKind.ORIGINAL_TIME if label == 'B0-TIME' else SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE"
+            },
+            {
+              "line": 118,
+              "text": "                        for name in ('last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX044_20261011/src/focused_checks.py",
+          "sha256": "4e07d1d9ca9197ecba42b1eb586116c1b952da47eb49e2ecbbfa8ab6b1c7c455",
+          "matches": [
+            {
+              "line": 20,
+              "text": "    new = SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE"
+            },
+            {
+              "line": 61,
+              "text": "                last_exit_route='bear', last_exit_category='BELOW' if reason == 'time' else None)"
+            },
+            {
+              "line": 68,
+              "text": "        expected = replace(flat, last_exit_reason='time', last_exit_route='bear', last_exit_category=category)"
+            },
+            {
+              "line": 75,
+              "text": "    pending = replace(flat, last_exit_reason='time', last_exit_route='bear', last_exit_category='BELOW')"
+            },
+            {
+              "line": 88,
+              "text": "          replace(flat, last_exit_reason='time', last_exit_route='bull', last_exit_category=None))"
+            },
+            {
+              "line": 95,
+              "text": "                            (flat, {'age': 1}), (pending, {'last_exit_category': 'UNKNOWN'}),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX044_20261011/src/transition.py",
+          "sha256": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26",
+          "matches": [
+            {
+              "line": 11,
+              "text": "    MEAN_BEAR_TIME_BELOW_CLOSE = 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            },
+            {
+              "line": 84,
+              "text": "    last_exit_category: str | None = None"
+            },
+            {
+              "line": 92,
+              "text": "            if any(value is not None for value in (self.last_exit_reason, self.last_exit_route, self.last_exit_category)):"
+            },
+            {
+              "line": 100,
+              "text": "                if self.last_exit_route is not None or self.last_exit_category is not None:"
+            },
+            {
+              "line": 106,
+              "text": "                if bear_time and self.last_exit_category not in CATEGORIES:"
+            },
+            {
+              "line": 108,
+              "text": "                if not bear_time and self.last_exit_category is not None:"
+            },
+            {
+              "line": 152,
+              "text": "            kind == SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE and mechanism != kind.value):"
+            },
+            {
+              "line": 168,
+              "text": "    is_new = kind == SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE"
+            },
+            {
+              "line": 170,
+              "text": "                          (state.entry_anchor, state.last_exit_reason, state.last_exit_route, state.last_exit_category)):"
+            },
+            {
+              "line": 188,
+              "text": "            last_exit_route=state.route, last_exit_category=category))"
+            },
+            {
+              "line": 194,
+              "text": "            and state.last_exit_route == 'bear' and state.last_exit_category == 'BELOW')"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/protocols/geometry.json",
+          "sha256": "bc78e054f7819621c9e5786bc7dae9615e48a6fbd81e17e51e0d92e59d07d243",
+          "matches": [
+            {
+              "line": 97,
+              "text": "    \"MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE fixed structural enum; strictpast120 full rawACF20 estimates, not current/future values\","
+            },
+            {
+              "line": 99,
+              "text": "    \"Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor applies strict Close>previousClose before original score\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/protocols/plan.json",
+          "sha256": "b4afd910800c80ccf30563a9f2fb6fad22ad9dc3ba89cf06d52c1bf3e21e334e",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 235,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 318,
+              "text": "  \"mechanism\": \"Only new MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE uses strictpast120mean raw20ACF; original confirmation score uses actual confirmation.lookback and all13coordinates active. Original eligible rawbear after retained BELOW-category finalbearTIME gets strictClose>previousClose gate exactly as EX043N0. Original holding H/range/regime priority and entry/exit context retained.\","
+            },
+            {
+              "line": 368,
+              "text": "      \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/analysis_reference.py",
+          "sha256": "b99bb3d3ad5c3ba9354e615cedc132e861655868fe15ee87427794f374880f58",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/analyze.py",
+          "sha256": "2ced877fb8b9a6357b4ee922b2d8d9b46d6ecb0296bc173995f379cc10f2e25a",
+          "matches": [
+            {
+              "line": 72,
+              "text": "        'entry_direction_up', 'last_exit_reason', 'last_exit_route', 'last_exit_category')"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/declare.py",
+          "sha256": "28c3bb71124f8c6665bf5c1dae6d5fa1fc5e98eab9d5540c7fd5f975a99bbd57",
+          "matches": [
+            {
+              "line": 52,
+              "text": "        'mechanism': 'Only new MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE uses strictpast120mean raw20ACF; original confirmation score uses actual confirmation.lookback and all13coordinates active. Original eligible rawbear after retained BELOW-category finalbearTIME gets strictClose>previousClose gate exactly as EX043N0. Original holding H/range/regime priority and entry/exit context retained.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/declare_geometry.py",
+          "sha256": "4d617e400168e644eeb1e9a745b984299be5dd6123d2d7968a964a0dd2262a4a",
+          "matches": [
+            {
+              "line": 12,
+              "text": "        'MEAN_FIXED120_BEAR_TIME_BELOW_CLOSE fixed structural enum; strictpast120 full rawACF20 estimates, not current/future values',"
+            },
+            {
+              "line": 14,
+              "text": "        'Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor applies strict Close>previousClose before original score',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/direction_oracle.py",
+          "sha256": "9de045ca2222a517a75d48b1c16d59a6911ef8b6abbab5c158590f6eaadae2de",
+          "matches": [
+            {
+              "line": 11,
+              "text": "MECHANISMS = frozenset(('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 111,
+              "text": "            'last_exit_category': category}"
+            },
+            {
+              "line": 135,
+              "text": "    for name in ('route_before', 'last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 197,
+              "text": "                  'last_exit_category': {'BELOW', 'EQUAL', 'ABOVE'}}"
+            },
+            {
+              "line": 232,
+              "text": "        if name in ('last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 268,
+              "text": "        'exit_category_counts': {key: int(expected.last_exit_category.eq(key).sum())"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/run_parameters.py",
+          "sha256": "5af09ecd8305fa7cea28549b3cc5a0cb7c3e46ef8feaf68bed0f7933e89ebba7",
+          "matches": [
+            {
+              "line": 163,
+              "text": "    assert old.pop('mechanism') == 'MEAN_BEAR_TIME_BELOW_CLOSE' and new.pop('mechanism') == MECHANISM"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+          "sha256": "25f9fe1863977d0fffaee0f9c267288b23a0f8123b60b6964e652ea9d4b89102",
+          "matches": [
+            {
+              "line": 14,
+              "text": "                'MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 92,
+              "text": "        last_exit_category = None"
+            },
+            {
+              "line": 93,
+              "text": "        selected_category = 'BELOW' if '_BELOW_' in p['mechanism'] else 'ABOVE'"
+            },
+            {
+              "line": 102,
+              "text": "            previous_exit_categories.append(last_exit_category)"
+            },
+            {
+              "line": 117,
+              "text": "            direction_applies = (opportunity and regime == 'bear'"
+            },
+            {
+              "line": 119,
+              "text": "                                 and last_exit_category == selected_category)"
+            },
+            {
+              "line": 120,
+              "text": "            direction_gate_applies.append(bool(direction_applies))"
+            },
+            {
+              "line": 140,
+              "text": "                    last_exit_category = ("
+            },
+            {
+              "line": 148,
+              "text": "                if direction_applies and not direction[i]:"
+            },
+            {
+              "line": 157,
+              "text": "                    last_exit_category = None"
+            },
+            {
+              "line": 177,
+              "text": "            last_exit_category=pd.Series(previous_exit_categories, index=sessions, dtype=object),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX045_20261011/src/synthetic_checks.py",
+          "sha256": "9288bc8460ba014cfcbc47dfabb39aed677f41368bb3307c1b3ae4beed50d904",
+          "matches": [
+            {
+              "line": 154,
+              "text": "            & frame.last_exit_route.eq('bear') & frame.last_exit_category.eq(required))"
+            },
+            {
+              "line": 161,
+              "text": "                assert all(nextrow[n] is None for n in ('last_exit_reason', 'last_exit_route', 'last_exit_category'))"
+            },
+            {
+              "line": 169,
+              "text": "                    assert nextrow.last_exit_category == wanted"
+            },
+            {
+              "line": 172,
+              "text": "                    assert nextrow.last_exit_category is None"
+            },
+            {
+              "line": 174,
+              "text": "                assert all(nextrow[n] == current[n] for n in ('last_exit_reason', 'last_exit_route', 'last_exit_category'))"
+            },
+            {
+              "line": 255,
+              "text": "                             'last_exit_category': ('BELOW', 'EQUAL', 'ABOVE')}.items():"
+            },
+            {
+              "line": 300,
+              "text": "        prior['mechanism'] = 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            },
+            {
+              "line": 346,
+              "text": "                if name in ('last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/protocols/geometry.json",
+          "sha256": "c8ea6038fcd47c19f75bb6de2b47c05a4f58b3135725b19bb68bbf3481e45ca7",
+          "matches": [
+            {
+              "line": 99,
+              "text": "    \"Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor in its uninterrupted rawbear segment requires strict Close>previousClose before original score\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/protocols/plan.json",
+          "sha256": "0100a3201952a5bfa1aa3ec66b5452cea8b7b5f5ceae5a02617ca4ef2b2ee5ed",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 235,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 332,
+              "text": "  \"mechanism\": \"Only MEAN_BEAR_TIME_BELOW_SEGMENT_CLOSE: flat current rawbull clears last_exit_category before decision metadata/eligibility; final held bear TIME on current rawbull keeps reason=time/route=bear but category=None. Both operations retain last_exit_reason/route/confirmation_exit_context. Any entry clears all3 as before. Coupled strictpast actual-L bear ACF baseline, original score, strictClose direction, original H/exit priorities and all13 coordinates unchanged.\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/declare.py",
+          "sha256": "81a85a765952717f43dec707d8e6b3dedd045af53a394d261e3aee533b97d51d",
+          "matches": [
+            {
+              "line": 58,
+              "text": "        'mechanism': 'Only MEAN_BEAR_TIME_BELOW_SEGMENT_CLOSE: flat current rawbull clears last_exit_category before decision metadata/eligibility; final held bear TIME on current rawbull keeps reason=time/route=bear but category=None. Both operations retain last_exit_reason/route/confirmation_exit_context. Any entry clears all3 as before. Coupled strictpast actual-L bear ACF baseline, original score, strictClose direction, original H/exit priorities and all13 coordinates unchanged.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/declare_geometry.py",
+          "sha256": "c739bb00402c98d79a69f9feb5ac7274c9c8ba11f95881bbe3162ad12fe2c760",
+          "matches": [
+            {
+              "line": 14,
+              "text": "        'Only flat originaleligible rawbear after final bearTIME BELOW-own-signal-entry-anchor in its uninterrupted rawbear segment requires strict Close>previousClose before original score',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/direction_oracle.py",
+          "sha256": "e92b91d68464e71195ec19cc97857fbc786e1cf8e342408c881705844e29a527",
+          "matches": [
+            {
+              "line": 15,
+              "text": "MECHANISMS = frozenset(('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 116,
+              "text": "            'last_exit_category': category}"
+            },
+            {
+              "line": 141,
+              "text": "    for name in ('route_before', 'last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 203,
+              "text": "                  'last_exit_category': {'BELOW', 'EQUAL', 'ABOVE'}}"
+            },
+            {
+              "line": 238,
+              "text": "        if name in ('last_exit_reason', 'last_exit_route', 'last_exit_category'):"
+            },
+            {
+              "line": 274,
+              "text": "        'exit_category_counts': {key: int(expected.last_exit_category.eq(key).sum())"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/run_parameters.py",
+          "sha256": "b4cfdc57788628f79c2a06648a909a6d944a9f06e4c895c953edd81b81f6c1ff",
+          "matches": [
+            {
+              "line": 163,
+              "text": "    assert old.pop('mechanism') == 'MEAN_BEAR_TIME_BELOW_CLOSE' and new.pop('mechanism') == MECHANISM"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+          "sha256": "54c17f2b9e1e0eccaf19970bc02b3d3f4b905e4adb6c3ebf04d92ee9c5b52f64",
+          "matches": [
+            {
+              "line": 14,
+              "text": "                'MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 91,
+              "text": "        last_exit_category = None"
+            },
+            {
+              "line": 92,
+              "text": "        selected_category = 'BELOW' if '_BELOW_' in p['mechanism'] else 'ABOVE'"
+            },
+            {
+              "line": 100,
+              "text": "                last_exit_category = None"
+            },
+            {
+              "line": 103,
+              "text": "            previous_exit_categories.append(last_exit_category)"
+            },
+            {
+              "line": 118,
+              "text": "            direction_applies = (opportunity and regime == 'bear'"
+            },
+            {
+              "line": 120,
+              "text": "                                 and last_exit_category == selected_category)"
+            },
+            {
+              "line": 121,
+              "text": "            direction_gate_applies.append(bool(direction_applies))"
+            },
+            {
+              "line": 141,
+              "text": "                    last_exit_category = ("
+            },
+            {
+              "line": 146,
+              "text": "                        last_exit_category = None"
+            },
+            {
+              "line": 152,
+              "text": "                if direction_applies and not direction[i]:"
+            },
+            {
+              "line": 161,
+              "text": "                    last_exit_category = None"
+            },
+            {
+              "line": 181,
+              "text": "            last_exit_category=pd.Series(previous_exit_categories, index=sessions, dtype=object),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX046_20261011/src/synthetic_checks.py",
+          "sha256": "50cc8dd9d29b0fc044e1f6e7b716b71f07bd5cf5e4491504f10c43816f0a78c6",
+          "matches": [
+            {
+              "line": 30,
+              "text": "OLD_ENUM = \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 301,
+              "text": "        and b.last_exit_category.iloc[2] == \"BELOW\""
+            },
+            {
+              "line": 305,
+              "text": "    assert a.last_exit_category.iloc[3] == \"BELOW\" and b.last_exit_category.iloc[3] is None"
+            },
+            {
+              "line": 315,
+              "text": "    assert a.last_exit_category.iloc[3] == \"BELOW\" and b.last_exit_category.iloc[3] is None"
+            },
+            {
+              "line": 329,
+              "text": "        assert a.last_exit_category.iloc[3] == category and b.last_exit_category.iloc[3] is None"
+            },
+            {
+              "line": 335,
+              "text": "    assert b.last_exit_category.iloc[0] is None and b.confirmation_exit_context.iloc[0] == \"initial\""
+            },
+            {
+              "line": 342,
+              "text": "    assert a.last_exit_category.iloc[2] is None and b.last_exit_category.iloc[2] is None"
+            },
+            {
+              "line": 352,
+              "text": "    for name in (\"last_exit_reason\", \"last_exit_route\", \"last_exit_category\"):"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX047_20261011/src/transition.py",
+          "sha256": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26",
+          "matches": [
+            {
+              "line": 11,
+              "text": "    MEAN_BEAR_TIME_BELOW_CLOSE = 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            },
+            {
+              "line": 84,
+              "text": "    last_exit_category: str | None = None"
+            },
+            {
+              "line": 92,
+              "text": "            if any(value is not None for value in (self.last_exit_reason, self.last_exit_route, self.last_exit_category)):"
+            },
+            {
+              "line": 100,
+              "text": "                if self.last_exit_route is not None or self.last_exit_category is not None:"
+            },
+            {
+              "line": 106,
+              "text": "                if bear_time and self.last_exit_category not in CATEGORIES:"
+            },
+            {
+              "line": 108,
+              "text": "                if not bear_time and self.last_exit_category is not None:"
+            },
+            {
+              "line": 152,
+              "text": "            kind == SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE and mechanism != kind.value):"
+            },
+            {
+              "line": 168,
+              "text": "    is_new = kind == SignalKind.MEAN_BEAR_TIME_BELOW_CLOSE"
+            },
+            {
+              "line": 170,
+              "text": "                          (state.entry_anchor, state.last_exit_reason, state.last_exit_route, state.last_exit_category)):"
+            },
+            {
+              "line": 188,
+              "text": "            last_exit_route=state.route, last_exit_category=category))"
+            },
+            {
+              "line": 194,
+              "text": "            and state.last_exit_route == 'bear' and state.last_exit_category == 'BELOW')"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX048_20261011/protocols/plan.json",
+          "sha256": "4229165ebe9264603d2d0484dd1ac9b93cf221e48e019c189997bb9543f31c4a",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX048_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX048_20261011/src/parameter_analysis.py",
+          "sha256": "11a66f4c725550ac72b5c36915409e9e04bf6f6e247f5d9e51945f981b0bbf79",
+          "matches": [
+            {
+              "line": 46,
+              "text": "        assert parameters['mechanism'] == 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            },
+            {
+              "line": 180,
+              "text": "        'scope': 'Three centers at all13 original full domains/numeric centers/5%L2/32 identical coordinates. Original versus new fixed2 bear raw-bull regime exit, same raw ACF20/score/H/flat entries. Coupled MEAN/BELOW reentry is unchanged historical counterevidence; it is not a single-exit causal control. No independent validation or fixed2 structural robustness claim.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX049_20261011/protocols/plan.json",
+          "sha256": "4d12c9b834e99415b490e44456b7aae4dfef213ce082f4833660f62243d28198",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX049_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX049_20261011/src/parameter_analysis.py",
+          "sha256": "0ebedb5893bc7dd6d8d43d6ac97bfd9e4f4c31336d7f930878fad4454256f102",
+          "matches": [
+            {
+              "line": 46,
+              "text": "        assert parameters['mechanism'] == 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            },
+            {
+              "line": 180,
+              "text": "        'scope': 'Three centers at all13 original full domains/numeric centers/5%L2/32 identical coordinates. Original versus new fixed2 bear raw-bull regime exit, same raw ACF20/score/H/flat entries. Coupled MEAN/BELOW reentry is unchanged historical counterevidence; it is not a single-exit causal control. No independent validation or fixed2 structural robustness claim.',"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX050_20261011/protocols/plan.json",
+          "sha256": "d3c3833b36b59f6a66c9fd1a9eceed632c876e50c9fb90209c3b709133c867a9",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 441,
+              "text": "          \"bear rankbelow rejects despite rawACFpass\","
+            },
+            {
+              "line": 442,
+              "text": "          \"bear rankabove entry despite rawACFbelow\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX050_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX050_20261011/src/parameter_analysis.py",
+          "sha256": "0e2e4ec2be3d8193ca294e2f1e904f92bdf686ad638458354c45263bcfe38b45",
+          "matches": [
+            {
+              "line": 46,
+              "text": "        assert parameters['mechanism'] == 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX051_20261011/protocols/plan.json",
+          "sha256": "22c1824db0fa8e7632836639ed39b6650c1d36a25a97a65f3987907e63eaa460",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 450,
+              "text": "          \"bear winsorbelow rejects despite rawACFpass\","
+            },
+            {
+              "line": 451,
+              "text": "          \"bear winsorabove entry despite rawACFbelow\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX051_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX051_20261011/src/parameter_analysis.py",
+          "sha256": "8a1886e494ad2f4a7840d7b17f874d013f2f708716314b8a7cea808b9661f525",
+          "matches": [
+            {
+              "line": 46,
+              "text": "        assert parameters['mechanism'] == 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX052_20261011/protocols/plan.json",
+          "sha256": "47006acee6527392e2f68db1ce761cb7212952fdf522d07664d81cf0cb9551ca",
+          "matches": [
+            {
+              "line": 121,
+              "text": "          \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\""
+            },
+            {
+              "line": 140,
+              "text": "      \"mechanism\": \"MEAN_BEAR_TIME_BELOW_CLOSE\","
+            },
+            {
+              "line": 455,
+              "text": "          \"bear winsorbelow rejects despite rawACFpass\","
+            },
+            {
+              "line": 456,
+              "text": "          \"rawACFbelow veto despite winsorpass\","
+            },
+            {
+              "line": 461,
+              "text": "          \"negative raw below cutoff veto positive winsor\","
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX052_20261011/src/analysis_reference.py",
+          "sha256": "0cd02f9fb440b02b6504b063a951dd2e1a5916080dd74d70597a7dbc2d00bf61",
+          "matches": [
+            {
+              "line": 60,
+              "text": "        if config.get('mechanism') in ('MEAN_BEAR_TIME_BELOW_CLOSE', 'MEAN_BEAR_TIME_BELOW_BODY',"
+            },
+            {
+              "line": 66,
+              "text": "            category=frame.last_exit_category"
+            },
+            {
+              "line": 88,
+              "text": "            'raw_score_below_threshold_opportunities':int((opportunity & ~expected).sum()),"
+            }
+          ]
+        },
+        {
+          "path": "research/S013/experiments/EX052_20261011/src/parameter_analysis.py",
+          "sha256": "0607dcecda447ce4b2552b8330db9e7da73a848cf67c8780890fdbdbb3accee3",
+          "matches": [
+            {
+              "line": 46,
+              "text": "        assert parameters['mechanism'] == 'MEAN_BEAR_TIME_BELOW_CLOSE'"
+            }
+          ]
+        }
+      ],
+      "source_hash_inventory": [
+        {
+          "sha256": "020e91b8aaf6681f2892272e625a07547b129d7f1b5459b958b1b7fcb69b0424",
+          "paths": [
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/price_confirmed_exit.py"
+          ]
+        },
+        {
+          "sha256": "0a773c016f98797f0b0546a1d18eaf4297d661cb185c6961fd502e61112e7339",
+          "paths": [
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "11adad5020639162fcf522ea81b4d7f9d14f6b2b9ec8dcfdab372194ae98d16f",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/reentry_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "1bb43525487e237488350297a8a44e15505bfa01106411f866e04e1941fb64dd",
+          "paths": [
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "1d49d8f8aa35ac81adf6ffbc1e98a407c84dce02e820a3180256a6bc767c2af8",
+          "paths": [
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "2123a2a6e9f4dba5296ec02df4d88c472bc05a4283113985148c0c0203602d75",
+          "paths": [
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/entry_refresh_range.py"
+          ]
+        },
+        {
+          "sha256": "249603c81a52cec1535956b47db28f7c2788b41d8fc194f9f1ee85fb69cf4898",
+          "paths": [
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/exit_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "2554be4b3e2110299953ef75bba7c9c5f415ac257bdc0aa49622844a6d02f98e",
+          "paths": [
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "25f9fe1863977d0fffaee0f9c267288b23a0f8123b60b6964e652ea9d4b89102",
+          "paths": [
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "2959305f2fb296c04971dbd3ecff46d36b39a9feef7d115405b22d2248fde5bc",
+          "paths": [
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "2bde348ded95c963e0dcb6548a61df1baab59fbae2a4967287422893b405bad8",
+          "paths": [
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "2be19d3acaa4c056e7d33eae60e8f1932a1ab845f12ebd6595ab49159b596a67",
+          "paths": [
+            "research/S013/experiments/EX003_20261007/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "2c69aa871ff8a5a7fdc15bcd894e181eefb2856d5cb86cc61cef8e992a82f87c",
+          "paths": [
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/mean_momentum_range.py"
+          ]
+        },
+        {
+          "sha256": "3842a35b7dff5ab035762bd764971ff05fffcff5a3e8e34b0790985a788140c8",
+          "paths": [
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "3c876ba5b361a2dd3d6c03f1bbfba150d15912797d373cb3a3ba214565731cef",
+          "paths": [
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "4844f13c22a5b829700975cf18d7ff60f01a0c5f2381fce813faed2c1bc38fd0",
+          "paths": [
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "54c17f2b9e1e0eccaf19970bc02b3d3f4b905e4adb6c3ebf04d92ee9c5b52f64",
+          "paths": [
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "5d7891c50cf34692ed7f77a02d1eb24a45b15e3bf020453f666da48a8773ecae",
+          "paths": [
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "5d84337ea9f7204632e68b41d20a3ffd2bd5931e28b78f09c3d8171d623a76ed",
+          "paths": [
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/__init__.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "6b8b51a38180064c51824feb56aad411f5844948b70f10a93eeee8489492297d",
+          "paths": [
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/regime_majority_range.py"
+          ]
+        },
+        {
+          "sha256": "6bf3f4ffb500468e7ba0e6ab71073f771c02e6ab217b5d48c52fb8d9fc3b371b",
+          "paths": [
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/stable_range.py"
+          ]
+        },
+        {
+          "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+          "paths": [
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "6fdbcaaebc51d1b666817bb93c628b69f49861179202943b319f444bd02e1bea",
+          "paths": [
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "722c3ddd11d910893d66873dbb6f654351fdd7884b1a2e9eeba7e2ba14513276",
+          "paths": [
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "747050bc3a7dd7f1e54df91aaf1532e30d04be890d97138ee234f64ddc2a92c5",
+          "paths": [
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_risk_one_range.py"
+          ]
+        },
+        {
+          "sha256": "7739c95baaa76021e20b6e775827faf200aa2f8a624b328948790a5e079bafb3",
+          "paths": [
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a",
+          "paths": [
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "7fb3aed8742a7a209cb7cd3a6ec0f0ef5b7c11d8541b84f23da3edcef9f81dad",
+          "paths": [
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/midpoint_volatility_time_range.py"
+          ]
+        },
+        {
+          "sha256": "8216102550da7e8898775273988970f1a4bb14b2aa485ce4589f75f329a0f3eb",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "85c0f3bf8d52f3f352d89504ae4a274a6adedab5e233b66fc4f58dc2889a7c46",
+          "paths": [
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/volatility_time_range.py"
+          ]
+        },
+        {
+          "sha256": "871a0b1ad164f22ff603561cac1b68f04638cd8f06876f0e544194eae51692c2",
+          "paths": [
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/adaptive_range/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX004_20261007/src/extended_window/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/range_reversion.py",
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        },
+        {
+          "sha256": "8e857d028d8361171a8aee156b1ea8d38d3335c25d3da3bd4ab43271a8725ef5",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "950c0ff10fd773cf5e2d932e45ee4833a17627f17d35ff9ee25b3afdf51b1fa5",
+          "paths": [
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "99635e970e79c7d95051411e8a026feac3f0b9d8bbe38d177a8ff729d9247093",
+          "paths": [
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/score_change_range.py"
+          ]
+        },
+        {
+          "sha256": "9a60174b633d0f3556b58ded3548c69885efbb2d6505c0ff051c7f8dc45fda94",
+          "paths": [
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "9b8230bee36d04865a7236c3271739416326542ffe766e3132e4b36d45cebaa6",
+          "paths": [
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "9d28a8ea74363720c0767e263a3e9e00a41bf8d72bce0f4c1e6b66d323539172",
+          "paths": [
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca",
+          "paths": [
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "adace832ee744b6a08bc2c31ac52bce6269f19b9179386d35152efb1e026485c",
+          "paths": [
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/bear_consensus_range.py"
+          ]
+        },
+        {
+          "sha256": "b1815cd8fb087742e96b425ed951d0fe2765da0f0479e882ed47cfe810a586cf",
+          "paths": [
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+          "paths": [
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/confirmed_range.py",
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "bccb2974e5db0c6f7fe3310d2af5401e1513c90833951755ea3a1060af353488",
+          "paths": [
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "bf84a3eb1c7ec07bdd94fd8f9e6be9a880fac6395727d8da8ce65c42b431b8f9",
+          "paths": [
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/acf_background_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_background_range.py"
+          ]
+        },
+        {
+          "sha256": "c368ceb5c325458e81e5927533d8cfbf8af79b88d379d87bd19a9230a86d8b3d",
+          "paths": [
+            "research/S013/experiments/EX013_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/no_timer/strategy_runtime/strategies/adaptive_range.py"
+          ]
+        },
+        {
+          "sha256": "c5d5550206d933677a1313bdf3ce31976ad4efd123618ff98bc09c17576ff18c",
+          "paths": [
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/eligibility_refresh_range.py"
+          ]
+        },
+        {
+          "sha256": "c5edcfa64d0db8df12a998e805cbacbfdd42d689c3ddc8cd2ca9219c1a55cc3d",
+          "paths": [
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/mechanism_range.py"
+          ]
+        },
+        {
+          "sha256": "cb65f2da5bb2fc348bbe7f0d24144381bb97d7b847c4d06fd8abe4c32a0b8b6a",
+          "paths": [
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "cd8b5fcd9713f2a9f30ef02b8b546b6b55edb943cf8704a5804daa20916ddb4b",
+          "paths": [
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/acf_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "ce93e525c75cdc86b9910a3429af963a576ee5da9404fd16044e56451b2c6676",
+          "paths": [
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/score_change_range.py"
+          ]
+        },
+        {
+          "sha256": "d277da001495e032b5d3908825c5ce0c39668994e119bdcbc3af17f3e42e33dc",
+          "paths": [
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "d4f55756c8244c490932f7190b46224efda29b7f30d05fcd989bcdb419553873",
+          "paths": [
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "dafea6ef91a8a377bf313e2ac8097d312792e965a2ebbe2b7c8e4257745e866c",
+          "paths": [
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "e9f5479aaac663424ca66f3c0f9c0c095ec7197c624f22079bc76dab15a397a2",
+          "paths": [
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/__init__.py"
+          ]
+        },
+        {
+          "sha256": "ecc19135d97f2bf620bd8a16f22c825fedb3f04757df5bb744a7d2e3d92d79a5",
+          "paths": [
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/acf_range.py"
+          ]
+        },
+        {
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/adaptive_range/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX005_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX006_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX012_20261011/src/exact_delta/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX013_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX014_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX015_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX015_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX016_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX016_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX017_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX017_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX018_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX018_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX019_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX019_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX020_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX020_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX021_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX021_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX022_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX022_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX023_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX023_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX024_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX024_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX025_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX025_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX026_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX026_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX027_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX027_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX028_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX028_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/mean_reference/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX029_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX030_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX030_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX031_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX031_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX032_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX032_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX034_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX035_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX037_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX037_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX038_20261011/src/original/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX038_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX049_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+            "research/S013/experiments/EX052_20261011/src/strategy_runtime/strategies/adaptive_range.py"
+          ]
+        },
+        {
+          "sha256": "f445aed8116c9e0d058ff21f4e9086c95bdeb0736424e524de62cb7421153eef",
+          "paths": [
+            "research/S013/experiments/EX051_20261011/src/strategy_runtime/strategies/bear_winsor_range.py"
+          ]
+        },
+        {
+          "sha256": "f5c2d6cf756b2b33332f0dc25a5b5e148fcc6ba3a1060fa45be40eb10f5147cc",
+          "paths": [
+            "research/S013/experiments/EX050_20261011/src/strategy_runtime/strategies/bear_rank_range.py"
+          ]
+        },
+        {
+          "sha256": "f623e4fdff5b43dddf9c5aefb599f3eadaa56b91374740fc22f0a252ec7fd58d",
+          "paths": [
+            "research/S013/experiments/EX048_20261011/src/strategy_runtime/strategies/exit_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "f75b7f71c1731204342f5c9445e5e0a9dfccd5945cc39d11df24ff9722093a1f",
+          "paths": [
+            "research/S013/experiments/EX007_20261009/src/strategy_runtime/strategies/complement_confirmed_range.py"
+          ]
+        },
+        {
+          "sha256": "fe8f369a167d535cf9565d1c15954f3e1ca2ab48073327ab7effaed624511831",
+          "paths": [
+            "research/S013/experiments/EX004_20261007/src/strategy_runtime/strategies/range_reversion.py"
+          ]
+        }
+      ],
+      "claim_limit": "Absence of an accepted exact implementation in retained bounded materials; not a universal statement about unsaved or other-domain research.",
+      "important_near_alias": "EX043 already has is_mean=False code paths, but constructor accepts only the four MEAN enums and all four formal configs use MEAN. A raw statistic path hidden behind rejected enums is not an accepted/evaluated RAW+BELOW candidate. Adding a RAW enum would reuse its category machine but change the legal estimator background, not rename C4900.",
+      "EX043_accepted_enums": [
+        "MEAN_BEAR_TIME_BELOW_CLOSE",
+        "MEAN_BEAR_TIME_BELOW_BODY",
+        "MEAN_BEAR_TIME_ABOVE_CLOSE",
+        "MEAN_BEAR_TIME_ABOVE_BODY"
+      ],
+      "distinctions": {
+        "EX040": "RAW_BEAR_CLOSE requires direction at every originaleligible flatbear opportunity, independent of exit reason/route/category. Originalcenter BELOW opportunities13 are only a subset of57 bear entries; scope differs.",
+        "EX041": "Only MEAN background and all bearTIME reentries, no BELOW/ABOVE classification; RAW enum explicitly invalid in synthetic tests.",
+        "EX043": "Same fixed BELOW/CLOSE context state but strictpastL MEAN-centered bear ACF, not rawACF. Proposed RAW background changes which flat opportunities qualify and subsequent endogenous states.",
+        "EX044_EX047": "Pure original/MEAN transition diagnostics may allow constructing arbitrary features; no authenticated RAW+BELOW implementation or full new account was created by that kernel.",
+        "EX045": "Same MEAN+BELOW gate with fixed120 baseline instead of actualL, not RAW.",
+        "EX046": "MEAN+BELOW with category expiry across rawbull segment, whereas this candidate explicitly carries across flat/rawregime changes.",
+        "EX016": "Signal-anchor-conditioned TIME exit, not this unchanged TIME plus future-entry gate.",
+        "EX034_EX035": "Range/eligibility refresh waiting after TIME, no BELOW signal-anchor classification/CLOSE direction gate."
+      }
+    },
+    "exact_prospective_state_contract": {
+      "anchor": "On any successful signalentry, anchor=currentT HFQClose. It remains that episode anchor until signalexit; actual fill prices/quantities do not reset it. This is signal-price memory, not net trade profit/loss.",
+      "exit": "Keep original loss>trailing>range>time>regime priority and current held route. On every finalexit record reason and exit-before active_route. Category=BELOW/EQUAL/ABOVE by strict exitClose vs that episode anchor only when finalreason=time and exit-before route=bear; other final exits category=None. TIME can outrank rawregime switch and still classify if exit rawregime already bull.",
+      "gate": "BEFORE decision, applies iff flat AND originalraweligible AND currentrawregime=bear AND lastreason=time AND lastroute=bear AND lastcategory=BELOW. Reject if currentT Close<=strictprevious actual trading session Close; strict> passes. Direction refusal precedes original confirmation refusal; original opportunity and confirmation_pass diagnostics remain unfiltered.",
+      "consume": "Any route successful signalentry clears all three exit context fields. Flat refusal, failedeligibility and rawregime changes withoutentry retain context. NonTIME/bullTIME final exits overwrite category withNone; holding never uses direction to exit. No new cooldown or holding-only wait.",
+      "initialization": "As original full-window strategy, holding=False, route=None, age0, context3=None at first selected signal session. Prices/ACF/score/regime features use complete causal prehistory; do not infer an initial prior holding/category from warmup. PreviousClose shift on full daily before reindex; no fill.",
+      "diagnostics": "If derived from EX043, preserve before-decision last_exit_reason/route/category, objectNone missing, price fields and gate flags; raw entry_acf_value is original row.acf1. Do not output fictitious meanbaseline/centered columns. All original columns/rawscore/range/H semantics unchanged."
+    },
+    "minimal_implementation_difference_from43": {
+      "reuse": "Reuse EX043 frozen category/anchor/holding state transition with BELOW and CLOSE selected; remove MEAN baseline from legal raw mechanism and use original rawACF in bear eligibility. New closure/source identity, never mutate old frozen source or clone an old identity.",
+      "not_entry_equivalent": "Same numeric payload does not equate rawACF to rawACF-minus-pastLmean; differing eligibility can change all later holding/context paths. C4900 is a background control, not a raw alias.",
+      "confirmation": "Original confirmation continues consuming rawACF and actual lookbackL. L remains active in score; MEAN background has extra L-baseline coupling absent from RAW, which must be disclosed."
+    },
+    "warmup_and_parameter_contract": {
+      "center_parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      },
+      "coordinates": [
+        [
+          "bull.range_window",
+          21.0,
+          360.0,
+          "INTEGER"
+        ],
+        [
+          "bull.entry",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bull.exit",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bull.max_hold",
+          1.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "bear.range_window",
+          21.0,
+          360.0,
+          "INTEGER"
+        ],
+        [
+          "bear.entry",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bear.exit",
+          0.0,
+          1.0,
+          "CONTINUOUS"
+        ],
+        [
+          "bear.max_hold",
+          1.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "bear.acf_min",
+          -0.6,
+          0.5,
+          "CONTINUOUS"
+        ],
+        [
+          "regime_window",
+          5.0,
+          60.0,
+          "INTEGER"
+        ],
+        [
+          "regime_threshold",
+          -0.2,
+          0.2,
+          "CONTINUOUS"
+        ],
+        [
+          "confirmation.lookback",
+          40.0,
+          120.0,
+          "INTEGER"
+        ],
+        [
+          "confirmation.threshold",
+          -0.5,
+          0.5,
+          "CONTINUOUS"
+        ]
+      ],
+      "parent_center_warmup": 180,
+      "minimum_parent_W60_L40_range21": 61,
+      "minimal_business_dependency": "The only new price predicate requires previousClose, already available within originalACF21-price and confirmation/range warmup. Category has no prehistory bootstrap. No business need for previous-regime diagnostics.",
+      "if_exact43_diagnostic_schema_kept": "Copying previous_regime and previous_regime_momentum diagnostic columns requires max(parent,W+2), making the full-domain W60/range21/L40 corner62 instead of original61. Disclose this as diagnostic dependency rather than falsely claim all-domain warmup identical; may omit unneeded previous-regime columns to retain exact parent minimum. No new data fetch/fill.",
+      "center_and_fixed32": "Center180 unchanged either way. Under5%L2 original domain bullrange21..360 and center180, every axis displacement<=.05 yields integer bullrange>=163, which dominates maximum confirmationL+21<=141 and local regimeW+2<=25. Thus current original32 effective warmup remains the original one; this is a geometric bound, not a read of financial accounts.",
+      "domain_honesty": "All13 numeric coordinates remain; originalraw ACF cutoff has original meaning. Category/strictdirection are fixed structural assumptions outside the numerical32 test, not proven stable by it."
+    },
+    "strongest_existing_counterevidence": {
+      "report_snippets": {
+        "EX040_20261011": [
+          {
+            "line": 17,
+            "text": "|B0-TIME|C2132|16.1572%|14.1599%|112|+12.1687%|+0.2841%|通过|"
+          },
+          {
+            "line": 19,
+            "text": "|N0|C5200|11.3928%|14.3459%|96|-0.1349%|-1.8693%|frequency、negative_buyhold_year_profit|"
+          },
+          {
+            "line": 20,
+            "text": "|N1|C5201|9.5058%|16.6953%|95|+2.7809%|-1.5228%|return、frequency、negative_buyhold_year_profit|"
+          }
+        ],
+        "EX041_20261011": [
+          {
+            "line": 19,
+            "text": "|N0|C4800|12.1547%|16.5875%|116|+8.4479%|-1.2487%|negative_buyhold_year_profit|"
+          },
+          {
+            "line": 20,
+            "text": "|N1|C4801|13.0995%|22.8325%|116|+12.9032%|-1.2500%|annual_drawdown、negative_buyhold_year_profit|"
+          }
+        ],
+        "EX042_20261011": [
+          {
+            "line": 25,
+            "text": "|center|BELOW|17|13|13|6|7|0|"
+          },
+          {
+            "line": 26,
+            "text": "|center|EQUAL|0|0|0|0|0|0|"
+          },
+          {
+            "line": 27,
+            "text": "|center|ABOVE|21|18|18|11|9|0|"
+          },
+          {
+            "line": 28,
+            "text": "|center|NONE|0|26|26|6|6|0|"
+          },
+          {
+            "line": 48,
+            "text": "以下按实际持仓入场来源分组，各类别净权益变化除以该年真实期初权益；四组贡献之和严格等于当年账户收益。这是已有政策的会计分解，删除某组交易不会得到表中其他组组成的新收益。NONE包含其他信号来源。"
+          },
+          {
+            "line": 52,
+            "text": "|center|2020|+16.7355%|+2.6542%|+0.0000%|+3.0710%|+11.0102%|"
+          },
+          {
+            "line": 53,
+            "text": "|center|2021|+9.9101%|+2.2925%|+0.0000%|+0.3619%|+7.2557%|"
+          },
+          {
+            "line": 54,
+            "text": "|center|2022|+12.1687%|+4.2826%|+0.0000%|-5.2244%|+13.1105%|"
+          },
+          {
+            "line": 55,
+            "text": "|center|2023|+0.2841%|+2.3049%|+0.0000%|+1.3924%|-3.4132%|"
+          },
+          {
+            "line": 56,
+            "text": "|center|2024|+64.9989%|-0.6316%|+0.0000%|+5.2936%|+60.3369%|"
+          },
+          {
+            "line": 57,
+            "text": "|center|2025|+11.0774%|+1.4959%|+0.0000%|+4.6542%|+4.9273%|"
+          },
+          {
+            "line": 58,
+            "text": "|center|2026|-0.0384%|+0.0000%|+0.0000%|+2.6687%|-2.7071%|"
+          },
+          {
+            "line": 98,
+            "text": "“低于入场价定时退出后再次买入就是坏交易”受到实际资金反证：原中心2023该来源贡献+2.3049个百分点，高于价退出来源+1.3924个百分点，其他来源-3.4132个百分点，全年仅+0.2841%。MEAN与BODY背景2023的低于价来源仍贡献约+0.7018/+0.7002个百分点。直接按亏损退出禁买可能删除恢复收益。"
+          },
+          {
+            "line": 100,
+            "text": "分类效果不能跨年份或背景概括：2024原中心低于价来源-0.6316个百分点，而MEAN/BODY同类分别+33.6747/+33.6749个百分点；高于价来源则在MEAN/BODY为负。这些是既有账户的真实年度会计分解，不是删掉该组后的新策略收益。"
+          }
+        ],
+        "EX043_20261011": [
+          {
+            "line": 21,
+            "text": "|N0|C4900|10.8889%|21.2540%|119|+9.4200%|+0.5491%|通过|"
+          },
+          {
+            "line": 87,
+            "text": "|B0-TIME|5.8974%|30.5044%|10.2598%|16.3446%|0/32|"
+          },
+          {
+            "line": 88,
+            "text": "|N0|1.7843%|34.6163%|9.1046%|13.3624%|0/32|"
+          },
+          {
+            "line": 98,
+            "text": "唯一达标N0完整13维/32点的收益Q10=1.7843%、回撤Q90=34.6163%，原策略对应5.8974%/30.5044%。绝对两项均恶化，所以参数敏感性改善目标没有达成。邻点四门0/32是诊断，未另设资格 veto；本轮失败依据为原先固定的绝对尾部要求。"
+          }
+        ]
+      },
+      "original_category": "EX042 originalcenter2023 BELOW-source actual equity contribution+2.3049pp vs full annual+0.2841%; same source2024-0.6316pp. This is a complete original-path accounting grouping, not independent future prediction or removable strategy profit. It directly challenges treating BELOW episodes as universally harmful.",
+      "old_mean_gate": "EX043 same-category MEAN/C4900 center qualified but CAGR10.8889% vs original16.1572%, DD21.2540% vs14.1599%; parameter absolute tails Q10CAGR1.7843% vs5.8974%, Q90DD34.6163% vs30.5044%. Smaller relative degradation did not achieve goal.",
+      "broader_raw_gate": "EX040 RAW_CLOSE96 closed and2023-1.8693%, RAW_BODY95 and2023-1.5228%. Narrower scope may change the outcome but does not erase direction-filter counterevidence.",
+      "budget_and_endogeneity": "Original112 closed has only2-trade margin above110; center2023+0.2841% small margin. Existingcenter13 BELOW bear opportunities only6 CloseUp (7 CloseNotUp), but filtering those7 fixed original opportunities is not a prediction of7 lost actual entries/trades. Refused contexts persist, possibly across rawbull, and later firstentry consumes them on a different date/route.",
+      "limits": [
+        "No selecting profitable/unprofitable years/trades or future windows. Keep all dates/categories/negative controls.",
+        "BELOW is exit signal price vs signal anchor, not actual closedPnL, and retained context can be stale across rawregime changes.",
+        "This is adaptively selected on extensively observed development data, not independent validation.",
+        "No subtraction of old category PnL or old rejected trades can predict a complete-account return."
+      ]
+    },
+    "conditional_test_if_root_adopts": {
+      "scope": "Not authorization or implementation from this review. First freeze identity, exact rule/source/synthetic/calendar audit and original economic gates before any new financial account.",
+      "minimal_center_matrix": "One newRAW+BELOW_CLOSE center plus exact reuse of three existing centers completes backgroundRAW/MEAN x gateoff/BELOW_CLOSE: C2132(raw/off), prospective(raw/on), C8701(mean/off), C4900(mean/on). No extra direction/category/year/threshold search. Complete account comparison, not delete-trade PnL.",
+      "parameter_trigger": "Only new center passing originalfour gates may receive complete original13-domain same32 account points; otherwise zero parameter preparation/evaluation. OriginalC2132 old32 reuse; C4900 old32 optional historical background evidence with structural differences, preserving native labels/source/lineage and bindings.",
+      "success": "Newcenterfour gates plus absoluteQ10 return/Q90drawdown and both center-relative degradations improved against original jointly. All32-neighbor four-gate count is diagnostic, not a new hard acceptance gate. Structural categorychoice not thereby independently validated.",
+      "falsification": "Center annualprofit/frequency/return/annualDD failure or unchanged/worse parameter absolute/relative tails rejects improvement claim; retain result without modifying scope/thresholds or choosing dates."
+    },
+    "references": [
+      {
+        "path": "research/S013/experiments/EX012_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+      },
+      {
+        "path": "research/S013/experiments/EX012_20261011/protocols/plan.json",
+        "sha256": "87683951db135f3d9d941ec672630dd5eb1de97dd8c212b05b56162b2bcccd29"
+      },
+      {
+        "path": "research/S013/experiments/EX040_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "871a0b1ad164f22ff603561cac1b68f04638cd8f06876f0e544194eae51692c2"
+      },
+      {
+        "path": "research/S013/experiments/EX040_20261011/others/report.md",
+        "sha256": "8962271e348ded059c9f86276cd0bf49f2ec931710ba6d5a9991c64c79fffa65"
+      },
+      {
+        "path": "research/S013/experiments/EX041_20261011/src/strategy_runtime/strategies/acf_range.py",
+        "sha256": "7a98e58435de78ee8094ac7010cadb3145a54216d6ce4a0abfff056ae36ce21a"
+      },
+      {
+        "path": "research/S013/experiments/EX041_20261011/others/report.md",
+        "sha256": "7f4de18a46a273ad22423fd3c03acab53bec8dedb539a4c98e8fd8055aa97e47"
+      },
+      {
+        "path": "research/S013/experiments/EX042_20261011/others/report.md",
+        "sha256": "e2b99062ba776a5edb8288de7addef67b50750e29ac2161caddc4fd922352a99"
+      },
+      {
+        "path": "research/S013/experiments/EX042_20261011/src/anchor_diagnosis_v2.py",
+        "sha256": "3641b1aa0f49fd55ff509073b10a190e0e46f3af22d1ba7727e43782fe0cfd5f"
+      },
+      {
+        "path": "research/S013/experiments/EX043_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "acfca9e7fa686fadc1282febdea083146180237d90cf2aa391cbd953962528ca"
+      },
+      {
+        "path": "research/S013/experiments/EX043_20261011/protocols/plan.json",
+        "sha256": "7beed71f67b643eba397a87ff360e384f66abc2940c44e07e2423a8acc8a20ae"
+      },
+      {
+        "path": "research/S013/experiments/EX043_20261011/protocols/geometry.json",
+        "sha256": "d508642461d6d3ab99fed0429c7a29c596d11000bcc859be867b5724e011d0fb"
+      },
+      {
+        "path": "research/S013/experiments/EX043_20261011/others/report.md",
+        "sha256": "c00cb204ccbd1eaaecbbf14405900e931a717b0fed05beeacdbaa28bac216e00"
+      },
+      {
+        "path": "research/S013/experiments/EX044_20261011/src/transition.py",
+        "sha256": "141c2600512c823b713a6183aebc477abacc3a9b208853d35f8a7cbc86d89c26"
+      },
+      {
+        "path": "research/S013/experiments/EX045_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "25f9fe1863977d0fffaee0f9c267288b23a0f8123b60b6964e652ea9d4b89102"
+      },
+      {
+        "path": "research/S013/experiments/EX046_20261011/src/strategy_runtime/strategies/mechanism_range.py",
+        "sha256": "54c17f2b9e1e0eccaf19970bc02b3d3f4b905e4adb6c3ebf04d92ee9c5b52f64"
+      }
+    ],
+    "next_action": "Root may assess this review before deciding a single fixed prospective raw-background contrast. Child stops at source review, no runtime/new experiment/accounts/registrations/publications."
+  },
+  "previous_delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 48,
+    "content_sha256": "e3b431d725eeb5de5ed8089984e2b3c5a47c60d4865548538edc64603510ead7"
+  },
+  "current_authorization": "User: 授权你可以自主完成目标，无需评审. RSCH S013 stage3 existing-data original-criteria only.",
+  "business_method": {
+    "anchor": "On any successful signalentry, anchor=currentT HFQClose. It remains that episode anchor until signalexit; actual fill prices/quantities do not reset it. This is signal-price memory, not net trade profit/loss.",
+    "exit": "Keep original loss>trailing>range>time>regime priority and current held route. On every finalexit record reason and exit-before active_route. Category=BELOW/EQUAL/ABOVE by strict exitClose vs that episode anchor only when finalreason=time and exit-before route=bear; other final exits category=None. TIME can outrank rawregime switch and still classify if exit rawregime already bull.",
+    "gate": "BEFORE decision, applies iff flat AND originalraweligible AND currentrawregime=bear AND lastreason=time AND lastroute=bear AND lastcategory=BELOW. Reject if currentT Close<=strictprevious actual trading session Close; strict> passes. Direction refusal precedes original confirmation refusal; original opportunity and confirmation_pass diagnostics remain unfiltered.",
+    "consume": "Any route successful signalentry clears all three exit context fields. Flat refusal, failedeligibility and rawregime changes withoutentry retain context. NonTIME/bullTIME final exits overwrite category withNone; holding never uses direction to exit. No new cooldown or holding-only wait.",
+    "initialization": "As original full-window strategy, holding=False, route=None, age0, context3=None at first selected signal session. Prices/ACF/score/regime features use complete causal prehistory; do not infer an initial prior holding/category from warmup. PreviousClose shift on full daily before reindex; no fill.",
+    "diagnostics": "If derived from EX043, preserve before-decision last_exit_reason/route/category, objectNone missing, price fields and gate flags; raw entry_acf_value is original row.acf1. Do not output fictitious meanbaseline/centered columns. All original columns/rawscore/range/H semantics unchanged."
+  },
+  "choice": "One RAW plus BELOW strict previousClose gate, no category/body/year/window/threshold search. Parent warmup exact; remove previous-regime diagnostic dependencies.",
+  "centers": {
+    "new": "C7580 raw/gate-on",
+    "reused": [
+      "C2132 raw/gate-off",
+      "C8701 mean/gate-off",
+      "C4900 mean/gate-on"
+    ]
+  },
+  "parameter_centers": "If new original-four-gate qualified: original C2132 and coupled C4900 full32 exact reused; new same32 with all13 full domains. C8701 center is diagnostic background control, not parameter baseline or new gate.",
+  "economics": "Original four gates unchanged. Only qualified new center receives32. Goal additionally requires absoluteQ10CAGR/Q90DD and both center-relative degradations improve against C2132. Neighborqualification remains diagnostic.",
+  "limits": [
+    "No selecting profitable/unprofitable years/trades or future windows. Keep all dates/categories/negative controls.",
+    "BELOW is exit signal price vs signal anchor, not actual closedPnL, and retained context can be stale across rawregime changes.",
+    "This is adaptively selected on extensively observed development data, not independent validation.",
+    "No subtraction of old category PnL or old rejected trades can predict a complete-account return.",
+    "Strict BELOW signal price is not actual negative netPnL; time and rawregime/H path endogeneity still present.",
+    "Extensively exposed development pool; fixed category/direction structural choice not independently validated by numeric32."
+  ],
+  "candidate_reservation": {
+    "center": 7580,
+    "first": 7540,
+    "last": 7571
+  },
+  "financial_evaluations_before_declaration": 0
+}

@@ -1,0 +1,10 @@
+{
+  "status": "FAILED",
+  "phase": "Frozen original analyze.py, after exact reuse of B0-TIME/B0-COUPLED/B0-MEAN",
+  "entrypoint": "research/S013/experiments/EX053_20261011/src/analyze.py",
+  "new_account_evaluations_during_analysis": 0,
+  "new_account_preparations_during_analysis": 0,
+  "exit_code": 1,
+  "output": "{'audited_center': 'B0-TIME', 'qualified': True}\n{'audited_center': 'B0-COUPLED', 'qualified': True}\n{'audited_center': 'B0-MEAN', 'qualified': False}\nTraceback (most recent call last):\n  File \"research/S013/experiments/EX053_20261011/src/analyze.py\", line 122, in <module>\n    main()\n  File \"research/S013/experiments/EX053_20261011/src/analyze.py\", line 72, in main\n    row, frame = summarize(bound, result, cfg, ledger)\n  File \"research/S013/experiments/EX053_20261011/src/analysis_reference.py\", line 82, in summarize\n    assert np.array_equal(opportunity & state_confirmed & expected,frame.signal_reason.eq('entry'))\nAssertionError\n",
+  "diagnosis": "Category-aware summary helper already implements the intended gate semantics for MEAN names, but its enum tuple omitted the new RAW_BEAR_TIME_BELOW_CLOSE name. No new-account metrics or ledger changed. Independent existing economic helper reports center frequency failure."
+}
