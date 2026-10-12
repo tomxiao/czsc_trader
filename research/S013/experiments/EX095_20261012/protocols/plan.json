@@ -1,0 +1,262 @@
+{
+  "question": "保留C8880其他规则，仅对当前及前日rawbull且当T严格正BODY豁免score，能否恢复有效参与并满足新版四门？",
+  "basis": "EX006/012全面解除确认增加频率但损害收益，当前窄scope与全面或bull单侧Off有合成差异；固定stable rawbull及严格正BODY条件检验恢复参与，没有新增信息。",
+  "strongest_counter": "窄豁免仍可能引入低质量买入，早入场改变后续交易年龄、价格锚和资金，可能使2023薄净盈利转负；因果上行近似不是最终buyhold盈利年预知。",
+  "role_of_component": "原0/1策略的稳定上行参与窄score豁免；其他入场、全部退出、持仓H和锚保持原职责",
+  "label": "真实连续原生账户净收益/年度回撤/实际退出闭合次数，不以价格代理代替",
+  "horizon": "原bull H8、bear H4仍是实际被接受的交易信号年龄；合法1..60域及原13参数完整保留，无新数值参数",
+  "controls": "同源C8880原完整参数及父策略；bypass_enabled=False父全部history与旧native决策逐字段精确核验",
+  "availability": "仅当T和完整前日rawbull且Close>Open可免score；原opportunity/scorepassed仍保留诊断；不使用当年最终盈利标签，T决策T+1执行",
+  "price_basis": "原510500HFQ固定锚、不叠加现金分红、100万元整手100、单侧10bp、固定1% LimitBuyHold及原数据",
+  "limitations": "同开发池反复研究；原13数值语义完整保持，固定结构豁免仍改变路径；旧扰动账户不能作为新策略扰动，中心通过不代表32/32",
+  "payload": {
+    "parameters": {
+      "bear": {
+        "acf_min": 0.1,
+        "cooldown": 0,
+        "entry": 0.9,
+        "exit": 0.99,
+        "limit_premium": 0.01,
+        "max_hold": 4,
+        "momentum_min": null,
+        "range_window": 120,
+        "stop_loss": null,
+        "trailing_stop": null
+      },
+      "bull": {
+        "acf_min": null,
+        "cooldown": 0,
+        "entry": 0.675,
+        "exit": 0.95,
+        "limit_premium": 0.01,
+        "max_hold": 8,
+        "momentum_min": null,
+        "range_window": 180,
+        "stop_loss": null,
+        "trailing_stop": null
+      },
+      "confirmation": {
+        "enabled": true,
+        "lookback": 120,
+        "orientation": 1,
+        "profile": "all",
+        "scope": "both",
+        "threshold": -0.2
+      },
+      "context": {
+        "entry_gate": "all",
+        "volume_basis": "ADJUSTED",
+        "weighting": "EQUAL_BLOCKS"
+      },
+      "exit_on_regime_change": true,
+      "regime_threshold": 0.0,
+      "regime_window": 20,
+      "mechanism": "STABLE_RAW_BULL_BODY_CONFIRMATION_BYPASS",
+      "bypass_enabled": true
+    },
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.stable_bull_bypass_range",
+      "qualname": "StableBullBypassRange",
+      "source_files": [
+        "strategies/__init__.py",
+        "strategies/range_reversion.py",
+        "strategies/adaptive_range.py",
+        "strategies/confirmed_range.py",
+        "strategies/reentry_confirmed_range.py",
+        "strategies/boundary_bear_recovery_range.py",
+        "strategies/policy_kernel.py",
+        "strategies/stable_bull_bypass_range.py"
+      ],
+      "source_sha256": "e1d4fae22fc0a5b2211596da58440a5674d8e0bcf8732c7d5cb95e637bcf6a9a"
+    }
+  },
+  "candidate_id": "C9095",
+  "parameter_geometry": {
+    "source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "bf86aa5e626b27385fca9fc8fc544c592202947a0cb0cccd53805aebe245b091.json",
+      "sha256": "bf86aa5e626b27385fca9fc8fc544c592202947a0cb0cccd53805aebe245b091",
+      "media_type": "application/json",
+      "name": "prospective-common-parameter-geometry",
+      "schema": null,
+      "schema_version": null
+    },
+    "coordinates": [
+      [
+        "bull.range_window",
+        21.0,
+        360.0,
+        "INTEGER"
+      ],
+      [
+        "bull.entry",
+        0.0,
+        1.0,
+        "CONTINUOUS"
+      ],
+      [
+        "bull.exit",
+        0.0,
+        1.0,
+        "CONTINUOUS"
+      ],
+      [
+        "bull.max_hold",
+        1.0,
+        60.0,
+        "INTEGER"
+      ],
+      [
+        "bear.range_window",
+        21.0,
+        360.0,
+        "INTEGER"
+      ],
+      [
+        "bear.entry",
+        0.0,
+        1.0,
+        "CONTINUOUS"
+      ],
+      [
+        "bear.exit",
+        0.0,
+        1.0,
+        "CONTINUOUS"
+      ],
+      [
+        "bear.max_hold",
+        1.0,
+        60.0,
+        "INTEGER"
+      ],
+      [
+        "bear.acf_min",
+        -0.6,
+        0.5,
+        "CONTINUOUS"
+      ],
+      [
+        "regime_window",
+        5.0,
+        60.0,
+        "INTEGER"
+      ],
+      [
+        "regime_threshold",
+        -0.2,
+        0.2,
+        "CONTINUOUS"
+      ],
+      [
+        "confirmation.lookback",
+        40.0,
+        120.0,
+        "INTEGER"
+      ],
+      [
+        "confirmation.threshold",
+        -0.5,
+        0.5,
+        "CONTINUOUS"
+      ]
+    ],
+    "protocol": {
+      "radius": 0.05,
+      "point_count": 32,
+      "seed": 13,
+      "random_generator": "PCG64",
+      "integer_rounding": "HALF_EVEN",
+      "quantile_method": "LINEAR",
+      "distance_tolerance": 1e-10,
+      "max_attempts": 100000
+    },
+    "feasibility": "bull.entry<bull.exit and bear.entry<bear.exit; original domain/type constraints",
+    "new_numeric_coordinates": [],
+    "fixed_structure": {
+      "bypass_enabled": true,
+      "mechanism": "STABLE_RAW_BULL_BODY_CONFIRMATION_BYPASS"
+    },
+    "semantic_change": "No numeric business semantic change; max_hold remains accepted-trade age; all13 original full domains retained; only fixed categorical bypass scope changes",
+    "not_done_before_centre": "No new parameter points or account results; centre pass requires a separately frozen sameEX32/independentfee plan"
+  },
+  "new_goal": "MANDATE/7; centre and all32 pass new4, pooled positiveBHyear actual exit frequency replaces whole-period frequency; realised BHyears ex-post only",
+  "stop_or_followup": "Fail any v2 centre gate: stop this fixed policy, no32/fee/windowrescue. Pass centre: freeze sameEX32 and independentfee; do not finalize as robust achieved.",
+  "resources": {
+    "maximum_native_centres": 1,
+    "new_accounts": 1,
+    "provider_calls": 0,
+    "automatic_repeat": false
+  },
+  "input_references": {
+    "baseline_native.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "parameter_geometry.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "bf86aa5e626b27385fca9fc8fc544c592202947a0cb0cccd53805aebe245b091.json",
+      "sha256": "bf86aa5e626b27385fca9fc8fc544c592202947a0cb0cccd53805aebe245b091",
+      "media_type": "application/json",
+      "name": "prospective-common-parameter-geometry",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_cache_sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+  "source_files": {
+    ".tmp/s013-new-goal/stable_bull_bypass/audit_checks.json": "06413edec791af07db274c16b159a0e2ce8fa7a3d121a2d04c205be127375e92",
+    ".tmp/s013-new-goal/stable_bull_bypass/audit_checks.py": "ac11ffb2a0d6312a8053e7e804d04140641073edb6e69c0fb7c279cea17d34b4",
+    ".tmp/s013-new-goal/stable_bull_bypass/audit_core.py": "b5752d82d0236c3afd3682f73ab0311b24831c9587e0198d0e33e91cf2ca6297",
+    ".tmp/s013-new-goal/stable_bull_bypass/checks.json": "ba6162c7a87a8273c6067c9894ef757bc12d04bae9a6b1459b0a0e00a4297d99",
+    ".tmp/s013-new-goal/stable_bull_bypass/checks.py": "cfc72fec1f1343739ff6f785acb3a5a03df2c005f855783db0e64a72d66cc5fe",
+    ".tmp/s013-new-goal/stable_bull_bypass/native_driver.py": "f4acd94d9ed018dda9f982db37cc7e4e73156e6c5d3e401dff5c553892db1d21",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/boundary_bear_recovery_range.py": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/policy_kernel.py": "81eec42acd52730c996a0376d86f796be202f7f149539ac3a3e7a649b12f093c",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/stable_bull_bypass_range.py": "8d85b90bcd81a3e64846edf2d1d9024cd05614f50741fd72547d0589222f4c43",
+    ".tmp/s013-new-goal/stable_bull_bypass/strategy_runtime/strategies/__init__.py": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013-new-goal/prospective_expression_review.json": "1c96ae1375262de832657f2e4c4e2e641d1397480f1f4aa09aa579dc9e9d0a45",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX080_20261012/src/reproduction/02c394b35938_s013_confirm_execution_v3.py": "02c394b35938f5ebc6e3fb7d3e44a07ee32428ca9a7904fb6802d149c6822048",
+    "research/S013/experiments/EX080_20261012/src/reproduction/f78efbb0b1da_audit_driver.py": "f78efbb0b1da9045187ab8ab7ba5dfa2afbb33f8df2826984a0131689b99ac52",
+    "research/S013/experiments/EX074_20261011/src/economics_reference.py": "caf12faeededd7f511528545b03fbe40fffdd38fa1796b11af6aa47f12d0b877",
+    "research/S013/experiments/EX074_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX074_20261011/src/execution_links.py": "b7aa3220794b93000cffbde4410c97b95f3cc798f7348244b4113cbf7d5da198"
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX095_20261012"
+  },
+  "quota_slot": 7,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}
