@@ -1,0 +1,781 @@
+{
+  "status": "PASS",
+  "kind": "READ_ONLY_RECORDED_RULES_AND_PARTICIPATION_REVIEW",
+  "candidate_count": 8,
+  "rows": {
+    "C0507": {
+      "source": "research/S013/assets/evidence/EX004_20261007/5e97627763d38a31807928a37ff061f1e1702b323826f104860c3dd6c7aefc00.json",
+      "source_sha256": "5e97627763d38a31807928a37ff061f1e1702b323826f104860c3dd6c7aefc00",
+      "payload": {
+        "path": "assets/candidates/C0507/payload/dcc54dff9b86d32caf83be6f9fa56bdcf68e79a734a6b2fd9b1525700153432d.json",
+        "sha256": "dcc54dff9b86d32caf83be6f9fa56bdcf68e79a734a6b2fd9b1525700153432d"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C0507/source/e122c362543289f7ab281b17a48050f94a285a0312dde8b0b449dee0e779a40e/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "ea84e4fea3cbb9bf36a220e4282965f5dd9ac6c88ba5b20badb8f121b8bf647d"
+        },
+        {
+          "path": "assets/candidates/C0507/source/e122c362543289f7ab281b17a48050f94a285a0312dde8b0b449dee0e779a40e/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "1b0df73891f7e96cb082c5c2ea51956bd605bd8ed09b7c145092a3438d03dd83"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "AdaptiveRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 310,
+          "flat_range_rejected": 365
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C0509": {
+      "source": "research/S013/assets/evidence/EX004_20261007/1b926a7e7f8536a1fb88c2e62b1f75cacc022ab5cb15b6fecd4e43dd967bdc28.json",
+      "source_sha256": "1b926a7e7f8536a1fb88c2e62b1f75cacc022ab5cb15b6fecd4e43dd967bdc28",
+      "payload": {
+        "path": "assets/candidates/C0509/payload/c380e88091dbcc84f39e21664f4c1ff0f6a8e3afad06beea4db8051f4eb89e39.json",
+        "sha256": "c380e88091dbcc84f39e21664f4c1ff0f6a8e3afad06beea4db8051f4eb89e39"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C0509/source/e122c362543289f7ab281b17a48050f94a285a0312dde8b0b449dee0e779a40e/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "ea84e4fea3cbb9bf36a220e4282965f5dd9ac6c88ba5b20badb8f121b8bf647d"
+        },
+        {
+          "path": "assets/candidates/C0509/source/e122c362543289f7ab281b17a48050f94a285a0312dde8b0b449dee0e779a40e/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "1b0df73891f7e96cb082c5c2ea51956bd605bd8ed09b7c145092a3438d03dd83"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "AdaptiveRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 311,
+          "flat_range_rejected": 364
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C2008": {
+      "source": "research/S013/assets/evidence/EX006_20261009/0bd586aec0342d91583fc14716cdb606d1d8ed0a7e6cc853dbf76d6b627a920b.json",
+      "source_sha256": "0bd586aec0342d91583fc14716cdb606d1d8ed0a7e6cc853dbf76d6b627a920b",
+      "payload": {
+        "path": "assets/candidates/C2008/payload/62b207505e56f82f9994deb6cf10d13286ed1dbc297674bb286650f08e81e956.json",
+        "sha256": "62b207505e56f82f9994deb6cf10d13286ed1dbc297674bb286650f08e81e956"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C2008/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/confirmed_range.py",
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+        },
+        {
+          "path": "assets/candidates/C2008/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C2008/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": false,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.5
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "ConfirmedRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 310,
+          "flat_range_rejected": 365
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C2009": {
+      "source": "research/S013/assets/evidence/EX006_20261009/675dbf0764258f1b0cb535e4acd0fa01209708c12fad83f4c3ac36a7cef567ff.json",
+      "source_sha256": "675dbf0764258f1b0cb535e4acd0fa01209708c12fad83f4c3ac36a7cef567ff",
+      "payload": {
+        "path": "assets/candidates/C2009/payload/698e5d2445156c839140c84cd1f88f42f7c097de161161ee5d772b7122e4a085.json",
+        "sha256": "698e5d2445156c839140c84cd1f88f42f7c097de161161ee5d772b7122e4a085"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/confirmed_range.py",
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+        },
+        {
+          "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C2009/source/9405992d9f314a642df4f34854c1aa977fbe192c4301029448dabc3b03313f5f/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": false,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.5
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "ConfirmedRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 311,
+          "flat_range_rejected": 364
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C9029": {
+      "source": "research/S013/assets/evidence/EX004_20261007/86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc.json",
+      "source_sha256": "86a299e660ffe9f4489c426cb763aec340e0e34116fce08eb57b79fc7ecfb2dc",
+      "payload": {
+        "path": "assets/candidates/C9029/payload/5f51095c04458f8bf0fc125451dd0a1e967871e6d0a6ff0b00565657fa38ad70.json",
+        "sha256": "5f51095c04458f8bf0fc125451dd0a1e967871e6d0a6ff0b00565657fa38ad70"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C9029/source/82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C9029/source/82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.95,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "AdaptiveRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 310,
+          "flat_range_rejected": 365
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C9030": {
+      "source": "research/S013/assets/evidence/EX004_20261007/b2fd6abba44aa22148fef49e05aa21215aa1437598e4eeed393d0468872b55a8.json",
+      "source_sha256": "b2fd6abba44aa22148fef49e05aa21215aa1437598e4eeed393d0468872b55a8",
+      "payload": {
+        "path": "assets/candidates/C9030/payload/b01bc3b5757f2edba2106ffcae345d5d074f58a37ef879d2a7d33b8468544b79.json",
+        "sha256": "b01bc3b5757f2edba2106ffcae345d5d074f58a37ef879d2a7d33b8468544b79"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C9030/source/82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C9030/source/82bdd6fa4630f1838182ac07c2d88221a956396b6a1fbdf27f290cb614fb6ca5/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.985,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "exit_on_regime_change": true,
+        "regime_threshold": 0.005,
+        "regime_window": 20
+      },
+      "runtime_qualname": "AdaptiveRange",
+      "cagr": 0.10993919897837778,
+      "drawdown": 0.16271162662101168,
+      "positive_closed_cycles": 72,
+      "required": 77,
+      "shortage": 5,
+      "all_closed_cycles": 117,
+      "positive_year_actual_held_sessions": 315,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 235
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 99,
+          "held_before_signal_continue": 243,
+          "held_before_signal_exit_today": 72,
+          "flat_basic_gates_pass_actual_signal_entry": 63,
+          "flat_range_pass_raw_acf_failed_no_entry": 311,
+          "flat_range_rejected": 364
+        },
+        "changed_bear_entry_band": {
+          "flat_acf_reject": 1
+        },
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C9070": {
+      "source": "research/S013/assets/evidence/EX070_20261011/d625ceca27e318bc2993df929e7277084b74b772683033d96c633fe2a26c0201.json",
+      "source_sha256": "d625ceca27e318bc2993df929e7277084b74b772683033d96c633fe2a26c0201",
+      "payload": {
+        "path": "assets/candidates/C9070/payload/7d26c03ac347c56b6363eafd8034af01f1a403fada89d5dd197b18670ccbd743.json",
+        "sha256": "7d26c03ac347c56b6363eafd8034af01f1a403fada89d5dd197b18670ccbd743"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/__init__.py",
+          "sha256": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/boundary_bear_recovery_range.py",
+          "sha256": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/confirmed_range.py",
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/reentry_confirmed_range.py",
+          "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+        },
+        {
+          "path": "assets/candidates/C9070/source/ed73d83ae06fa4893e85bb63456e542dfbfe439ae6dbe9fd1b2992dfd679c25c/strategy_runtime/strategies/short_alternative_range.py",
+          "sha256": "eac7ebecf6ec453e6f8205741e2641c3f5a94b403147fcfff5929da2c68c53a1"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "mechanism": "RAW_BULL_BOUNDARY_BODY_BEAR_BELOW_BODY_ACF_RECOVERY_SHORT_ALT",
+        "regime_threshold": 0.0,
+        "regime_window": 20,
+        "short_confirmation_lookback4": 4
+      },
+      "runtime_qualname": "ShortAlternativeRange",
+      "cagr": 0.1503426979870537,
+      "drawdown": 0.13600416373812574,
+      "positive_closed_cycles": 71,
+      "required": 77,
+      "shortage": 6,
+      "all_closed_cycles": 120,
+      "positive_year_actual_held_sessions": 328,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4.0,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 241
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 104,
+          "held_before_signal_continue": 257,
+          "held_before_signal_exit_today": 71,
+          "flat_range_rejected": 379,
+          "flat_basic_gates_pass_actual_signal_entry": 57,
+          "flat_range_pass_raw_acf_failed_no_entry": 272,
+          "flat_raw_acf_failed_but_actual_signal_entry": 5,
+          "flat_basic_gates_pass_no_entry_other_rules": 7
+        },
+        "changed_bear_entry_band": {},
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    },
+    "C8880": {
+      "source": "research/S013/assets/evidence/EX058_20261011/2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "source_sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "payload": {
+        "path": "assets/candidates/C8880/payload/85cfcbaa7aed49b3c36eb7d102f3b9c05d8e42ad72176551ea6c2b9ff9c89c41.json",
+        "sha256": "85cfcbaa7aed49b3c36eb7d102f3b9c05d8e42ad72176551ea6c2b9ff9c89c41"
+      },
+      "source_files": [
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/range_reversion.py",
+          "sha256": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3"
+        },
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/adaptive_range.py",
+          "sha256": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4"
+        },
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/confirmed_range.py",
+          "sha256": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a"
+        },
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/reentry_confirmed_range.py",
+          "sha256": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+        },
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/boundary_bear_recovery_range.py",
+          "sha256": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8"
+        },
+        {
+          "path": "assets/candidates/C8880/source/74c5cac24c8f649f6d7a98a8aae3bef02209bc494d23f7378d7f691961a61674/strategy_runtime/strategies/__init__.py",
+          "sha256": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1"
+        }
+      ],
+      "parameters": {
+        "bear": {
+          "acf_min": 0.1,
+          "cooldown": 0,
+          "entry": 0.9,
+          "exit": 0.99,
+          "limit_premium": 0.01,
+          "max_hold": 4,
+          "momentum_min": null,
+          "range_window": 120,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "bull": {
+          "acf_min": null,
+          "cooldown": 0,
+          "entry": 0.675,
+          "exit": 0.95,
+          "limit_premium": 0.01,
+          "max_hold": 8,
+          "momentum_min": null,
+          "range_window": 180,
+          "stop_loss": null,
+          "trailing_stop": null
+        },
+        "confirmation": {
+          "enabled": true,
+          "lookback": 120,
+          "orientation": 1,
+          "profile": "all",
+          "scope": "both",
+          "threshold": -0.2
+        },
+        "context": {
+          "entry_gate": "all",
+          "volume_basis": "ADJUSTED",
+          "weighting": "EQUAL_BLOCKS"
+        },
+        "exit_on_regime_change": true,
+        "mechanism": "RAW_BULL_BOUNDARY_BODY_BEAR_BELOW_BODY_ACF_RECOVERY",
+        "regime_threshold": 0.0,
+        "regime_window": 20
+      },
+      "runtime_qualname": "BoundaryBearRecoveryRange",
+      "cagr": 0.17134559076619493,
+      "drawdown": 0.13618731411686769,
+      "positive_closed_cycles": 68,
+      "required": 77,
+      "shortage": 9,
+      "all_closed_cycles": 116,
+      "positive_year_actual_held_sessions": 308,
+      "positive_year_sessions": 1152,
+      "actual_closed_holding_sessions_median": 4.0,
+      "actual_closed_holding_sessions_max": 8,
+      "order_status_counts": {
+        "FILLED": 233
+      },
+      "observed_signal_conditions": {
+        "classification": {
+          "flat_insufficient_stored_warmup": 106,
+          "held_before_signal_continue": 240,
+          "held_before_signal_exit_today": 68,
+          "flat_range_rejected": 387,
+          "flat_basic_gates_pass_actual_signal_entry": 55,
+          "flat_range_pass_raw_acf_failed_no_entry": 278,
+          "flat_raw_acf_failed_but_actual_signal_entry": 4,
+          "flat_basic_gates_pass_no_entry_other_rules": 14
+        },
+        "changed_bear_entry_band": {},
+        "limit": "Recorded execution prefix excludes 2019 warmup. No full-year gate rejection count claimed; other_rules is not isolated confirmation rejection. No potential trade or profit counterfactual."
+      }
+    }
+  },
+  "six_nearest_path_equivalence": {
+    "C0507": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    },
+    "C0509": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    },
+    "C2008": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    },
+    "C2009": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    },
+    "C9029": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    },
+    "C9030": {
+      "signals_without_identity_exact": true,
+      "account_exact": true,
+      "fills_without_identity_exact": true,
+      "trades_without_identity_exact": true
+    }
+  },
+  "C9070_C8880_buy_date_comparison": {
+    "common_buy_dates": 107,
+    "short_alternative_only_buy_dates": [
+      "2020-04-16",
+      "2020-04-29",
+      "2020-05-19",
+      "2020-12-15",
+      "2021-05-24",
+      "2021-10-26",
+      "2021-11-02",
+      "2022-04-15",
+      "2023-07-25",
+      "2023-08-07",
+      "2024-03-22",
+      "2025-05-23",
+      "2026-08-17",
+      "2026-08-28"
+    ],
+    "original_only_buy_dates": [
+      "2020-04-22",
+      "2020-05-08",
+      "2020-05-21",
+      "2020-12-16",
+      "2021-10-27",
+      "2023-07-26",
+      "2023-08-08",
+      "2025-05-26",
+      "2026-08-20",
+      "2026-09-02"
+    ]
+  },
+  "recorded_actual_alternative_attribution": {
+    "source": "research/S013/experiments/EX070_20261011/others/report.md:68",
+    "source_sha256": "5ee24a1c679d5698b2d5a4733397dba2bacaaaec2d3cbb3193290193a797053b",
+    "alternative_only_signal_opportunities": 11,
+    "actual_source_closed_trades": 10,
+    "winning_source_trades": 5,
+    "losing_source_trades": 5,
+    "net_pnl_approx": -91400,
+    "not_isolated_incremental_causal_profit": true
+  },
+  "limits": [
+    "No calculate_history, new strategy run, evaluation, parameter changes or profit proxy.",
+    "Same equity does not prove every unaccepted eligibility flag identical.",
+    "Occupied sessions do not prove profitable opportunities were lost.",
+    "BH positive-year labels used only for retrospective participation accounting."
+  ]
+}
