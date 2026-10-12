@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "new_statistics": 0,
+  "checks": [
+    "OLS all-inlier same penalized solution and unpenalized intercept",
+    "few shocks have less coefficient influence; full true gradient/Huber loss/MAD verified",
+    "zeroMAD constant definition and variedtarget explicit NA without scale fallback",
+    "fixed500 nonconvergence rejects with last proof; no OLS fallback",
+    "all six mature annual supports/CDF/scale/beta; tail/current availability independent of future truth",
+    "causal prefix and immature futurelabel mutation do not change prior forecasts",
+    "no-year and insufficient mature training explicitly unavailable"
+  ],
+  "check_count": 7,
+  "rejections": [
+    "columns",
+    "label_axis",
+    "unordered",
+    "duplicate",
+    "timezone",
+    "infinite_x",
+    "infinite_y",
+    "unpaired_maturity",
+    "not_future",
+    "alpha_low",
+    "alpha_high",
+    "alpha_int",
+    "multiple_low",
+    "multiple_high",
+    "multiple_nan",
+    "fit_short",
+    "fit_nan"
+  ],
+  "rejection_count": 17,
+  "synthetic_annual_models": 6,
+  "source_sha256": {
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    "checks.py": "3240ba22039888b48ba01cef02023749b308bac9e5ca1de74ca57794209cd93d"
+  },
+  "counterevidence": "rare large gains may be suppressed; prior top-profit concentration and conditional-gain support remain",
+  "original_native_parameter_domains": {
+    "lookback": [
+      40,
+      120
+    ],
+    "holding": [
+      1,
+      60
+    ],
+    "ridge_alpha": [
+      1.0,
+      100.0
+    ]
+  },
+  "new_huber_multiple_domain": [
+    0.5,
+    3.0
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "metadata_and_mock_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "provider_calls": 0,
+  "checks": [
+    "inherited exact original80 InputContract/Scope/decision/execution, no market ingestion",
+    "all four original/new parameter domain endpoints are legal",
+    "centreH4 independent old labels exact; H endpoints use actual dynamic maturity and missing tail",
+    "strictpositive entry/expiry priority/no sameT reentry matches independent old clock",
+    "adaptercalculate dispatch signature exercised with explicit mock; no OHLC/provider consumed",
+    "original80 source bytes and pure/runtime Huber arithmetic bytes exact"
+  ],
+  "check_count": 6,
+  "rejections": [
+    "extra_key",
+    "lookback39",
+    "lookback121",
+    "lookback_float",
+    "holding0",
+    "holding61",
+    "alpha0",
+    "alpha101",
+    "alpha_int",
+    "multiple_low",
+    "multiple_high",
+    "multiple_nan",
+    "multiple_int"
+  ],
+  "rejection_count": 13,
+  "source_sha256": {
+    "confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    "huber_net.py": "b95c602587661ff48961dd81463b82401b801457a56c81fbe4de807972a756a4"
+  },
+  "native_market_calculate_path_executed": false,
+  "hubernetscore_is_conditional_expected_payoff": false
+}

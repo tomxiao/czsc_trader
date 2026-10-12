@@ -1,0 +1,193 @@
+{
+  "question": "原14成熟年度训练采用固定Huber残差损失，再兑现完整账户，能否通过新版四门并保留必要大赚？",
+  "basis": "平方损失中极端净回报可能主导系数；Huber只降低大残差影响，不剪裁或删掉目标样本。表达变化不等于新增价量信息或正条件期望。",
+  "strongest_counter": "历史最高约10percent盈利交易贡献约43percent；EX086条件赚幅有局部支持，EX090每日净更新仍不足。Huber可能压掉达标所需少数大赚；EX050 winsor ACF已有失败，不能包装成相同输入处理的新发现。",
+  "role_of_component": "原14年度Huber净机会位置分数严格正入场，原EX080固定H时钟及执行，不沿C8880价格门。",
+  "label": "O[T+1+H]/O[T+1]*(.999/1.001)-1，动态H真实观察价格；return_4/end字段是接口别名，中心H4，成熟日严格早于年首T。",
+  "horizon": "centre holding4；原1..60完整域；2020起成熟过去年度训练、2021..26预测，2019仅暖特征、2020不入场。",
+  "controls": "EX079原14和净ridge公开引用只作原中心元数据对照，不重新拟合ridge；C8880只完整经济/执行控制，不能声称OFF=C8880策略等价。",
+  "availability": "当前完整原14即可预测未知truth尾部；无未来test count gate；delta=1.345*training rawMAD，不乘1.4826。ConstantMAD0定义常值/零斜率，variedMAD0明确NA，不fallback。年度最终BH盈亏仅事后验收。",
+  "price_basis": "原510500HFQ固定2019-12-31锚0.2803、不另叠加分红、100万元、整手100、单侧10bp、固定1percent LimitBuyHold。",
+  "limitations": "同开发池反复研究；Huber位置一般不是条件净收益均值，正分数不证明正条件期望；可能失去关键大赚。无新信息、参数优化、数据或独立封存样本。",
+  "payload": {
+    "parameters": {
+      "confirmation_lookback": 120,
+      "holding_sessions": 4,
+      "ridge_alpha": 10.0,
+      "huber_multiple": 1.345
+    },
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.huber_net",
+      "qualname": "HuberNet",
+      "source_files": [
+        "strategies/confirm_kernel.py",
+        "strategies/confirm_net.py",
+        "strategies/huber_kernel.py",
+        "strategies/huber_net.py"
+      ],
+      "source_sha256": "8cf11b436acac220f2364448188b528897558c41958d7b3ecc122416b9a94352"
+    }
+  },
+  "candidate_id": "C9097",
+  "parameter_geometry": {
+    "coordinates": [
+      [
+        "confirmation_lookback",
+        40,
+        120,
+        "INTEGER"
+      ],
+      [
+        "holding_sessions",
+        1,
+        60,
+        "INTEGER"
+      ],
+      [
+        "ridge_alpha",
+        1.0,
+        100.0,
+        "CONTINUOUS"
+      ],
+      [
+        "huber_multiple",
+        0.5,
+        3.0,
+        "CONTINUOUS"
+      ]
+    ],
+    "protocol": {
+      "radius": 0.05,
+      "point_count": 32,
+      "seed": 13,
+      "random_generator": "PCG64",
+      "integer_rounding": "HALF_EVEN",
+      "quantile_method": "LINEAR",
+      "distance_tolerance": 1e-10,
+      "max_attempts": 100000
+    },
+    "origins": "Original EX080 exact lookback40..120/holding1..60/ridge1..100 legal contracts; append multiplier .5..3 declared before inputs",
+    "feasibility": "Full domains and exact types; all four effective coordinates, no unseen scale fallback",
+    "new_numeric_coordinates": [
+      "huber_multiple"
+    ],
+    "fixed_structure": {
+      "mechanism": "ORIGINAL14_HUBER_LOCATION_FIXED_EPISODE",
+      "loss": "sumHuber+.5alpha*slopes_squared; unpenalizedintercept",
+      "scale": "training rawMAD, not1.4826normalised",
+      "iterations": 500,
+      "gradient_tolerance": 1e-10,
+      "coefficient_change_tolerance": 1e-12
+    },
+    "not_done_before_centre": "No perturbation accounts; centre pass requires separately frozen sameEX32 and independentfee"
+  },
+  "new_goal": "MANDATE/7; centre and all32 pass new4, positiveBHyears pooled actual exitfrequency; finalyear sign never signal",
+  "stop_or_followup": "Any centre v2 gate failure stops fixed policy, no neighbors/domainrescue; centre pass requires sameEX32/fee and never declares robust achieved.",
+  "resources": {
+    "maximum_native_centres": 1,
+    "new_accounts": 1,
+    "provider_calls": 0,
+    "automatic_repeat": false
+  },
+  "input_references": {
+    "baseline_native.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "original14_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "original14_net_ridge.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6.json",
+      "sha256": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6",
+      "media_type": "application/json",
+      "name": "net-statistics",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_cache_sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+  "original14_and_label_oracle": {
+    "source": "research/S013/experiments/EX080_20261012/src/reproduction/82670d42c540_audit.py",
+    "sha256": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+    "functions": [
+      "original14",
+      "net_labels",
+      "episodes"
+    ],
+    "function_sha256": {
+      "net_labels": "57768b5563b77fa41c77dc727cf8c5c2651cd935237606100bdcaa17ec822143",
+      "original14": "b24ac1b5a8d73bd2452566ba978649fe12921b926360624042cd2fc8b89788aa",
+      "episodes": "cbb6aeccc7a4ec662bdff6ce553a4db9289bf41cb08286db330815b33fcde58c"
+    },
+    "net_labels_original_horizon": 4,
+    "noncentre_H": "independent scalar p+1+H; no domain narrowing"
+  },
+  "source_files": {
+    ".tmp/s013-new-goal/huber_net/audit_checks.json": "4d3b9cf3aef2e6d204ce61d68a7887bf61db6ba6cfffe717725cebb0e68c7362",
+    ".tmp/s013-new-goal/huber_net/audit_checks.py": "2fa642e40c5b7ad1bc45357b4cfe757495d8ac3094330172ac7cf0bc4e1afd38",
+    ".tmp/s013-new-goal/huber_net/audit_huber.py": "9988729d6ffbf669c3f3a58147afa92d39e39ea2514b652bc2c92be5fbdff60e",
+    ".tmp/s013-new-goal/huber_net/checks.json": "3174dda4a0b5d02b550d38d000c5a9030d2a41e5ff11bb9031b6106d438896de",
+    ".tmp/s013-new-goal/huber_net/checks.py": "3240ba22039888b48ba01cef02023749b308bac9e5ca1de74ca57794209cd93d",
+    ".tmp/s013-new-goal/huber_net/huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    ".tmp/s013-new-goal/huber_net/native_contract_checks.json": "5b267a699526f336bbf3f2d1c176a2fa27efb72dea9f92ff197ca7a2e34dbc2b",
+    ".tmp/s013-new-goal/huber_net/native_contract_checks.py": "4e3686d2ffdca119805283f2a2b450f8b14328fafd38d0bd10c4fa3d3a1ff85e",
+    ".tmp/s013-new-goal/huber_net/native_driver.py": "be8cbbedf75c967ef85efe0d52a0b248c3f8419ba507eccfe070e898d955ee2b",
+    ".tmp/s013-new-goal/huber_net/native_driver_checks.json": "8a6945817f991bd1243c4304a51ebe651c0610e65e1240262d9e459f041fca5d",
+    ".tmp/s013-new-goal/huber_net/native_driver_checks.py": "c30d3c4e4638843db683a1a0391e8e0f9724b82197789cde27b78f33db6c423f",
+    ".tmp/s013-new-goal/huber_net/strategy_runtime/strategies/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    ".tmp/s013-new-goal/huber_net/strategy_runtime/strategies/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    ".tmp/s013-new-goal/huber_net/strategy_runtime/strategies/huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    ".tmp/s013-new-goal/huber_net/strategy_runtime/strategies/huber_net.py": "b95c602587661ff48961dd81463b82401b801457a56c81fbe4de807972a756a4",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013-new-goal/prospective_expression_review.json": "1c96ae1375262de832657f2e4c4e2e641d1397480f1f4aa09aa579dc9e9d0a45",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX080_20261012/src/reproduction/82670d42c540_audit.py": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+    "research/S013/experiments/EX080_20261012/src/reproduction/02c394b35938_s013_confirm_execution_v3.py": "02c394b35938f5ebc6e3fb7d3e44a07ee32428ca9a7904fb6802d149c6822048",
+    "research/S013/experiments/EX080_20261012/src/reproduction/f78efbb0b1da_audit_driver.py": "f78efbb0b1da9045187ab8ab7ba5dfa2afbb33f8df2826984a0131689b99ac52",
+    "research/S013/experiments/EX080_20261012/src/adapter_revision2/strategy_runtime/strategies/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "research/S013/experiments/EX080_20261012/src/adapter_revision2/strategy_runtime/strategies/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a",
+    "research/S013/experiments/EX074_20261011/src/economics_reference.py": "caf12faeededd7f511528545b03fbe40fffdd38fa1796b11af6aa47f12d0b877",
+    "research/S013/experiments/EX074_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX074_20261011/src/execution_links.py": "b7aa3220794b93000cffbde4410c97b95f3cc798f7348244b4113cbf7d5da198"
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX097_20261012"
+  },
+  "quota_slot": 9,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}

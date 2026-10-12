@@ -1,0 +1,749 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "new_statistics": 0,
+  "checks": [
+    "all-inlier Huber equals slope-penalized OLS with unpenalized intercept",
+    "few shocks lower coefficient influence while every target remains in loss",
+    "positive_constant explicit definition/unavailability without epsilon or OLS fallback",
+    "negative_constant explicit definition/unavailability without epsilon or OLS fallback",
+    "zero_constant explicit definition/unavailability without epsilon or OLS fallback",
+    "varied_zero_MAD explicit definition/unavailability without epsilon or OLS fallback",
+    "intercept plateau demonstrates optimum not necessarily unique; fixed-source runtime equality separate",
+    "alpha1..100 and Huber multiple.5..3 full float-domain endpoints",
+    "exact500 nonconvergence explicit refusal; no primary file changed",
+    "six past-year causal CDF/fit supports,2020 unavailable, tailtruth NA predicted, prefix/future-label invariant",
+    "feature-only current availability and variedMAD0 matched two-column NA; no historical-mean rescue",
+    "label maturity equal firstyear T excluded without discarding future-label predictions",
+    "scale/beta/penalty/convergence/CDF/provenance/availability/date corruption rejected"
+  ],
+  "rejections": [
+    "injected_nonconvergence_exact500_no_fallback",
+    "delta_tampered",
+    "ridge_tampered",
+    "change_not_converged",
+    "claim_501iterations",
+    "intercept_penalized",
+    "beta_tampered_truegradient",
+    "invalid_hyperparameters_10_1.345",
+    "invalid_hyperparameters_0.99_1.345",
+    "invalid_hyperparameters_100.01_1.345",
+    "invalid_hyperparameters_10.0_0.49",
+    "invalid_hyperparameters_10.0_3.01",
+    "invalid_hyperparameters_10.0_1",
+    "invalid_hyperparameters_nan_1.345",
+    "tail_future_gate",
+    "nonfuture_maturity",
+    "unpaired_maturity",
+    "false_CDF",
+    "future_training",
+    "timezone",
+    "unordered_axis",
+    "feature_inf",
+    "future_test_count_gate",
+    "annual_delta_normalization",
+    "annual_beta_tamper",
+    "duplicate_axis",
+    "not_midnight_axis",
+    "missing_label_field"
+  ],
+  "final_fit_certificates": [
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.001440658813996263,
+      "objective": 6.202832076198533e-05,
+      "true_gradient_norm": 1.8735013540549517e-16,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0014751103579111146,
+      "objective": 0.003598085990027681,
+      "true_gradient_norm": 9.15717154881257e-16,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0,
+      "objective": 0.0,
+      "true_gradient_norm": 0.0,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0,
+      "objective": 0.0,
+      "true_gradient_norm": 0.0,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0,
+      "objective": 0.0,
+      "true_gradient_norm": 0.0,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": false,
+      "reason": "ZERO_MAD_WITH_VARIED_TARGET",
+      "scope": "independent zero-scale unavailability contract"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.5,
+      "objective": 15.0,
+      "true_gradient_norm": 0.0,
+      "forecast_rows": 2,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0005355608973963803,
+      "objective": 7.773525135501056e-06,
+      "true_gradient_norm": 1.6878859421254333e-15,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.003213365384378282,
+      "objective": 7.773525135501056e-06,
+      "true_gradient_norm": 1.6878859421254333e-15,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.0005355608973963803,
+      "objective": 0.000154431670605405,
+      "true_gradient_norm": 6.107701150392941e-11,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    },
+    {
+      "status": "PASS",
+      "available": true,
+      "delta": 0.003213365384378282,
+      "objective": 0.00020738859978314709,
+      "true_gradient_norm": 5.204170427930421e-16,
+      "forecast_rows": 25,
+      "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+      "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+      "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+    }
+  ],
+  "annual_certificates": [
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 900,
+      "training_cdf_values": 19740,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0077318033284089135,
+          "objective": 0.004088672313926169,
+          "true_gradient_norm": 4.306064879666671e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0072971223638511815,
+          "objective": 0.005376103886973026,
+          "true_gradient_norm": 2.8693832466314406e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007662547765757507,
+          "objective": 0.007177791730181066,
+          "true_gradient_norm": 3.705892374656489e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007458046506802817,
+          "objective": 0.008509606395175513,
+          "true_gradient_norm": 4.029359013330361e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007565789106943467,
+          "objective": 0.010609094771655598,
+          "true_gradient_norm": 3.556008265626076e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 182,
+      "training_cdf_values": 1190,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 1,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 542,
+      "training_cdf_values": 9800,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0077318033284089135,
+          "objective": 0.004088672313926169,
+          "true_gradient_norm": 4.306064879666671e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0072971223638511815,
+          "objective": 0.005376103886973026,
+          "true_gradient_norm": 2.8693832466314406e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007662547765757507,
+          "objective": 0.007177791730181066,
+          "true_gradient_norm": 3.705892374656489e-11,
+          "forecast_rows": 1,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 782,
+      "training_cdf_values": 19740,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0077318033284089135,
+          "objective": 0.004088672313926169,
+          "true_gradient_norm": 4.306064879666671e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0072971223638511815,
+          "objective": 0.005376103886973026,
+          "true_gradient_norm": 2.8693832466314406e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007662547765757507,
+          "objective": 0.007177791730181066,
+          "true_gradient_norm": 3.705892374656489e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007458046506802817,
+          "objective": 0.008509606395175513,
+          "true_gradient_norm": 4.029359013330361e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007565789106943467,
+          "objective": 0.010609094771655598,
+          "true_gradient_norm": 3.556008265626076e-11,
+          "forecast_rows": 1,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 542,
+      "training_cdf_values": 9800,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0077318033284089135,
+          "objective": 0.004088672313926169,
+          "true_gradient_norm": 4.306064879666671e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0072971223638511815,
+          "objective": 0.005376103886973026,
+          "true_gradient_norm": 2.8693832466314406e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007662547765757507,
+          "objective": 0.007177791730181066,
+          "true_gradient_norm": 3.705892374656489e-11,
+          "forecast_rows": 1,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 900,
+      "training_cdf_values": 15610,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 0,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00794406727659628,
+          "objective": 0.0024804056808137133,
+          "true_gradient_norm": 1.0451725097372633e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007507800484409047,
+          "objective": 0.003836664696693331,
+          "true_gradient_norm": 1.553660086868469e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007519324483709613,
+          "objective": 0.005481442064964022,
+          "true_gradient_norm": 2.3057020702432762e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0075373408075045676,
+          "objective": 0.006949369216176328,
+          "true_gradient_norm": 1.8287046356368908e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007773183933256874,
+          "objective": 0.009137080664584046,
+          "true_gradient_norm": 1.1058213210141804e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 900,
+      "training_cdf_values": 14700,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007961812141586986,
+          "objective": 0.0026234121887854377,
+          "true_gradient_norm": 9.361834875029618e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00759123041299341,
+          "objective": 0.004004248815908014,
+          "true_gradient_norm": 2.4041160338536538e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00786663179423287,
+          "objective": 0.00576670518397209,
+          "true_gradient_norm": 1.7842155162171858e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007436891954123205,
+          "objective": 0.0070523124167261465,
+          "true_gradient_norm": 1.7039722172325356e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007721156638381908,
+          "objective": 0.009217680336624333,
+          "true_gradient_norm": 2.3754069051378293e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 900,
+      "training_cdf_values": 19740,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": false,
+          "reason": "ZERO_MAD_WITH_VARIED_TARGET",
+          "scope": "independent zero-scale unavailability contract"
+        },
+        {
+          "status": "PASS",
+          "available": false,
+          "reason": "ZERO_MAD_WITH_VARIED_TARGET",
+          "scope": "independent zero-scale unavailability contract"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.004597005617159338,
+          "objective": 0.0034676587832219966,
+          "true_gradient_norm": 1.3872959963960596e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.005396717072876318,
+          "objective": 0.005193926349160077,
+          "true_gradient_norm": 3.9582325210476416e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0057157127025758425,
+          "objective": 0.006657721445095847,
+          "true_gradient_norm": 2.8499578358479353e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.006361466825413245,
+          "objective": 0.008936792487221153,
+          "true_gradient_norm": 4.06501387184479e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    },
+    {
+      "status": "PASS",
+      "annual_traces": 6,
+      "score_cells": 900,
+      "training_cdf_values": 19740,
+      "final_fit_certificates": [
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.00785057389961152,
+          "objective": 0.002289464616708709,
+          "true_gradient_norm": 8.51334421795441e-12,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0077318033284089135,
+          "objective": 0.004088672313926169,
+          "true_gradient_norm": 4.306064879666671e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.0072971223638511815,
+          "objective": 0.005376103886973026,
+          "true_gradient_norm": 2.8693832466314406e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007662547765757507,
+          "objective": 0.007177791730181066,
+          "true_gradient_norm": 3.705892374656489e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007458046506802817,
+          "objective": 0.008509606395175513,
+          "true_gradient_norm": 4.029359013330361e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        },
+        {
+          "status": "PASS",
+          "available": true,
+          "delta": 0.007565789106943467,
+          "objective": 0.010609094771655598,
+          "true_gradient_norm": 3.556008265626076e-11,
+          "forecast_rows": 60,
+          "scope": "independent scale, slope-only Huber objective, final stationarity and coefficient predictions",
+          "limitations": "No full IRLS trajectory or independent last-change recomputation; convex optimum may have nonunique intercept plateau. Fixed implementation/source and runtime exact equivalence are separate evidence.",
+          "economic_semantics": "Huber location is not conditional expected net mean or proven alpha"
+        }
+      ],
+      "method_scope": "independent final convex stationarity and causal fitted provenance, not every IRLS iterate",
+      "no_unique_optimum_claim": true,
+      "not_expected_net_mean": true
+    }
+  ],
+  "check_count": 13,
+  "rejection_count": 28,
+  "scope_limitation": "Final convex stationarity/causal provenance, not IRLS trajectory replay or unique-optimum certification. Huber location is not expected net mean or alpha."
+}
