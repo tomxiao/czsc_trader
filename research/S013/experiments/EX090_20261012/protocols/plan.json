@@ -1,0 +1,140 @@
+{
+  "question": "同一原PG赚幅信息，改为标签真正成熟后逐T更新能否修正年度冻结滞后并改善下跌年净选择？",
+  "basis": "EX089简单加最近误差使MSE恶化且2023/2026更差，停止20窗口校准。EX0842022历史盈利结构过于乐观，EX087赚幅局部增量，尚未区分原年更新与实际成熟信息更新。",
+  "strongest_counter": "每日扩展训练仍以旧历史为主，不增加新市场信息；重叠标签和极端大赚影响估计，不保证适应新环境；年度冻结不是已经证明的唯一失败原因。",
+  "fixed_design": "原14/确认列8，两族原110年PG精确不变。2021起每T用2020起完整原14、signal<T且label_end<=T成熟池；n40且盈利/非正各20，跨年不重置。旧logit及正赚幅原函数/alpha10/100Newton40Armijo/gradient1e-10不改；loss用成熟非正幅度均值，不恢复条件亏幅。",
+  "role_of_component": "估计更新时间职责；原收益概率及赚幅与成熟损幅均值的净机会选择",
+  "label": "原h4扣费HFQ OPEN价格收益，正y与非正y(含0)分类",
+  "horizon": "h4固定；扩展成熟训练，未引入遗忘窗口/阈值/alpha搜索",
+  "controls": "各族historical原年度q、matched完整daily支持原q、当T扩展training_mean、onlinePG；48所有钟/年度/五相位，原历史钟与EX087精确一致",
+  "availability": "旧年度q当时已发行；新模型只取signal<T且label_end<=T的完整成熟原14，当前features缺失NA；不取未来test数量、不年重置",
+  "price_basis": "原510500HFQ锚/无现金分红叠加/原1m整手100单侧10bp及1percent执行",
+  "limitations": "估计更新不是新信息；同开发池反复选择无封存；价格代理非真实账户/年度收益/闭合次数",
+  "quantities": [
+    "每族净MSE改善相对matched与training_mean、新正选择均值及相对两控制差、greedy均值相对matched差共12项"
+  ],
+  "bootstrap": "500x40原轴seed13,固定实际预测和选择不重拟合,20/400minimum,LINEAR95,非标准32",
+  "resources": {
+    "family_fit_processes": 2,
+    "blas_threads_each": 1,
+    "new_models": "4 per validdailyT,actualcount fromtrace",
+    "native_accounts": 0,
+    "provider_calls": 0
+  },
+  "input_references": {
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "scores.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462.csv",
+      "sha256": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462",
+      "media_type": "text/csv",
+      "name": "confirm-net-forecasts",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1.json",
+      "sha256": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1",
+      "media_type": "application/json",
+      "name": "confirm-net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb.json",
+      "sha256": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a.csv",
+      "sha256": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a",
+      "media_type": "text/csv",
+      "name": "net-features",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_files": {
+    ".tmp/s013-new-goal/online_pg/kernel.py": "af29dc09ae77d787918092143206582254a5227a65838409239001100ee35c33",
+    ".tmp/s013-new-goal/online_pg/audit.py": "151b2cf1c1201a59c1792f291c16751d84c29ef894f0aa18ebd37d903a71fdcb",
+    ".tmp/s013-new-goal/online_pg/focused_checks.py": "b23696df8622e779344d724fd8c38dfb69d3153f8ced1d00bad084139be6b577",
+    ".tmp/s013-new-goal/online_pg/focused_checks.json": "f152e54394e28ab3062892439e57302c2bfc8d948088c760e26b791ee4a3c4fe",
+    ".tmp/s013-new-goal/online_pg/focused_checks_serial_v1.json": "5a29a92b3d6ef51de56a94255a7cd14924166504944134ffe0ebb2eac2ce8c39",
+    ".tmp/s013-new-goal/online_pg/worker.py": "f7e3c60eb7a431a8333facb51126b78e96d1f16f30a3dab01c472a841c7f442b",
+    ".tmp/s013-new-goal/online_pg/parallel_checks.json": "6863e3921c8968e803553bcd005e73dd1ad47457fb6f994ea8001fbdd6d1c43c",
+    ".tmp/s013-new-goal/online_pg/audit_checks.py": "7fa6589ac08f27eb37c622eddf36a175af4d321705b0eac613917e124c459aa2",
+    ".tmp/s013-new-goal/online_pg/audit_checks.json": "174161c4e512622857cc842cdfdbcba5bfc8be19dbccb6752e9ee82f8a9a503b",
+    ".tmp/s013-new-goal/online_pg/driver.py": "705b685709c78a0f462de392d8d0f8948c2da58446a28fc9104825f5798aa214",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX084_20261012/src/kernel.py": "a831e092cbbb9bdfbc689d1b88806c2e1ed8f2e537d80e3cbd7fda9e2d0f186d",
+    "research/S013/experiments/EX086_20261012/src/kernel.py": "b39b431a351d903a185bf65a12b356285e89a4a839863fc462438986445f3825",
+    "research/S013/experiments/EX083_20261012/src/kernel.py": "769044707f3759cc988ca8ec7176b2ea9bee87fd0211bc76193377532a5e0212",
+    "research/S013/experiments/EX083_20261012/src/audit.py": "6bd2709191e56f731da894af84190a0051a450753686e1b06e8bab2aec75b486"
+  },
+  "new_goal": "MANDATE/7 v2;center andstandard32 all passnew4;allpoolfrequency diagnosticonly",
+  "stop_or_followup": "净增量及经济余量不足则停止固定扩展每日PG，不扫窗口/正则/相位；存在明确新经济依据才另冻结原生中心计划",
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX090_20261012"
+  },
+  "quota_slot": 2,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}
