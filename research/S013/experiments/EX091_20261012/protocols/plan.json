@@ -1,0 +1,139 @@
+{
+  "question": "负实体bar的成交量与下一bar反应交互，是否在27既有价格/量/时间/无权响应控制之外增加h4净机会信息？",
+  "basis": "EX075只测同bar负幅与量，EX068测负段顺序，EX061测端点恢复；均不足。下一bar响应×来源量是此前未直接检验的交互，不因旧失效自动反向。",
+  "strongest_counter": "下一bar反弹已经发生在T日，可能不能预测T+1入场收益；量不识别主动买卖、同日7对不独立、只是旧信息新交互、既有控制已大量失效。",
+  "role_of_component": "旧日内信息的新交互：下跌成交后紧接实体反应",
+  "label": "原h4双边10bp后复权OPEN净标签，maturity=T+5OPEN",
+  "horizon": "h4唯一；来源固定同日0..6，不跨日；过去20量时钟只控制，excludeT",
+  "controls": "固定原14+EX0612+EX0684+同期负幅/量协方差/过去量时钟+来源无权反应U/来源数/来源平均负幅+过去量时钟下一响应，共27；同28有限支持配对",
+  "availability": "完成T日8bar后；所有历史量profile只T-20..T-1；年度模型仅以前已成熟标签、label_end<本年首T；test可得性不依赖未来标签/数量",
+  "price_basis": "S013原510500开发池HFQ固定锚/无现金分红叠加/单侧10bp原执行合同",
+  "limitations": "组件价格标签不是原生账户/年度净收益/闭合交易/32点；同开发池多重研究无封存；不新增独立市场信息",
+  "hypothesis": "X=S-U，固定positive→更高净收益；不按实际结果翻转、不扫bar/窗口/量阈值",
+  "method": "全1635轴raw/27control partial rankIC；原轴500overlap40seed13 LINEAR95，20n/10residDF/400valid；年度2021..26同28支持trainECDFmidpoint+ridge10controls/+X，train40，不futuretestcountgate；4prediction数量与18固定clock",
+  "stop_or_followup": "若控制后方向不一致及净经济增量不足，停止本固定交互，不翻向/去控制/扫参数；有明确经济余量才冻结同轮原生计划",
+  "new_goal": "MANDATE/7；中心+标准32均过新版四门；年度BH盈亏只事后验收",
+  "resources": {
+    "one_statistical_study": 1,
+    "maximum_new_models": 12,
+    "new_accounts": 0,
+    "provider_calls": 0
+  },
+  "input_references": {
+    "features14.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a.csv",
+      "sha256": "652f8e92a214964c124b65f3f1e46a130a3e86c31695336632c86694a09f0b9a",
+      "media_type": "text/csv",
+      "name": "net-features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "features75.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX075_20261011"
+      },
+      "evidence_id": "b82c1c85d2e11ce35969b9a79c46392f3224b08a18834c30de3aeff9d70648cd.csv",
+      "sha256": "b82c1c85d2e11ce35969b9a79c46392f3224b08a18834c30de3aeff9d70648cd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "features68.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX068_20261011"
+      },
+      "evidence_id": "303943c0042045db2e45a2319fc548f6931d977576febf8a81e67f90797f01fb.csv",
+      "sha256": "303943c0042045db2e45a2319fc548f6931d977576febf8a81e67f90797f01fb",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "native_account.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    }
+  },
+  "native_cache_sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+  "source_files": {
+    ".tmp/s013-new-goal/next_bar_response/kernel.py": "6134b50dfc223f9d0302a3edbc0f1d3bc85192693543c45938298dfee7167282",
+    ".tmp/s013-new-goal/next_bar_response/features.py": "20343209c18ff7f4c23f6d70cc78eb0ac3ff5d0af85c4437f5d07e71e4581a11",
+    ".tmp/s013-new-goal/next_bar_response/focused_checks.py": "57a2066153be8ed700d20afd9105208c71170cc23bd7d91a615a12454d8db18d",
+    ".tmp/s013-new-goal/next_bar_response/focused_checks.json": "f21367291b7a9acb70a3dd86da1bc35d30008eca14da824e8fe929b963622d23",
+    ".tmp/s013-new-goal/next_bar_response/audit_features.py": "03d918005cab57a2fc3298b92a3df51788c707a859ca8dd49c5df422f9ca0d85",
+    ".tmp/s013-new-goal/next_bar_response/synthetic_checks.py": "2a6a1a425077e07da0f8d5577c9579d4e70ac36ea3ad214b0d505810b61bc949",
+    ".tmp/s013-new-goal/next_bar_response/synthetic_checks.json": "b36f79cf053c350890edaf8a659bbb250493c7927b19e7102ebaa0e4e0bed1d0",
+    ".tmp/s013-new-goal/next_bar_response/audit_statistics.py": "a81dce3a3b796064e3b9ed12fe4262be212cf22a13da637b1967000d1e7f9caf",
+    ".tmp/s013-new-goal/next_bar_response/audit_statistics_checks.py": "e4f44bbf73166567b150e45087e62b10a682802e4c4178c8f4766da9d864b8c2",
+    ".tmp/s013-new-goal/next_bar_response/audit_statistics_checks.json": "45d341d43815e37f03addf681ac1baee683fdbdf14343997935d13e182f0aabe",
+    ".tmp/s013-new-goal/next_bar_response/kernel_checks.py": "86e7083c939d181996fab8d3f0ee7b4c4b7c791fbeed20ef709bb44942be4cba",
+    ".tmp/s013-new-goal/next_bar_response/kernel_checks.json": "4b701ea267d85ef0c0ed52dff6efb69a5590ec199b07551fdfe3c192862be2e5",
+    ".tmp/s013-new-goal/next_bar_response/driver.py": "18dc22ed0d2c6a4c3688599c2c00d3ebf1df9cbf90c1d20a1fd9ed16b2b82f9a",
+    "research/S013/experiments/EX075_20261011/src/statistics_draft_v2.py": "efb3e3db5ef14cee38aa74a39873b54506e6c3071d9b442d45d410435e023708",
+    "research/S013/experiments/EX068_20261011/src/order_component.py": "ebef150b9e19920484a003915ca73d79ffb5799444b30db511c7668eef3063bf",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX083_20261012/src/kernel.py": "769044707f3759cc988ca8ec7176b2ea9bee87fd0211bc76193377532a5e0212",
+    "research/S013/experiments/EX083_20261012/src/audit.py": "6bd2709191e56f731da894af84190a0051a450753686e1b06e8bab2aec75b486"
+  },
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX091_20261012"
+  },
+  "quota_slot": 3,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}

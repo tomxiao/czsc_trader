@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "regressions": 0,
+  "checks": [
+    "all50 scalar features and traces including calendar-year crossing",
+    "all50 prefix truncations invariant",
+    "selected axis retains full earlier profile history",
+    "past20 excludes current profile and adapts next session",
+    "equal negative-source volumes make X zero",
+    "last-bar negative body never becomes source; no-source remains NA",
+    "actual zero successor response remains zero not missing",
+    "zero source weights refuse X and future-clock projection",
+    "zero whole profile invalidates exact20 without skipping; recovers after20",
+    "per-session price and extreme volume unit scales invariant"
+  ],
+  "check_count": 10,
+  "rejections": [
+    "missing_bar",
+    "wrong_clock",
+    "duplicate",
+    "unordered",
+    "nan_price",
+    "zero_price",
+    "negative_volume",
+    "nan_volume",
+    "missing_column",
+    "duplicate_column",
+    "non_datetime",
+    "timezone",
+    "nat",
+    "absent_axis",
+    "duplicated_axis",
+    "unordered_axis",
+    "intraday_axis",
+    "timezone_axis",
+    "empty_axis"
+  ],
+  "rejection_count": 19,
+  "scalar_verification": {
+    "status": "PASS",
+    "sessions": 50,
+    "feature_cells": 450,
+    "trace_fields_per_session": 17,
+    "causal_prefix_windows": 50,
+    "source_pairs": 200,
+    "independent_scalar_profiles": "ALL",
+    "real_data_loading": false,
+    "accounts": 0,
+    "experiments_allocated": 0
+  },
+  "source_sha256": {
+    "features.py": "20343209c18ff7f4c23f6d70cc78eb0ac3ff5d0af85c4437f5d07e71e4581a11",
+    "audit_features.py": "03d918005cab57a2fc3298b92a3df51788c707a859ca8dd49c5df422f9ca0d85",
+    "synthetic_checks.py": "2a6a1a425077e07da0f8d5577c9579d4e70ac36ea3ad214b0d505810b61bc949"
+  }
+}

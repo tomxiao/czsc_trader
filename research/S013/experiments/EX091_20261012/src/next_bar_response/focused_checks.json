@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "equal source volumes give X zero",
+    "volume emphasis on recovering negative source changes response",
+    "no last-bar source or following-day response",
+    "all prefixes invariant",
+    "past20 excludes current; exact20 histories and next-day adaptation",
+    "old EX075 same-bar fields exactly match synthetic inputs",
+    "no sources NA; actual zero successor remains zero",
+    "zero source/session volume explicit; past zero invalidates exact window",
+    "warmup outside selected axis retained without silent filling",
+    "per-session HFQ price/volume scale cancels"
+  ],
+  "rejections": [
+    "missing_bar",
+    "wrong_clock",
+    "duplicate",
+    "unordered",
+    "nan_price",
+    "zero_price",
+    "negative_volume",
+    "nan_volume",
+    "missing_column",
+    "duplicate_column",
+    "non_datetime",
+    "timezone",
+    "nat",
+    "absent_axis",
+    "duplicated_axis",
+    "unordered_axis",
+    "intraday_axis",
+    "timezone_axis",
+    "empty_axis"
+  ],
+  "check_count": 10,
+  "rejection_count": 19
+}

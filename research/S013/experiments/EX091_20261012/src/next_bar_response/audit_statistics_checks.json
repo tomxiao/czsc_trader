@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "full400 scalar ranks, all fits stationary, all panels and bootstraps",
+    "28 common features, delayed maturity and first-year-axis cutoff",
+    "tail forecast does not require future label availability",
+    "prefix and not-yet-mature label mutation preserve predictions",
+    "nine correlation status/rank/df/constant/explained/tie/duplicate cases",
+    "corrupted ridge beta explicitly rejected",
+    "future training position explicitly rejected"
+  ],
+  "check_count": 7,
+  "verification": {
+    "status": "PASS",
+    "forecast_rows": 400,
+    "ridge_fits_stationary": 4,
+    "maximum_normal_equation_residual": 1.0755285551056204e-16,
+    "correlation_panels": 28,
+    "correlation_bootstrap_replicates": 1000,
+    "prediction_bootstrap_quantities": 4,
+    "prediction_bootstrap_records": 2000,
+    "schedules": 18,
+    "year_schedule_panels": 144,
+    "strict_positive_flags": "EXACT",
+    "new_models_refitted_by_audit": 0,
+    "new_accounts": 0
+  },
+  "source_sha256": {
+    "kernel.py": "6134b50dfc223f9d0302a3edbc0f1d3bc85192693543c45938298dfee7167282",
+    "audit_statistics.py": "a81dce3a3b796064e3b9ed12fe4262be212cf22a13da637b1967000d1e7f9caf",
+    "audit_statistics_checks.py": "e4f44bbf73166567b150e45087e62b10a682802e4c4178c8f4766da9d864b8c2"
+  }
+}
