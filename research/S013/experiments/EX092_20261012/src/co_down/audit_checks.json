@@ -1,0 +1,223 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "new_statistics": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "same six marginals different negative pairing changes X",
+    "first20 unavailable and every20-gap plus predecessor window exact",
+    "prefix invariance and future mutation not consumed",
+    "HFQ common unit scaling and calendar-year transition no reset",
+    "gap_zero X unavailable while all six observed marginals retained",
+    "body_zero X unavailable while all six observed marginals retained",
+    "both_zero X unavailable while all six observed marginals retained",
+    "zero covariance with positive energies is observed zero not NA",
+    "every numeric column, unavailable cell, and window trace fraud rejected"
+  ],
+  "rejections": [
+    "nan_open",
+    "zero_close",
+    "negative_open",
+    "inf_close",
+    "missing_price_date",
+    "missing_column",
+    "duplicate_column",
+    "unordered_calendar",
+    "duplicate_calendar",
+    "signal_gap",
+    "signal_absent",
+    "nonmidnight_signal",
+    "timezone_calendar",
+    "nat_calendar",
+    "duplicate_price_date",
+    "feature_co_down_dependence20",
+    "feature_mean_a20",
+    "feature_mean_b20",
+    "feature_rms_a20",
+    "feature_rms_b20",
+    "feature_freq_a20",
+    "feature_freq_b20",
+    "first_NA_filled_zero",
+    "trace_window_positions",
+    "trace_predecessor_position",
+    "trace_max_observation_date",
+    "trace_available",
+    "trace_reason",
+    "trace_numerator",
+    "trace_denominator"
+  ],
+  "cases": [
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 2.220446049250313e-16,
+      "availability_counts": {
+        "AVAILABLE": 11,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 2.3592239273284576e-16,
+      "availability_counts": {
+        "AVAILABLE": 11,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 1,
+      "feature_cells": 7,
+      "trace_windows": 1,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 0.0,
+      "availability_counts": {
+        "AVAILABLE": 0,
+        "INSUFFICIENT_HISTORY": 1,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 20,
+      "feature_cells": 140,
+      "trace_windows": 20,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 0.0,
+      "availability_counts": {
+        "AVAILABLE": 0,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 21,
+      "feature_cells": 147,
+      "trace_windows": 21,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 2.220446049250313e-16,
+      "availability_counts": {
+        "AVAILABLE": 1,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 27,
+      "feature_cells": 189,
+      "trace_windows": 27,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 2.220446049250313e-16,
+      "availability_counts": {
+        "AVAILABLE": 7,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 2.220446049250313e-16,
+      "availability_counts": {
+        "AVAILABLE": 11,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 1.942890293094024e-16,
+      "availability_counts": {
+        "AVAILABLE": 11,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 3.469446951953614e-18,
+      "availability_counts": {
+        "AVAILABLE": 0,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 11
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 3.469446951953614e-18,
+      "availability_counts": {
+        "AVAILABLE": 0,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 11
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 0.0,
+      "availability_counts": {
+        "AVAILABLE": 0,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 11
+      },
+      "implementation": "independent_scalar_math_fsum"
+    },
+    {
+      "status": "PASS",
+      "signal_rows": 31,
+      "feature_cells": 217,
+      "trace_windows": 31,
+      "all_trace_fields_checked": true,
+      "maximum_absolute_feature_difference": 1.355252715606878e-16,
+      "availability_counts": {
+        "AVAILABLE": 11,
+        "INSUFFICIENT_HISTORY": 20,
+        "ZERO_NEGATIVE_ENERGY_DENOMINATOR": 0
+      },
+      "implementation": "independent_scalar_math_fsum"
+    }
+  ],
+  "check_count": 9,
+  "rejection_count": 30
+}

@@ -1,0 +1,114 @@
+{
+  "material_kind": "READ_ONLY_HISTORY_REVIEW_AND_UNEXECUTED_COMPONENT_HYPOTHESES",
+  "batch": "S013",
+  "status": "ONE_DISTINCT_WEAK_HYPOTHESIS_ONLY_NOT_AN_EXPERIMENT_PLAN",
+  "scope": "Existing S013 source and reports only; original 510500.SH development pool, HFQ fixed anchor, no dividend overlay, fixed one-percent execution contract, zero/one long exposure",
+  "real_statistics_computed": 0,
+  "real_market_inputs_read": 0,
+  "experiments_allocated": 0,
+  "new_accounts": 0,
+  "new_information_claim": "None. Every proposal is an expression of already authorized price observations, not a new independent market information source or profitability finding.",
+  "recommendation": "Do not fill all three slots. Only one interaction survived the targeted history/source review as distinct enough to consider. Its mechanism is plausible but unsupported; do not spend a round unless root judges the prospective counterfactual sufficiently informative.",
+  "directions": [
+    {
+      "id": "JOINT_OVERNIGHT_AND_INTRADAY_DOWNSIDE_DEPENDENCE20",
+      "rank": 1,
+      "status": "UNTESTED_FIXED_INTERACTION_WEAK_PRIOR_NO_ALPHA_EVIDENCE",
+      "plain_question": "When overnight declines and same-day intraday declines repeatedly occur together, does this identify worse subsequent fee-inclusive long opportunities beyond knowing each decline separately?",
+      "available_old_fields": [
+        "Existing complete HFQ daily Date/Open/Close including actual preceding trading Close",
+        "Existing daily/trading calendar and 2019 warmup",
+        "Frozen original14 controls, including overnight gap, intraday return, momentum20, acf1, volatility20, intraday RMS and overnight negative RMS",
+        "Existing OPEN/CLOSE future prices used only for matured labels, never as features"
+      ],
+      "no_high_low_volume_or_external_input": true,
+      "proposed_fixed_expression": {
+        "window": "Exactly 20 complete trading sessions ending at T, fixed by the established 20-session state scale, with one preceding actual Close",
+        "g_j": "log(Open_j)-log(Close_(j-1))",
+        "d_j": "log(Close_j)-log(Open_j)",
+        "a_j": "max(-g_j,0)",
+        "b_j": "max(-d_j,0)",
+        "X_T": "[mean20(a_j*b_j)-mean20(a_j)*mean20(b_j)] / sqrt(mean20(a_j^2)*mean20(b_j^2))",
+        "interpretation": "Centered nonlinear co-down dependence normalized by each negative magnitude. Positive X means the two negative components coincide more than their observed marginal means would imply. It is not order flow, causality or next-year classification.",
+        "single_component_only": true,
+        "primary_role_and_direction": "Negative relation to next-open-entry h4 fee-inclusive net-return proxy; initially an admission-risk component, not a holding-time or fractional-position proposal",
+        "h4": "Primary net long-opportunity label Open[T+5]/Open[T+1]*0.999/1.001-1",
+        "h8": "Optional predeclared secondary persistence diagnostic only; cannot rescue h4 failure or be chosen posthoc",
+        "risk_label": "Optional OPEN/CLOSE h4 adverse move diagnostic, no High/Low and no actual-account-drawdown equivalence"
+      },
+      "genuinely_different_unexamined_interaction": [
+        "EX060 separately measures negative overnight RMS and intraday down-energy, not simultaneous daily negative-pair dependence centered for marginals.",
+        "EX064 negative_gap_repair measures a down gap repaired intraday, and positive_gap_fade measures an up gap followed by fade; the proposed co-down pairs are not those repair/fade observations.",
+        "EX069/EX072/EX073/EX074 sum four-day negative overnight and intraday magnitudes, compare their dominance and alter entry/holding. Their sum or share ignores whether each day's two losses occurred together.",
+        "EX068 uses intraday close-transition ordering within a session; it does not include previous-close-to-open gaps or repeated daily co-down pairing.",
+        "EX075 concerns same-bar volume/negative-body covariance. The proposed interaction uses no volume.",
+        "This is not the just-implemented negative-bar-next-body volume response; its unit is an overnight gap paired with the complete same-day body across a fixed past20 state."
+      ],
+      "history_search_limit": "Targeted keyword search of existing S013 experiment source/plans/reports plus direct source review found no exact implementation. This is not proof that every historical dynamic expression was exhaustively compared algebraically.",
+      "necessary_controls_and_minimal_counterfactual": {
+        "population": "Full original signal axis primary; original causal policy-flat eligible subset secondary only, no selection using final-year or realized trade profit",
+        "control_model": "Original14 plus the same complete20 marginal negative means, intraday negative RMS, and both negative-day fractions. Original overnight negative RMS remains the existing field; old current gap/body and momentum/ACF/volatility controls are retained.",
+        "augmented_model": "Exactly the matched control model plus X_T, same available rows, same matured training opportunities and fixed statistical method",
+        "why_marginals": "Without controlling magnitude, frequency and current gap/body, a result can be generic volatility or more frequent declines rather than joint dependence.",
+        "training": "A root-frozen past-only training design with identical training/test support for control and augmentation; if annual frozen ridge is chosen, only past-year matured h4 labels and alpha10, not joint optimization of update cadence and component.",
+        "diagnostics": "Shared full trading-axis blocks, fixed non-overlapping phases and all years; thin groups/rank or bootstrap failures remain NA with reason. No winning-year or phase selection.",
+        "synthetic_distinctness_before_market": "Construct paths with identical marginal a and b values but changed pairing; prove X changes, while marginal negative means/RMS/frequencies do not. Separately verify all features use known T inputs and no future label.",
+        "native_zero_one_handoff": "Only if the component establishes coherent prospective net-opportunity value, freeze a single admission policy with 0/1 exposure and unchanged execution/exit rules; reassess the full path and frequency. Do not choose a cutoff to fit 2022/2023 or invent partial positions.",
+        "ultimate_acceptance": "User-approved new four gates at center and every standard32 parameter point, including buyhold-positive-years merged actual closed-trade frequency; price proxy evidence is never substituted for account acceptance."
+      },
+      "strongest_prior_counterevidence": [
+        "EX060: after controls, overnight negative RMS and intraday down-energy lose incremental risk relation; all12 enlarged main risk comparisons were worse. A volatility-expression repackage is a serious competing explanation.",
+        "EX064: the fixed positive gap-repair hypothesis failed, with 5-day controlled relation negative and models generally worse. This proposal must not relabel that failure as success by reversing its direction.",
+        "EX069: high overnight negative share did not imply recovery; the original positive entry hypothesis stopped. The new joint-dependence responsibility does not revive that buy hypothesis.",
+        "EX072: withholding buys based on overnight pressure reduced activity and profits, and increased full-window drawdown. A new risk indicator can exclude profitable rebound trades, including in buyhold-positive years.",
+        "EX074: the corresponding fixed early-exit policy worsened absolute perturbation Q10/Q90. A local risk correlation is not evidence that changing exits improves robust economics.",
+        "EX086/EX087: the current conditional loss-amplitude leg harmed combined selection despite local gain-amplitude support. Merely renaming risk prediction cannot solve the economic defect.",
+        "The same development pool has been repeatedly inspected. Twenty-day rolling states and future h4 labels overlap heavily; test years and parameter points are not independent market replications."
+      ],
+      "missing_and_stop_contract": [
+        "Need the exact20 complete sessions and a known predecessor Close; insufficient history NA, no shorter-window substitute.",
+        "Zero negative overnight energy or zero negative intraday energy makes normalized dependence undefined: NA with ZERO_NEGATIVE_ENERGY_DENOMINATOR, not zero danger or successful recovery.",
+        "A zero centered numerator with positive denominator is a genuine zero; preserve it.",
+        "Duplicate or unordered dates, missing authorized trading sessions, nonfinite or nonpositive O/C are explicit refusal; no silent reindex/fill or High/Low repair.",
+        "Incomplete future h4 truth remains NA while preserving the causal X value and decision availability.",
+        "If primary incremental net selection is unsupported, stop this fixed expression; no windows, sign reversal, h8 promotion, annual cutoff selection or holding-time rescue."
+      ],
+      "exact_history_files": [
+        "research/S013/experiments/EX060_20261011/src/component_definitions.py",
+        "research/S013/experiments/EX060_20261011/src/component_statistics.py",
+        "research/S013/experiments/EX060_20261011/others/report.md",
+        "research/S013/experiments/EX064_20261011/src/gap_expression.py",
+        "research/S013/deliveries/COMPONENTS/4/report.md",
+        "research/S013/experiments/EX068_20261011/src/order_component.py",
+        "research/S013/deliveries/COMPONENTS/7/report.md",
+        "research/S013/experiments/EX069_20261011/src/pressure_component.py",
+        "research/S013/deliveries/COMPONENTS/8/report.md",
+        "research/S013/experiments/EX072_20261011/others/report.md",
+        "research/S013/deliveries/COMPONENTS/10/report.md",
+        "research/S013/experiments/EX074_20261011/others/report.md",
+        "research/S013/experiments/EX075_20261011/src/component_draft.py",
+        "research/S013/deliveries/COMPONENTS/20/report.md",
+        "research/S013/deliveries/COMPONENTS/21/report.md"
+      ]
+    }
+  ],
+  "rejected_to_avoid_filling_budget_with_repackaging": [
+    {
+      "idea": "Generic daily trend window, MA distance, rolling skewness, lag2/lag5 autocorrelation, or generic volatility-ratio component",
+      "reason": "EX002 source already includes momentum5/20/60, MA5/20/60, pullback_x_trend, return linear trend/skewness/lag1/2/5. EX004 searched momentum5..60 and holding/threshold interactions; EX078 stopped fixed4/20 volatility-ratio exit expression. Adjacent windows alone are not a new mechanism.",
+      "files": ["research/S013/experiments/EX002_20261007/src/components.py", "research/S013/experiments/EX004_20261007/others/four_gate_stopping_review.md", "research/S013/deliveries/COMPONENTS/13/report.md"]
+    },
+    {
+      "idea": "Intraday trend efficiency from absolute total movement, or unconditioned overnight/body covariance",
+      "reason": "Efficiency based on signed total divided by total absolute movement is directly reconstructible from EX068 total_up/total_down. Since daily log close return=g+d, unconditioned cross-product can also be reconstructed from full second moments; treating it as independent information would be misleading. The proposed nonlinear co-down pairing deliberately differs from that identity.",
+      "files": ["research/S013/experiments/EX068_20261011/src/order_component.py", "research/S013/experiments/EX060_20261011/src/component_definitions.py"]
+    },
+    {
+      "idea": "Inverse-volume price-impact or thin-volume downside strength",
+      "reason": "No independent liquidity, spread or true aggressor data is authorized. With the old OHLCV fields this risks being only a nonlinear reversal of EX075 volume/negative-body covariance, with EX002 trend_x_volume and EX060 volatility already controlling much of the effect. No sufficient new mechanism evidence found to recommend spending a round.",
+      "files": ["research/S013/experiments/EX075_20261011/src/component_draft.py", "research/S013/experiments/EX002_20261007/src/components.py", "research/S013/experiments/EX060_20261011/others/report.md"]
+    }
+  ],
+  "explicitly_excluded_by_root_task": ["recent20 issued-error correction", "daily P+G update", "calendar", "peak age", "just-implemented negative-bar-next-body volume response"],
+  "conclusion": "The original field space has been heavily researched. This review supplies one untested responsibility-specific nonlinear interaction, not three credible independent routes and not evidence that the target is reachable. If root requires existing empirical positive support before any new component test, there are zero such newly supported directions in this review."
+}
