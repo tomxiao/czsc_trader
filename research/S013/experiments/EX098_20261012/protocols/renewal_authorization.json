@@ -1,0 +1,35 @@
+{
+  "human_message": "同意这版目标：用buyhold盈利年份合并交易频率替代全期频率硬门，中心及标准32个扰动点均须通过新版四门。再授权10轮实验，请自主研究，额度用完后暂停并给出通俗结论，每个实验目录保存report副本。",
+  "human_doc_message": "请你顺手把实验报告的输出规范，写入RSCH文档",
+  "maximum_additional_experiments": 10,
+  "reserved_experiment_sequence": [
+    "EX089",
+    "EX090",
+    "EX091",
+    "EX092",
+    "EX093",
+    "EX094",
+    "EX095",
+    "EX096",
+    "EX097",
+    "EX098"
+  ],
+  "last_allowed": "EX098",
+  "next_unapproved": "EX099",
+  "pause_after_quota": true,
+  "round_definition": "每个EX编号一轮；技术修正/独立复算/同轮中心及32点/独立费用不另算；不得拆分账户规避额度",
+  "scope": "S013 existing510500.SH development pool2020-01-02..2026-09-30;2019 permitted warmup;HFQ fixed anchor;cash1m;lot100;one-way10bp;1percent fixed LimitBuyHold",
+  "new_gates": {
+    "net_cagr": "at least1.5same positiveBH CAGR;otherwise strictlypositive",
+    "annual_drawdown": "strictly smaller than sameBH every year,continuous previousyearend equity",
+    "positive_buyhold_year_frequency": "all positiveBH years pooled actual closed exits*60/sessions>=4",
+    "negative_buyhold_year_profit": "strategy actual continuous netreturn strictly>0 every negativeBH year"
+  },
+  "standard32": "center and all32 pass new4;normalised totalL2 radius.05;seed13;all effective numeric coordinates;domains prospective not narrowed after results",
+  "annual_classification": "realised yearlyBH sign is ex-post acceptance only,never a strategy input or currentyear oracle",
+  "fivechecks": "latest independent definitions;only standard32 creates new robustness hardgate;time/concentration/fee/statistical diagnostics add no extra veto",
+  "all_pool_frequency": "report-only,not economic hardgate",
+  "no_new_data_platform_production": true,
+  "historical_eligibility_unchanged": true,
+  "report_copy": "every final formal report exactbytes ->others/report.md;SHA+byte proof inprotocols/report_copy_verification.json"
+}

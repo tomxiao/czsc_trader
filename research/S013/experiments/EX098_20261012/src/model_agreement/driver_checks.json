@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "real_inputs": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "Definition reads source/registry/reference metadata only",
+    "Six effective full domains/exact centre/fixed2of3/sharedalpha",
+    "Standard32 fixed metadata",
+    "Candidate runtime canonical payload",
+    "Independent policy expiry/no reentry/strictpositive/missing/crossyear",
+    "Policy corruption and candidate collision refused"
+  ],
+  "check_count": 6,
+  "policy_corruptions_refused": 12,
+  "candidate_collision_refused": true,
+  "runtime_sha256": "07b1e33ebc2982870e87f69fd7c46f9d66efc6ab0a9ca37f4f7bbd02516ac541",
+  "source_sha256": {
+    "native_driver.py": "16e0936d4605963f37f658a14e87ffbfaca1df3adafcc06398abe7498a827793",
+    "driver_checks.py": "34eda1eab9a0280819c4ff435dce1c8c909a479e5b712cc29c9307feb67a62b3",
+    "agreement_kernel.py": "ed888b2db31f683f29e56a4510f285151e5d49aaab3d9e04dfbe3d16db4169f3",
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    "checks.py": "a6c2bc442288a00787bedc7e69c13f5d7dded2a125ed981ebe5e3c296f5989f0",
+    "native_checks.py": "4b5da3227e15ca1f59f349d93d744efc08a236d99fe97eccda8fb270c7029e85",
+    "audit_agreement.py": "0891f986b57e7c9b39e58a5583fe3459415f7db4e77eb36d72c575b272560f37",
+    "audit_tree.py": "12b1b706212a668c4c08f36270c81002664132bd6a828d958c2311d9bfa0e0d3",
+    "audit_huber.py": "9988729d6ffbf669c3f3a58147afa92d39e39ea2514b652bc2c92be5fbdff60e",
+    "audit_checks.py": "c25fafd5bd9f7b11fb3abfce368690e6530dd24d6c42090f006e77f6058398d7"
+  },
+  "original_parent_sha256": {
+    "confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f"
+  },
+  "original14_label_oracle_sha256": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+  "coordinates": [
+    [
+      "confirmation_lookback",
+      40,
+      120,
+      "INTEGER"
+    ],
+    [
+      "holding_sessions",
+      1,
+      60,
+      "INTEGER"
+    ],
+    [
+      "ridge_alpha",
+      1.0,
+      100.0,
+      "CONTINUOUS"
+    ],
+    [
+      "huber_multiple",
+      0.5,
+      3.0,
+      "CONTINUOUS"
+    ],
+    [
+      "tree_depth",
+      1,
+      4,
+      "INTEGER"
+    ],
+    [
+      "minimum_leaf",
+      20,
+      120,
+      "INTEGER"
+    ]
+  ],
+  "candidate_id": "C9098"
+}

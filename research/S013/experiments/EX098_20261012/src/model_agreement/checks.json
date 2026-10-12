@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "real_inputs": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "Current fixed2of3 strict-positive64 truth cells and all3 availability",
+    "JointRidge all14 rather than confirmation-only",
+    "Unpenalized intercept and stationary closed-form coefficients",
+    "Exact CART/Huber copied scores and traces",
+    "Annual mature common40 training and delayed labels",
+    "2020NA/missing features/current unknowntruth tail predicts",
+    "Causal prefix and future truth/features invariant",
+    "ZeroMAD varied Huber NA never rescued by two available models",
+    "Full six effective domains and illegal inputs",
+    "Frozen core copies exact; aggregate is vote not expectedreturn"
+  ],
+  "check_count": 10,
+  "rejections": [
+    "(1, 1.345, 2, 40)",
+    "(0.0, 1.345, 2, 40)",
+    "(101.0, 1.345, 2, 40)",
+    "(10.0, 0.49, 2, 40)",
+    "(10.0, 3.1, 2, 40)",
+    "(10.0, 1.345, 0, 40)",
+    "(10.0, 1.345, 5, 40)",
+    "(10.0, 1.345, True, 40)",
+    "(10.0, 1.345, 2, 19)",
+    "(10.0, 1.345, 2, 121)",
+    "bad_model_columns_or_inf",
+    "bad_model_columns_or_inf"
+  ],
+  "rejection_count": 12,
+  "vote_truth_cells": 64,
+  "source_sha256": {
+    "agreement_kernel.py": "ed888b2db31f683f29e56a4510f285151e5d49aaab3d9e04dfbe3d16db4169f3",
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    "checks.py": "a6c2bc442288a00787bedc7e69c13f5d7dded2a125ed981ebe5e3c296f5989f0"
+  },
+  "copied_frozen_sha256": {
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939"
+  }
+}

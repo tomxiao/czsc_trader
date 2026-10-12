@@ -1,0 +1,212 @@
+{
+  "question": "原14联合岭回归/CART/Huber的当前固定2of3同意门，共用一个H持仓时钟，在完整执行下能否通过新版四门？",
+  "basis": "异质平方损失加法、浅树条件交互、Huber残差表达可能有不同错误；只检验当前严格正分数同意是否减少错误入场，不添加信息、权重或参数搜索。",
+  "strongest_counter": "三个模型共享同一原14和成熟标签，错误可能高度相关；多数票不是正条件净收益保证，可能减少盈利年参与或错失关键大赚。单模型已有失败不能用投票包装成新增独立证据。",
+  "role_of_component": "当前全3分数可用时至少2严格正才入场；只有一个H资金/持仓/age/退出状态，持仓期间票数变动或缺失不提前退出。",
+  "label": "成熟训练O[T+1+H]/O[T+1]*(.999/1.001)-1；投票分数是0/1，不用于对truth计算MSE，不称expectedreturn。",
+  "horizon": "H4中心/原1..60完整域；2020起过去年度扩展训练，2021..26预测；2019只暖特征，2020现金。",
+  "training_support": "JointRidge/Huber mature train>=40，CART>=max(40,minimum_leaf)；all3当前有限才形成aggregate，缺一NA而不改已持仓clock。",
+  "controls": "原14JOINT ridge所有14列且无罚截距，不是旧80确认单列；原96/97纯kernels字节原样。原79公开refs作元数据，C8880只经济/执行控制。",
+  "availability": "各模型仅年首前成熟完整原14样本、当前原14可得性；当前未知truth仍能预测。年度最终BH盈亏只事后验收，永不作为输入。",
+  "price_basis": "原510500HFQ2019-12-31锚0.2803、不叠加分红、100万元、整手100、单侧10bp、固定1percent LimitBuyHold。",
+  "limitations": "相同信息且可能共同错；固定2of3不是expectedvalue，不能MSE对标签；不加权、不扫描票数、不救援缺失。不将开发池当独立检验。",
+  "distinction_from_EX018": "EX018不同参数的独立虚拟持仓再表决；本轮三个不同学习表达的当前分数先表决，然后只执行一个共同episode；无三个持仓状态。",
+  "copied_frozen_sha256": {
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939"
+  },
+  "payload": {
+    "parameters": {
+      "confirmation_lookback": 120,
+      "holding_sessions": 4,
+      "ridge_alpha": 10.0,
+      "huber_multiple": 1.345,
+      "tree_depth": 2,
+      "minimum_leaf": 40
+    },
+    "runtime": {
+      "contract_version": 1,
+      "module": "strategy_runtime.strategies.model_agreement",
+      "qualname": "AgreementNet",
+      "source_files": [
+        "strategies/confirm_kernel.py",
+        "strategies/confirm_net.py",
+        "strategies/tree_kernel.py",
+        "strategies/huber_kernel.py",
+        "strategies/agreement_kernel.py",
+        "strategies/model_agreement.py"
+      ],
+      "source_sha256": "07b1e33ebc2982870e87f69fd7c46f9d66efc6ab0a9ca37f4f7bbd02516ac541"
+    }
+  },
+  "candidate_id": "C9098",
+  "parameter_geometry": {
+    "coordinates": [
+      [
+        "confirmation_lookback",
+        40,
+        120,
+        "INTEGER"
+      ],
+      [
+        "holding_sessions",
+        1,
+        60,
+        "INTEGER"
+      ],
+      [
+        "ridge_alpha",
+        1.0,
+        100.0,
+        "CONTINUOUS"
+      ],
+      [
+        "huber_multiple",
+        0.5,
+        3.0,
+        "CONTINUOUS"
+      ],
+      [
+        "tree_depth",
+        1,
+        4,
+        "INTEGER"
+      ],
+      [
+        "minimum_leaf",
+        20,
+        120,
+        "INTEGER"
+      ]
+    ],
+    "protocol": {
+      "radius": 0.05,
+      "point_count": 32,
+      "seed": 13,
+      "random_generator": "PCG64",
+      "integer_rounding": "HALF_EVEN",
+      "quantile_method": "LINEAR",
+      "distance_tolerance": 1e-10,
+      "max_attempts": 100000
+    },
+    "feasibility": "All six full original/prospective domains and exact types; sharedalpha affects JointRidge/Huber; no free vote weight",
+    "new_numeric_coordinates": [],
+    "fixed_structure": {
+      "mechanism": "CURRENT_2OF3_JOINT_RIDGE_CART_HUBER_SINGLE_EPISODE",
+      "vote": "current2of3 strictpositive; all3 finite required",
+      "clock": "single H episode"
+    },
+    "net_forecast_semantics": "compatibility binaryvote 0/1/NA, never net expectedreturn",
+    "not_done_before_centre": "No perturbation accounts; centre pass requires separately frozen sameEX32 and independentfee plan"
+  },
+  "new_goal": "MANDATE/7; centre and all32 pass new4, pooled positiveBHyear actual exit frequency; annualBHsign ex-post only",
+  "stop_or_followup": "Any centre v2 gate failure stops fixed policy, no rescue/search. Centre pass requires frozen sameEX32/fee, never declares robust achieved.",
+  "resources": {
+    "maximum_native_centres": 1,
+    "new_accounts": 1,
+    "provider_calls": 0,
+    "automatic_repeat": false
+  },
+  "input_references": {
+    "baseline_native.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX058_20261011"
+      },
+      "evidence_id": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e.json",
+      "sha256": "2ba4906b271e148a956755df9ba9907457ef0bee726b7a24a13602df4e73fa3e",
+      "media_type": "application/json",
+      "name": "raw-boundary-body-local-bear-recovery-native-center-n0",
+      "schema": "account_evaluation",
+      "schema_version": 6
+    },
+    "original14_features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "original14_net_ridge.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6.json",
+      "sha256": "afc31de556fe6d4d4fa1189716d371cc0878aae3afea04d63a5253dc21714ea6",
+      "media_type": "application/json",
+      "name": "net-statistics",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "native_cache_sha256": "ceded25c20adb4e698ec4dfecd677d26db62c342f339d83be3c0b592a451d26c",
+  "original14_and_label_oracle": {
+    "source": "research/S013/experiments/EX080_20261012/src/reproduction/82670d42c540_audit.py",
+    "sha256": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+    "functions": {
+      "net_labels": "e31671efc1dca7e16bc9463189c51b1aa2244f0f7a5a462ede4b85b46980022a",
+      "original14": "cb093113b19b9bfd86653e84103d1c329c3bb505b0dfb7f078561a473d421097"
+    },
+    "net_labels_original_horizon": 4,
+    "noncentre_H": "independent scalar p+1+H; no domain narrowing"
+  },
+  "source_files": {
+    ".tmp/s013-new-goal/model_agreement/agreement_kernel.py": "ed888b2db31f683f29e56a4510f285151e5d49aaab3d9e04dfbe3d16db4169f3",
+    ".tmp/s013-new-goal/model_agreement/audit_agreement.py": "0891f986b57e7c9b39e58a5583fe3459415f7db4e77eb36d72c575b272560f37",
+    ".tmp/s013-new-goal/model_agreement/audit_checks.json": "8cb2763db2f13cfc612ba7330f4a39951f9ed292d0bc38e307de1d1ab27cacc0",
+    ".tmp/s013-new-goal/model_agreement/audit_checks.py": "c25fafd5bd9f7b11fb3abfce368690e6530dd24d6c42090f006e77f6058398d7",
+    ".tmp/s013-new-goal/model_agreement/audit_huber.py": "9988729d6ffbf669c3f3a58147afa92d39e39ea2514b652bc2c92be5fbdff60e",
+    ".tmp/s013-new-goal/model_agreement/audit_tree.py": "12b1b706212a668c4c08f36270c81002664132bd6a828d958c2311d9bfa0e0d3",
+    ".tmp/s013-new-goal/model_agreement/checks.json": "a4c618eb38dd77fa586ef0c9638881cb652d191cc416b0cae115eaf3b39cbc06",
+    ".tmp/s013-new-goal/model_agreement/checks.py": "a6c2bc442288a00787bedc7e69c13f5d7dded2a125ed981ebe5e3c296f5989f0",
+    ".tmp/s013-new-goal/model_agreement/driver_checks.json": "652121411f130ab8bda7f25a898a7abec49a188ee243493afc7615ca4f3fd8f4",
+    ".tmp/s013-new-goal/model_agreement/driver_checks.py": "34eda1eab9a0280819c4ff435dce1c8c909a479e5b712cc29c9307feb67a62b3",
+    ".tmp/s013-new-goal/model_agreement/huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    ".tmp/s013-new-goal/model_agreement/native_checks.json": "119ca349f70d813ef9d7cac40f81ec68517e0c09d779ab71c497f9be314fc0f4",
+    ".tmp/s013-new-goal/model_agreement/native_checks.py": "4b5da3227e15ca1f59f349d93d744efc08a236d99fe97eccda8fb270c7029e85",
+    ".tmp/s013-new-goal/model_agreement/native_driver.py": "16e0936d4605963f37f658a14e87ffbfaca1df3adafcc06398abe7498a827793",
+    ".tmp/s013-new-goal/model_agreement/tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/agreement_kernel.py": "ed888b2db31f683f29e56a4510f285151e5d49aaab3d9e04dfbe3d16db4169f3",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/model_agreement.py": "0be9842afd450912045b3354b75381b414af177633e8c9d4514f950deb0345a8",
+    ".tmp/s013-new-goal/model_agreement/strategy_runtime/strategies/tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013-new-goal/prospective_expression_review.json": "1c96ae1375262de832657f2e4c4e2e641d1397480f1f4aa09aa579dc9e9d0a45",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    ".tmp/s013-new-goal/cart_net/tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    ".tmp/s013-new-goal/huber_net/huber_kernel.py": "fd948dc44a129bfcfee039d37154d9782f571e7ef84186af890875e46488e939",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX080_20261012/src/reproduction/82670d42c540_audit.py": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+    "research/S013/experiments/EX080_20261012/src/reproduction/02c394b35938_s013_confirm_execution_v3.py": "02c394b35938f5ebc6e3fb7d3e44a07ee32428ca9a7904fb6802d149c6822048",
+    "research/S013/experiments/EX080_20261012/src/reproduction/f78efbb0b1da_audit_driver.py": "f78efbb0b1da9045187ab8ab7ba5dfa2afbb33f8df2826984a0131689b99ac52",
+    "research/S013/experiments/EX080_20261012/src/adapter_revision2/strategy_runtime/strategies/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "research/S013/experiments/EX080_20261012/src/adapter_revision2/strategy_runtime/strategies/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    "research/S013/experiments/EX066_20261011/src/opportunity_statistics.py": "565db5bb8e50a49ce303e10c0e0f44eab4f707e8f8c6eed0ec19f528c7b94d9a",
+    "research/S013/experiments/EX074_20261011/src/economics_reference.py": "caf12faeededd7f511528545b03fbe40fffdd38fa1796b11af6aa47f12d0b877",
+    "research/S013/experiments/EX074_20261011/src/account_reference.py": "560689afbd21a388bbe8337730125a4bf805ca20e88e0b377d2402aa39cdb4b6",
+    "research/S013/experiments/EX074_20261011/src/execution_links.py": "b7aa3220794b93000cffbde4410c97b95f3cc798f7348244b4113cbf7d5da198"
+  },
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX098_20261012"
+  },
+  "quota_slot": 10,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}
