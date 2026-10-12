@@ -166,7 +166,7 @@ def test_complete_declared_coverage_computes_linear_quantiles():
     assert context.design_sha256 == req.parameter_designs[0].sha256
     values = {x.metric: x.value for x in panel.rows[0].diagnostics}
     assert values[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION] > 0
-    assert panel.formula_version == "research-assessment-v3"
+    assert panel.formula_version == "research-assessment-v4"
     assert m.CandidateAssessmentRequest.from_dict(req.to_dict()) == req
 
 
@@ -193,6 +193,8 @@ def test_parameter_quantiles_match_independent_linear_account_calculation():
     expected_return = (1.03**63 - 1) - 0.1 * (1.015**63 - 1)
     assert metrics[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION] == pytest.approx(expected_return)
     assert metrics[m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION] == pytest.approx(0.0195)
+    assert metrics[m.ResearchMetric.PARAMETER_RETURN_Q10] == pytest.approx(0.1 * (1.015**63 - 1))
+    assert metrics[m.ResearchMetric.PARAMETER_DRAWDOWN_Q90] == pytest.approx(0.0195)
 
 
 def test_missing_point_never_computes_from_available_subset():
@@ -205,6 +207,8 @@ def test_missing_point_never_computes_from_available_subset():
         assert panel.rows[0].parameter_context.valid_points == 1
         for diagnostic in panel.rows[0].diagnostics:
             if diagnostic.metric in (
+                m.ResearchMetric.PARAMETER_RETURN_Q10,
+                m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                 m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                 m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
             ):
@@ -302,12 +306,12 @@ def test_legacy_serialized_contract_is_not_silently_upgraded():
         m.AssessmentEvidence.from_dict(value)
 
 
-def test_partial_policy_keeps_early_economic_relation_but_rejects_unbound_parameter_pair():
+def test_partial_policy_requires_parameter_method_before_same_layer_comparison():
     from test_research_comparison_v2 import partial_policy
 
     a = replace(row(candidate(), annual=0.11, drawdown=0.12), parameter_context=None)
     b = replace(row(candidate("C0002", "b"), annual=0.10, drawdown=0.11), parameter_context=None)
-    assert compare((a, b), partial_policy()).pairs[0].relation is m.PairwiseRelation.A_BEFORE_B
+    assert compare((a, b), partial_policy()).pairs[0].relation is m.PairwiseRelation.INCOMPARABLE
     tied = replace(b, diagnostics=a.diagnostics)
     result = compare((a, tied), partial_policy())
     assert result.pairs[0].relation is m.PairwiseRelation.INCOMPARABLE

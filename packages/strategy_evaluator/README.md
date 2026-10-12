@@ -91,7 +91,7 @@ SE不猜测策略参数含义，也不读取账户收益筛选扰动点。
 公开契约为`ParameterCoordinate`、`ParameterSpace`、`ParameterPerturbationProtocol`、
 `ParameterDesignRequest`、`ParameterPerturbationDesign`及`ParameterPointBinding`。
 `ResearchRecord.to_dict/from_dict/sha256`提供严格序列化和内容身份；当前字段必须齐全，
-不自动补齐历史格式。自检输出公式版本为`research-assessment-v3`，历史原件保持不变。
+不自动补齐历史格式。自检输出公式版本为`research-assessment-v4`，历史原件保持不变。
 
 ```python
 from strategy_evaluator import (
@@ -142,7 +142,8 @@ if result.status is ParameterDesignStatus.COMPLETE:
 `CandidateAssessmentRequest.parameter_designs`逐中心携带设计；每个`PerturbationLink`
 和对应`AssessmentEvidence.parameter_point`必须与设计同一点一致。
 绑定包括设计哈希、点序号、坐标及实际距离。全部规定点在同一中心原生评价条件下
-成功，才用LINEAR计算`max(0, 中心净年化-Q10)`及`max(0, Q90回撤-中心回撤)`；
+成功，才用LINEAR计算扰动净年化`PARAMETER_RETURN_Q10`及回撤幅度`PARAMETER_DRAWDOWN_Q90`，
+用于同层排序；另保留`max(0, 中心净年化-Q10)`及`max(0, Q90回撤-中心回撤)`作退化诊断；
 回撤含初始财富。没有成功的点不填零、不替换、不从已完成子集计算完整指标。
 无显式设计的旧式局部诊断没有新方法身份，不能用于统一参数排序。
 
@@ -155,7 +156,7 @@ if result.status is ParameterDesignStatus.COMPLETE:
 退化对照及明确的`comparable/reasons/limitations`，保留各自评价上下文；方法、指标版本、
 频率窗口及完整覆盖必须一致。它允许披露后的原生经济上下文差异，不输出总体候选赢家。
 普通`compare_candidates`仍要求经济上下文一致。默认完整证据政策要求声明参数方法且方法一致；
-既有`PREFIX_PARTIAL`能力可在前两项已决定先后时保留关系，真正走到参数项时，
+`PREFIX_PARTIAL`可保留已知前缀决定的关系；同层比较首先走到参数项时，
 缺失方法或方法不同的候选对明确不可比，不能把未经声明的局部诊断当作统一证据。
 参数退化是有限样本诊断，不是置信区间或新的经济验收门。
 
@@ -166,23 +167,41 @@ if result.status is ParameterDesignStatus.COMPLETE:
 `CandidateComparisonRequest`显式传入比较候选集、`ResearchTargets`、自检面板和
 `ComparisonPolicy`。TDR阶段交付将数值目标绑定到阶段一已确认的`MandateItem`；纯SE请求本身
 不证明目标已获用户确认。诊断指标不自动升级为研究硬门。
+本入口核验`ResearchTargets`显式支持的中心指标目标；年度逐项目标及扰动点逐点达标要求
+由研究方另外核验并留证，排序计算不替代这些检查。
 
-`ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=())`
+`ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=(),
+formula_version="research-ranking-v2")`
 必须显式声明分层基础及缺失证据政策：
 
 | 字段 | 支持选项与语义 |
 | --- | --- |
 | `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
-| `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求七项排序指标齐备；`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
+| `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求两项分层、五项稳健性及一项频率，共八项证据齐备；`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
+| `formula_version` | 固定为`research-ranking-v2`，连同研究协议`version`进入请求身份；旧字段集合和公式版本明确拒绝，不自动升级历史交付 |
 
-层内按七项指标的显式分箱顺序比较：净年化、回撤、参数收益退化、参数回撤退化、滚动超额Q10、
-压力年化损失、利润集中度。`MetricBinSpec`指定分辨率、原点及舍入规则；同层同箱保留并列，
+`bins`恰含净年化、回撤、上述五项稳健性及一个`FREQUENCY_METRICS`指标。
+层级优先；层内固定按六项指标比较：扰动净年化Q10（高）、扰动回撤Q90（低）、滚动超额Q10（高）、
+压力年化损失（低，可为负）、利润集中度（低）、所选交易频率（高）。中心收益和回撤仅用于分层，
+相对中心退化仅作诊断。`MetricBinSpec`指定分辨率、原点及舍入规则；元组排列不改变优先级。
+`policy.frequency_metric`与`policy.ranking_metrics`明确所选频率及六项层内顺序，
+`CandidateRank.bin_values`按该顺序输出六项分箱值。同层同箱保留并列，
 候选ID只用于稳定展示。结果包含`pairs`两两比较关系以及每个候选的`rank_min/rank_max`；
 `rank_in_layer`仅在能确定名次时填写，完整并列采用竞赛排名。状态为
 `TARGET_NOT_MET/INCOMPARABLE/RANKED/TIED/PARTIALLY_ORDERED`，缺失值不填零。
-交易频率用于目标核验，不参与上述层内排序；未达标、证据不足和不可比候选仍保留结果。
+交易频率最后参与层内排序，已有频率目标必须与所选频率指标一致，窗口须与面板一致，不能混用口径。
+未达标、证据不足和不可比候选仍保留结果。
 采用部分排序时，目标、净年化和回撤仍须可核验；评价口径不一致的候选保留为不可比。
-敏感性方案另列，不改写基准排序；输出不自动产生入选或冻结决定。
+敏感性方案另列，不改写基准排序；`adjacent_swap`取0至4，只交换六项层内指标的相邻优先级，
+不改变分层指标或所选频率口径。输出不自动产生入选或冻结决定。
+
+`BENCHMARK_POSITIVE_YEAR_FREQUENCY`将buyhold收益严格大于零年份的实际交易日与闭合交易合并，
+计算`frequency_window_days × 闭合交易数 / 实际交易日数`，不平均各年度频率。
+年度收益按基准年末净值相对上一年末净值计算，研究首年使用`initial_cash`；
+研究窗口边缘年份只使用窗口内实际日期。闭合交易按实际退出年份归属，未退出持仓不计。
+年度分类仅用于事后评价。缺少基准或没有盈利年份时明确返回缺失或不适用，
+不填零、不改用`FULL_SAMPLE_FREQUENCY`；选择该指标的比较因此不可比。
+既有全期、滚动中位数和滚动Q10频率可按获批研究协议显式选用。
 
 平台提供上述政策能力；当前RSCH研究政策使用原始值分层及完整证据比较，具体以
 [RSCH排序规则](../../research/RSCH_AGENT.md#研究族内排序规则)和获批协议为准，调用方不得据工具能力自行改政策。

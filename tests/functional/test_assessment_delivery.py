@@ -235,6 +235,9 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     comparison = value.payload.comparison_request
+    assert comparison.panel.formula_version == "research-assessment-v4"
+    assert comparison.policy.formula_version == "research-ranking-v2"
+    assert len(comparison.policy.bins) == 8
     comparison = replace(comparison, policy=replace(comparison.policy, sensitivities=(m.ComparisonVariant("coarse-bins", comparison.policy.bins),)))
     value = replace(value, payload=replace(value.payload, comparison_request=comparison, comparison=compare_candidates(comparison)))
     receipt = assemble_delivery(context, definition, value)
@@ -250,6 +253,26 @@ def test_stage_four_roundtrip_recomputation_and_source_cleanup(completed):
     shutil.rmtree(temporary)
     assert validate_delivery(context, receipt.reference).status is d.ValidationStatus.PASS
     assert assemble_delivery(context, definition, value) == receipt
+
+
+def test_stage_four_rejects_old_formula_versions_and_forged_comparison(completed):
+    context, _, _, _, _ = completed
+    definition, value = prepare(completed)
+    payload = value.payload
+    old_panel = payload.assessment.to_dict()
+    old_panel["formula_version"] = "research-assessment-v3"
+    with pytest.raises(ValueError, match="unsupported assessment formula version"):
+        m.AssessmentPanel.from_dict(old_panel)
+    old_policy = payload.comparison_request.policy.to_dict()
+    old_policy["formula_version"] = "research-ranking-v1"
+    with pytest.raises(ValueError, match="unsupported ranking formula version"):
+        m.ComparisonPolicy.from_dict(old_policy)
+    # The saved account evidence remains authentic; only the claimed numeric
+    # comparison is changed, so publication must reject recomputation mismatch.
+    forged = replace(payload.comparison, request_sha256="f" * 64)
+    with pytest.raises(d.DeliveryValidationError) as caught:
+        assemble_delivery(context, definition, replace(value, payload=replace(payload, comparison=forged)))
+    assert caught.value.issues[0].code == "COMPARISON_RESULT"
 
 
 @pytest.mark.parametrize("case, saved_value, changed_value, passes", [
@@ -413,7 +436,12 @@ def test_stage_four_rejects_forged_account_evidence(completed):
         assemble_delivery(context, definition, replace(value, payload=changed))
     assert caught.value.issues[0].code == "ASSESSMENT_EVIDENCE"
 
-def test_frequency_targets_require_the_confirmed_window(completed):
+@pytest.mark.parametrize("frequency_metric", [
+    m.ResearchMetric.FREQUENCY_MEDIAN,
+    m.ResearchMetric.FULL_SAMPLE_FREQUENCY,
+    m.ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
+])
+def test_frequency_targets_require_the_confirmed_window(completed, frequency_metric):
     context, _, _, _, _ = completed
     definition, value = prepare(completed)
     payload = value.payload
@@ -428,13 +456,13 @@ def test_frequency_targets_require_the_confirmed_window(completed):
             d.MandateItem(
                 "frequency",
                 d.MandateItemKind.OBJECTIVE,
-                "滚动闭合次数中位数",
+                "用户确认的闭合交易频率口径",
                 confirmation,
                 d.PerformanceRequirement(
                     (
                         m.ResearchTarget(
-                            "frequency_median",
-                            m.ResearchMetric.FREQUENCY_MEDIAN,
+                            "frequency_target",
+                            frequency_metric,
                             lower=m.ConstantBound(0.0, True),
                         ),
                     )
@@ -458,13 +486,17 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         requirements=(
             *payload.comparison_request.targets.requirements,
             m.ResearchTarget(
-                "frequency_median",
-                m.ResearchMetric.FREQUENCY_MEDIAN,
+                "frequency_target",
+                frequency_metric,
                 lower=m.ConstantBound(0.0, True),
             ),
         ),
     )
-    comparison = replace(payload.comparison_request, targets=targets)
+    policy = replace(payload.comparison_request.policy, bins=tuple(
+        replace(item, metric=frequency_metric) if item.metric in m.FREQUENCY_METRICS else item
+        for item in payload.comparison_request.policy.bins
+    ))
+    comparison = replace(payload.comparison_request, targets=targets, policy=policy)
     changed = replace(
         payload,
         source_mandate=receipt.reference,
@@ -473,7 +505,7 @@ def test_frequency_targets_require_the_confirmed_window(completed):
         frequency_window_item_id="frequency_days",
         target_bindings=(
             *payload.target_bindings,
-            d.TargetMandateBinding("frequency_median", "frequency"),
+            d.TargetMandateBinding("frequency_target", "frequency"),
         ),
     )
     defined = replace(definition, predecessors=(payload.source_candidates, receipt.reference))

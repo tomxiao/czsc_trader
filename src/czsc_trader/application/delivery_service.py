@@ -8,7 +8,8 @@ from pathlib import Path
 import shutil
 
 from factor_signal_catalog import FactorDefinition, SignalDefinition
-from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates, ResearchMetric
+from strategy_evaluator import AssessmentEvidence, AssessmentPanel, assess_candidates, compare_candidates
+from strategy_evaluator.research_models import FREQUENCY_METRICS
 from strategy_manager.write_lock import RegistryWriteLock
 from strategy_manager.errors import RegistryError
 
@@ -270,8 +271,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     for binding in payload.target_bindings:
         if expected[binding.target_id] != (binding.mandate_item_id, targets[binding.target_id]):
             _fail("TARGET_BINDING", binding.target_id, "target differs from confirmed mandate")
-    if any(x.metric in (ResearchMetric.FREQUENCY_MEDIAN, ResearchMetric.FREQUENCY_Q10,
-                       ResearchMetric.FULL_SAMPLE_FREQUENCY) for x in targets.values()):
+    if any(x.metric in FREQUENCY_METRICS for x in targets.values()):
         item = declarations.get(payload.frequency_window_item_id)
         days = payload.comparison_request.targets.frequency_window_days
         if (item is None or item.confirmation.status is not d.ConfirmationStatus.CONFIRMED

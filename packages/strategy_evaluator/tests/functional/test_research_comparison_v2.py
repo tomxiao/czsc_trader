@@ -46,7 +46,7 @@ def test_full_sample_frequency_and_benchmark_are_computed_from_accounts():
         evidence(), frequency_window_days=60, benchmark_equity=(1000.0, 1100.0, 900.0, 1050.0)
     )
     panel = assess_candidates(replace(request(), evidence=(base,)))
-    assert panel.formula_version == "research-assessment-v3"
+    assert panel.formula_version == "research-assessment-v4"
     assert values(panel)[m.ResearchMetric.FULL_SAMPLE_FREQUENCY].value == 30.0
     assert values(panel)[m.ResearchMetric.FREQUENCY_MEDIAN].value is None
     got = {x.metric: x for x in panel.rows[0].benchmark.diagnostics}
@@ -146,14 +146,14 @@ def test_half_up_binning_changes_layer_explicitly_and_handles_negative_ties():
             for x in a.diagnostics
         ),
     )
-    assert compare((negative,), p).rows[0].bin_values[5] == -13
+    assert compare((negative,), p).rows[0].bin_values[3] == -13
 
 
 def test_prefix_partial_order_rank_intervals_match_all_linear_extensions():
     a = row(candidate(), degradation=0.01, missing=m.ResearchMetric.STRESS_ANNUAL_LOSS)
     a = replace(a, stress_scenario=None)
     b = row(candidate("C0002", "b"), degradation=0.02)
-    c = row(candidate("C0003", "c"), missing=m.ResearchMetric.PARAMETER_RETURN_DEGRADATION)
+    c = row(candidate("C0003", "c"), missing=m.ResearchMetric.PARAMETER_RETURN_Q10)
     rows = (a, b, c)
     result = compare(rows, partial_policy())
     assert len(result.pairs) == 3

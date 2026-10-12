@@ -446,6 +446,11 @@ if checked.status is not ValidationStatus.PASS:
 校验默认 `DeliveryValidationScope.FULL`，核对文件身份和关联事实，并重算阶段四 SE 结果；
 `INTEGRITY` 仍核对文件、引用及保存事实，但不重新执行阶段四 SE 自检和排序计算。两者都不重跑整个研究过程。
 两种范围均核验 `report.md` 与提交的 `report` 字节一致；该检查不判断文字解释或研究结论的正确性。
+阶段四使用 SE 自检公式 `research-assessment-v4` 与排序公式 `research-ranking-v2`，
+按中心收益和回撤分层、同层稳健性优先及交易频率最后比较；指标、分箱与频率口径见
+[SE 比较政策](../../packages/strategy_evaluator/README.md#比较请求与政策)。
+盈利年份合并频率由已保存基准净值与实际退出日计算，频率硬门仍须绑定已确认的目标及精确窗口。
+旧自检或排序字段集合明确拒绝，历史原件保留，不自动改写或重算历史排名。
 阶段五继续核验实际决定、检验及冻结状态；交付快照不取代运行发布和批准事实。
 
 ## 8. 技术检验、用户决定与冻结

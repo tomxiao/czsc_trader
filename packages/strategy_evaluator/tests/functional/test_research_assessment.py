@@ -278,13 +278,13 @@ def test_identity_duplicate_coordinates_and_derivation_are_rejected():
         replace(req.protocol, rolling_window_days=True)
 
 
-def policy(resolution=0.01):
+def policy(resolution=0.01, frequency_metric=m.ResearchMetric.FULL_SAMPLE_FREQUENCY):
     return m.ComparisonPolicy(
         "1",
         tuple(
             (
                 m.MetricBinSpec(metric, resolution, 0.0, m.BinRounding.FLOOR)
-                for metric in m.RANKING_METRICS
+                for metric in (*m.BENCHMARK_METRICS, *m.WITHIN_LAYER_METRICS, frequency_metric)
             )
         ),
         pareto_basis=m.ParetoBasis.RAW,
@@ -299,6 +299,8 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
             m.ResearchMetric.NET_ANNUAL_RETURN: annual,
             m.ResearchMetric.DRAWDOWN_MAGNITUDE: drawdown,
             m.ResearchMetric.PARAMETER_RETURN_DEGRADATION: degradation,
+            m.ResearchMetric.PARAMETER_RETURN_Q10: annual - degradation,
+            m.ResearchMetric.PARAMETER_DRAWDOWN_Q90: drawdown + 0.01,
             m.ResearchMetric.FREQUENCY_MEDIAN: 5.0,
             m.ResearchMetric.FREQUENCY_Q10: 3.0,
             m.ResearchMetric.PROFIT_CONCENTRATION: 0.3,
@@ -364,7 +366,7 @@ def compare(rows, selected_policy=None, targets=()):
     )
 
 
-def test_raw_pareto_then_binned_seven_metrics_and_ties():
+def test_raw_pareto_then_binned_robustness_frequency_and_ties():
     a, b, c = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
     # A strictly dominates C even though A and C fall in the same bins.
     result = compare((row(b, 0.1002, 0.1002), row(c, 0.1000, 0.1002), row(a, 0.1001, 0.1001)))
@@ -500,8 +502,11 @@ def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked()
             upper=m.ConstantBound(10.0, True),
         ),
     )
-    result = compare((first, second), targets=frequency)
-    assert [x.rank_in_layer for x in result.rows] == [1, 1]
+    result = compare((first, second), policy(frequency_metric=m.ResearchMetric.FREQUENCY_MEDIAN),
+                     targets=frequency)
+    assert result.rows[0].candidate == second.candidate
+    assert [x.rank_in_layer for x in result.rows] == [1, 2]
+    assert all(x.target_checks[0].status is m.TargetCheckStatus.PASSED for x in result.rows)
     rejected_context = compare(
         (row(a, 0.1), replace(row(b, 0.01), context_sha256="e" * 64)),
         targets=(
@@ -518,7 +523,7 @@ def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked()
 def test_sensitivity_does_not_rewrite_baseline_and_context_mismatch_is_explicit():
     a, b = candidate(), candidate("C0002", "b")
     rows = (row(a, 0.11, 0.2), row(b, 0.10, 0.1))
-    variant = m.ComparisonVariant("swap_return_drawdown", policy().bins, 0)
+    variant = m.ComparisonVariant("swap_parameter_return_drawdown", policy().bins, 0)
     result = compare(rows, replace(policy(), sensitivities=(variant,)))
     assert result.rows[0].candidate == a
     assert result.sensitivities[0].rows[0].candidate == b
@@ -526,7 +531,7 @@ def test_sensitivity_does_not_rewrite_baseline_and_context_mismatch_is_explicit(
     assert all(x.status is m.ComparisonStatus.INCOMPARABLE for x in mismatch.rows)
     fine = tuple(replace(x, resolution=0.001) for x in policy().bins)
     result = compare(
-        (row(a, 0.1001, 0.1001, 0.0299), row(b, 0.1002, 0.1002, 0.0201)),
+        (row(a, 0.1001, 0.1001, 0.0299), row(b, 0.1002, 0.1002, 0.0203)),
         replace(policy(), sensitivities=(m.ComparisonVariant("finer", fine),)),
     )
     assert result.rows[0].rank_in_layer == result.rows[1].rank_in_layer

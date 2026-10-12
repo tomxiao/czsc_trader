@@ -229,6 +229,32 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                 size * len(base.closed_cycles) / len(sessions),
                 sources=(base,),
             )
+            if base.benchmark_equity:
+                years = defaultdict(list)
+                for session, equity in zip(sessions, base.benchmark_equity):
+                    years[session[:4]].append(equity)
+                opening = base.initial_cash
+                positive_years = set()
+                for year, equity in years.items():
+                    if equity[-1] > opening:
+                        positive_years.add(year)
+                    opening = equity[-1]
+                positive_days = sum(session[:4] in positive_years for session in sessions)
+                put(
+                    m.ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
+                    size * sum(x.exit_session[:4] in positive_years for x in base.closed_cycles)
+                    / positive_days
+                    if positive_days else None,
+                    status=m.DiagnosticStatus.NOT_APPLICABLE,
+                    reason="NO_BENCHMARK_POSITIVE_YEARS",
+                    sources=(base,),
+                )
+            else:
+                put(
+                    m.ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
+                    reason="MISSING_BENCHMARK",
+                    sources=(base,),
+                )
             counts = [
                 sum(
                     sessions[i - size + 1] <= x.exit_session <= sessions[i]
@@ -290,20 +316,16 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
             ):
                 performances = [_performance(x) for x in neighbors]
                 weights = [x.weight for x in links]
+                return_q10 = _quantile([x[0] for x in performances], 0.1, p.quantile_method, weights)
+                drawdown_q90 = _quantile([x[1] for x in performances], 0.9, p.quantile_method, weights)
                 values = (
-                    max(
-                        0.0,
-                        annual
-                        - _quantile([x[0] for x in performances], 0.1, p.quantile_method, weights),
-                    ),
-                    max(
-                        0.0,
-                        _quantile([x[1] for x in performances], 0.9, p.quantile_method, weights)
-                        - drawdown,
-                    ),
+                    return_q10, drawdown_q90,
+                    max(0.0, annual - return_q10), max(0.0, drawdown_q90 - drawdown),
                 )
                 for metric, value in zip(
                     (
+                        m.ResearchMetric.PARAMETER_RETURN_Q10,
+                        m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                         m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                         m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
                     ),
@@ -312,6 +334,8 @@ def assess_candidates(request: m.CandidateAssessmentRequest) -> m.AssessmentPane
                     put(metric, value, sources=(base, *neighbors))
             else:
                 for metric in (
+                    m.ResearchMetric.PARAMETER_RETURN_Q10,
+                    m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                     m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                     m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
                 ):
@@ -544,8 +568,8 @@ def _bin(value, spec):
 def _compare_pair(a, b, layer, order, parameter_methods):
     for metric, left, right in zip(order, a.bin_values, b.bin_values):
         if metric in (
-            m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
-            m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+            m.ResearchMetric.PARAMETER_RETURN_Q10,
+            m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
         ):
             method_a, method_b = parameter_methods[a.candidate], parameter_methods[b.candidate]
             if method_a is None or method_b is None or method_a != method_b:
@@ -570,7 +594,8 @@ def _compare_pair(a, b, layer, order, parameter_methods):
             )
         if left != right:
             maximize = metric in (
-                m.ResearchMetric.NET_ANNUAL_RETURN,
+                *m.FREQUENCY_METRICS,
+                m.ResearchMetric.PARAMETER_RETURN_Q10,
                 m.ResearchMetric.ROLLING_EXCESS_Q10,
             )
             relation = (
@@ -655,7 +680,10 @@ def _rank(request, bins, order):
             for x in checks
             if x.status in (m.TargetCheckStatus.FAILED, m.TargetCheckStatus.INDETERMINATE)
         ]
-        missing = [metric for metric in order if metrics[metric].value is None]
+        missing = [
+            metric for metric in (*m.BENCHMARK_METRICS, *order)
+            if metrics[metric].value is None
+        ]
         reasons.extend(f"{metric.value}:{metrics[metric].reason}" for metric in missing)
         missing_parameter_method = row.parameter_context is None
         if missing_parameter_method:
@@ -665,8 +693,8 @@ def _rank(request, bins, order):
                 for metric in order
                 if metric
                 in (
-                    m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
-                    m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                    m.ResearchMetric.PARAMETER_RETURN_Q10,
+                    m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                 )
                 and metric not in missing
             )
@@ -674,6 +702,7 @@ def _rank(request, bins, order):
             status = m.ComparisonStatus.TARGET_NOT_MET
         elif (
             any(x.status is m.TargetCheckStatus.INDETERMINATE for x in checks)
+            or row.frequency_window_days != request.targets.frequency_window_days
             or row.context_sha256 is None
             or any(x in missing for x in m.BENCHMARK_METRICS)
             or (
@@ -685,6 +714,8 @@ def _rank(request, bins, order):
             status = m.ComparisonStatus.INCOMPARABLE
             if row.context_sha256 is None:
                 reasons.append("EVALUATION_CONTEXTS_DIFFER")
+            if row.frequency_window_days != request.targets.frequency_window_days:
+                reasons.append("FREQUENCY_WINDOW_DIFFERS")
         else:
             status = m.ComparisonStatus.RANKED
         values = tuple(
@@ -692,8 +723,8 @@ def _rank(request, bins, order):
             if missing_parameter_method
             and metric
             in (
-                m.ResearchMetric.PARAMETER_RETURN_DEGRADATION,
-                m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                m.ResearchMetric.PARAMETER_RETURN_Q10,
+                m.ResearchMetric.PARAMETER_DRAWDOWN_Q90,
             )
             else _bin(metrics[metric].value, specifications[metric])
             for metric in order
@@ -784,10 +815,10 @@ def compare_candidates(request: m.CandidateComparisonRequest) -> m.CandidateComp
     if type(request) is not m.CandidateComparisonRequest:
         raise TypeError("compare_candidates requires CandidateComparisonRequest")
     request = m.CandidateComparisonRequest.from_dict(request.to_dict())
-    baseline, pairs = _rank(request, request.policy.bins, m.RANKING_METRICS)
+    baseline, pairs = _rank(request, request.policy.bins, request.policy.ranking_metrics)
     sensitivities = []
     for variant in request.policy.sensitivities:
-        order = list(m.RANKING_METRICS)
+        order = list(request.policy.ranking_metrics)
         if variant.adjacent_swap is not None:
             i = variant.adjacent_swap
             order[i], order[i + 1] = order[i + 1], order[i]

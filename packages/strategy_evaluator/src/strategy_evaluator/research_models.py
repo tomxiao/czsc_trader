@@ -269,12 +269,15 @@ class DiagnosticStatus(StrEnum):
 
 class ResearchMetric(StrEnum):
     FULL_SAMPLE_FREQUENCY = "FULL_SAMPLE_FREQUENCY"
+    BENCHMARK_POSITIVE_YEAR_FREQUENCY = "BENCHMARK_POSITIVE_YEAR_FREQUENCY"
     NET_ANNUAL_RETURN = "NET_ANNUAL_RETURN"
     DRAWDOWN_MAGNITUDE = "DRAWDOWN_MAGNITUDE"
     FREQUENCY_MEDIAN = "FREQUENCY_MEDIAN"
     FREQUENCY_Q10 = "FREQUENCY_Q10"
     PARAMETER_RETURN_DEGRADATION = "PARAMETER_RETURN_DEGRADATION"
     PARAMETER_DRAWDOWN_DEGRADATION = "PARAMETER_DRAWDOWN_DEGRADATION"
+    PARAMETER_RETURN_Q10 = "PARAMETER_RETURN_Q10"
+    PARAMETER_DRAWDOWN_Q90 = "PARAMETER_DRAWDOWN_Q90"
     ROLLING_EXCESS_Q10 = "ROLLING_EXCESS_Q10"
     STRESS_ANNUAL_LOSS = "STRESS_ANNUAL_LOSS"
     PROFIT_CONCENTRATION = "PROFIT_CONCENTRATION"
@@ -282,6 +285,7 @@ class ResearchMetric(StrEnum):
 
 FREQUENCY_METRICS = (
     ResearchMetric.FULL_SAMPLE_FREQUENCY,
+    ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
     ResearchMetric.FREQUENCY_MEDIAN,
     ResearchMetric.FREQUENCY_Q10,
 )
@@ -319,13 +323,12 @@ class DiagnosticValue(ResearchRecord):
         if self.value is not None:
             if self.metric in (
                 ResearchMetric.DRAWDOWN_MAGNITUDE,
+                ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                 ResearchMetric.PROFIT_CONCENTRATION,
             ):
                 require(0 <= self.value <= 1, "metric outside ratio range")
             if self.metric in (
-                ResearchMetric.FREQUENCY_MEDIAN,
-                ResearchMetric.FREQUENCY_Q10,
-                ResearchMetric.FULL_SAMPLE_FREQUENCY,
+                *FREQUENCY_METRICS,
                 ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                 ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
             ):
@@ -893,6 +896,8 @@ class CandidateAssessment(ResearchRecord):
                     in (
                         ResearchMetric.PARAMETER_RETURN_DEGRADATION,
                         ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+                        ResearchMetric.PARAMETER_RETURN_Q10,
+                        ResearchMetric.PARAMETER_DRAWDOWN_Q90,
                     )
                 ),
                 "available parameter metrics require complete coverage",
@@ -933,11 +938,11 @@ class AssessmentPanel(ResearchRecord):
     rows: tuple[CandidateAssessment, ...]
     family_diagnostics: tuple[FamilyDiagnostic, ...]
     family_limitations: tuple[str, ...]
-    formula_version: str = "research-assessment-v3"
+    formula_version: str = "research-assessment-v4"
 
     def validate(self):
         require(
-            self.formula_version == "research-assessment-v3",
+            self.formula_version == "research-assessment-v4",
             "unsupported assessment formula version",
         )
         unique((x.candidate.candidate_id for x in self.rows), "panel candidate")
@@ -992,6 +997,7 @@ class ResearchTarget(ResearchRecord):
                 ResearchMetric.FREQUENCY_MEDIAN,
                 ResearchMetric.FREQUENCY_Q10,
                 ResearchMetric.FULL_SAMPLE_FREQUENCY,
+                ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY,
             ),
             "unsupported research target",
         )
@@ -1020,14 +1026,17 @@ class ResearchTargets(ResearchRecord):
         require(self.frequency_window_days > 0, "invalid frequency window")
 
 
-RANKING_METRICS = (
-    ResearchMetric.NET_ANNUAL_RETURN,
-    ResearchMetric.DRAWDOWN_MAGNITUDE,
-    ResearchMetric.PARAMETER_RETURN_DEGRADATION,
-    ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION,
+WITHIN_LAYER_METRICS = (
+    ResearchMetric.PARAMETER_RETURN_Q10,
+    ResearchMetric.PARAMETER_DRAWDOWN_Q90,
     ResearchMetric.ROLLING_EXCESS_Q10,
     ResearchMetric.STRESS_ANNUAL_LOSS,
     ResearchMetric.PROFIT_CONCENTRATION,
+)
+RANKING_METRICS = (
+    *BENCHMARK_METRICS,
+    *WITHIN_LAYER_METRICS,
+    ResearchMetric.FULL_SAMPLE_FREQUENCY,
 )
 
 
@@ -1045,7 +1054,11 @@ class MetricBinSpec(ResearchRecord):
     rounding: BinRounding
 
     def validate(self):
-        require(self.metric in RANKING_METRICS and self.resolution > 0, "invalid ranking bin")
+        require(
+            self.metric in (*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS, *FREQUENCY_METRICS)
+            and self.resolution > 0,
+            "invalid ranking bin",
+        )
 
 
 @dataclass(frozen=True)
@@ -1056,9 +1069,14 @@ class ComparisonVariant(ResearchRecord):
 
     def validate(self):
         unique((x.metric for x in self.bins), "variant bin")
-        require({x.metric for x in self.bins} == set(RANKING_METRICS), "seven bins required")
+        metrics = {x.metric for x in self.bins}
         require(
-            self.adjacent_swap is None or 0 <= self.adjacent_swap < 6,
+            metrics - set(FREQUENCY_METRICS) == set((*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS))
+            and len(metrics & set(FREQUENCY_METRICS)) == 1,
+            "eight bins required: two Pareto, five robustness and one frequency metric",
+        )
+        require(
+            self.adjacent_swap is None or 0 <= self.adjacent_swap < len(WITHIN_LAYER_METRICS),
             "invalid adjacent priority swap",
         )
 
@@ -1080,10 +1098,28 @@ class ComparisonPolicy(ResearchRecord):
     pareto_basis: ParetoBasis
     missing_evidence_policy: MissingEvidencePolicy
     sensitivities: tuple[ComparisonVariant, ...] = ()
+    formula_version: str = "research-ranking-v2"
 
     def validate(self):
+        require(self.formula_version == "research-ranking-v2", "unsupported ranking formula version")
         ComparisonVariant("baseline", self.bins)
         unique((x.name for x in self.sensitivities), "sensitivity name")
+        require(
+            all(
+                {x.metric for x in variant.bins if x.metric in FREQUENCY_METRICS}
+                == {self.frequency_metric}
+                for variant in self.sensitivities
+            ),
+            "sensitivity frequency metric differs",
+        )
+
+    @property
+    def frequency_metric(self) -> ResearchMetric:
+        return next(x.metric for x in self.bins if x.metric in FREQUENCY_METRICS)
+
+    @property
+    def ranking_metrics(self) -> tuple[ResearchMetric, ...]:
+        return (*WITHIN_LAYER_METRICS, self.frequency_metric)
 
 
 @dataclass(frozen=True)
@@ -1099,6 +1135,14 @@ class CandidateComparisonRequest(ResearchRecord):
         require(
             set(self.candidates) == {x.candidate for x in self.panel.rows},
             "comparison set differs from panel",
+        )
+        require(
+            all(
+                x.metric is self.policy.frequency_metric
+                for x in self.targets.requirements
+                if x.metric in FREQUENCY_METRICS
+            ),
+            "ranking frequency metric differs from target",
         )
 
 
