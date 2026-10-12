@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "real_inputs": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "Definition reads source/registry/reference metadata only",
+    "Four effective full domains and exact centre",
+    "Standard32 fixed metadata",
+    "Candidate runtime canonical payload",
+    "Independent policy expiry/no reentry/strictpositive/missing/crossyear",
+    "Policy corruption and candidate collision refused"
+  ],
+  "check_count": 6,
+  "policy_corruptions_refused": 6,
+  "candidate_collision_refused": true,
+  "runtime_sha256": "78c5924e05d037b29f863367138e0ddcb03162bea3a36f1de3f74a2bd62c52bf",
+  "source_sha256": {
+    "native_driver.py": "f4be304e8551fe90c59566f56d4cfeba95311d4e738494ae5b981eb8cf9fcf14",
+    "driver_checks.py": "77e1dc65932fb28acac13937d713cd029bf138fd5ef40764b8bc8730c9e45847",
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "checks.py": "472e56e21eeab964f668e1a29ddb976026a20d5b79a5c3257b5abddd480d1313",
+    "native_checks.py": "d9690ca2af36fc578834053a08d645e88b687602a859d9028abf17bfdf3f1737",
+    "audit_tree.py": "12b1b706212a668c4c08f36270c81002664132bd6a828d958c2311d9bfa0e0d3",
+    "audit_checks.py": "5ca3e8509d00458e1bfccd2318d134d22db3d45e8d43083ad7ab48ebbab169bf"
+  },
+  "original_parent_sha256": {
+    "confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f"
+  },
+  "original14_label_oracle_sha256": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+  "coordinates": [
+    [
+      "confirmation_lookback",
+      40,
+      120,
+      "INTEGER"
+    ],
+    [
+      "holding_sessions",
+      1,
+      60,
+      "INTEGER"
+    ],
+    [
+      "tree_depth",
+      1,
+      4,
+      "INTEGER"
+    ],
+    [
+      "minimum_leaf",
+      20,
+      120,
+      "INTEGER"
+    ]
+  ],
+  "candidate_id": "C9096"
+}

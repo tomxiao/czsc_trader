@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs": 0,
+  "real_inputs_read": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "new_models_on_real_inputs": 0,
+  "checks": [
+    "AND interaction exactly fits while additive cannot",
+    "Symmetric XOR root no gain remains single leaf",
+    "Exact ties choose first feature/quantile and <= threshold branch",
+    "Depth2 and40min leaves maintained",
+    "No valid split is valid tree leaf, not fallback",
+    "Orderstat quartiles use ceil(nq)-1 with no interpolation",
+    "Original14 complete/mature/2020-start annual expanding support",
+    "Delayed labels and missing features excluded",
+    "2020 prediction NA and unavailable future-label tail still predicted",
+    "Prefix and future mutation preserve tree/CDF/past prediction",
+    "Previous-year observations retained across annual update",
+    "Strict illegal input refusal",
+    "Effective depth1..4/leaf20..120 domains and explicit centre identical",
+    "Basic mature training remains max(40,minimum_leaf) at all legal parameters"
+  ],
+  "check_count": 14,
+  "rejections": [
+    "invalid_depth_leaf_(0, 40)",
+    "invalid_depth_leaf_(5, 40)",
+    "invalid_depth_leaf_(True, 40)",
+    "invalid_depth_leaf_(2.0, 40)",
+    "invalid_depth_leaf_(2, 19)",
+    "invalid_depth_leaf_(2, 121)",
+    "invalid_depth_leaf_(2, True)",
+    "invalid_depth_leaf_(2, 40.0)",
+    "infinite_feature",
+    "wrong_columns",
+    "unordered_axis",
+    "unaligned_labels",
+    "unpaired_truth",
+    "not_future",
+    "bad_price_factor",
+    "less_than40",
+    "nonfinite_target",
+    "bad_width",
+    "missing_prediction"
+  ],
+  "rejection_count": 19,
+  "synthetic_only_annual_trees": 2,
+  "AND_additive_mse": 0.0625,
+  "AND_cart_mse": 0.0,
+  "symmetric_XOR_unlearned_mse": 0.25,
+  "fixed_centre": {
+    "max_depth": 2,
+    "minimum_leaf": 40
+  },
+  "prospective_native_domains": {
+    "max_depth": [
+      1,
+      4
+    ],
+    "minimum_leaf": [
+      20,
+      120
+    ]
+  },
+  "source_sha256": {
+    "tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "checks.py": "472e56e21eeab964f668e1a29ddb976026a20d5b79a5c3257b5abddd480d1313"
+  }
+}

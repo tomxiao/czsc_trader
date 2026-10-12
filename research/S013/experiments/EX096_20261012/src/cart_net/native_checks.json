@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "real_inputs": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "Inherited input/scope/calendar/execute contracts exact",
+    "Four effective full legal domains no ridge coordinate",
+    "Original2019 warm features only and2020 cash",
+    "Exact old pricing AST and frozen parent bytes",
+    "H1/4/60 matured labels scalar exact and NA tail prediction",
+    "Complete native history/strict positive flags",
+    "Prefix/future mutation preserve prior history",
+    "H expiry priority and no same T reentry/year continuity",
+    "Runtime source copy exact and candidate canonical serialization",
+    "All illegal params refused",
+    "Frozen independent original14/net_labels reconstruction"
+  ],
+  "check_count": 11,
+  "rejections": [
+    "confirmation_lookback=39",
+    "confirmation_lookback=121",
+    "holding_sessions=0",
+    "holding_sessions=61",
+    "tree_depth=0",
+    "tree_depth=5",
+    "minimum_leaf=19",
+    "minimum_leaf=121",
+    "tree_depth=True",
+    "holding_sessions=4.0",
+    "wrong_keys",
+    "wrong_keys"
+  ],
+  "rejection_count": 12,
+  "signal_count": 350,
+  "source_sha256": {
+    "strategies/confirm_kernel.py": "f4627a9a14984b4450afa12eb6e77e0b2060befea9b3d64602dcec9a675aa9b2",
+    "strategies/confirm_net.py": "19ac337b60a0b8ed5c024e8c76d80c22bf5764ea888d98ea97c85d860fc6d27f",
+    "strategies/tree_kernel.py": "6d1dd10f4778620795e4e574bdb383ea2673207dd785e3857fb542efe0d6cd4e",
+    "strategies/cart_net.py": "8b20ddafa392101697aaeac2abc4ccbeb6b3bf3f95edbe62abb124639d3dbd87"
+  },
+  "oracle_source_sha256": "82670d42c54092a50f2af74f95086ee5150d1bf9223415e7d0bad7ba49cbdc71",
+  "test_source_sha256": "d9690ca2af36fc578834053a08d645e88b687602a859d9028abf17bfdf3f1737",
+  "domains": [
+    [
+      "confirmation_lookback",
+      40,
+      120,
+      "INTEGER"
+    ],
+    [
+      "holding_sessions",
+      1,
+      60,
+      "INTEGER"
+    ],
+    [
+      "tree_depth",
+      1,
+      4,
+      "INTEGER"
+    ],
+    [
+      "minimum_leaf",
+      20,
+      120,
+      "INTEGER"
+    ]
+  ]
+}
