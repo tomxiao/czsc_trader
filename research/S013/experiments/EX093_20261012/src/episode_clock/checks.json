@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "real_inputs_read": 0,
+  "accounts": 0,
+  "experiments_allocated": 0,
+  "checks": [
+    "market age starts0, TIME priority, endT no reentry, nextT can restart",
+    "same market different confirmation/ACF/accepted holding leaves observer exact",
+    "flat transaction cannot enter ending market episode",
+    "original stop exit and repeat entry allowed inside same market episode",
+    "range equality ends before TIME and preserves original exit priority",
+    "route locked through endingT; TIME beats regime; new route starts nextT",
+    "original entry/ACF/score/momentum equalities retain inclusive semantics",
+    "TIME BELOW original transaction anchor and recovery feedback retained",
+    "TIME equality/above keep original category and no recovery exception",
+    "all30 causal prefixes and no calendar-year reset",
+    "adapter OFF exact original complete table, ON original public contracts"
+  ],
+  "check_count": 11,
+  "rejections": [
+    "nan_score",
+    "nan_normalized",
+    "nan_acf",
+    "nan_market_position",
+    "zero_market_close",
+    "unknown_route",
+    "missing_base_key",
+    "unaligned_series",
+    "unordered_axis",
+    "integer_episode_switch",
+    "wrong_mechanism"
+  ],
+  "rejection_count": 11,
+  "observer_transaction_independence": "EXACT_SYNTHETIC",
+  "off_parent_complete_table": "EXACT_SYNTHETIC",
+  "inherited_sources": "EXACT_BYTES",
+  "initial_boundary": "empty observer and transaction at first FULL signal; no warmup episodes",
+  "actual_fill_or_account_equivalence": "NOT_CLAIMED",
+  "source_sha256": {
+    "checks.py": "1b64c4bac681251dbe66306fa368eb0db7b17ffc0be5964bad1f6f649e9d57fe",
+    "__init__.py": "4f2a781378f173bbfdf43029a57d62a6b009893d2d7c84615d9638956819fbb1",
+    "adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "boundary_bear_recovery_range.py": "3fc44c4bfe601b26a43cee533303d41e54db365f98c526ccfcf004a9b8afdce8",
+    "confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "episode_clock_range.py": "980a69daa2128b13297fc4d9f2e149b15340f9344f5e02a5827bb7010216c86c",
+    "policy_kernel.py": "daf980c8a888f2e333b1537256f2d98d9936e28c4526a53d61a6d4808fcefa59",
+    "pureobserver.py": "a41f1ae36eb28d3dae7f60da8866c4a582c16058312a151201c01bbabe4b632a",
+    "range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c"
+  }
+}

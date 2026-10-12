@@ -1,0 +1,163 @@
+{
+  "material_kind": "READ_ONLY_EXISTING_S013_TRANSACTION_EXPRESSION_COVERAGE_REVIEW",
+  "status": "REVIEW_ONLY_NOT_EXPERIMENT_AUTHORIZATION_OR_PROFITABILITY_EVIDENCE",
+  "data_read": "Existing S013 source and reports only; no actual market tables or account ledger recomputation",
+  "real_statistics_computed": 0,
+  "new_accounts": 0,
+  "experiments_allocated": 0,
+  "source_edited": false,
+  "scope": "Original 510500.SH development pool/HFQ/fixed1%/0-1 long contract; new positive-buyhold-year merged frequency gate and center plus all32 acceptance are current targets. Old results remain under their original gates.",
+  "main_conclusion": "Fixed entry-close stops, held-close trailing peaks, route locking, disabled regime exits, confirmation relief, entry-refresh memory and price-cycle simplification already have substantial coverage. Do not propose them as fresh mechanisms. A market-episode clock independent of accepted trades is the clearest as-yet-unverified expression difference, but has strong opportunity-loss counterevidence. A profit-activated one-way protection latch is not found in the reviewed source; actual filled-cost breakeven cannot be claimed from these history-only native adapters.",
+  "coverage": [
+    {
+      "family": "FIXED_ENTRY_REFERENCE_STOP",
+      "status": "ALREADY_IMPLEMENTED_AND_ACCOUNT_TESTED",
+      "precise_behavior": "RangeReversion and AdaptiveRange set anchor=signal Close on accepted entry. A enabled percentage stop exits when Close/anchor-1<=-stop_loss. It is T signal/T+1 market exit, not same-session stop execution or actual-cost guarantee.",
+      "coverage": "EX003/EX004 search and focused followups include fixed percentage stops. EX004 report states searched stops/trailing/hold periods and cites 6% anchor-stop C0375 with CAGR14.2072% but65 closed trades under the old full-period frequency target. The later C2132/C8880 parent has stop/trailing null; mere availability in the source is distinct from those centers using it.",
+      "additional_zero_anchor_tests": "EX025 bull-only Close below signal-entry Close after age1; EX026 two consecutive held closes below that anchor after age2. EX016 also tested bear TIME conditioned on price above/below signal entry.",
+      "strong_counter": "EX025 pure protection C9700 CAGR11.5740%,133 closed,2023-2.9079%; BODY+protection C9701 2023-1.9905%. EX026 reduces churn but pure two-day C9780 still2023-2.5707%. EX016 all8 relative-anchor conditional exit mechanisms failed old four gates. Adding more trades or a close-floor alone did not produce economic robustness.",
+      "refs": [
+        "research/S013/experiments/EX003_20261007/src/strategy_runtime/strategies/range_reversion.py",
+        "research/S013/experiments/EX004_20261007/src/prepare_followup.py",
+        "research/S013/experiments/EX004_20261007/src/prepare_followup3.py",
+        "research/S013/deliveries/CANDIDATES/1/report.md",
+        "research/S013/deliveries/CANDIDATES/12/report.md",
+        "research/S013/experiments/EX025_20261011/others/report.md",
+        "research/S013/experiments/EX026_20261011/others/report.md"
+      ]
+    },
+    {
+      "family": "MOVING_HELD_CLOSE_PEAK_STOP",
+      "status": "ALREADY_IMPLEMENTED_AND_ACCOUNT_TESTED",
+      "precise_behavior": "Peak=max(previous held peak,current Close); percentage trailing stop exits on Close/peak-1<=-trailing_stop. Entry establishes a new signal peak. Original priority loss>trailing>range>time>regime.",
+      "coverage": "EX003/EX004 percentage-trailing search. EX077 separately tested no regime/no timeout unified FLAT/ARMED/HELD price cycle: arm at2*k*sigma drawdown, enter at k*sigma recovery, exit at k*sigma from held Close peak; sigma locked at market arm throughout the cycle.",
+      "strong_counter": "EX077 frozen L20/k1 has CAGR7.8887% below10.8290%,78 closed trades,2026-13.2460%. It retained2022/2023 positive and all yearly drawdown gates but failed overall return and old full-period frequency. No32 metrics obtained. Simplicity and locked scale already received a direct failed-account test; cannot rescue by k/L scanning.",
+      "refs": [
+        "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+        "research/S013/experiments/EX004_20261007/src/prepare_followup.py",
+        "research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/policy.py",
+        "research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/price_event.py",
+        "research/S013/deliveries/CANDIDATES/61/report.md"
+      ]
+    },
+    {
+      "family": "ENTRY_LOCKED_ROUTE_AND_EXIT_STATE_ACROSS_RAW_REGIME",
+      "status": "BASIC_BEHAVIOR_ALREADY_PRESENT_AND_REGIME_SWITCH_OFF_ALREADY_TESTED",
+      "precise_behavior": "While holding, route=active_route rather than today's raw regime. Entry locks route and establishes age/anchor/peak; a raw change does not replace these fields. The optional regime exit can close the policy, and actual accepted exit then resets active_route. This is not a daily route-switched holding policy.",
+      "coverage": "EX004 C0439/C0440 controlled exit_on_regime_change Boolean. EX005 deadband, confirmation, exit-direction, state-only cooldown. EX017 bull-entry/bull-exit two-day confirmation; EX030 only bull->bear exit confirmation; EX048 only bear->bull confirmation; EX024/EX049 majority/mean momentum route smoothing. EX046 only changed lifetime of empty-state TIME-BELOW category memory across rawbull, not held route/anchor independence.",
+      "strong_counter": "State-change exit protected2022 at2023 fee cost. EX005 cancellation of bull->bear risk exit lost2022 profitability. EX048 center107 closed vs112 and no new32. EX046 clearing category across rawbull created3 added losing actual cycles and reduced CAGR10.8889%->10.6245%. Keeping/clearing memory based on regime is not automatically beneficial.",
+      "refs": [
+        "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/adaptive_range.py",
+        "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py",
+        "research/S013/deliveries/CANDIDATES/3/report.md",
+        "research/S013/experiments/EX005_20261009/others/report.md",
+        "research/S013/deliveries/CANDIDATES/13/report.md",
+        "research/S013/experiments/EX030_20261011/others/report.md",
+        "research/S013/experiments/EX046_20261011/others/report.md",
+        "research/S013/experiments/EX048_20261011/others/report.md",
+        "research/S013/experiments/EX049_20261011/others/report.md"
+      ]
+    },
+    {
+      "family": "STOP_AND_EXIT_REENTRY_PATH_COUPLING_EX033_TO_EX058",
+      "status": "EXTENSIVELY_DIAGNOSED_AND_PARTLY_TESTED",
+      "coverage": [
+        "EX033:1793 dependent state divergence episodes across32;451 includeTIME origins; held age/route reset implicated but not sole cause.",
+        "EX034:after bear TIME, wait until rawbear/range eligibility refreshes. C6100 86 closed,2022-2.4305%,2023-5.1258%.",
+        "EX035:also allow ACF/momentum qualification invalidation to refresh. C6000 92 closed,2022-3.8576%,2023-2.1436%.",
+        "EX036/039/042:confirmation/actual drawdown/price direction/TIME price category diagnosis, no hypothetical traded-profit subtraction.",
+        "EX037/038:1/2/3 past20 TR-unit bear adverse displacement exits relative to signal-entry Close. Wider units are known post-failure adaptive calibration, not fresh untouched evidence.",
+        "EX040/041/043:price direction filtering, TIME-exit context, BELOW/ABOVE categories, raw/mean ACF backgrounds.",
+        "EX044/045:mean-ACF history window decoupling; absolute tails did not improve, stop window rescue.",
+        "EX046:memory clear on causal rawbull failed return;EX047 one-step triggers showed strong regime/H dependencies, not independent parameter profit causation.",
+        "EX050/051/052:rank/Winsor/consensus ACF variants, not new held-exit state.",
+        "EX053/054:original-background TIME-BELOW reentry CLOSE/BODY gates;EX055 local BODY restores ACF-ineligible bear entries;EX056 combined direction center equal toEX055;EX057 neutral score addition worse;EX058 combined bull boundary BODY and bear local recovery yieldsC8880 but old32 joint0/32."
+      ],
+      "implication": "Not every policy-state reduction is beneficial. Directly preventing TIME reentry already removed positive bear cycles and damaged both down years. State avalanche diagnosis does not certify a profitable remedy.",
+      "refs": [
+        "research/S013/experiments/EX033_20261011/others/report.md",
+        "research/S013/experiments/EX034_20261011/others/report.md",
+        "research/S013/experiments/EX035_20261011/others/report.md",
+        "research/S013/experiments/EX036_20261011/others/report.md",
+        "research/S013/experiments/EX037_20261011/others/report.md",
+        "research/S013/experiments/EX038_20261011/others/report.md",
+        "research/S013/experiments/EX040_20261011/others/report.md",
+        "research/S013/experiments/EX041_20261011/others/report.md",
+        "research/S013/experiments/EX043_20261011/others/report.md",
+        "research/S013/experiments/EX045_20261011/others/report.md",
+        "research/S013/experiments/EX047_20261011/others/report.md",
+        "research/S013/experiments/EX053_20261011/others/report.md",
+        "research/S013/experiments/EX054_20261011/others/report.md",
+        "research/S013/experiments/EX055_20261011/others/report.md",
+        "research/S013/experiments/EX056_20261011/others/report.md",
+        "research/S013/experiments/EX057_20261011/others/report.md",
+        "research/S013/experiments/EX058_20261011/others/report.md"
+      ]
+    },
+    {
+      "family": "CAUSAL_BULL_PARTICIPATION_RESTORED_FROM_CONFIRMATION_REJECTION",
+      "status": "BROAD_CONFIRMATION_BYPASS_AND_ROUTE_SCOPES_ALREADY_TESTED_NARROW_NEW_SCOPE_NOT_ESTABLISHED",
+      "coverage": "EX006 declare(add scope='bull'/'bear') includes route-specific confirmation and disabled confirmation; EX012 compares confirmation entirely off vs original level at original and two fragile backgrounds. EX036 andEX039 show current center bear opportunities all pass, and most direct confirmation rejection is bull. EX020/EX058 bull transition BODY rule restricts entry; it is not confirmation bypass. EX055-57 restore bear ACF qualification while retaining score, also not bull score bypass.",
+      "strong_counter": "At original B0, confirmation-off C7000 improves116 vs112 closed but lowers CAGR13.9456% vs16.1572%. Off still fails in changed ACF/H backgrounds. Returning more bull entries is no proof of enough net opportunities or32 robustness. At center, bull-only bypass can be economically identical to complete off if bear never rejected; must first compare full signal paths to avoid duplicate account identity.",
+      "not_found_exact_scope": "A single explicit bypass restricted to stable causal rawbull AND current Close>Open, retaining confirmation on transitions and all bear entries, was not found as the exact current-C8880 policy. It combines already tested state confirmation/BODY and score-off choices and is only a conditional structural interaction, not a new information mechanism.",
+      "review_before_any_account": "Freeze the exact scope and root's policy, show algebraic/synthetic differences and complete-signal equivalence screening against old off/scoped parents; then one center only if a prospective participation rationale survives. Do not infer future-year regime or add a profitability-trained threshold.",
+      "refs": [
+        "research/S013/experiments/EX006_20261009/src/declare.py",
+        "research/S013/experiments/EX006_20261009/others/report.md",
+        "research/S013/experiments/EX012_20261011/others/report.md",
+        "research/S013/experiments/EX036_20261011/others/report.md",
+        "research/S013/experiments/EX039_20261011/others/report.md",
+        "research/S013/experiments/EX020_20261011/others/report.md",
+        "research/S013/experiments/EX055_20261011/others/report.md",
+        "research/S013/experiments/EX058_20261011/others/report.md"
+      ]
+    }
+  ],
+  "remaining_expression_differences": [
+    {
+      "id": "MARKET_EPISODE_STATE_SEPARATE_FROM_ACCEPTED_TRANSACTION_STATE",
+      "priority": 1,
+      "status": "NOT_FOUND_EXACT_WHOLE_POLICY_WEAK_STRUCTURAL_HYPOTHESIS",
+      "difference": "Advance an opportunity-episode observer continuously from complete T market history regardless of actual holding, confirmation acceptance, failed buys or TIME exit. The observer owns its opportunity origin and reset; accepted entry/exit only changes transaction state. This contrasts with the parent whose age/anchor/category is established or cleared by each accepted signal, EX034/035 pending set only after an actual policy TIME exit, and EX077 market state becoming HELD when its buy event occurs.",
+      "possible_minimal_design_not_yet_frozen": "Use a single original causal eligibility crossing to open an episode and the reverse crossing to reset it, with explicit initial/warmup boundary. Persist episode origin while raw regime switches or score rejects; use transaction0/1 actions without resetting observer at accepted trade. Root must first freeze whether one admission per episode or repeated eligible admissions are allowed, and what exit remains independent. No new market threshold, calendar wait or future-year label.",
+      "why_might_reduce_avalanche": "Different accepted entry dates need not immediately create different observer episode clocks, so a TIME exit alone does not reset the opportunity identity. This is a path-geometry hypothesis, not evidence of reduced financial losses or guaranteed resynchronization.",
+      "strongest_counter": "EX034/035 already show episode-refresh restrictions can remove good repeat entries and break down-year profitability. EX077 independent-looking price-cycle simplification fails return and frequency. Different eligibility/range/regime parameters can still produce different episode boundaries, so this does not eliminate parameter sensitivity.",
+      "minimum_before_account": "One factorized observer/transaction specification, synthetic same-market/different-acceptance histories proving observer independence; matched disabled-observer equivalence with the exact parent; full numeric domain including every effective new coordinate; then at most one predeclared center without adapting to observed-year profits. Old aggregate frequency failures are historical facts, not automatic qualification under the new positive-year frequency gate.",
+      "native_expressibility": "Pure inputs/sessions history state machine producing target0/1 is expressible in reviewed native adapters. Actual-fill-based observer resets are not supplied by those adapters.",
+      "refs": ["research/S013/experiments/EX033_20261011/others/report.md", "research/S013/experiments/EX034_20261011/src/strategy_runtime/strategies/entry_refresh_range.py", "research/S013/experiments/EX035_20261011/src/strategy_runtime/strategies/eligibility_refresh_range.py", "research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/policy.py"]
+    },
+    {
+      "id": "PROFIT_ACTIVATED_ONE_WAY_SIGNAL_PROTECTION_LATCH",
+      "priority": 2,
+      "status": "NOT_FOUND_AS_EXACT_POLICY_NOT_ACTUAL_BREAKEVEN",
+      "difference": "An accepted signal episode begins with no new floor protection; only after a causally known favorable excursion activates a latch does a subsequent return toward a fixed signal-entry reference trigger0. The latch is monotone within that episode and is not cleared merely by rawregime flips. This differs from always-on EX025/026 anchor-loss and from ordinary continuously updated percentage peak trailing.",
+      "not_yet_scientifically_selected": "No activation threshold, floor or route scope has been approved/frozen. There is no basis here for threshold search, arbitrary2-fee activation, pretending the1%limit premium equals actual cost, or automatically combining this latch with changed regime exits.",
+      "strongest_counter": "EX025/026 cut rebounds and caused2023 losses. Ordinary trailing and EX077 locked price retrace already failed. A new latch introduces another discontinuous activation surface and can increase churn; lower state count or prettier drawdown cannot establish four-gate32 success.",
+      "minimum_before_account": "One matched latch-on/latch-off policy with same entries, timers, priorities and regime behavior; predeclare activation/floor business meaning and full active parameter geometry. First validate monotone latch, ties, crossregime persistence, top-up/retry semantics and T+1 delay using synthetic inputs. Signal floor only; every actual result must come from a full native account.",
+      "native_expressibility": "Signal-entry-reference latch with history-only state and0/1 target is expressible. A latch using actual weighted filled cost/fees is not established by reviewed adapter contracts.",
+      "refs": ["research/S013/experiments/EX025_20261011/others/report.md", "research/S013/experiments/EX026_20261011/others/report.md", "research/S013/experiments/EX058_20261011/src/strategy_runtime/strategies/reentry_confirmed_range.py", "research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/policy.py"]
+    }
+  ],
+  "platform_and_economic_boundaries": [
+    {
+      "requested_expression": "True filled-cost and fees breakeven or start holding-age on actual fill",
+      "status": "NOT_ESTABLISHED_BY_REVIEWED_S013_HISTORY_ADAPTERS",
+      "reason": "Reviewed calculate_history(inputs,sessions) adapters consume market-history inputs and generate entire target history before account execution; no actual account cost/quantity/fill feedback is provided in the shown interface. EX071 retrospectively reconstructs known actual positions/cost only for diagnostics, not a new supported strategy callback. Do not infer platform-wide impossibility from this narrow adapter review; an actual contract extension would need separate DEV authorization.",
+      "refs": ["research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/price_event.py", "research/S013/experiments/EX080_20261012/src/strategy_runtime/strategies/confirm_net.py", "research/S013/experiments/EX071_20261011/src/continuation_core.py"]
+    },
+    {
+      "requested_expression": "Guaranteed intraday stop or guaranteed no-loss exit",
+      "status": "NOT_EXPRESSED_BY_FIXED_T_DECISION_T_PLUS_1_MARKET_EXIT",
+      "reason": "A threshold seen at T Close can trigger a sell intention forT+1; next-open gap and fee can violate the floor. Changing to an intraday stop executor changes the frozen execution contract and cannot be silently implemented as another Close rule.",
+      "refs": ["research/S013/experiments/EX025_20261011/others/report.md", "research/S013/experiments/EX037_20261011/others/report.md", "research/S013/experiments/EX077_20261012/src/strategy_runtime/strategies/price_event.py"]
+    },
+    {
+      "requested_expression": "Dynamic stepwise half-position resize or multiple independent real accounts for routes",
+      "status": "OUTSIDE_AUTHORIZED_ZERO_ONE_POLICY_AND_NOT_ESTABLISHED_BY_REVIEWED_EXECUTOR",
+      "reason": "Current user authorization is0/1 long. Virtual parallel observers can produce one final0/1 target; separate real capital accounts or partial resizing need their own economic/execution contract. Existing EX018 independent virtual voters were tested and failed frequency, so parallel virtual state alone is not a new discovery.",
+      "refs": ["research/S013/experiments/EX018_20261011/others/report.md", "research/S013/deliveries/COMPONENTS/9/report.md"]
+    }
+  ],
+  "search_limit": "Targeted S013 source/report reading only. NOT_FOUND means no exact implementation found in these reviewed policies, not a claim that every historical configuration/AST has been exhaustively compared. No historical gate eligibility changed and no newly computed positive-year frequency implied.",
+  "recommended_root_next_decision": "Prefer explicit observer/transaction-state separation review over another old-field correlation search if a genuinely different economic policy can be specified. First prove which state remains independent and why good repetition is retained. Do not spend remaining quota to re-run fixed stops/trailing/off-regime/confirmation-off under a new name."
+}
