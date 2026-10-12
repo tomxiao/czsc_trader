@@ -1,0 +1,134 @@
+{
+  "question": "已经发行净预测的成熟误差能否修正乐观偏差，超越相同成熟样本的原预测和近期raw均值？",
+  "basis": "EX0842022历史盈利结构与实际结构偏离；EX086/87赚幅局部支持但组合净选择2022负；年度更新可能滞后。EX085近期raw状态无增量，必须与同20raw均值作配对反证。",
+  "strongest_counter": "校准等于rawmean+(currentq-pastmeanq)，不是新增市场信息；成熟延迟可能错过风险，当前/过去预测差可能重表达旧确认，更多交易不保证净盈利。",
+  "fixed_design": "两族原110净预测，最近20已发行且h4 truth在T成熟；同日成熟可用，无20或当前q缺失NA，不年重置/不回填。四表达historical/matched/rawmean/calibrated；0新fit；48预设时钟，不择相位。",
+  "quantities": [
+    "confirmation_mse_improvement_vs_matched",
+    "confirmation_mse_improvement_vs_rawmean",
+    "confirmation_calibrated_positive_mean",
+    "confirmation_calibrated_positive_minus_matched",
+    "confirmation_calibrated_positive_minus_rawmean",
+    "confirmation_calibrated_greedy_minus_matched_greedy",
+    "original14_mse_improvement_vs_matched",
+    "original14_mse_improvement_vs_rawmean",
+    "original14_calibrated_positive_mean",
+    "original14_calibrated_positive_minus_matched",
+    "original14_calibrated_positive_minus_rawmean",
+    "original14_calibrated_greedy_minus_matched_greedy"
+  ],
+  "bootstrap": "500overlap40 originalTaxis seed13;fixedpredictions/masks;20minimum/400valid;LINEAR95CI;not standard32/futureprobability",
+  "role_of_component": "已发行预测偏差校准与扣费机会选择；是否支持新独立风险许可仍待证明",
+  "label": "原h4HFQ OPEN扣费收益Open[T+5]/Open[T+1]*.999/1.001-1",
+  "horizon": "原h4，固定20已成熟issued预测误差窗口，不扫描",
+  "controls": "每族历史原控制、同20可得支持matched原q、raw20均值、calibrated；48所有时钟/年度/相位",
+  "availability": "当T已知发出的历史q和label_end<=T的真实h4标签；最终年度标签仅验收；无未来y/年度选择",
+  "price_basis": "原510500HFQ锚.2803，无现金分红叠加，原1m/lot100/fee10bp/1percent合同",
+  "limitations": "同开发池反复研究；残差不是独立信息；价格代理忽略原生限价/整手/现金路径/浮盈亏；不能据此填硬门或32点状态",
+  "input_references": {
+    "labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX079_20261012"
+      },
+      "evidence_id": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75.csv",
+      "sha256": "8f555f2eaac04c28c588bde3122e3ee1a248cc2326d77c33a45bb6057f669c75",
+      "media_type": "text/csv",
+      "name": "net-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    },
+    "scores.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462.csv",
+      "sha256": "664f30084a21aeb69018354c267b4ea9b0801de730a44e1454b1c72380eb6462",
+      "media_type": "text/csv",
+      "name": "confirm-net-forecasts",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_statistics.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1.json",
+      "sha256": "e123248a16c1ebef1d87d4980141838f35852756beeb87ed07a887daa4c198a1",
+      "media_type": "application/json",
+      "name": "confirm-net-statistics",
+      "schema": null,
+      "schema_version": null
+    },
+    "prior_verification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX087_20261012"
+      },
+      "evidence_id": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb.json",
+      "sha256": "527556b71fa743eecabbd3a2f8a8fc38fd85556e09444ac3b97b5e3b7c7286fb",
+      "media_type": "application/json",
+      "name": "confirm-net-verification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "source_files": {
+    ".tmp/s013-new-goal/calibration/kernel.py": "87f15f46f21984ed9cb0d08845a3b5368b06b9c2ae40c9c1deee11791f7d9e40",
+    ".tmp/s013-new-goal/calibration/audit.py": "c65170f8be066946929145de72c59a321b49466878d42c77858839d07b05ff50",
+    ".tmp/s013-new-goal/calibration/focused_checks.py": "773d84514e358be67c738a5bdcc70db1e124517b68faca9cc50c542cb06fc527",
+    ".tmp/s013-new-goal/calibration/focused_checks.json": "e94535eecd004bc13e81518b26df2e1c7669a201506341e28bc0c8fe4bb4aad1",
+    ".tmp/s013-new-goal/calibration/audit_checks.py": "77b0a1274411fa632a3cf21a28216e41a30be0b3a4f915226f42f27b06fc5720",
+    ".tmp/s013-new-goal/calibration/audit_checks.json": "ac1d61913b8e721e0c3813748a7a4de7ba3c631e7ea91d735f3dba31f2360b96",
+    ".tmp/s013-new-goal/calibration/driver.py": "22f1bda0f3775a2e02937d014f8d6e62881d0bc7a22709b0468b0f24b7199dc4",
+    ".tmp/s013-new-goal/governance.py": "1e8049fca6ac817cbdd885152e126d19659beadc18f9df3e8df50b825897025a",
+    ".tmp/s013-new-goal/gates_v2.py": "b04ad39f5e121ed4334644c26def970184708f3a379785c40f34603c844d8eb5",
+    ".tmp/s013-new-goal/gate_checks.py": "e9f09317465717e29e0bdeed1144a365396c92a5ceb891ab2e769726382cf599",
+    ".tmp/s013-new-goal/gate_checks.json": "7c28fbfc4f1bea90becab87c9fb1c4a6f89df51818c8b480b36afe27c2b48574",
+    ".tmp/s013_confirm_execution.py": "769e9cd21a405239f776d26bd33455e6e7a10d69de500d4d6e46fd869cb2ed64",
+    "research/S013/experiments/EX058_20261011/src/common.py": "f38c71d3392fb791fdd064f366cc251e33c064d7b88a0cd8b737f2603ccf236b",
+    "research/S013/experiments/EX083_20261012/src/kernel.py": "769044707f3759cc988ca8ec7176b2ea9bee87fd0211bc76193377532a5e0212",
+    "research/S013/experiments/EX083_20261012/src/audit.py": "6bd2709191e56f731da894af84190a0051a450753686e1b06e8bab2aec75b486"
+  },
+  "resources": {
+    "new_annual_models": 0,
+    "new_accounts_component": 0,
+    "provider_calls": 0,
+    "schedules": 48,
+    "bootstrap": 500
+  },
+  "new_goal": "v2 pooledpositivefrequency replaces allpoolfrequency;center+32 must passnew4",
+  "stop_or_followup": "证据不足则停止固定20校准，不扫窗口或选年份/相位；有明确增量和经济余量则同轮可另冻结native中心反证，只有新中心四门合格才标准32及独立费检查",
+  "objective_achieved": false,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX089_20261012"
+  },
+  "quota_slot": 1,
+  "status": "FROZEN_BEFORE_REAL_STUDY"
+}
