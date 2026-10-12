@@ -1,0 +1,212 @@
+{
+  "status": "PASS",
+  "closed_on_utc": "2026-10-12T16:51:26.604390+00:00",
+  "research_state": "PAUSED",
+  "objective_achieved": false,
+  "two_round_execution_completed": true,
+  "completed": 2,
+  "remaining": 0,
+  "goals_and_fixed_execution_unchanged": true,
+  "EX101_authorized": false,
+  "experiments": {
+    "EX099": {
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S013"
+        },
+        "stage": "COMPONENTS",
+        "revision": 27,
+        "content_sha256": "8400b2a769437023cecdc0d666c7d4214f6f8324d2e1f8dbedc7a93850dc886f"
+      },
+      "FULL": {
+        "type": "DeliveryValidation",
+        "status": "PASS",
+        "scope": "FULL",
+        "issues": []
+      },
+      "report_copy": {
+        "status": "PASS",
+        "formal_report": "research/S013/deliveries/COMPONENTS/27/report.md",
+        "experiment_report": "research/S013/experiments/EX099_20261013/others/report.md",
+        "formal_bytes": 14134,
+        "copy_bytes": 14134,
+        "formal_sha256": "e114a19a2234a9b09bcdc6fe98876abeeb0960149f7857a2921415bdc2f6531d",
+        "copy_sha256": "e114a19a2234a9b09bcdc6fe98876abeeb0960149f7857a2921415bdc2f6531d",
+        "exact_bytes": true
+      },
+      "budget": {
+        "completed": 1,
+        "remaining": 1,
+        "last_completed": "EX099_20261013",
+        "pause_after_EX100": true,
+        "objective_achieved": false,
+        "actual": {
+          "annual_fits": 12,
+          "full_accounts": 0,
+          "independent_attempts": 1635,
+          "provider_calls": 2
+        },
+        "authority": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S013",
+            "experiment_id": "EX099_20261013"
+          },
+          "evidence_id": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96.json",
+          "sha256": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96",
+          "media_type": "application/json",
+          "name": "stage2-authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      }
+    },
+    "EX100": {
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S013"
+        },
+        "stage": "COMPONENTS",
+        "revision": 28,
+        "content_sha256": "353cd290d74bf361960e9343487dc8a8c83fd36047d09733fe0c740efc4a8fba"
+      },
+      "FULL": {
+        "type": "DeliveryValidation",
+        "status": "PASS",
+        "scope": "FULL",
+        "issues": []
+      },
+      "report_copy": {
+        "status": "PASS",
+        "formal_report": "research/S013/deliveries/COMPONENTS/28/report.md",
+        "experiment_report": "research/S013/experiments/EX100_20261013/others/report.md",
+        "formal_bytes": 18612,
+        "copy_bytes": 18612,
+        "formal_sha256": "a2e531d6777c1092bacc1f656196b580762dfc284049a3073f3037e62c93e788",
+        "copy_sha256": "a2e531d6777c1092bacc1f656196b580762dfc284049a3073f3037e62c93e788",
+        "exact_bytes": true
+      },
+      "budget": {
+        "completed": 2,
+        "remaining": 0,
+        "last_completed": "EX100_20261013",
+        "pause_after_EX100": true,
+        "objective_achieved": false,
+        "actual": {
+          "annual_fits": 36,
+          "full_accounts": 0,
+          "independent_attempts": 0,
+          "provider_calls": 0
+        },
+        "authority": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S013",
+            "experiment_id": "EX100_20261013"
+          },
+          "evidence_id": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96.json",
+          "sha256": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96",
+          "media_type": "application/json",
+          "name": "stage2-authorization",
+          "schema": null,
+          "schema_version": null
+        }
+      }
+    }
+  },
+  "new_full_window_strategy_accounts": 0,
+  "real_independent_attempts": 1635,
+  "actual_real_annual_fits": 48,
+  "provider_calls": 2,
+  "provider_retries": 0,
+  "new_candidates": 0,
+  "historical_eligibility_unchanged": true,
+  "publication_time_verified": false,
+  "conditional_exploration": true,
+  "supplemental_verification_source_references": {
+    ".tmp/s013-stage2-20261013/execution/ledger_verification.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX100_20261013"
+      },
+      "evidence_id": "4fc14d0b2e1ccb6a427a8d05f27b8093072e5071e436fa1ceb77d5f5e51cc041.py",
+      "sha256": "4fc14d0b2e1ccb6a427a8d05f27b8093072e5071e436fa1ceb77d5f5e51cc041",
+      "media_type": "text/x-python",
+      "name": "stage2-ledger-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    ".tmp/s013-stage2-20261013/input_adapter.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX100_20261013"
+      },
+      "evidence_id": "b866a6611fb546c4450435c6e65b692514e465baa1a629d4e256015ff79a95b4.py",
+      "sha256": "b866a6611fb546c4450435c6e65b692514e465baa1a629d4e256015ff79a95b4",
+      "media_type": "text/x-python",
+      "name": "stage2-input-adapter",
+      "schema": null,
+      "schema_version": null
+    },
+    ".tmp/s013-stage2-20261013/run_fit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX100_20261013"
+      },
+      "evidence_id": "8cc50c4ed8f5d06a8c3b12d45a9b4f6bea02cda6ee6fab20eb0020f0a44a2a8f.py",
+      "sha256": "8cc50c4ed8f5d06a8c3b12d45a9b4f6bea02cda6ee6fab20eb0020f0a44a2a8f",
+      "media_type": "text/x-python",
+      "name": "stage2-run-fit",
+      "schema": null,
+      "schema_version": null
+    },
+    ".tmp/s013-stage2-20261013/models/bootstrap_peer_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX100_20261013"
+      },
+      "evidence_id": "b60fef0e799de9f9c94f334773614fce55fa4e9e38988858ac2dff0b4d90cdb9.py",
+      "sha256": "b60fef0e799de9f9c94f334773614fce55fa4e9e38988858ac2dff0b4d90cdb9",
+      "media_type": "text/x-python",
+      "name": "stage2-bootstrap-peer-audit",
+      "schema": null,
+      "schema_version": null
+    },
+    ".tmp/s013-stage2-20261013/closing_check.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX100_20261013"
+      },
+      "evidence_id": "4e565ad28c39d320aac8b552c584770ff71846b5b4557353510df373067dea9f.py",
+      "sha256": "4e565ad28c39d320aac8b552c584770ff71846b5b4557353510df373067dea9f",
+      "media_type": "text/x-python",
+      "name": "stage2-closing-check",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "runtime_versions": {
+    "numpy": "2.5.2",
+    "pandas": "3.0.5",
+    "czsc-dataflows": "0.1.0",
+    "czsc-strategy-runtime": "0.1.0",
+    "czsc-trading-execution-engine": "0.1.0"
+  },
+  "registered_candidate_count": 203
+}

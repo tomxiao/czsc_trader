@@ -1,0 +1,187 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX100_20261013"
+  },
+  "frozen_utc": "2026-10-12T16:47:27.034691+00:00",
+  "method": "approved fixed H4 paired labels/ridge10/annual ECDF/zero threshold/no search",
+  "sources": {
+    ".tmp/s013-stage2-20261013/governance.py": "78166994450b218a25fefbcfc309e07d68bcb26a93c91505fb180c33adcac099",
+    ".tmp/s013-stage2-20261013/driver.py": "e97bf65ebd87ffc9bf76ee42d0e48b347df27eaed96136d0b24a5374d5914c32",
+    ".tmp/s013-stage2-20261013/models/stage2_models.py": "0067a25f83aa3b0d6466d96c49f066a57477e5144a1f3ce346ee778e8b7d3dcc",
+    ".tmp/s013-stage2-20261013/models/synthetic_checks.py": "df1f930a2ed160f2a2697af2a65cac051e7c4c43ce73f2489af0a423fc241eaf",
+    ".tmp/s013-stage2-20261013/models/synthetic_checks.json": "5bfc8e43a6093facdcfc5b67a529cf8a2f01bd32992a1e841bfe9dde2aedea4c",
+    ".tmp/s013-stage2-20261013/execution/label_kernel.py": "c4efc57e3024fed7e94e2c3c3ba35b950103ca5bfb46e99860437d931eaa7eab",
+    ".tmp/s013-stage2-20261013/execution/synthetic_checks.py": "9e394ac8635033b14616749baa0cd8ea78c343612dcc24580128f3f18f6296df",
+    ".tmp/s013-stage2-20261013/execution/synthetic_checks.json": "51d8e39df270ba2e1ef73d0021264bf08fd453bd1da96cdad7d9250eb7ea878c",
+    ".tmp/s013-stage2-20261013/data/collect.py": "66f44838275d299099cc3cb3e6820b50073456c0812e2a6fe18d01d89e53a1ba",
+    ".tmp/s013-stage2-20261013/data/audit.py": "688b0a0fb48423e1270da2564570cf3bacf2d7b0ce3da10400f07905583a826e",
+    ".tmp/s013-stage2-20261013/inputs/input_checks.json": "a343b10c93e25a6905a3850ea320678805a99f793026f24e5216b1c9178a2ff5",
+    ".tmp/s013-stage2-20261013/data/data_review.json": "e0c18734093883a227fff669b0448483f9f5c99d85a6dd8f7360105786b7e17d",
+    ".tmp/s013-stage2-20261013/data/request_ledger.json": "8dedadc96e4c8917d467c29884ceb67cb838bcb1901807e12e7e5dac1ecc194d",
+    ".tmp/s013-stage2-20261013/data/response_01.json": "3cbd1ea39d8506a7d21d0dea25892be81d59f73205cc078608f4cffdcae09234",
+    ".tmp/s013-stage2-20261013/data/response_02.json": "86f91d45aae0299dd075f347985dce6f897b3a5647c2bcf29ee6ec5fcdeea636",
+    ".tmp/s013-stage2-20261013/data/G1_ordered.csv": "097f58e5c5cedf843e0cf782f979739570cda1e907a5addef211627144ece918",
+    ".tmp/s013-stage2-20261013/data/G1_raw.csv": "d219656809f0aa81f4d497f6ad227e8a95d5d6394fea5084f4de54e8ba35865d",
+    ".tmp/s013-stage2-20261013/data/G2_ordered.csv": "2dcc64acdc7ab4938ec93ddebf7c377b7e66f13ad81e787799738f11aa4be62b",
+    ".tmp/s013-stage2-20261013/data/G2_raw.csv": "f1f9ce1afc079101af298fa65b24b69e2b1baf44fcb44bd4319979c6cf34761b"
+  },
+  "checks": {
+    "model_synthetic": {
+      "status": "PASS",
+      "checks": [
+        "exact_two_labels_four_groups_two_year_16_fits",
+        "strict_maturity_shared_training",
+        "tail_prediction_ignores_unknown_label",
+        "future_feature_and_label_change_preserves_past_predictions",
+        "prefix_has_same_predictions_no_future_test_count_gate",
+        "one_valid_test_T_does_not_block_training_or_prediction",
+        "missing_new_data_not_imputed_A_can_predict",
+        "training_rows_shared_across_labels_and_groups",
+        "ridge_alpha10_intercept_unpenalized",
+        "train_only_ECDF_ties_and_extremes",
+        "two_prespecified_interactions_no_fullpool_transform",
+        "interaction_uses_ranked_centered_range60",
+        "occupation_and_release_day_no_reentry",
+        "unfilled_attempt_still_occupies_until_cancel",
+        "unknown_release_no_fake_end_close",
+        "fixed_phase_0_does_not_choose_other_phase",
+        "fixed_phase_1_does_not_choose_other_phase",
+        "fixed_phase_2_does_not_choose_other_phase",
+        "fixed_phase_3_does_not_choose_other_phase",
+        "fixed_phase_4_does_not_choose_other_phase",
+        "maturity_on_signal_T_rejected",
+        "common_input_mask_precedes_selection_without_future_labels",
+        "paired_panels_use_shared_forecast_support",
+        "zero_fit_quota_blocks_first_fit",
+        "bootstrap_500_shared_blocks_without_refits",
+        "bootstrap_fixed_seed_determinism"
+      ],
+      "n": 26,
+      "synthetic_only": true,
+      "real_data_reads": 0,
+      "real_model_fits": 0,
+      "full_accounts": 0
+    },
+    "execution_synthetic": {
+      "status": "PASS",
+      "checks": [
+        "open limit fill and exact100 lot cash fees",
+        "exact fixed L0 formula maturity",
+        "H4 exit crosses year continuous attempt",
+        "fee cash and independent100w return",
+        "intraday strict crossing fills canonical limit",
+        "exact touch refused by existing strict semantics",
+        "unfilled DAY entry no nextday retry and early cancellation maturity",
+        "tail actual filled OPEN not force closed",
+        "lastT noexecution cannot fabricate outcome",
+        "HFQ scaled grid quantity canonical",
+        "prefix unchanged for matured labels",
+        "future mutated after maturity leaves label ledger invariant",
+        "overlapping attempts reset cash and do not composite",
+        "illegal quote refused no repair"
+      ],
+      "check_count": 14,
+      "market_reads": 0,
+      "real_attempts": 0,
+      "synthetic_signal_rows": 16,
+      "synthetic_executors": 15,
+      "model_fits": 0,
+      "full_window_accounts": 0,
+      "limits": "market sell canonical public TXE always OPEN_MARKET; no artificial delayed-sale simulation"
+    },
+    "feature_checks": {
+      "status": "PASS",
+      "original14_exact": true,
+      "signal_dates": 1635,
+      "first": "2020-01-02",
+      "last": "2026-09-29",
+      "market": [
+        {
+          "group": "G1",
+          "sha256": "097f58e5c5cedf843e0cf782f979739570cda1e907a5addef211627144ece918",
+          "lag": 1,
+          "prefix_checks": 3,
+          "source_last_used_for_T": "previous_actual_session",
+          "valid_on_original_axis": 1635
+        },
+        {
+          "group": "G2",
+          "sha256": "2dcc64acdc7ab4938ec93ddebf7c377b7e66f13ad81e787799738f11aa4be62b",
+          "lag": 1,
+          "prefix_checks": 3,
+          "source_last_used_for_T": "previous_actual_session",
+          "valid_on_original_axis": 1635
+        }
+      ],
+      "common_complete": 1616,
+      "historical_publication_verified": false,
+      "conditional_snapshot_exploration": true,
+      "no_imputation": true,
+      "old_input_references": {
+        "features.csv": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S013",
+            "experiment_id": "EX066_20261011"
+          },
+          "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+          "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+          "media_type": "text/csv",
+          "name": "features",
+          "schema": null,
+          "schema_version": null
+        }
+      }
+    }
+  },
+  "input_references": {
+    "features.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd.csv",
+      "sha256": "aa2a816c802ed35932e8d879efcc75cb3876a9280e74b3e188461923bd5736bd",
+      "media_type": "text/csv",
+      "name": "features",
+      "schema": null,
+      "schema_version": null
+    },
+    "prices.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S013",
+        "experiment_id": "EX066_20261011"
+      },
+      "evidence_id": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc.csv",
+      "sha256": "4402aba79913c267c6785971b084f0ee1bf5cc0886a08a2db5b8352de28aa5dc",
+      "media_type": "text/csv",
+      "name": "prices",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "authority": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96.json",
+    "sha256": "375c1e67cc823403200b1711a3f21be88fba989e556a1855c851eae3c6f9eb96",
+    "media_type": "application/json",
+    "name": "stage2-authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_kind": "PUBLIC_COMPONENT_PRERESEARCH_CHECKS",
+  "current_cli": "only backtest CLI exists; no legacy experiment preflight command invoked",
+  "data_probe_sequence": "two authorized scope-only provider coverage probes precede formal allocation; no label/model calculation then; committed plan fixed before probes"
+}
