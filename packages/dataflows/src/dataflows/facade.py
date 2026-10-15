@@ -311,6 +311,11 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
         {"Date", "ConstituentSymbol", "Weight"},
         {"Weight"},
     ),
+    Dataset.INDEX_CONSTITUENT_CHANGES.value: (
+        {"Date", "AnnouncementDate", "EffectiveAfterClose", "AvailableDate",
+         "ConstituentSymbol", "ConstituentName", "Change"},
+        set(),
+    ),
     Dataset.SELL_SIDE_FORECAST.value: (
         {
             "Date",
@@ -503,6 +508,10 @@ def _validate_provider_output(
                 dataset=dataset,
                 field=column,
             )
+    if dataset == Dataset.INDEX_CONSTITUENT_CHANGES.value:
+        from .index_constituent_changes import validate_index_constituent_changes
+
+        validate_index_constituent_changes(dataframe, request, metadata)
     if dataset == Dataset.ETF_CREATION_REDEMPTION_BASKET.value:
         source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
         available_dates = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
@@ -1434,6 +1443,7 @@ class Dataflows:
 
 
 def _default_providers(env_file: Path | None) -> dict[str, Provider]:
+    from .index_constituent_changes import fetch_index_constituent_changes
     from .chinaamc_pcf import verify_chinaamc_pcf_components
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .fred_gold_volatility import fetch_gold_volatility_daily
@@ -1756,6 +1766,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.VIX_DAILY.value: vix,
         Dataset.GOLD_VOLATILITY_DAILY.value: gold_volatility,
         Dataset.INDEX_CONSTITUENT_WEIGHT.value: index_weights,
+        Dataset.INDEX_CONSTITUENT_CHANGES.value: fetch_index_constituent_changes,
         Dataset.SELL_SIDE_FORECAST.value: sell_side_forecast,
         Dataset.STOCK_MONEYFLOW.value: stock_moneyflow,
         Dataset.TRADING_CALENDAR.value: trading_calendar,

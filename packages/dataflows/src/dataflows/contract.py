@@ -77,6 +77,7 @@ class Dataset(StrEnum):
     VIX_DAILY = "index.vix_daily"
     GOLD_VOLATILITY_DAILY = "index.gold_volatility_daily"
     INDEX_CONSTITUENT_WEIGHT = "index.constituent_weight"
+    INDEX_CONSTITUENT_CHANGES = "index.constituent_changes"
     SELL_SIDE_FORECAST = "stock.sell_side_forecast"
     STOCK_MONEYFLOW = "stock.moneyflow"
     TRADING_CALENDAR = "calendar.trading_sessions"
@@ -314,6 +315,12 @@ class DataRequest:
             frequencies = intraday
         elif dataset is Dataset.INDEX_CONSTITUENT_WEIGHT:
             frequencies = {"daily", "snapshot"}
+        elif dataset is Dataset.INDEX_CONSTITUENT_CHANGES:
+            frequencies = {"event"}
+            if symbol is None:
+                raise ValueError("index constituent changes require a symbol")
+            if len(self.start) != 10 or len(self.end) != 10:
+                raise ValueError("index constituent changes require ISO date boundaries")
         if not isinstance(self.frequency, str) or self.frequency not in frequencies:
             raise ValueError(f"{dataset} frequency must be one of {sorted(frequencies)}")
         allowed = {
