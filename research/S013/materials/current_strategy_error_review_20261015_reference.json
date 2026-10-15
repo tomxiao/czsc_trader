@@ -1,0 +1,75 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "908193106deb3e0334720fabfdc60b67d1afc37062e6144e821d133bcb1fa97d.json",
+    "sha256": "908193106deb3e0334720fabfdc60b67d1afc37062e6144e821d133bcb1fa97d",
+    "media_type": "application/json",
+    "name": "existing-strategy-error-review-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "diagnosis": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "b0a5257ab9a8e6fb0f6cd487105d4766bf6b9c53b0f51bbe21bea18d93f19969.json",
+    "sha256": "b0a5257ab9a8e6fb0f6cd487105d4766bf6b9c53b0f51bbe21bea18d93f19969",
+    "media_type": "application/json",
+    "name": "existing-strategy-error-review-20261015-ledger_diagnosis",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "bff1a9e432c462512093b669ee9f8d49bae8da5fee617ee2cf0c9484a3b3f143.zip",
+    "sha256": "bff1a9e432c462512093b669ee9f8d49bae8da5fee617ee2cf0c9484a3b3f143",
+    "media_type": "application/zip",
+    "name": "existing-strategy-error-review-20261015-existing_ledger_diagnosis",
+    "schema": null,
+    "schema_version": null
+  },
+  "findings": {
+    "primary_candidate": "C2132",
+    "actual_closed_cycles": 112,
+    "positive_benchmark_year_closed_cycles": 64,
+    "required_cycles": 77,
+    "frequency_shortfall": 13,
+    "entirely_flat_days": 1040,
+    "flat_reasons": {
+      "PRICE_ABOVE_ENTRY_RANGE": 513,
+      "PERSISTENCE_BELOW_ENTRY_THRESHOLD": 504,
+      "CONFIRMATION_REJECTED": 23
+    },
+    "example": {
+      "start": "2025-07-18",
+      "end": "2025-12-11",
+      "sessions": 99,
+      "etf_return": 0.17165636186137312,
+      "price_gate_days": 72,
+      "persistence_gate_days": 27
+    },
+    "judgment": "优先审查入场机制未覆盖的上涨行情；现有证据不足以支持全量成分股行情采集。",
+    "limitations": [
+      "空仓期间ETF上涨不是可追回策略利润。",
+      "C2132与C2093规则不同，比较不能隔离单个规则的因果效果。",
+      "未计算成分股指标，无法证实其预测或交易价值。"
+    ],
+    "research_state": "PAUSED",
+    "new_models": 0,
+    "new_accounts": 0,
+    "new_provider_calls": 0
+  }
+}
