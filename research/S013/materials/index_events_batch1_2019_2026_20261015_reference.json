@@ -1,0 +1,315 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "8046120c4bc4bd05cd82040ae3813909ce041691d85b78d977e90ffd1da54901.json",
+    "sha256": "8046120c4bc4bd05cd82040ae3813909ce041691d85b78d977e90ffd1da54901",
+    "media_type": "application/json",
+    "name": "csi500-events-batch1-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "3d3121df766dd1a7216a71abe4763481cb505c563201296261327891d23b4419.json",
+    "sha256": "3d3121df766dd1a7216a71abe4763481cb505c563201296261327891d23b4419",
+    "media_type": "application/json",
+    "name": "csi500-events-batch1-20261015-batch_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "8bf416d0edc74427074d45ca93c19a5a9698db13b3dd269d250264ad75201f0d.zip",
+    "sha256": "8bf416d0edc74427074d45ca93c19a5a9698db13b3dd269d250264ad75201f0d",
+    "media_type": "application/zip",
+    "name": "csi500-events-batch1-20261015-sources_and_acceptance",
+    "schema": null,
+    "schema_version": null
+  },
+  "bundle_members_verified": 252,
+  "authenticated_references": 3,
+  "findings": {
+    "kind": "DEV_CSI500_SOURCE_PATCH_BATCH1_NOT_RESEARCH_RESTART",
+    "scope": {
+      "approval": "同意，请继续逐批补齐研究区间内中证500的其他历史调整事件，核验后纳入DFLS补丁，S013研究保持暂停。",
+      "start_date": "2019-10-09",
+      "end_date": "2026-09-30",
+      "symbol": "000905.SH",
+      "branch": "codex/s013-diagnostic-feedback",
+      "role": "DEV",
+      "source": "CSI issuer original notices and attachments",
+      "models": 0,
+      "accounts": 0,
+      "new_strategy_experiments": 0,
+      "research_execution_state": "PAUSED",
+      "discovery": "Capture every issuer-directory page through start boundary; inspect official adjustment announcements, including ones hiding CSI500 in their title."
+    },
+    "batch_status": "COMPLETE_FOR_FOUR_NEW_EVENTS",
+    "overall_status": "PARTIAL_OFFICIAL_DETAIL_ACCESS_REFUSED",
+    "new_events": [
+      {
+        "notice_id": 11529,
+        "announcement_date": "2019-12-02",
+        "first_session": "2019-12-16",
+        "effective_after_close": null,
+        "boundary_kind": "FIRST_SESSION_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20191129",
+          "after_snapshot": "20191231",
+          "constituents_per_snapshot": 500,
+          "added": 50,
+          "removed": 50,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "attachment_variants": 1
+        }
+      },
+      {
+        "notice_id": 11429,
+        "announcement_date": "2020-06-01",
+        "first_session": "2020-06-15",
+        "effective_after_close": null,
+        "boundary_kind": "FIRST_SESSION_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20200529",
+          "after_snapshot": "20200630",
+          "constituents_per_snapshot": 500,
+          "added": 50,
+          "removed": 50,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "attachment_variants": 2
+        }
+      },
+      {
+        "notice_id": 3006027,
+        "announcement_date": "2026-01-06",
+        "first_session": "2026-01-12",
+        "effective_after_close": "2026-01-09T15:00:00",
+        "boundary_kind": "AFTER_CLOSE_STATED",
+        "replacement_count": 1,
+        "verification": {
+          "before_snapshot": "20251231",
+          "after_snapshot": "20260130",
+          "constituents_per_snapshot": 500,
+          "added": 1,
+          "removed": 1,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "attachment_variants": 1
+        }
+      },
+      {
+        "notice_id": 3006137,
+        "announcement_date": "2026-05-29",
+        "first_session": "2026-06-15",
+        "effective_after_close": "2026-06-12T15:00:00",
+        "boundary_kind": "AFTER_CLOSE_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20260529",
+          "after_snapshot": "20260630",
+          "constituents_per_snapshot": 500,
+          "added": 50,
+          "removed": 50,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "attachment_variants": 1
+        }
+      }
+    ],
+    "catalog_events_total": 5,
+    "catalog_change_rows_total": 402,
+    "acceptance": {
+      "status": "PASS",
+      "public_api": "Dataflows.prepare/fetch",
+      "new_events": [
+        {
+          "first_session": "2019-12-16",
+          "notice_id": 11529,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "51899b2822c3fe459421aeed73acbced316e4aac9eaad18983b688f27c709752"
+        },
+        {
+          "first_session": "2020-06-15",
+          "notice_id": 11429,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "71f189017ad029cae92c62d07c4f00cdd2607159c968e793b0250f84f52fa040"
+        },
+        {
+          "first_session": "2026-01-12",
+          "notice_id": 3006027,
+          "count_per_side": 1,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "d4b4ceedd8f08ae2fddc17ff1dfffde617f3ba90a2b999cdd99b7d503737b75d"
+        },
+        {
+          "first_session": "2026-06-15",
+          "notice_id": 3006137,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "91b86de9b157744a47a1228181bc84e4e61329364b2d48bbffcbc134ce7aea31"
+        }
+      ],
+      "new_rows": 302,
+      "total_catalog_events": 5,
+      "total_catalog_change_rows": 402,
+      "network_requests": 0,
+      "model_fits": 0,
+      "strategy_accounts": 0,
+      "research_execution_state": "PAUSED",
+      "full_history_certified": false,
+      "prepared_reference": {
+        "space_id": "84176675-e72c-498e-8b69-462e49c9ece4",
+        "preparation_id": "90c4c683-d63a-426e-8211-77c0c21694bd",
+        "manifest_sha256": "709366bce173e3175b131efb82592b7d60d990074108600b5d03bdf276e081d4"
+      }
+    },
+    "validation": {
+      "focused_tests_passed": 35,
+      "final_patch_tests_rerun_passed": 16,
+      "new_source_change_records_checked": 302,
+      "source_and_snapshot_mismatches": 0
+    },
+    "discovery": {
+      "directory_records": 1530,
+      "adjustment_candidates": 803,
+      "split_day_boundary_checks": 2,
+      "candidate_notice_successes": 157,
+      "candidate_notice_403_failures": 646,
+      "known_retained_provider_notices_absent_from_current_directory": 213,
+      "directory_absence_counterexample_notice_id": 3006027,
+      "attachment_inventory_includes_target_not_mentioned_in_body": [
+        11529,
+        11429
+      ]
+    },
+    "pending_regular_notices": [
+      {
+        "id": 11514,
+        "title": "关于调整沪深300和中证香港100等指数样本的公告",
+        "theme": "指数调样",
+        "publishDate": "2020-11-27",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 13888,
+        "title": "关于调整沪深300和中证香港100等指数样本的公告",
+        "theme": "指数调样",
+        "publishDate": "2021-11-26",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 14223,
+        "title": "关于沪深300和中证香港100等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2022-05-27",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 14497,
+        "title": "关于沪深300和中证香港100等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2022-11-25",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 14796,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2023-05-26",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15044,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2023-11-24",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15267,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2024-05-31",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15471,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2024-11-29",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15690,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2025-05-30",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 3006000,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2025-11-28",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      }
+    ],
+    "blocker": "Issuer detail API returned403 for646 candidate reads and remained403 on one later normal-access recheck. Unverified notices were not added; no bypass attempted.",
+    "limits": [
+      "Whole research-window event completeness is not certified.",
+      "Incomplete candidate counts refer to CSI-company announcements, not confirmed CSI500 events.",
+      "Current issuer directory omits known historical notices; union/independent coverage remains necessary.",
+      "Announcement lookback beyond the source-window start remains an unverified boundary.",
+      "Historical first publication/revision visibility remains unverified; actual source capture times are retained.",
+      "Older notices state first session only; EffectiveAfterClose is intentionally null for them."
+    ],
+    "new_tushare_requests": 3,
+    "new_price_requests": 0,
+    "models": 0,
+    "accounts": 0,
+    "new_strategy_experiments": 0,
+    "research_execution_state": "PAUSED",
+    "next_step": "Continue remaining regular/ad-hoc verification under the existing approval when ordinary official access is available; preserve explicit incomplete status meanwhile."
+  }
+}

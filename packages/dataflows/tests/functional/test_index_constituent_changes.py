@@ -84,7 +84,8 @@ def test_unknown_event_windows_are_incomplete_not_certified_empty(tmp_path, star
     assert item.identity is None
     assert item.error.code == "INDEX_CHANGE_COVERAGE_UNVERIFIED"
     assert item.error.retryable is False
-    assert item.error.context["verified_event_sessions"] == ["2021-06-15"]
+    assert "2021-06-15" in item.error.context["verified_event_sessions"]
+    assert start not in item.error.context["verified_event_sessions"]
 
 
 def test_other_index_cannot_consume_the_csi500_patch(tmp_path):
@@ -132,10 +133,69 @@ def test_corrupt_event_or_provenance_never_publishes_ready(tmp_path, monkeypatch
 
 
 def test_transcription_hash_rejects_changed_catalog_before_publication(tmp_path, monkeypatch):
-    patch = index_constituent_changes.PATCH
+    patch = next(patch for patch in index_constituent_changes.PATCHES if patch.first_session == "2021-06-15")
     changed = replace(patch, added=(("000001.SZ", "changed"), *patch.added[1:]))
-    monkeypatch.setattr(index_constituent_changes, "PATCH", changed)
+    monkeypatch.setattr(index_constituent_changes, "PATCHES", tuple(
+        changed if item.patch_id == patch.patch_id else item for item in index_constituent_changes.PATCHES
+    ))
     prepared = _flow(tmp_path).prepare((_request(),), policy=PreparePolicy.REFRESH)
     item, = prepared.items
     assert item.status is DataStatus.FAILED and prepared.reference is None
     assert "pinned hash" in item.error.message
+
+
+def test_multiple_verified_events_publish_together_without_certifying_the_intervening_dates(tmp_path, monkeypatch):
+    def deny(*args, **kwargs):
+        pytest.fail("verified event patches must remain offline")
+
+    monkeypatch.setattr(requests.sessions.Session, "request", deny)
+    cases = [
+        ("2019-12-16", 50, "2019-12-02", None),
+        ("2020-06-15", 50, "2020-06-01", None),
+        ("2021-06-15", 50, "2021-05-28", "2021-06-11T15:00:00"),
+        ("2026-01-12", 1, "2026-01-06", "2026-01-09T15:00:00"),
+        ("2026-06-15", 50, "2026-05-29", "2026-06-12T15:00:00"),
+    ]
+    requests_ = tuple(_request(start=day, end=day, required_cutoff=day) for day, *_ in cases)
+    flow = _flow(tmp_path)
+    prepared = flow.prepare(requests_, policy=PreparePolicy.REFRESH)
+    assert prepared.ready, prepared.items
+    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
+    total = 0
+    for request, (day, count, announcement, close) in zip(requests_, cases, strict=True):
+        result = offline.fetch(request, prepared=prepared.reference)
+        assert result.ready, result.error
+        frame, metadata = result.dataframe, result.identity.metadata
+        assert len(frame) == 2 * count
+        total += len(frame)
+        assert frame.groupby("Change").size().to_dict() == {"ADD": count, "REMOVE": count}
+        assert frame.Date.eq(pd.Timestamp(day)).all()
+        assert frame.AnnouncementDate.eq(pd.Timestamp(announcement)).all()
+        if close is None:
+            assert frame.EffectiveAfterClose.isna().all()
+            assert metadata["effective_boundary_kind"] == "FIRST_SESSION_STATED"
+            assert metadata["source_calendar_url"] is None
+            assert metadata["source_calendar_sha256"] is None
+        else:
+            assert frame.EffectiveAfterClose.eq(pd.Timestamp(close)).all()
+            assert metadata["effective_boundary_kind"] == "AFTER_CLOSE_STATED"
+        assert frame.AvailableDate.dt.year.eq(2026).all()
+        assert metadata["replacement_count"] == count
+        assert metadata["verified_event_sessions"] == [day]
+        assert metadata["coverage_kind"] == "VERIFIED_EVENT_ONLY"
+        assert metadata["complete_membership_history"] is False
+        assert metadata["historical_publication_time_verified"] is False
+    assert total == 402
+    result = flow.prepare((_request(start="2019-12-16", end="2026-06-15", required_cutoff=None),),
+                          policy=PreparePolicy.REUSE)
+    assert not result.ready and result.reference is None
+    assert result.items[0].status is DataStatus.INCOMPLETE
+
+
+def test_duplicate_catalog_session_fails_instead_of_selecting_a_patch(tmp_path, monkeypatch):
+    patch = next(p for p in index_constituent_changes.PATCHES if p.first_session == "2021-06-15")
+    monkeypatch.setattr(index_constituent_changes, "PATCHES", (*index_constituent_changes.PATCHES, patch))
+    prepared = _flow(tmp_path).prepare((_request(),), policy=PreparePolicy.REFRESH)
+    assert not prepared.ready and prepared.reference is None
+    assert prepared.items[0].status is DataStatus.FAILED
+    assert "multiple" in prepared.items[0].error.message

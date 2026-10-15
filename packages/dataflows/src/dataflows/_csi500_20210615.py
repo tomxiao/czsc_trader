@@ -5,28 +5,7 @@ nor a weight repair. Original source bytes were independently reconciled before
 transcription. Attachment paths do not establish their historical release time.
 """
 
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True, slots=True)
-class _IndexChangePatch:
-    patch_id: str
-    version: int
-    symbol: str
-    notice_id: int
-    notice_url: str
-    notice_sha256: str
-    attachment_url: str
-    attachment_sha256: str
-    calendar_url: str
-    calendar_sha256: str
-    observed_at_utc: str
-    announcement_date: str
-    effective_after_close: str
-    first_session: str
-    added: tuple[tuple[str, str], ...]
-    removed: tuple[tuple[str, str], ...]
-    records_sha256: str
+from ._index_change_patch import _IndexChangePatch
 
 
 PATCH = _IndexChangePatch(
