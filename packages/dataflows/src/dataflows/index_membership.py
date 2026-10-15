@@ -11,7 +11,6 @@ from pathlib import Path
 import re
 from typing import Any, Mapping
 
-import numpy as np
 import pandas as pd
 
 from . import _csi500_effective_dates
@@ -24,7 +23,7 @@ from .index_membership_reconstruction import reconstruct_membership
 from .tushare_common import get_tushare_pro
 
 
-_AVAILABILITY = "maximum actual capture time of dependent monthly snapshots, official notices, explicit patches and trading calendar"
+_AVAILABILITY = "maximum actual capture/review time of dependent monthly snapshots, official notices, announcement scope, explicit patches and trading calendar"
 
 
 def _json_hash(value: Any) -> str:
@@ -49,6 +48,11 @@ def _catalog(request: DataRequest) -> dict[str, Any]:
             or not catalog["coverage_complete"]):
         raise IncompleteDataError("known effective-date catalog is not verified for this range",
                                   coverage_start=catalog["coverage_start"], coverage_end=catalog["coverage_end"],
+                                  unresolved_notices=catalog.get("unresolved_notices", []))
+    review = catalog.get("source_scope_review", {})
+    if review.get("complete") is not True:
+        raise IncompleteDataError("official announcement scope review is incomplete",
+                                  pending_notice_ids=review.get("pending_notice_ids", []),
                                   unresolved_notices=catalog.get("unresolved_notices", []))
     seen = {}
     for event in catalog["events"]:
@@ -83,6 +87,9 @@ def _event_frame(catalog: Mapping[str, Any]) -> pd.DataFrame:
                                         "NoticeId", "NoticeTitle"])
     for column in ("Date", "AnnouncementDate", "EffectiveAfterClose", "AvailableDate"):
         frame[column] = pd.to_datetime(frame[column])
+    scope_observed = catalog.get("source_scope_review", {}).get("observed_at_utc")
+    if scope_observed is not None:
+        frame["AvailableDate"] = frame["AvailableDate"].clip(lower=_observed_at(scope_observed))
     return frame.sort_values(["Date", "NoticeId"]).reset_index(drop=True)
 
 
@@ -90,8 +97,8 @@ def _metadata(catalog: Mapping[str, Any]) -> dict[str, Any]:
     return {"vendor": "csindex+tushare", "vendor_symbol": "000905.SH", "source_calendar": "SSE",
             "event_catalog_sha256": _csi500_effective_dates.CATALOG_SHA256,
             "event_coverage_start": catalog["coverage_start"], "event_coverage_end": catalog["coverage_end"],
-            "event_coverage_verified": catalog.get("source_scope_review", {}).get("complete", True),
-            "event_scope_review": catalog.get("source_scope_review", {"complete": True}),
+            "event_coverage_verified": catalog["source_scope_review"]["complete"],
+            "event_scope_review": catalog["source_scope_review"],
             "catalog_coverage_complete": catalog["coverage_complete"],
             "event_sources": [{key: event[key] for key in ("notice_id", "notice_url", "notice_sha256",
                                "announcement_date", "first_session", "observed_at_utc")}
@@ -146,6 +153,9 @@ def _available_at(
     observations.extend(item["observed_at_utc"] for item in metadata["snapshot_queries"])
     observations.extend(item["observed_at_utc"] for item in catalog["events"])
     observations.extend(item.observed_at_utc for item in used_patches)
+    scope_observed = catalog.get("source_scope_review", {}).get("observed_at_utc")
+    if scope_observed is not None:
+        observations.append(scope_observed)
     return max(_observed_at(value) for value in observations)
 
 
@@ -171,27 +181,26 @@ def fetch_index_constituents_daily(
     for month in pd.period_range(start, end, freq="M"):
         first, last = month.start_time.strftime("%Y%m%d"), month.end_time.strftime("%Y%m%d")
         raw = client.index_weight(index_code=request.symbol, start_date=first, end_date=last,
-                                  fields="index_code,con_code,trade_date,weight")
+                                  fields="index_code,con_code,trade_date")
         observed = _now()
         if not isinstance(raw, pd.DataFrame):
             raise DataContractError("index_weight did not return a dataframe")
+        columns = ["index_code", "con_code", "trade_date"]
+        if not raw.empty and (not set(columns).issubset(raw.columns)
+                              or raw["index_code"].ne(request.symbol).any()):
+            raise DataContractError("index_weight response is missing its identity or mixes indexes")
+        raw = raw.reindex(columns=columns)
         digest = _frame_hash(raw)
         source_queries.append({"api": "index_weight", "start_date": first, "end_date": last,
                                "sha256": digest, "observed_at_utc": observed, "rows": len(raw)})
         if raw.empty:
             missing_months.append(str(month))
             continue
-        required = {"index_code", "con_code", "trade_date", "weight"}
-        if not required.issubset(raw.columns) or raw["index_code"].ne(request.symbol).any():
-            raise DataContractError("index_weight response is missing its identity or mixes indexes")
         if len(raw) >= 4000:
             raise IncompleteDataError("index_weight monthly response may be truncated", month=str(month))
         dates = pd.to_datetime(raw["trade_date"], format="%Y%m%d", errors="coerce")
         if dates.isna().any() or dates.dt.to_period("M").ne(month).any():
             raise DataContractError("index_weight returned dates outside the requested month")
-        weights = pd.to_numeric(raw["weight"], errors="coerce")
-        if weights.isna().any() or not np.isfinite(weights).all() or (weights < 0).any():
-            raise DataContractError("index_weight returned invalid weights")
         snapshots.append(pd.DataFrame({"Date": dates, "ConstituentSymbol": raw["con_code"],
                                         "ObservedAt": observed, "SnapshotSha256": digest}))
     if not snapshots:

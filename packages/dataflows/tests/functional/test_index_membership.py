@@ -57,7 +57,8 @@ class _Pro:
                  "trade_date": pd.Timestamp(day).strftime("%Y%m%d"), "weight": 0.2}
                 for day, members in self.snapshots.items() if first <= pd.Timestamp(day) <= last
                 for symbol in members]
-        return pd.DataFrame(rows, columns=["index_code", "con_code", "trade_date", "weight"])
+        return pd.DataFrame(rows, columns=["index_code", "con_code", "trade_date", "weight"])[
+            kwargs["fields"].split(",")]
 
     def trade_cal(self, **kwargs):
         self.calendar_calls.append(kwargs)
@@ -74,9 +75,10 @@ class _Pro:
 def sources(monkeypatch):
     from dataflows import _csi500_effective_dates, index_membership
 
-    def install(*, events=(), snapshots=None, patches=(), complete=True):
+    def install(*, events=(), snapshots=None, patches=(), complete=True, scope_review=None):
         catalog = {"coverage_start": "2019-12-01", "coverage_end": "2020-03-31",
                    "coverage_complete": complete, "unresolved_notices": [] if complete else ["unverified"],
+                   "source_scope_review": {"complete": True} if scope_review is None else scope_review,
                    "events": list(events)}
         monkeypatch.setattr(_csi500_effective_dates, "CATALOG", catalog)
         monkeypatch.setattr(_csi500_effective_dates, "CATALOG_SHA256", index_membership._json_hash(catalog))
@@ -144,6 +146,59 @@ def test_actual_effective_session_switches_and_offline_fetch_keeps_evidence(tmp_
     restored = _flow(tmp_path, offline=True).fetch(daily, prepared=prepared.reference)
     assert restored.ready, restored.error
     pd.testing.assert_frame_equal(restored.dataframe, frame)
+
+
+@pytest.mark.parametrize("weight", ["missing", None, "invalid", float("inf")])
+def test_daily_membership_neither_requires_nor_hashes_weights(tmp_path, monkeypatch, sources, weight):
+    from dataflows import index_membership
+
+    pro = sources(events=[_event()])
+    original = pro.index_weight
+    raw_sources = []
+
+    def snapshots(**kwargs):
+        assert kwargs["fields"] == "index_code,con_code,trade_date"
+        raw = original(**kwargs)
+        raw_sources.append(raw.copy())
+        if weight != "missing":
+            # Some clients may return unrequested columns; these are not membership evidence.
+            raw["weight"] = weight
+        return raw
+
+    monkeypatch.setattr(pro, "index_weight", snapshots)
+    flow, request, prepared = _prepare(tmp_path)
+    assert prepared.ready, prepared.items
+    result = flow.fetch(request, prepared=prepared.reference)
+    assert result.ready, result.error
+    assert set(result.dataframe.columns) == {"Date", "ConstituentSymbol", "AvailableDate", "SourceSnapshotDate"}
+    assert result.dataframe.groupby("Date").size().eq(500).all()
+    assert [query["sha256"] for query in result.identity.metadata["snapshot_queries"]] == [
+        index_membership._frame_hash(raw) for raw in raw_sources]
+
+
+@pytest.mark.parametrize("dataset,frequency", [
+    (Dataset.INDEX_CONSTITUENTS_DAILY, "daily"), (Dataset.INDEX_CONSTITUENT_EVENTS, "event"),
+])
+def test_unreviewed_announcement_scope_is_incomplete_before_vendor_queries(tmp_path, sources, dataset, frequency):
+    pending = [13334, 13716]
+    pro = sources(events=[_event()], scope_review={"complete": False, "pending_notice_ids": pending})
+    _, _, prepared = _prepare(tmp_path, _request(dataset=dataset, frequency=frequency))
+    item, = prepared.items
+    assert item.status is DataStatus.INCOMPLETE and prepared.reference is None
+    assert item.error.context["pending_notice_ids"] == pending
+    assert not pro.weight_calls and not pro.calendar_calls
+
+
+@pytest.mark.parametrize("dataset,frequency", [
+    (Dataset.INDEX_CONSTITUENTS_DAILY, "daily"), (Dataset.INDEX_CONSTITUENT_EVENTS, "event"),
+])
+def test_scope_review_time_bounds_published_availability(tmp_path, sources, dataset, frequency):
+    sources(events=[_event()], scope_review={"complete": True, "observed_at_utc": "2026-10-15T03:00:00+00:00"})
+    flow, request, prepared = _prepare(tmp_path, _request(dataset=dataset, frequency=frequency))
+    assert prepared.ready, prepared.items
+    result = flow.fetch(request, prepared=prepared.reference)
+    assert result.ready, result.error
+    assert result.dataframe.AvailableDate.eq(pd.Timestamp("2026-10-15T11:00:00")).all()
 
 
 def test_missing_month_with_no_event_uses_unchanged_segment_without_patch(tmp_path, monkeypatch, sources):

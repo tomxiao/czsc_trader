@@ -1,0 +1,194 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "c86b7fe68c33d1a859df6589932901cded82aeef61b1ed8415b626977c4aaa2c.json",
+    "sha256": "c86b7fe68c33d1a859df6589932901cded82aeef61b1ed8415b626977c4aaa2c",
+    "media_type": "application/json",
+    "name": "csi500-daily-scope-complete-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "c8426fc9813a58d97e95bf8825c1482295fb2cefbac407de3caa1128f266a597.json",
+    "sha256": "c8426fc9813a58d97e95bf8825c1482295fb2cefbac407de3caa1128f266a597",
+    "media_type": "application/json",
+    "name": "csi500-daily-scope-complete-20261015-batch_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "5afba02c882c52a2801be4bf1ecff270341942e2692b87681cdd56dd5ee4fc01.zip",
+    "sha256": "5afba02c882c52a2801be4bf1ecff270341942e2692b87681cdd56dd5ee4fc01",
+    "media_type": "application/zip",
+    "name": "csi500-daily-scope-complete-20261015-sources_and_verified_acceptance",
+    "schema": null,
+    "schema_version": null
+  },
+  "bundle_members_verified": 139,
+  "predecessor_bundle_members_verified": 502,
+  "findings": {
+    "kind": "DEV_CSI500_DAILY_MEMBERSHIP_SCOPE_COMPLETION_NOT_RESEARCH_RESTART",
+    "status": "COMPLETE_FOR_APPROVED_DAILY_MEMBERSHIP_SCOPE",
+    "scope": {
+      "role": "DEV",
+      "branch": "codex/s013-diagnostic-feedback",
+      "development_window": [
+        "2020-01-01",
+        "2026-09-30"
+      ],
+      "research_execution_state": "PAUSED",
+      "models": 0,
+      "accounts": 0,
+      "new_strategy_experiments": 0
+    },
+    "datasets": [
+      "index.constituent_events",
+      "index.constituents_daily"
+    ],
+    "source_scope": {
+      "previous_pending_notices": 53,
+      "remaining_pending_notices": 0,
+      "excluded_pending_notice_ids": [
+        11451,
+        13713,
+        13726,
+        13765,
+        13769,
+        13858,
+        14009,
+        14011,
+        14015,
+        14074,
+        14078,
+        14081,
+        14092,
+        14099,
+        14115,
+        14125,
+        14127,
+        14130,
+        14133,
+        14162,
+        14198,
+        14246,
+        14256,
+        14299,
+        14301,
+        14303,
+        14324,
+        14332,
+        14339,
+        14341,
+        14356,
+        14361,
+        14368,
+        14370,
+        14421,
+        14433,
+        14466,
+        14520,
+        14524,
+        14528,
+        14555,
+        14572,
+        14574,
+        14599,
+        14604,
+        14629,
+        14631,
+        14651,
+        14654,
+        14662,
+        14666,
+        14722,
+        14770
+      ],
+      "captured_official_notice_bodies": 54,
+      "captured_official_attachments": 54,
+      "all_sheets_reviewed_with_exact_index_identity": true,
+      "raw_xml_and_openpyxl_agree": true,
+      "notice_13716_official_body_and_attachment_now_captured": true,
+      "evidence_sha256": "1e52e0121399df7c0b5208ab934b3ae4755b1c0fea7d1e6812efee55fc3563dc"
+    },
+    "numerical_acceptance": {
+      "rows": 818000,
+      "trading_sessions": 1636,
+      "effective_events": 18,
+      "monthly_snapshots": 82,
+      "in_window_snapshot_comparisons": 81,
+      "predevelopment_anchor_snapshots": 1,
+      "snapshot_mismatches": 0,
+      "reconstructed_intermediate_sessions": 9,
+      "simulated_provider_gap": {
+        "month": "2020-08",
+        "patched_sessions": 11,
+        "membership_mismatches": 0
+      },
+      "independent_13716_forward_vs_13420_reverse": {
+        "status": "PASS",
+        "sessions": 9,
+        "attachment_sha256": "9cce0059324cb7c876fb067c2655649e216a52302cf9bc22470135567dfcab35"
+      }
+    },
+    "validation": {
+      "kind": "DEV_FOCUSED_VALIDATION",
+      "focused_tests": "PASS",
+      "focused_test_count": 68,
+      "pytest_elapsed_seconds": 25.67,
+      "pytest_command": ".venv/Scripts/python.exe -m pytest packages/dataflows/tests/functional/test_index_membership.py packages/dataflows/tests/functional/test_index_constituent_changes.py packages/dataflows/tests/functional/test_contract.py -q --basetemp .tmp/pytest/index-membership-scope-final",
+      "ruff": "PASS",
+      "git_diff_check": "PASS",
+      "source_sha256": {
+        "packages/dataflows/src/dataflows/_csi500_effective_dates.py": "ecd9756951f923991d686a19079c5ceee31be67a70f2ed6792287834d4a20ca6",
+        "packages/dataflows/src/dataflows/index_membership.py": "71fefb3595401053a88c7fe3f74cd8ed00000148342193d9c4c163ed56093bff",
+        "packages/dataflows/tests/functional/test_index_membership.py": "229e1aa0ec70d3fff8d00785716afda736bc6efc90d888d9be7ca9432ae4f70c"
+      },
+      "verified_utc": "2026-10-15T12:36:08.608119+00:00",
+      "full_repository_regression_run": false,
+      "research_state": "PAUSED"
+    },
+    "weights": {
+      "requested": false,
+      "reconstructed": false,
+      "returned": false,
+      "earlier_raw_sources_preserved_unchanged": true
+    },
+    "new_source_acquisition": {
+      "tushare_requests": 0,
+      "official_notice_requests": 54,
+      "official_attachment_requests": 54,
+      "all_http_200": true,
+      "retries": 0
+    },
+    "historical_publication_time_verified": false,
+    "historical_revision_history_verified": false,
+    "deliverables": [
+      "verified_daily_membership.parquet",
+      "verified_effective_events.parquet"
+    ],
+    "limitations": [
+      "Historical constituent facts are reconstructed; original publication timing and revision history are not certified.",
+      "AvailableDate retains actual source capture, scope review and later offline materialization times.",
+      "The official 13716 attachment filename carries a later upload date; it is not evidence of pre-effective historical availability.",
+      "Verification covers 000905.SH in the approved window; source catalog limits are explicit.",
+      "No S013 strategy evaluation or production change was executed."
+    ]
+  }
+}
