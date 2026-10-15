@@ -1,0 +1,107 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "19ab7db1a80af36d3179278635162ee2b6966437045a35631d815079d7918fb0.json",
+    "sha256": "19ab7db1a80af36d3179278635162ee2b6966437045a35631d815079d7918fb0",
+    "media_type": "application/json",
+    "name": "trend-participation-design-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "plan": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "13dbff90ad3a85b58e91668b34f3817ff13c004d18e9eac47e79092ebdead6d0.json",
+    "sha256": "13dbff90ad3a85b58e91668b34f3817ff13c004d18e9eac47e79092ebdead6d0",
+    "media_type": "application/json",
+    "name": "trend-participation-design-20261015-plan",
+    "schema": null,
+    "schema_version": null
+  },
+  "peer_review": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "06a0ff5faf61d3c5c91e705b941d0b76271c00f9ecc6f2a4f3faf16f1edbf2a9.json",
+    "sha256": "06a0ff5faf61d3c5c91e705b941d0b76271c00f9ecc6f2a4f3faf16f1edbf2a9",
+    "media_type": "application/json",
+    "name": "trend-participation-design-20261015-peer_review",
+    "schema": null,
+    "schema_version": null
+  },
+  "verification": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "f20db7e533d6f3f12e453f5fd84f1af043c7c0a6796a77d43d2512e4457f0f8c.json",
+    "sha256": "f20db7e533d6f3f12e453f5fd84f1af043c7c0a6796a77d43d2512e4457f0f8c",
+    "media_type": "application/json",
+    "name": "trend-participation-design-20261015-verification",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "081fdd252c1e7b6086b7c4567add9b2170666d38c4dabad67a21427c18d42374.zip",
+    "sha256": "081fdd252c1e7b6086b7c4567add9b2170666d38c4dabad67a21427c18d42374",
+    "media_type": "application/zip",
+    "name": "trend-participation-design-20261015-proposal_sources",
+    "schema": null,
+    "schema_version": null
+  },
+  "findings": {
+    "status": "DESIGN_COMPLETE_PENDING_USER_EXECUTION_AUTHORIZATION",
+    "research_execution_state": "PAUSED",
+    "rule": "前20交易日收盘新高入场、前10交易日收盘新低退出；T收盘决策/T+1原合同执行。",
+    "combination": "原入口优先、单一仓位、各自退出、同日不反向重入。",
+    "proposed_budget": {
+      "new_experiments": 1,
+      "experiment_identity": "未分配；不创建EX101或修改MANDATE，待用户恢复授权后办理。",
+      "new_business_configurations": 2,
+      "baseline_account_reuse": 1,
+      "maximum_full_account_evaluations": 4,
+      "evaluation_accounting": "两个业务中心，加最多两次串行/多进程技术等价或重复核验；技术重复不是新策略发现，所有实际评价均计入4次上限。",
+      "source_requests": 0,
+      "model_fits": 0,
+      "parameter_search_trials": 0,
+      "new_parameter_accounts": 0,
+      "fee_stress_accounts": 0,
+      "max_workers": 2,
+      "native_threads_per_worker": 1,
+      "request_workers": 1,
+      "seed": 13,
+      "over_budget": "遇需新增表达、账户次数、数据、平台修改或研究阶段变化，保留已完成结果后另行说明，不自动扩展。",
+      "authorization_state": "PROPOSED_NOT_AUTHORIZED",
+      "branch_question": "若授权这轮重量级研究，建议继续当前codex/s013-diagnostic-feedback；需用户同时确认分支安排，不使用worktree。"
+    },
+    "current_activity_counts": {
+      "provider_calls": 0,
+      "strategy_history_calculations": 0,
+      "model_fits": 0,
+      "account_evaluations": 0,
+      "new_experiments": 0,
+      "production_changes": 0
+    },
+    "actual_validation": "静态方案及证据身份核验；未执行合成策略检查或经济账户。"
+  }
+}
