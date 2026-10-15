@@ -316,6 +316,14 @@ _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
          "ConstituentSymbol", "ConstituentName", "Change"},
         set(),
     ),
+    Dataset.INDEX_CONSTITUENT_EVENTS.value: (
+        {"Date", "AnnouncementDate", "EffectiveAfterClose", "AvailableDate", "NoticeId", "NoticeTitle"},
+        set(),
+    ),
+    Dataset.INDEX_CONSTITUENTS_DAILY.value: (
+        {"Date", "ConstituentSymbol", "AvailableDate", "SourceSnapshotDate"},
+        set(),
+    ),
     Dataset.SELL_SIDE_FORECAST.value: (
         {
             "Date",
@@ -512,6 +520,10 @@ def _validate_provider_output(
         from .index_constituent_changes import validate_index_constituent_changes
 
         validate_index_constituent_changes(dataframe, request, metadata)
+    if dataset in {Dataset.INDEX_CONSTITUENT_EVENTS.value, Dataset.INDEX_CONSTITUENTS_DAILY.value}:
+        from .index_membership import validate_index_membership
+
+        validate_index_membership(dataframe, request, metadata)
     if dataset == Dataset.ETF_CREATION_REDEMPTION_BASKET.value:
         source_dates = pd.to_datetime(dataframe["Date"], errors="coerce")
         available_dates = pd.to_datetime(dataframe["AvailableDate"], errors="coerce")
@@ -1444,6 +1456,7 @@ class Dataflows:
 
 def _default_providers(env_file: Path | None) -> dict[str, Provider]:
     from .index_constituent_changes import fetch_index_constituent_changes
+    from .index_membership import fetch_index_constituent_events, fetch_index_constituents_daily
     from .chinaamc_pcf import verify_chinaamc_pcf_components
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .fred_gold_volatility import fetch_gold_volatility_daily
@@ -1693,6 +1706,9 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
             env_file=env_file,
         )
 
+    def index_membership_daily(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        return fetch_index_constituents_daily(request, env_file=env_file)
+
     def stock_moneyflow(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         trading_dates = (request.parameters.trading_dates
                          if isinstance(request.parameters, MoneyflowParameters) else None)
@@ -1767,6 +1783,8 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.GOLD_VOLATILITY_DAILY.value: gold_volatility,
         Dataset.INDEX_CONSTITUENT_WEIGHT.value: index_weights,
         Dataset.INDEX_CONSTITUENT_CHANGES.value: fetch_index_constituent_changes,
+        Dataset.INDEX_CONSTITUENT_EVENTS.value: fetch_index_constituent_events,
+        Dataset.INDEX_CONSTITUENTS_DAILY.value: index_membership_daily,
         Dataset.SELL_SIDE_FORECAST.value: sell_side_forecast,
         Dataset.STOCK_MONEYFLOW.value: stock_moneyflow,
         Dataset.TRADING_CALENDAR.value: trading_calendar,

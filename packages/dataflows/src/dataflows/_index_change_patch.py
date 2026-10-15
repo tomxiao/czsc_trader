@@ -24,3 +24,5 @@ class _IndexChangePatch:
     records_sha256: str
     replacement_count: int = 50
     boundary_kind: str = "AFTER_CLOSE_STATED"
+    effective_date_source_url: str | None = None
+    effective_date_source_sha256: str | None = None

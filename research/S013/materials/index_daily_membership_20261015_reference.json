@@ -1,0 +1,191 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "f5ceed98d9a2156b28ac54d40b0aae9fa5ff454e11063289584d908cfe112282.json",
+    "sha256": "f5ceed98d9a2156b28ac54d40b0aae9fa5ff454e11063289584d908cfe112282",
+    "media_type": "application/json",
+    "name": "csi500-daily-candidate-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "2911334d70dc1d013db224b5dcf5cafda09eeb1174099505e6cd2436a17a3234.json",
+    "sha256": "2911334d70dc1d013db224b5dcf5cafda09eeb1174099505e6cd2436a17a3234",
+    "media_type": "application/json",
+    "name": "csi500-daily-candidate-20261015-batch_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "44d7581ce6bf8a07c63b6e6b9ccf612304d71316f556cf675f3a47803833c926.zip",
+    "sha256": "44d7581ce6bf8a07c63b6e6b9ccf612304d71316f556cf675f3a47803833c926",
+    "media_type": "application/zip",
+    "name": "csi500-daily-candidate-20261015-sources_and_candidate_acceptance",
+    "schema": null,
+    "schema_version": null
+  },
+  "bundle_members_verified": 502,
+  "findings": {
+    "kind": "DEV_CSI500_KNOWN_EVENT_DAILY_MEMBERSHIP_CANDIDATE_NOT_RESEARCH_RESTART",
+    "scope": {
+      "role": "DEV",
+      "branch": "codex/s013-diagnostic-feedback",
+      "development_window": [
+        "2020-01-01",
+        "2026-09-30"
+      ],
+      "research_execution_state": "PAUSED",
+      "models": 0,
+      "accounts": 0,
+      "new_strategy_experiments": 0
+    },
+    "implementation_status": "IMPLEMENTED_AND_NUMERICALLY_VERIFIED",
+    "overall_history_certification": "EVENT_SCOPE_REVIEW_INCOMPLETE",
+    "datasets": [
+      "index.constituent_events",
+      "index.constituents_daily"
+    ],
+    "numerical_acceptance": {
+      "rows": 818000,
+      "trading_sessions": 1636,
+      "effective_events": 18,
+      "monthly_snapshots": 82,
+      "snapshot_mismatches": 0,
+      "reconstructed_intermediate_sessions": 9,
+      "simulated_provider_gap": {
+        "month": "2020-08",
+        "patched_sessions": 11,
+        "membership_mismatches": 0
+      }
+    },
+    "validation": {
+      "focused_tests": "PASS",
+      "focused_test_count": 60,
+      "test_seconds": 18.65,
+      "ruff": "PASS",
+      "git_diff_check": "PASS",
+      "test_scope": "DFLS daily membership, prior official changes and contract functional tests; not repository-wide regression",
+      "implementation_sha256": {
+        "contract.py": "a5ff2fc237f8cdab135edac7df754e64b819448e2c624d75996b593ae1ed0bc6",
+        "facade.py": "ba75262b41cd8953a0d68e1bcec744810afb997b83200631433bc7e6cb76944f",
+        "_index_change_patch.py": "d7c789b0f9903199c86b518762832f5aa9b869539ab7cddbf20991687301bb1e",
+        "_csi500_effective_dates.py": "63a76a28db53ee86fd31e1121b8ebb779174f9530849d526bfb480f3d36b9700",
+        "_csi500_daily_patches.py": "4541cc83d04e83cdc64c735728d39dc3f14cb2e93bc641d01fac42b5c3cb7f53",
+        "index_membership.py": "2175f8977e049f3e77a966ac97b2b85278ce7bab5e45e2ddfa9c5fbf07db583e",
+        "index_membership_reconstruction.py": "56a879f406ab75857b3d1c0d1d910fc436cf7f6d82660ddbb6342e108c6e3e41"
+      }
+    },
+    "source_scope_audit": {
+      "kind": "DEV_SOURCE_SCOPE_AUDIT_NOT_RESEARCH_RESTART",
+      "development_window": [
+        "2020-01-01",
+        "2026-09-30"
+      ],
+      "monthly_snapshot_months": 82,
+      "missing_snapshot_months": [],
+      "known_effective_events_inside_window": 18,
+      "predevelopment_warmup_events": 1,
+      "exhaustive_event_scope_review_complete": false,
+      "pending_generic_notice_count": 53,
+      "pending_generic_notice_list": "correct_vo_new_ambiguous_candidates.json",
+      "previous_directory_limitation": "Vonew and incorrect filter argument names omitted known notices, including13716. It is retained as historical acquisition evidence and is not treated as a complete directory.",
+      "corrected_directory": "correct_vo_verified_adjustment_directory.json",
+      "corrected_adjustment_keyword_unique_rows": 1116,
+      "corrected_update_keyword_unique_rows": 49,
+      "pagination_boundary_repair_days": [
+        "2022-05-27",
+        "2024-11-29"
+      ],
+      "prior_scope_cleared": {
+        "existing_notice_attachments": 27,
+        "additional_notices": 22,
+        "evidence": [
+          "scope_existing_notices.json",
+          "extra_scope_review.json"
+        ]
+      },
+      "unread_is_not_excluded": true,
+      "browser_empty_body_samples": [
+        {
+          "id": 13726,
+          "publication_date": "2021-09-23",
+          "captured_utc": "2026-10-15T10:51:55.978Z",
+          "url": "https://www.csindex.com.cn/#/about/newsDetail?id=13726",
+          "title_rendered": false,
+          "article_text_rendered": false
+        },
+        {
+          "id": 13765,
+          "publication_date": "2021-09-30",
+          "captured_utc": "2026-10-15T10:51:59.160Z",
+          "url": "https://www.csindex.com.cn/#/about/newsDetail?id=13765",
+          "title_rendered": false,
+          "article_text_rendered": false
+        },
+        {
+          "id": 14092,
+          "publication_date": "2022-02-08",
+          "captured_utc": "2026-10-15T10:52:02.322Z",
+          "url": "https://www.csindex.com.cn/#/about/newsDetail?id=14092",
+          "title_rendered": false,
+          "article_text_rendered": false
+        }
+      ],
+      "notice13716": {
+        "announcement_date": "2021-09-08",
+        "effective_after_close": "2021-09-10T15:00:00",
+        "first_session": "2021-09-13",
+        "acquisition_mode": "OFFICIAL_FULL_TEXT_SEARCH_MATCH",
+        "matched_exact_phrase": "2021年9月10日收盘后",
+        "search_response": "correct_vo_exact_close_page01.json",
+        "request_binding": "correct_vo_second_capture_ledger.json",
+        "detail_body_captured": false,
+        "attachment_captured": false,
+        "verification_limit": "Official search returns matching notice identities without the matching field. The close-date phrase is observed through the official full-text search and the first session is computed from the retained SSE calendar. This is not a direct full-body capture.",
+        "intermediate_membership_source": "2021-09-30 Tushare snapshot, reversed using notice13420 official one-for-one replacement plus SSE601868 listing date. No13716 replacement list is fabricated."
+      },
+      "conditional_event_outside_window": {
+        "notice_id": 3006227,
+        "effective_first_session": "2026-10-19",
+        "source": "dongxing_delisting_source.json"
+      },
+      "known_limit": "Monthly endpoint agreement does not rule out unreviewed changes that are reversed before the next snapshot.",
+      "research_execution_state": "PAUSED"
+    },
+    "source_acquisition": {
+      "new_tushare_requests": 70,
+      "reused_monthly_snapshots": 13,
+      "monthly_snapshot_months": 82,
+      "provider_missing_months": []
+    },
+    "public_api_boundary": "Uses known verified effective-date catalog. Source-scope completeness is separately exposed as false with53 pending IDs; this candidate is not an exhaustive historical-event certificate.",
+    "candidate_deliverables": [
+      "candidate_daily_membership.parquet",
+      "verified_effective_events.parquet"
+    ],
+    "limitations": [
+      "One effective date uses an exact official full-text-search match; its body/attachment is unavailable.",
+      "Fifty-three generic notices remain without full scope review. Monthly equality cannot exclude offsetting intramonth changes.",
+      "Actual observation times are retained; historical publication availability and revision history are not certified.",
+      "Offline acceptance replays retained upstream responses. New DFLS observation time is the later local materialization time.",
+      "No S013 strategy research was executed; no production changes, merge, tag or remote push."
+    ]
+  }
+}
