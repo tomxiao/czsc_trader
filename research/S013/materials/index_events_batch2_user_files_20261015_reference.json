@@ -1,0 +1,305 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "b18e1628c27f302c95390c0a820db5dc16889efbbf1c050deea03101428ebbb4.json",
+    "sha256": "b18e1628c27f302c95390c0a820db5dc16889efbbf1c050deea03101428ebbb4",
+    "media_type": "application/json",
+    "name": "csi500-events-batch2-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "b89df6853066e4fe45418ef4e874f09bce0a3ed701827858fbe3ff734bc0fc3d.json",
+    "sha256": "b89df6853066e4fe45418ef4e874f09bce0a3ed701827858fbe3ff734bc0fc3d",
+    "media_type": "application/json",
+    "name": "csi500-events-batch2-20261015-batch_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "65f66635976fbb1399544eaf6275a4d6a973f3b4b2429fb41bed046a1b90bda9.zip",
+    "sha256": "65f66635976fbb1399544eaf6275a4d6a973f3b4b2429fb41bed046a1b90bda9",
+    "media_type": "application/zip",
+    "name": "csi500-events-batch2-20261015-sources_and_acceptance",
+    "schema": null,
+    "schema_version": null
+  },
+  "bundle_members_verified": 38,
+  "authenticated_references": 3,
+  "findings": {
+    "kind": "DEV_CSI500_SOURCE_PATCH_BATCH2_USER_FILES_NOT_RESEARCH_RESTART",
+    "scope": {
+      "role": "DEV",
+      "branch": "codex/s013-diagnostic-feedback",
+      "development_window": [
+        "2020-01-01",
+        "2026-09-30"
+      ],
+      "source_scope": "Four user-supplied adjustment files; issuer sources only supplement missing Tushare fields.",
+      "user_statement": "调整明细见文件。文件名对应公告时间",
+      "research_execution_state": "PAUSED",
+      "models": 0,
+      "accounts": 0,
+      "new_strategy_experiments": 0
+    },
+    "batch_status": "COMPLETE_FOR_FOUR_USER_SUPPLIED_EVENTS",
+    "overall_status": "PARTIAL_HISTORY_NOT_CERTIFIED",
+    "new_events": [
+      {
+        "notice_id": 11514,
+        "announcement_date": "2020-11-27",
+        "first_session": "2020-12-14",
+        "effective_after_close": null,
+        "boundary_kind": "FIRST_SESSION_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20201130",
+          "after_snapshot": "20201231",
+          "constituents_per_snapshot": 500,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "official_user_bytes_identical": true,
+          "standby_rows_excluded": true
+        }
+      },
+      {
+        "notice_id": 13888,
+        "announcement_date": "2021-11-26",
+        "first_session": "2021-12-13",
+        "effective_after_close": "2021-12-10T15:00:00",
+        "boundary_kind": "AFTER_CLOSE_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20211130",
+          "after_snapshot": "20211231",
+          "constituents_per_snapshot": 500,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "official_user_bytes_identical": true,
+          "standby_rows_excluded": true
+        }
+      },
+      {
+        "notice_id": 14223,
+        "announcement_date": "2022-05-27",
+        "first_session": "2022-06-13",
+        "effective_after_close": "2022-06-10T15:00:00",
+        "boundary_kind": "AFTER_CLOSE_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20220531",
+          "after_snapshot": "20220630",
+          "constituents_per_snapshot": 500,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "official_user_bytes_identical": true,
+          "standby_rows_excluded": true
+        }
+      },
+      {
+        "notice_id": 14497,
+        "announcement_date": "2022-11-25",
+        "first_session": "2022-12-12",
+        "effective_after_close": "2022-12-09T15:00:00",
+        "boundary_kind": "AFTER_CLOSE_STATED",
+        "replacement_count": 50,
+        "verification": {
+          "before_snapshot": "20221130",
+          "after_snapshot": "20221230",
+          "constituents_per_snapshot": 500,
+          "set_mismatches": 0,
+          "independent_extractors_agree": true,
+          "official_user_bytes_identical": true,
+          "standby_rows_excluded": true
+        }
+      }
+    ],
+    "source_identity": [
+      {
+        "notice_id": 11514,
+        "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/info/files/20210331/1617182729617116.xlsx",
+        "sha256": "1094e0a6f284a6a6b4b0e5fc3320c6d43cd4467ad844960c7e73fde07665f608",
+        "user_file": "2020-11-27.xlsx",
+        "user_sha256": "1094e0a6f284a6a6b4b0e5fc3320c6d43cd4467ad844960c7e73fde07665f608",
+        "identical_bytes": true
+      },
+      {
+        "notice_id": 13888,
+        "url": "https://oss-ch.csindex.com.cn/notice/20211130195824-中证指数调入调出名单.xlsx",
+        "sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+        "user_file": "2021-11-26.xlsx",
+        "user_sha256": "f6b9d596f3fa6072258aa1eb2c036517bf20cc74c7879eaad1069cb8e1747909",
+        "identical_bytes": true
+      },
+      {
+        "notice_id": 14223,
+        "url": "https://oss-ch.csindex.com.cn/notice%2F20220527185038-%E6%8C%87%E6%95%B0%E6%A0%B7%E6%9C%AC%E8%B0%83%E6%95%B4%E5%90%8D%E5%8D%95.xlsx",
+        "sha256": "a3cceb28f6df96a77d4747a804b10a346a17f22d9b521261c222bdb03d4ca7a5",
+        "user_file": "2022-05-27.xlsx",
+        "user_sha256": "a3cceb28f6df96a77d4747a804b10a346a17f22d9b521261c222bdb03d4ca7a5",
+        "identical_bytes": true
+      },
+      {
+        "notice_id": 14497,
+        "url": "https://oss-ch.csindex.com.cn/notice%2F20221207152016-%E6%8C%87%E6%95%B0%E6%A0%B7%E6%9C%AC%E8%B0%83%E6%95%B4%E5%90%8D%E5%8D%95.xlsx",
+        "sha256": "acbf06876606a980fd65c3e3185b7725634ad7530f4fa83ee1d3a3963ee23490",
+        "user_file": "2022-11-25.xlsx",
+        "user_sha256": "acbf06876606a980fd65c3e3185b7725634ad7530f4fa83ee1d3a3963ee23490",
+        "identical_bytes": true
+      }
+    ],
+    "issuer_access": {
+      "four_target_notices": "HTTP_200_RECOVERED",
+      "four_linked_attachments": "HTTP_200",
+      "other_notices": "NOT_RECHECKED_IN_THIS_BATCH",
+      "previous_403_capture": "Retained in immutable batch1 evidence; not asserted as current status."
+    },
+    "catalog_events_total": 9,
+    "catalog_change_rows_total": 802,
+    "catalog_events_inside_development_window": 8,
+    "retained_predevelopment_events": 1,
+    "acceptance": {
+      "status": "PASS",
+      "public_api": "Dataflows.prepare/fetch",
+      "new_events": [
+        {
+          "first_session": "2020-12-14",
+          "notice_id": 11514,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "4495efcb87c91d944487964052f5b6db7b391b1da5ab1304191eaeff7c5192b4"
+        },
+        {
+          "first_session": "2021-12-13",
+          "notice_id": 13888,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "b2ddca4ac09c216feca66dfed94fd333432535a3fd7d4d50d3d7fd867d0b8000"
+        },
+        {
+          "first_session": "2022-06-13",
+          "notice_id": 14223,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "0b6d48a5ad6fd05c6a47e075d39fdc5bbe7ba8abdef30b99f2df2e2c113ca14c"
+        },
+        {
+          "first_session": "2022-12-12",
+          "notice_id": 14497,
+          "count_per_side": 50,
+          "source_record_mismatches": 0,
+          "data_content_sha256": "25aeb075f97849bbc0cd23a12288c45dc974c42c953886361083b97f727b2719"
+        }
+      ],
+      "new_rows": 400,
+      "total_catalog_events": 9,
+      "total_catalog_change_rows": 802,
+      "network_requests": 0,
+      "models": 0,
+      "strategy_accounts": 0,
+      "new_strategy_experiments": 0,
+      "research_execution_state": "PAUSED",
+      "full_history_certified": false,
+      "prepared_reference": {
+        "space_id": "0aa580ff-5472-4c6e-a10f-b38f8de6314a",
+        "preparation_id": "8eab29e6-b6a7-41ef-8c80-ee48d19f31fc",
+        "manifest_sha256": "54bca69e6bb335897fb8c8c556f14712fa21020938f2e97d0671de6f9e1a4e5d"
+      }
+    },
+    "validation": {
+      "focused_tests_passed": 35,
+      "ruff": "PASS",
+      "git_diff_check": "PASS",
+      "new_source_records_checked": 400,
+      "source_and_snapshot_mismatches": 0,
+      "official_user_files_identical": 4,
+      "prior_event_identities_unchanged": 5
+    },
+    "provider_requests": {
+      "index_weight": 4,
+      "trade_cal": 3,
+      "price_requests": 0,
+      "retries": 0
+    },
+    "pending_regular_notices": [
+      {
+        "id": 14796,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2023-05-26",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15044,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2023-11-24",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15267,
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2024-05-31",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15471,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2024-11-29",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 15690,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2025-05-30",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      },
+      {
+        "id": 3006000,
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "theme": "指数调样",
+        "publishDate": "2025-11-28",
+        "noticeType": "announcement",
+        "fileUrl": null,
+        "fileName": null
+      }
+    ],
+    "limits": [
+      "Whole development-window daily membership history is not certified.",
+      "Six known regular notices and possible temporary changes remain unverified.",
+      "First historical publication time and revisions are unverified; actual capture timestamps are retained.",
+      "2020 notice explicitly states first effective session only; no after-close timestamp is invented."
+    ],
+    "next_step": "Continue Tushare-first gap verification inside the development window; retain S013 PAUSED."
+  }
+}

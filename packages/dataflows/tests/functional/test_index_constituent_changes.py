@@ -152,7 +152,11 @@ def test_multiple_verified_events_publish_together_without_certifying_the_interv
     cases = [
         ("2019-12-16", 50, "2019-12-02", None),
         ("2020-06-15", 50, "2020-06-01", None),
+        ("2020-12-14", 50, "2020-11-27", None),
         ("2021-06-15", 50, "2021-05-28", "2021-06-11T15:00:00"),
+        ("2021-12-13", 50, "2021-11-26", "2021-12-10T15:00:00"),
+        ("2022-06-13", 50, "2022-05-27", "2022-06-10T15:00:00"),
+        ("2022-12-12", 50, "2022-11-25", "2022-12-09T15:00:00"),
         ("2026-01-12", 1, "2026-01-06", "2026-01-09T15:00:00"),
         ("2026-06-15", 50, "2026-05-29", "2026-06-12T15:00:00"),
     ]
@@ -179,13 +183,16 @@ def test_multiple_verified_events_publish_together_without_certifying_the_interv
         else:
             assert frame.EffectiveAfterClose.eq(pd.Timestamp(close)).all()
             assert metadata["effective_boundary_kind"] == "AFTER_CLOSE_STATED"
+            if day in {"2021-12-13", "2022-06-13", "2022-12-12"}:
+                assert metadata["source_calendar_url"].startswith("tushare://trade_cal?exchange=SSE&")
+                assert len(metadata["source_calendar_sha256"]) == 64
         assert frame.AvailableDate.dt.year.eq(2026).all()
         assert metadata["replacement_count"] == count
         assert metadata["verified_event_sessions"] == [day]
         assert metadata["coverage_kind"] == "VERIFIED_EVENT_ONLY"
         assert metadata["complete_membership_history"] is False
         assert metadata["historical_publication_time_verified"] is False
-    assert total == 402
+    assert total == 802
     result = flow.prepare((_request(start="2019-12-16", end="2026-06-15", required_cutoff=None),),
                           policy=PreparePolicy.REUSE)
     assert not result.ready and result.reference is None
