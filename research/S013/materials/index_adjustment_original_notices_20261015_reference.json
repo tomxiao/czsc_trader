@@ -1,0 +1,141 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "7e5d728281f45b1c1294ade4f30508e45dd015829258c33bdb74cfc76460d8f4.json",
+    "sha256": "7e5d728281f45b1c1294ade4f30508e45dd015829258c33bdb74cfc76460d8f4",
+    "media_type": "application/json",
+    "name": "notice-originals-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "1933fd91d2bb4c06888a90ca30258f35312de4325be4ac0a5cf9ee07e4b9892a.json",
+    "sha256": "1933fd91d2bb4c06888a90ca30258f35312de4325be4ac0a5cf9ee07e4b9892a",
+    "media_type": "application/json",
+    "name": "notice-originals-20261015-14-verification_summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "changes": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "00885c5a8039452fe7ddd2db6f25c1a50e5316a2af9b7447e90ea607cf91a658.json",
+    "sha256": "00885c5a8039452fe7ddd2db6f25c1a50e5316a2af9b7447e90ea607cf91a658",
+    "media_type": "application/json",
+    "name": "notice-originals-20261015-04-csi500_changes",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_xlsx": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "49371333c7c39c2c9be21707f98b39d5664870ad3a2d32c8779d015ee3019f61.xlsx",
+    "sha256": "49371333c7c39c2c9be21707f98b39d5664870ad3a2d32c8779d015ee3019f61",
+    "media_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "name": "notice-originals-20261015-01-attachment_3006027",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_pdf": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "63301b60a2a2040c4bdd97c7db5021afc8425e1f0473b96dc0b472a39ba25d32.pdf",
+    "sha256": "63301b60a2a2040c4bdd97c7db5021afc8425e1f0473b96dc0b472a39ba25d32",
+    "media_type": "application/pdf",
+    "name": "notice-originals-20261015-02-attachment_3006137",
+    "schema": null,
+    "schema_version": null
+  },
+  "archived_files": 15,
+  "authenticated_references": 16,
+  "findings": {
+    "kind": "S013_TWO_ORIGINAL_NOTICES_SUPPLEMENTAL_DIAGNOSTIC_NOT_REOPENED",
+    "verified_date": "2026-10-15",
+    "scope": "Read and verify the two official originals returned by the already authorized idx_anns probes; no additional market requests.",
+    "temporary": {
+      "notice_id": "3006027",
+      "announcement_date": "2026-01-06",
+      "effective_after_close": "2026-01-09",
+      "added": [
+        {
+          "code": "688037",
+          "name": "芯源微",
+          "sheet": "调入",
+          "range": "A3:D3"
+        }
+      ],
+      "removed": [
+        {
+          "code": "600079",
+          "name": "ST人福",
+          "sheet": "调出",
+          "range": "A3:D3"
+        }
+      ],
+      "matches_retained_month_end_snapshot_difference": true
+    },
+    "regular": {
+      "notice_id": "3006137",
+      "announcement_date": "2026-05-29",
+      "effective_after_close": "2026-06-12",
+      "added_count": 50,
+      "removed_count": 50,
+      "pdf_pages": [
+        1,
+        2
+      ],
+      "rows_per_page": [
+        14,
+        36
+      ],
+      "unique_per_side": true,
+      "no_cross_side_overlap": true,
+      "agrees_with_notice_stated_replacement_count": true
+    },
+    "validation": [
+      "Source hashes verified against acquisition manifests",
+      "XLSX openpyxl and ZIP XML independently agree",
+      "PDF pypdf and pdfplumber independently agree on all 50 rows",
+      "PDF first two pages rendered and visually inspected, including direction headers",
+      "Temporary official changes equal the already retained Dec2025-Jan2026 snapshot set difference"
+    ],
+    "meaning": "idx_anns supplies notice discovery; the official body supplies the effective boundary and the attachment supplies structured additions/removals after parsing.",
+    "limitations": [
+      "Two notices do not establish full 2020-2026 announcement coverage.",
+      "The previously empty 2021-05-28 idx_anns result remains unresolved.",
+      "Date-only publication fields and timestamp-like filenames do not prove exact historical public availability time.",
+      "Current official copies do not establish a complete historical revision chain.",
+      "No May-Jun2026 weight snapshots were acquired; full daily historical membership was not reconstructed."
+    ],
+    "new_market_provider_requests": 0,
+    "model_fits": 0,
+    "accounts": 0,
+    "new_experiments": 0,
+    "research_execution_state": "PAUSED",
+    "next_step_recommendation": "Seek approval for a bounded announcement-coverage audit over the intended history before reconstructing daily membership; no strategy experiment yet."
+  },
+  "scope": "Two original official notices and attachments; zero new market requests; S013 remains paused."
+}
