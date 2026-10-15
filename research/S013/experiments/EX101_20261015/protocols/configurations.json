@@ -1,0 +1,174 @@
+{
+  "configurations": [
+    {
+      "mode": "TREND_ONLY",
+      "candidate_id": "C9200",
+      "payload": {
+        "parameters": {
+          "base": {
+            "bear": {
+              "acf_min": 0.1,
+              "cooldown": 0,
+              "entry": 0.9,
+              "exit": 0.99,
+              "limit_premium": 0.01,
+              "max_hold": 4,
+              "momentum_min": null,
+              "range_window": 120,
+              "stop_loss": null,
+              "trailing_stop": null
+            },
+            "bull": {
+              "acf_min": null,
+              "cooldown": 0,
+              "entry": 0.675,
+              "exit": 0.95,
+              "limit_premium": 0.01,
+              "max_hold": 8,
+              "momentum_min": null,
+              "range_window": 180,
+              "stop_loss": null,
+              "trailing_stop": null
+            },
+            "confirmation": {
+              "enabled": true,
+              "lookback": 120,
+              "orientation": 1,
+              "profile": "all",
+              "scope": "both",
+              "threshold": -0.2
+            },
+            "context": {
+              "entry_gate": "all",
+              "volume_basis": "ADJUSTED",
+              "weighting": "EQUAL_BLOCKS"
+            },
+            "exit_on_regime_change": true,
+            "regime_threshold": 0.0,
+            "regime_window": 20
+          },
+          "trend": {
+            "mode": "TREND_ONLY",
+            "entry_sessions": 20,
+            "exit_sessions": 10
+          }
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.trend_participation",
+          "qualname": "TrendParticipation",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/trend_participation.py"
+          ],
+          "source_sha256": "6e63b91f4bf5683c09d04805d75a2afc5eb7700fb7c2219c67bb9a58b7413c93"
+        }
+      },
+      "content_sha256": "9011b47a45914750c0a40a93c64ccf7ad64df421d1ea1912ddee2c097f253df2"
+    },
+    {
+      "mode": "COMBINED",
+      "candidate_id": "C9201",
+      "payload": {
+        "parameters": {
+          "base": {
+            "bear": {
+              "acf_min": 0.1,
+              "cooldown": 0,
+              "entry": 0.9,
+              "exit": 0.99,
+              "limit_premium": 0.01,
+              "max_hold": 4,
+              "momentum_min": null,
+              "range_window": 120,
+              "stop_loss": null,
+              "trailing_stop": null
+            },
+            "bull": {
+              "acf_min": null,
+              "cooldown": 0,
+              "entry": 0.675,
+              "exit": 0.95,
+              "limit_premium": 0.01,
+              "max_hold": 8,
+              "momentum_min": null,
+              "range_window": 180,
+              "stop_loss": null,
+              "trailing_stop": null
+            },
+            "confirmation": {
+              "enabled": true,
+              "lookback": 120,
+              "orientation": 1,
+              "profile": "all",
+              "scope": "both",
+              "threshold": -0.2
+            },
+            "context": {
+              "entry_gate": "all",
+              "volume_basis": "ADJUSTED",
+              "weighting": "EQUAL_BLOCKS"
+            },
+            "exit_on_regime_change": true,
+            "regime_threshold": 0.0,
+            "regime_window": 20
+          },
+          "trend": {
+            "mode": "COMBINED",
+            "entry_sessions": 20,
+            "exit_sessions": 10
+          }
+        },
+        "runtime": {
+          "contract_version": 1,
+          "module": "strategy_runtime.strategies.trend_participation",
+          "qualname": "TrendParticipation",
+          "source_files": [
+            "strategies/confirmed_range.py",
+            "strategies/adaptive_range.py",
+            "strategies/range_reversion.py",
+            "strategies/reentry_confirmed_range.py",
+            "strategies/trend_participation.py"
+          ],
+          "source_sha256": "6e63b91f4bf5683c09d04805d75a2afc5eb7700fb7c2219c67bb9a58b7413c93"
+        }
+      },
+      "content_sha256": "fac68364060fb24322956e5f1b76654303e2fc2a8328ad610fe456fe6f77be2d"
+    }
+  ],
+  "source_files": {
+    "common.py": "eafd0377134aa79cde517984328780dcd56ca6ade193210a56cf4f190509cd31",
+    "declare.py": "5c9307ecd3d03277811fd32695dde5f268dfb8b281c85809f318bd932b6cfba0",
+    "synthetic.py": "0210147e5af4f001e9526be15c9554bdf964c37ec92cd645c54d2c7e5b4c2b12",
+    "strategy_runtime/strategies/adaptive_range.py": "f3a8a9e8a69cb61b326c1702bf8b471fa49105fd91cc58ec9d09dc27492669e4",
+    "strategy_runtime/strategies/confirmed_range.py": "b1e6b77bd0983791550106c7e468f396371381f58f828cdcaf2c47ce1abf8a4a",
+    "strategy_runtime/strategies/range_reversion.py": "899522b56a578190c1f254e21c2babc1fdce6ece58cc3f947cd5e76065d78dd3",
+    "strategy_runtime/strategies/reentry_confirmed_range.py": "6dfa9c7d37d8eef604a0dfccb82ebc37ff4e87b44fff04686a27ad8bb7da518c",
+    "strategy_runtime/strategies/trend_participation.py": "a3f2f4e6c199ca0694c5ed76451c004193faab6ea2ffad1a93c6fae89e53cc2f"
+  },
+  "business_configurations": 2,
+  "maximum_full_accounts": 4,
+  "evaluation_order": [
+    "TREND_ONLY_SERIAL",
+    "TREND_ONLY_SPAWN_EQUIVALENCE",
+    "COMBINED_SPAWN"
+  ],
+  "planned_full_evaluations": 3,
+  "remaining_contingency": 1,
+  "baseline_full_evaluations": 0,
+  "data": "Only existing S013 development assets; providers explicitly forbidden",
+  "search": "None: fixed 20/10, no trial or window search",
+  "mandate": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "MANDATE",
+    "revision": 9,
+    "content_sha256": "dca01de2ba09a290c58cc019c3880aca673a295e3e279055f4a09cfd43264a47"
+  }
+}

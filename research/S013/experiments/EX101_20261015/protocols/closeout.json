@@ -1,0 +1,102 @@
+{
+  "status": "FIXED_COMPARISON_COMPLETE_NO_NEW_QUALIFIED_STRATEGY",
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S013",
+    "experiment_id": "EX101_20261015"
+  },
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S013"
+    },
+    "stage": "CANDIDATES",
+    "revision": 75,
+    "content_sha256": "e734ae08b9c2cba46a811e10bca905410b9441344b94312fad0fda47dd7171c4"
+  },
+  "analysis": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX101_20261015"
+    },
+    "evidence_id": "818ec12b6ad3707823411c1ebd0101234551fad9d40d70845827de3f4c64962c.json",
+    "sha256": "818ec12b6ad3707823411c1ebd0101234551fad9d40d70845827de3f4c64962c",
+    "media_type": "application/json",
+    "name": "trend-final-analysis",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_bundle": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX101_20261015"
+    },
+    "evidence_id": "58808487e448e906e0d670dd9329a126d3a4f63baf2ad1e2b4db90d9a3bd732f.zip",
+    "sha256": "58808487e448e906e0d670dd9329a126d3a4f63baf2ad1e2b4db90d9a3bd732f",
+    "media_type": "application/zip",
+    "name": "trend-final-reproduction",
+    "schema": null,
+    "schema_version": null
+  },
+  "research_execution_state": "PAUSED",
+  "actual_counts": {
+    "status": "PASS",
+    "actual_full_accounts": 3,
+    "new_business_configs": 2,
+    "technical_duplicate_accounts": 1,
+    "baseline_reused": true,
+    "provider_calls": 0,
+    "model_fits": 0,
+    "search_trials": 0,
+    "standard32_accounts": 0,
+    "fee_stress_accounts": 0,
+    "remaining_full_account_budget": 1,
+    "remaining_experiment_budget": 0,
+    "research_state": "PAUSED",
+    "elapsed_seconds": 36.31095430000278
+  },
+  "result_summary": [
+    {
+      "configuration": "BASE",
+      "net_cagr": 0.16157224402295944,
+      "max_drawdown": 0.14159851629375708,
+      "positive_year_closed_cycles": 64,
+      "gates": {
+        "return_target": true,
+        "annual_drawdown": true,
+        "positive_buyhold_year_frequency": false,
+        "negative_buyhold_year_profit": true
+      }
+    },
+    {
+      "configuration": "TREND_ONLY",
+      "net_cagr": 0.011742356403784404,
+      "max_drawdown": 0.30114376229263307,
+      "positive_year_closed_cycles": 30,
+      "gates": {
+        "return_target": false,
+        "annual_drawdown": false,
+        "positive_buyhold_year_frequency": false,
+        "negative_buyhold_year_profit": false
+      }
+    },
+    {
+      "configuration": "COMBINED",
+      "net_cagr": 0.11380299958939588,
+      "max_drawdown": 0.24802715660455654,
+      "positive_year_closed_cycles": 74,
+      "gates": {
+        "return_target": true,
+        "annual_drawdown": false,
+        "positive_buyhold_year_frequency": false,
+        "negative_buyhold_year_profit": false
+      }
+    }
+  ],
+  "next_direction": "先评审新增趋势交易亏在入场反转还是退出回吐；不自动追加账户、改参数或新增数据。"
+}

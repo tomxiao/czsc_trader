@@ -1,0 +1,56 @@
+{
+  "parameters": {
+    "bear": {
+      "acf_min": 0.1,
+      "cooldown": 0,
+      "entry": 0.9,
+      "exit": 0.99,
+      "limit_premium": 0.01,
+      "max_hold": 4,
+      "momentum_min": null,
+      "range_window": 120,
+      "stop_loss": null,
+      "trailing_stop": null
+    },
+    "bull": {
+      "acf_min": null,
+      "cooldown": 0,
+      "entry": 0.675,
+      "exit": 0.95,
+      "limit_premium": 0.01,
+      "max_hold": 8,
+      "momentum_min": null,
+      "range_window": 180,
+      "stop_loss": null,
+      "trailing_stop": null
+    },
+    "confirmation": {
+      "enabled": true,
+      "lookback": 120,
+      "orientation": 1,
+      "profile": "all",
+      "scope": "both",
+      "threshold": -0.2
+    },
+    "context": {
+      "entry_gate": "all",
+      "volume_basis": "ADJUSTED",
+      "weighting": "EQUAL_BLOCKS"
+    },
+    "exit_on_regime_change": true,
+    "regime_threshold": 0.0,
+    "regime_window": 20
+  },
+  "runtime": {
+    "contract_version": 1,
+    "module": "strategy_runtime.strategies.reentry_confirmed_range",
+    "qualname": "ReentryConfirmedRange",
+    "source_files": [
+      "strategies/confirmed_range.py",
+      "strategies/adaptive_range.py",
+      "strategies/range_reversion.py",
+      "strategies/reentry_confirmed_range.py"
+    ],
+    "source_sha256": "62f31b2780807fb40f678a73bd0e0895295751008c15e90f1e29435493cab42c"
+  }
+}

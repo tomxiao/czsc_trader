@@ -1,0 +1,11 @@
+{
+  "strategy_analysis_closeout_default_ruff": "PASS",
+  "frozen_driver_scripts_ruff_F": "PASS",
+  "scope": "仅EX101新策略、结果分析及收尾程序默认Ruff；冻结的common/declare/run/synthetic做F级语义检查，不改动实际执行源码。",
+  "initial_default_style_check": "初次显式检查研究脚本报告34条E701/E702单行复合语句格式提示；未发现F级错误。closeout在首次执行前已格式化。其他冻结驱动脚本保留原字节。",
+  "synthetic": "12组生成数据检查PASS；无真实账户计算。",
+  "actual_full_account_evaluations": 3,
+  "serial_spawn": "信号、策略/基准各五账本及结果哈希精确相等。",
+  "whole_repository_regression": "NOT_RUN",
+  "analysis_representation_fix": "assessment日期为datetime64us，ledger为ns；时间值逐元素相等，统一ns后严格比对，无数值或账户重跑。"
+}

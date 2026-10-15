@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "reviewer": "trend_implementation_review",
+  "method": "只读认证三份正式账户SHA并独立从现金、权益、成交账本重算，不运行策略。",
+  "net_cagr": {"BASE": 0.16157224402295944, "TREND_ONLY": 0.011742356403784404, "COMBINED": 0.11380299958939588},
+  "maximum_drawdown": {"BASE": 0.14159851629375708, "TREND_ONLY": 0.30114376229263307, "COMBINED": 0.24802715660455654},
+  "positive_year_closed_cycles": {"BASE": 64, "TREND_ONLY": 30, "COMBINED": 74},
+  "negative_year_2023_return": {"BASE": 0.002841021560040513, "TREND_ONLY": -0.07202510821382169, "COMBINED": -0.010003792795408528},
+  "combined_trend_closed_cycles": 29,
+  "combined_trend_net_pnl": -33619.45500046364,
+  "base_entry_signals_blocked_by_trend": 16,
+  "base_shadow": "日期、signal_reason和target_position逐元素精确相同。",
+  "known_anomaly_dates": ["2020-03-17", "2020-10-22", "2020-12-01", "2021-02-25", "2021-03-02"],
+  "known_anomaly_limit_touch_exposure": "五日均无INTRADAY_LIMIT或未成交；仅OPEN、OPEN_MARKET或无订单。本轮未依赖这些异常30分钟的限价首触。",
+  "limits": "仅既有开发池与20/10中心表达的负结果；不推断全部趋势机制无效。"
+}

@@ -1,0 +1,207 @@
+{
+  "kind": "PROPOSED_S013_TREND_PARTICIPATION_FIXED_COMPARISON",
+  "status": "DESIGN_COMPLETE_PENDING_USER_EXECUTION_AUTHORIZATION",
+  "current_authorization": "仅设计具体规则和最小验证方案；不运行真实历史信号、模型、账户或新实验",
+  "research_execution_state": "PAUSED",
+  "strategy_reference": "C2132为诊断参照，不是新选型或PTE推荐",
+  "scientific_question": "独立的上涨突破入场能否补上原回调策略未覆盖的参与，并在同一账户下改善当前四项经济目标？",
+  "differences_from_previous_routes": [
+    "原范围或ACF不通过时也可能由趋势突破提出入场；不是放宽原范围上限。",
+    "不以原confirmation_opportunity为前提；不是EX095仅豁免已有低位机会的确认分。",
+    "趋势持有按自己的价格通道退出；不套用原4/8日定时退出或每日20日动量翻转退出。",
+    "原策略信号过程不改写，不把过去33段避跌空仓视为错误。"
+  ],
+  "assumptions_and_limits": [
+    "20/10为事前指定的单一研究起点，不是数据拟合或最优周期。",
+    "所有历史均为反复使用的S013开发池，没有新的独立验证样本。",
+    "原策略的下跌规则不修改，但组合的整体保护效果可能变差，不能预先声称保住保护。",
+    "趋势持仓可能更久，未必改善实际闭合频率；不得人为切仓凑次数。",
+    "原先基于亏损次数和空仓涨幅的描述不等于新增可实现利润。"
+  ],
+  "scope": {
+    "symbol": "510500.SH",
+    "development_window": [
+      "2020-01-02",
+      "2026-09-30"
+    ],
+    "earliest_decision": "2019-12-31",
+    "last_decision": "2026-09-29",
+    "prewarm": "仅复用C2132既有2019年正式ETF资产及其原预热；不扩展日期",
+    "initialization": "以原WINDOW首个信号日2019-12-31为状态起点；BASE影子按原算法初始化，TREND_ONLY与COMBINED的owner初始EMPTY，再处理当日条件。2019年此前行情只供计算阈值，不在预热区交易或累计趋势持仓。",
+    "sources": "仅S013现有ETF复权日线、执行日线、已有分时撮合与SSE日历",
+    "new_provider_calls": 0,
+    "new_models": 0,
+    "stock_or_industry_acquisition": false,
+    "source_failure_behavior": "所需资产缺失或认证失败则明确停止，不下载、不缩窗、不换来源。"
+  },
+  "trend_rules": {
+    "entry_sessions": 20,
+    "exit_sessions": 10,
+    "price": "原S013既有HFQ研究口径日收盘价",
+    "entry": "信号状态为空时，C[T] > max(C[T-20],...,C[T-1])，提出买入并令信号owner=TREND。",
+    "exit": "信号owner=TREND时，C[T] < min(C[T-10],...,C[T-1])，提出卖出并令信号owner=EMPTY。",
+    "equality": "等于任一边界不触发对应入场或退出。",
+    "threshold_excludes_current": true,
+    "event_semantics": "每个T独立判断突破条件，不要求条件从false跳到true；连续创新高可连续满足，但持有时不重复入场。",
+    "hold": "未触发退出则保持目标1；不添加固定最长持有、止损、冷却、均线或成交量条件。",
+    "insufficient_history": "需完整20个此前有效交易日；输入不足或非有限值明确失败，不填充。",
+    "maturity": "不在区间末强制清仓，尾部持仓按真实账本保留且不计闭合交易。",
+    "parameter_status": "仅测20/10中心，不搜索窗口。",
+    "declared_future_numeric_domain": {
+      "entry_sessions": {
+        "type": "int",
+        "minimum": 10,
+        "maximum": 60
+      },
+      "exit_sessions": {
+        "type": "int",
+        "minimum": 5,
+        "maximum": 30
+      },
+      "coupled_constraint": "exit_sessions < entry_sessions",
+      "rationale": "事前约定约2周至3个月入场参考、约1周至1个半月退出参考；用于将来标准32的同域数值说明，不代表本轮允许搜索。",
+      "original_numeric_coordinates": "组合保留C2132原13个数值坐标及域，新增2个窗口坐标；将来不能把20/10包装成不受扰动的常数以回避稳健性检查。",
+      "future_geometry": "以后若获准标准32，先固定15维组合几何及无效耦合点的确定性处理；本轮不生成、不查看、不执行参数点。"
+    }
+  },
+  "combination": {
+    "signal_states": [
+      "EMPTY",
+      "BASE",
+      "TREND"
+    ],
+    "actual_account": "三组各自独立100万元起点；组合组仅一个真实现金/持仓账本，目标0或1，只做多不加杠杆。",
+    "baseline_shadow": "原C2132完整日线信号过程逐日独立继续；其信号年龄、原退出、过滤和确认不因组合占仓或真实成交重置。影子过程不创建第二个交易账户。",
+    "empty": "仅接收当日原策略signal_reason=entry的新入口或当日趋势突破条件；若同时出现，BASE优先。",
+    "base_holding": "原目标保持1则继续BASE；原目标为0则退出。忽略趋势条件，不中途更换信号owner。",
+    "trend_holding": "只由趋势10日低点条件退出。原策略入口不抢仓、不加仓、不另建持仓。",
+    "exit_day": "任何owner退出的同一信号日目标为0，不处理其他入口。",
+    "later_reentry": "以后重新判断当日新入口；被遮挡的原策略持续target=1不是新入口，不补认、不排队。趋势条件按当日是否再创新高判断。",
+    "same_underlying": "组合仍只交易同一ETF，不叠加两个满仓账户或回报。",
+    "attribution": "信号owner只说明信号职责；实际成交、未成交、交易周期、费用与收益按公开执行层真实记录。"
+  },
+  "execution": {
+    "mechanism": "现有FROZEN_RULE及公开historical完整账户路径，不修改平台执行逻辑。",
+    "decision_timing": "T日已知收盘后信号，T+1按原合同执行。",
+    "initial_cash": 1000000,
+    "lot_size": 100,
+    "one_way_cost": 0.001,
+    "buy": "沿用当前1%买入限价、原报价参考、价网及首触撮合；不改为开盘必成交。",
+    "unfilled_buy": "DAY订单未成则现金和数量不变；若后续信号目标仍1，按原冻结规则与当日参考价重新规划差额订单。信号状态不读取或伪造真实成交反馈。",
+    "sell": "沿用原MARKET退出。已核C2132冻结源码及原replay execution_spec；现有正式历史撮合在有效开盘价按开盘成交。",
+    "model_limit": "历史MARKET成交假设不等于生产或PTE成交承诺；本方案不覆盖那些执行通道。",
+    "benchmark": "固定LimitBuyHold：premium=.01,lot_size=100,price_tick=.001,price_limit_ratio=.1,maximum_order_quantity=1000000",
+    "benchmark_sha256": "7c751496de5bc7cf108e28067a859666d42fd7687f37e08253778f49c7dc7099",
+    "pricing": {
+      "basis": "HFQ_RESEARCH",
+      "anchor_date": "2019-12-31",
+      "anchor_factor": 0.2803,
+      "quantity_unit": "RESEARCH_UNIT"
+    },
+    "cash_dividend": "不额外叠加现金分红。"
+  },
+  "comparisons": [
+    {
+      "id": "BASE",
+      "behavior": "原C2132",
+      "new_business_config": false,
+      "account": "认证复用原完整账本；关闭趋势实现必须与原信号字段及执行配置等价。"
+    },
+    {
+      "id": "TREND_ONLY",
+      "behavior": "单独20/10趋势机制",
+      "new_business_config": true,
+      "question": "新入场理由本身是否有扣费后收益，风险和交易频率怎样？"
+    },
+    {
+      "id": "COMBINED",
+      "behavior": "原策略与20/10趋势按单仓owner仲裁",
+      "new_business_config": true,
+      "question": "真实组合相对原策略是否改善；新增交易是否挤掉原赢家或扩大下跌损失？"
+    }
+  ],
+  "success_interpretation": {
+    "hard_economic_targets": [
+      "净年化至少同口径正BuyHold的1.5倍；若BuyHold非正，则策略净年化严格为正。",
+      "每自然年最大回撤严格小于同口径BuyHold，纳入上年末权益。",
+      "所有BuyHold盈利年份合并每60交易日至少4笔真实闭合交易，按实际退出日期归年。",
+      "每个BuyHold亏损年份策略连续账户年度净收益严格为正。"
+    ],
+    "profitable_years_ex_post_only": [
+      2020,
+      2021,
+      2024,
+      2025,
+      2026
+    ],
+    "positive_year_sessions": 1152,
+    "minimum_positive_year_closed_cycles": 77,
+    "negative_years_ex_post_only": [
+      2022,
+      2023
+    ],
+    "thresholds": "按未舍入账户值判定；以认证基准实际年度盈亏和日期轴重核，不硬编码到决策。",
+    "standalone_role": "趋势单独组用于解释职责，不要求它单独通过全部目标才允许评价已预先约定的组合组。",
+    "report_only_diagnostics": [
+      "BASE和TREND入口竞争及遮挡次数",
+      "双方独有及被替换的真实交易",
+      "实际持仓时长和资金占用",
+      "净收益/费用与年度回撤变化",
+      "尾仓及未成交",
+      "原已知价格异常相关交易单列"
+    ],
+    "no_new_hard_gates": true,
+    "centre_scope": "本轮只回答两个固定中心的机制问题；即使组合中心四门通过也不宣称最终策略达标。",
+    "final_requirement": "未来正式稳健性仍沿用户既定中心及标准32要求；本轮预算不含32、费用压力或选型。",
+    "stop_behavior": "两个固定表达结果如未支持改善，完整保存负结果并回到诊断；不自动扫描邻窗、改优先级或延长轮数救结果。"
+  },
+  "prospective_validation": {
+    "synthetic_cases": [
+      "完整20日前史不足必须失败。",
+      "收盘高于、等于、低于前20日最高值，且今日不进入最高值窗口。",
+      "收盘低于、等于、高于前10日最低值，且今日不进入最低值窗口。",
+      "连续创新高、突破后横盘、突然回落；只有EMPTY接受新买入。",
+      "同日BASE新入口和趋势突破时BASE优先。",
+      "BASE持有时趋势信号不抢仓；TREND持有时BASE入口不抢仓。",
+      "退出同日另一入口触发也必须输出0；以后只接新入口。",
+      "BASE入口被遮挡后的持续target=1不能迟到补入。",
+      "买入未成后持续目标1沿冻结合同继续规划；全程未成又退出不得虚构收益或闭合。",
+      "关闭趋势直接走原输出，比较全部原信号字段和执行policy；不能只比目标。",
+      "趋势始终不触发时，组合目标与原BASE逐日一致；COMBINED新增诊断字段不属于关闭模块时原输出透传比较。",
+      "未来价格改动和截断未来不改变此前信号；暖机及窗口边界一致。",
+      "区间尾部未平仓如实保留，不强行退出凑频率。"
+    ],
+    "data_and_evidence": "只读认证原EvidenceRef与DFLS准备引用；正式评价通过TDR公开API，新增证据独立不可变保存。",
+    "account_audit": "订单、首触、费用、现金、数量、权益、闭合与尾仓对账；单仓竞争由同一真实账户核验，不累加独立收益。",
+    "full_repo_regression": false,
+    "implementation_scope": "获准后仅新增本轮研究实现及最小聚焦检查，不改DFLS/SRT/TXE/FSC公共契约、依赖或生产。"
+  },
+  "proposed_execution_budget": {
+    "new_experiments": 1,
+    "experiment_identity": "未分配；不创建EX101或修改MANDATE，待用户恢复授权后办理。",
+    "new_business_configurations": 2,
+    "baseline_account_reuse": 1,
+    "maximum_full_account_evaluations": 4,
+    "evaluation_accounting": "两个业务中心，加最多两次串行/多进程技术等价或重复核验；技术重复不是新策略发现，所有实际评价均计入4次上限。",
+    "source_requests": 0,
+    "model_fits": 0,
+    "parameter_search_trials": 0,
+    "new_parameter_accounts": 0,
+    "fee_stress_accounts": 0,
+    "max_workers": 2,
+    "native_threads_per_worker": 1,
+    "request_workers": 1,
+    "seed": 13,
+    "over_budget": "遇需新增表达、账户次数、数据、平台修改或研究阶段变化，保留已完成结果后另行说明，不自动扩展。",
+    "authorization_state": "PROPOSED_NOT_AUTHORIZED",
+    "branch_question": "若授权这轮重量级研究，建议继续当前codex/s013-diagnostic-feedback；需用户同时确认分支安排，不使用worktree。"
+  },
+  "current_activity_counts": {
+    "provider_calls": 0,
+    "strategy_history_calculations": 0,
+    "model_fits": 0,
+    "account_evaluations": 0,
+    "new_experiments": 0,
+    "production_changes": 0
+  }
+}
