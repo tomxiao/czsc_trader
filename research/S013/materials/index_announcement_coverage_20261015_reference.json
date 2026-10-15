@@ -1,0 +1,222 @@
+{
+  "manifest": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "0defc4bd1ba640e356b158f347d0eafab4552aa9fc7f809a7748460381148fe9.json",
+    "sha256": "0defc4bd1ba640e356b158f347d0eafab4552aa9fc7f809a7748460381148fe9",
+    "media_type": "application/json",
+    "name": "announcement-coverage-20261015-manifest",
+    "schema": null,
+    "schema_version": null
+  },
+  "summary": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S013",
+      "experiment_id": "EX100_20261013"
+    },
+    "evidence_id": "3634231ed834bef0d9fd9b1a4847a03e100b4d9bd277b23d891261ba37e18238.json",
+    "sha256": "3634231ed834bef0d9fd9b1a4847a03e100b4d9bd277b23d891261ba37e18238",
+    "media_type": "application/json",
+    "name": "announcement-coverage-20261015-27-summary",
+    "schema": null,
+    "schema_version": null
+  },
+  "archived_files": 29,
+  "authenticated_references": 30,
+  "findings": {
+    "kind": "S013_BOUNDED_HISTORICAL_ANNOUNCEMENT_COVERAGE_DIAGNOSIS",
+    "date": "2026-10-15",
+    "window": [
+      "2019-10-09",
+      "2026-09-30"
+    ],
+    "status": "DIAGNOSIS_COMPLETE_COVERAGE_INSUFFICIENT",
+    "provider": {
+      "api": "idx_anns",
+      "source": "中证指数",
+      "annual_queries": 8,
+      "source_filter_controls": 2,
+      "total_requests": 10,
+      "self_imposed_cap": 24,
+      "retries": 0,
+      "all_provider_codes_zero": true,
+      "saturated_responses": 0,
+      "date_and_source_filters_validated": true
+    },
+    "annual_windows": [
+      {
+        "start_date": "20191009",
+        "end_date": "20191231",
+        "rows": 0
+      },
+      {
+        "start_date": "20200101",
+        "end_date": "20201231",
+        "rows": 0
+      },
+      {
+        "start_date": "20210101",
+        "end_date": "20211231",
+        "rows": 0
+      },
+      {
+        "start_date": "20220101",
+        "end_date": "20221231",
+        "rows": 0
+      },
+      {
+        "start_date": "20230101",
+        "end_date": "20231231",
+        "rows": 164
+      },
+      {
+        "start_date": "20240101",
+        "end_date": "20241231",
+        "rows": 243
+      },
+      {
+        "start_date": "20250101",
+        "end_date": "20251231",
+        "rows": 241
+      },
+      {
+        "start_date": "20260101",
+        "end_date": "20260930",
+        "rows": 145
+      }
+    ],
+    "counts_are": "All CSI-company notices, not counts of CSI500 changes.",
+    "unique_company_announcements": 793,
+    "earliest_returned": "2023-07-19",
+    "latest_returned": "2026-09-28",
+    "historical_gap_observed": [
+      "2019-10-09",
+      "2023-07-18"
+    ],
+    "source_filter_controls": [
+      {
+        "parameters": {
+          "ann_date": "20210528"
+        },
+        "rows": 0,
+        "sources": [],
+        "csi_rows": []
+      },
+      {
+        "parameters": {
+          "start_date": "20230101",
+          "end_date": "20230718"
+        },
+        "rows": 107,
+        "sources": [
+          "华证指数",
+          "国证指数",
+          "恒生指数"
+        ],
+        "csi_rows": []
+      }
+    ],
+    "independent_counterexamples": [
+      {
+        "source": "Shanghai Stock Exchange official publication",
+        "publication_date": "2020-11-27",
+        "url": "https://www.sse.com.cn/market/sseindex/diclosure/c/c_20201127_5268298.shtml",
+        "fact": "CSI500 replacement of50 constituents, effective2020-12-14; the entire 2020 CSI-source query returned zero."
+      },
+      {
+        "source": "Shanghai Stock Exchange official publication",
+        "publication_date": "2021-05-28",
+        "url": "https://www.sse.com.cn/market/sseindex/diclosure/c/c_20210528_5476672.shtml",
+        "fact": "CSI500 replacement of50 constituents, effective2021-06-11 after close; annual and no-source date queries lack the event."
+      }
+    ],
+    "recent_positive_controls": {
+      "notice_ids": [
+        "3006027",
+        "3006137"
+      ],
+      "exact_rows_match_previous_probes": true
+    },
+    "regular_title_candidates": [
+      {
+        "ann_date": "20231124",
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=15044",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      {
+        "ann_date": "20240531",
+        "title": "关于沪深300、中证500、中证1000等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=15267",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      {
+        "ann_date": "20241129",
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=15471",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      {
+        "ann_date": "20250530",
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=15690",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      {
+        "ann_date": "20251128",
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=3006000",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      {
+        "ann_date": "20260529",
+        "title": "关于沪深300、中证500、中证1000、中证A500等指数定期调整结果的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=3006137",
+        "source": "中证指数",
+        "type": "指数修订"
+      }
+    ],
+    "title_screening_counterexample": {
+      "notice": {
+        "ann_date": "20260106",
+        "title": "关于中证1000等指数样本临时调整的公告",
+        "url": "https://www.csindex.com.cn/#/about/newsDetail?id=3006027",
+        "source": "中证指数",
+        "type": "指数修订"
+      },
+      "meaning": "A confirmed CSI500 temporary adjustment lacks CSI500 in its title. Title-only filtering cannot establish full recall."
+    },
+    "documentation": {
+      "url": "https://tushare.pro/document/2?doc_id=460",
+      "documented_general_data_start": "2018-06-01",
+      "interpretation": "General endpoint start is not proof of every issuer historical coverage. Actual results govern this diagnosis."
+    },
+    "conclusion": "The current account and endpoint responses are insufficient to reconstruct uninterrupted CSI500 daily membership over the authorized window.",
+    "limits": [
+      "This does not establish that all Tushare products lack older information, or identify why the endpoint is missing it.",
+      "The earliest returned date is an observed sample boundary, not a contractual provider start date.",
+      "Non-saturation and six recent regular titles do not prove full recall of later temporary adjustments.",
+      "Original notice/attachment coverage, initial membership and historical public timestamps still require independent validation.",
+      "No complete daily membership table or strategy input was constructed."
+    ],
+    "learning_feedback": "Distinguish documented generic coverage, actual issuer-specific recall, and events hidden by title filters. Do not interpret empty responses as absence of events.",
+    "next_step_recommendation": "Use official historical CSI notices and their attachments to test recovery of the known2021-06 gap, reconcile to the retained May/June500-stock snapshots, then assess a bounded full-history collection plan.",
+    "models": 0,
+    "accounts": 0,
+    "new_experiments": 0,
+    "price_requests": 0,
+    "research_execution_state": "PAUSED"
+  },
+  "scope": "Bounded historical announcement audit only; no new prices, strategy experiment or research restart."
+}
