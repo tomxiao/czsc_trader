@@ -1,0 +1,29 @@
+{
+  "stage": "COMPONENTS",
+  "authorization": "用户：请以能推进进入阶段三为目标，自主完成阶段二",
+  "scope": "S014,600722.SH,2020-01-01..2026-10-15; existing pinned native inputs and EX004..EX006 evidence only; fully seen development pool; no independent validation claim",
+  "question": "Can completed-day market structure, volume participation and observed holding path distinguish the net value of continuing a position from exiting at the next TXE-feasible open?",
+  "mechanisms": {
+    "structure": "Persistence requires price remaining above its medium-term reference and maintaining distance from recent support; a one-day negative return alone may be normal noise.",
+    "participation": "Volume-weighted close location and positive/negative return participation may distinguish sustained pressure from an isolated pullback. They are daily-bar proxies, not observed investor flows.",
+    "holding_path": "How much of an already-observed gain has been surrendered, in units of recent volatility, may distinguish normal consolidation from deterioration. This is an incremental representation of the same price source."
+  },
+  "sample": "Use EX006 common-mature, filled attempts at the midpoint checkpoint for H=5,10,20, decision index>=60. Each horizon separately has one observation per decision session. Keep every eligible year, censoring and nonfills separately; no complete account.",
+  "label": "continue_gain = inherited original fixed-exit net cash return minus inherited next-feasible-exit net cash return, both same actual quantity and initial100000CNY, both side0.001 fee. Positive means continuing to the declared fixed horizon is better. Earliest exit after completed D, never D close. Costs of capital/re-entry opportunities are not represented.",
+  "features": {
+    "baseline": ["ret1", "ret5", "ret20", "true_range_fraction", "volume_mean5_over20", "known_fee_adjusted_mark"],
+    "structure": ["close_over_ma20_minus1", "ma5_over_ma20_minus1", "ma20_change5", "close_distance_prior5_close_min_in_atr20"],
+    "participation": ["volume_weighted_close_location5", "signed_volume_balance5", "volume_mean5_over20_times_ret5"],
+    "holding_path": ["fee_adjusted_close_mark_drawdown_from_observed_peak", "profit_giveback_in_atr20_units", "mark_gain_per_observed_holding_day"],
+    "time": "Completed D and earlier bars/position only. First60sessions warm up inside authorized interval; no pre-window data. No D+1 price or exit outcome in features."
+  },
+  "estimators": "Fixed ridge penalty10 with train-only centering/scaling, baseline, each single-group augmentation, full, each full-minus-one group (8 total). Fixed depth3,min_samples_leaf40,seed13 regression tree on baseline/full to check interactions (2). Training label mean is a separate simpler control. No parameter search or automatic model selection.",
+  "direct_controls": "Two predefined completed-day continuation indicators: close>=MA20 and MA5>=MA20; close>=minimum previous5 closes. They are contrasts, not selected production rules.",
+  "training": "Expanding2020 onward; test years2023/24/25/26. Training maturity strictly before the first test decision of the year; all preprocessing fit on training only. Decisions near year end with immature labels are excluded from next-year training. Cutoff stays2026-10-15.",
+  "decision_probe": "For each independent checkpoint, continue if predicted continue_gain>0, otherwise next feasible exit. Report prediction MAE, continue/exit coverage, mean realized checkpoint choice vs always-fixed-hold and vs baseline-ridge, selected continuation label, forgone upside, and worst completed-close movement after earliest exit. This probe is not a sequential stopping policy, candidate or account.",
+  "comparisons": "13 probes x3horizons x2paired comparators=78 nominal contrasts including trivial/repeated controls, prior78 gives nominal history156. Confidence diagnostics use within-year20-session circular block resampling5000, preserving paired dates. Pooled mean weights decision observations. Report all years, omit2026, omit best3 positive decision improvements; intervals do not establish independent replication or new hard gates.",
+  "counterevidence": "Ablate each group; compare simple controls and full nonlinear expression; report years with losses/negative increment, leave2026out, opportunity cost of early exits, sample/coverage changes. If only a particular year or thin selection drives improvement, keep that limitation. Do not reverse a losing rule automatically.",
+  "precheck": "Validate predecessor FULL/PASS and input identities; reproduce original entry plans and fixed/earlier TXE exits; synthetic monotonic/downward paths, future perturbation and prefix feature equality; no-network assertion; split maturity; exact cash choice identity; serial/spawn equality.",
+  "resources": {"max_workers":2,"native_threads_per_worker":1,"seed":13,"hours_cap":2,"source_calls":0,"new_dependencies":0,"expected_fits":120,"strategy_accounts":0},
+  "stop_and_route": "Complete this mechanism study and audit before interpreting. If coherent complementary information supports a falsifiable executable strategy, finish phase2 and propose a concrete bounded phase3 hypothesis. If unsupported, report negative result and only continue for a distinct discriminating mechanism; never manufacture SUPPORT to advance. Stage3 execution still needs approval. User annual objectives remain unevaluated and unchanged."
+}
