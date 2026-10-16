@@ -3,6 +3,17 @@
   "created_by": "RSCH",
   "name": "金牛化工A股个股技术可行性试点",
   "research_intent": {
+    "attribution_authorization": {
+      "confirmed_proposal": "回到阶段二，先做一轮数据归因；收益发生位置、固定退出回吐、事前区分能力",
+      "experiment": {
+        "experiment_id": "EX006_20261016",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "scope": "Existing S014 data and contract only; 2 processes/native1; zero source calls, searches or new strategy accounts",
+      "source": "current human conversation",
+      "verbatim": "同意"
+    },
     "authorization": {
       "approved": {
         "additional_upstream_call_cap": 50,
@@ -44,12 +55,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "799ab04eb8a24f2167ace6d8d7a4fbaa91df778ceecae7c0a9a3a680fcfcf1b7",
-      "revision": 2,
+      "content_sha256": "c2b8c125e948eb5ec3efa88eecd7ec55ef07983e10e21a3a0d33d744c8da4a63",
+      "revision": 3,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "阶段二完成：2项基础辅助上下文用途获得限定支持，稳定净收益增量入场组件0；阈值失配、少样本和更强简单对照已核验。整体经济目标未验收，阶段三未获批准。",
+    "conclusion": "本轮数据归因完成：普遍入场过晚解释未获支持；买后收益集中于强行情阶段；有盈利回吐但朴素提前退出未获支持。保留2项基础辅助用途，新增收益组件0。主要回传阶段二的行情持续性/持有决策信息研究，阶段三未批准。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "diagnostic_feedback": {
       "assessment": [
@@ -59,11 +70,23 @@
         "固定期限独立尝试未充分区分入场前收益、成交后延续和利润回吐；新增数据的必要性尚未建立",
         "不要求每个组件单独赚钱或在所有年份有效；逐年硬门适用于完整策略，既有目标不变"
       ],
+      "attribution_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "c2b8c125e948eb5ec3efa88eecd7ec55ef07983e10e21a3a0d33d744c8da4a63",
+        "revision": 3,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
       "authorization": "用户当前明确要求：进入“研究诊断与学习反馈”状态，给出建议",
       "decision_update": "暂缓阶段三；不把缺少单独盈利入场组件设为硬门，也不直接归因于供应商数据不足",
       "execution_scope_this_turn": "证据复核、研究意图状态更新及建议；未启动新实验、获取新数据或评价新账户",
+      "judgment_update": "优先识别持有中的行情持续性与失效，现有单日走弱/20日涨跌状态不足以区分；新增信息需求尚未建立。",
       "priority_question": "现有可执行入场后是否仍有可辨识的收益结构，主要短板是入场时机、持有退出还是事前信息？",
       "recommended_minimum_design": "沿用现有输入和执行合同，拆分信号到次日开盘、实际入场后及固定退出收益，检查利润回吐、退出受阻和事件机会分布；按年度及已知状态分层，检验父条件及条件增量。事后路径仅用于诊断，不构造事后最优账户。",
+      "result": "普遍入场过晚未获支持；买后强行情收益、未成交选择性及回吐已量化；朴素浮盈走弱退出未获稳定改善。",
       "reviewed_commit": "ff38a92a",
       "reviewed_delivery": {
         "batch": {
@@ -80,6 +103,7 @@
         "primary": "阶段二：标签、收益机制和信息用途",
         "stage_three": "仅在形成具体完整策略假设后另行推进"
       },
+      "routing_after_result": "阶段二：持有决策信息与相应标签；不立即进入阶段三或扩展数据。",
       "verified": "当前COMPONENTS/2为FULL/PASS；已核对固定持有标签、父条件对照与真实结果，未发现阻止本次诊断的技术失败"
     },
     "mandate": {
@@ -100,7 +124,7 @@
       "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool."
     },
     "pending": [
-      "呈现诊断建议；先判断可交易机会与损失来源，新实验及数据扩展本轮未启动"
+      "审阅COMPONENTS/3归因结果与阶段二后续方向；阶段三未获批准"
     ],
     "ready": true,
     "research_window": {
@@ -114,7 +138,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 6
     },
-    "stage": "研究诊断与学习反馈：主要回传阶段二，诊断建议待审阅",
+    "stage": "阶段二：数据归因完成，主问题转向行情持续性与持有决策信息",
     "strategy_accounts": 0,
     "supported_components": 2,
     "supported_return_entry_components": 0
@@ -125,5 +149,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-16T23:32:35+08:00"
+  "updated_at": "2026-10-17T00:06:05+08:00"
 }

@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "checks": [
+    "predecessor_full_pass",
+    "published_design_identity",
+    "published_attribution_identity",
+    "published_paired_identity",
+    "published_study_identity",
+    "native_input_hashes_calendar_and_status",
+    "real_feature_prefix_causality",
+    "unique_signal_horizon",
+    "all_closed_cash_attribution_identities",
+    "all_closed_gross_minus_fees",
+    "lot_and_cash_bounds",
+    "identical_common_signals_all_horizons",
+    "unfilled_zero_cash_no_invented_position",
+    "right_censored_stays_unliquidated",
+    "hindsight_is_bounded_and_later_than_entry",
+    "checkpoints_precede_exit_and_sell_next_session",
+    "exit_comparison_cash_identity",
+    "condition_uses_known_mark_and_known_daily_return",
+    "close_marks_exclude_exit_day",
+    "all_checkpoint_features_recomputed_from_native_bars",
+    "no_new_models_sources_or_strategy_accounts",
+    "all16_primary_annual_aggregations"
+  ],
+  "manifest": [
+    {
+      "path": "research/S014/assets/runs/EX006_20261016/first/decisions.csv",
+      "bytes": 2536307,
+      "sha256": "18c5a37d1eb4e3dbdedcbb0681f1b77d2382942df32b292ae4c14a518e170195"
+    },
+    {
+      "path": "research/S014/assets/runs/EX006_20261016/first/entry_replay.csv",
+      "bytes": 67246,
+      "sha256": "d07182d52088dad4201dd178f286c6a0fd2cce95de293e2020f1c8d19dc1ca34"
+    },
+    {
+      "path": "research/S014/assets/runs/EX006_20261016/first/features.csv",
+      "bytes": 84589,
+      "sha256": "094dfc4b99de4dc9b217ab5b620c5deb90f4029302e2a2a6efa43b7861db82f7"
+    },
+    {
+      "path": "research/S014/assets/runs/EX006_20261016/first/paths.csv",
+      "bytes": 2426942,
+      "sha256": "21fdd7f810c6f58d978a46f77696649edfc9184c75d383791431575b17abf55b"
+    },
+    {
+      "path": "research/S014/assets/runs/EX006_20261016/first/result.json",
+      "bytes": 28408,
+      "sha256": "1cea89d44962760b3c803092b1edef816d86c441f1206087e7adf03553db3be8"
+    }
+  ],
+  "closed_rows": 6316,
+  "common_attempts_per_horizon": 1601,
+  "common_filled_per_horizon": 1569,
+  "common_unfilled_per_horizon": 32,
+  "new_model_fits": 0,
+  "new_source_calls": 0,
+  "strategy_accounts": 0,
+  "primary_comparisons": 16,
+  "secondary_concentration": "Descriptive top-positive-attempt removal and top-year concentration; not independent confirmatory tests, account returns or tradable year labels",
+  "limits": "Checks establish identities and declared chronology, not profitable timing or annual economic acceptance"
+}

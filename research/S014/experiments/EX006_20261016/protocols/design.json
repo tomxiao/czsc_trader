@@ -1,0 +1,41 @@
+{
+  "stage": "COMPONENTS",
+  "authorization": {"source": "current human conversation", "reply": "同意", "confirmed_proposal": "回到阶段二，先做一轮数据归因：收益发生位置、固定退出回吐、现有事前信息区分能力"},
+  "prior_delivery": "COMPONENTS/2",
+  "scope": "600722.SH,2020-01-01..2026-10-15; existing S014 native pinned assets and published EX004/EX005 evidence only. Whole seen development pool, no unseen validation.",
+  "contract": "Independent100000CNY attempts, HFQ normalized units, original planned quantity/limit buys via SRT and daily fills via TXE;0.001 each side; next-session market exit including lower-limit-open+tick/delay. No new strategy account or parameter search.",
+  "questions": ["Does observed upside occur before the next executable entry, or after actual entry?", "How much poor fixed-horizon outcome corresponds to mark-to-market profit giveback or earlier feasible exits, and how much to nonfills/delays?", "Are the simpler pullback/breakout parent events themselves weak, or only their added confirmations?", "Can a completed-day profit-and-weakness condition distinguish whether next-session exit is better than the original fixed exit?"],
+  "labels": {
+    "horizons": [3,5,10,20],
+    "common_sample": "Primary attribution uses signal IDs mature for every horizon. Also publish horizon-native summaries separately. Right-censored observations remain censored, no forced liquidation.",
+    "cash_identity": "For closed attempts: actual net = q*(actualExit-signalClose)/100000 - q*(entryOpen-signalClose)/100000 - q*(actualEntry-entryOpen)/100000 - q*(actualEntry+actualExit)*0.001/100000. Counterfactual same-q differences are diagnostic price attribution, not an earlier-close investable baseline.",
+    "unfilled": "Realized net0, cash fees0, no invented position. Describe planned-open/entry-open price change only as a noninvested market path.",
+    "holding_marks": "Only completed closes from entry through actual-exit-1; exclude exit-day closes. Fee-adjusted close marks are not executable close exits. Report prior positive mark profit returned separately from final losses.",
+    "hindsight_headroom": "For each completed holding day D before planned exit, resolve next-session MARKET sell using TXE with original quantity. First allowed D is entry day; same-day entry/exit never invented. Compare best earlier feasible net exit to fixed net; hindsight choice is an opportunity diagnostic only, never a signal or stitched account.",
+    "delay": "Separate actual exit proceeds from planned-exit open mark. The latter may be nonexecutable; delay can help or hurt, so signed effect is preserved."
+  },
+  "decision_conditions": {
+    "entry_parents": "pullback:Close>MA60 and ret5<0; confirmation ret1>0. breakout:Close>prior20HighMax; confirmation Volume>prior20VolumeMean. Inputs through completed T only, first60sessions for parent features inside window.",
+    "states": "T ret20>=0 vs<0; close at official upper limit vs other. No new state threshold or feature search.",
+    "exit_checkpoints": "Entry-day close and midpoint close E+floor(H/2); each independently labelled, no rule combination or stopping-policy simulation.",
+    "exit_parent": "Current fee-adjusted close mark>0",
+    "exit_condition": "exit_parent and current close/previous close-1<0",
+    "exit_control": "exit_parent with nonnegative current daily return",
+    "exit_target": "Net proceeds from next feasible TXE exit minus original fixed exit, divided by100000. Report absolute selected/control advantages as well as their difference. Conditioning is on facts known at checkpoint D, outcomes mature at actual original exit.",
+    "interpretation": "One record per original attempt per checkpoint/horizon; overlapping attempts are not an account. A positive mark or hindsight rescue alone cannot establish a usable exit component."
+  },
+  "analysis": {
+    "descriptive_years": [2020,2021,2022,2023,2024,2025,2026],
+    "primary_years": [2023,2024,2025,2026],
+    "entry_group_year": "signal year, not account annual P&L",
+    "exit_group_year": "decision year, not account annual P&L",
+    "primary_comparisons":16,
+    "composition":"2 parent/confirmation pairs x4horizons +2checkpoint exit-condition pairs x4horizons",
+    "uncertainty":"5000 paired circular blocks of20origin sessions within each year. Recompute selection counts in each draw; absent selections stay missing and valid-draw fractions reported. Show ordinary95percent and nominal-history78 intervals (prior62+16); adaptivity/secondary descriptions not erased by adjustment.",
+    "counterevidence":"Report all years, count/coverage/fills, native/common window differences, unconditional outcomes, losses without positive marks, top-positive contribution removal, and delays. No new economic gates.",
+    "routing":"Before-entry effect dominant: consider earlier information; profitable after-entry paths with repeatable ex-ante exit separation: exit-component research; stable parent discrimination: articulate strategy hypothesis before phase3; headroom without ex-ante discrimination: do not call an opportunity executable. Mixed evidence remains unresolved."
+  },
+  "precheck":"Pinned input hashes, prior labels/quantities/buy fills/fixed sell replication, serial/spawn synthetic cash identity and delayed-exit behavior, actual feature causality, path/checkpoint order boundaries",
+  "resources":{"max_workers":2,"native_threads_per_worker":1,"seed":13,"hours_cap":2,"new_source_calls":0,"parameter_searches":0,"strategy_accounts":0},
+  "closure":"Publish a successor COMPONENTS revision with diagnosis, counterevidence, judgment update and precise next routing; copy final report exactly. Do not broaden data, invent an account or change user objectives."
+}
