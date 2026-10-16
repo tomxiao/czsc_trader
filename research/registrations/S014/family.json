@@ -51,6 +51,37 @@
     },
     "conclusion": "阶段二完成：2项基础辅助上下文用途获得限定支持，稳定净收益增量入场组件0；阈值失配、少样本和更强简单对照已核验。整体经济目标未验收，阶段三未获批准。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
+    "diagnostic_feedback": {
+      "assessment": [
+        "已支持的2项为风险与执行辅助；未建立可指导阶段三的具体收益机制，不能用交付完成或拟合数量代替研究充分性",
+        "阈值失配存在但校准未恢复稳定增量；单样本改善已有反证，不能认定量价信息整体无效",
+        "父条件与附加确认的比较，主要检验确认条件；确认无效不等于父机会无效",
+        "固定期限独立尝试未充分区分入场前收益、成交后延续和利润回吐；新增数据的必要性尚未建立",
+        "不要求每个组件单独赚钱或在所有年份有效；逐年硬门适用于完整策略，既有目标不变"
+      ],
+      "authorization": "用户当前明确要求：进入“研究诊断与学习反馈”状态，给出建议",
+      "decision_update": "暂缓阶段三；不把缺少单独盈利入场组件设为硬门，也不直接归因于供应商数据不足",
+      "execution_scope_this_turn": "证据复核、研究意图状态更新及建议；未启动新实验、获取新数据或评价新账户",
+      "priority_question": "现有可执行入场后是否仍有可辨识的收益结构，主要短板是入场时机、持有退出还是事前信息？",
+      "recommended_minimum_design": "沿用现有输入和执行合同，拆分信号到次日开盘、实际入场后及固定退出收益，检查利润回吐、退出受阻和事件机会分布；按年度及已知状态分层，检验父条件及条件增量。事后路径仅用于诊断，不构造事后最优账户。",
+      "reviewed_commit": "ff38a92a",
+      "reviewed_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "799ab04eb8a24f2167ace6d8d7a4fbaa91df778ceecae7c0a9a3a680fcfcf1b7",
+        "revision": 2,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "routing": {
+        "data_expansion": "先证明现有信息缺口，再核验具体上游覆盖、权限、历史可得时间及修订限制",
+        "primary": "阶段二：标签、收益机制和信息用途",
+        "stage_three": "仅在形成具体完整策略假设后另行推进"
+      },
+      "verified": "当前COMPONENTS/2为FULL/PASS；已核对固定持有标签、父条件对照与真实结果，未发现阻止本次诊断的技术失败"
+    },
     "mandate": {
       "batch": {
         "strategy_id": "S014",
@@ -69,7 +100,7 @@
       "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool."
     },
     "pending": [
-      "用户审阅COMPONENTS/2后决定是否进入阶段三小规模账户验证"
+      "呈现诊断建议；先判断可交易机会与损失来源，新实验及数据扩展本轮未启动"
     ],
     "ready": true,
     "research_window": {
@@ -83,7 +114,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 6
     },
-    "stage": "阶段二已完成，等待用户审阅并决定阶段三",
+    "stage": "研究诊断与学习反馈：主要回传阶段二，诊断建议待审阅",
     "strategy_accounts": 0,
     "supported_components": 2,
     "supported_return_entry_components": 0
@@ -94,5 +125,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-16T22:34:32+08:00"
+  "updated_at": "2026-10-16T23:32:35+08:00"
 }
