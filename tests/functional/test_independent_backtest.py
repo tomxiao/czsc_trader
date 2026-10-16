@@ -62,6 +62,7 @@ def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
         "decisions.csv", "fills.csv", "ma_account_daily.csv", "ma_chart.html", "ma_orders.csv",
         "ma_signals.csv", "ma_trades.csv", "manifest.json", "metrics.json", "observations.json",
         "orders.csv", "report.md", "trades.csv",
+        "buyhold_attempts.csv", "buyhold_fills.csv", "ma_attempts.csv", "ma_fills.csv",
     }
     assert set(result["artifacts"]) == {path.name for path in output.iterdir()} == expected_files
     assert all((repository.root / path).is_file() for path in result["artifacts"].values())

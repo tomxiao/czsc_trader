@@ -39,6 +39,21 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
             dates = pd.date_range(request.start, request.end)
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {"vendor": "test"}
         dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), pd.Timestamp("2026-09-21")))
+        if request.dataset is Dataset.SECURITY_PRICE_LIMITS:
+            frame = pd.DataFrame({"Date": dates, "UpLimit": 1.2, "DownLimit": 0.8})
+            calendar = verify_daily_sessions(
+                SyntheticCalendar(), request.symbol, frame,
+                start=request.start, end=request.end,
+            )
+            return frame, {
+                "vendor": "test", "vendor_symbol": request.symbol,
+                "vendor_interface": "etf_limit", "asset_type": "etf",
+                "adjustment": "none", "frequency": "daily", "source_calendar": "SSE",
+                "available_at": "same-session pre-open source schedule; historical publication unverified",
+                "source_publication_timestamp_verified": False,
+                "historical_revision_history_verified": False,
+                "daily_session_coverage": calendar,
+            }
         daily_dates = dates
         volume = 8000
         if request.frequency == "30m":
@@ -83,7 +98,7 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
                                      Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
-                                     Dataset.ETF_SHARE_SIZE)}))
+                                     Dataset.ETF_SHARE_SIZE, Dataset.SECURITY_PRICE_LIMITS)}))
 
 
 def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(current_frozen):
