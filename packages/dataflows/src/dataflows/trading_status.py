@@ -1,4 +1,4 @@
-"""Proven daily instrument sessions shared by stocks and exchange-traded funds."""
+"""Authenticated daily instrument sessions and native stock suspension evidence."""
 from enum import StrEnum
 from pathlib import Path
 import re
@@ -20,11 +20,11 @@ def suspension_dates(pro, symbol: str, calendar_dates, observed_dates) -> tuple[
     missing = expected.difference(observed_dates)
     if not expected:
         return [], []
-    # The vendor documents suspend_d for stocks; ETF coverage is not certified.
+    # suspend_d is a stock source; ETF quote gaps remain data-quality failures.
     if symbol.startswith(("5", "15", "16")):
         if not missing:
             return [], []
-        raise IncompleteDataError("ETF suspension evidence is unavailable", missing_dates=sorted(missing))
+        raise IncompleteDataError("daily observations omit exchange sessions", missing_dates=sorted(missing))
     if not callable(getattr(pro, "suspend_d", None)):
         if not missing:
             return [], []
@@ -91,11 +91,12 @@ def fetch_trading_status(request: DataRequest, *, env_file: str | Path | None = 
     from .ohlcv_quality import verify_daily_sessions
     from .tushare_common import get_tushare_pro
 
-    pro = get_tushare_pro(env_file)
     asset = "etf" if infer_asset_type(request.symbol) == "fund" else "stock"
-    api = "fund_daily" if asset == "etf" else "daily"
-    raw = getattr(pro, api)(ts_code=request.symbol, start_date=request.start.replace("-", ""),
-                           end_date=request.end.replace("-", ""))
+    if asset != "stock":
+        raise DataContractError("trading status source supports SH/SZ stocks only")
+    pro = get_tushare_pro(env_file)
+    raw = pro.daily(ts_code=request.symbol, start_date=request.start.replace("-", ""),
+                    end_date=request.end.replace("-", ""))
     if raw is None or not {"ts_code", "trade_date", "vol"}.issubset(raw.columns):
         raise DataContractError("trading observations are unavailable")
     if not raw.ts_code.eq(request.symbol).all():

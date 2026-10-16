@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from copy import deepcopy
 from datetime import date, timedelta
+from enum import StrEnum
 from pathlib import Path
 
 import pandas as pd
@@ -12,7 +13,31 @@ from dataflows import (DataError, DataRequest, DataStatus, Dataflows, Dataset,
                        PreparePolicy, PreparedDataRef, DataResult)
 from strategy_runtime import (canonical_sha256, StrategyInputBinding,
                               ExecutionPriceBasis, ExecutionPricing)
-from trading_execution_engine import MarketExecutionRules, SessionPriceLimits
+from trading_execution_engine import MarketExecutionRules, SessionPriceLimits, SuspensionInformation
+
+
+class MarketSecurity(StrEnum):
+    """The supported market/security combinations for account replay."""
+
+    CN_STOCK = "CN_STOCK"
+    CN_ETF = "CN_ETF"
+
+    @classmethod
+    def select(cls, symbol: str, asset_type: str) -> MarketSecurity:
+        if symbol.rsplit(".", 1)[-1] not in {"SH", "SZ"}:
+            raise ValueError("historical market execution currently supports SH/SZ securities")
+        if asset_type not in {"stock", "etf"}:
+            raise ValueError("backtest asset type must be stock or etf")
+        return cls.CN_STOCK if asset_type == "stock" else cls.CN_ETF
+
+    @property
+    def suspension_information(self) -> SuspensionInformation:
+        return (SuspensionInformation.PROVIDED if self is MarketSecurity.CN_STOCK
+                else SuspensionInformation.NOT_PROVIDED)
+
+    @property
+    def price_tick(self) -> float:
+        return .01 if self is MarketSecurity.CN_STOCK else .001
 
 
 @dataclass(frozen=True)
@@ -48,6 +73,10 @@ class BacktestExecutionData:
     @property
     def evaluation_end(self) -> pd.Timestamp:
         return pd.Timestamp(self.evaluation_sessions[-1])
+
+    @property
+    def market_security(self) -> MarketSecurity:
+        return MarketSecurity.select(self.symbol, self.asset_type)
 
 
 class BacktestExecutionDataPreparationError(ValueError):
@@ -167,10 +196,14 @@ def _execution_frames(results, pricing: ExecutionPricing) -> dict[str, pd.DataFr
     return frames
 
 
-def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str) -> MarketExecutionRules:
+def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str, policy: MarketSecurity) -> MarketExecutionRules:
     """Translate authenticated raw limits into the account's explicit price units."""
-    status = results["trading_status"].dataframe
-    suspended = set(pd.to_datetime(status.loc[status.Status.eq("SUSPENDED"), "Date"]).dt.normalize())
+    suspended = set()
+    if policy.suspension_information is SuspensionInformation.PROVIDED:
+        status = results["trading_status"].dataframe
+        suspended = set(pd.to_datetime(status.loc[status.Status.eq("SUSPENDED"), "Date"]).dt.normalize())
+    elif "trading_status" in results:
+        raise ValueError("ETF replay does not consume suspension information")
     limits = results["price_limits"].dataframe
     limits = limits.loc[~pd.to_datetime(limits.Date).isin(suspended)]
     # DFLS already authenticated metadata; unit conversion needs numerical data only.
@@ -189,15 +222,18 @@ def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str) -> 
     evaluation_dates = pd.to_datetime(calendar.loc[calendar.IsOpen.eq(1), "Date"])
     return MarketExecutionRules(symbol, tuple(
         SessionPriceLimits(day.date(), float(lower) * float(scale), float(upper) * float(scale),
-                           (0.01 if symbol.startswith(("6", "0", "3")) else 0.001) * float(scale))
+                           policy.price_tick * float(scale))
         for day, lower, upper, scale in zip(dates, limits["DownLimit"], limits["UpLimit"], factors, strict=True)
-    ), tuple(day.date() for day in sorted(suspended) if evaluation_dates.min() <= day <= evaluation_dates.max()))
+    ), tuple(day.date() for day in sorted(suspended) if evaluation_dates.min() <= day <= evaluation_dates.max()),
+        policy.suspension_information)
 
 
 def _require_market_rules(data: BacktestExecutionData) -> MarketExecutionRules:
     """Formal TDR replay always has a complete, explicit market contract."""
     if not isinstance(data.market_rules, MarketExecutionRules) or data.market_rules.symbol != data.symbol:
         raise ValueError("formal replay requires matching market execution rules")
+    if data.market_rules.suspension_information is not data.market_security.suspension_information:
+        raise ValueError("market suspension policy differs from instrument")
     if "price_limits" not in data.requests or "price_limits" not in data.input_identities:
         raise ValueError("formal replay requires authenticated price-limit inputs")
     for session in data.evaluation_sessions:
@@ -248,13 +284,9 @@ def _prepare_backtest_execution_data(
     if start > end:
         raise ValueError("backtest start must not follow end")
     normalized_asset = asset_type.lower()
-    if normalized_asset not in {"stock", "etf"}:
-        raise ValueError("backtest asset type must be stock or etf")
     normalized_symbol = symbol.upper()
-    try:
-        exchange = {"SH": "SSE", "SZ": "SZSE"}[normalized_symbol.rsplit(".", 1)[-1]]
-    except KeyError as exc:
-        raise ValueError("historical market execution currently supports SH/SZ securities") from exc
+    policy = MarketSecurity.select(normalized_symbol, normalized_asset)
+    exchange = {"SH": "SSE", "SZ": "SZSE"}[normalized_symbol.rsplit(".", 1)[-1]]
     flows = dataflows
     calendar_request = DataRequest(
             Dataset.TRADING_CALENDAR,
@@ -289,14 +321,17 @@ def _prepare_backtest_execution_data(
 
     actual_start = sessions[0].date()
     actual_end = sessions[-1].date()
-    status_request = DataRequest(Dataset.SECURITY_TRADING_STATUS, normalized_symbol,
-                                 history_calendar_request.start, actual_end.isoformat(), actual_end.isoformat())
-    status_prepared = flows.prepare((status_request,), policy=PreparePolicy.REUSE)
-    if not status_prepared.ready:
-        item = status_prepared.items[0]
-        _require_ready(DataResult(item.status, error=item.error), "trading_status")
-    status = _ready(flows, status_request, "trading_status", prepared=status_prepared.reference)
-    active = pd.DatetimeIndex(pd.to_datetime(status.dataframe.loc[status.dataframe.Status.eq("TRADING"), "Date"]))
+    status_request = None
+    active = calendar_sessions
+    if policy.suspension_information is SuspensionInformation.PROVIDED:
+        status_request = DataRequest(Dataset.SECURITY_TRADING_STATUS, normalized_symbol,
+                                     history_calendar_request.start, actual_end.isoformat(), actual_end.isoformat())
+        status_prepared = flows.prepare((status_request,), policy=PreparePolicy.REUSE)
+        if not status_prepared.ready:
+            item = status_prepared.items[0]
+            _require_ready(DataResult(item.status, error=item.error), "trading_status")
+        status = _ready(flows, status_request, "trading_status", prepared=status_prepared.reference)
+        active = pd.DatetimeIndex(pd.to_datetime(status.dataframe.loc[status.dataframe.Status.eq("TRADING"), "Date"]))
     prior = calendar_sessions[(calendar_sessions < sessions[0]) & calendar_sessions.isin(active)]
     if len(prior) < prior_sessions:
         raise ValueError(f"trading calendar cannot satisfy {prior_sessions} prior sessions")
@@ -310,7 +345,6 @@ def _prepare_backtest_execution_data(
     )
 
     requests = {
-        "trading_status": status_request,
         "price_limits": DataRequest(
             Dataset.SECURITY_PRICE_LIMITS, normalized_symbol,
             actual_start.isoformat(), actual_end.isoformat(), actual_end.isoformat(),
@@ -332,6 +366,8 @@ def _prepare_backtest_execution_data(
             "daily",
         ),
     }
+    if status_request is not None:
+        requests["trading_status"] = status_request
     intraday_dataset = (
         Dataset.ETF_UNADJUSTED_INTRADAY if normalized_asset == "etf"
         else Dataset.STOCK_UNADJUSTED_INTRADAY
@@ -382,7 +418,7 @@ def _prepare_backtest_execution_data(
             for name, result in sorted(results.items())
         },
     }
-    market_rules = _market_execution_rules(results, pricing, normalized_symbol)
+    market_rules = _market_execution_rules(results, pricing, normalized_symbol, policy)
     if tuple(item.session for item in market_rules.sessions) != tuple(item.date() for item in tradable_sessions):
         raise ValueError("execution price limits do not cover evaluation sessions exactly")
     fingerprint = canonical_sha256(

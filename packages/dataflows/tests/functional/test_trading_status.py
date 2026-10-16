@@ -36,7 +36,7 @@ class SessionSource:
 
 @pytest.mark.parametrize("symbol,missing,proof,intraday,ready", [
     ("600722.SH", False, True, False, True),
-    ("510500.SH", False, True, False, True),
+    ("510500.SH", False, True, False, False),
     ("600722.SH", True, True, False, True),
     ("600722.SH", True, False, False, False),
     ("600722.SH", True, True, True, False),

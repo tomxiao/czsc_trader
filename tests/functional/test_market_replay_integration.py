@@ -12,9 +12,10 @@ from strategy_runtime import (
     ExecutionPriceBasis, RuntimeContractError, StrategyCandidate, StrategyRuntime,
     implementation_identity,
 )
-from trading_execution_engine import MarketExecutionRules
+from trading_execution_engine import MarketExecutionRules, SuspensionInformation
 
 from czsc_trader.application import BacktestRequest, RepositoryContext, run_backtest
+from czsc_trader.application.errors import ExecutionError
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from czsc_trader.backtesting.srt_bridge import _validate_execution_binding
 from czsc_trader.research_tools import (
@@ -95,10 +96,25 @@ def test_public_backtest_applies_one_market_contract_to_strategy_and_benchmarks(
     candidate_payload, tmp_path, monkeypatch, symbol,
 ):
     context, candidate, dates, _, _ = _case(candidate_payload, tmp_path, monkeypatch, symbol)
+    if symbol == "588080.SH":
+        original_prepare = context.data.prepare
+
+        def prepare_without_status(requests, **kwargs):
+            assert all(item.dataset is not Dataset.SECURITY_TRADING_STATUS for item in requests)
+            return original_prepare(requests, **kwargs)
+
+        monkeypatch.setattr(context.data, "prepare", prepare_without_status)
     result = run_backtest(context, candidate, BacktestRequest(
         symbol, "stock" if symbol == "600722.SH" else "etf", dates[20].date(), dates[-1].date(), 10000, 100,
     ))
     assert result.manifest["audit"]["status"] == "PASS"
+    stock = symbol == "600722.SH"
+    assert ("trading_status" in result.execution_data.requests) is stock
+    assert result.manifest["execution_data"]["market_security"] == ("CN_STOCK" if stock else "CN_ETF")
+    assert result.execution_data.market_rules.suspension_information is (
+        SuspensionInformation.PROVIDED if stock else SuspensionInformation.NOT_PROVIDED)
+    if not stock:
+        assert result.result.account_daily.trading_status.isna().all()
     adjusted = result.execution_data.requests["adjusted_daily"]
     raw = result.execution_data.requests["execution_daily"]
     assert (adjusted.symbol, raw.symbol) == (symbol, symbol)
@@ -127,7 +143,30 @@ def test_public_backtest_applies_one_market_contract_to_strategy_and_benchmarks(
         assert account.equity.tolist() == pytest.approx((account.cash + account.quantity * account.close).tolist())
 
 
-@pytest.mark.parametrize("symbol", ["588080.SH", "600722.SH"])
+def test_etf_missing_quotes_are_not_admitted_as_suspended_sessions(candidate_payload, tmp_path, monkeypatch):
+    context, candidate, dates, _, _ = _case(candidate_payload, tmp_path, monkeypatch,
+                                          suspended_dates=(pd.Timestamp("2026-09-02"),))
+    with pytest.raises(ExecutionError, match="execution prices do not cover evaluation sessions.*2026-09-02"):
+        run_backtest(context, candidate, BacktestRequest(
+            "588080.SH", "etf", dates[20].date(), dates[-1].date(), 10000, 100))
+
+
+def test_stock_replay_requires_its_status_provider(candidate_payload, tmp_path, monkeypatch):
+    from dataflows.errors import DataContractError
+    context, candidate, dates, _, _ = _case(candidate_payload, tmp_path, monkeypatch, "600722.SH")
+
+    def unavailable(request):
+        raise DataContractError("stock status source unavailable")
+
+    binding = context.data._providers[Dataset.SECURITY_TRADING_STATUS.value]
+    monkeypatch.setitem(context.data._providers, Dataset.SECURITY_TRADING_STATUS.value,
+                        replace(binding, fetch=unavailable))
+    with pytest.raises(ExecutionError, match="trading_status.*stock status source unavailable"):
+        run_backtest(context, candidate, BacktestRequest(
+            "600722.SH", "stock", dates[20].date(), dates[-1].date(), 10000, 100))
+
+
+@pytest.mark.parametrize("symbol", ["600722.SH"])
 @pytest.mark.parametrize("halt_indices", [(22, 23), (20, 21), (23, 24)], ids=["middle", "start", "end"])
 def test_public_daily_replay_retains_suspended_accounts_and_replans_on_resumption(
     candidate_payload, tmp_path, monkeypatch, symbol, halt_indices,
@@ -191,7 +230,7 @@ def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contra
     second = data.market_rules.for_session(dates[21].date())
     assert first.up_limit == pytest.approx(1.1)
     assert second.up_limit == pytest.approx(4.0 if basis is ExecutionPriceBasis.HFQ_RESEARCH else 2.0)
-    altered = MarketExecutionRules(data.symbol, tuple(
+    altered = replace(data.market_rules, sessions=tuple(
         replace(item, up_limit=item.up_limit + 0.001) for item in data.market_rules.sessions
     ))
     assert altered.fingerprint != data.market_rules.fingerprint
@@ -202,6 +241,9 @@ def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contra
         _validate_execution_binding(context.data, replace(data, input_identities=changed_identities), data.prepared)
     with pytest.raises(RuntimeContractError, match="fingerprint differs"):
         _validate_execution_binding(context.data, replace(data, fingerprint="0" * 64), data.prepared)
+    with pytest.raises(ValueError, match="suspension policy"):
+        _validate_execution_binding(context.data, replace(data, market_rules=replace(
+            data.market_rules, suspension_information=SuspensionInformation.PROVIDED)), data.prepared)
     with pytest.raises(ValueError, match="matching market execution rules"):
         _validate_execution_binding(context.data, replace(data, market_rules=None), data.prepared)
     contract = {**data.market_rules.to_dict(), "contract_version": "UNRECOGNIZED"}

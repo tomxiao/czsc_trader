@@ -21,7 +21,7 @@ def build_manifest(
     application: dict[str, str],
 ) -> dict[str, object]:
     manifest = {
-        "schema_version": 7,
+        "schema_version": 8,
         "engine": "TDR_BACKTEST_V4_DAILY_RANGE",
         "strategy": {
             "kind": snapshot.identity.kind,
@@ -32,6 +32,7 @@ def build_manifest(
         },
         "application": application,
         "execution_data": {
+            "market_security": data.market_security.value,
             "fingerprint": data.fingerprint,
             "cutoff": data.cutoff.isoformat(),
             "signal_adjustment": "hfq",

@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from trading_execution_engine import (
-    MarketExecutionRules, OrderSpec, SessionPriceLimits, execute_target_positions, resolve_fill,
+    MarketExecutionRules, OrderSpec, SessionPriceLimits, SuspensionInformation, execute_target_positions, resolve_fill,
 )
 
 
@@ -54,7 +54,7 @@ def test_rule_identity_is_deterministic_and_validates_session_coverage():
     assert restored.to_dict() == rules.to_dict()
     assert restored.fingerprint == sha256(json.dumps(restored.to_dict(), ensure_ascii=False,
                                                    sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
-    assert rules.to_dict() == {"contract_version": "DAILY_RANGE_V2", "symbol": "600722.SH", "suspended_sessions": [],
+    assert rules.to_dict() == {"contract_version": "DAILY_RANGE_V3", "symbol": "600722.SH", "suspended_sessions": [], "suspension_information": "PROVIDED",
                                "sessions": [{"session": "2026-09-18", "down_limit": 9., "up_limit": 11., "price_tick": .001}]}
     with pytest.raises(ValueError, match="do not cover"):
         rules.for_session(limits.session + timedelta(days=1))
@@ -75,6 +75,9 @@ def test_rule_identity_is_deterministic_and_validates_session_coverage():
     lambda raw: {**raw, "symbol": 600722},
     lambda raw: {**raw, "sessions": tuple(raw["sessions"])},
     lambda raw: {**raw, "sessions": []},
+    lambda raw: {**raw, "suspension_information": "UNKNOWN"},
+    lambda raw: {key: value for key, value in raw.items() if key != "suspension_information"},
+    lambda raw: {**raw, "suspension_information": "NOT_PROVIDED", "suspended_sessions": ["2026-09-17"]},
     lambda raw: {**raw, "sessions": [None]},
     lambda raw: {**raw, "sessions": [{**raw["sessions"][0], "extra": 1}]},
     lambda raw: {**raw, "sessions": [{**raw["sessions"][0], "session": "20260918"}]},
@@ -88,6 +91,17 @@ def test_market_contract_deserialization_is_closed_and_strict(change):
     raw = MarketExecutionRules("600722.SH", (SessionPriceLimits(date(2026, 9, 18), 9., 11.),)).to_dict()
     with pytest.raises((TypeError, ValueError)):
         MarketExecutionRules.from_dict(change(raw))
+
+
+def test_unprovided_suspension_information_is_explicit_and_survives_transport():
+    rules = MarketExecutionRules("588080.SH", (SessionPriceLimits(date(2026, 9, 18), 9., 11.),),
+                                 suspension_information=SuspensionInformation.NOT_PROVIDED)
+    assert rules.to_dict()["suspension_information"] == "NOT_PROVIDED"
+    assert MarketExecutionRules.from_dict(rules.to_dict()) == rules
+    assert pickle.loads(pickle.dumps(rules)) == rules
+    with pytest.raises(ValueError, match="cannot declare"):
+        MarketExecutionRules(rules.symbol, rules.sessions, (date(2026, 9, 17),),
+                             SuspensionInformation.NOT_PROVIDED)
 
 
 @pytest.mark.parametrize("order,reason", [

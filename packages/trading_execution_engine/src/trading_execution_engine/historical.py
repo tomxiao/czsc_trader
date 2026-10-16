@@ -22,7 +22,7 @@ from strategy_runtime import (
     TradingPoint,
 )
 from .fills import OrderSpec, resolve_fill, DailyQuote
-from .market import MarketExecutionRules
+from .market import MarketExecutionRules, SuspensionInformation
 from .result import ExecutionResult
 
 
@@ -781,7 +781,9 @@ class HistoricalExecutor:
                     "quantity": quantity,
                     "close": float(price_row["close"]),
                     "valuation_source_date": self._daily.index[self._daily.index <= day][-1],
-                    "trading_status": "SUSPENDED" if self._market_rules is not None and day.date() in self._market_rules.suspended_sessions else "TRADING",
+                    "trading_status": (None if self._market_rules is not None and
+                                       self._market_rules.suspension_information is SuspensionInformation.NOT_PROVIDED else
+                                       "SUSPENDED" if self._market_rules is not None and day.date() in self._market_rules.suspended_sessions else "TRADING"),
                     "equity": cash + quantity * float(price_row["close"]),
                 }
             )

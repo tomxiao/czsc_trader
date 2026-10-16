@@ -81,8 +81,9 @@ def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
     api = run_backtest(research_context(repository, execution_flows(repository.root)), strategy,
                        BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100))
     assert result["result"]["metrics"] == api.metrics
-    pd.testing.assert_frame_equal(pd.read_csv(output / "account_daily.csv", parse_dates=["date", "signal_date", "valuation_source_date"]), api.result.account_daily,
-                                  check_dtype=False)
+    saved_account = pd.read_csv(output / "account_daily.csv", parse_dates=["date", "signal_date", "valuation_source_date"])
+    saved_account["trading_status"] = saved_account.trading_status.astype(object).where(saved_account.trading_status.notna(), None)
+    pd.testing.assert_frame_equal(saved_account, api.result.account_daily, check_dtype=False)
     assert main([*_arguments(selector), "--outputs-root", "custom-output"]) == 0
     custom = json.loads(capsys.readouterr().out)
     assert custom["result"]["output_dir"] == f"custom-output/{day}_01_{reference}"
@@ -154,7 +155,7 @@ def test_cli_calculation_and_output_failures_return_fail_without_partial_reports
         assert result["error"]["context"]["input"] == "price_limits"
         assert result["error"]["context"]["data_error"]["code"] == "INCOMPLETE_DATA"
         assert result["error"]["context"]["data_error"]["context"]["missing_dates"] == ["2026-09-22"]
-        assert "ETF suspension evidence is unavailable" in result["error"]["message"]
+        assert "daily observations omit exchange sessions" in result["error"]["message"]
         assert "2026-09-22" in result["error"]["message"]
         assert main([*arguments, "--format", "text"]) == 5
         text = capsys.readouterr().out

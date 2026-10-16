@@ -476,6 +476,9 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                 if timestamp.date().isoformat() not in evaluation_days:
                     raise ValueError("fill belongs to an unknown market session")
             for account in evidence.account_daily:
+                if (evidence.execution_spec["market_rules"]["suspension_information"] == "NOT_PROVIDED"
+                        and account.get("trading_status") is not None):
+                    raise ValueError("unprovided suspension information cannot assert a trading status")
                 for field in ("quantity_before", "quantity"):
                     strict_market_number(account[field], integer=True)
                 for field in ("cash_before", "cash", "close", "equity"):

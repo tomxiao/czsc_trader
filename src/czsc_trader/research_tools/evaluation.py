@@ -1123,6 +1123,10 @@ def validate_evaluation_evidence(value: dict) -> None:
     if request.get("schema_version") != 6:
         raise ValueError("evaluation request requires schema 6 market execution identities")
     rules = MarketExecutionRules.from_dict(request.get("market_rules"))
+    from ..backtesting.execution_data import MarketSecurity
+
+    if rules.suspension_information is not MarketSecurity.select(request["symbol"], request["asset_type"]).suspension_information:
+        raise ValueError("evaluation suspension policy differs from market/security type")
     if rules.symbol != request["symbol"]:
         raise ValueError("evaluation market rules differ from request symbol")
     pricing = ExecutionPricing.from_dict(request["pricing"])

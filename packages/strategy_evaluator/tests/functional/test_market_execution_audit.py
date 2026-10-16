@@ -11,7 +11,7 @@ from test_intraday_replay_audit import _evidence as overlay_replay
 
 
 def rules(sessions, *, lower=.8, upper=1.2):
-    return {"contract_version": "DAILY_RANGE_V2", "symbol": "510300.SH", "suspended_sessions": [],
+    return {"contract_version": "DAILY_RANGE_V3", "symbol": "510300.SH", "suspended_sessions": [], "suspension_information": "PROVIDED",
             "sessions": [{"session": day, "down_limit": lower, "up_limit": upper, "price_tick": .001} for day in sessions]}
 
 
@@ -49,6 +49,16 @@ def test_daily_market_ledger_passes(kind):
     assert evidence.to_dict() == original
 
 
+@pytest.mark.parametrize("asserted", ["TRADING", "SUSPENDED"])
+def test_unprovided_suspension_information_cannot_be_forged_as_a_known_status(asserted):
+    evidence = strategy()
+    market = {**evidence.execution_spec["market_rules"], "suspension_information": "NOT_PROVIDED"}
+    evidence = replace(evidence, execution_spec={**evidence.execution_spec, "market_rules": market})
+    assert audit_replay(evidence).status is AuditStatus.PASS
+    accounts = ({**evidence.account_daily[0], "trading_status": asserted}, *evidence.account_daily[1:])
+    assert audit_replay(replace(evidence, account_daily=accounts)).status is AuditStatus.FAIL
+
+
 @pytest.mark.parametrize("kind", ["benchmark", "strategy"])
 @pytest.mark.parametrize("bad", [None, [], 1, {"sessions": []}, "unknown", {"invalid"}])
 def test_invalid_market_contract_returns_fail(kind, bad):
@@ -61,7 +71,7 @@ def test_invalid_market_contract_returns_fail(kind, bad):
 
 
 @pytest.mark.parametrize("kind", ["benchmark", "strategy"])
-@pytest.mark.parametrize("tamper", ["unknown", "missing", "nan", "negative", "duplicate", "symbol"])
+@pytest.mark.parametrize("tamper", ["unknown", "missing", "nan", "negative", "duplicate", "symbol", "suspension_information", "unprovided_halt"])
 def test_market_boundary_corruption_cannot_pass(kind, tamper):
     evidence, audit = (benchmark(), audit_benchmark_replay) if kind == "benchmark" else (strategy(), audit_replay)
     market = deepcopy(evidence.market_rules if kind == "benchmark" else evidence.execution_spec["market_rules"])
@@ -73,6 +83,11 @@ def test_market_boundary_corruption_cannot_pass(kind, tamper):
         market["sessions"].append(market["sessions"][-1])
     elif tamper == "symbol":
         market["symbol"] = "AAPL"
+    elif tamper == "suspension_information":
+        market["suspension_information"] = "UNKNOWN"
+    elif tamper == "unprovided_halt":
+        market["suspension_information"] = "NOT_PROVIDED"
+        market["suspended_sessions"] = [market["sessions"][0]["session"]]
     else:
         market["sessions"][0]["up_limit"] = float("nan") if tamper == "nan" else -1.
     changed = (replace(evidence, market_rules=market) if kind == "benchmark" else

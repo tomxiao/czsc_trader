@@ -8,8 +8,9 @@ from typing import Any, Mapping
 def market_limits(value: Mapping[str, Any] | None, sessions) -> dict[str, tuple[float, float]]:
     if value is None:
         return {}  # Explicit price-only numerical evidence has no market identity.
-    if (not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions"}
-            or value["contract_version"] != "DAILY_RANGE_V2"
+    if (not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions", "suspension_information"}
+            or value["contract_version"] != "DAILY_RANGE_V3"
+            or value["suspension_information"] not in {"PROVIDED", "NOT_PROVIDED"}
             or not isinstance(value["symbol"], str)
             or re.fullmatch(r"\d{6}\.(?:SH|SZ|BJ)", value["symbol"]) is None
             or not isinstance(value["sessions"], (tuple, list)) or not value["sessions"]):
@@ -33,6 +34,8 @@ def market_limits(value: Mapping[str, Any] | None, sessions) -> dict[str, tuple[
         result[day] = (float(lower), float(upper))
         previous = day
     halted = value["suspended_sessions"]
+    if value["suspension_information"] == "NOT_PROVIDED" and halted:
+        raise ValueError("unprovided suspension information cannot declare suspended sessions")
     if (not isinstance(halted, (list, tuple)) or sorted(set(halted)) != list(halted)
             or any(date.fromisoformat(day).isoformat() != day for day in halted)
             or set(halted).intersection(result)):

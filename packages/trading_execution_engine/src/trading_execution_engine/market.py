@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from enum import StrEnum
 from hashlib import sha256
 import json
 from math import isfinite
@@ -49,12 +50,18 @@ class SessionPriceLimits:
                 "up_limit": self.up_limit, "price_tick": self.price_tick}
 
 
+class SuspensionInformation(StrEnum):
+    PROVIDED = "PROVIDED"
+    NOT_PROVIDED = "NOT_PROVIDED"
+
+
 @dataclass(frozen=True)
 class MarketExecutionRules:
     symbol: str
     sessions: tuple[SessionPriceLimits, ...]
     suspended_sessions: tuple[date, ...] = ()
-    contract_version: ClassVar[str] = "DAILY_RANGE_V2"
+    suspension_information: SuspensionInformation = SuspensionInformation.PROVIDED
+    contract_version: ClassVar[str] = "DAILY_RANGE_V3"
     _by_session: Mapping[date, SessionPriceLimits] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
@@ -72,6 +79,10 @@ class MarketExecutionRules:
                 or tuple(sorted(set(self.suspended_sessions))) != self.suspended_sessions
                 or set(dates).intersection(self.suspended_sessions)):
             raise ValueError("suspended sessions must be unique, increasing and disjoint from trading sessions")
+        if not isinstance(self.suspension_information, SuspensionInformation):
+            raise TypeError("suspension information requires SuspensionInformation")
+        if self.suspension_information is SuspensionInformation.NOT_PROVIDED and self.suspended_sessions:
+            raise ValueError("unprovided suspension information cannot declare suspended sessions")
         object.__setattr__(self, "_by_session", MappingProxyType({item.session: item for item in self.sessions}))
 
     def for_session(self, session: date) -> SessionPriceLimits:
@@ -82,19 +93,22 @@ class MarketExecutionRules:
         except KeyError as exc:
             raise ValueError(f"market rules do not cover session {session.isoformat()}") from exc
 
-    def __reduce__(self) -> tuple[object, tuple[str, tuple[SessionPriceLimits, ...]]]:
+    def __reduce__(self) -> tuple[
+        object, tuple[str, tuple[SessionPriceLimits, ...], tuple[date, ...], SuspensionInformation]
+    ]:
         # Keep the private immutable index out of process transport. Rebuilding
         # through the public constructor revalidates the transported contract.
-        return type(self), (self.symbol, self.sessions, self.suspended_sessions)
+        return type(self), (self.symbol, self.sessions, self.suspended_sessions, self.suspension_information)
 
     def to_dict(self) -> dict[str, object]:
         return {"contract_version": self.contract_version, "symbol": self.symbol,
                 "sessions": [item.to_dict() for item in self.sessions],
-                "suspended_sessions": [day.isoformat() for day in self.suspended_sessions]}
+                "suspended_sessions": [day.isoformat() for day in self.suspended_sessions],
+                "suspension_information": self.suspension_information.value}
 
     @classmethod
     def from_dict(cls, value: Mapping[str, object]) -> MarketExecutionRules:
-        if not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions"}:
+        if not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions", "suspension_information"}:
             raise ValueError("invalid market execution contract fields")
         if type(value["contract_version"]) is not str or value["contract_version"] != cls.contract_version:
             raise ValueError("unsupported market execution contract version")
@@ -111,7 +125,8 @@ class MarketExecutionRules:
             if day.isoformat() != item["session"]:
                 raise ValueError("session price-limit date must use YYYY-MM-DD")
             sessions.append(SessionPriceLimits(day, item["down_limit"], item["up_limit"], item["price_tick"]))
-        result = cls(value["symbol"], tuple(sessions), tuple(date.fromisoformat(day) for day in value["suspended_sessions"]))
+        result = cls(value["symbol"], tuple(sessions), tuple(date.fromisoformat(day) for day in value["suspended_sessions"]),
+                     SuspensionInformation(value["suspension_information"]))
         if result.to_dict() != value:
             raise ValueError("market execution contract is not canonical")
         return result
