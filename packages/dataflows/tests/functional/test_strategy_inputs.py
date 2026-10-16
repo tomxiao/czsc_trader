@@ -73,7 +73,8 @@ class ChunkedGlobalPro:
 
     def index_global(self, **kwargs):
         self.index_calls.append(kwargs)
-        return pd.DataFrame({"trade_date": [kwargs["start_date"]], "pct_chg": [1.5]})
+        dates = pd.bdate_range(kwargs['start_date'], kwargs['end_date'])
+        return pd.DataFrame({"trade_date": dates.strftime('%Y%m%d'), "pct_chg": 1.5})
 
     def vix_index(self, **kwargs):
         self.vix_calls.append(kwargs)
@@ -127,7 +128,7 @@ def test_global_inputs_are_yearly_paged_and_causally_declared() -> None:
     index, index_meta = fetch_global_index_daily("SPX", "2024-12-31", "2026-01-01", pro=pro)
     vix, vix_meta = fetch_vix_daily("VIX", "2024-12-31", "2026-01-01", pro=pro)
 
-    assert len(index) == len(vix) == 3
+    assert len(index) > 250 and len(vix) == 3
     assert [call["start_date"] for call in pro.index_calls] == [
         "20241231",
         "20250101",

@@ -13,6 +13,7 @@ import pandas as pd
 from .errors import DataContractError, EmptyDataError, IncompleteDataError
 from .contract import FXCM_AVAILABILITY_RULE
 from .tushare_common import get_tushare_pro
+from ._global_index_quality import SPX_MAXIMUM_GAP_DAYS, validate_global_index_history
 
 
 def _client(pro: object | None, env_file: str | Path | None) -> object:
@@ -999,13 +1000,27 @@ def fetch_global_index_daily(
     env_file: str | Path | None = None,
     pro: object | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
+    annual_requests: list[dict[str, Any]] = []
+
+    def fetch_annual(start: str, end: str) -> pd.DataFrame:
+        value = _client(pro, env_file).index_global(
+            ts_code=symbol, start_date=start, end_date=end,
+        )
+        frame = pd.DataFrame() if value is None else pd.DataFrame(value)
+        annual_requests.append({'start_date': start, 'end_date': end,
+                                'row_count': len(frame)})
+        if (symbol.upper() == 'SPX' and frame.empty
+                and (pd.Timestamp(end) - pd.Timestamp(start)).days >= SPX_MAXIMUM_GAP_DAYS):
+            raise IncompleteDataError(
+                'SPX annual request returned no observations for an extended interval',
+                vendor_api='index_global', symbol=symbol,
+                maximum_gap_days=SPX_MAXIMUM_GAP_DAYS, annual_requests=annual_requests,
+            )
+        return frame
+
     dataframe = _canonicalize(
         _fetch_yearly(
-            lambda start, end: _client(pro, env_file).index_global(
-                ts_code=symbol,
-                start_date=start,
-                end_date=end,
-            ),
+            fetch_annual,
             start_date,
             end_date,
         ),
@@ -1014,6 +1029,12 @@ def fetch_global_index_daily(
         columns={"pct_chg": "PercentChange"},
         numeric_columns=("PercentChange",),
     )
+    try:
+        validate_global_index_history(dataframe, symbol)
+    except IncompleteDataError as exc:
+        raise IncompleteDataError(
+            str(exc), **exc.context, vendor_api='index_global', annual_requests=annual_requests,
+        ) from exc
     dataframe["PercentChange"] /= 100.0
     return dataframe, {
         "vendor": "tushare",
@@ -1023,6 +1044,8 @@ def fetch_global_index_daily(
         "unit": "decimal_return",
         "availability_rule": "US close date must be strictly earlier than China decision session",
         "maximum_start_lag_days": 10,
+        "vendor_api": "index_global",
+        "annual_requests": annual_requests,
     }
 
 

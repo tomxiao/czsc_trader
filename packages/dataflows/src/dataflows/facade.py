@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 
 from .asset_store import AssetStore, StoreError
+from ._global_index_quality import validate_global_index_history
 
 from .contract import (
     DATA_CONTRACT_VERSION,
@@ -1001,6 +1002,8 @@ def _end_timestamp(value: str) -> pd.Timestamp:
 
 
 def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
+    if request.dataset is Dataset.GLOBAL_INDEX_DAILY:
+        validate_global_index_history(frame, request.symbol)
     coverage = request.coverage
     if coverage is None:
         return
@@ -1163,7 +1166,9 @@ class Dataflows:
                                                            identity=result.identity, error=result.error))
                         if all(item.ready for item in items):
                             return PrepareResult(PrepareStatus.READY, tuple(items), cached)
-                        raise StoreError("PREPARATION_CORRUPT", "cached preparation no longer satisfies its request")
+                        status = (PrepareStatus.PARTIAL if any(item.ready for item in items)
+                                  else PrepareStatus.FAILED)
+                        return PrepareResult(status, tuple(items), None)
                     self._check_existing_contracts(connection, planned)
                 for request, binding, record, key in planned:
                     asset_id = None
