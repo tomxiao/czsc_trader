@@ -1,0 +1,87 @@
+{
+  "status": "PASS",
+  "request": {
+    "dataset": "index.domestic_daily",
+    "symbol": "000001.SH",
+    "start": "2020-01-01",
+    "end": "2026-10-15",
+    "required_cutoff": "2026-10-15"
+  },
+  "policy": "REFRESH",
+  "call_cap": 6,
+  "verified_at": "2026-10-16T17:22:12.136807+00:00",
+  "availability_limit": "T completed market close assumed; source publication and revision history not proven.",
+  "prepare_status": "READY",
+  "reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "2568ae37-8dd8-4352-b272-8d2520d51914",
+    "manifest_sha256": "4e20441c0722cd4c6f95c53ec0c51b08c823ff128a3881a93586f9e21100ecb8"
+  },
+  "identity": {
+    "dataset": "index.domestic_daily",
+    "source": "tushare",
+    "symbol": "000001.SH",
+    "data_start": "2020-01-02T00:00:00",
+    "data_cutoff": "2026-10-15T00:00:00",
+    "content_sha256": "539458755edb64a50d38f5b5034aa25fea997e0406e8bda18cdc9caa5e284bce",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "000001.SH",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "percent_change_unit": "decimal_return",
+      "availability_rule": "current session after market close",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "available_at": "current session after market close",
+      "request_range_policy": "EXACT",
+      "provider_binding": "index.domestic_daily",
+      "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+      "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+      "data_contract_version": 1
+    }
+  },
+  "rows": 1642,
+  "fields": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "PreviousClose",
+    "Change",
+    "PercentChange",
+    "Volume",
+    "Amount"
+  ],
+  "checks": {
+    "live_account_access": true,
+    "source_symbol": true,
+    "unique_dates": true,
+    "exact_calendar": true,
+    "expected1642": true,
+    "finite": true,
+    "positive_prices": true,
+    "nonnegative_activity": true,
+    "ohlc_bounds": true,
+    "previous_close_continuity": true,
+    "change_identity": true,
+    "percent_change_identity": true
+  },
+  "missing_dates": [],
+  "extra_dates": [],
+  "source_calls": [
+    {
+      "ordinal": 1,
+      "api": "index_daily",
+      "symbol": "000001.SH",
+      "start_date": "20200101",
+      "end_date": "20261015"
+    }
+  ],
+  "source_calls_used": 1,
+  "remaining_source_calls": 5
+}
