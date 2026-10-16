@@ -1,0 +1,27 @@
+{
+  "stage": "COMPONENTS",
+  "authorization": {"source": "current human conversation", "verbatim": "你来主导完成阶段二，我看结果", "scope": "Autonomously complete S014 phase two; no phase-three strategy/account construction"},
+  "prior_delivery": "COMPONENTS/1",
+  "data": {"symbol": "600722.SH", "window": ["2020-01-01", "2026-10-15"], "access": "Pinned native S014 DFLS assets and published EX004 EvidenceRefs only", "new_source_calls": 0, "new_dependencies": 0, "publication_history_verified": false},
+  "selection_history": "Designed after EX004 findings and the observed 2026 coverage problem; all periods remain seen development data.",
+  "questions": [
+    "Do score and feature distribution shifts, fixed annual thresholds and one-event dependence explain the old reversal/risk clues?",
+    "Does causal recalibration rescue incremental information, or only increase coverage without better ranking?",
+    "Do fixed pullback-turn, breakout-volume or shock-close mechanisms provide usable information beyond their simpler parent condition?",
+    "Does persistent volatility offer a risk-scale role beyond same-day range, independent of avoiding fills?"
+  ],
+  "chronology": {"test_years": [2023, 2024, 2025, 2026], "training": "Expanding 2020 history; only labels with actual maturity strictly before test-year first signal", "new_rule_warmup": "60 sessions inside the window; no external prehistory", "features": "Completed T only; execute on T+1", "states": "ret20 >= 0 vs < 0, crossed with std20 above vs below training-year median", "limitations": "Not historical publication/revision verification or independent holdout"},
+  "old_model_audit": {"horizons": [3, 5], "models": ["return-base", "reversal", "tree-risk-base", "tree-risk"], "fits": 32, "replication": "Reproduce EX004 fixed fits and all saved test predictions before using scores", "fixed_threshold": "Original training prediction quantile", "causal_recalibration": "Same annual fitted model; threshold from predictions on strictly preceding 63 sessions, 75th percentile for returns and 25th for risk. No current or future score enters threshold.", "diagnostics": ["annual signal counts", "score/feature drift", "within-year Spearman association", "state-specific outcomes", "leave-one-year-out differences", "paired-block uncertainty with recomputed selection denominators", "individual positive-contribution concentration"]},
+  "fixed_mechanisms": {
+    "horizons": [3, 5, 10],
+    "pullback_turn": {"parent": "Close > MA60 and ret5 < 0", "component": "parent and ret1 > 0", "hypothesis": "A completed up day after an uptrend pullback distinguishes stabilization from continued decline"},
+    "breakout_volume": {"parent": "Close > maximum High of preceding 20 sessions", "component": "parent and Volume > mean Volume of preceding 20 sessions", "hypothesis": "Volume confirmation distinguishes participation from a weak breakout"},
+    "shock_close": {"parent": "ret1 <= 10th percentile of mature training-sample ret1", "component": "parent and close_location >= 0.5", "hypothesis": "An upper-half close after a large down day distinguishes absorption from continued pressure"},
+    "risk_scale": {"parent": "range1 <= 25th percentile of strictly preceding 252 sessions", "component": "std20 <= 25th percentile of strictly preceding 252 sessions", "hypothesis": "Persistent realized volatility predicts next-holding-period adverse movement better than the current day's range", "conditional_check": "Within each of four training-defined range bins, measure std20/adverse Spearman association, counts and returns"},
+    "interpretation": "Mechanism rules are component event selections, not complete strategies. No parameters are searched or chosen from outcomes. Same-source conditional expressions do not create independent information."
+  },
+  "comparisons": {"primary_count": 20, "composition": "8 old-model pairs (2 horizons x 2 roles x fixed/recalibrated) + 9 event-confirmation pairs (3 mechanisms x 3 horizons) + 3 risk-scale pairs", "uncertainty": "5000 paired 20-session circular block resamples within each test year; recalculate selected means and counts in every draw. Empty selection draws remain missing and valid-draw fractions are reported. Report ordinary 95 percent and family-20 intervals alongside the previous 32 comparisons and adaptive history.", "pooling": "Eligible-date-weighted mean of per-year selected-minus-control means; positive risk difference means less adverse movement", "robustness": "Leave each year out; report top-positive-day removal and year/state sample counts; these are diagnostics, not new economic gates", "judgment": "Researcher weighs incremental effects, counts, cross-state/year behavior, rank evidence and economic tradeoffs; no statistical or frequency acceptance threshold is invented"},
+  "resources": {"workers": 2, "native_threads_per_worker": 1, "seed": 13, "hours_cap": 2, "new_source_calls": 0, "parameter_searches": 0, "strategy_accounts": 0},
+  "precheck": "Public input identity; preserved prior EvidenceRefs; fixed-fit replication; serial/spawn equality; new-feature and rolling-threshold prefix causality; no network allowed",
+  "closure": "Resolve the coverage/state question, classify supported, ineffective, redundant or insufficient components with necessary counterevidence; follow any material new clue within phase two before final judgment. Negative/empty panel is allowed. Publish successor COMPONENTS revision and copy its report exactly."
+}

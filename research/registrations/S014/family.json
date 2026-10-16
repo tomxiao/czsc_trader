@@ -21,6 +21,17 @@
         "继续"
       ]
     },
+    "autonomy": {
+      "resources": {
+        "max_workers": 2,
+        "native_threads_per_worker": 1,
+        "new_source_calls": 0,
+        "wall_clock_hours_cap": 2
+      },
+      "scope": "S014 phase two only; existing data, objectives and execution contract; preserve old evidence",
+      "source": "current human conversation",
+      "verbatim": "你来主导完成阶段二，我看结果"
+    },
     "boundaries": [
       "S014 research materials and batch-owned assets only",
       "S013 remains PAUSED",
@@ -33,12 +44,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "796cdd4cd09423893ae45c8b6bba6c69df5a84cca6f3acf79d91664402ce6fb0",
-      "revision": 1,
+      "content_sha256": "799ab04eb8a24f2167ace6d8d7a4fbaa91df778ceecae7c0a9a3a680fcfcf1b7",
+      "revision": 2,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "首轮组件研究完成，SUPPORTED数量0；保留趋势负面及反转/风险证据不足的结果。建议阶段二补证状态变化与覆盖，不自动进入阶段三。",
+    "conclusion": "阶段二完成：2项基础辅助上下文用途获得限定支持，稳定净收益增量入场组件0；阈值失配、少样本和更强简单对照已核验。整体经济目标未验收，阶段三未获批准。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "mandate": {
       "batch": {
@@ -58,7 +69,7 @@
       "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool."
     },
     "pending": [
-      "用户决定是否批准阶段二状态变化与覆盖补证；未自动进入阶段三"
+      "用户审阅COMPONENTS/2后决定是否进入阶段三小规模账户验证"
     ],
     "ready": true,
     "research_window": {
@@ -72,9 +83,10 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 6
     },
-    "stage": "阶段二首轮已完成，等待用户决定补证或阶段推进",
+    "stage": "阶段二已完成，等待用户审阅并决定阶段三",
     "strategy_accounts": 0,
-    "supported_components": 0
+    "supported_components": 2,
+    "supported_return_entry_components": 0
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -82,5 +94,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-16T21:25:36+08:00"
+  "updated_at": "2026-10-16T22:34:32+08:00"
 }
