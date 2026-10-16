@@ -71,7 +71,7 @@ def test_published_parameter_point_reaches_authenticated_account_and_se(managed_
     assert evidence[0].parameter_point == plan.design.bind_point(0)
     saved = serialize_evaluation_evidence(children[0], result)
     validate_evaluation_evidence(json.loads(json.dumps(saved)))
-    assert saved["schema_version"] == 6
+    assert saved["schema_version"] == 7
     assert saved["request_identity"]["parameter_binding"]["plan"]["sha256"] == reference.sha256
     assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
     with pytest.raises(ValueError, match="nonparameter context"):

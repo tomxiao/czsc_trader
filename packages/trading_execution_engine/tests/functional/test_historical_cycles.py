@@ -87,7 +87,7 @@ def test_cycle_retains_all_exit_cashflows_across_sessions_and_reentry(reentry, f
     assert first.entry_price == pytest.approx(entry_gross / first.quantity)
     assert first.exit_price == pytest.approx(exit_gross / first.quantity)
     assert first.net_return == pytest.approx(exit_gross * (1 - fee) / (entry_gross * (1 + fee)) - 1)
-    assert first.exit_date == dates[4]
+    assert first.exit_date == dates[4] + pd.Timedelta(hours=9, minutes=30)
     assert second.cycle_id != first.cycle_id
     assert second.quantity == 100
     assert second.net_return == pytest.approx(900. * (1 - fee) / (800. * (1 + fee)) - 1)

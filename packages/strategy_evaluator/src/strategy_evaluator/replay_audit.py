@@ -12,6 +12,10 @@ import pandas as pd
 from .audit_models import AuditStatus
 from .models import Record, _exact
 from ._metric_validation import metric_matches
+from ._market_execution import (
+    market_limits, blocked_order, validate_market_prices, strict_market_number,
+    market_timestamp, market_session, expected_market_fill,
+)
 
 
 def _jsonable(value: Any) -> Any:
@@ -198,6 +202,8 @@ def _audit_intraday_overlay(
         ):
             reasons.append("ORDER_DECISION_MISMATCH")
         quantity = int(order["quantity"])
+        if str(order["side"]) not in {"BUY", "SELL"}:
+            reasons.append("INVALID_ORDER_SIDE")
         if quantity <= 0 or quantity % lot_size:
             reasons.append("INVALID_ORDER_LOT")
         if str(order["status"]) != "FILLED" or order_id not in fills_by_order:
@@ -433,13 +439,65 @@ def _audit_intraday_overlay(
 
 def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAuditResult:
     """Independently recompute causal order, fill, and account invariants."""
-    digest = hash_replay_evidence(evidence)
+    try:
+        digest = hash_replay_evidence(evidence)
+    except (TypeError, ValueError, OverflowError):
+        return ReplayAuditResult(AuditStatus.FAIL, sha256(b"INVALID_EVIDENCE_ENCODING").hexdigest(),
+                                 (), ("INVALID_EVIDENCE_ENCODING",))
+    try:
+        limits = market_limits(evidence.execution_spec.get("market_rules"), evidence.evaluation_sessions)
+        validate_market_prices(evidence.execution_daily, limits, time_field="date")
+        validate_market_prices(evidence.execution_intraday, limits, time_field="time")
+        validate_market_prices(evidence.fills, limits, time_field="fill_time", fields=("price",))
+        if limits and any(
+            any(isinstance(fill.get(field), bool) or not isinstance(fill.get(field), (int, float))
+                or not np.isfinite(fill[field]) or fill[field] < 0 for field in ("quantity", "price", "fees"))
+            for fill in evidence.fills
+        ):
+            raise ValueError("invalid market fill values")
+        if limits:
+            evaluation_days = set(str(day)[:10] for day in evidence.evaluation_sessions)
+            strict_market_number(evidence.initial_cash, positive=True)
+            strict_market_number(evidence.execution_spec["fee_rate"])
+            for order in evidence.orders:
+                strict_market_number(order["quantity"], integer=True, positive=True)
+                strict_market_number(order["limit_price"], positive=True)
+                if market_session(order["execution_date"]) not in evaluation_days:
+                    raise ValueError("order belongs to an unknown market session")
+            for fill in evidence.fills:
+                strict_market_number(fill["quantity"], integer=True, positive=True)
+                timestamp = market_timestamp(fill["fill_time"])
+                if timestamp.date().isoformat() not in evaluation_days:
+                    raise ValueError("fill belongs to an unknown market session")
+            for account in evidence.account_daily:
+                for field in ("quantity_before", "quantity"):
+                    strict_market_number(account[field], integer=True)
+                for field in ("cash_before", "cash", "close", "equity"):
+                    strict_market_number(account[field], positive=field in {"close", "equity"})
+            for trade in evidence.trades:
+                strict_market_number(trade["quantity"], integer=True, positive=True)
+            last_bar = None
+            for bar in evidence.execution_intraday:
+                timestamp = market_timestamp(bar["time"])
+                if timestamp.date().isoformat() not in limits or last_bar is not None and timestamp <= last_bar:
+                    raise ValueError("intraday observations require ordered known market sessions")
+                for field in ("low", "high"):
+                    strict_market_number(bar[field], positive=True)
+                last_bar = timestamp
+    except (TypeError, ValueError, KeyError):
+        return ReplayAuditResult(AuditStatus.FAIL, digest, (), ("INVALID_MARKET_EXECUTION_RULES",))
     if evidence.execution_spec.get("mode") == "CORE_EVENT_INTRADAY_ROTATION":
+        if limits:
+            return ReplayAuditResult(AuditStatus.FAIL, digest, (), ("UNSUPPORTED_MARKET_EXECUTION_MODE",))
         return _audit_intraday_overlay(evidence, digest, tolerance)
     reasons: list[str] = []
     checks: list[str] = []
     _audit_session_coverage(evidence, reasons, checks, sparse_decisions=False)
     spec = evidence.execution_spec
+    try:
+        limits = market_limits(spec.get("market_rules"), evidence.evaluation_sessions)
+    except (TypeError, ValueError, KeyError):
+        return ReplayAuditResult(AuditStatus.FAIL, digest, tuple(checks), ("INVALID_MARKET_EXECUTION_RULES",))
     instrument = spec["instrument"]
     fee_rate = float(spec["fee_rate"])
     lot_size = int(instrument["lot_size"])
@@ -484,6 +542,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             reasons.append("INVALID_ORDER_LOT")
         signal = daily.get(str(order["signal_date"])[:10])
         execution = daily.get(str(order["execution_date"])[:10])
+        if str(order["side"]) not in {"BUY", "SELL"}:
+            reasons.append("INVALID_ORDER_SIDE")
         if signal is None or execution is None:
             reasons.append("MISSING_EXECUTION_PRICE")
             continue
@@ -513,6 +573,19 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         if abs(float(order["limit_price"]) - expected_limit) > tolerance:
             reasons.append("ORDER_LIMIT_MISMATCH")
         fill = fills_by_order.get(order_id)
+        if str(order["status"]) not in {"FILLED", "UNFILLED"}:
+            reasons.append("INVALID_ORDER_STATUS")
+        try:
+            blocked = blocked_order(str(order["side"]), float(execution["open"]),
+                                    limits.get(str(order["execution_date"])[:10]),
+                                    order_type=expected_order_type, limit_price=expected_limit)
+        except ValueError:
+            reasons.append("INVALID_MARKET_EXECUTION_PRICE")
+            continue
+        if blocked:
+            if fill is not None or str(order["status"]) != "UNFILLED":
+                reasons.append("MARKET_BLOCKED_ORDER_FILLED")
+            continue
         if str(order["status"]) == "FILLED" and fill is None:
             reasons.append("FILLED_ORDER_WITHOUT_FILL")
             continue
@@ -520,6 +593,16 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             reasons.append("UNFILLED_ORDER_HAS_FILL")
             continue
         if fill is None:
+            if limits:
+                expected_fill = expected_market_fill(str(order["side"]), expected_order_type, expected_limit,
+                    float(execution["open"]), str(order["execution_date"])[:10],
+                    intraday_by_day.get(str(order["execution_date"])[:10], []))
+                account = accounts.get(str(order["execution_date"])[:10])
+                affordable = (str(order["side"]) == "SELL" or account is not None and expected_fill is not None
+                    and quantity * expected_fill[1] * (1 + fee_rate) <= float(account["cash_before"]) + tolerance)
+                if expected_fill is not None and affordable:
+                    reasons.append("MISSED_ELIGIBLE_FILL")
+                continue
             if order["side"] == "SELL" and expected_order_type == "MARKET":
                 reasons.append("MISSED_ELIGIBLE_FILL")
             elif order["side"] == "SELL":
@@ -544,10 +627,21 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                 if eligible_price and affordable:
                     reasons.append("MISSED_ELIGIBLE_FILL")
             continue
-        if int(fill["quantity"]) != quantity or str(fill["side"]) != str(order["side"]):
+        if (int(fill["quantity"]) != quantity or str(fill["side"]) != str(order["side"])
+                or str(fill["fill_time"])[:10] != str(order["execution_date"])[:10]
+                or str(fill.get("decision_id")) != str(order["decision_id"])
+                or str(fill.get("cycle_id")) != str(order.get("cycle_id"))):
             reasons.append("FILL_ORDER_MISMATCH")
         price = float(fill["price"])
         trigger = str(fill["trigger"])
+        if limits:
+            expected_fill = expected_market_fill(str(order["side"]), expected_order_type, expected_limit,
+                float(execution["open"]), str(order["execution_date"])[:10],
+                intraday_by_day.get(str(order["execution_date"])[:10], []))
+            if (expected_fill is None or trigger != expected_fill[0]
+                    or abs(price - expected_fill[1]) > tolerance
+                    or market_timestamp(fill["fill_time"]) != expected_fill[2]):
+                reasons.append("INVALID_FILL_TRIGGER")
         if expected_order_type == "MARKET":
             eligible = (
                 trigger == "OPEN_MARKET"
@@ -578,6 +672,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             reasons.append("INVALID_FILL_TRIGGER")
         if abs(float(fill["fees"]) - quantity * price * fee_rate) > tolerance:
             reasons.append("FEE_MISMATCH")
+    if set(fills_by_order).difference(order_ids):
+        reasons.append("FILL_WITHOUT_ORDER")
     checks.append("ORDER_AND_FILL_CAUSALITY")
 
     cash = float(evidence.initial_cash)
@@ -588,6 +684,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
     previous_date = ""
     for row in evidence.account_daily:
         day = str(row["date"])[:10]
+        if limits and day in daily and abs(float(row["close"]) - float(daily[day]["close"])) > tolerance:
+            reasons.append("ACCOUNT_MARKET_CLOSE_MISMATCH")
         if day <= previous_date:
             reasons.append("INVALID_ACCOUNT_INDEX")
         previous_date = day

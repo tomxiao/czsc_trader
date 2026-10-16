@@ -23,7 +23,80 @@ from strategy_runtime import (
 )
 from strategy_runtime.contracts import plan_identity_for, signal_identity_for
 
-from trading_execution_engine import HistoricalExecutor
+from trading_execution_engine import HistoricalExecutor, MarketExecutionRules, SessionPriceLimits
+
+
+def _market_executor_fixture(*, rules=None, policy_type="FROZEN_RULE", daily=None, intraday=None):
+    dates = pd.bdate_range("2026-09-14", periods=5)
+    if daily is None:
+        daily = pd.DataFrame({"dt": dates, "open": [10., 11., 10., 9., 10.],
+                              "close": [10., 10.5, 10., 9.5, 10.],
+                              "high": [10., 11., 10., 9.5, 10.],
+                              "low": [10., 10.5, 10., 9., 10.]})
+    if rules is None:
+        rules = MarketExecutionRules("600722.SH", tuple(SessionPriceLimits(day.date(), 9., 11.) for day in dates[1:]))
+    policy = ExecutionPolicy(policy_type, {"capital": {"fee_rate": .001}, "one_way_cost": .001})
+    if intraday is None:
+        intraday = pd.DataFrame(columns=["dt", "high", "low"])
+    return HistoricalExecutor(strategy_reference="S999-v1", symbol="600722.SH", execution_daily=daily,
+                              execution_intraday=intraday,
+                              evaluation_start=dates[1], evaluation_end=dates[-1], initial_cash=2000.,
+                              execution_policy=policy, order_types=("MARKET",), market_rules=rules), dates
+
+
+def test_historical_market_rejections_retain_cash_holdings_and_retry_idempotently():
+    channel, dates = _market_executor_fixture()
+    for index, target in enumerate((1., 1., 0., 0.), start=1):
+        signal, valid = dates[index - 1], dates[index]
+        generated = datetime.combine(signal.date(), time(20, 30), tzinfo=ZoneInfo("Asia/Shanghai"))
+        portfolio, state = channel.snapshot(TradingPoint(valid.date(), generated))
+        plan = _execution_plan(reference="S999-v1", symbol="600722.SH", signal_date=str(signal.date()),
+                               valid_date=str(valid.date()), generated_at=generated, portfolio=portfolio, state=state,
+                               target_position=target, target_quantity=100 if target else 0, cycle_target_quantity=100,
+                               orders=(PlannedOrder(OrderSide.BUY if target else OrderSide.SELL, 100, OrderType.MARKET, None),))
+        outcome = channel.execute(plan)
+        assert channel.execute(plan) == outcome
+    result = channel.finish()
+    assert channel.finish() is result
+    assert result.orders.status.tolist() == ["UNFILLED", "FILLED", "UNFILLED", "FILLED"]
+    assert result.orders.reason.tolist() == ["OPEN_UP_LIMIT_BUY_BLOCKED", "FILLED", "OPEN_DOWN_LIMIT_SELL_BLOCKED", "FILLED"]
+    assert result.account_daily.cash.tolist() == [2000., 999., 999., 1998.]
+    assert result.account_daily.quantity.tolist() == [0, 100, 100, 0]
+    assert result.account_daily.equity.tolist() == [2000., 1999., 1949., 1998.]
+    assert result.fills.fees.tolist() == [1., 1.]
+    assert result.fills.fill_time.tolist() == [dates[2] + pd.Timedelta(hours=9, minutes=30), dates[4] + pd.Timedelta(hours=9, minutes=30)]
+    assert len(result.trades) == 1
+    assert result.trades.iloc[0].net_return == pytest.approx(999. / 1001. - 1.)
+
+
+def test_historical_market_admission_rejects_wrong_symbol_missing_dates_and_unsupported_overlay():
+    dates = pd.bdate_range("2026-09-14", periods=5)
+    limits = tuple(SessionPriceLimits(day.date(), 9., 11.) for day in dates[1:])
+    with pytest.raises(RuntimeContractError, match="another instrument"):
+        _market_executor_fixture(rules=MarketExecutionRules("510500.SH", limits))
+    with pytest.raises(RuntimeContractError, match="do not cover"):
+        _market_executor_fixture(rules=MarketExecutionRules("600722.SH", limits[:-1]))
+    with pytest.raises(RuntimeContractError, match="INTRADAY_OVERLAY"):
+        _market_executor_fixture(policy_type="INTRADAY_OVERLAY")
+
+
+@pytest.mark.parametrize("column,value", [("open", 12.), ("close", float("nan")), ("high", 12.), ("low", 8.)])
+def test_historical_market_prices_rejected_before_account_admission(column, value):
+    dates = pd.bdate_range("2026-09-14", periods=5)
+    daily = pd.DataFrame({"dt": dates, "open": 10., "close": 10., "high": 10., "low": 10.})
+    daily.loc[4, column] = value
+    with pytest.raises(RuntimeContractError):
+        _market_executor_fixture(daily=daily)
+
+
+@pytest.mark.parametrize("column,value", [("open", 12.), ("close", float("nan")),
+                                         ("high", float("inf")), ("low", 8.), ("close", 10.5)])
+def test_historical_market_intraday_checks_all_coordinates_before_admission(column, value):
+    intraday = pd.DataFrame({"dt": [pd.Timestamp("2026-09-16 10:00")],
+                             "open": [10.], "close": [10.], "high": [10.], "low": [10.]})
+    intraday.loc[0, column] = value
+    with pytest.raises(RuntimeContractError):
+        _market_executor_fixture(intraday=intraday)
 
 
 def _execution_plan(

@@ -88,7 +88,7 @@ def _serialize_worker(payload: bytes, native_threads: int) -> bytes:
 
 def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
-        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 6
+        media_type, suffix, schema, version = "application/json", "json", "account_evaluation", 7
     else:
         media_type, suffix = request.media_type, request.suffix
         schema, version = None, None

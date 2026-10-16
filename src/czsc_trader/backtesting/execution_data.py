@@ -12,6 +12,7 @@ from dataflows import (DataRequest, DataStatus, Dataflows, Dataset,
                        PreparePolicy, PreparedDataRef, DataResult)
 from strategy_runtime import (canonical_sha256, StrategyInputBinding,
                               ExecutionPriceBasis, ExecutionPricing)
+from trading_execution_engine import MarketExecutionRules, SessionPriceLimits
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,7 @@ class BacktestExecutionData:
     strategy_bindings: dict[str, StrategyInputBinding] = field(default_factory=dict)
     pricing: ExecutionPricing = field(default_factory=ExecutionPricing)
     raw_execution_daily: pd.DataFrame | None = None
+    market_rules: MarketExecutionRules | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.pricing, ExecutionPricing):
@@ -140,6 +142,38 @@ def _execution_frames(results, pricing: ExecutionPricing) -> dict[str, pd.DataFr
     return frames
 
 
+def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str) -> MarketExecutionRules:
+    """Translate authenticated raw limits into the account's explicit price units."""
+    limits = results["price_limits"].dataframe
+    # DFLS already authenticated metadata; unit conversion needs numerical data only.
+    raw = _prices(pd.DataFrame(results["execution_daily"].dataframe, copy=False))
+    adjusted = _prices(pd.DataFrame(results["adjusted_daily"].dataframe, copy=False))
+    execution = pricing.apply(raw, raw_daily=raw, adjusted_daily=adjusted)
+    scales = pd.Series(execution["close"].to_numpy() / raw["close"].to_numpy(),
+                       index=pd.DatetimeIndex(raw["dt"]).normalize())
+    dates = pd.to_datetime(limits["Date"], errors="raise").dt.normalize()
+    if dates.duplicated().any() or not dates.is_monotonic_increasing:
+        raise ValueError("execution price limits require unique increasing sessions")
+    factors = dates.map(scales)
+    if factors.isna().any():
+        raise ValueError("execution price limits have no authenticated price scale")
+    return MarketExecutionRules(symbol, tuple(
+        SessionPriceLimits(day.date(), float(lower) * float(scale), float(upper) * float(scale))
+        for day, lower, upper, scale in zip(dates, limits["DownLimit"], limits["UpLimit"], factors, strict=True)
+    ))
+
+
+def _require_market_rules(data: BacktestExecutionData) -> MarketExecutionRules:
+    """Formal TDR replay always has a complete, explicit market contract."""
+    if not isinstance(data.market_rules, MarketExecutionRules) or data.market_rules.symbol != data.symbol:
+        raise ValueError("formal replay requires matching market execution rules")
+    if "price_limits" not in data.requests or "price_limits" not in data.input_identities:
+        raise ValueError("formal replay requires authenticated price-limit inputs")
+    for session in data.evaluation_sessions:
+        data.market_rules.for_session(pd.Timestamp(session).date())
+    return data.market_rules
+
+
 def _require_execution_frequencies(
     data: BacktestExecutionData, frequencies: tuple[str, ...],
 ) -> None:
@@ -184,10 +218,14 @@ def _prepare_backtest_execution_data(
     if normalized_asset not in {"stock", "etf"}:
         raise ValueError("backtest asset type must be stock or etf")
     normalized_symbol = symbol.upper()
+    try:
+        exchange = {"SH": "SSE", "SZ": "SZSE"}[normalized_symbol.rsplit(".", 1)[-1]]
+    except KeyError as exc:
+        raise ValueError("historical market execution currently supports SH/SZ securities") from exc
     flows = dataflows
     calendar_request = DataRequest(
             Dataset.TRADING_CALENDAR,
-            "SSE",
+            exchange,
             start.isoformat(),
             end.isoformat(),
             end.isoformat(),
@@ -231,6 +269,10 @@ def _prepare_backtest_execution_data(
     )
 
     requests = {
+        "price_limits": DataRequest(
+            Dataset.SECURITY_PRICE_LIMITS, normalized_symbol,
+            actual_start.isoformat(), actual_end.isoformat(), actual_end.isoformat(),
+        ),
         "adjusted_daily": DataRequest(
             adjusted_dataset,
             normalized_symbol,
@@ -297,6 +339,9 @@ def _prepare_backtest_execution_data(
             for name, result in sorted(results.items())
         },
     }
+    market_rules = _market_execution_rules(results, pricing, normalized_symbol)
+    if tuple(item.session for item in market_rules.sessions) != tuple(item.date() for item in sessions):
+        raise ValueError("execution price limits do not cover evaluation sessions exactly")
     fingerprint = canonical_sha256(
         {
             "symbol": normalized_symbol,
@@ -305,6 +350,7 @@ def _prepare_backtest_execution_data(
             "evaluation_end": actual_end.isoformat(),
             "inputs": identities,
             "pricing": pricing.to_dict(),
+            "market_rules": market_rules.to_dict(),
         }
     )
     return BacktestExecutionData(
@@ -323,4 +369,5 @@ def _prepare_backtest_execution_data(
         input_identities=identities,
         pricing=pricing,
         raw_execution_daily=frames["raw_execution_daily"],
+        market_rules=market_rules,
     )

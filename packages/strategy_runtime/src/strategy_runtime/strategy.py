@@ -137,18 +137,25 @@ class StrategyInstance:
         adjusted = [
             result.dataframe
             for name, result in inputs.results.items()
-            if str(inputs.requests[name].dataset) == Dataset.ETF_OHLCV.value
+            if str(inputs.requests[name].dataset) in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value}
             and inputs.requests[name].frequency == "daily"
             and inputs.requests[name].symbol == self._identity.symbol
         ]
         execution = [
             result.dataframe
             for name, result in inputs.results.items()
-            if str(inputs.requests[name].dataset) == Dataset.ETF_UNADJUSTED_DAILY.value
+            if str(inputs.requests[name].dataset) in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.STOCK_UNADJUSTED_DAILY.value}
             and inputs.requests[name].frequency == "daily"
             and inputs.requests[name].symbol == self._identity.symbol
         ]
-        if len(adjusted) != 1 or len(execution) != 1:
+        price_families = {
+            str(request.dataset).split(".", 1)[0]
+            for request in inputs.requests.values()
+            if request.dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV,
+                                   Dataset.ETF_UNADJUSTED_DAILY, Dataset.STOCK_UNADJUSTED_DAILY}
+            and request.frequency == "daily" and request.symbol == self._identity.symbol
+        }
+        if len(adjusted) != 1 or len(execution) != 1 or len(price_families) != 1:
             raise RuntimeContractError(
                 "strategy input contract must declare one adjusted and one execution price"
             )

@@ -27,12 +27,13 @@ from strategy_runtime import (
 from strategy_manager import CandidateKey, CandidateDerivation, CandidateDerivationKind
 from .parameter_evaluation import ParameterEvaluationBinding
 from strategy_runtime.implementation_identity import implementation_sha256
-from trading_execution_engine import ExecutionResult
+from trading_execution_engine import ExecutionResult, MarketExecutionRules
 
 from ..backtesting.execution_data import (
     BacktestExecutionData,
     _prepare_backtest_execution_data,
     _require_execution_frequencies,
+    _require_market_rules,
 )
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
 from ..backtesting.benchmark_contracts import EvaluationBenchmark, LimitBuyHold
@@ -43,7 +44,7 @@ from ..backtesting.srt_bridge import (
     replay_srt_account, prepare_srt_input_binding,
 )
 
-METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v4-explicit-benchmark"
+METRIC_SEMANTICS_VERSION = "candidate-srt-txe-v5-market-limits"
 
 
 @dataclass(frozen=True)
@@ -653,6 +654,7 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
     if data is not None:
         if not isinstance(data, BacktestExecutionData):
             raise ValueError("evaluation requires prepared BacktestExecutionData")
+        _require_market_rules(data)
         if data.pricing.basis is not request.price_basis:
             raise ValueError("execution data price and quantity units differ from request")
         if data.pricing.anchor_date is not None and any(data.pricing.anchor_date >= w.start for w in request.windows):
@@ -739,7 +741,7 @@ def _request_identity_payload(
 ) -> dict[str, object]:
     """Project already authenticated request values without loading mutable source files."""
     return {
-        "schema_version": 5,
+        "schema_version": 6,
         "content_sha256": content_sha256,
         "lineage": None if request.lineage is None else request.lineage.derivation.to_dict(),
         "parameter_binding": None if request.lineage is None or request.lineage.parameter_binding is None
@@ -780,6 +782,7 @@ def _request_identity_payload(
         "data_identity": None if request.execution_data is None else request.execution_data.fingerprint,
         "price_basis": request.price_basis.value,
         "pricing": None if request.execution_data is None else request.execution_data.pricing.to_dict(),
+        "market_rules": None if request.execution_data is None else request.execution_data.market_rules.to_dict(),
         "benchmark": request.benchmark.to_dict(),
         "frequency_window_days": request.frequency_window_days,
         "execution_mode": request.execution_mode,
@@ -819,6 +822,8 @@ def _evaluation_result_hash(request_hash: str, runs: tuple[EvaluationRun, ...]) 
                 if benchmark is None
                 else _frame_hash(benchmark.orders),
                 "buyhold_metrics": None if benchmark is None else benchmark.metrics,
+                "buyhold_attempts": None if benchmark is None else _frame_hash(benchmark.attempts),
+                "buyhold_fills": None if benchmark is None else _frame_hash(benchmark.fills),
                 "benchmark": None if benchmark is None else benchmark.benchmark.to_dict(),
                 "buyhold_execution": None if benchmark is None or benchmark.execution is None else {
                     name: _frame_hash(getattr(benchmark.execution, name))
@@ -1068,6 +1073,8 @@ def serialize_evaluation_evidence(request: EvaluationRequest, result: Evaluation
             else {
                 "account_daily": frame(run.buyhold.account_daily),
                 "orders": frame(run.buyhold.orders),
+                "attempts": frame(run.buyhold.attempts),
+                "fills": frame(run.buyhold.fills),
                 "metrics": run.buyhold.metrics,
                 "benchmark": run.buyhold.benchmark.to_dict(),
                 "execution": None if run.buyhold.execution is None else {
@@ -1078,7 +1085,7 @@ def serialize_evaluation_evidence(request: EvaluationRequest, result: Evaluation
         }
         runs.append(item)
     return {
-            "schema_version": 6,
+            "schema_version": 7,
             "source_kind": "published_result",
             "request_identity": _request_identity_payload(
                 request, result.runs[0].identity.content_sha256, result.runtime_binding_hash
@@ -1110,11 +1117,14 @@ def validate_evaluation_evidence(value: dict) -> None:
     from strategy_evaluator import AssessmentEvidence, ReplayEvidence, audit_replay, AuditStatus
     from ..backtesting.audit_adapter import _records
 
-    if not isinstance(value, dict) or value.get("schema_version") != 6 or value.get("source_kind") != "published_result":
-        raise ValueError("account evaluation evidence requires schema 6 published_result")
+    if not isinstance(value, dict) or value.get("schema_version") != 7 or value.get("source_kind") != "published_result":
+        raise ValueError("account evaluation evidence requires schema 7 published_result")
     request = value["request_identity"]
-    if request.get("schema_version") != 5:
-        raise ValueError("evaluation request requires schema 5 parameter identities")
+    if request.get("schema_version") != 6:
+        raise ValueError("evaluation request requires schema 6 market execution identities")
+    rules = MarketExecutionRules.from_dict(request.get("market_rules"))
+    if rules.symbol != request["symbol"]:
+        raise ValueError("evaluation market rules differ from request symbol")
     pricing = ExecutionPricing.from_dict(request["pricing"])
     if pricing.basis.value != request["price_basis"]:
         raise ValueError("evaluation pricing differs from requested units")
@@ -1167,6 +1177,8 @@ def validate_evaluation_evidence(value: dict) -> None:
         replay = ReplayEvidence.from_dict(item["replay_evidence"])
         if replay.execution_spec.get("pricing") != request["pricing"]:
             raise ValueError("evaluation replay pricing differs from request")
+        if replay.execution_spec.get("market_rules") != rules.to_dict():
+            raise ValueError("evaluation replay market rules differ from request")
         if pricing.basis is ExecutionPriceBasis.UNADJUSTED and any(
             row.get("price_scale") != 1 for row in replay.execution_daily
         ):
@@ -1233,6 +1245,7 @@ def validate_evaluation_evidence(value: dict) -> None:
         buyhold = None if benchmark is None else SimpleNamespace(
             account_daily=_evidence_frame(benchmark["account_daily"]),
             orders=_evidence_frame(benchmark["orders"]), metrics=benchmark["metrics"],
+            attempts=_evidence_frame(benchmark["attempts"]), fills=_evidence_frame(benchmark["fills"]),
             benchmark=record(benchmark["benchmark"]),
             execution=None if benchmark["execution"] is None else SimpleNamespace(
                 **{name: _evidence_frame(table) for name, table in benchmark["execution"].items()}),

@@ -56,6 +56,7 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
         execution_policy=policy,
         order_types=("LIMIT",),
         pricing=data.pricing,
+        market_rules=data.market_rules,
     )
     adjusted = pd.DataFrame(data.adjusted_daily, copy=False)
     adjusted = adjusted.set_index(pd.to_datetime(adjusted["dt"]).dt.normalize())

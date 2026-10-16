@@ -144,6 +144,7 @@ _OHLCV_DATASETS = {
 }
 
 _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
+    Dataset.SECURITY_PRICE_LIMITS.value: ({"Date", "UpLimit", "DownLimit"}, {"UpLimit", "DownLimit"}),
     Dataset.ETF_CREATION_REDEMPTION_BASKET.value: (
         {
             "Date", "AvailableDate", "ConstituentSymbol", "Quantity",
@@ -520,6 +521,10 @@ def _validate_provider_output(
         from .index_constituent_changes import validate_index_constituent_changes
 
         validate_index_constituent_changes(dataframe, request, metadata)
+    if dataset == Dataset.SECURITY_PRICE_LIMITS.value:
+        from .security_price_limits import validate_security_price_limits
+
+        validate_security_price_limits(dataframe, request, metadata)
     if dataset in {Dataset.INDEX_CONSTITUENT_EVENTS.value, Dataset.INDEX_CONSTITUENTS_DAILY.value}:
         from .index_membership import validate_index_membership
 
@@ -1565,6 +1570,11 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
             request.frequency, env_file=env_file,
         )
 
+    def security_price_limits(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
+        from .security_price_limits import fetch_security_price_limits
+
+        return fetch_security_price_limits(request, env_file=env_file)
+
     def shibor(request: DataRequest) -> tuple[pd.DataFrame, Mapping[str, Any]]:
         return fetch_shibor_daily(request.start, request.end, env_file=env_file)
 
@@ -1757,6 +1767,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.ETF_CREATION_REDEMPTION_BASKET.value: etf_creation_redemption_basket,
         Dataset.STOCK_OHLCV.value: stock_ohlcv,
         Dataset.STOCK_UNADJUSTED_DAILY.value: stock_unadjusted,
+        Dataset.SECURITY_PRICE_LIMITS.value: security_price_limits,
         Dataset.SHIBOR_DAILY.value: shibor,
         Dataset.US_REAL_YIELD_DAILY.value: us_real_yield,
         Dataset.US_NOMINAL_YIELD_DAILY.value: us_nominal_yield,

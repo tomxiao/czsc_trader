@@ -127,6 +127,7 @@ def build_replay_evidence(
             raise ValueError("SRT replay has no effective order-type evidence")
         execution_spec = {
             "pricing": data.pricing.to_dict(),
+            "market_rules": None if data.market_rules is None else data.market_rules.to_dict(),
             "decision_coverage": "COMPLETE",
             "entry_limit_parameter": entry["limit_parameter"],
             "exit_limit_ratio": exit_rule["limit_ratio"],
@@ -211,6 +212,8 @@ def build_benchmark_evidence(
             empty_trades,
             benchmarks.metrics["buyhold"]["metrics"],
             lot_size=lot_size,
+            market_rules=None if data.market_rules is None else data.market_rules.to_dict(),
+            attempts=_records(benchmarks.buyhold_attempts, ("execution_date",)),
         ),
         "ma5_ma20": BenchmarkEvidence(
             "MA5_MA20",
@@ -224,5 +227,7 @@ def build_benchmark_evidence(
             _records(benchmarks.ma_trades, ("entry_date", "exit_date")),
             benchmarks.metrics["ma5_ma20"]["metrics"],
             lot_size=lot_size,
+            market_rules=None if data.market_rules is None else data.market_rules.to_dict(),
+            attempts=_records(benchmarks.ma_attempts, ("execution_date",)),
         ),
     }

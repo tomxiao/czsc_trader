@@ -90,8 +90,8 @@ def _account_evidence(root, ref, account_cache=None):
 def _account_document(root, ref, account_cache=None):
     from ..research_tools.evaluation import validate_evaluation_evidence
 
-    if (ref.schema, ref.schema_version) != ("account_evaluation", 6):
-        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 6 required")
+    if (ref.schema, ref.schema_version) != ("account_evaluation", 7):
+        _fail("EVALUATION_REFERENCE", ref.path, "published account evaluation schema 7 required")
     # Always authenticate the current file. Only immutable, identical bytes may
     # reuse account decoding/certification within this publication or validation.
     data = _read_evidence(root, ref)
@@ -293,7 +293,7 @@ def _validate_assessment_delivery(definition, payload, root, context, content, s
     saved_requests = {}
     saved_policies = {}
     for reference in _references(content):
-        if (reference.schema, reference.schema_version) == ("account_evaluation", 6):
+        if (reference.schema, reference.schema_version) == ("account_evaluation", 7):
             account, records = _account_document(root, reference, account_cache)
             saved_requests[account["request_hash"]] = account["request_identity"]
             saved_policies[account["request_hash"]] = tuple(x["signal_support"]["execution_policy"]

@@ -12,8 +12,9 @@ from pathlib import Path
 
 import pandas as pd
 from strategy_runtime import (
-    canonical_sha256, StrategyInputBinding,
+    canonical_sha256, StrategyInputBinding, ExecutionPricing,
 )
+from trading_execution_engine import MarketExecutionRules
 
 from czsc_trader.backtesting.execution_data import BacktestExecutionData
 from czsc_trader.backtesting.srt_bridge import (
@@ -29,6 +30,7 @@ TABLES = (
     "execution_daily",
     "execution_intraday",
     "execution_five_minute",
+    "raw_execution_daily",
 )
 
 
@@ -55,7 +57,7 @@ def _snapshot_file(root: Path, name: str) -> Path:
 def verify_review_dataset(directory: Path, expected_hash: str | None = None) -> dict:
     raw = json.loads((directory / MANIFEST).read_text(encoding="utf-8"))
     digest = raw.pop("snapshot_hash")
-    if raw.get("schema_version") != 3 or canonical_sha256(raw) != digest:
+    if raw.get("schema_version") != 4 or canonical_sha256(raw) != digest:
         raise ValueError("review dataset manifest hash mismatch")
     if expected_hash is not None and expected_hash != digest:
         raise ValueError("review dataset differs from the sealed snapshot")
@@ -108,6 +110,9 @@ def load_review_dataset(
         input_identities=manifest["input_identities"],
         strategy_bindings={key: StrategyInputBinding.from_mapping(value)
                            for key, value in manifest["strategy_bindings"].items()},
+        pricing=ExecutionPricing.from_dict(manifest["pricing"]),
+        raw_execution_daily=frames["raw_execution_daily"],
+        market_rules=MarketExecutionRules.from_dict(manifest["market_rules"]),
     )
 
 
@@ -181,7 +186,9 @@ def publish_review_dataset(
             bindings[f"{snapshot.identity.reference}|{start.date()}|{end.date()}"] = strategy.input_binding.to_dict()
         runtimes[definition.release_id] = definition.runtime_sha256
     content = {
-        "schema_version": 3, "recipe_hash": recipe_hash,
+        "schema_version": 4, "recipe_hash": recipe_hash,
+        "pricing": execution_data.pricing.to_dict(),
+        "market_rules": execution_data.market_rules.to_dict(),
         "execution_requests": {name: asdict(request) for name, request in execution_data.requests.items()},
         "prepared": {"space_id": str(execution_data.prepared.space_id),
                      "preparation_id": str(execution_data.prepared.preparation_id),

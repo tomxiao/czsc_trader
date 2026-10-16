@@ -151,31 +151,10 @@ def describe_snapshot_strategy(
 
 
 def strategy_reference_symbol(strategy) -> str:
-    """Return the single ETF instrument declared by one frozen runtime."""
+    """Return SRT's explicit tradable instrument for stock and ETF strategies."""
 
     definition = getattr(strategy, "definition", strategy)
-    subjects = {
-        item.subject.upper()
-        for item in definition.inputs.requirements
-        if item.subject and item.dataset.startswith("etf.")
-    }
-    if len(subjects) != 1:
-        payload = definition.parameters.values
-        rule = payload.get("rule")
-        if isinstance(rule, Mapping):
-            execution = rule.get("execution")
-            if isinstance(execution, Mapping):
-                instrument = execution.get("instrument")
-                if isinstance(instrument, Mapping) and isinstance(
-                    instrument.get("symbol"), str
-                ):
-                    return str(instrument["symbol"]).upper()
-            if isinstance(rule.get("symbol"), str):
-                return str(rule["symbol"]).upper()
-        if isinstance(payload.get("symbol"), str):
-            return str(payload["symbol"]).upper()
-        raise ValueError("SRT strategy does not declare exactly one ETF instrument")
-    return next(iter(subjects))
+    return definition.tradable_symbol
 
 
 def execution_intraday_frequencies(strategy) -> tuple[str, ...]:
@@ -280,9 +259,10 @@ def _validate_execution_binding(flows, execution_data, prepared):
     adjusted_dataset = Dataset.ETF_OHLCV if asset == "etf" else Dataset.STOCK_OHLCV
     daily_dataset = Dataset.ETF_UNADJUSTED_DAILY if asset == "etf" else Dataset.STOCK_UNADJUSTED_DAILY
     expected = {
+        "price_limits": (Dataset.SECURITY_PRICE_LIMITS, execution_data.symbol, "daily"),
         "adjusted_daily": (adjusted_dataset, execution_data.symbol, "daily"),
         "execution_daily": (daily_dataset, execution_data.symbol, "daily"),
-        "trading_calendar": (Dataset.TRADING_CALENDAR, "SSE", "daily"),
+        "trading_calendar": (Dataset.TRADING_CALENDAR, {"SH": "SSE", "SZ": "SZSE"}.get(execution_data.symbol.rsplit(".", 1)[-1]), "daily"),
     }
     intraday_dataset = Dataset.ETF_UNADJUSTED_INTRADAY if asset == "etf" else Dataset.STOCK_UNADJUSTED_INTRADAY
     if "execution_30m" in execution_data.requests:
@@ -307,12 +287,18 @@ def _validate_execution_binding(flows, execution_data, prepared):
     if (sessions.empty or not sessions.equals(execution_data.evaluation_sessions)
             or execution_data.cutoff != sessions[-1].date()):
         raise RuntimeContractError("execution evaluation window differs from bound calendar")
+    from .execution_data import _market_execution_rules, _require_market_rules
+    rules = _require_market_rules(execution_data)
+    authenticated_rules = _market_execution_rules(results, execution_data.pricing, execution_data.symbol)
+    if rules != authenticated_rules:
+        raise RuntimeContractError("execution market rules differ from bound inputs")
     fingerprint = canonical_sha256({
         "symbol": execution_data.symbol, "asset_type": asset,
         "evaluation_start": sessions[0].date().isoformat(),
         "evaluation_end": sessions[-1].date().isoformat(),
         "inputs": {name: result.identity.content_sha256 for name, result in results.items()},
         "pricing": execution_data.pricing.to_dict(),
+        "market_rules": rules.to_dict(),
     })
     if execution_data.fingerprint != fingerprint:
         raise RuntimeContractError("execution data fingerprint differs from bound inputs")
@@ -532,6 +518,7 @@ def replay_srt_account(
         order_types=definition.capabilities.order_types,
         checkpoints=definition.capabilities.checkpoints,
         pricing=execution_data.pricing,
+        market_rules=execution_data.market_rules,
     )
     from .observation import ObservationExecutor
     observed = ObservationExecutor(strategy.definition, channel)

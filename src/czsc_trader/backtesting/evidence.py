@@ -21,8 +21,8 @@ def build_manifest(
     application: dict[str, str],
 ) -> dict[str, object]:
     manifest = {
-        "schema_version": 5,
-        "engine": "TDR_BACKTEST_V2",
+        "schema_version": 6,
+        "engine": "TDR_BACKTEST_V3_MARKET_LIMITS",
         "strategy": {
             "kind": snapshot.identity.kind,
             "reference": snapshot.identity.reference,
@@ -36,6 +36,7 @@ def build_manifest(
             "cutoff": data.cutoff.isoformat(),
             "signal_adjustment": "hfq",
             "execution_adjustment": "none",
+            "market_rules": data.market_rules.to_dict(),
         },
         "request": {
             "symbol": request.symbol,

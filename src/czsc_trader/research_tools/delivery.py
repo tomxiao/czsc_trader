@@ -301,8 +301,8 @@ class EvaluationEvidenceRef(_Record):
     evaluation_ids: tuple[str, ...] = ()
 
     def _validate(self):
-        if (self.evidence.schema,self.evidence.schema_version) != ("account_evaluation",6):
-            raise ValueError("evaluation evidence requires published account schema 6")
+        if (self.evidence.schema,self.evidence.schema_version) != ("account_evaluation",7):
+            raise ValueError("evaluation evidence requires published account schema 7")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:
             _hash(value)

@@ -13,7 +13,7 @@ from dataflows import Dataflows
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from .benchmarks import MA_BENCHMARK_SLOW_SESSIONS, BenchmarkReplay, replay_benchmarks
-from .execution_data import BacktestExecutionData, _prepare_backtest_execution_data
+from .execution_data import BacktestExecutionData, _prepare_backtest_execution_data, _require_market_rules
 from .audit_adapter import build_benchmark_evidence, build_replay_evidence
 from .chart import render_backtest_chart_html
 from .chart_context import BacktestChartMetrics, build_backtest_chart_context, build_ma_chart_context
@@ -75,6 +75,7 @@ def _validate_execution_window(
     request: BacktestRequest,
     execution_data: BacktestExecutionData,
 ) -> None:
+    _require_market_rules(execution_data)
     if request.start > request.end:
         raise ValueError("backtest start must not follow end")
     calendar = execution_data.requests["trading_calendar"]
@@ -237,6 +238,8 @@ def _backtest_report_files(
             ("decisions.csv", result.decisions), ("orders.csv", result.orders),
             ("fills.csv", result.fills), ("account_daily.csv", result.account_daily),
             ("trades.csv", result.trades), ("buyhold_account_daily.csv", benchmarks.buyhold_account_daily),
+            ("buyhold_attempts.csv", benchmarks.buyhold_attempts), ("buyhold_fills.csv", benchmarks.buyhold_fills),
+            ("ma_attempts.csv", benchmarks.ma_attempts), ("ma_fills.csv", benchmarks.ma_fills),
             ("ma_signals.csv", benchmarks.ma_signals), ("ma_orders.csv", benchmarks.ma_orders),
             ("ma_account_daily.csv", benchmarks.ma_account_daily), ("ma_trades.csv", benchmarks.ma_trades),
         )

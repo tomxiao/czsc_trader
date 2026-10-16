@@ -19,7 +19,7 @@ from strategy_runtime import (
 from trading_execution_engine import HistoricalExecutor
 
 
-def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None):
+def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None, price_limits=None, asset_type="etf"):
     from dataflows.ohlcv_quality import (
         bind_quality_frame, build_quality_evidence, verify_daily_sessions,
     )
@@ -52,6 +52,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             listed = pd.to_datetime(market["Date"]).min().strftime("%Y%m%d")
             return pd.DataFrame({"ts_code": [ts_code], "list_date": [listed]})
 
+        stock_basic = fund_basic
+
         def trade_cal(self, *, exchange, start_date, end_date):
             dates = pd.date_range(start_date, end_date)
             return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
@@ -64,14 +66,18 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {
                 "vendor": "test"
             }
-        if dataset == Dataset.ETF_SHARE_SIZE.value and request.symbol == "588080.SH":
+        if dataset == Dataset.SECURITY_PRICE_LIMITS.value:
+            frame = price_limits.copy() if price_limits is not None else pd.DataFrame({
+                "Date": market["Date"], "UpLimit": market["High"] * 2, "DownLimit": market["Low"] / 2,
+            })
+        elif dataset == Dataset.ETF_SHARE_SIZE.value and request.symbol == "588080.SH":
             frame = flow.copy()
             frame["TotalShare"] = frame["Flow"]
         elif dataset == Dataset.ETF_SHARE_SIZE.value:
             frame = pd.DataFrame({"Date": market["Date"], "TotalShare": range(1, len(market) + 1)})
         else:
             frame = market.copy()
-            if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+            if dataset in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value} and hfq_factors is not None:
                 for column in ("Open", "High", "Low", "Close"):
                     frame[column] = frame[column] * hfq_factors
                 frame["Volume"] = frame["Volume"] / hfq_factors
@@ -93,13 +99,26 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             values.between(pd.Timestamp(request.start), end)
         ].reset_index(drop=True)
         metadata = {"vendor": "test"}
-        if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+        if dataset == Dataset.SECURITY_PRICE_LIMITS.value:
+            metadata.update(
+                vendor_symbol=request.symbol, vendor_interface="etf_limit" if asset_type == "etf" else "stk_limit", asset_type=asset_type,
+                adjustment="none", frequency="daily", source_calendar="SSE",
+                available_at="same-session pre-open source schedule; historical publication unverified",
+                source_publication_timestamp_verified=False, historical_revision_history_verified=False,
+                daily_session_coverage=verify_daily_sessions(
+                    SyntheticCalendar(), request.symbol, frame,
+                    start=pd.Timestamp(request.start).date().isoformat(), end=pd.Timestamp(request.end).date().isoformat(),
+                    asset_type=asset_type,
+                ),
+            )
+        if dataset in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value} and hfq_factors is not None:
             metadata["adjustment"] = "hfq"
         if dataset == Dataset.ETF_SHARE_SIZE.value:
             metadata["vendor_symbol"] = request.symbol
-        if dataset in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.ETF_UNADJUSTED_INTRADAY.value}:
+        if dataset in {Dataset.ETF_UNADJUSTED_DAILY.value, Dataset.ETF_UNADJUSTED_INTRADAY.value,
+                       Dataset.STOCK_UNADJUSTED_DAILY.value, Dataset.STOCK_UNADJUSTED_INTRADAY.value}:
             metadata["adjustment"] = "none"
-        if dataset == Dataset.ETF_UNADJUSTED_INTRADAY.value:
+        if dataset in {Dataset.ETF_UNADJUSTED_INTRADAY.value, Dataset.STOCK_UNADJUSTED_INTRADAY.value}:
             from dataflows.contract import ETF_INTRADAY_OBSERVATION_RULE
 
             frame["AvailableDate"] = frame["Date"]
@@ -110,16 +129,18 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
                 historical_revision_history_verified=False, live_feed_latency_verified=False,
             )
         if dataset in {Dataset.ETF_OHLCV.value, Dataset.ETF_UNADJUSTED_DAILY.value,
-                       Dataset.ETF_UNADJUSTED_INTRADAY.value}:
+                       Dataset.ETF_UNADJUSTED_INTRADAY.value, Dataset.STOCK_OHLCV.value,
+                       Dataset.STOCK_UNADJUSTED_DAILY.value, Dataset.STOCK_UNADJUSTED_INTRADAY.value}:
             start_day = pd.Timestamp(request.start).normalize()
             end_day = pd.Timestamp(request.end).normalize()
             anchor_dates = pd.to_datetime(market["Date"]).dt.normalize()
             anchor = market.loc[anchor_dates.between(start_day, end_day)].reset_index(drop=True)
-            if dataset == Dataset.ETF_OHLCV.value and hfq_factors is not None:
+            if dataset in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value} and hfq_factors is not None:
                 anchor = frame.copy()
             calendar = verify_daily_sessions(
                 SyntheticCalendar(), request.symbol, anchor,
                 start=start_day.date().isoformat(), end=end_day.date().isoformat(),
+                asset_type=asset_type,
             )
             evidence = build_quality_evidence(
                 anchor, intraday=frame if request.frequency == "30m" else None,
@@ -142,7 +163,8 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
         providers=ProviderConfig(bindings={dataset: ProviderBinding("synthetic", "v1", fetch)
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
                             Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
-                            Dataset.TRADING_CALENDAR)}),
+                            Dataset.STOCK_OHLCV, Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_UNADJUSTED_INTRADAY,
+                            Dataset.TRADING_CALENDAR, Dataset.SECURITY_PRICE_LIMITS)}),
     )
     return flows
 

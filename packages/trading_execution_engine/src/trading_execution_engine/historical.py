@@ -22,6 +22,7 @@ from strategy_runtime import (
     TradingPoint,
 )
 from .fills import OrderSpec, resolve_fill
+from .market import MarketExecutionRules
 from .result import ExecutionResult
 
 
@@ -97,6 +98,7 @@ class HistoricalExecutor:
         account_id: str = "backtest-account",
         execution_five_minute: pd.DataFrame | None = None,
         pricing: ExecutionPricing = ExecutionPricing(),
+        market_rules: MarketExecutionRules | None = None,
     ) -> None:
         if not account_id.strip():
             raise RuntimeContractError("backtest account_id must be non-empty")
@@ -119,6 +121,14 @@ class HistoricalExecutor:
         if not symbol.strip():
             raise RuntimeContractError("backtest symbol must be non-empty")
         self._strategy_symbol = symbol.strip().upper()
+        if market_rules is not None:
+            if not isinstance(market_rules, MarketExecutionRules):
+                raise RuntimeContractError("historical market rules require MarketExecutionRules")
+            if market_rules.symbol != self._strategy_symbol:
+                raise RuntimeContractError("market rules belong to another instrument")
+            if execution_policy.policy_type == "INTRADAY_OVERLAY":
+                raise RuntimeContractError("INTRADAY_OVERLAY does not support market execution rules")
+        self._market_rules = market_rules
         self._policy = execution_policy
         try:
             configured_fee = (
@@ -152,6 +162,33 @@ class HistoricalExecutor:
         ]
         if self._evaluation.empty:
             raise RuntimeContractError("historical executor evaluation interval is empty")
+        if market_rules is not None:
+            try:
+                if not {"open", "high", "low", "close"}.issubset(self._evaluation.columns):
+                    raise ValueError("market execution requires daily OHLC prices")
+                for day, row in self._evaluation.iterrows():
+                    if day != day.normalize():
+                        raise ValueError("daily market prices require session dates")
+                    limits = market_rules.for_session(day.date())
+                    values = tuple(float(row[column]) for column in ("open", "high", "low", "close"))
+                    if any(not isfinite(value) or not limits.contains(value) for value in values):
+                        raise ValueError("daily OHLC prices are outside session price limits")
+                    if not values[2] <= min(values[0], values[3]) <= max(values[0], values[3]) <= values[1]:
+                        raise ValueError("daily OHLC prices are inconsistent")
+                for timestamp, row in self._intraday.iterrows():
+                    if timestamp.normalize() not in self._evaluation.index:
+                        continue
+                    limits = market_rules.for_session(timestamp.date())
+                    values = tuple(float(row[column]) for column in ("open", "high", "low", "close") if column in row)
+                    if any(not isfinite(value) or not limits.contains(value) for value in values):
+                        raise ValueError("intraday prices are outside session price limits")
+                    if float(row["low"]) > float(row["high"]):
+                        raise ValueError("intraday low exceeds high")
+                    if any(not float(row["low"]) <= float(row[column]) <= float(row["high"])
+                           for column in ("open", "close") if column in row):
+                        raise ValueError("intraday OHLC prices are inconsistent")
+            except (TypeError, ValueError) as exc:
+                raise RuntimeContractError(str(exc)) from exc
 
         self._cash = self._initial_cash
         self._quantity = 0
@@ -306,6 +343,7 @@ class HistoricalExecutor:
             "order_type",
             "limit_price",
             "status",
+            "reason",
         ]
         if self._policy.policy_type == "INTRADAY_OVERLAY":
             order_columns.extend(("checkpoint", "role"))
@@ -412,12 +450,17 @@ class HistoricalExecutor:
                     side, order_type, quantity, limit_price
                 ),
                 session_open=float(price_row["open"]),
-                session_time=execution_date.to_pydatetime(),
+                session_time=(execution_date + pd.Timedelta(hours=9, minutes=30)).to_pydatetime(),
                 intraday_touches=[
                     (pd.Timestamp(timestamp).to_pydatetime(), float(value))
                     for timestamp, value in day_bars[touch_column].items()
                 ],
+                session_limits=(
+                    None if self._market_rules is None
+                    else self._market_rules.for_session(execution_date.date())
+                ),
             )
+            reason = fill.reason
             trigger = fill.trigger
             fill_price = fill.price
             fill_time = None if fill.filled_at is None else pd.Timestamp(fill.filled_at)
@@ -427,6 +470,10 @@ class HistoricalExecutor:
                 )
                 if required is not None and required > self._cash + 1e-8:
                     trigger = fill_price = fill_time = None
+                    reason = "INSUFFICIENT_CASH"
+            elif quantity > self._quantity:
+                trigger = fill_price = fill_time = None
+                reason = "INSUFFICIENT_POSITION"
             self._order_rows.append(
                 {
                     "order_id": order_id,
@@ -439,6 +486,7 @@ class HistoricalExecutor:
                     "order_type": order_type,
                     "limit_price": limit_price,
                     "status": "FILLED" if fill_price is not None else "UNFILLED",
+                    "reason": reason,
                 }
             )
             if fill_price is None or fill_time is None:

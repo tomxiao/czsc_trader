@@ -11,6 +11,7 @@ import pandas as pd
 from .audit_models import AuditStatus
 from .models import Record
 from ._metric_validation import metric_matches
+from ._market_execution import market_limits, blocked_order, validate_market_prices
 
 
 def _jsonable(value: Any) -> Any:
@@ -38,6 +39,8 @@ class BenchmarkEvidence(Record):
     trades: tuple[Mapping[str, Any], ...]
     metrics: Mapping[str, Any]
     lot_size: int
+    market_rules: Mapping[str, Any] | None = None
+    attempts: tuple[Mapping[str, Any], ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.lot_size) is not int:
@@ -110,9 +113,13 @@ def audit_benchmark_replay(
 ) -> BenchmarkAuditResult:
     """Independently verify benchmark definition, sessions, ledger, and metrics."""
 
-    encoded = json.dumps(
-        evidence.to_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    ).encode("utf-8")
+    try:
+        encoded = json.dumps(
+            evidence.to_dict(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+    except (TypeError, ValueError, OverflowError):
+        return BenchmarkAuditResult(AuditStatus.FAIL, sha256(b"INVALID_EVIDENCE_ENCODING").hexdigest(),
+                                    (), ("INVALID_EVIDENCE_ENCODING",))
     digest = sha256(encoded).hexdigest()
     reasons: list[str] = []
     checks: list[str] = []
@@ -176,22 +183,57 @@ def audit_benchmark_replay(
     cash = float(evidence.initial_cash)
     shares = 0.0
     previous_target = 0.0
+    try:
+        limits = market_limits(evidence.market_rules, evidence.evaluation_sessions)
+        validate_market_prices(evidence.execution_prices, limits, time_field="date")
+        validate_market_prices(evidence.orders, limits, time_field="execution_date", fields=("price",))
+        if limits and any(
+            any(isinstance(order.get(field), bool) or not isinstance(order.get(field), (int, float))
+                or not np.isfinite(order[field]) or order[field] < 0 for field in ("size", "price", "fees"))
+            for order in evidence.orders
+        ):
+            raise ValueError("invalid benchmark fill values")
+    except (TypeError, ValueError, KeyError):
+        return BenchmarkAuditResult(AuditStatus.FAIL, digest, tuple(checks), ("INVALID_MARKET_EXECUTION_RULES",))
     equity_values: list[float] = []
     cash_values: list[float] = []
     quantity_values: list[float] = []
     expected_orders: list[dict[str, Any]] = []
+    expected_attempts: list[dict[str, Any]] = []
     for desired, (_, price) in zip(target, prices.iterrows(), strict=True):
         open_price = float(price["open"])
         close_price = float(price["close"])
         if float(desired) != previous_target:
             portfolio_value = cash + shares * open_price
             delta = float(desired) * portfolio_value - shares * open_price
+            try:
+                blocked = blocked_order("BUY" if delta > 0 else "SELL", open_price,
+                                        limits.get(str(price["date"])[:10])) if delta else False
+            except ValueError:
+                return BenchmarkAuditResult(AuditStatus.FAIL, digest, tuple(checks), ("INVALID_MARKET_EXECUTION_PRICE",))
+            if blocked:
+                requested = (min(delta / open_price, cash / (open_price * (1 + evidence.fee_rate)))
+                             if delta > 0 else min(-delta / open_price, shares))
+                if delta > 0 or desired > 0:
+                    requested = float(int(requested // evidence.lot_size) * evidence.lot_size)
+                if requested > 0:
+                    expected_attempts.append({"execution_date": price["date"],
+                                              "side": "BUY" if delta > 0 else "SELL",
+                                              "quantity": requested, "status": "UNFILLED"})
+                else:
+                    previous_target = float(desired)
+                equity_values.append(cash + shares * close_price)
+                cash_values.append(cash)
+                quantity_values.append(shares)
+                continue
             if delta > 0.0:
                 bought = min(delta / open_price, cash / (open_price * (1.0 + evidence.fee_rate)))
                 bought = float(int(bought // evidence.lot_size) * evidence.lot_size)
                 cash -= bought * open_price * (1.0 + evidence.fee_rate)
                 shares += bought
                 if bought > 0:
+                    expected_attempts.append({"execution_date": price["date"], "side": "BUY",
+                                              "quantity": bought, "status": "FILLED"})
                     expected_orders.append(
                         {
                             "execution_date": price["date"],
@@ -208,6 +250,8 @@ def audit_benchmark_replay(
                 cash += sold * open_price * (1.0 - evidence.fee_rate)
                 shares -= sold
                 if sold > 0:
+                    expected_attempts.append({"execution_date": price["date"], "side": "SELL",
+                                              "quantity": sold, "status": "FILLED"})
                     expected_orders.append(
                         {
                             "execution_date": price["date"],
@@ -256,6 +300,21 @@ def audit_benchmark_replay(
                 reasons.append("BENCHMARK_ORDER_MISMATCH")
                 break
     checks.append("BENCHMARK_ORDERS")
+
+    if evidence.market_rules is not None or evidence.attempts:
+        try:
+            if len(evidence.attempts) != len(expected_attempts):
+                raise ValueError("attempt count differs")
+            for actual, expected_attempt in zip(evidence.attempts, expected_attempts, strict=True):
+                if (pd.Timestamp(actual["execution_date"]).normalize() != expected_attempt["execution_date"]
+                        or str(actual["side"]).upper() != expected_attempt["side"]
+                        or str(actual["status"]) != expected_attempt["status"]
+                        or not np.isfinite(float(actual["quantity"]))
+                        or abs(float(actual["quantity"]) - expected_attempt["quantity"]) > tolerance):
+                    raise ValueError("attempt fact differs")
+        except (TypeError, ValueError, KeyError):
+            reasons.append("BENCHMARK_ATTEMPT_MISMATCH")
+        checks.append("BENCHMARK_ATTEMPTS")
 
     closed_returns: list[float] = []
     pending: Mapping[str, Any] | None = None

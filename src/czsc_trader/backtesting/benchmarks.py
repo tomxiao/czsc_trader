@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 
@@ -26,6 +26,10 @@ class BenchmarkReplay:
     ma_account_daily: pd.DataFrame
     ma_trades: pd.DataFrame
     ma_audit_signals: pd.DataFrame
+    buyhold_attempts: pd.DataFrame = field(default_factory=pd.DataFrame)
+    buyhold_fills: pd.DataFrame = field(default_factory=pd.DataFrame)
+    ma_attempts: pd.DataFrame = field(default_factory=pd.DataFrame)
+    ma_fills: pd.DataFrame = field(default_factory=pd.DataFrame)
 
 
 @dataclass(frozen=True)
@@ -37,6 +41,23 @@ class BuyHoldReplay:
     orders: pd.DataFrame
     benchmark: EvaluationBenchmark
     execution: ExecutionResult | None = None
+    attempts: pd.DataFrame = field(default_factory=pd.DataFrame)
+    fills: pd.DataFrame = field(default_factory=pd.DataFrame)
+
+
+def _with_signal_dates(
+    rows: pd.DataFrame,
+    prior_date: pd.Timestamp,
+    evaluation_index: pd.DatetimeIndex,
+) -> pd.DataFrame:
+    """Retain order attempts separately from their actual fill projection."""
+    result = rows.copy()
+    previous_sessions = pd.Series([prior_date, *evaluation_index[:-1]], index=evaluation_index)
+    result.insert(
+        0, "signal_date",
+        pd.to_datetime(result["execution_date"]).map(previous_sessions),
+    )
+    return result.reset_index(drop=True)
 
 
 def _fee_rate(signals: SignalReplay) -> float:
@@ -107,7 +128,10 @@ def replay_buyhold(
         from .metrics import calculate_metrics
 
         metrics = calculate_metrics(ledger, initial_cash)
-        return BuyHoldReplay(metrics, ledger.account_daily, ledger.orders, benchmark, ledger)
+        return BuyHoldReplay(
+            metrics, ledger.account_daily, ledger.orders, benchmark, ledger,
+            attempts=ledger.orders, fills=ledger.fills,
+        )
     execution = execution_data.execution_daily.copy()
     execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
     evaluation = execution.loc[
@@ -132,25 +156,10 @@ def replay_buyhold(
         fee_rate=fee_rate,
         initial_cash=initial_cash,
         lot_size=benchmark.execution.lot_size,
+        market_rules=execution_data.market_rules,
     )
-    orders = result.orders.copy()
-    if not orders.empty:
-        orders = orders.rename(columns={"quantity": "size"})
-        previous_sessions = pd.Series(
-            [prior_date, *evaluation_index[:-1]], index=evaluation_index
-        )
-        orders.insert(
-            0,
-            "signal_date",
-            pd.to_datetime(orders["execution_date"]).map(previous_sessions),
-        )
-        orders = orders[
-            ["signal_date", "execution_date", "side", "size", "price", "fees"]
-        ].reset_index(drop=True)
-    else:
-        orders = pd.DataFrame(
-            columns=["signal_date", "execution_date", "side", "size", "price", "fees"]
-        )
+    fills = _with_signal_dates(result.orders, prior_date, evaluation_index)
+    orders = fills.rename(columns={"quantity": "size"})
     metrics = strategy_comparison_metrics(result.equity, orders, initial_cash)
     metrics["closed_trades"] = 0
     return BuyHoldReplay(
@@ -165,6 +174,8 @@ def replay_buyhold(
         ),
         orders=orders,
         benchmark=benchmark,
+        attempts=_with_signal_dates(result.attempts, prior_date, evaluation_index),
+        fills=fills,
     )
 
 
@@ -209,10 +220,10 @@ def replay_benchmarks(
         fee_rate=fee_rate,
         initial_cash=initial_cash,
         lot_size=lot_size,
+        market_rules=execution_data.market_rules,
     )
-    ma_orders = ma.orders.rename(columns={"quantity": "size"}).copy()
-    previous_sessions = pd.Series([prior_date, *evaluation_index[:-1]], index=evaluation_index)
-    ma_orders.insert(0, "signal_date", pd.to_datetime(ma_orders["execution_date"]).map(previous_sessions))
+    ma_fills = _with_signal_dates(ma.orders, prior_date, evaluation_index)
+    ma_orders = ma_fills.rename(columns={"quantity": "size"})
     ma_trades = closed_trade_ledger(ma_orders)
     ma_metrics = strategy_comparison_metrics(ma.equity, ma_orders, initial_cash)
     ma_metrics["closed_trades"] = int(len(ma_trades))
@@ -243,4 +254,8 @@ def replay_benchmarks(
         ma_account_daily=ma_account,
         ma_trades=ma_trades,
         ma_audit_signals=ma_audit_signals,
+        buyhold_attempts=buyhold.attempts,
+        buyhold_fills=buyhold.fills,
+        ma_attempts=_with_signal_dates(ma.attempts, prior_date, evaluation_index),
+        ma_fills=ma_fills,
     )

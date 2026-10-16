@@ -290,7 +290,7 @@ class _InvalidInspectionReference(ValueError):
 
 def _load_reference(context, reference, store):
     value = _read(reference.evidence.resolve(context.root))
-    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 6:
+    if reference.evidence.schema != "account_evaluation" or value.get("schema_version") != 7:
         raise ValueError("inspection requires platform account evaluation evidence")
     validate_evaluation_evidence(value)
     if value["request_identity"]["experiment_id"] != reference.evidence.experiment.experiment_id:
@@ -335,9 +335,11 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     """Exercise from_release through the managed runtime port, without deployment."""
     window = TradableWindow(run.signals.evaluation_start.date(), run.signals.evaluation_end.date())
     root = create_temporary_directory(context.root, "inspection-runtime")
-    candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate"))
+    candidate = execution.runtime.create(StrategyInit(request.strategy, window, root / "candidate",
+                                                     pricing=request.execution_data.pricing))
     frozen = execution.runtime.create(
-        StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding)
+        StrategyInit(release, window, root / "release", source_root=source_root, runtime_binding=binding,
+                     pricing=request.execution_data.pricing)
     )
     candidate_binding = StrategyInputBinding.from_mapping(run.signals.support_data["input_binding"])
     candidate_prepared = candidate.prepare_data(binding=candidate_binding)
@@ -383,7 +385,8 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
     policy = ExecutionPolicy(policy.policy_type, settings)
     frozen = execution.runtime.create(
         StrategyInit(
-            release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding
+            release, window, root / "release", execution_policy=policy, source_root=source_root, runtime_binding=binding,
+            pricing=request.execution_data.pricing
         )
     )
     frozen.prepare_data(binding=frozen_binding)
@@ -399,6 +402,8 @@ def _inspect_release_replay(context, execution, request, run, release, source_ro
         execution_policy=policy,
         order_types=frozen.definition.capabilities.order_types,
         checkpoints=frozen.definition.capabilities.checkpoints,
+        pricing=request.execution_data.pricing,
+        market_rules=request.execution_data.market_rules,
     )
     from ..backtesting.observation import ObservationExecutor
     observed = ObservationExecutor(frozen.definition, channel)
