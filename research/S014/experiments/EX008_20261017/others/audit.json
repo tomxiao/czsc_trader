@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "checks": [
+    "predeclared_design",
+    "predeclared_block_stats",
+    "predeclared_features",
+    "predeclared_inputs",
+    "predeclared_study",
+    "predeclared_followup-design",
+    "predeclared_followup",
+    "predecessor_full_pass_and_native_input_hashes",
+    "real_prefix_and_future_perturbation",
+    "log_return_decomposition",
+    "H1_cash_nonfill_censor_delay",
+    "all_srt_entry_plans_prices_and_nonfills",
+    "entry_signal",
+    "entry_entry",
+    "entry_quantity",
+    "entry_filled",
+    "entry_fill_price",
+    "entry_limit_price",
+    "H1_all_statuses",
+    "H1_net_return",
+    "H1_adverse",
+    "H1_maturity",
+    "H1_quantity",
+    "H1_entry_price",
+    "H1_exit_price",
+    "no_same_day_H1_sale",
+    "all4horizon_txe_exits_same_quantity_fees",
+    "inherited_h3_status",
+    "inherited_h5_status",
+    "inherited_h10_status",
+    "maturity_split_h1_2023",
+    "maturity_split_h1_2024",
+    "maturity_split_h1_2025",
+    "maturity_split_h1_2026",
+    "maturity_split_h3_2023",
+    "maturity_split_h3_2024",
+    "maturity_split_h3_2025",
+    "maturity_split_h3_2026",
+    "maturity_split_h5_2023",
+    "maturity_split_h5_2024",
+    "maturity_split_h5_2025",
+    "maturity_split_h5_2026",
+    "maturity_split_h10_2023",
+    "maturity_split_h10_2024",
+    "maturity_split_h10_2025",
+    "maturity_split_h10_2026",
+    "all96_model_predictions_and_selection_thresholds",
+    "nonfills_zero_never_filtered_from_universe",
+    "all88_primary_point_estimates_and_event_weighting",
+    "all16_followup_cell_effects_and_without2026",
+    "four_cells_partition_eligible_sessions",
+    "matched_distance_limit_and_outcome_identity",
+    "all226_matched_pairs_membership_and_real_net_outcomes",
+    "all1780_cash_attribution_identities",
+    "bootstrap_constant_conditional_zero",
+    "bootstrap_no_events_stays_missing",
+    "source_and_account_counts_zero"
+  ],
+  "model_recomputations": 96,
+  "entry_replications": 1621,
+  "exit_replications": 6334,
+  "cash_identities": 1780,
+  "matched_pairs": 226,
+  "analysis_pairs_with_later_control_origin": 108,
+  "manifest": [
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/cash_attribution.csv",
+      "sha256": "c6ed17ff7f90e4ba4f17fd57ad21fc296677609e1252a78bc09260ec57ea0918"
+    },
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/entries.csv",
+      "sha256": "2ce4c904e6543d28102eb8a5074f16c356780e3f1fc9b319ec53e1f9a33ad9e8"
+    },
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/features.csv",
+      "sha256": "e0f2d83289147fd5a25a7ce54f9d6a809c911808d69dc424dbe2932c3b3c1bf1"
+    },
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/labels.csv",
+      "sha256": "7adfed4d0b071da46d29f92de987921f2067fa078f16b1c3c4e1177168a93d08"
+    },
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/matched_controls.csv",
+      "sha256": "17af160f48664ccef5238cbbf8a271b767d2e78f5726addddcc417ee29e78cd7"
+    },
+    {
+      "path": "research/S014/assets/runs/EX008_20261017/first/predictions.csv",
+      "sha256": "f343603533fbd0ff338e6b6c0b2fa285e3a17d18981415bb839a2c65853aa1cb"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/others/annual.csv",
+      "sha256": "e94d59c7bb9032d8bb5a7d5129aa1aa2b18717328279b6c92f3515b48f77d7e2"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/others/computation_result.json",
+      "sha256": "4a6476f3252cfed8bce2f2562a31b4ff072eb10c392f4b8dd688dacc5a68a5fb"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/others/followup_cells.csv",
+      "sha256": "463626de6cdd9bd34c33983c7e5c664e7f2c04dd669db9dc9206b4d03b97372e"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/others/followup_result.json",
+      "sha256": "062d5b42a87b8c34cfedf87a0fa437a5cee7eb178898d7617c2d359dc82e747b"
+    }
+  ],
+  "limitation": "Audit validates calculations and timing of signals, not economic validity; matched future controls are explanatory only and excluded from features."
+}

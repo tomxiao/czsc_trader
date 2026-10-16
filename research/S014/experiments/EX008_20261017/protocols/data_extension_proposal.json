@@ -1,0 +1,35 @@
+{
+  "status":"PROPOSED_NOT_INGESTED_NOT_APPROVED",
+  "research_reason":"A stock-only lower-open/positive-session clue survives the negative-gap parent comparison at short horizons, but2025 selected outcomes lose money, A-C/common-support controls are inconclusive, and2025 first-holding-day gains are outweighed by later overnight price changes and fees. Stock-only OHLCV does not identify whether the opening shock and later selloff are common market/industry responses or firm-specific repricing. This is an identification gap, not proof that all transformations of existing prices are useless.",
+  "minimum_next_scope": {
+    "dataset":"index.domestic_daily",
+    "symbol":"000001.SH",
+    "name":"上证指数",
+    "window":["2020-01-01","2026-10-15"],
+    "fields":["Date","Open","High","Low","Close","PreviousClose","Volume","Amount"],
+    "provider_api":"Tushare index_daily",
+    "platform_entry":"ResearchContext.data.prepare/fetch, Dataset.DOMESTIC_INDEX_DAILY in S014 owned asset space",
+    "platform_verified":"Existing contract and adapter implement this dataset and call index_daily; no platform modification needed for this first proposal.",
+    "account_access_and_actual_history":"NOT_VERIFIED; neither metadata nor docs establish this account's rights or full1642session coverage. No numeric index series has been fetched in this round.",
+    "budget":"Use existing remaining6source-call ceiling; request one full-range series first through the public facade, do not silently exceed ceiling or bypass failures. If pagination/retry exceeds available budget, stop and explain before enlargement.",
+    "validation":"Verify symbol/source identity, duplicate/negative/inconsistent OHLC, all declared exchange sessions and exact cutoff; preserve missing/unknown status, do not fill unobserved dates. Source date+market-close assumption is not strict publication-time proof. Retain receipts/hashes and record availability convention.",
+    "prospective_discrimination":"Before reading index outcomes publish design. Separate stock and market overnight gaps and intraday repairs using T-completed facts; compare stock residual gap/repair with market-common repair, holding targets and original simple controls unchanged. Train strictly on mature past and report all years. Determine whether market information explains the2025 counterexample, adds forward conditional utility, or merely redescribes past outcomes. Do not encode calendar2025/2026 as signals."
+  },
+  "conditional_later_expansions":[
+    {"data":"基础化工行业指数日收盘及历史分类版本","why":"If broad-market normalization leaves a systematic sector-linked difference, separate industry shocks from company-specific repricing.","upstream":"Tushare ci_daily documents industry daily closes but warns high/open/low/volume/amount are no longer disclosed. Verify exact code, historical classification and actual2020..2026 coverage. Never synthesize absent OHLC or reconstruct history from today's members.","platform":"No ci_daily adapter found in current DFLS. Any required DEV implementation needs separate role authorization after upstream verification, not before."},
+    {"data":"甲醇期货合约价格、成交量、持仓量及每日主力映射","why":"Company2025annual report identifies methanol production/sales. Product-price expectations are a distinct candidate driver outside the stock's own prices; futures alone are not actual company margin because its process uses coke-oven gas and historical business changes must be verified.","upstream":"Tushare fut_daily,fut_basic,fut_mapping documented. Verify methanol contract codes, permissions, requested history, daily/night session availability, and mapping publication; prevent artificial return jumps at contract switches.","platform":"Current futures public datasets are explicitly SHFE gold/AU only. They do not establish methanol support; new adapter would require DEV authorization. Not part of the minimum first request."},
+    {"data":"600722.SH公司公告目录、原文、真实披露时间及修订记录","why":"If market/industry data cannot distinguish firm-specific repricing, test whether major business/investment/earnings/risk events explain persistence rather than price-only absorption.","upstream":"Tushare anns_d documents historical announcement URLs and optional rec_time but needs separate permissions. Reconcile rec_time against original exchange publication time; ann_date alone does not prove pre-decision availability.","platform":"No announcements dataset in current DFLS enum. Requires source/rights/time verification before any separately authorized platform work. A2025annual report seen today cannot be applied as knowledge to2020signals."}
+  ],
+  "public_document_review": {
+    "consulted_date":"2026-10-17",
+    "company_report":{"url":"https://static.cninfo.com.cn/finalpage/2026-04-15/1225103220.PDF","publication_date":"2026-04-15","pages":[7,8],"use":"Qualitative planning only; states methanol business/coke-oven-gas process and references a2026investment project. Not a historical signal or tested explanation of stock returns."},
+    "index_codes":"https://tushare.pro/document/2?doc_id=93",
+    "index_daily":"https://tushare.pro/document/1?doc_id=95",
+    "industry":"https://tushare.pro/document/2?doc_id=308",
+    "futures_daily":"https://tushare.pro/document/2?doc_id=138",
+    "futures_mapping":"https://tushare.pro/document/2?doc_id=189",
+    "announcements":"https://tushare.pro/document/2?doc_id=176",
+    "quotation_policy":"Short factual paraphrases and links only; no full third-party document copied. Documentation claims are not verified account capability or empirical coverage."
+  },
+  "authorization_boundary":"User asked to identify needed expansions, not silently ingest them. Research-guide rule requires appropriate authorization for expanded external inputs. No new external time series or historical event dataset was ingested, no other batch data read, no platform/production writes. Phase2 remains active and phase3 unapproved."
+}

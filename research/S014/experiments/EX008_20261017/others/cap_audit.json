@@ -1,0 +1,139 @@
+{
+  "status": "PASS",
+  "checks": [
+    "full_raw_price_floor_flags",
+    "parent_recovery_differences",
+    "leave_episode_out_means",
+    "full_calendar_entry_count_bounds"
+  ],
+  "all_calendar_signals": 1642,
+  "all_lower_touch_count": 40,
+  "all_lower_recovery_count": 21,
+  "all_touch_sole_entry_frequency_bound": 1.46163215590743,
+  "all_recovery_sole_entry_frequency_bound": 0.7673568818514007,
+  "warmup_note": "Original descriptive result counts38/20after60session warmup. This audit additionally includes all first60sessions to make the strongest conservative count upper bound40/21; both counts preserved.",
+  "first_touch_per_episode": [
+    {
+      "horizon": 3,
+      "year": 2024,
+      "episodes": 2,
+      "first_origins": [
+        "2024-02-05",
+        "2024-04-15"
+      ],
+      "first_touch_net_mean": 0.0038935350000002533
+    },
+    {
+      "horizon": 3,
+      "year": 2025,
+      "episodes": 3,
+      "first_origins": [
+        "2025-04-07",
+        "2025-06-20",
+        "2025-09-03"
+      ],
+      "first_touch_net_mean": -0.04326823999999987
+    },
+    {
+      "horizon": 3,
+      "year": 2026,
+      "episodes": 7,
+      "first_origins": [
+        "2026-01-16",
+        "2026-03-10",
+        "2026-04-27",
+        "2026-06-09",
+        "2026-07-21",
+        "2026-09-03",
+        "2026-09-23"
+      ],
+      "first_touch_net_mean": 0.09866782857142867
+    },
+    {
+      "horizon": 5,
+      "year": 2024,
+      "episodes": 2,
+      "first_origins": [
+        "2024-02-05",
+        "2024-04-15"
+      ],
+      "first_touch_net_mean": 0.014427990000000099
+    },
+    {
+      "horizon": 5,
+      "year": 2025,
+      "episodes": 3,
+      "first_origins": [
+        "2025-04-07",
+        "2025-06-20",
+        "2025-09-03"
+      ],
+      "first_touch_net_mean": -0.015506029999999898
+    },
+    {
+      "horizon": 5,
+      "year": 2026,
+      "episodes": 7,
+      "first_origins": [
+        "2026-01-16",
+        "2026-03-10",
+        "2026-04-27",
+        "2026-06-09",
+        "2026-07-21",
+        "2026-09-03",
+        "2026-09-23"
+      ],
+      "first_touch_net_mean": 0.12126520857142867
+    },
+    {
+      "horizon": 10,
+      "year": 2024,
+      "episodes": 2,
+      "first_origins": [
+        "2024-02-05",
+        "2024-04-15"
+      ],
+      "first_touch_net_mean": 0.1224848250000002
+    },
+    {
+      "horizon": 10,
+      "year": 2025,
+      "episodes": 3,
+      "first_origins": [
+        "2025-04-07",
+        "2025-06-20",
+        "2025-09-03"
+      ],
+      "first_touch_net_mean": -0.030028159999999998
+    },
+    {
+      "horizon": 10,
+      "year": 2026,
+      "episodes": 6,
+      "first_origins": [
+        "2026-01-16",
+        "2026-03-10",
+        "2026-04-27",
+        "2026-06-09",
+        "2026-07-21",
+        "2026-09-03"
+      ],
+      "first_touch_net_mean": 0.07621958166666679
+    }
+  ],
+  "qualification": "Bound assumes each new entry requires a fresh event on completedT. It does not reject combining this event with other entries and is not an account frequency measurement.",
+  "manifest": [
+    {
+      "path": "research/S014/experiments/EX008_20261017/protocols/cap_diagnostics.json",
+      "sha256": "fa15bd25a0da9b87619f1d0a78143da54d4521a7edfd4d1e65f46e952bd4d833"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/src/cap_diagnostics.py",
+      "sha256": "59c410dbe5faef953429e739a3cf4ca7ccae612c5b5537c69fd352fff039e7c6"
+    },
+    {
+      "path": "research/S014/experiments/EX008_20261017/others/cap_diagnostics_result.json",
+      "sha256": "90dbfaa135ec42a0064d3147ec66e4bc58393630a93e9dc4a02426877a6f2ab5"
+    }
+  ]
+}
