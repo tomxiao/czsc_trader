@@ -37,8 +37,10 @@ from .errors import (
 )
 from .facade import Dataflows, canonical_frame_sha256
 from .temporal import TemporalAlignmentResult, align_temporal_frame
+from .trading_status import TradingStatus
 
 __all__ = [
+    "TradingStatus",
     "DataSpace",
     "DataSpaceBinding",
     "PreparePolicy",

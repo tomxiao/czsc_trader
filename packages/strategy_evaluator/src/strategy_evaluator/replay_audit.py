@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime
 
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP
@@ -134,7 +135,9 @@ def _audit_session_coverage(
     except ValueError:
         execution = pd.DatetimeIndex([])
         reasons.append("MISSING_EXECUTION_PRICE")
-    if not expected.difference(execution).empty:
+    halted = pd.DatetimeIndex(pd.to_datetime((evidence.execution_spec.get("market_rules") or {}).get("suspended_sessions", [])))
+    expected_trading = expected.difference(halted)
+    if not expected_trading.difference(execution).empty:
         reasons.append("INCOMPLETE_EXECUTION_SESSION_COVERAGE")
     if not sparse_decisions and evidence.execution_spec.get("decision_coverage") == "COMPLETE":
         try:
@@ -145,7 +148,7 @@ def _audit_session_coverage(
         except ValueError:
             decisions = pd.DatetimeIndex([])
             reasons.append("INVALID_DECISION_SESSION")
-        if not decisions.equals(expected):
+        if not decisions.equals(expected_trading):
             reasons.append("INCOMPLETE_DECISION_SESSION_COVERAGE")
     checks.append("EVALUATION_SESSION_COVERAGE")
 
@@ -466,7 +469,10 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                     raise ValueError("order belongs to an unknown market session")
             for fill in evidence.fills:
                 strict_market_number(fill["quantity"], integer=True, positive=True)
-                timestamp = market_timestamp(fill["fill_time"])
+                timestamp = (datetime.fromisoformat(fill["fill_time"]) if fill.get("time_precision") == "SESSION"
+                             else market_timestamp(fill["fill_time"]))
+                if fill.get("time_precision") == "SESSION" and timestamp.time() != datetime.min.time():
+                    raise ValueError("session-precision fill must not fabricate a clock time")
                 if timestamp.date().isoformat() not in evaluation_days:
                     raise ValueError("fill belongs to an unknown market session")
             for account in evidence.account_daily:
@@ -511,6 +517,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             or abs(float(row["close"]) - raw_close * scale) > tolerance):
             return ReplayAuditResult(AuditStatus.FAIL, digest, tuple(checks),
                                      ("INVALID_EXECUTION_PRICE_SCALE",))
+    rule_ticks = {row["session"]: float(row["price_tick"]) for row in (spec.get("market_rules") or {}).get("sessions", [])}
+    halted = set((spec.get("market_rules") or {}).get("suspended_sessions", []))
     intraday_by_day: dict[str, list[Mapping[str, Any]]] = {}
     for row in evidence.execution_intraday:
         intraday_by_day.setdefault(str(row["time"])[:10], []).append(row)
@@ -544,6 +552,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         execution = daily.get(str(order["execution_date"])[:10])
         if str(order["side"]) not in {"BUY", "SELL"}:
             reasons.append("INVALID_ORDER_SIDE")
+        if str(order["execution_date"])[:10] in halted:
+            reasons.append("SUSPENDED_SESSION_ORDER")
         if signal is None or execution is None:
             reasons.append("MISSING_EXECUTION_PRICE")
             continue
@@ -596,7 +606,9 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             if limits:
                 expected_fill = expected_market_fill(str(order["side"]), expected_order_type, expected_limit,
                     float(execution["open"]), str(order["execution_date"])[:10],
-                    intraday_by_day.get(str(order["execution_date"])[:10], []))
+                    intraday_by_day.get(str(order["execution_date"])[:10], []),
+                    daily=execution, bounds=limits.get(str(order["execution_date"])[:10]),
+                    price_tick=rule_ticks.get(str(order["execution_date"])[:10], tick))
                 account = accounts.get(str(order["execution_date"])[:10])
                 affordable = (str(order["side"]) == "SELL" or account is not None and expected_fill is not None
                     and quantity * expected_fill[1] * (1 + fee_rate) <= float(account["cash_before"]) + tolerance)
@@ -637,12 +649,17 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         if limits:
             expected_fill = expected_market_fill(str(order["side"]), expected_order_type, expected_limit,
                 float(execution["open"]), str(order["execution_date"])[:10],
-                intraday_by_day.get(str(order["execution_date"])[:10], []))
+                intraday_by_day.get(str(order["execution_date"])[:10], []),
+                    daily=execution, bounds=limits.get(str(order["execution_date"])[:10]),
+                    price_tick=rule_ticks.get(str(order["execution_date"])[:10], tick))
             if (expected_fill is None or trigger != expected_fill[0]
                     or abs(price - expected_fill[1]) > tolerance
-                    or market_timestamp(fill["fill_time"]) != expected_fill[2]):
+                    or (datetime.fromisoformat(fill["fill_time"]) if trigger.startswith("DAILY_") else market_timestamp(fill["fill_time"])) != expected_fill[2]
+                    or fill.get("time_precision", "TIMESTAMP") != ("SESSION" if trigger.startswith("DAILY_") else "TIMESTAMP")):
                 reasons.append("INVALID_FILL_TRIGGER")
-        if expected_order_type == "MARKET":
+        if limits:
+            eligible = expected_fill is not None
+        elif expected_order_type == "MARKET":
             eligible = (
                 trigger == "OPEN_MARKET"
                 and abs(price - float(execution["open"])) <= tolerance
@@ -686,6 +703,12 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
         day = str(row["date"])[:10]
         if limits and day in daily and abs(float(row["close"]) - float(daily[day]["close"])) > tolerance:
             reasons.append("ACCOUNT_MARKET_CLOSE_MISMATCH")
+        if day in halted:
+            prior = sorted(item for item in daily if item < day)
+            if (not prior or str(row.get("valuation_source_date", ""))[:10] != prior[-1]
+                    or abs(float(row["close"]) - float(daily[prior[-1]]["close"])) > tolerance
+                    or fills_by_day.get(day)):
+                reasons.append("INVALID_SUSPENDED_VALUATION")
         if day <= previous_date:
             reasons.append("INVALID_ACCOUNT_INDEX")
         previous_date = day

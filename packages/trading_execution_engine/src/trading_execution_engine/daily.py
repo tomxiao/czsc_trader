@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from .fills import OrderSpec, resolve_fill
+from .fills import OrderSpec, resolve_fill, DailyQuote
 from .market import MarketExecutionRules
 
 
@@ -46,6 +46,8 @@ def execute_target_positions(
         price_values = frame[["open", "close"]].to_numpy(dtype=float)
     except (TypeError, ValueError) as exc:
         raise ValueError("prices must be positive and finite") from exc
+    halted_mask = pd.Series(False, index=frame.index) if market_rules is None else pd.Series(frame.index.isin(pd.to_datetime(market_rules.suspended_sessions)), index=frame.index)
+    price_values = frame.loc[~halted_mask, ["open", "close"]].to_numpy(dtype=float)
     if not np.isfinite(price_values).all() or (price_values <= 0).any():
         raise ValueError("prices must be positive and finite")
     if market_rules is not None:
@@ -56,6 +58,8 @@ def execute_target_positions(
         for timestamp, row in frame.iterrows():
             if timestamp != timestamp.normalize():
                 raise ValueError("market prices require session dates")
+            if timestamp.date() in market_rules.suspended_sessions:
+                continue
             limits = market_rules.for_session(timestamp.date())
             for column in ("open", "high", "low", "close"):
                 if column in row and (
@@ -94,6 +98,13 @@ def execute_target_positions(
     state_rows: list[dict[str, object]] = []
     for timestamp, row in frame.iterrows():
         desired = float(target.loc[timestamp])
+        if market_rules is not None and timestamp.date() in market_rules.suspended_sessions:
+            close_price = float(row["close"])
+            if not np.isfinite(close_price) or close_price <= 0:
+                raise ValueError("suspended session requires a valid valuation close")
+            equity_rows.append(cash + shares * close_price)
+            state_rows.append({"date": timestamp, "target": float(target.loc[timestamp]), "cash": cash, "quantity": shares, "close": close_price, "equity": cash + shares * close_price})
+            continue
         open_price = float(row["open"])
         close_price = float(row["close"])
         if desired != previous_target:
@@ -115,6 +126,7 @@ def execute_target_positions(
                         session_time=(timestamp + pd.Timedelta(hours=9, minutes=30)).to_pydatetime(),
                         intraday_touches=(), slippage_bp=slippage_bp,
                         session_limits=None if market_rules is None else market_rules.for_session(timestamp.date()),
+                        daily_quote=None if market_rules is None else DailyQuote(float(row["low"]), float(row["high"])),
                     )
                     attempt_rows.append({"execution_date": timestamp, "side": "BUY", "quantity": quantity,
                                          "status": "FILLED" if fill.filled else "UNFILLED", "reason": fill.reason})
@@ -141,6 +153,7 @@ def execute_target_positions(
                         session_time=(timestamp + pd.Timedelta(hours=9, minutes=30)).to_pydatetime(),
                         intraday_touches=(), slippage_bp=slippage_bp,
                         session_limits=None if market_rules is None else market_rules.for_session(timestamp.date()),
+                        daily_quote=None if market_rules is None else DailyQuote(float(row["low"]), float(row["high"])),
                     )
                     attempt_rows.append({"execution_date": timestamp, "side": "SELL", "quantity": quantity,
                                          "status": "FILLED" if fill.filled else "UNFILLED", "reason": fill.reason})

@@ -145,6 +145,7 @@ _OHLCV_DATASETS = {
 }
 
 _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
+    Dataset.SECURITY_TRADING_STATUS.value: ({"Date", "Status"}, set()),
     Dataset.SECURITY_PRICE_LIMITS.value: ({"Date", "UpLimit", "DownLimit"}, {"UpLimit", "DownLimit"}),
     Dataset.ETF_CREATION_REDEMPTION_BASKET.value: (
         {
@@ -503,6 +504,10 @@ def _validate_provider_output(
     if specification is None:
         return
     required, numeric = specification
+    if dataset == Dataset.SECURITY_TRADING_STATUS.value:
+        from .trading_status import validate_trading_status
+
+        validate_trading_status(dataframe, request, metadata)
     missing = sorted(required.difference(dataframe.columns))
     if missing:
         raise DataContractError(
@@ -954,7 +959,13 @@ def _date_bounds(
         else:
             actual_comparable = actual_end
             required_comparable = required_cutoff
-        if actual_comparable < required_comparable:
+        coverage = metadata.get("daily_session_coverage", {})
+        admitted_tail = (request.dataset.value in (_OHLCV_DATASETS | {Dataset.SECURITY_PRICE_LIMITS.value, Dataset.SECURITY_TRADING_STATUS.value})
+            and (coverage.get("suspended_dates") or request.dataset is Dataset.SECURITY_TRADING_STATUS)
+            and pd.Timestamp(coverage.get("end_date")) >= required_comparable and all(
+            pd.Timestamp(day) <= actual_comparable or pd.Timestamp(day) > required_comparable
+            for day in coverage.get("expected_dates", [])))
+        if actual_comparable < required_comparable and not admitted_tail:
             raise IncompleteDataError(
                 "published dataframe does not reach the required cutoff",
                 required_cutoff=str(required_cutoff),
@@ -1471,6 +1482,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
     from .fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
     from .fred_gold_volatility import fetch_gold_volatility_daily
     from .local_strategy_data import fetch_strategy_feature_evidence
+    from .trading_status import fetch_trading_status
     from .tushare_etf import fetch_etf_ohlcv, fetch_etf_unadjusted_daily
     from .tushare_pcf import fetch_etf_creation_redemption_basket
     from .tushare_futures import (
@@ -1766,6 +1778,7 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
 
     return {
         Dataset.ETF_OHLCV.value: etf_ohlcv,
+        Dataset.SECURITY_TRADING_STATUS.value: lambda request: fetch_trading_status(request, env_file=env_file),
         Dataset.ETF_UNADJUSTED_DAILY.value: etf_unadjusted,
         Dataset.ETF_UNADJUSTED_INTRADAY.value: etf_unadjusted_intraday,
         Dataset.STOCK_UNADJUSTED_INTRADAY.value: stock_unadjusted_intraday,

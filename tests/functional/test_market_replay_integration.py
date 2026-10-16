@@ -51,11 +51,13 @@ class MarketReplayFixture(CandidateFixture):
         market["Date"] = pd.to_datetime(market["Date"])
         close = market.set_index("Date").reindex(sessions)["Close"]
         target = (close > float(self.definition.parameters.values["threshold"])).astype(float)
+        if "exit_date" in self.definition.parameters.values:
+            target = (sessions < pd.Timestamp(self.definition.parameters.values["exit_date"])).astype(float)
         return pd.DataFrame({"target_position": target, "fixture_signal": target}, index=sessions)
 '''
 
 
-def _case(candidate_payload, tmp_path, monkeypatch, symbol="588080.SH", *, hfq_factors=None):
+def _case(candidate_payload, tmp_path, monkeypatch, symbol="588080.SH", *, hfq_factors=None, suspended_dates=()):
     payload, package = candidate_payload
     source = package / "strategies/candidate_fixture.py"
     source.write_text(source.read_text(encoding="utf-8") + _MARKET_CANDIDATE, encoding="utf-8")
@@ -75,6 +77,7 @@ def _case(candidate_payload, tmp_path, monkeypatch, symbol="588080.SH", *, hfq_f
         monkeypatch, flow, daily, base_dir=tmp_path,
         space=DataSpace(Path("research/S900/assets/data")), price_limits=limits,
         hfq_factors=hfq_factors, asset_type=asset,
+        suspended_dates=suspended_dates,
     )
     (tmp_path / "src/czsc_trader").mkdir(parents=True, exist_ok=True)
     (tmp_path / "pyproject.toml").write_text("[project]\nname='market-replay-test'\n", encoding="utf-8")
@@ -118,11 +121,58 @@ def test_public_backtest_applies_one_market_contract_to_strategy_and_benchmarks(
         benchmark = result.benchmarks
         attempts = getattr(benchmark, f"{prefix}_attempts")
         account = getattr(benchmark, f"{prefix}_account_daily")
-        assert attempts.status.tolist() == ["UNFILLED", "FILLED"]
-        assert account.quantity.iloc[0] == 0
-        assert account.cash.iloc[0] == 10000
-        assert getattr(benchmark, f"{prefix}_fills").iloc[0].execution_date == dates[21]
+        assert attempts.status.tolist() == ["FILLED"]
+        assert account.quantity.iloc[0] > 0
+        assert getattr(benchmark, f"{prefix}_fills").iloc[0].execution_date == dates[20]
         assert account.equity.tolist() == pytest.approx((account.cash + account.quantity * account.close).tolist())
+
+
+@pytest.mark.parametrize("symbol", ["588080.SH", "600722.SH"])
+@pytest.mark.parametrize("halt_indices", [(22, 23), (20, 21), (23, 24)], ids=["middle", "start", "end"])
+def test_public_daily_replay_retains_suspended_accounts_and_replans_on_resumption(
+    candidate_payload, tmp_path, monkeypatch, symbol, halt_indices,
+):
+    dates = pd.bdate_range("2026-08-03", periods=25)
+    context, candidate, _, _, _ = _case(candidate_payload, tmp_path, monkeypatch, symbol,
+                                       suspended_dates=tuple(dates[index] for index in halt_indices))
+    candidate = StrategyCandidate(candidate.strategy_family_id, candidate.candidate_id,
+                                  {**candidate.payload, "parameters": {**candidate.payload["parameters"], "exit_date": dates[21].date().isoformat()}},
+                                  candidate.source_root)
+    result = run_backtest(context, candidate, BacktestRequest(
+        symbol, "stock" if symbol == "600722.SH" else "etf", dates[20].date(), dates[24].date(), 10000, 100,
+    ))
+    assert result.manifest["audit"]["status"] == "PASS"
+    assert all(row["status"] == "PASS" for row in result.manifest["audit"]["benchmarks"].values())
+    account = result.result.account_daily.set_index("date")
+    assert len(account) == 5
+    prior = dates[halt_indices[0] - 1]
+    for index in halt_indices:
+        day = dates[index]
+        if prior in account.index:
+            assert account.loc[day, "quantity"] == account.loc[prior, "quantity"]
+            assert account.loc[day, "cash"] == account.loc[prior, "cash"]
+            assert account.loc[day, "close"] == account.loc[prior, "close"]
+        else:
+            assert account.loc[day, "quantity"] == 0
+            assert account.loc[day, "cash"] == 10000
+        assert account.loc[day, "valuation_source_date"] == prior
+        assert account.loc[day, "trading_status"] == "SUSPENDED"
+    assert not result.result.orders.execution_date.isin(dates[list(halt_indices)]).any()
+    if halt_indices == (22, 23):
+        assert account.loc[dates[24], "quantity"] == 0
+        assert result.result.orders.iloc[-1].execution_date == dates[24]
+        assert result.result.orders.iloc[-1].signal_date == dates[21]
+        assert result.result.orders.iloc[-1].order_id != result.result.orders.iloc[0].order_id
+    from czsc_trader.backtesting.audit_adapter import build_replay_evidence
+    from strategy_evaluator import AuditStatus, audit_replay
+
+    evidence = build_replay_evidence(result.signals, result.execution_data, result.result, 10000,
+                                     result.metrics["strategy"]["metrics"])
+    for field, value in (("valuation_source_date", dates[halt_indices[0]].date().isoformat()),
+                         ("close", float(account.loc[dates[halt_indices[0]], "close"]) + 1)):
+        rows = [dict(row) for row in evidence.account_daily]
+        rows[halt_indices[0] - 20][field] = value
+        assert audit_replay(replace(evidence, account_daily=tuple(rows))).status is AuditStatus.FAIL
 
 
 @pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])
@@ -160,7 +210,7 @@ def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contra
 
 
 @pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])
-def test_public_evaluation_keeps_unfilled_attempts_separate_from_buyhold_fills(
+def test_public_evaluation_records_daily_attempts_and_rejects_tampered_evidence(
     candidate_payload, tmp_path, monkeypatch, basis,
 ):
     context, candidate, dates, _, _ = _case(
@@ -179,7 +229,7 @@ def test_public_evaluation_keeps_unfilled_attempts_separate_from_buyhold_fills(
     )
     evaluation = context.evaluation.evaluate(request)
     benchmark = evaluation.runs[0].buyhold
-    assert benchmark.attempts.status.tolist() == ["UNFILLED", "FILLED"]
+    assert benchmark.attempts.status.tolist() == ["FILLED"]
     assert len(benchmark.orders) == len(benchmark.fills) == 1
     assert benchmark.metrics["closed_trades"] == 0
     from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, validate_evaluation_evidence
@@ -187,7 +237,7 @@ def test_public_evaluation_keeps_unfilled_attempts_separate_from_buyhold_fills(
     saved = serialize_evaluation_evidence(request, evaluation)
     validate_evaluation_evidence(saved)
     changed = deepcopy(saved)
-    changed["runs"][0]["buyhold"]["attempts"]["data"][0]["status"] = "FILLED"
+    changed["runs"][0]["buyhold"]["attempts"]["data"][0]["status"] = "UNFILLED"
     with pytest.raises(ValueError, match="result hash differs"):
         validate_evaluation_evidence(changed)
     for change in ("none", "missing", "symbol", "price"):

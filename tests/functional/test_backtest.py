@@ -38,6 +38,9 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None, da
         if str(request.dataset) == "calendar.trading_sessions":
             dates = pd.date_range(request.start, request.end)
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {"vendor": "test"}
+        if request.dataset is Dataset.SECURITY_TRADING_STATUS:
+            proof = verify_daily_sessions(SyntheticCalendar(), request.symbol, pd.DataFrame({"Date": pd.bdate_range(request.start, request.end)}), start=request.start, end=request.end)
+            return pd.DataFrame({"Date": proof["expected_dates"], "Status": "TRADING"}), {"vendor": "test", "daily_session_coverage": proof}
         if request.dataset is Dataset.ETF_OHLCV and data_failure is not None:
             raise IncompleteDataError("injected incomplete daily observations", **data_failure)
         dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), pd.Timestamp("2026-09-21")))
@@ -100,7 +103,7 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None, da
                     providers=ProviderConfig(bindings={name: ProviderBinding("backtest-fixture", "v1", fetch)
                         for name in (Dataset.TRADING_CALENDAR, Dataset.ETF_OHLCV,
                                      Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
-                                     Dataset.ETF_SHARE_SIZE, Dataset.SECURITY_PRICE_LIMITS)}))
+                                     Dataset.ETF_SHARE_SIZE, Dataset.SECURITY_TRADING_STATUS, Dataset.SECURITY_PRICE_LIMITS)}))
 
 
 def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(current_frozen):

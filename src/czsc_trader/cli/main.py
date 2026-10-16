@@ -42,6 +42,7 @@ def _context(args: argparse.Namespace) -> RepositoryContext:
 
 def _backtest_run(args: argparse.Namespace):
     from strategy_manager import StrategyRegistry, StrategyManagerError, CandidateKey
+    from strategy_runtime import ExecutionPriceBasis
     from czsc_trader.application import BacktestRequest, load_candidate
     from czsc_trader.application.errors import ValidationError
     from .backtest import run_independent_backtest
@@ -49,7 +50,7 @@ def _backtest_run(args: argparse.Namespace):
     context = _context(args)
     try:
         request = BacktestRequest(symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
-                                  initial_cash=args.init_cash, lot_size=args.lot_size)
+                                  initial_cash=args.init_cash, lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis))
     except (TypeError, ValueError) as exc:
         raise ValidationError("backtest_request_invalid", str(exc)) from exc
     try:
@@ -83,6 +84,7 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_run.add_argument("--start", required=True, type=date.fromisoformat)
     backtest_run.add_argument("--end", required=True, type=date.fromisoformat)
     backtest_run.add_argument("--init-cash", required=True, type=float)
+    backtest_run.add_argument("--price-basis", choices=("UNADJUSTED", "HFQ_RESEARCH"), default="HFQ_RESEARCH")
     backtest_run.add_argument("--lot-size", required=True, type=_positive_integer)
     _add_output_options(backtest_run)
     backtest_run.set_defaults(

@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 from dataflows import Dataflows
+from strategy_runtime import ExecutionPriceBasis
 from strategy_evaluator import AuditStatus, audit_benchmark_replay, audit_replay
 
 from .benchmarks import MA_BENCHMARK_SLOW_SESSIONS, BenchmarkReplay, replay_benchmarks
@@ -41,8 +42,11 @@ class BacktestRequest:
     end: date
     initial_cash: float
     lot_size: int
+    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.HFQ_RESEARCH
 
     def __post_init__(self) -> None:
+        if not isinstance(self.price_basis, ExecutionPriceBasis):
+            raise TypeError("price_basis requires ExecutionPriceBasis")
         if not isinstance(self.symbol, str) or re.fullmatch(r"[A-Z0-9]+\.[A-Z]+", self.symbol) is None:
             raise ValueError("symbol must be a normalized instrument code")
         if self.asset_type not in {"stock", "etf"}:
@@ -76,6 +80,8 @@ def _validate_execution_window(
     execution_data: BacktestExecutionData,
 ) -> None:
     _require_market_rules(execution_data)
+    if request.price_basis is not execution_data.pricing.basis:
+        raise ValueError("request pricing differs from prepared execution data")
     if request.start > request.end:
         raise ValueError("backtest start must not follow end")
     calendar = execution_data.requests["trading_calendar"]
@@ -97,6 +103,8 @@ def _validate_execution_window(
         (daily_sessions >= pd.Timestamp(request.start))
         & (daily_sessions <= pd.Timestamp(request.end))
     ]
+    requested = requested.union(pd.DatetimeIndex(execution_data.market_rules.suspended_sessions)).sort_values()
+    requested = requested[(requested >= pd.Timestamp(request.start)) & (requested <= pd.Timestamp(request.end))]
     if requested.has_duplicates or not sessions.equals(requested):
         raise ValueError("request window differs from execution data evaluation sessions")
 
@@ -139,6 +147,7 @@ def _run_backtest(
             start=request.start,
             end=request.end,
             intraday_frequencies=execution_intraday_frequencies(definition),
+            price_basis=request.price_basis,
             prior_sessions=MA_BENCHMARK_SLOW_SESSIONS,
             dataflows=flows,
         )

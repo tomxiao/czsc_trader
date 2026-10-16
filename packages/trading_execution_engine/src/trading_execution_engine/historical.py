@@ -21,7 +21,7 @@ from strategy_runtime import (
     RuntimeContractError,
     TradingPoint,
 )
-from .fills import OrderSpec, resolve_fill
+from .fills import OrderSpec, resolve_fill, DailyQuote
 from .market import MarketExecutionRules
 from .result import ExecutionResult
 
@@ -153,14 +153,16 @@ class HistoricalExecutor:
         )
         start = pd.Timestamp(evaluation_start).normalize()
         end = pd.Timestamp(evaluation_end).normalize()
-        if start > end or start not in self._daily.index or end not in self._daily.index:
+        halted = set() if market_rules is None else {pd.Timestamp(day) for day in market_rules.suspended_sessions}
+        covered = set(self._daily.index) | halted
+        if start > end or start not in covered or end not in covered:
             raise RuntimeContractError(
                 "execution prices do not cover the declared evaluation sessions"
             )
         self._evaluation = self._daily.loc[
             pd.Timestamp(evaluation_start).normalize() : pd.Timestamp(evaluation_end).normalize()
         ]
-        if self._evaluation.empty:
+        if self._evaluation.empty and not (halted and start in halted and end in halted):
             raise RuntimeContractError("historical executor evaluation interval is empty")
         if market_rules is not None:
             try:
@@ -189,6 +191,15 @@ class HistoricalExecutor:
                         raise ValueError("intraday OHLC prices are inconsistent")
             except (TypeError, ValueError) as exc:
                 raise RuntimeContractError(str(exc)) from exc
+
+        if market_rules is not None:
+            index = self._evaluation.index.union(pd.DatetimeIndex(market_rules.suspended_sessions)).sort_values()
+            index = index[(index >= start) & (index <= end)]
+            self._evaluation = self._evaluation.reindex(index)
+            # Valuation only: never manufacture executable OHLC rows for a halted day.
+            self._evaluation["close"] = self._daily["close"].reindex(self._daily.index.union(index)).sort_index().ffill().reindex(index)
+            if self._evaluation["close"].isna().any():
+                raise RuntimeContractError("suspended valuation requires an earlier valid close")
 
         self._cash = self._initial_cash
         self._quantity = 0
@@ -306,6 +317,8 @@ class HistoricalExecutor:
         if self._policy.policy_type == "FROZEN_RULE":
             submitted = pd.DatetimeIndex(sorted(self._state_by_date))
             expected = pd.DatetimeIndex(self._evaluation.index)
+            if self._market_rules is not None:
+                expected = expected.difference(pd.to_datetime(self._market_rules.suspended_sessions))
             if not submitted.equals(expected):
                 missing = expected.difference(submitted)
                 unexpected = submitted.difference(expected)
@@ -364,6 +377,7 @@ class HistoricalExecutor:
                     "price",
                     "fees",
                     "trigger",
+                    "time_precision",
                 ],
             ),
             account_daily=pd.DataFrame(account_rows),
@@ -404,6 +418,8 @@ class HistoricalExecutor:
             raise RuntimeContractError("plan belongs to another strategy")
         if plan.symbol != self._strategy_symbol:
             raise RuntimeContractError("plan belongs to another instrument")
+        if self._market_rules is not None and plan.trading_date in self._market_rules.suspended_sessions:
+            raise RuntimeContractError("cannot execute a plan in a suspended session")
         if execution_date not in self._evaluation.index:
             raise RuntimeContractError("historical plan is outside the evaluation interval")
         if self._last_execution is not None and execution_date <= self._last_execution:
@@ -455,6 +471,7 @@ class HistoricalExecutor:
                     (pd.Timestamp(timestamp).to_pydatetime(), float(value))
                     for timestamp, value in day_bars[touch_column].items()
                 ],
+                daily_quote=DailyQuote(float(price_row["low"]), float(price_row["high"])) if self._market_rules is not None else None,
                 session_limits=(
                     None if self._market_rules is None
                     else self._market_rules.for_session(execution_date.date())
@@ -512,6 +529,7 @@ class HistoricalExecutor:
                     "price": fill_price,
                     "fees": fees,
                     "trigger": trigger,
+                    "time_precision": fill.time_precision,
                 }
             )
             if side == "BUY":
@@ -762,6 +780,8 @@ class HistoricalExecutor:
                     "cash": cash,
                     "quantity": quantity,
                     "close": float(price_row["close"]),
+                    "valuation_source_date": self._daily.index[self._daily.index <= day][-1],
+                    "trading_status": "SUSPENDED" if self._market_rules is not None and day.date() in self._market_rules.suspended_sessions else "TRADING",
                     "equity": cash + quantity * float(price_row["close"]),
                 }
             )

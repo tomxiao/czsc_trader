@@ -44,7 +44,7 @@ def _inputs(tmp_path, symbol):
 
 
 @pytest.mark.parametrize("symbol", ["600722.SH", "588080.SH"])
-def test_next_open_and_ma_retry_blocked_entry_without_counting_attempt_as_fill(tmp_path, symbol):
+def test_next_open_and_ma_fill_open_up_limit_under_daily_range_contract(tmp_path, symbol):
     signals, data = _inputs(tmp_path, symbol)
     result = replay_benchmarks(signals, data, 10000.0, lot_size=100)
     for prefix in ("buyhold", "ma"):
@@ -52,13 +52,13 @@ def test_next_open_and_ma_retry_blocked_entry_without_counting_attempt_as_fill(t
         fills = getattr(result, f"{prefix}_fills")
         orders = getattr(result, f"{prefix}_orders")
         account = getattr(result, f"{prefix}_account_daily")
-        assert attempts.status.tolist() == ["UNFILLED", "FILLED"]
+        assert attempts.status.tolist() == ["FILLED"]
         assert len(fills) == len(orders) == 1
-        assert fills.iloc[0].execution_date == data.evaluation_sessions[1]
-        assert fills.iloc[0].signal_date == data.evaluation_sessions[0]
-        assert account.quantity.tolist() == [0, 900, 900]
-        assert account.cash.tolist() == pytest.approx([10000, 991, 991])
-        assert account.equity.tolist() == pytest.approx([10000, 10531, 10441])
+        assert fills.iloc[0].execution_date == data.evaluation_sessions[0]
+        assert fills.iloc[0].signal_date == data.execution_daily.dt.iloc[23]
+        assert account.quantity.tolist() == [900, 900, 900]
+        assert account.cash.tolist() == pytest.approx([90.1, 90.1, 90.1])
+        assert account.equity.tolist() == pytest.approx([9810.1, 9630.1, 9540.1])
     assert result.metrics["buyhold"]["metrics"]["closed_trades"] == 0
     assert result.metrics["ma5_ma20"]["metrics"]["closed_trades"] == 0
 
@@ -85,6 +85,9 @@ def test_unblocked_next_open_ledger_matches_existing_cash_and_lot_semantics(tmp_
 @pytest.mark.parametrize("symbol", ["600722.SH", "588080.SH"])
 def test_limit_buyhold_uses_same_market_boundary_and_keeps_unfilled_cash(tmp_path, symbol):
     signals, data = _inputs(tmp_path, symbol)
+    daily = data.execution_daily.copy()
+    daily.loc[daily.dt.eq(signals.evaluation_start), ["low", "close"]] = 11.
+    data = replace(data, execution_daily=daily)
     data = replace(data, execution_intraday=pd.DataFrame({
         "dt": [signals.evaluation_start + pd.Timedelta(hours=10)],
         "high": [11.0], "low": [10.8],
@@ -106,7 +109,7 @@ def test_ma_blocked_exit_keeps_position_and_retries_current_zero_target(tmp_path
     signals, data = _inputs(tmp_path, symbol)
     prices = data.execution_daily.copy()
     prices.loc[24:, "open"] = [9.0, 1.0, 1.1]
-    prices.loc[24:, "close"] = [1.0, 1.1, 1.2]
+    prices.loc[24:, "close"] = [1.0, 1.0, 1.2]
     prices["high"] = prices[["open", "close"]].max(axis=1)
     prices["low"] = prices[["open", "close"]].min(axis=1)
     rules = MarketExecutionRules(symbol, tuple(

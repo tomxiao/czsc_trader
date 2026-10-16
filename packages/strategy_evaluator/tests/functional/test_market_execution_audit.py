@@ -11,8 +11,8 @@ from test_intraday_replay_audit import _evidence as overlay_replay
 
 
 def rules(sessions, *, lower=.8, upper=1.2):
-    return {"contract_version": "OPEN_LIMIT_BLOCK_V1", "symbol": "510300.SH",
-            "sessions": [{"session": day, "down_limit": lower, "up_limit": upper} for day in sessions]}
+    return {"contract_version": "DAILY_RANGE_V2", "symbol": "510300.SH", "suspended_sessions": [],
+            "sessions": [{"session": day, "down_limit": lower, "up_limit": upper, "price_tick": .001} for day in sessions]}
 
 
 def benchmark():
@@ -20,42 +20,28 @@ def benchmark():
     return BenchmarkEvidence(
         "BUYHOLD", 100., 0., days,
         ({"date": days[0], "open": 10., "close": 10.},
-         {"date": days[1], "open": 9., "close": 9.}), (),
-        ({"date": days[0], "target_position": 1., "cash": 100., "quantity": 0., "equity": 100.},
-         {"date": days[1], "target_position": 1., "cash": 1., "quantity": 11., "equity": 100.}),
-        ({"execution_date": days[1], "side": "BUY", "size": 11., "price": 9., "fees": 0.},), (),
+         {"date": days[1], "open": 9., "close": 10.}), (),
+        ({"date": days[0], "target_position": 1., "cash": 0., "quantity": 10., "equity": 100.},
+         {"date": days[1], "target_position": 1., "cash": 0., "quantity": 10., "equity": 100.}),
+        ({"execution_date": days[0], "side": "BUY", "size": 10., "price": 10., "fees": 0.},), (),
         {"return": 0., "max_drawdown": 0., "calmar": None, "sharpe": None,
          "win_loss_ratio": None, "win_loss_ratio_status": "NO_CLOSED_TRADES",
          "closed_trades": 0, "win_rate": None}, 1,
         market_rules=rules(days, lower=8., upper=10.),
-        attempts=({"execution_date": days[0], "side": "BUY", "quantity": 10., "status": "UNFILLED"},
-                  {"execution_date": days[1], "side": "BUY", "quantity": 11., "status": "FILLED"}),
+        attempts=({"execution_date": days[0], "side": "BUY", "quantity": 10., "status": "FILLED"},),
     )
 
 
 def strategy():
     source = closed_replay()
     market = rules(source.evaluation_sessions)
-    # First buy is blocked; the still-valid target is attempted next session.
-    market["sessions"][1]["up_limit"] = 1.
-    first, retry = source.evaluation_sessions[1:3]
-    buy, sell = source.orders
-    orders = ({**buy, "status": "UNFILLED"},
-              {**buy, "order_id": "retry", "decision_id": "d2", "signal_date": first,
-               "execution_date": retry}, sell)
-    fills = ({**source.fills[0], "order_id": "retry", "decision_id": "d2",
-              "signal_date": first, "fill_time": retry + "T09:30:00"},
-             {**source.fills[1], "fill_time": str(source.fills[1]["fill_time"])[:10] + "T09:30:00"})
-    accounts = list(source.account_daily)
-    accounts[1] = {**accounts[1], "cash": 100000., "quantity": 0, "equity": 100000.}
-    accounts[2] = {**accounts[2], "cash_before": 100000., "quantity_before": 0}
+    fills = tuple({**row, "fill_time": str(row["fill_time"])[:10] + "T09:30:00"} for row in source.fills)
     return replace(source, execution_spec={**source.execution_spec, "market_rules": market},
-                   orders=orders, fills=fills, account_daily=tuple(accounts),
-                   trades=({**source.trades[0], "entry_date": retry},))
+                   fills=fills, execution_daily=tuple({**row, "high": 1., "low": 1.} for row in source.execution_daily))
 
 
 @pytest.mark.parametrize("kind", ["benchmark", "strategy"])
-def test_true_unfilled_then_retry_passes(kind):
+def test_daily_market_ledger_passes(kind):
     evidence, audit = (benchmark(), audit_benchmark_replay) if kind == "benchmark" else (strategy(), audit_replay)
     original = deepcopy(evidence.to_dict())
     result = audit(evidence)
@@ -121,14 +107,14 @@ def test_tampered_unfilled_day_cash_fails(kind):
 def test_benchmark_missing_or_forged_attempt_fails():
     evidence = benchmark()
     assert audit_benchmark_replay(replace(evidence, attempts=evidence.attempts[1:])).status is AuditStatus.FAIL
-    changed = ({**evidence.attempts[0], "status": "FILLED"}, evidence.attempts[1])
+    changed = ({**evidence.attempts[0], "status": "UNFILLED"},)
     assert audit_benchmark_replay(replace(evidence, attempts=changed)).status is AuditStatus.FAIL
 
 
 @pytest.mark.parametrize("side,price,bounds,blocked", [
-    ("BUY", 100. - 5e-9, (80., 100.), True),
+    ("BUY", 100. - 5e-9, (80., 100.), False),
     ("BUY", 100. - 2e-8, (80., 100.), False),
-    ("SELL", .01 + 5e-13, (.01, 100.), True),
+    ("SELL", .01 + 5e-13, (.01, 100.), False),
     ("SELL", .01 + 2e-12, (.01, 100.), False),
     ("SELL", 100., (80., 100.), False),
     ("BUY", 80., (80., 100.), False),
@@ -182,7 +168,7 @@ def test_fill_must_belong_to_its_real_order(tamper):
         orders[1] = {**orders[1], "side": "UNKNOWN"}
         changed = replace(evidence, orders=tuple(orders))
     else:
-        field, value = ("fill_time", evidence.evaluation_sessions[1]) if tamper == "wrong_fill_date" else ("decision_id", "forged")
+        field, value = ("fill_time", evidence.evaluation_sessions[0] + "T09:30:00") if tamper == "wrong_fill_date" else ("decision_id", "forged")
         changed = replace(evidence, fills=({**evidence.fills[0], field: value}, *evidence.fills[1:]))
     assert audit_replay(changed).status is AuditStatus.FAIL
 
@@ -222,17 +208,17 @@ def test_open_fill_requires_exact_local_0930(index, clock):
 
 def intraday_strategy():
     evidence = strategy()
-    day = evidence.evaluation_sessions[2]
+    day = evidence.evaluation_sessions[1]
     daily = tuple({**row, "open": 1.05} if str(row["date"])[:10] == day else row
                   for row in evidence.execution_daily)
     bars = tuple({"time": day + "T" + clock, "low": low, "high": 1.06}
                  for clock, low in (("09:35:00", 1.), ("09:40:00", .999), ("09:45:00", .998)))
-    fills = ({**evidence.fills[0], "trigger": "INTRADAY_LIMIT", "fill_time": day + "T09:40:00"},
+    fills = ({**evidence.fills[0], "trigger": "DAILY_LIMIT", "time_precision": "SESSION", "fill_time": day + "T00:00:00"},
              evidence.fills[1])
     return replace(evidence, execution_daily=daily, execution_intraday=bars, fills=fills)
 
 
-def test_intraday_fill_matches_first_strict_cross_not_equal_touch():
+def test_daily_range_fill_has_session_precision_and_no_invented_clock():
     evidence = intraday_strategy()
     result = audit_replay(evidence)
     assert result.status is AuditStatus.PASS, result.reason_codes

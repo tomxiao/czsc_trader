@@ -109,6 +109,18 @@ def _account_daily(
     )
 
 
+def valuation_prices(data: BacktestExecutionData, start, end) -> pd.DataFrame:
+    """Account view retains halted sessions without executable OHLC quotes."""
+    raw = data.execution_daily.set_index("dt").sort_index()
+    index = data.evaluation_sessions
+    index = index[(index >= start) & (index <= end)]
+    frame = raw.reindex(index)
+    frame["close"] = raw["close"].reindex(raw.index.union(index)).sort_index().ffill().reindex(index)
+    frame["valuation_source_date"] = pd.Series(raw.index, index=raw.index).reindex(raw.index.union(index)).sort_index().ffill().reindex(index)
+    frame.index.name = "dt"
+    return frame.reset_index()
+
+
 def replay_buyhold(
     signals: SignalReplay,
     execution_data: BacktestExecutionData,
@@ -134,9 +146,7 @@ def replay_buyhold(
         )
     execution = execution_data.execution_daily.copy()
     execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
-    evaluation = execution.loc[
-        execution["dt"].between(signals.evaluation_start, signals.evaluation_end)
-    ].copy()
+    evaluation = valuation_prices(execution_data, signals.evaluation_start, signals.evaluation_end)
     evaluation_index = pd.DatetimeIndex(evaluation["dt"], name="dt")
     if evaluation.empty:
         raise ValueError("benchmark interval contains no execution sessions")
@@ -190,9 +200,7 @@ def replay_benchmarks(
     fee_rate = _fee_rate(signals)
     execution = execution_data.execution_daily.copy()
     execution["dt"] = pd.to_datetime(execution["dt"]).dt.normalize()
-    evaluation = execution.loc[
-        execution["dt"].between(signals.evaluation_start, signals.evaluation_end)
-    ].copy()
+    evaluation = valuation_prices(execution_data, signals.evaluation_start, signals.evaluation_end)
     evaluation_index = pd.DatetimeIndex(evaluation["dt"], name="dt")
     if evaluation.empty:
         raise ValueError("benchmark interval contains no execution sessions")
@@ -210,7 +218,7 @@ def replay_benchmarks(
         benchmark=EvaluationBenchmark(NextOpenBuyHold(lot_size)),
     )
 
-    ma_target = adjusted_signals["target_position"].reindex(evaluation_index).astype(float)
+    ma_target = adjusted_signals["target_position"].reindex(adjusted_signals.index.union(evaluation_index)).sort_index().ffill().reindex(evaluation_index).astype(float)
     initial_ma_target = float(adjusted_signals.loc[prior_date, "target_position"])
     execution_target = ma_target.shift(1)
     execution_target.iloc[0] = initial_ma_target
@@ -237,10 +245,11 @@ def replay_benchmarks(
     )
     visible_signals = adjusted_signals.loc[prior_date : signals.evaluation_end].reset_index()
     visible_signals = visible_signals.rename(columns={"dt": "date"})
-    evaluation_start_location = int(adjusted_signals.index.get_loc(evaluation_index[0]))
+    active_evaluation = adjusted_signals.index[(adjusted_signals.index >= evaluation_index[0]) & (adjusted_signals.index <= evaluation_index[-1])]
+    evaluation_start_location = int(adjusted_signals.index.get_loc(active_evaluation[0]))
     audit_start_location = max(0, evaluation_start_location - MA_BENCHMARK_SLOW_SESSIONS)
     ma_audit_signals = adjusted_signals.iloc[
-        audit_start_location : int(adjusted_signals.index.get_loc(evaluation_index[-1])) + 1
+        audit_start_location : int(adjusted_signals.index.get_loc(active_evaluation[-1])) + 1
     ].reset_index().rename(columns={"dt": "date"})
     return BenchmarkReplay(
         metrics={

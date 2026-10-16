@@ -53,6 +53,7 @@ class Dataset(StrEnum):
     STOCK_UNADJUSTED_DAILY = "stock.unadjusted_daily"
     STOCK_UNADJUSTED_INTRADAY = "stock.unadjusted_intraday"
     SECURITY_PRICE_LIMITS = "security.price_limits"
+    SECURITY_TRADING_STATUS = "security.trading_status"
     SHIBOR_DAILY = "macro.shibor_daily"
     US_REAL_YIELD_DAILY = "macro.us_real_yield_daily"
     US_NOMINAL_YIELD_DAILY = "macro.us_nominal_yield_daily"
@@ -311,7 +312,7 @@ class DataRequest:
             if not start <= through <= end:
                 raise ValueError("observations_through must fall within start and end")
         intraday = {"1m", "5m", "15m", "30m"}
-        if dataset is Dataset.SECURITY_PRICE_LIMITS:
+        if dataset in {Dataset.SECURITY_PRICE_LIMITS, Dataset.SECURITY_TRADING_STATUS}:
             if symbol is None:
                 raise ValueError("security price limits require a symbol")
             if len(self.start) != 10 or len(self.end) != 10:

@@ -178,10 +178,12 @@ class StrategyInstance:
         """Return the strategy-declared prerequisite request without supplier access."""
         return calendar_request(algorithm=self._algorithm, tradable_window=self._tradable_window)
 
-    def plan_inputs(self, calendar: DataResult) -> StrategyInputPlan:
+    def plan_inputs(self, calendar: DataResult, *, trading_status: DataResult | None = None,
+                    status_request: DataRequest | None = None) -> StrategyInputPlan:
         """Authenticate the strategy-declared requests against a prepared calendar."""
         return plan_inputs(strategy=self._identity, algorithm=self._algorithm,
-                           tradable_window=self._tradable_window, calendar=calendar)
+                           tradable_window=self._tradable_window, calendar=calendar,
+                           trading_status=trading_status, status_request=status_request)
 
     @property
     def input_binding(self) -> StrategyInputBinding:

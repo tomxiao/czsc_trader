@@ -19,7 +19,7 @@ from strategy_runtime import (
 from trading_execution_engine import HistoricalExecutor
 
 
-def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None, price_limits=None, asset_type="etf"):
+def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, space=None, hfq_factors=None, price_limits=None, asset_type="etf", suspended_dates=()):
     from dataflows.ohlcv_quality import (
         bind_quality_frame, build_quality_evidence, verify_daily_sessions,
     )
@@ -45,6 +45,9 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
     if "Amount" not in market:
         market["Amount"] = market["Volume"] * (market["High"] + market["Low"]) / 2
 
+    suspended_dates = set(pd.to_datetime(list(suspended_dates)).strftime("%Y-%m-%d"))
+    market = market.loc[~pd.to_datetime(market.Date).dt.strftime("%Y-%m-%d").isin(suspended_dates)].reset_index(drop=True)
+
     class SyntheticCalendar:
         """Declared weekday calendar and lifecycle for this synthetic provider."""
 
@@ -59,6 +62,17 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
                                  "is_open": (dates.weekday < 5).astype(int)})
 
+    def coverage(request, frame):
+        baseline = frame if not suspended_dates else pd.DataFrame({"Date": pd.bdate_range(request.start, request.end)})
+        baseline = baseline.loc[pd.to_datetime(baseline.Date).ge(pd.to_datetime(market.Date).min())]
+        value = verify_daily_sessions(SyntheticCalendar(), request.symbol, baseline, start=pd.Timestamp(request.start).date().isoformat(),
+                                     end=pd.Timestamp(request.end).date().isoformat(), asset_type=asset_type)
+        halted = sorted(suspended_dates.intersection(value["expected_dates"]))
+        value["expected_dates"] = [day for day in value["expected_dates"] if day not in halted]
+        value.update(verified_sessions=len(value["expected_dates"]), suspended_dates=halted,
+                     suspension_evidence=[{"date": day, "status": "SUSPENDED", "source": "synthetic-exchange"} for day in halted])
+        return value
+
     def fetch(request):
         dataset = str(request.dataset)
         if dataset == Dataset.TRADING_CALENDAR.value:
@@ -66,6 +80,10 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {
                 "vendor": "test"
             }
+        if dataset == Dataset.SECURITY_TRADING_STATUS.value:
+            evidence = coverage(request, pd.DataFrame({"Date": pd.bdate_range(request.start, request.end)}))
+            dates = sorted(set(evidence["expected_dates"]) | set(evidence["suspended_dates"]))
+            return pd.DataFrame({"Date": dates, "Status": ["SUSPENDED" if day in suspended_dates else "TRADING" for day in dates]}), {"vendor": "test", "daily_session_coverage": evidence}
         if dataset == Dataset.SECURITY_PRICE_LIMITS.value:
             frame = price_limits.copy() if price_limits is not None else pd.DataFrame({
                 "Date": market["Date"], "UpLimit": market["High"] * 2, "DownLimit": market["Low"] / 2,
@@ -99,17 +117,17 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             values.between(pd.Timestamp(request.start), end)
         ].reset_index(drop=True)
         metadata = {"vendor": "test"}
+        if dataset == Dataset.SECURITY_TRADING_STATUS.value:
+            evidence = coverage(request, pd.DataFrame({"Date": pd.bdate_range(request.start, request.end)}))
+            dates = sorted(set(evidence["expected_dates"]) | set(evidence["suspended_dates"]))
+            return pd.DataFrame({"Date": dates, "Status": ["SUSPENDED" if day in suspended_dates else "TRADING" for day in dates]}), {"vendor": "test", "daily_session_coverage": evidence}
         if dataset == Dataset.SECURITY_PRICE_LIMITS.value:
             metadata.update(
                 vendor_symbol=request.symbol, vendor_interface="etf_limit" if asset_type == "etf" else "stk_limit", asset_type=asset_type,
                 adjustment="none", frequency="daily", source_calendar="SSE",
                 available_at="same-session pre-open source schedule; historical publication unverified",
                 source_publication_timestamp_verified=False, historical_revision_history_verified=False,
-                daily_session_coverage=verify_daily_sessions(
-                    SyntheticCalendar(), request.symbol, frame,
-                    start=pd.Timestamp(request.start).date().isoformat(), end=pd.Timestamp(request.end).date().isoformat(),
-                    asset_type=asset_type,
-                ),
+                daily_session_coverage=coverage(request, frame),
             )
         if dataset in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value} and hfq_factors is not None:
             metadata["adjustment"] = "hfq"
@@ -137,11 +155,7 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             anchor = market.loc[anchor_dates.between(start_day, end_day)].reset_index(drop=True)
             if dataset in {Dataset.ETF_OHLCV.value, Dataset.STOCK_OHLCV.value} and hfq_factors is not None:
                 anchor = frame.copy()
-            calendar = verify_daily_sessions(
-                SyntheticCalendar(), request.symbol, anchor,
-                start=start_day.date().isoformat(), end=end_day.date().isoformat(),
-                asset_type=asset_type,
-            )
+            calendar = coverage(request, anchor)
             evidence = build_quality_evidence(
                 anchor, intraday=frame if request.frequency == "30m" else None,
                 frequency=request.frequency, expected_dates=calendar["expected_dates"],
@@ -164,7 +178,7 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
             for dataset in (Dataset.ETF_SHARE_SIZE, Dataset.ETF_OHLCV,
                             Dataset.ETF_UNADJUSTED_DAILY, Dataset.ETF_UNADJUSTED_INTRADAY,
                             Dataset.STOCK_OHLCV, Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_UNADJUSTED_INTRADAY,
-                            Dataset.TRADING_CALENDAR, Dataset.SECURITY_PRICE_LIMITS)}),
+                            Dataset.TRADING_CALENDAR, Dataset.SECURITY_TRADING_STATUS, Dataset.SECURITY_PRICE_LIMITS)}),
     )
     return flows
 
@@ -295,7 +309,7 @@ def test_candidate_evaluation_and_se_use_identical_txe_ledgers(managed_evaluatio
     candidate = replace(request.strategy, source_root=package)
     sessions = pd.bdate_range("2026-09-14", periods=6)
     daily = pd.DataFrame({"dt": sessions, "open": 1., "close": 1.})
-    daily.loc[2, "open"] = 1.1  # First LIMIT cannot fill; unchanged target must retry.
+    daily.loc[2, ["open", "close"]] = 1.1  # Entire day stays above the buy limit; retry next session.
     inputs = pd.DataFrame({"Date": sessions, "Flow": [.1, .8, .8, .1, 0., 0.]})
     flows = _install_candidate_dataflows(monkeypatch, inputs, daily, base_dir=root,
         space=DataSpace(Path("research/S900/assets/data")))

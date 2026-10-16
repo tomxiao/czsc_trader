@@ -239,7 +239,8 @@ def build_backtest_chart_context(
                                        observation.action, observation.series, observation.facts))
     signals = tuple(signal_rows)
     fills = tuple(ChartFill(
-        str(row["fill_id"]), str(row["decision_id"]), pd.Timestamp(row["fill_time"]).to_pydatetime(),
+        str(row["fill_id"]), str(row["decision_id"]),
+        pd.Timestamp(row["fill_time"]).date() if row.get("time_precision") == "SESSION" else pd.Timestamp(row["fill_time"]).to_pydatetime(),
         str(row["side"]), _quantity(row["quantity"]), _number(row["price"], "price"),
         _number(row["fees"], "fees"),
     ) for row in result.fills.to_dict("records"))

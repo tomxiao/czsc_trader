@@ -70,7 +70,12 @@ def validate_security_price_limits(
             or coverage.get("calendar_sha256") != frame_content_sha256(calendar)):
         raise DataContractError("security price-limit calendar does not prove the request window")
     expected = set(calendar_dates[flags.eq(1) & calendar_dates.ge(listed)].dt.strftime("%Y-%m-%d"))
+    suspended = set(coverage.get("suspended_dates", []))
+    if suspended != {row.get("date") for row in coverage.get("suspension_evidence", []) if row.get("status") == "SUSPENDED" and row.get("source")}:
+        raise DataContractError("price limits lack suspension evidence")
+    expected -= suspended
     actual = set(dates.dt.strftime("%Y-%m-%d"))
+    actual -= suspended
     if actual.difference(expected):
         raise DataContractError("security price limits contain inapplicable trading dates")
     if expected.difference(actual):

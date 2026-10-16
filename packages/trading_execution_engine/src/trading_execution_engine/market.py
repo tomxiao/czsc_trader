@@ -17,11 +17,12 @@ class SessionPriceLimits:
     session: date
     down_limit: float
     up_limit: float
+    price_tick: float = 0.001
 
     def __post_init__(self) -> None:
         if type(self.session) is not date:
             raise TypeError("price-limit session must be a date")
-        for name in ("down_limit", "up_limit"):
+        for name in ("down_limit", "up_limit", "price_tick"):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, (int, float)):
                 raise TypeError("price limits must be real numbers")
@@ -45,14 +46,15 @@ class SessionPriceLimits:
 
     def to_dict(self) -> dict[str, object]:
         return {"session": self.session.isoformat(), "down_limit": self.down_limit,
-                "up_limit": self.up_limit}
+                "up_limit": self.up_limit, "price_tick": self.price_tick}
 
 
 @dataclass(frozen=True)
 class MarketExecutionRules:
     symbol: str
     sessions: tuple[SessionPriceLimits, ...]
-    contract_version: ClassVar[str] = "OPEN_LIMIT_BLOCK_V1"
+    suspended_sessions: tuple[date, ...] = ()
+    contract_version: ClassVar[str] = "DAILY_RANGE_V2"
     _by_session: Mapping[date, SessionPriceLimits] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
@@ -65,6 +67,11 @@ class MarketExecutionRules:
         dates = tuple(item.session for item in self.sessions)
         if dates != tuple(sorted(set(dates))):
             raise ValueError("market rule sessions must be unique and increasing")
+        if (type(self.suspended_sessions) is not tuple
+                or any(type(day) is not date for day in self.suspended_sessions)
+                or tuple(sorted(set(self.suspended_sessions))) != self.suspended_sessions
+                or set(dates).intersection(self.suspended_sessions)):
+            raise ValueError("suspended sessions must be unique, increasing and disjoint from trading sessions")
         object.__setattr__(self, "_by_session", MappingProxyType({item.session: item for item in self.sessions}))
 
     def for_session(self, session: date) -> SessionPriceLimits:
@@ -78,15 +85,16 @@ class MarketExecutionRules:
     def __reduce__(self) -> tuple[object, tuple[str, tuple[SessionPriceLimits, ...]]]:
         # Keep the private immutable index out of process transport. Rebuilding
         # through the public constructor revalidates the transported contract.
-        return type(self), (self.symbol, self.sessions)
+        return type(self), (self.symbol, self.sessions, self.suspended_sessions)
 
     def to_dict(self) -> dict[str, object]:
         return {"contract_version": self.contract_version, "symbol": self.symbol,
-                "sessions": [item.to_dict() for item in self.sessions]}
+                "sessions": [item.to_dict() for item in self.sessions],
+                "suspended_sessions": [day.isoformat() for day in self.suspended_sessions]}
 
     @classmethod
     def from_dict(cls, value: Mapping[str, object]) -> MarketExecutionRules:
-        if not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions"}:
+        if not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions"}:
             raise ValueError("invalid market execution contract fields")
         if type(value["contract_version"]) is not str or value["contract_version"] != cls.contract_version:
             raise ValueError("unsupported market execution contract version")
@@ -95,15 +103,15 @@ class MarketExecutionRules:
             raise ValueError("market execution contract sessions must be a non-empty list")
         sessions = []
         for item in raw_sessions:
-            if not isinstance(item, Mapping) or set(item) != {"session", "down_limit", "up_limit"}:
+            if not isinstance(item, Mapping) or set(item) != {"session", "down_limit", "up_limit", "price_tick"}:
                 raise ValueError("invalid session price-limit fields")
             if type(item["session"]) is not str:
                 raise TypeError("session price-limit date must be an ISO date string")
             day = date.fromisoformat(item["session"])
             if day.isoformat() != item["session"]:
                 raise ValueError("session price-limit date must use YYYY-MM-DD")
-            sessions.append(SessionPriceLimits(day, item["down_limit"], item["up_limit"]))
-        result = cls(value["symbol"], tuple(sessions))
+            sessions.append(SessionPriceLimits(day, item["down_limit"], item["up_limit"], item["price_tick"]))
+        result = cls(value["symbol"], tuple(sessions), tuple(date.fromisoformat(day) for day in value["suspended_sessions"]))
         if result.to_dict() != value:
             raise ValueError("market execution contract is not canonical")
         return result

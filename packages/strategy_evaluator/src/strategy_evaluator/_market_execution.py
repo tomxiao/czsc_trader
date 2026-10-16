@@ -8,8 +8,8 @@ from typing import Any, Mapping
 def market_limits(value: Mapping[str, Any] | None, sessions) -> dict[str, tuple[float, float]]:
     if value is None:
         return {}  # Explicit price-only numerical evidence has no market identity.
-    if (not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions"}
-            or value["contract_version"] != "OPEN_LIMIT_BLOCK_V1"
+    if (not isinstance(value, Mapping) or set(value) != {"contract_version", "symbol", "sessions", "suspended_sessions"}
+            or value["contract_version"] != "DAILY_RANGE_V2"
             or not isinstance(value["symbol"], str)
             or re.fullmatch(r"\d{6}\.(?:SH|SZ|BJ)", value["symbol"]) is None
             or not isinstance(value["sessions"], (tuple, list)) or not value["sessions"]):
@@ -17,7 +17,7 @@ def market_limits(value: Mapping[str, Any] | None, sessions) -> dict[str, tuple[
     result = {}
     previous = ""
     for item in value["sessions"]:
-        if not isinstance(item, Mapping) or set(item) != {"session", "down_limit", "up_limit"}:
+        if not isinstance(item, Mapping) or set(item) != {"session", "down_limit", "up_limit", "price_tick"}:
             raise ValueError("invalid session price limits")
         day = item["session"]
         if not isinstance(day, str) or date.fromisoformat(day).isoformat() != day or day <= previous:
@@ -27,9 +27,17 @@ def market_limits(value: Mapping[str, Any] | None, sessions) -> dict[str, tuple[
             raise ValueError("invalid market limit prices")
         if not 0 < lower < upper:
             raise ValueError("invalid market limit prices")
+        tick = item["price_tick"]
+        if isinstance(tick, bool) or not isinstance(tick, (int, float)) or not isfinite(tick) or tick <= 0:
+            raise ValueError("invalid market price tick")
         result[day] = (float(lower), float(upper))
         previous = day
-    if not set(str(item)[:10] for item in sessions).issubset(result):
+    halted = value["suspended_sessions"]
+    if (not isinstance(halted, (list, tuple)) or sorted(set(halted)) != list(halted)
+            or any(date.fromisoformat(day).isoformat() != day for day in halted)
+            or set(halted).intersection(result)):
+        raise ValueError("invalid suspended sessions")
+    if not set(str(item)[:10] for item in sessions).issubset(set(result) | set(halted)):
         raise ValueError("market limits do not cover audit sessions")
     return result
 
@@ -46,9 +54,6 @@ def blocked_order(side: str, open_price: float, bounds: tuple[float, float] | No
         raise ValueError("opening price must be finite")
     if not lower - tolerance <= open_price <= upper + tolerance:
         raise ValueError("opening price outside market limits")
-    if (side.upper() == "BUY" and abs(open_price - upper) <= abs(upper) * 1e-10
-            or side.upper() == "SELL" and abs(open_price - lower) <= abs(lower) * 1e-10):
-        return True
     if order_type == "LIMIT":
         if isinstance(limit_price, bool) or not isinstance(limit_price, (int, float)) or not isfinite(limit_price):
             raise ValueError("invalid market order limit")
@@ -104,8 +109,20 @@ def market_session(value: Any) -> str:
 
 
 def expected_market_fill(side: str, order_type: str, limit: float, open_price: float,
-                         session: str, bars) -> tuple[str, float, datetime] | None:
+                         session: str, bars, *, daily=None, bounds=None, price_tick=0.001) -> tuple[str, float, datetime] | None:
     opening = datetime.combine(date.fromisoformat(session), time(9, 30))
+    if daily is not None:
+        midnight = datetime.combine(date.fromisoformat(session), time(0))
+        if side == "SELL" and order_type == "MARKET" and bounds is not None and abs(open_price - bounds[0]) <= abs(bounds[0]) * 1e-10:
+            price = open_price + price_tick
+            return ("DAILY_OPEN_PLUS_TICK", price, midnight) if daily["high"] + abs(price) * 1e-12 >= price else None
+        if order_type == "MARKET":
+            return "OPEN_MARKET", open_price, opening
+        if open_price <= limit if side == "BUY" else open_price >= limit:
+            return "OPEN", open_price, opening
+        if daily["low"] <= limit if side == "BUY" else daily["high"] >= limit:
+            return "DAILY_LIMIT", limit, midnight
+        return None
     if order_type == "MARKET":
         return "OPEN_MARKET", open_price, opening
     crosses_open = open_price <= limit if side == "BUY" else open_price >= limit

@@ -30,8 +30,8 @@ def _market_executor_fixture(*, rules=None, policy_type="FROZEN_RULE", daily=Non
     dates = pd.bdate_range("2026-09-14", periods=5)
     if daily is None:
         daily = pd.DataFrame({"dt": dates, "open": [10., 11., 10., 9., 10.],
-                              "close": [10., 10.5, 10., 9.5, 10.],
-                              "high": [10., 11., 10., 9.5, 10.],
+                              "close": [10., 10.5, 10., 9., 10.],
+                              "high": [10., 11., 10., 9., 10.],
                               "low": [10., 10.5, 10., 9., 10.]})
     if rules is None:
         rules = MarketExecutionRules("600722.SH", tuple(SessionPriceLimits(day.date(), 9., 11.) for day in dates[1:]))
@@ -53,20 +53,21 @@ def test_historical_market_rejections_retain_cash_holdings_and_retry_idempotentl
         plan = _execution_plan(reference="S999-v1", symbol="600722.SH", signal_date=str(signal.date()),
                                valid_date=str(valid.date()), generated_at=generated, portfolio=portfolio, state=state,
                                target_position=target, target_quantity=100 if target else 0, cycle_target_quantity=100,
-                               orders=(PlannedOrder(OrderSide.BUY if target else OrderSide.SELL, 100, OrderType.MARKET, None),))
+                               orders=(() if portfolio.position_quantity == (100 if target else 0) else
+                                       (PlannedOrder(OrderSide.BUY if target else OrderSide.SELL, 100, OrderType.MARKET, None),)))
         outcome = channel.execute(plan)
         assert channel.execute(plan) == outcome
     result = channel.finish()
     assert channel.finish() is result
-    assert result.orders.status.tolist() == ["UNFILLED", "FILLED", "UNFILLED", "FILLED"]
-    assert result.orders.reason.tolist() == ["OPEN_UP_LIMIT_BUY_BLOCKED", "FILLED", "OPEN_DOWN_LIMIT_SELL_BLOCKED", "FILLED"]
-    assert result.account_daily.cash.tolist() == [2000., 999., 999., 1998.]
-    assert result.account_daily.quantity.tolist() == [0, 100, 100, 0]
-    assert result.account_daily.equity.tolist() == [2000., 1999., 1949., 1998.]
-    assert result.fills.fees.tolist() == [1., 1.]
-    assert result.fills.fill_time.tolist() == [dates[2] + pd.Timedelta(hours=9, minutes=30), dates[4] + pd.Timedelta(hours=9, minutes=30)]
+    assert result.orders.status.tolist() == ["FILLED", "UNFILLED", "FILLED"]
+    assert result.orders.reason.tolist() == ["FILLED", "DAILY_RANGE_NOT_REACHED", "FILLED"]
+    assert result.account_daily.cash.tolist() == pytest.approx([898.9, 898.9, 898.9, 1897.9])
+    assert result.account_daily.quantity.tolist() == [100, 100, 100, 0]
+    assert result.account_daily.equity.tolist() == pytest.approx([1948.9, 1898.9, 1798.9, 1897.9])
+    assert result.fills.fees.tolist() == [1.1, 1.]
+    assert result.fills.fill_time.tolist() == [dates[1] + pd.Timedelta(hours=9, minutes=30), dates[4] + pd.Timedelta(hours=9, minutes=30)]
     assert len(result.trades) == 1
-    assert result.trades.iloc[0].net_return == pytest.approx(999. / 1001. - 1.)
+    assert result.trades.iloc[0].net_return == pytest.approx(999. / 1101.1 - 1.)
 
 
 def test_historical_market_admission_rejects_wrong_symbol_missing_dates_and_unsupported_overlay():

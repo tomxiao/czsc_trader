@@ -167,6 +167,14 @@ def validate_quality_metadata(metadata: Mapping[str, Any], request: DataRequest,
     if frame_content_sha256(canonical) != calendar["calendar_sha256"]:
         raise DataContractError("OHLCV calendar content hash differs")
     derived = canonical.loc[canonical.is_open.eq(1) & days.ge(pd.Timestamp(calendar["listing_date"])), "Date"].tolist()
+    suspended = calendar.get("suspended_dates", [])
+    proofs = calendar.get("suspension_evidence", [])
+    if (not isinstance(suspended, list) or sorted(set(suspended)) != suspended
+            or not set(suspended).issubset(derived)
+            or set(suspended) != {row.get("date") for row in proofs
+                                  if row.get("status") == "SUSPENDED" and row.get("source")}):
+        raise DataContractError("OHLCV suspension evidence is invalid")
+    derived = [day for day in derived if day not in suspended]
     if derived != list(expected) or calendar.get("verified_sessions") != len(derived):
         raise DataContractError("OHLCV denominator differs from exchange calendar")
     parsed = pd.to_datetime(pd.Series(expected, dtype="object"), format="%Y-%m-%d", errors="coerce")
@@ -202,7 +210,7 @@ def verify_daily_sessions(
     """Prove the denominator with source lifecycle and full exchange calendar."""
     from .history_repair import frame_content_sha256
 
-    if daily.empty:
+    if daily.empty and market != "a_share":
         raise IncompleteDataError("daily reference is empty", symbol=ts_code)
     api = {"hk": "hk_basic", "us": "us_basic"}.get(market, "fund_basic" if asset_type == "etf" else "stock_basic")
     instrument = getattr(pro, api)(ts_code=ts_code, fields="ts_code,list_date")
@@ -237,6 +245,12 @@ def verify_daily_sessions(
     closed = sorted(actual.difference(expected))
     if closed:
         raise DataContractError("daily bars include inapplicable exchange sessions", symbol=ts_code, dates=closed)
+    suspended, proofs = [], []
+    if market == "a_share" and set(expected).difference(actual):
+        from .trading_status import suspension_dates
+
+        suspended, proofs = suspension_dates(pro, ts_code, expected, actual)
+        expected = [day for day in expected if day not in suspended]
     canonical = pd.DataFrame({"Date": dates.dt.strftime("%Y-%m-%d"), "is_open": flags.astype(int)}).sort_values("Date").reset_index(drop=True)
     return {
         "source": market + "_tradecal" if market in {"hk", "us"} else "trade_cal", "exchange": exchange,
@@ -245,6 +259,7 @@ def verify_daily_sessions(
         "verified_sessions": len(expected), "expected_dates": expected,
         "calendar": canonical.to_dict("records"),
         "calendar_sha256": frame_content_sha256(canonical),
+        "suspended_dates": suspended, "suspension_evidence": proofs,
     }
 
 

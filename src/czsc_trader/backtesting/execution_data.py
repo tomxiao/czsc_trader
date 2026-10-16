@@ -169,7 +169,10 @@ def _execution_frames(results, pricing: ExecutionPricing) -> dict[str, pd.DataFr
 
 def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str) -> MarketExecutionRules:
     """Translate authenticated raw limits into the account's explicit price units."""
+    status = results["trading_status"].dataframe
+    suspended = set(pd.to_datetime(status.loc[status.Status.eq("SUSPENDED"), "Date"]).dt.normalize())
     limits = results["price_limits"].dataframe
+    limits = limits.loc[~pd.to_datetime(limits.Date).isin(suspended)]
     # DFLS already authenticated metadata; unit conversion needs numerical data only.
     raw = _prices(pd.DataFrame(results["execution_daily"].dataframe, copy=False))
     adjusted = _prices(pd.DataFrame(results["adjusted_daily"].dataframe, copy=False))
@@ -182,10 +185,13 @@ def _market_execution_rules(results, pricing: ExecutionPricing, symbol: str) -> 
     factors = dates.map(scales)
     if factors.isna().any():
         raise ValueError("execution price limits have no authenticated price scale")
+    calendar = results["trading_calendar"].dataframe
+    evaluation_dates = pd.to_datetime(calendar.loc[calendar.IsOpen.eq(1), "Date"])
     return MarketExecutionRules(symbol, tuple(
-        SessionPriceLimits(day.date(), float(lower) * float(scale), float(upper) * float(scale))
+        SessionPriceLimits(day.date(), float(lower) * float(scale), float(upper) * float(scale),
+                           (0.01 if symbol.startswith(("6", "0", "3")) else 0.001) * float(scale))
         for day, lower, upper, scale in zip(dates, limits["DownLimit"], limits["UpLimit"], factors, strict=True)
-    ))
+    ), tuple(day.date() for day in sorted(suspended) if evaluation_dates.min() <= day <= evaluation_dates.max()))
 
 
 def _require_market_rules(data: BacktestExecutionData) -> MarketExecutionRules:
@@ -195,6 +201,8 @@ def _require_market_rules(data: BacktestExecutionData) -> MarketExecutionRules:
     if "price_limits" not in data.requests or "price_limits" not in data.input_identities:
         raise ValueError("formal replay requires authenticated price-limit inputs")
     for session in data.evaluation_sessions:
+        if pd.Timestamp(session).date() in data.market_rules.suspended_sessions:
+            continue
         data.market_rules.for_session(pd.Timestamp(session).date())
     return data.market_rules
 
@@ -221,7 +229,7 @@ def _prepare_backtest_execution_data(
     intraday_frequencies: tuple[str, ...] = (),
     prior_sessions: int = 1,
     dataflows: Dataflows,
-    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.UNADJUSTED,
+    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.HFQ_RESEARCH,
 ) -> BacktestExecutionData:
     """Bind execution prices for declared frequencies and daily benchmark history.
 
@@ -281,7 +289,15 @@ def _prepare_backtest_execution_data(
 
     actual_start = sessions[0].date()
     actual_end = sessions[-1].date()
-    prior = calendar_sessions[calendar_sessions < sessions[0]]
+    status_request = DataRequest(Dataset.SECURITY_TRADING_STATUS, normalized_symbol,
+                                 history_calendar_request.start, actual_end.isoformat(), actual_end.isoformat())
+    status_prepared = flows.prepare((status_request,), policy=PreparePolicy.REUSE)
+    if not status_prepared.ready:
+        item = status_prepared.items[0]
+        _require_ready(DataResult(item.status, error=item.error), "trading_status")
+    status = _ready(flows, status_request, "trading_status", prepared=status_prepared.reference)
+    active = pd.DatetimeIndex(pd.to_datetime(status.dataframe.loc[status.dataframe.Status.eq("TRADING"), "Date"]))
+    prior = calendar_sessions[(calendar_sessions < sessions[0]) & calendar_sessions.isin(active)]
     if len(prior) < prior_sessions:
         raise ValueError(f"trading calendar cannot satisfy {prior_sessions} prior sessions")
     history_start = prior[-prior_sessions].date()
@@ -294,6 +310,7 @@ def _prepare_backtest_execution_data(
     )
 
     requests = {
+        "trading_status": status_request,
         "price_limits": DataRequest(
             Dataset.SECURITY_PRICE_LIMITS, normalized_symbol,
             actual_start.isoformat(), actual_end.isoformat(), actual_end.isoformat(),
@@ -350,8 +367,9 @@ def _prepare_backtest_execution_data(
     if not prior[-prior_sessions:].isin(adjusted_sessions).all():
         raise ValueError("adjusted daily prices do not cover declared prior sessions")
     execution_sessions = pd.DatetimeIndex(pd.DataFrame(execution_daily, copy=False)["dt"].dt.normalize())
-    if not prior[-1:].append(sessions).isin(execution_sessions).all():
-        required = prior[-1:].append(sessions)
+    tradable_sessions = sessions[sessions.isin(active)]
+    if not prior[-1:].append(tradable_sessions).isin(execution_sessions).all():
+        required = prior[-1:].append(tradable_sessions)
         missing = required[~required.isin(execution_sessions)]
         raise ValueError(
             "TDR execution prices do not cover evaluation sessions: "
@@ -365,7 +383,7 @@ def _prepare_backtest_execution_data(
         },
     }
     market_rules = _market_execution_rules(results, pricing, normalized_symbol)
-    if tuple(item.session for item in market_rules.sessions) != tuple(item.date() for item in sessions):
+    if tuple(item.session for item in market_rules.sessions) != tuple(item.date() for item in tradable_sessions):
         raise ValueError("execution price limits do not cover evaluation sessions exactly")
     fingerprint = canonical_sha256(
         {

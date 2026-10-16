@@ -21,8 +21,8 @@ def build_manifest(
     application: dict[str, str],
 ) -> dict[str, object]:
     manifest = {
-        "schema_version": 6,
-        "engine": "TDR_BACKTEST_V3_MARKET_LIMITS",
+        "schema_version": 7,
+        "engine": "TDR_BACKTEST_V4_DAILY_RANGE",
         "strategy": {
             "kind": snapshot.identity.kind,
             "reference": snapshot.identity.reference,
@@ -35,7 +35,8 @@ def build_manifest(
             "fingerprint": data.fingerprint,
             "cutoff": data.cutoff.isoformat(),
             "signal_adjustment": "hfq",
-            "execution_adjustment": "none",
+            "execution_adjustment": data.pricing.basis.value,
+            "pricing": data.pricing.to_dict(),
             "market_rules": data.market_rules.to_dict(),
         },
         "request": {
@@ -45,6 +46,7 @@ def build_manifest(
             "end": request.end.isoformat(),
             "initial_cash": request.initial_cash,
             "lot_size": request.lot_size,
+            "price_basis": request.price_basis.value,
         },
         "ranges": {
             "calculation": [

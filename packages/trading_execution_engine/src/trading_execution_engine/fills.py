@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from math import isfinite
 from typing import Iterable
+from enum import StrEnum
 
 from .market import SessionPriceLimits
 
@@ -27,6 +28,11 @@ class OrderSpec:
                 raise ValueError("limit order requires a positive finite limit price")
 
 
+class FillTimePrecision(StrEnum):
+    TIMESTAMP = "TIMESTAMP"
+    SESSION = "SESSION"
+
+
 @dataclass(frozen=True)
 class FillDecision:
     filled: bool
@@ -34,6 +40,18 @@ class FillDecision:
     filled_at: datetime | None
     trigger: str | None
     reason: str | None = None
+    time_precision: FillTimePrecision = FillTimePrecision.TIMESTAMP
+
+
+@dataclass(frozen=True)
+class DailyQuote:
+    low: float
+    high: float
+
+    def __post_init__(self):
+        if any(isinstance(x, bool) or not isinstance(x, (int, float)) or not isfinite(x) or x <= 0
+               for x in (self.low, self.high)) or self.low > self.high:
+            raise ValueError("daily range requires positive finite ordered prices")
 
 
 def resolve_fill(
@@ -45,6 +63,7 @@ def resolve_fill(
     slippage_bp: float = 0.0,
     inclusive_touch: bool = False,
     session_limits: SessionPriceLimits | None = None,
+    daily_quote: DailyQuote | None = None,
 ) -> FillDecision:
     """Resolve one order using one canonical fill rule.
 
@@ -87,10 +106,35 @@ def resolve_fill(
             raise ValueError("intraday prices must use increasing timestamps at or after session open")
         if order.order_type == "LIMIT" and not session_limits.contains(float(order.limit_price)):
             return FillDecision(False, None, None, None, "ORDER_PRICE_OUTSIDE_LIMITS")
-        if order.side == "BUY" and session_limits.at_upper(open_price):
+        if daily_quote is None and order.side == "BUY" and session_limits.at_upper(open_price):
             return FillDecision(False, None, None, None, "OPEN_UP_LIMIT_BUY_BLOCKED")
-        if order.side == "SELL" and session_limits.at_lower(open_price):
+        if daily_quote is None and order.side == "SELL" and session_limits.at_lower(open_price):
             return FillDecision(False, None, None, None, "OPEN_DOWN_LIMIT_SELL_BLOCKED")
+
+    if daily_quote is not None:
+        if not isinstance(daily_quote, DailyQuote) or not daily_quote.low <= open_price <= daily_quote.high:
+            raise ValueError("daily quote does not contain the opening price")
+        if slippage_bp:
+            raise ValueError("daily range execution does not accept slippage")
+        if session_limits is not None and not all(session_limits.contains(x) for x in (daily_quote.low, daily_quote.high)):
+            raise ValueError("daily range is outside session price limits")
+        if order.side == "SELL" and order.order_type == "MARKET" and session_limits is not None and session_limits.at_lower(open_price):
+            price = open_price + session_limits.price_tick
+            if price > daily_quote.high + abs(price) * 1e-12:
+                return FillDecision(False, None, None, None, "DAILY_RANGE_NOT_REACHED")
+            return FillDecision(True, price, session_time.replace(hour=0, minute=0, second=0, microsecond=0),
+                                "DAILY_OPEN_PLUS_TICK", "FILLED", FillTimePrecision.SESSION)
+        if order.order_type == "MARKET":
+            return FillDecision(True, open_price, session_time, "OPEN_MARKET", "FILLED")
+        limit = float(order.limit_price)
+        crosses_open = open_price <= limit if order.side == "BUY" else open_price >= limit
+        if crosses_open:
+            return FillDecision(True, open_price, session_time, "OPEN", "FILLED")
+        reached = daily_quote.low <= limit if order.side == "BUY" else daily_quote.high >= limit
+        if not reached:
+            return FillDecision(False, None, None, None, "DAILY_RANGE_NOT_REACHED")
+        return FillDecision(True, limit, session_time.replace(hour=0, minute=0, second=0, microsecond=0),
+                            "DAILY_LIMIT", "FILLED", FillTimePrecision.SESSION)
 
     raw_price: float | None = None
     filled_at: datetime | None = None

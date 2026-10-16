@@ -131,6 +131,8 @@ def plan_inputs(
     algorithm: StrategyImplementation,
     tradable_window: TradableWindow,
     calendar: DataResult,
+    trading_status: DataResult | None = None,
+    status_request: DataRequest | None = None,
 ) -> StrategyInputPlan:
     definition = algorithm.definition
     if definition.tradable_symbol != strategy.symbol:
@@ -154,6 +156,15 @@ def plan_inputs(
     if not actual_dates.equals(expected_dates):
         raise RuntimeContractError("calendar result differs from strategy calendar request")
     dates = _open_dates(result.dataframe)
+    if trading_status is not None:
+        status = _ready(trading_status, "__trading_status")
+        if (status_request is None or status_request.dataset is not Dataset.SECURITY_TRADING_STATUS
+                or status_request.symbol != strategy.symbol or status.prepared is None
+                or status.identity.dataset != Dataset.SECURITY_TRADING_STATUS.value
+                or status.identity.symbol != strategy.symbol):
+            raise RuntimeContractError("trading status differs from strategy instrument")
+        suspended = set(pd.to_datetime(status.dataframe.loc[status.dataframe.Status.eq("SUSPENDED"), "Date"]).dt.date)
+        dates = tuple(day for day in dates if day not in suspended)
     scope = algorithm.derive_calculation_scope(tradable_window, dates)
     if not isinstance(scope, CalculationScope) or scope.tradable_window != tradable_window:
         raise RuntimeContractError("strategy calculation scope differs from requested window")
@@ -170,6 +181,8 @@ def plan_inputs(
                 f"strategy input request differs from input contract: {name}"
             )
     requests = {calendar_name: request, **scope.inputs}
+    if trading_status is not None:
+        requests["__trading_status"] = status_request
     return StrategyInputPlan(
         strategy,
         tradable_window,
@@ -226,8 +239,11 @@ def prepare_inputs(
         dataflows.fetch(plan.requests[plan.calendar_name], prepared=binding.prepared),
         plan.calendar_name,
     )
+    status_request = plan.requests.get("__trading_status")
+    status = None if status_request is None else _ready(dataflows.fetch(status_request, prepared=binding.prepared), "__trading_status")
     actual_plan = plan_inputs(
-        strategy=strategy, algorithm=algorithm, tradable_window=tradable_window, calendar=calendar
+        strategy=strategy, algorithm=algorithm, tradable_window=tradable_window, calendar=calendar,
+        trading_status=status, status_request=status_request,
     )
     comparable_requests = dict(actual_plan.requests)
     for name, derived in actual_plan.requests.items():

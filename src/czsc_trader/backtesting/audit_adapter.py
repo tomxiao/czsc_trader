@@ -50,6 +50,8 @@ def build_replay_evidence(
         .dt.normalize()
         .dt.date.astype(str)
     )
+    evaluation_sessions = tuple(day.date().isoformat() for day in data.evaluation_sessions
+                                if signals.evaluation_start <= day <= signals.evaluation_end)
     srt_policy = support.get("execution_policy")
     if support.get("mode") != "srt_input_contract":
         raise ValueError("replay audit requires SRT execution evidence")
@@ -102,7 +104,7 @@ def build_replay_evidence(
             decisions=_records(result.decisions, ("signal_date", "valid_session")),
             orders=_records(result.orders, ("signal_date", "execution_date")),
             fills=_records(result.fills, ("signal_date", "fill_time")),
-            account_daily=_records(result.account_daily, ("date", "signal_date")),
+            account_daily=_records(result.account_daily, ("date", "signal_date", "valuation_source_date")),
             trades=_records(result.trades, ("entry_date", "exit_date")),
             metrics=metrics,
             execution_daily=_records(daily, ("date",)),
@@ -161,7 +163,7 @@ def build_replay_evidence(
         decisions=_records(result.decisions, ("signal_date", "valid_session")),
         orders=_records(result.orders, ("signal_date", "execution_date")),
         fills=_records(result.fills, ("signal_date", "fill_time")),
-        account_daily=_records(result.account_daily, ("date", "signal_date")),
+        account_daily=_records(result.account_daily, ("date", "signal_date", "valuation_source_date")),
         trades=_records(result.trades, ("entry_date", "exit_date")),
         metrics=metrics,
         execution_daily=_records(daily, ("date",)),
@@ -177,11 +179,9 @@ def build_benchmark_evidence(
     *,
     lot_size: int,
 ) -> dict[str, BenchmarkEvidence]:
-    evaluation = data.execution_daily.loc[
-        data.execution_daily["dt"].between(
-            signals.evaluation_start, signals.evaluation_end
-        )
-    ].rename(columns={"dt": "date"})
+    from .benchmarks import valuation_prices
+
+    evaluation = valuation_prices(data, signals.evaluation_start, signals.evaluation_end).rename(columns={"dt": "date"})
     sessions = tuple(pd.to_datetime(evaluation["date"]).dt.date.astype(str))
     support = signals.support_data or {}
     policy = support.get("execution_policy")
@@ -198,7 +198,7 @@ def build_benchmark_evidence(
     else:
         raise ValueError("benchmark audit requires SRT execution evidence")
     empty_trades: tuple[dict[str, Any], ...] = ()
-    prices = _records(evaluation, ("date",))
+    prices = _records(evaluation, ("date", "valuation_source_date"))
     return {
         "buyhold": BenchmarkEvidence(
             "BUYHOLD",

@@ -166,9 +166,6 @@ def execution_intraday_frequencies(strategy) -> tuple[str, ...]:
     if unsupported:
         raise ValueError(f"unsupported SRT execution checkpoints: {sorted(unsupported)}")
     frequencies = []
-    if definition.execution.policy_type == "FROZEN_RULE":
-        if any(definition.execution.order_type_for(side) == "LIMIT" for side in ("BUY", "SELL")):
-            frequencies.append("30m")
     if "11:30_CLOSE" in checkpoints:
         frequencies.append("5m")
     return tuple(frequencies)
@@ -212,13 +209,17 @@ def prepare_srt_input_binding(
                      pricing=execution_data.pricing)
     )
     calendar_request = instance.calendar_request()
-    calendar_prepared = dataflows.prepare((calendar_request,), policy=PreparePolicy.REUSE)
+    status_request = replace(execution_data.requests["trading_status"],
+                             start=calendar_request.start, end=calendar_request.end,
+                             required_cutoff=calendar_request.required_cutoff)
+    calendar_prepared = dataflows.prepare((calendar_request, status_request), policy=PreparePolicy.REUSE)
     if not calendar_prepared.ready:
         raise RuntimeContractError(f"strategy calendar preparation failed: {calendar_prepared.items}")
     calendar = dataflows.fetch(calendar_request, prepared=calendar_prepared.reference)
     if not calendar.ready:
         raise RuntimeContractError(f"strategy calendar read failed: {calendar.error}")
-    plan = instance.plan_inputs(calendar)
+    trading_status = dataflows.fetch(status_request, prepared=calendar_prepared.reference)
+    plan = instance.plan_inputs(calendar, trading_status=trading_status, status_request=status_request)
     prepared = dataflows.prepare(
         (*plan.requests.values(), *execution_data.requests.values()), policy=PreparePolicy.REUSE,
     )
@@ -259,6 +260,7 @@ def _validate_execution_binding(flows, execution_data, prepared):
     adjusted_dataset = Dataset.ETF_OHLCV if asset == "etf" else Dataset.STOCK_OHLCV
     daily_dataset = Dataset.ETF_UNADJUSTED_DAILY if asset == "etf" else Dataset.STOCK_UNADJUSTED_DAILY
     expected = {
+        "trading_status": (Dataset.SECURITY_TRADING_STATUS, execution_data.symbol, "daily"),
         "price_limits": (Dataset.SECURITY_PRICE_LIMITS, execution_data.symbol, "daily"),
         "adjusted_daily": (adjusted_dataset, execution_data.symbol, "daily"),
         "execution_daily": (daily_dataset, execution_data.symbol, "daily"),
@@ -439,8 +441,8 @@ def build_srt_signal_replay(
         decisions=pd.DataFrame(rows),
         calculation_start=pd.Timestamp(calculations.min()),
         calculation_end=pd.Timestamp(calculations.max()),
-        evaluation_start=evaluation[0],
-        evaluation_end=evaluation[-1],
+        evaluation_start=pd.Timestamp(start),
+        evaluation_end=pd.Timestamp(end),
         data_dir=data_dir,
         data_identity=prepared.data_identity,
         support_data={

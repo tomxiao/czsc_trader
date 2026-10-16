@@ -167,7 +167,7 @@ def audit_benchmark_replay(
             if prior.empty:
                 reasons.append("MISSING_BENCHMARK_PRIOR_SIGNAL")
             else:
-                expected_execution = expected.reindex(sessions).shift(1)
+                expected_execution = expected.reindex(expected.index.union(sessions)).sort_index().ffill().reindex(sessions).shift(1)
                 expected_execution.iloc[0] = expected.loc[prior[-1]]
                 if not np.allclose(
                     target.to_numpy(dtype=float),
@@ -201,6 +201,11 @@ def audit_benchmark_replay(
     expected_orders: list[dict[str, Any]] = []
     expected_attempts: list[dict[str, Any]] = []
     for desired, (_, price) in zip(target, prices.iterrows(), strict=True):
+        if evidence.market_rules is not None and str(price["date"])[:10] in evidence.market_rules["suspended_sessions"]:
+            equity_values.append(cash + shares * float(price["close"]))
+            cash_values.append(cash)
+            quantity_values.append(shares)
+            continue
         open_price = float(price["open"])
         close_price = float(price["close"])
         if float(desired) != previous_target:
@@ -211,6 +216,13 @@ def audit_benchmark_replay(
                                         limits.get(str(price["date"])[:10])) if delta else False
             except ValueError:
                 return BenchmarkAuditResult(AuditStatus.FAIL, digest, tuple(checks), ("INVALID_MARKET_EXECUTION_PRICE",))
+            exit_price = open_price
+            if delta < 0 and limits:
+                day = str(price["date"])[:10]
+                rule = next(row for row in evidence.market_rules["sessions"] if row["session"] == day)
+                if abs(open_price - rule["down_limit"]) <= abs(open_price) * 1e-10:
+                    exit_price += rule["price_tick"]
+                    blocked = float(price["high"]) + abs(exit_price) * 1e-12 < exit_price
             if blocked:
                 requested = (min(delta / open_price, cash / (open_price * (1 + evidence.fee_rate)))
                              if delta > 0 else min(-delta / open_price, shares))
@@ -247,7 +259,7 @@ def audit_benchmark_replay(
                 sold = min(-delta / open_price, shares)
                 if desired > 0:
                     sold = float(int(sold // evidence.lot_size) * evidence.lot_size)
-                cash += sold * open_price * (1.0 - evidence.fee_rate)
+                cash += sold * exit_price * (1.0 - evidence.fee_rate)
                 shares -= sold
                 if sold > 0:
                     expected_attempts.append({"execution_date": price["date"], "side": "SELL",
@@ -257,8 +269,8 @@ def audit_benchmark_replay(
                             "execution_date": price["date"],
                             "side": "Sell",
                             "size": sold,
-                            "price": open_price,
-                            "fees": sold * open_price * evidence.fee_rate,
+                            "price": exit_price,
+                            "fees": sold * exit_price * evidence.fee_rate,
                         }
                     )
             previous_target = float(desired)

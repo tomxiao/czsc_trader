@@ -123,7 +123,7 @@ class EvaluationRequest:
     lineage: EvaluationLineage | None = None
     dependencies: tuple[ImplementationDependency, ...] = ()
     input_bindings: Mapping[str, StrategyInputBinding] = field(default_factory=dict)
-    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.UNADJUSTED
+    price_basis: ExecutionPriceBasis = ExecutionPriceBasis.HFQ_RESEARCH
 
     def __post_init__(self):
         if not isinstance(self.price_basis, ExecutionPriceBasis):
@@ -1153,7 +1153,7 @@ def validate_evaluation_evidence(value: dict) -> None:
         "decisions": ("signal_date", "valid_session"),
         "orders": ("signal_date", "execution_date"),
         "fills": ("signal_date", "fill_time"),
-        "account_daily": ("date", "signal_date"),
+        "account_daily": ("date", "signal_date", "valuation_source_date"),
         "trades": ("entry_date", "exit_date"),
     }
     for item, assessment in zip(value["runs"], projected, strict=True):

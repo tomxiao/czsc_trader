@@ -54,8 +54,8 @@ def test_rule_identity_is_deterministic_and_validates_session_coverage():
     assert restored.to_dict() == rules.to_dict()
     assert restored.fingerprint == sha256(json.dumps(restored.to_dict(), ensure_ascii=False,
                                                    sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
-    assert rules.to_dict() == {"contract_version": "OPEN_LIMIT_BLOCK_V1", "symbol": "600722.SH",
-                               "sessions": [{"session": "2026-09-18", "down_limit": 9., "up_limit": 11.}]}
+    assert rules.to_dict() == {"contract_version": "DAILY_RANGE_V2", "symbol": "600722.SH", "suspended_sessions": [],
+                               "sessions": [{"session": "2026-09-18", "down_limit": 9., "up_limit": 11., "price_tick": .001}]}
     with pytest.raises(ValueError, match="do not cover"):
         rules.for_session(limits.session + timedelta(days=1))
     with pytest.raises(ValueError, match="unique and increasing"):
@@ -142,16 +142,18 @@ def test_market_fill_rejects_invalid_later_prices_before_open_fill(value):
 
 def test_daily_blocked_orders_retry_without_a_signal_change_and_preserve_the_ledger():
     dates = pd.bdate_range("2026-09-15", periods=4)
-    prices = pd.DataFrame({"open": [11., 10., 9., 10.], "close": [10.5, 10., 9.5, 10.]}, index=dates)
+    prices = pd.DataFrame({"open": [11., 10., 9., 10.], "close": [10.5, 10., 9., 10.]}, index=dates)
+    prices["high"] = prices[["open", "close"]].max(axis=1)
+    prices["low"] = prices[["open", "close"]].min(axis=1)
     rules = MarketExecutionRules("600722.SH", tuple(SessionPriceLimits(day.date(), 9., 11.) for day in dates))
     result = execute_target_positions(prices, pd.Series([1., 1., 0., 0.], index=dates),
                                       fee_rate=.001, initial_cash=2000., lot_size=100, market_rules=rules)
-    assert result.attempts.status.tolist() == ["UNFILLED", "FILLED", "UNFILLED", "FILLED"]
-    assert result.orders.execution_date.tolist() == [dates[1], dates[3]]
-    assert result.orders.fees.tolist() == [1., 1.]
-    assert result.state.cash.tolist() == [2000., 999., 999., 1998.]
-    assert result.state.quantity.tolist() == [0., 100., 100., 0.]
-    assert result.equity.tolist() == [2000., 1999., 1949., 1998.]
+    assert result.attempts.status.tolist() == ["FILLED", "UNFILLED", "FILLED"]
+    assert result.orders.execution_date.tolist() == [dates[0], dates[3]]
+    assert result.orders.fees.tolist() == [1.1, 1.]
+    assert result.state.cash.tolist() == pytest.approx([898.9, 898.9, 898.9, 1897.9])
+    assert result.state.quantity.tolist() == [100., 100., 100., 0.]
+    assert result.equity.tolist() == pytest.approx([1948.9, 1898.9, 1798.9, 1897.9])
 
 
 def test_daily_market_contract_rejects_a_later_missing_session_before_any_replay():
