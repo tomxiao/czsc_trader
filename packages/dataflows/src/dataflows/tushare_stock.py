@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import tushare as ts
 
 from .bar_utils import (
     INTRADAY_PERIOD_MINUTES,
@@ -73,7 +72,7 @@ def _standardize_a_share_tushare_ohlcv(dataframe: pd.DataFrame, *, intraday: boo
     """Normalize Tushare A-share bars to shares and yuan."""
 
     if intraday and "trade_time" in dataframe.columns and "trade_date" in dataframe.columns:
-        # pro_bar adds a derived trade_date to stk_mins rows. The bar-close
+        # Some responses include a derived trade_date alongside stk_mins rows. The bar-close
         # trade_time is authoritative; both aliases would otherwise become Date.
         dataframe = dataframe.drop(columns="trade_date")
     normalized = standardize_vendor_ohlcv(dataframe, intraday=intraday)
@@ -140,15 +139,11 @@ def _fetch_tushare_ohlcv(
             )
         api = get_tushare_pro(env_file)
         intraday = period in INTRADAY_PERIOD_MINUTES
-        fetch_frequency = {
-            "daily": "D",
-            "weekly": "W",
-            **{item: f"{minutes}min" for item, minutes in INTRADAY_PERIOD_MINUTES.items()},
-        }[period]
-        dataframe = ts.pro_bar(
-            api=api,
-            ts_code=ts_code,
-            start_date=(
+        # pro_bar catches all provider exceptions and retries them internally.
+        # Direct source calls retain typed failures and the existing raw units.
+        query = getattr(api, "stk_mins" if intraday else "weekly" if period == "weekly" else "daily")
+        parameters = dict(
+            ts_code=ts_code, start_date=(
                 _intraday_boundary(start_date, end=False)
                 if intraday
                 else start_date.replace("-", "")
@@ -156,10 +151,11 @@ def _fetch_tushare_ohlcv(
             end_date=(
                 _intraday_boundary(end_date, end=True) if intraday else end_date.replace("-", "")
             ),
-            freq=fetch_frequency,
-            asset="E",
-            adj=None,
+            offset=None, limit=None,
         )
+        if intraday:
+            parameters["freq"] = f"{INTRADAY_PERIOD_MINUTES[period]}min"
+        dataframe = query(**parameters)
         if dataframe is None or dataframe.empty:
             return pd.DataFrame(), market, ts_code
         normalized = _standardize_a_share_tushare_ohlcv(dataframe, intraday=intraday)

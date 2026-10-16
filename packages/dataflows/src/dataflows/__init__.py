@@ -34,6 +34,7 @@ from .errors import (
     EmptyDataError,
     IncompleteDataError,
     SourceNotReadyError,
+    SourceRequestError,
 )
 from .facade import Dataflows, canonical_frame_sha256
 from .temporal import TemporalAlignmentResult, align_temporal_frame
@@ -71,6 +72,7 @@ __all__ = [
     "EmptyDataError",
     "IncompleteDataError",
     "SourceNotReadyError",
+    "SourceRequestError",
     "RequestRangePolicy",
     "TemporalAlignment",
     "TemporalAlignmentResult",
