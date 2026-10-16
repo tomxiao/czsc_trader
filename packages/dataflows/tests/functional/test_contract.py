@@ -92,8 +92,8 @@ def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:
         lambda token: (_ for _ in ()).throw(AssertionError("Pro client must not persist tk.csv")),
     )
     monkeypatch.setattr(
-        tushare_common.ts,
-        "pro_api",
+        tushare_common,
+        "_TusharePro",
         lambda token: observed.setdefault("token", token),
     )
 

@@ -6,8 +6,61 @@ from pathlib import Path
 from datetime import date, timedelta
 
 import tushare as ts
+import pandas as pd
+import requests
+from tushare.pro.client import DataApi
 
 from .config import get_tushare_token
+from .errors import DataContractError, SourceNotReadyError, SourceRequestError
+
+
+class _TusharePro(DataApi):
+    """Keep SDK method dispatch while checking transport before decoding rows."""
+
+    def __init__(self, token: str, timeout: int = 30):
+        super().__init__(token, timeout=timeout)
+        self._source_token = token
+        self._source_timeout = timeout
+
+    def query(self, api_name, fields="", **kwargs):
+        endpoint = self._DataApi__http_url
+        kwargs.setdefault("ts_type_name", endpoint)
+        context = {"vendor": "tushare", "api": api_name}
+        try:
+            response = requests.post(
+                f"{endpoint}/{api_name}",
+                json={"api_name": api_name, "token": self._source_token,
+                      "params": kwargs, "fields": fields},
+                timeout=self._source_timeout,
+            )
+        except (requests.Timeout, requests.ConnectionError) as exc:
+            raise SourceNotReadyError("Tushare transport is unavailable", **context,
+                                      exception_type=type(exc).__name__) from None
+        except requests.RequestException as exc:
+            raise SourceRequestError("Tushare request could not be sent", **context,
+                                     exception_type=type(exc).__name__) from None
+        status = response.status_code
+        if not 200 <= status < 300:
+            error = SourceNotReadyError if status == 429 or 500 <= status < 600 else SourceRequestError
+            raise error(f"Tushare HTTP request failed: {status}", **context, http_status=status)
+        try:
+            payload = response.json()
+        except ValueError:
+            raise DataContractError("Tushare response is not JSON", **context, http_status=status) from None
+        if not isinstance(payload, dict) or type(payload.get("code")) is not int:
+            raise DataContractError("Tushare response has no valid business code", **context, http_status=status)
+        if payload["code"] != 0:
+            # Vendor messages and exception strings may echo request credentials.
+            raise SourceRequestError("Tushare API rejected the request", **context,
+                                     http_status=status, vendor_code=payload["code"])
+        data = payload.get("data")
+        if (not isinstance(data, dict) or not isinstance(data.get("fields"), list)
+                or any(not isinstance(name, str) for name in data["fields"])
+                or len(set(data["fields"])) != len(data["fields"])
+                or not isinstance(data.get("items"), list)
+                or any(not isinstance(row, list) or len(row) != len(data["fields"]) for row in data["items"])):
+            raise DataContractError("Tushare response fields or rows are invalid", **context, http_status=status)
+        return pd.DataFrame(data["items"], columns=data["fields"])
 
 
 def get_tushare_module(env_file: str | Path | None = None):
@@ -20,7 +73,7 @@ def get_tushare_pro(env_file: str | Path | None = None):
     # ``ts.set_token`` persists ``tk.csv`` in the user profile. Pro clients
     # already accept the token explicitly, so avoid that unrelated filesystem
     # side effect and keep DFLS execution inside the repository boundary.
-    return ts.pro_api(get_tushare_token(env_file))
+    return _TusharePro(get_tushare_token(env_file))
 
 
 def fetch_instrument_name(

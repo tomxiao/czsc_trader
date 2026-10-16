@@ -21,6 +21,12 @@ class SourceNotReadyError(DataflowError):
     retryable = True
 
 
+class SourceRequestError(DataflowError):
+    """The source rejected a request; retry requires an explicit correction."""
+
+    code = "SOURCE_REQUEST_FAILED"
+
+
 class EmptyDataError(DataflowError, ValueError):
     """No rows were published; also a ValueError for adapter compatibility."""
 

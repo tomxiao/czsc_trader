@@ -29,7 +29,7 @@ class _StockCalendarPro:
 
 @pytest.mark.parametrize("dataset", [Dataset.STOCK_UNADJUSTED_DAILY, Dataset.STOCK_OHLCV],
                          ids=["raw-execution", "hfq-research"])
-def test_stock_daily_pro_bar_receives_explicit_api(
+def test_stock_daily_uses_explicit_client_and_preserves_units(
     flow_factory, publish_data, monkeypatch, dataset,
 ) -> None:
     calls, factor_calls = [], []
@@ -42,7 +42,7 @@ def test_stock_daily_pro_bar_receives_explicit_api(
     client = StockPro()
     monkeypatch.setattr(tushare_stock, "get_tushare_pro", lambda _: client)
 
-    def fake_pro_bar(**kwargs):
+    def fake_daily(**kwargs):
         calls.append(kwargs)
         return pd.DataFrame([{
             "ts_code": "600406.SH", "trade_date": "20260928",
@@ -50,15 +50,15 @@ def test_stock_daily_pro_bar_receives_explicit_api(
             "vol": 100.0, "amount": 240.0,
         }])
 
-    monkeypatch.setattr(tushare_stock.ts, "pro_bar", fake_pro_bar)
+    monkeypatch.setattr(client, "daily", fake_daily, raising=False)
     request = DataRequest(dataset, "600406.SH", "2026-09-28", "2026-09-28", "2026-09-28")
     flows = flow_factory()
     result = publish_data(flows, request)
     assert result.ready, result.error
     assert len(calls) == 1
     assert calls[0] == {
-        "api": client, "ts_code": "600406.SH", "start_date": "20260928",
-        "end_date": "20260928", "freq": "D", "asset": "E", "adj": None,
+        "ts_code": "600406.SH", "start_date": "20260928",
+        "end_date": "20260928", "offset": None, "limit": None,
     }
     assert result.dataframe.Amount.tolist() == [240000.]
     assert result.identity.source == "tushare"
@@ -95,18 +95,18 @@ def test_stock_intraday_publishes_requested_window_with_daily_reconciliation(
     calls = []
     monkeypatch.setattr(tushare_stock, "get_tushare_pro", lambda _: client)
 
-    def fake_pro_bar(**kwargs):
-        calls.append(kwargs)
-        assert kwargs["adj"] is None
+    def fake_source(method, **kwargs):
+        calls.append({"method": method, **kwargs})
         assert kwargs["start_date"] == (
-            "20260929" if kwargs["freq"] == "D" else "20260929 00:00:00"
+            "20260929" if method == "daily" else "20260929 00:00:00"
         )
-        if kwargs["freq"] == "D":
+        if method == "daily":
             return pd.DataFrame([{
                 "trade_date": "20260929", "open": 4., "high": 4.,
                 "low": 4., "close": 4., "vol": 49. if anomaly == "volume_mismatch" else 48.,
                 "amount": 19.2,
             }])
+        assert kwargs["freq"] == "5min"
         times = pd.date_range("2026-09-29 09:35", "2026-09-29 11:30", freq="5min").append(
             pd.date_range("2026-09-29 13:05", "2026-09-29 15:00", freq="5min")
         )
@@ -117,12 +117,13 @@ def test_stock_intraday_publishes_requested_window_with_daily_reconciliation(
             "close": 4., "vol": 100., "amount": 400.,
         })
 
-    monkeypatch.setattr(tushare_stock.ts, "pro_bar", fake_pro_bar)
+    monkeypatch.setattr(client, "daily", lambda **kwargs: fake_source("daily", **kwargs), raising=False)
+    monkeypatch.setattr(client, "stk_mins", lambda **kwargs: fake_source("stk_mins", **kwargs), raising=False)
     result = publish_data(flow_factory(), DataRequest(
         dataset, "600406.SH",
         "2026-09-29 10:00:00", "2026-09-29 10:15:00", None, frequency="5m",
     ))
-    assert {call["freq"] for call in calls} == {"D", "5min"}
+    assert {call["method"] for call in calls} == {"daily", "stk_mins"}
     if anomaly is not None:
         assert result.status is (DataStatus.INCOMPLETE if anomaly == "missing_bar" else DataStatus.FAILED)
         if anomaly == "volume_mismatch":
