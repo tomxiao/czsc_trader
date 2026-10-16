@@ -1,0 +1,273 @@
+{
+  "symbol": "600722.SH",
+  "start": "2020-01-01",
+  "end": "2026-10-15",
+  "upstream_call_cap": 50,
+  "upstream_calls": [
+    {
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20200101",
+        "end_date": "20261015"
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015",
+        "offset": null,
+        "limit": null
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015",
+        "offset": null,
+        "limit": null
+      },
+      "status": "RETURNED",
+      "rows": 1642
+    },
+    {
+      "api": "adj_factor",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015"
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015",
+        "offset": null,
+        "limit": null
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015",
+        "offset": null,
+        "limit": null
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015",
+        "offset": null,
+        "limit": null
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20201231"
+      },
+      "status": "RETURNED",
+      "rows": 243
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20210101",
+        "end_date": "20211231"
+      },
+      "status": "RETURNED",
+      "rows": 243
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20220101",
+        "end_date": "20221231"
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20230101",
+        "end_date": "20231231"
+      },
+      "status": "RETURNED",
+      "rows": 242
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "status": "RETURNED",
+      "rows": 242
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20250101",
+        "end_date": "20251231"
+      },
+      "status": "RETURNED",
+      "rows": 243
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20260101",
+        "end_date": "20261015"
+      },
+      "status": "RETURNED",
+      "rows": 187
+    },
+    {
+      "api": "stock_basic",
+      "parameters": {
+        "ts_code": "600722.SH"
+      },
+      "status": "RETURNED",
+      "rows": 1
+    },
+    {
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20200101",
+        "end_date": "20201231"
+      },
+      "status": "RETURNED",
+      "rows": 0
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015"
+      },
+      "status": "RETURNED",
+      "rows": 0
+    }
+  ],
+  "results": [
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "FAILED",
+      "errors": [
+        "EMPTY_DATA"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "stock.ohlcv",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "FAILED",
+      "errors": [
+        "PROVIDER_EXCEPTION"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "stock.unadjusted_daily",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "FAILED",
+      "errors": [
+        "PROVIDER_EXCEPTION"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "FAILED",
+      "errors": [
+        "INCOMPLETE_DATA"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "security.trading_status",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "FAILED",
+      "errors": [
+        "DATA_CONTRACT_MISMATCH"
+      ]
+    }
+  ],
+  "ready": false,
+  "source_publication_timestamp_verified": false,
+  "historical_revision_history_verified": false,
+  "strategy_evaluations": 0,
+  "parameter_searches": 0
+}

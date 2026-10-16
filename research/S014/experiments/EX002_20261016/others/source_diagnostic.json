@@ -1,0 +1,73 @@
+{
+  "purpose": "explicit-source-diagnostic-after-failed-native-preparation",
+  "source_probes": [
+    {
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20260101",
+        "end_date": "20261015"
+      },
+      "rows": 288,
+      "columns": [
+        "exchange",
+        "cal_date",
+        "is_open",
+        "pretrade_date"
+      ]
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20261008",
+        "end_date": "20261015"
+      },
+      "rows": 6,
+      "columns": [
+        "ts_code",
+        "trade_date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "pre_close",
+        "change",
+        "pct_chg",
+        "vol",
+        "amount"
+      ]
+    },
+    {
+      "api": "adj_factor",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20261008",
+        "end_date": "20261015"
+      },
+      "rows": 6,
+      "columns": [
+        "ts_code",
+        "trade_date",
+        "adj_factor"
+      ]
+    }
+  ],
+  "http": [
+    {
+      "api": "trade_cal",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8"
+    },
+    {
+      "api": "daily",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8"
+    },
+    {
+      "api": "adj_factor",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8"
+    }
+  ]
+}

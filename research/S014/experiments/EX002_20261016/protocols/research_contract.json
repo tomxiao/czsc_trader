@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "strategy_id": "S014",
+  "symbol": "600722.SH",
+  "role": "RSCH",
+  "stage": "MANDATE",
+  "research_window": {
+    "start": "2020-01-01",
+    "end": "2026-10-15",
+    "confirmation": "CONFIRMED_BY_CURRENT_USER"
+  },
+  "objectives": {
+    "annual_return": "For every accepted calendar year: strategy return >= 1.5 * BuyHold return when BuyHold return > 0; otherwise strategy return > 0.",
+    "annual_drawdown": "For every accepted calendar year: strategy drawdown magnitude < BuyHold drawdown magnitude. A tie fails.",
+    "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool.",
+    "confirmation": "CONFIRMED_RSCH_RULES_AT_COMMIT_a1441988",
+    "diagnostics_are_additional_gates": false
+  },
+  "annual_method": {
+    "continuous_cash_and_holdings": true,
+    "year_opening_equity": "Previous calendar-year ending equity; use initial cash for the first evaluation year.",
+    "return": "ending_equity / opening_equity - 1; never annualize a partial calendar year.",
+    "drawdown": "max(1 - equity / running_peak), including opening_equity in that year's equity path.",
+    "profit_or_loss": "After the fixed one-way execution fee.",
+    "end_positions": "Mark to market; no forced close for year boundaries or the terminal evaluation date.",
+    "partial_year_proposal": "Include 2026-01-01 through 2026-10-15 in both annual gates, identify it as year-to-date, and do not annualize it.",
+    "partial_year_confirmation": "PROPOSED",
+    "all_years_must_pass": true
+  },
+  "execution": {
+    "market_security": "CN_STOCK",
+    "decision": "Completed tradable session T; execute next tradable instrument session, never use T+1 observations in the signal.",
+    "long_only": true,
+    "leverage": false,
+    "price_basis": "HFQ_RESEARCH",
+    "one_way_fee": 0.001,
+    "buy": "LIMIT: favorable open fills at open, otherwise inclusive daily-low touch fills at the limit, subject to market price bounds.",
+    "sell": "MARKET: open, or open plus one raw-price tick when opening at the lower limit and the daily high reaches it.",
+    "raw_price_tick": 0.01,
+    "lot_size": 100,
+    "quantity": "Full planned quantity constrained by cash, holdings and lot size; no queue simulation or partial fills.",
+    "suspension": "Require authenticated stock status. No execution on proven full-day halts; carry account balances and previous close for valuation. Unknown gaps fail.",
+    "fill_precision": "SESSION for range touches; TIMESTAMP for fills observed at the open.",
+    "quantity_units": "Fixed normalized HFQ research units, not a historical broker-share/corporate-action ledger."
+  },
+  "capital_proposal": {
+    "initial_cash_cny": 100000.0,
+    "confirmation": "PROPOSED"
+  },
+  "benchmark_proposal": {
+    "kind": "BUYHOLD",
+    "execution_type": "LimitBuyHold",
+    "lot_size": 100,
+    "premium": 0.01,
+    "price_tick": 0.01,
+    "price_limit_ratio": 0.1,
+    "maximum_order_quantity": 1000000,
+    "lifecycle": "Target full investment from window start, submit fresh plans after unfilled orders, hold after establishing the position; no annual rebuy or forced terminal liquidation.",
+    "limit_definition": "Previous tradable close plus fixed 1%, rounded by the existing SRT planner and bounded by the published session market rules.",
+    "same_cash_fees_prices_market_rules_as_strategy": true,
+    "search_parameter": false,
+    "confirmation": "PROPOSED"
+  },
+  "data_and_sample_use": {
+    "vendor": "Existing Tushare account through the S014 ResearchContext.data public API.",
+    "initial_inputs": ["stock.ohlcv", "stock.unadjusted_daily", "security.price_limits", "security.trading_status", "calendar.trading_sessions"],
+    "initial_information_scope": "This instrument's daily price-volume and market-execution inputs. Availability of unrequested industry or fundamental inputs is not inferred.",
+    "development_pool": "2020-01-01 through 2026-10-15; use temporal splits within the development pool.",
+    "exposure": "EX001 inspected dates, daily shapes and execution boundaries through 2026-09-30; DEV also inspected fixed orders in 2026. This is not an unseen holdout.",
+    "independent_holdout": "None declared. Any future additional period or data-source expansion needs the corresponding authorization.",
+    "publication_and_revision_times": "Not verified; do not claim strict historical point-in-time availability.",
+    "warmup": "Declare required pre-window data before preparing it; do not silently expand the permitted input range."
+  },
+  "stage_two_proposal": {
+    "question": "Which daily information helps identify entry opportunities, exit risk or periods where trading should be reduced?",
+    "competing_explanations": ["trend continuation", "short-horizon reversal", "volatility and liquidity risk filtering"],
+    "controls": "Simple price/volume controls, component removal and chronological subperiod comparisons; inspect net execution-aligned outcomes separately from price labels.",
+    "horizons": "Start with 3, 5, 10 and 20 tradable sessions; check whether labels and holding occupancy fit the frequency objective.",
+    "leakage": "Fit preprocessing on past samples only; remove training labels overlapping a validation boundary; log all data used for selection.",
+    "tools": "Use installed tsfresh for applicable feature surveys; Optuna for any authorized parameter search; validate process transport before parallel workloads.",
+    "initial_budget": {"max_workers": 2, "native_threads_per_worker": 1, "random_seed": 13, "wall_clock_hours": 2, "additional_upstream_call_cap": 50},
+    "strategy_search_and_candidate_registration": "Stage three, after component-stage review.",
+    "stopping": "Report resource use and unanswered questions at the budget boundary; neither budget exhaustion nor first positive component proves adequate research.",
+    "confirmation": "PROPOSED; no component computation has started."
+  },
+  "boundaries": ["S014 research materials and batch-owned assets only", "S013 remains PAUSED", "No platform, frozen release, PTE or production changes", "No reading other research batches' data", "No merge or push authorization for this branch"],
+  "pending": ["Approve treatment of partial 2026 as an annual hard-gate period", "Approve initial cash and fixed benchmark proposal", "Review stage-one delivery and authorize stage two after input readiness passes"]
+}

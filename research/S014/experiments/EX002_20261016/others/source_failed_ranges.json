@@ -1,0 +1,91 @@
+{
+  "purpose": "diagnose-exact-failed-source-ranges-with-http-status",
+  "source_probes": [
+    {
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20210101",
+        "end_date": "20211231"
+      },
+      "rows": 365,
+      "columns": [
+        "exchange",
+        "cal_date",
+        "is_open",
+        "pretrade_date"
+      ]
+    },
+    {
+      "api": "adj_factor",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015"
+      },
+      "rows": 1642,
+      "columns": [
+        "ts_code",
+        "trade_date",
+        "adj_factor"
+      ]
+    },
+    {
+      "api": "stk_limit",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20210101",
+        "end_date": "20211231"
+      },
+      "rows": 243,
+      "columns": [
+        "trade_date",
+        "ts_code",
+        "up_limit",
+        "down_limit"
+      ]
+    },
+    {
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20200101",
+        "end_date": "20261015"
+      },
+      "rows": 1642,
+      "columns": [
+        "ts_code",
+        "trade_date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "pre_close",
+        "change",
+        "pct_chg",
+        "vol",
+        "amount"
+      ]
+    }
+  ],
+  "http": [
+    {
+      "api": "trade_cal",
+      "status": 200
+    },
+    {
+      "api": "adj_factor",
+      "status": 200
+    },
+    {
+      "api": "stk_limit",
+      "status": 200
+    },
+    {
+      "api": "daily",
+      "status": 200
+    }
+  ],
+  "cumulative_upstream_calls": 42,
+  "call_cap": 50
+}

@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "synthetic_only": true,
+  "checks": [
+    "cross-year holdings use previous year-end equity; annual and full drawdown differ",
+    "exact 1.5 times positive benchmark return passes without annualizing partial year",
+    "equal positive drawdowns fail strict comparison",
+    "zero benchmark return requires strictly positive strategy return; zero drawdown tie fails",
+    "positive strategy return and lower drawdown pass against losing benchmark",
+    "six early exits over 120 sessions pass frequency 3 despite empty later rolling windows",
+    "missing account sessions are rejected"
+  ],
+  "strategy_evaluations": 0,
+  "parameter_searches": 0
+}
