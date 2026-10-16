@@ -36,7 +36,7 @@ from ..backtesting.execution_data import (
     _require_market_rules,
 )
 from ..backtesting.benchmarks import BuyHoldReplay, replay_buyhold
-from ..backtesting.benchmark_contracts import EvaluationBenchmark, LimitBuyHold
+from ..backtesting.benchmark_contracts import EvaluationBenchmark
 from ..backtesting.models import StrategyIdentity, StrategySnapshot
 from ..backtesting.signal_replay import SignalReplay
 from ..backtesting.srt_bridge import (
@@ -450,12 +450,8 @@ def _validate_execution_result(
     if not required.issubset(account.columns) or account.empty:
         raise ValueError("TXE account ledger is incomplete")
     dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
-    prices = pd.DataFrame(execution_data.execution_daily, copy=False)
-    expected = pd.DatetimeIndex(
-        pd.to_datetime(
-            prices.loc[prices["dt"].between(start, end), "dt"]
-        )
-    ).normalize()
+    sessions = pd.DatetimeIndex(execution_data.evaluation_sessions).normalize()
+    expected = sessions[(sessions >= start) & (sessions <= end)]
     if dates.has_duplicates or not dates.is_monotonic_increasing or not dates.equals(expected):
         raise ValueError("TXE account ledger does not cover the evaluation sessions exactly")
     numeric = account[["cash_before", "quantity_before", "cash", "quantity", "close", "equity"]].astype(float)
@@ -503,12 +499,8 @@ def _validate_buyhold(
     if account.empty or not {"date", "equity"}.issubset(account.columns):
         raise ValueError("BuyHold account ledger is incomplete")
     dates = pd.DatetimeIndex(pd.to_datetime(account["date"])).normalize()
-    prices = pd.DataFrame(execution_data.execution_daily, copy=False)
-    expected = pd.DatetimeIndex(
-        pd.to_datetime(
-            prices.loc[prices["dt"].between(start, end), "dt"]
-        )
-    ).normalize()
+    sessions = pd.DatetimeIndex(execution_data.evaluation_sessions).normalize()
+    expected = sessions[(sessions >= start) & (sessions <= end)]
     if not dates.equals(expected):
         raise ValueError("BuyHold ledger does not use the strategy evaluation sessions")
     if not np.isfinite(account["equity"].astype(float).to_numpy()).all():
@@ -660,8 +652,6 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
         if data.pricing.anchor_date is not None and any(data.pricing.anchor_date >= w.start for w in request.windows):
             raise ValueError("HFQ anchor must precede every evaluation window")
         required_frequencies = set(execution_intraday_frequencies(StrategyRuntime().describe(candidate)))
-        if isinstance(request.benchmark.execution, LimitBuyHold):
-            required_frequencies.add("30m")
         _require_execution_frequencies(data, tuple(sorted(required_frequencies)))
         if (data.symbol, data.asset_type, data.cutoff) != (
             symbol,
@@ -692,13 +682,14 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
         ):
             raise ValueError("adjusted and execution market calendars differ")
         requested_sessions = pd.DatetimeIndex(data.evaluation_sessions).normalize()
+        tradable_sessions = requested_sessions.difference(pd.to_datetime(data.market_rules.suspended_sessions))
         if (
             requested_sessions.empty
             or requested_sessions.has_duplicates
             or not requested_sessions.is_monotonic_increasing
             or requested_sessions[-1].date() != request.data_cutoff
-            or not requested_sessions.isin(execution_sessions).all()
-            or not requested_sessions.isin(adjusted_sessions).all()
+            or not tradable_sessions.isin(execution_sessions).all()
+            or not tradable_sessions.isin(adjusted_sessions).all()
         ):
             raise ValueError("execution evaluation sessions are incomplete")
     if not np.isfinite(float(request.initial_cash)) or request.initial_cash <= 0:
@@ -723,12 +714,12 @@ def _request_contract(request: EvaluationRequest, *, require_execution: bool = T
     if any(item.end > request.data_cutoff for item in request.windows):
         raise ValueError("evaluation window violates cutoff")
     if data is not None:
-        sessions = execution_sessions
+        sessions = requested_sessions
         for item in request.windows:
             start, end = pd.Timestamp(item.start), pd.Timestamp(item.end)
             if start > end or start not in sessions or end not in sessions:
                 raise ValueError(f"evaluation window is not bounded by trading sessions: {item.window_id}")
-            if end.date() > request.data_cutoff or not (sessions < start).any():
+            if end.date() > request.data_cutoff or not (execution_sessions < start).any():
                 raise ValueError(f"evaluation window violates cutoff or warmup: {item.window_id}")
 
     _validate_costs(request.costs)
@@ -850,8 +841,6 @@ def _bind_evaluation_inputs(request: EvaluationRequest, *, dataflows) -> Evaluat
     if request.execution_data is None:
         definition = StrategyRuntime().describe(request.strategy)
         frequencies = set(execution_intraday_frequencies(definition))
-        if isinstance(request.benchmark.execution, LimitBuyHold):
-            frequencies.add("30m")
         request = replace(request, execution_data=_prepare_backtest_execution_data(
             repository_root=Path(request.repository_root), symbol=request.symbol,
             asset_type=request.asset_type, start=min(item.start for item in request.windows),

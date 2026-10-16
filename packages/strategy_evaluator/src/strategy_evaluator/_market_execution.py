@@ -121,9 +121,10 @@ def expected_market_fill(side: str, order_type: str, limit: float, open_price: f
             return ("DAILY_OPEN_PLUS_TICK", price, midnight) if daily["high"] + abs(price) * 1e-12 >= price else None
         if order_type == "MARKET":
             return "OPEN_MARKET", open_price, opening
-        if open_price <= limit if side == "BUY" else open_price >= limit:
+        tolerance = max(abs(limit), abs(open_price), abs(daily["low"]), abs(daily["high"])) * 1e-12
+        if open_price <= limit + tolerance if side == "BUY" else open_price + tolerance >= limit:
             return "OPEN", open_price, opening
-        if daily["low"] <= limit if side == "BUY" else daily["high"] >= limit:
+        if daily["low"] <= limit + tolerance if side == "BUY" else daily["high"] + tolerance >= limit:
             return "DAILY_LIMIT", limit, midnight
         return None
     if order_type == "MARKET":

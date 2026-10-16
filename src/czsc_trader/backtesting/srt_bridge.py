@@ -199,6 +199,11 @@ def prepare_srt_input_binding(
     if not execution_data.requests or execution_data.prepared is None:
         raise RuntimeContractError("execution data requires an explicit DFLS input binding")
     _validate_execution_binding(dataflows, execution_data, execution_data.prepared)
+    active = pd.DatetimeIndex(pd.to_datetime(execution_data.adjusted_daily["dt"]).dt.normalize())
+    active = active[(active >= pd.Timestamp(start).normalize()) & (active <= pd.Timestamp(end).normalize())]
+    if active.empty:
+        raise ValueError("backtest interval contains no tradable instrument sessions")
+    start, end = active[0], active[-1]
     source, _ = describe_snapshot_strategy(
         repository_root, snapshot, deployment_symbol=execution_data.symbol,
     )

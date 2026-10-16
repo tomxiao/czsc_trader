@@ -19,7 +19,7 @@ from czsc_trader.application.errors import ExecutionError
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
 from czsc_trader.backtesting.srt_bridge import _validate_execution_binding
 from czsc_trader.research_tools import (
-    EvaluationBenchmark, EvaluationCost, EvaluationRequest, EvaluationWindow, NextOpenBuyHold,
+    EvaluationBenchmark, EvaluationCost, EvaluationRequest, EvaluationWindow, LimitBuyHold, NextOpenBuyHold,
 )
 from czsc_trader.research_tools.context import ResearchBatchRef, ResearchContext
 from czsc_trader.research_tools.evaluation_access import EvaluationAccess
@@ -212,6 +212,21 @@ def test_public_daily_replay_retains_suspended_accounts_and_replans_on_resumptio
         rows = [dict(row) for row in evidence.account_daily]
         rows[halt_indices[0] - 20][field] = value
         assert audit_replay(replace(evidence, account_daily=tuple(rows))).status is AuditStatus.FAIL
+
+    request = EvaluationRequest(
+        tmp_path, "synthetic", candidate,
+        {"candidate_id": candidate.reference_id, "source_files": candidate.payload["runtime"]["source_files"],
+         "implementation_sha256": candidate.payload["runtime"]["source_sha256"]},
+        symbol, "stock", (EvaluationWindow("full", dates[20].date(), dates[-1].date()),),
+        dates[-1].date(), 10000, (EvaluationCost("cost", .001),), result.execution_data,
+        benchmark=EvaluationBenchmark(LimitBuyHold(100, .003, .01, .1, 1000000)),
+    )
+    evaluated = context.evaluation.evaluate(request)
+    assert evaluated.runs[0].execution.account_daily.date.tolist() == dates[20:].tolist()
+    assert evaluated.runs[0].buyhold.account_daily.date.tolist() == dates[20:].tolist()
+    from czsc_trader.research_tools.evaluation import serialize_evaluation_evidence, validate_evaluation_evidence
+
+    validate_evaluation_evidence(serialize_evaluation_evidence(request, evaluated))
 
 
 @pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])

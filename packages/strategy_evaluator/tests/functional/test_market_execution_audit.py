@@ -224,7 +224,7 @@ def test_open_fill_requires_exact_local_0930(index, clock):
 def intraday_strategy():
     evidence = strategy()
     day = evidence.evaluation_sessions[1]
-    daily = tuple({**row, "open": 1.05} if str(row["date"])[:10] == day else row
+    daily = tuple({**row, "open": 1.05, "high": 1.06} if str(row["date"])[:10] == day else row
                   for row in evidence.execution_daily)
     bars = tuple({"time": day + "T" + clock, "low": low, "high": 1.06}
                  for clock, low in (("09:35:00", 1.), ("09:40:00", .999), ("09:45:00", .998)))
@@ -233,8 +233,15 @@ def intraday_strategy():
     return replace(evidence, execution_daily=daily, execution_intraday=bars, fills=fills)
 
 
-def test_daily_range_fill_has_session_precision_and_no_invented_clock():
+@pytest.mark.parametrize("low", [1., 1.0000000000000002])
+def test_daily_range_fill_has_session_precision_and_no_invented_clock(low):
     evidence = intraday_strategy()
+    day = evidence.evaluation_sessions[1]
+    daily = tuple({**row, "low": low, "close": low, "unadjusted_close": low}
+                  if str(row["date"])[:10] == day else row for row in evidence.execution_daily)
+    accounts = tuple({**row, "close": low, "equity": row["cash"] + row["quantity"] * low}
+                     if str(row["date"])[:10] == day else row for row in evidence.account_daily)
+    evidence = replace(evidence, execution_daily=daily, account_daily=accounts)
     result = audit_replay(evidence)
     assert result.status is AuditStatus.PASS, result.reason_codes
     for clock in ("09:35:00", "09:41:00", "09:45:00"):

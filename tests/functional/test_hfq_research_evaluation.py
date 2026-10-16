@@ -22,7 +22,7 @@ def test_hfq_evaluation_uses_one_price_contract_for_plans_account_benchmark_and_
     context, request, _ = request_for_prices(candidate_payload, tmp_path, monkeypatch, prices,
         benchmark=benchmark, flow=[.1, .8, .8, .1, .1, .1, .1],
         hfq_factors=pd.Series([.3, .3, .411, .411, .411, .411, .411]))
-    raw_request = context.evaluation.prepare(request)
+    raw_request = context.evaluation.prepare(replace(request, price_basis=ExecutionPriceBasis.UNADJUSTED))
     raw_result = context.evaluation.evaluate(raw_request)
     bound = context.evaluation.prepare(replace(request, price_basis=ExecutionPriceBasis.HFQ_RESEARCH))
     result = context.evaluation.evaluate(bound)
@@ -30,7 +30,7 @@ def test_hfq_evaluation_uses_one_price_contract_for_plans_account_benchmark_and_
     assert bound.execution_data.pricing.anchor_date == days[0].date()
     assert bound.execution_data.execution_daily.close.tolist() == pytest.approx(
         [10., 10., 6.85, 7.01851, 8.38851, 8.38851, 8.38851])
-    assert bound.execution_data.execution_intraday.close.iloc[-1] == pytest.approx(8.38851)
+    assert bound.execution_data.execution_intraday.empty
     assert result.request_hash != raw_result.request_hash
     assert bound.execution_data.fingerprint != raw_request.execution_data.fingerprint
     assert run.buyhold.account_daily.iloc[-1].equity > raw_result.runs[0].buyhold.account_daily.iloc[-1].equity

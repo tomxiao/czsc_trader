@@ -162,12 +162,7 @@ def test_public_backtest_prepares_execution_and_benchmark_requirements(
     )
     assert result.manifest["audit"]["status"] == "PASS"
     minutes = [item for item in calls if item.frequency in {"5m", "30m"}]
-    if entry_order_type == "MARKET":
-        assert not minutes
-    else:
-        assert minutes
-        assert all(item.dataset is Dataset.ETF_UNADJUSTED_INTRADAY for item in minutes)
-        assert all(item.start == sessions[20].date().isoformat() for item in minutes)
+    assert not minutes  # Daily-range LIMIT fills need no minute observations.
     adjusted = [item for item in calls if item.dataset is Dataset.ETF_OHLCV]
     assert min(item.start for item in adjusted) == sessions[0].date().isoformat()
     # The same authenticated data may include longer benchmark than execution history.
@@ -185,9 +180,9 @@ def test_public_backtest_prepares_execution_and_benchmark_requirements(
     assert len(evaluation.runs) == 1
 
 
-def test_limit_execution_rejects_missing_minute_prices(bound_inputs):
+def test_limit_execution_rejects_tampered_bound_minute_prices(bound_inputs):
     request, flows = bound_inputs
     data = request.execution_data
     request = replace(request, execution_data=replace(data, execution_intraday=data.execution_intraday.iloc[:0]))
-    with pytest.raises(ValueError, match="no required 30m"):
+    with pytest.raises(ValueError, match="dataframe differs from bound inputs: execution_intraday"):
         EvaluationAccess(dataflows=flows).evaluate(request)

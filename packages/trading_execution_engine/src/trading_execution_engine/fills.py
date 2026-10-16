@@ -127,10 +127,11 @@ def resolve_fill(
         if order.order_type == "MARKET":
             return FillDecision(True, open_price, session_time, "OPEN_MARKET", "FILLED")
         limit = float(order.limit_price)
-        crosses_open = open_price <= limit if order.side == "BUY" else open_price >= limit
+        tolerance = max(abs(limit), abs(open_price), abs(daily_quote.low), abs(daily_quote.high)) * 1e-12
+        crosses_open = open_price <= limit + tolerance if order.side == "BUY" else open_price + tolerance >= limit
         if crosses_open:
             return FillDecision(True, open_price, session_time, "OPEN", "FILLED")
-        reached = daily_quote.low <= limit if order.side == "BUY" else daily_quote.high >= limit
+        reached = daily_quote.low <= limit + tolerance if order.side == "BUY" else daily_quote.high + tolerance >= limit
         if not reached:
             return FillDecision(False, None, None, None, "DAILY_RANGE_NOT_REACHED")
         return FillDecision(True, limit, session_time.replace(hour=0, minute=0, second=0, microsecond=0),

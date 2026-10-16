@@ -155,7 +155,7 @@ def test_cli_calculation_and_output_failures_return_fail_without_partial_reports
         assert result["error"]["context"]["input"] == "price_limits"
         assert result["error"]["context"]["data_error"]["code"] == "INCOMPLETE_DATA"
         assert result["error"]["context"]["data_error"]["context"]["missing_dates"] == ["2026-09-22"]
-        assert "daily observations omit exchange sessions" in result["error"]["message"]
+        assert "security price limits omit exchange sessions" in result["error"]["message"]
         assert "2026-09-22" in result["error"]["message"]
         assert main([*arguments, "--format", "text"]) == 5
         text = capsys.readouterr().out

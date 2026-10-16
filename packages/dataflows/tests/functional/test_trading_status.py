@@ -36,6 +36,7 @@ class SessionSource:
 
 @pytest.mark.parametrize("symbol,missing,proof,intraday,ready", [
     ("600722.SH", False, True, False, True),
+    ("600722.SH", False, None, False, False),
     ("510500.SH", False, True, False, False),
     ("600722.SH", True, True, False, True),
     ("600722.SH", True, False, False, False),
@@ -47,6 +48,8 @@ def test_native_status_preparation_requires_explicit_suspension_evidence(
     tmp_path, monkeypatch, symbol, missing, proof, intraday, ready,
 ):
     source = SessionSource(missing, proof, intraday)
+    if proof is None:
+        monkeypatch.setattr(source, "suspend_d", None)
     monkeypatch.setattr("dataflows.tushare_common.get_tushare_pro", lambda _: source)
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("data")), providers=ProviderConfig())
     request = DataRequest(Dataset.SECURITY_TRADING_STATUS, symbol, "2026-09-14", "2026-09-18", "2026-09-18")

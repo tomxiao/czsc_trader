@@ -22,9 +22,7 @@ def suspension_dates(pro, symbol: str, calendar_dates, observed_dates) -> tuple[
         return [], []
     # suspend_d is a stock source; ETF quote gaps remain data-quality failures.
     if symbol.startswith(("5", "15", "16")):
-        if not missing:
-            return [], []
-        raise IncompleteDataError("daily observations omit exchange sessions", missing_dates=sorted(missing))
+        return [], []
     if not callable(getattr(pro, "suspend_d", None)):
         if not missing:
             return [], []
@@ -95,6 +93,8 @@ def fetch_trading_status(request: DataRequest, *, env_file: str | Path | None = 
     if asset != "stock":
         raise DataContractError("trading status source supports SH/SZ stocks only")
     pro = get_tushare_pro(env_file)
+    if not callable(getattr(pro, "suspend_d", None)):
+        raise DataContractError("stock suspension source is unavailable")
     raw = pro.daily(ts_code=request.symbol, start_date=request.start.replace("-", ""),
                     end_date=request.end.replace("-", ""))
     if raw is None or not {"ts_code", "trade_date", "vol"}.issubset(raw.columns):

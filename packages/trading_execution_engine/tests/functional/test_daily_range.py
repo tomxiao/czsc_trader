@@ -8,6 +8,9 @@ from trading_execution_engine import DailyQuote, FillTimePrecision, OrderSpec, S
 @pytest.mark.parametrize("side,kind,limit,open_price,low,high,price,precision", [
     ("BUY", "LIMIT", 10.1, 10., 9.8, 10., 10., "TIMESTAMP"),
     ("BUY", "LIMIT", 9.8, 10., 9.8, 10.2, 9.8, "SESSION"),
+    ("BUY", "LIMIT", 9.8, 10., 9.800000000000002, 10.2, 9.8, "SESSION"),
+    ("BUY", "LIMIT", 9.8, 9.800000000000002, 9.7, 10.2, 9.800000000000002, "TIMESTAMP"),
+    ("SELL", "LIMIT", 10.2, 10., 9.8, 10.199999999999998, 10.2, "SESSION"),
     ("BUY", "LIMIT", 9.79, 10., 9.8, 10.2, None, None),
     ("BUY", "LIMIT", 11., 11., 11., 11., 11., "TIMESTAMP"),
     ("SELL", "MARKET", None, 10., 9.8, 10.2, 10., "TIMESTAMP"),
