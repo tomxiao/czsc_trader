@@ -1,0 +1,84 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX001_20261016"
+  },
+  "status": "DATA_PREPARATION_PASS_EXECUTION_GAP_CONFIRMED",
+  "preparation_goal": "已达成：日线及分钟抽样正式准备、逐值复核、成交缺口诊断并留证；不代表正式策略研发验收",
+  "symbol": "600722.SH",
+  "window": {
+    "start": "2020-01-01",
+    "end": "2026-09-30"
+  },
+  "coverage": {
+    "exchange_sessions": 1636,
+    "daily_rows": 1636,
+    "missing_dates": [],
+    "daily_duplicates": 0,
+    "factor_changes": 0,
+    "positive_ex_dividend_records": 0,
+    "suspension_rows": 0,
+    "locked_up_days": 9,
+    "locked_down_days": 3
+  },
+  "evidence": {
+    "diagnostic-program": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX001_20261016"
+      },
+      "evidence_id": "1cb1733f42b67885ed4e238d4fa888d522dfc266a1aebd1a3699942fec9e4f34.py",
+      "sha256": "1cb1733f42b67885ed4e238d4fa888d522dfc266a1aebd1a3699942fec9e4f34",
+      "media_type": "text/x-python",
+      "name": "diagnostic-program",
+      "schema": null,
+      "schema_version": null
+    },
+    "technical-diagnosis": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX001_20261016"
+      },
+      "evidence_id": "6bdf9e66b68e9b78c86ad3a99ab72066a35a8eb42ad49547fe5e43982d0d3029.json",
+      "sha256": "6bdf9e66b68e9b78c86ad3a99ab72066a35a8eb42ad49547fe5e43982d0d3029",
+      "media_type": "application/json",
+      "name": "technical-diagnosis",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "verification": {
+    "native_assets_verified": 6,
+    "offline_reproduction_same_sha256": "6bdf9e66b68e9b78c86ad3a99ab72066a35a8eb42ad49547fe5e43982d0d3029",
+    "default_execution_boundary_cases": 12,
+    "ruff": "PASS"
+  },
+  "findings": [
+    "日线、因子及涨跌停价1636日对齐；6份原生数据准备全部READY；原始单位与复权换算逐值复核通过。",
+    "3个全天跌停日的市价卖出探针均直接判满额成交；实际队列是否能成交未知，现接口未表达这一不确定性。",
+    "9个全天涨停日的默认1%限价买单均未成交；不把填充内核的理论缺口扩大为当前买入规则的已发生问题。",
+    "4日分钟样本不证明全区间分钟完整；未运行账户，所以现金、持仓、权益及未成交延续尚未验收。",
+    "本标的窗口内没有正分红送股或因子变化；停牌接口为空且日线无缺日，仍缺少这些边界的阳性用例。",
+    "固定单侧0.1%只用于订单探针，真实费用拆分、停牌、T+1可卖数量与公司行动尚待合同及最小专门验证。"
+  ],
+  "proposed_minimum_dev_scope": {
+    "data": "DFLS提供逐日涨跌停价与交易状态的强类型执行输入，原始价格口径，缺失应明确非READY；停牌不伪造成缺数或人工行情。",
+    "execution": "在现有TXE路径统一执行A股市场约束；建议全天涨停不买入、全天跌停不卖出的保守成交合同，需用户确认；这是假设，不是历史成交事实。",
+    "order_lifecycle": "未成交不得改变现金和持仓；当日单到期，次日根据仍有效的目标和新交易状态重下单；基准共用规则。",
+    "tests": "正常日成交/未触价、全天涨跌停及对侧、盘中开板、缺失状态、停牌与复牌、未成交后续日、T+1和费用边界；比较ETF旧合同兼容。",
+    "limits": "不扩至美股、选股池、基本面或多标的组合；不改已有冻结策略的历史语义。"
+  },
+  "authorization_needed": "根据research/RSCH_AGENT.md角色边界，请用户确认封板保守成交合同，并授权DEV在当前分支修改平台；本轮未修改平台。",
+  "next_step": "请用户确认A股成交合同及授权DEV修改平台，再做固定订单的现金/持仓/权益账本验证；通过后再提交策略机制方案。",
+  "models": 0,
+  "account_evaluations": 0,
+  "S013_state": "PAUSED",
+  "sources": [
+    "https://tushare.pro/document/2?doc_id=183"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "batch_request": {
+    "strategy_id": "S014",
+    "name": "金牛化工A股个股技术可行性试点",
+    "scope": [
+      "600722.SH"
+    ],
+    "research_intent": {
+      "stage": "阶段一：数据与成交规则可行性准备",
+      "objective": "核实单标的数据完整性及执行偏差，形成是否具备策略研发条件的判断；本轮不评价收益能力",
+      "authorization": [
+        "用户指定金牛化工为个股试点",
+        "用户同意在codex/a-share-600722-pilot分支开展试点"
+      ],
+      "technical_window": {
+        "start": "2020-01-01",
+        "end": "2026-09-30",
+        "basis": "研究员选取已结束完整季度作为准备期；不是独立封存样本"
+      },
+      "scope": {
+        "symbols": [
+          "600722.SH"
+        ],
+        "vendor": "项目既有Tushare权限",
+        "new_data_sources": false
+      },
+      "budget": {
+        "source_probes": 8,
+        "dfls_upstream_call_cap": 50,
+        "workers": 2,
+        "models": 0,
+        "account_evaluations": 0
+      },
+      "constraints": [
+        "S013保持PAUSED",
+        "不搜索策略及参数",
+        "不修改平台",
+        "不操作PTE或生产",
+        "不读取其他研究批次数据"
+      ],
+      "pending": [
+        "有真实成交约束的账户合同",
+        "策略研究的经济目标、开发及封存范围",
+        "跨角色DEV平台修改授权"
+      ]
+    },
+    "research_state": "RESEARCHING",
+    "credential_id": null
+  },
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX001_20261016"
+  },
+  "minute_samples": [
+    "2020-01-02",
+    "2020-02-03",
+    "2021-02-09",
+    "2026-09-30"
+  ],
+  "selection": "最早正常日、最早全天跌停、最早全天涨停、窗口末日；仅依据交易日期及数据形态选取，不使用收益表现",
+  "limitations": [
+    "停复牌接口空结果不能单独证明无停牌",
+    "分钟抽样不代表全历史分钟覆盖",
+    "全天封板有成交量不能证明指定订单排队成交",
+    "既有单侧0.1%费用是假设，不等于券商真实账单",
+    "历史发布时间及修订未核验"
+  ]
+}
