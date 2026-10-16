@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
-from dataflows import (DataRequest, DataStatus, Dataflows, Dataset,
+from dataflows import (DataError, DataRequest, DataStatus, Dataflows, Dataset,
                        PreparePolicy, PreparedDataRef, DataResult)
 from strategy_runtime import (canonical_sha256, StrategyInputBinding,
                               ExecutionPriceBasis, ExecutionPricing)
@@ -50,6 +50,18 @@ class BacktestExecutionData:
         return pd.Timestamp(self.evaluation_sessions[-1])
 
 
+class BacktestExecutionDataPreparationError(ValueError):
+    """Preserve DFLS failure facts across the backtest application boundary."""
+
+    def __init__(self, *, input_name: str, error: DataError) -> None:
+        self.input_name = input_name
+        self.error = error
+        detail = error.message
+        if "missing_dates" in error.context:
+            detail += f"; missing_dates={error.context['missing_dates']}"
+        super().__init__(f"TDR execution-data preparation failed for {input_name}: {detail}")
+
+
 class BacktestExecutionDataNotReadyError(ValueError):
     def __init__(
         self,
@@ -82,24 +94,37 @@ def _ready(
     return _require_ready(result, name, evaluation_sessions, requested_cutoff)
 
 
-def _require_ready(result, name, evaluation_sessions=None, requested_cutoff=None):
+def _require_ready(
+    result: DataResult,
+    name: str,
+    evaluation_sessions: pd.DatetimeIndex | None = None,
+    requested_cutoff: date | None = None,
+) -> DataResult:
     if result.status is DataStatus.READY and result.identity is not None:
         return result
     if (
         result.status is DataStatus.INCOMPLETE
         and result.error is not None
         and evaluation_sessions is not None
+        and isinstance(result.error.context.get("actual_cutoff"), str)
     ):
-        actual = pd.Timestamp(str(result.error.context.get("actual_cutoff"))).normalize()
-        missing = evaluation_sessions[evaluation_sessions > actual]
+        try:
+            actual = pd.Timestamp(result.error.context["actual_cutoff"])
+            if pd.isna(actual):
+                raise ValueError("actual_cutoff must be a finite timestamp")
+            actual = actual.normalize()
+            missing = evaluation_sessions[evaluation_sessions > actual]
+        except (ValueError, TypeError, OverflowError) as exc:
+            raise BacktestExecutionDataPreparationError(input_name=name, error=result.error) from exc
         if not missing.empty:
             raise BacktestExecutionDataNotReadyError(
                 requested_cutoff=requested_cutoff or evaluation_sessions[-1].date(),
                 published_cutoff=actual.date(),
                 first_unpublished_session=missing[0].date(),
             )
-    detail = result.error.message if result.error is not None else result.status.value
-    raise ValueError(f"TDR execution-data preparation failed for {name}: {detail}")
+    if result.error is not None:
+        raise BacktestExecutionDataPreparationError(input_name=name, error=result.error)
+    raise ValueError(f"TDR execution-data preparation failed for {name}: {result.status.value}")
 
 
 def _prices(frame: pd.DataFrame) -> pd.DataFrame:

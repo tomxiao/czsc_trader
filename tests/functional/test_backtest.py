@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.application.errors import ExecutionError
-from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset
+from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset, IncompleteDataError
 from pathlib import Path
 from public_backtest_support import assert_public_charts, research_context, render_output
 from test_current_contracts import (
@@ -16,7 +16,7 @@ from test_current_contracts import (
 )
 
 
-def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
+def execution_flows(root, *, adjusted_price=1., procurement=None, space=None, data_failure=None):
     from dataflows.ohlcv_quality import (
         bind_quality_frame, build_quality_evidence, verify_daily_sessions,
     )
@@ -38,6 +38,8 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None):
         if str(request.dataset) == "calendar.trading_sessions":
             dates = pd.date_range(request.start, request.end)
             return pd.DataFrame({"Date": dates, "IsOpen": (dates.weekday < 5).astype(int)}), {"vendor": "test"}
+        if request.dataset is Dataset.ETF_OHLCV and data_failure is not None:
+            raise IncompleteDataError("injected incomplete daily observations", **data_failure)
         dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), pd.Timestamp("2026-09-21")))
         if request.dataset is Dataset.SECURITY_PRICE_LIMITS:
             frame = pd.DataFrame({"Date": dates, "UpLimit": 1.2, "DownLimit": 0.8})

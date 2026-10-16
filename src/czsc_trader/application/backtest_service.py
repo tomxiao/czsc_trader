@@ -12,6 +12,7 @@ from czsc_trader.backtesting import (
 from czsc_trader.backtesting.service import _run_backtest, BacktestEvaluation
 from czsc_trader.backtesting.execution_data import (
     BacktestExecutionDataNotReadyError,
+    BacktestExecutionDataPreparationError,
 )
 
 from ..research_tools.context import ResearchContext
@@ -89,6 +90,21 @@ def _run_authenticated_backtest(
                 "requested_cutoff": exc.requested_cutoff.isoformat(),
                 "published_cutoff": exc.published_cutoff.isoformat(),
                 "first_unpublished_session": exc.first_unpublished_session.isoformat(),
+            },
+        ) from exc
+    except BacktestExecutionDataPreparationError as exc:
+        raise ExecutionError(
+            "backtest_failed",
+            str(exc),
+            context={
+                "strategy": reference,
+                "symbol": request.symbol,
+                "input": exc.input_name,
+                "data_error": {
+                    "code": exc.error.code,
+                    "message": exc.error.message,
+                    "context": _plain(exc.error.context),
+                },
             },
         ) from exc
     except Exception as exc:
