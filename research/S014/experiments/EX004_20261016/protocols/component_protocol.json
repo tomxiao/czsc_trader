@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "stage": "COMPONENTS",
+  "symbol": "600722.SH",
+  "window": ["2020-01-01", "2026-10-15"],
+  "purpose": "Test role-specific daily information beyond simple price-volume controls; not a complete strategy or account-return claim.",
+  "source_readiness": "research/S014/experiments/EX002_20261016/others/input_readiness_fixed_1.json",
+  "mandate": "MANDATE/2",
+  "data_access": "Pinned public DFLS fetch in the S014 context only; no new source calls.",
+  "features": {
+    "window": 20,
+    "baseline": ["ret_1", "ret_5", "ret_20", "range_1", "volume_ratio_5_20"],
+    "trend": ["efficiency_20", "log_price__linear_trend__attr_\"slope\"", "log_price__linear_trend__attr_\"rvalue\"", "return__autocorrelation__lag_1"],
+    "reversal": ["close_location", "distance_ma10", "gain_loss_balance_14", "return__skewness"],
+    "risk": ["downside_std_20", "amount_ratio_5_20", "return_volume_corr_20", "return__standard_deviation", "volume_change__absolute_sum_of_changes"],
+    "information_interpretation": "All features are transformations of the same daily source. Any increment is representational, not an independent information source.",
+    "availability": "Features use bars through completed T only. First 20 sessions warm up inside the permitted interval. No external pre-window data."
+  },
+  "labels": {
+    "horizons": [3, 5, 10, 20],
+    "entry": "Each T independently plans a 100000-CNY full-cash 1% premium limit order with the existing SRT execution planner for T+1. TXE resolves daily range execution.",
+    "exit": "MARKET at the open H tradable sessions after entry; a lower-limit opening requires open plus one tick. If unreachable, retry the next tradable session until cutoff.",
+    "fees": 0.001,
+    "return": "Net cash profit divided by 100000 after both fees and actual planned lot quantity. Unfilled attempts have zero realized profit and explicit entry_filled=false.",
+    "risk": "Entry-relative worst close/exit-price decline during the holding interval; excludes intraday lows with unknown before/after-fill ordering. Not account maximum drawdown.",
+    "censoring": "Exclude attempts whose common planned horizon or actual delayed exit is outside cutoff. Do not force terminal liquidation.",
+    "maturity": "Training labels must mature strictly before the first test signal date.",
+    "scope_limit": "Overlapping independent trade attempts cannot be compounded or interpreted as a single-position account."
+  },
+  "design": {
+    "test_years": [2023, 2024, 2025, 2026],
+    "training": "Expanding history from 2020; train only on labels fully mature before the test year. 2026 is partial through the fixed cutoff.",
+    "preprocessing": "Train-only mean imputation and standardization. No future fit or cross-year resampling of model selection.",
+    "estimator": "Fixed linear ridge with intercept, penalty 10; same estimator for baseline and augmented features. No hyperparameter or strategy-parameter search.",
+    "selection": "Fix the 75th percentile of training predictions for return selection and the 25th percentile for adverse-movement selection, then apply unchanged to the following test year. Compare identical eligible test dates, report different actual selection fractions and do not use future-year score quantiles.",
+    "negative_control": "Also report unconditional attempt outcomes, fill rates and filled-only adverse movement to distinguish useful information from simply avoiding fills.",
+    "uncertainty": "5000 paired circular moving-block bootstrap draws, block length 20, resampled separately within test years. Compare contributions normalized by each fixed model's actual test selection fraction, weighted by eligible dates; these fractions normalize retrospective statistics only, never determine the trading signal. Missing selections remain unavailable.",
+    "multiple_comparisons": "12 comparisons (3 families times 4 horizons): report ordinary 95% and Bonferroni 1-0.05/12 intervals. These are development diagnostics, not future-success probabilities.",
+    "component_judgment": "Describe signs by year, pooled difference, strongest contrary evidence, filled-only risk and representational redundancy; no economic acceptance gate is added. Weak or mixed findings are not declared Alpha."
+  },
+  "resources": {"workers": 2, "native_threads_per_worker": 1, "seed": 13, "wall_clock_hours": 2, "new_upstream_calls": 0},
+  "precheck": "Synthetic serial/spawn results and prefix-causal feature equivalence before formal computation; verify tsfresh columns and transport.",
+  "output": ["features", "execution-aligned labels", "annual model coefficients", "out-of-time predictions", "comparisons and uncertainty", "component panel and RSCH report"],
+  "boundaries": ["No complete strategy search", "No candidate registration", "No S013 or other batch data", "No phase-three advance without user approval"]
+}

@@ -1,0 +1,288 @@
+{
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX003_20261016"
+  },
+  "delivery": {
+    "type": "DeliveryReference",
+    "batch": {
+      "type": "ResearchBatchRef",
+      "strategy_id": "S014"
+    },
+    "stage": "MANDATE",
+    "revision": 2,
+    "content_sha256": "1d0dc0090eac4f0ff6400d72ffcd9ded30b921c1f91825a4b8dfbb3a2987b3bf"
+  },
+  "status": "COMPLETE",
+  "validation": {
+    "type": "DeliveryValidation",
+    "status": "PASS",
+    "scope": "FULL",
+    "issues": []
+  },
+  "evidence": {
+    "authorization": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "f686b79afd9b1f2b6f00d58c7c0aee8ffa2bb84bda27a0bdb684b31571397702.json",
+      "sha256": "f686b79afd9b1f2b6f00d58c7c0aee8ffa2bb84bda27a0bdb684b31571397702",
+      "media_type": "application/json",
+      "name": "authorization",
+      "schema": null,
+      "schema_version": null
+    },
+    "confirmed-contract": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "38f05048835831b49ec4a4e22433dea0446cd749f53851b01fe4154bbd105f4e.json",
+      "sha256": "38f05048835831b49ec4a4e22433dea0446cd749f53851b01fe4154bbd105f4e",
+      "media_type": "application/json",
+      "name": "confirmed-contract",
+      "schema": null,
+      "schema_version": null
+    },
+    "input-readiness": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "2da90c090e4769adaba8100713fead4349dfa7ea219349f428c9263949ac74b5.json",
+      "sha256": "2da90c090e4769adaba8100713fead4349dfa7ea219349f428c9263949ac74b5",
+      "media_type": "application/json",
+      "name": "input-readiness",
+      "schema": null,
+      "schema_version": null
+    },
+    "readiness-program": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "dd458ce749a0383022f2263e5bfc8c62d6eb71a19c23eda0c3e1f3af4f607dfa.py",
+      "sha256": "dd458ce749a0383022f2263e5bfc8c62d6eb71a19c23eda0c3e1f3af4f607dfa",
+      "media_type": "text/x-python",
+      "name": "readiness-program",
+      "schema": null,
+      "schema_version": null
+    },
+    "annual-method": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "28c62395b419acefa49dad4b489a218cd088abce5002f0a1bb8907110fc700b8.py",
+      "sha256": "28c62395b419acefa49dad4b489a218cd088abce5002f0a1bb8907110fc700b8",
+      "media_type": "text/x-python",
+      "name": "annual-method",
+      "schema": null,
+      "schema_version": null
+    },
+    "annual-checks": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX003_20261016"
+      },
+      "evidence_id": "ac3ba7e4e27e9c6c2ad4e6c055679d07b0b98f7eccf1b1ae723be8dd406b3860.json",
+      "sha256": "ac3ba7e4e27e9c6c2ad4e6c055679d07b0b98f7eccf1b1ae723be8dd406b3860",
+      "media_type": "application/json",
+      "name": "annual-checks",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "ready_inputs": [
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "items": [
+        {
+          "status": "READY",
+          "error": null
+        }
+      ],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "c951062b-e7f2-4633-bba2-9834217ac8d2",
+        "manifest_sha256": "b6d7510045c946874f20b83c05f79086288266d5ac67629c773913a2a9cafba2"
+      },
+      "rows": 2480,
+      "content_sha256": "aa048f9e44af79f4c71ff0be5d07b99e8f32ef1f9118d6251b5127a8f1087a41",
+      "columns": [
+        "Date",
+        "IsOpen",
+        "PreviousTradingDate"
+      ],
+      "exchange_sessions": 1642
+    },
+    {
+      "request": {
+        "dataset": "stock.ohlcv",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "items": [
+        {
+          "status": "READY",
+          "error": null
+        }
+      ],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "f80a90f5-01e2-4002-a93f-9296dd211cea",
+        "manifest_sha256": "b85d756d62605404091d2a74fd176ddccb00041e8c6aa659f79e202b591423ec"
+      },
+      "rows": 1642,
+      "content_sha256": "d4d86b11b0c1fcff699d3a0b0376cd1d7db994d22dc23a1b209a234e8b17f4da",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount",
+        "AvailableDate"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "stock.unadjusted_daily",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "items": [
+        {
+          "status": "READY",
+          "error": null
+        }
+      ],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "c683b86f-29a6-474d-bf5a-ac8efac45e3c",
+        "manifest_sha256": "afee64e931ff8e12fea94bea7da8377eef5ef553cff230db4c42e5c9ce0a2bd0"
+      },
+      "rows": 1642,
+      "content_sha256": "17599042a40f3a6c6f9f56244ae482c1f41771dad883a8944227d7e66a6e2612",
+      "columns": [
+        "Date",
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume",
+        "Amount"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "items": [
+        {
+          "status": "READY",
+          "error": null
+        }
+      ],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "1a904d3f-a519-4ef0-addd-ca4ed71faa3b",
+        "manifest_sha256": "750115facaab31f0d552d9986e0039a1039b560fb47017d87cc7b0dbeae1e088"
+      },
+      "rows": 1642,
+      "content_sha256": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+      "columns": [
+        "Date",
+        "UpLimit",
+        "DownLimit"
+      ]
+    },
+    {
+      "request": {
+        "dataset": "security.trading_status",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "items": [
+        {
+          "status": "READY",
+          "error": null
+        }
+      ],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "50b03a3f-4488-4298-806d-4d623a477368",
+        "manifest_sha256": "1e288197c3c82760d5d959d2a20a8ceb113d1480092aa294adaf233670f4ba18"
+      },
+      "rows": 1642,
+      "content_sha256": "2e69a0ee72636f3a850a72f97126b82c088207d4fa58fc96cfcef5c8404daa3b",
+      "columns": [
+        "Date",
+        "Status"
+      ],
+      "status_counts": {
+        "TRADING": 1642
+      }
+    }
+  ],
+  "source_calls_after_fix": 44,
+  "remaining_source_budget": 6,
+  "report_copy": {
+    "formal_report": "research/S014/deliveries/MANDATE/2/report.md",
+    "experiment_report": "research/S014/experiments/EX003_20261016/others/report.md",
+    "bytes": 3169,
+    "sha256": "22d5d8134333645a5586636e18306009c75a6c66311816695f2ab250a14c8390",
+    "status": "PASS"
+  }
+}

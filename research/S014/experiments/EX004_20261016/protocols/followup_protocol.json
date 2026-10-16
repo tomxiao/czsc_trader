@@ -1,0 +1,14 @@
+{
+  "purpose": "Distinguish a weak 3-session reversal clue from feature redundancy and a linear-model expression limitation.",
+  "trigger": "Initial 3-session reversal difference is positive in 3/4 years but its 95% interval crosses zero; other expansions have no stable increment.",
+  "adaptive_design_disclosure": "This design is chosen after seeing initial component results. Same development-pool outcomes are reused; it is not independent validation.",
+  "ablation": "At horizon 3 only, add each of four reversal features separately to the baseline and remove each separately from the full reversal group. Fixed ridge penalty remains 10.",
+  "expression_control": "At all four horizons, repeat baseline and the three augmented families with one fixed depth-2 regression tree, minimum leaf size 50, seed 13. No depth or leaf-size tuning.",
+  "causality": "Reuse original eligible dates, mature-label purge, train-only preprocessing and training prediction quantile thresholds.",
+  "comparisons": 20,
+  "total_disclosed_comparisons": 32,
+  "uncertainty": "5000 within-year paired circular 20-session block draws; report ordinary 95% and Bonferroni 1-0.05/32 intervals for these followups. Adaptive design still limits inference.",
+  "scope": "No account strategies, hyperparameter search, new external inputs, economic gates or stage-three advancement.",
+  "workers": 2,
+  "native_threads_per_worker": 1
+}
