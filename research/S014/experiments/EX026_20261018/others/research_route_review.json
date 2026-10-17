@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "account_runs": 0,
+  "upstream_calls": 0,
+  "evidence_sha256": {
+    "research/S014/experiments/EX026_20261018/others/account_results.json": "d83203b689ad6afa76b16c03cb8947189e99a4619c599798524919d78668e75f",
+    "research/S014/experiments/EX026_20261018/others/annual_comparison.csv": "84ed5e8f9901f49b2680ab3bf2705489b0460e60a18db54376fdecb0af278afd",
+    "research/S014/experiments/EX026_20261018/others/path_diagnostics.json": "d5199e67ffcb1d9b058c1ad7b8fc9b3e485a5beb6304bca4070d59d25b898a3d",
+    "research/S014/experiments/EX026_20261018/others/account_audit.json": "47bc4a9f0c55626396187fe543ce9179cbaca337b46e450ae5412619038494d0"
+  },
+  "account_summary": [
+    {
+      "variant": "support_entry_H10",
+      "total_return": 4.416045839999995,
+      "annual_return_pass_count": 3,
+      "annual_drawdown_pass_count": 5,
+      "closed_trades": 137,
+      "frequency_per_60": 5.006090133982948
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "total_return": 7.087224249999997,
+      "annual_return_pass_count": 4,
+      "annual_drawdown_pass_count": 7,
+      "closed_trades": 138,
+      "frequency_per_60": 5.0426309378806335
+    },
+    {
+      "variant": "support_first_profit_exit_H10",
+      "total_return": 7.118778269999996,
+      "annual_return_pass_count": 3,
+      "annual_drawdown_pass_count": 6,
+      "closed_trades": 137,
+      "frequency_per_60": 5.006090133982948
+    },
+    {
+      "variant": "support_entry_H3",
+      "total_return": 1.4512229799999945,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 5,
+      "closed_trades": 352,
+      "frequency_per_60": 12.862362971985384
+    },
+    {
+      "variant": "support_exit_reserve_H3",
+      "total_return": 1.8212632599999905,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 5,
+      "closed_trades": 352,
+      "frequency_per_60": 12.862362971985384
+    },
+    {
+      "variant": "support_first_profit_exit_H3",
+      "total_return": 1.4512229799999945,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 5,
+      "closed_trades": 352,
+      "frequency_per_60": 12.862362971985384
+    },
+    {
+      "variant": "support_entry_H5",
+      "total_return": 0.25807613000000185,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 3,
+      "closed_trades": 244,
+      "frequency_per_60": 8.915956151035322
+    },
+    {
+      "variant": "support_exit_reserve_H5",
+      "total_return": 0.8906143999999976,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 7,
+      "closed_trades": 245,
+      "frequency_per_60": 8.95249695493301
+    },
+    {
+      "variant": "support_first_profit_exit_H5",
+      "total_return": 0.3989878899999999,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 3,
+      "closed_trades": 244,
+      "frequency_per_60": 8.915956151035322
+    }
+  ],
+  "finding": "All three H3 mechanisms improve total return versus corresponding H5 and improve 2024. This is a provisional short-domain boundary improvement, not H10 superiority or target achievement. All six short accounts pass return only2020/2024.",
+  "counterevidence": [
+    "H3 R is worse than H5 R in2022/2023.",
+    "Every H3 total return is below its H10 counterpart.",
+    "H3 P accepted no early exit and equals H3 B: not independent corroboration.",
+    "B H3-H10 cyclelog: matched +.652301; omitted old -2.438943; new +.993863; total -.792779. Replaced entry paths, not merely fees, explain the short-cycle deterioration."
+  ],
+  "recommendation": {
+    "structure": "One bounded check: H1 B representative plus H2 B/R/P; six H3/H10 accounts reused.",
+    "basis": "RSCH_AGENT requires expansion when improvement reaches a provisional boundary. H1 is natural minimum under T+1; no H0 or further lower-neighbor search.",
+    "H1": "BUY-dayclose is deadline; strictly early interval empty. R timeout and support exit coincide; reservation expires nextsession; blocked SELL latch identical. Prove economic equivalence and execute one representative only.",
+    "H2": "Only actual BUY-dayclose is strictly early. Retain B/R/P fixed controls.",
+    "selector": "Annual complementarity provides no demonstrated decision-time state. No year switching, hindsight best horizon, or conditional-alpha claim.",
+    "refutation": "If lower edge fails original targets, close uniform short-cycle route. Any later construction needs known-at-close mechanism and actual path evidence; no new threshold by default."
+  },
+  "next_experiment": "EX027_20261018 already publicly locked",
+  "limits": "Already-seen adaptive data; diagnostics add no acceptance gate and no out-of-sample claim."
+}

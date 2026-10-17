@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "Independent EX026 H3/H5 by B/R/P short whole-cycle method and audit design, six new accounts plus three exact H10 baselines. No new replay/upstream by reviewer.",
+  "causal_contract": [
+    "Actual BUY indexE sets deadline E+H-1; next-session SELL begins E+H. B timeout only, no explicit reservation observation.",
+    "R/P reservation E+H survives early SELL/flat until next actual BUY. Earliest fresh BUY decision E+Hclose and execution E+H+1; no future baseline clock.",
+    "R exits on any current strict supportbreak or deadline. P checks first supportbreak strictly before deadline once: normalizedClose/(actual normalizedBUYprice*1.001)-1>0, else ignore later breaks until deadline.",
+    "H3 permits early P evaluation only atE/E+1, while E+2 is timeout. H5 permits E..E+3 and E+4 timeout. Entryday break is legal; zero P is not positive.",
+    "Support floor remains previous5completed evaluation closes, readiness60sessions, no up-candle/high-environment/start-delay filter. holding_horizon must equal actual lockedH while held/newBUYplanned.",
+    "PendingSELL remains irreversible and retries canonical execution; buy-failure reset and all fees/fullcashlotrules unchanged."
+  ],
+  "independent_audit": [
+    "From actual BUY/SELL fills reconstruct actual clock, fixedH, retainedreservation and holdingquantity; compare every public shadow field and prior-day target.",
+    "Independently rebuild previous-five support and strict first-break P from actual fills/normalized dailyclose; verify events/zero otherwise, selected/rejected counts and no recheck.",
+    "Reuse authenticated EX017 ledger audit for canonical limit/open/tick price rules, quantities, fees, cash, fullcashlot sizing and unchanged BuyHold.",
+    "Authenticate C0062..C0067 and exact C0034/C0056/C0057 reuse, runtime/precheck hashes, zero source access and actual stock status coverage."
+  ],
+  "interpretation": [
+    "Six coarse H3/H5 controls change both exposure length and reserved participation rate; result cannot be attributed solely to less risk or more trades.",
+    "Prior parent-mechanism H3 success does not transfer to support entries; ninecells are seen-data overlapping research outcomes.",
+    "Short horizons can truncate winners and increase fees/repeated losses. Retain all annual targets, all new outcomes and matched/uniquepath explanations rather than selecting besthorizon.",
+    "H3 boundary improvement would motivate a separately reasoned lower-bound check, not automatic optimality or free integer scan.",
+    "60*CLOSED/1642 and all7 annual return/DD goals unchanged; mathematical uniformH20 frequency limit is not an extra acceptance requirement."
+  ],
+  "new_account_runs": 0,
+  "external_calls": 0
+}

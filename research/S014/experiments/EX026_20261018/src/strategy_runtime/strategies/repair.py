@@ -1,0 +1,150 @@
+"""Three support exit mechanisms at locked H3, H5 and baseline H10 clocks."""
+from datetime import date,datetime,time
+from decimal import Decimal,ROUND_FLOOR,ROUND_HALF_UP
+import numpy as np
+import pandas as pd
+from dataflows import DataRequest,Dataset
+from strategy_runtime import (StrategyImplementation,ParameterSet,StrategyDefinition,ObservationDefinition,ObservationSeries,
+    InputContract,InputRequirement,CutoffRule,DecisionContract,ExecutionPolicy,MonitoringPolicy,RequiredCapabilities,CalculationScope)
+from trading_execution_engine import OrderSpec,DailyQuote,SessionPriceLimits,resolve_fill
+
+CONDITIONAL=('support_first_profit_exit_H10','support_first_nonprofit_exit_H10')
+BASES=('support_entry_H10','support_exit_reserve_H10','support_first_profit_exit_H10')
+SHORT_VARIANTS=tuple(base[:-2]+str(h) for h in (3,5) for base in BASES)
+VARIANTS=BASES+SHORT_VARIANTS
+BRANCH_OBSERVED=('first_break_evaluated','early_exit_selected','float_pnl','break_checked','entry_fill_price')
+EVALUATION_START=pd.Timestamp('2020-01-02')
+OBSERVED=('ready','support_ok','warmup_sessions','held_at_close','buy_filled_today','sell_filled_today',
+          'failed_buy_reset','entry_signal','exit_pending','support_break','deadline_index','entry_index')
+
+
+def tick(value,mode=ROUND_FLOOR):
+    return float((Decimal(str(value))/Decimal('.01')).to_integral_value(rounding=mode)*Decimal('.01'))
+
+
+def buy_limit(previous_raw_close,previous_scale):
+    return min(tick(previous_raw_close*1.01),tick(tick(previous_raw_close*1.1)-.01,ROUND_HALF_UP))*previous_scale
+
+
+def parse_variant(variant):
+    if not isinstance(variant,str) or variant not in VARIANTS:
+        raise ValueError('Unknown locked support horizon variant')
+    stem,horizon=variant.rsplit('_H',1)
+    return stem+'_H10',int(horizon)
+
+
+def history(market,raw,limits,status,variant):
+    variant,horizon=parse_variant(variant)
+    conditional=variant in CONDITIONAL
+    reserve=variant=='support_exit_reserve_H10' or conditional
+    reservation=-1;break_checked=False;entry_fill_price=0.
+    market=market.set_index(pd.to_datetime(market.Date)).sort_index()
+    raw=raw.set_index(pd.to_datetime(raw.Date)).reindex(market.index)
+    bounds=limits.set_index(pd.to_datetime(limits.Date))
+    states=status.set_index(pd.to_datetime(status.Date))
+    if market.index.has_duplicates or raw.Close.isna().any():
+        raise ValueError('Unique aligned prices required')
+    scale=market.Close/raw.Close
+    in_window=market.index>=EVALUATION_START
+    counts=np.cumsum(in_window)
+    # The execution prewindow is not support history or one of the 60 warmup closes.
+    support=market.Close.where(in_window).shift(1).rolling(5,min_periods=5).min()
+    held=False;entry=None;deadline=None;intent=None;exit_pending=False;rows=[]
+    for i,day in enumerate(market.index):
+        bought=False;sold=False;failed_buy=intent is not None and intent['side']=='BUY'
+        first_break_evaluated=False;early_exit_selected=False;float_pnl=0.
+        if intent is not None:
+            if day not in states.index:
+                raise ValueError('Missing stock trading status')
+            state=states.loc[day,'Status']
+            if state not in ('TRADING','SUSPENDED'):
+                raise ValueError('Unknown trading status')
+            if state=='TRADING':
+                if day not in bounds.index:
+                    raise ValueError('Missing price limits')
+                b=bounds.loc[day];bar=market.iloc[i]
+                rule=SessionPriceLimits(day.date(),float(b.DownLimit*scale.iloc[i]),float(b.UpLimit*scale.iloc[i]),float(.01*scale.iloc[i]))
+                order=OrderSpec('BUY','LIMIT',100,intent['limit']) if intent['side']=='BUY' else OrderSpec('SELL','MARKET',100)
+                fill=resolve_fill(order,session_open=float(bar.Open),session_time=datetime.combine(day.date(),time(9,30)),
+                    intraday_touches=(),daily_quote=DailyQuote(float(bar.Low),float(bar.High)),session_limits=rule)
+                if fill.filled:
+                    if intent['side']=='BUY':
+                        held=True;entry=i;deadline=i+horizon-1;bought=True;failed_buy=False;exit_pending=False
+                        if reserve:reservation=i+horizon
+                        if conditional:entry_fill_price=float(fill.price);break_checked=False
+                    else:
+                        held=False;entry=None;deadline=None;sold=True;exit_pending=False
+                        if conditional:entry_fill_price=0.;break_checked=False
+        ready=bool(counts[i]>=60 and np.isfinite(support.iloc[i]))
+        support_ok=bool(np.isfinite(support.iloc[i]) and market.Close.iloc[i]>=support.iloc[i])
+        support_break=bool(np.isfinite(support.iloc[i]) and market.Close.iloc[i]<support.iloc[i])
+        intent=None;target=0.;accepted=False
+        if held:
+            if conditional and not exit_pending and not break_checked and i<deadline and support_break:
+                first_break_evaluated=True;break_checked=True
+                float_pnl=float(market.Close.iloc[i])/(entry_fill_price*1.001)-1
+                early_exit_selected=float_pnl>0 if variant=='support_first_profit_exit_H10' else float_pnl<=0
+                if early_exit_selected:exit_pending=True
+            if i>=deadline or (variant in ('support_exit_H10','support_exit_reserve_H10') and support_break):
+                exit_pending=True
+            if exit_pending:
+                intent={'side':'SELL'}
+            else:
+                target=1.
+        elif not failed_buy and ready and (not reserve or i>=reservation) and (variant=='repeated_H10' or support_ok):
+            intent={'side':'BUY','limit':buy_limit(float(raw.Close.iloc[i]),float(scale.iloc[i]))}
+            target=1.;accepted=True
+        rows.append(dict(target_position=target,ready=ready,support_ok=support_ok,support_floor=support.iloc[i],
+                         warmup_sessions=int(counts[i]),held_at_close=held,buy_filled_today=bought,sell_filled_today=sold,
+                         failed_buy_reset=failed_buy,entry_signal=accepted,holding_horizon=horizon if held or accepted else 0,
+                         exit_pending=exit_pending,support_break=support_break,
+                         deadline_index=deadline if deadline is not None else -1,entry_index=entry if entry is not None else -1))
+        if reserve:rows[-1]['reservation_index']=reservation
+        if conditional:rows[-1].update(first_break_evaluated=first_break_evaluated,early_exit_selected=early_exit_selected,
+            float_pnl=float_pnl,break_checked=break_checked,entry_fill_price=entry_fill_price)
+    return pd.DataFrame(rows,index=market.index)
+
+
+class RepairStrategy(StrategyImplementation):
+    def __init__(self,parameters):
+        if set(parameters.values)!={'variant'}:
+            raise ValueError('Exactly one locked support horizon variant required')
+        base,_=parse_variant(parameters.values['variant'])
+        self._parameters=parameters
+        self._observed=OBSERVED+(('reservation_index',) if base!='support_entry_H10' else ())
+        if base in CONDITIONAL:self._observed+=BRANCH_OBSERVED
+        self._definition=StrategyDefinition(parameters=parameters,tradable_symbol='600722.SH',
+            inputs=InputContract((InputRequirement('calendar',Dataset.TRADING_CALENDAR.value,'SSE','daily',0,CutoffRule.SIGNAL_SESSION),)+tuple(InputRequirement(n,d.value,'600722.SH','daily',1 if n in ('market','raw') else 0,CutoffRule.SIGNAL_SESSION) for n,d in [('market',Dataset.STOCK_OHLCV),('raw',Dataset.STOCK_UNADJUSTED_DAILY),('limits',Dataset.SECURITY_PRICE_LIMITS),('status',Dataset.SECURITY_TRADING_STATUS)])),
+            decision=DecisionContract('TARGET_POSITION',0.,1.,'NEXT_SESSION'),
+            execution=ExecutionPolicy('FROZEN_RULE',{'capital':{'fee_rate':.001,'mode':'full_available_cash','target_scope':'entry_cycle'},'entry':{'order_type':'LIMIT','limit_parameter':.01},'exit':{'order_type':'MARKET','limit_ratio':.1},'instrument':{'lot_size':100,'maximum_order_quantity':1000000,'price_limit_ratio':.1,'price_tick':.01}}),
+            monitoring=MonitoringPolicy('OBSERVE',{}),capabilities=RequiredCapabilities((Dataset.TRADING_CALENDAR.value,Dataset.STOCK_OHLCV.value,Dataset.STOCK_UNADJUSTED_DAILY.value,Dataset.SECURITY_PRICE_LIMITS.value,Dataset.SECURITY_TRADING_STATUS.value),('LIMIT','MARKET')),
+            observation=ObservationDefinition(tuple(ObservationSeries(name,name,name) for name in self._observed),()))
+
+    @classmethod
+    def from_parameters(cls,parameters:ParameterSet):
+        return cls(parameters)
+
+    @property
+    def definition(self):
+        return self._definition
+
+    def calendar_request(self,tradable_window):
+        return DataRequest(Dataset.TRADING_CALENDAR,'SSE','2019-12-01',tradable_window.end.isoformat(),tradable_window.end.isoformat())
+
+    def derive_calculation_scope(self,tradable_window,calendar_dates):
+        if tradable_window.start!=date(2020,1,2):
+            raise ValueError('This comparison requires the original full-window account start')
+        trading=tuple(x for x in calendar_dates if tradable_window.contains(x));signals={x:max(p for p in calendar_dates if p<x) for x in trading}
+        first,last=min(signals.values()),max(signals.values());requests={}
+        for requirement in self.definition.inputs.requirements:
+            if requirement.name=='calendar':
+                continue
+            start=max(first,date(2020,1,1)) if requirement.name=='limits' else first
+            requests[requirement.name]=DataRequest(requirement.dataset,requirement.subject,start.isoformat(),last.isoformat(),last.isoformat())
+        calculation=tuple(x for x in calendar_dates if first<=x<=last)
+        return CalculationScope(tradable_window,trading,signals,calculation,requests)
+
+    def calculate_history(self,inputs,sessions):
+        out=history(inputs['market'],inputs['raw'],inputs['limits'],inputs['status'],self._parameters.values['variant'])
+        out[list(self._observed)]=out[list(self._observed)].astype(float)
+        return out.loc[sessions]

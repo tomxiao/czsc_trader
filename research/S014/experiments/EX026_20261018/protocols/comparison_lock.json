@@ -1,0 +1,58 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 7,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX026_20261018"
+  },
+  "hypothesis": "A fixed ten-session capital cycle can miss fresh recovery opportunities even after an early exit. Shorten the WHOLE planned holding and reservation cycle while retaining original permissive support entry, and compare whether the effect depends on fixed/all-break/profitable-first-break exits.",
+  "trigger": {
+    "source_sha256": {
+      "research/S014/experiments/EX025_20261018/others/account_results.json": "4b763777af6067079c32fe61e077e19b039ac70983f3ace1a3a573718e206ef9",
+      "research/S014/experiments/EX025_20261018/others/annual_comparison.csv": "d456b6aad61db52f0badb9ef9249fec0735a2068dee5112bcf06e196d1f15c62",
+      "research/S014/experiments/EX025_20261018/others/path_diagnostics.json": "752a17ce21c07b59ba1c37cdc953fc956002dbe112c1866b126bc5268746d53a",
+      "research/S014/experiments/EX025_20261018/others/frequency_feasibility.json": "8e362ba6aa085b92b0d8d3a034f809ab24ce50b505e435c703e2a784139d042c"
+    },
+    "observations": "Up-candle filtering produced only40/36/40 matchedentries and90/94/90 newentries; lost old profitable paths and newpaths also negative. All three new accounts deteriorated. Prior initial-delay study changes startup only, not recurring cycle. All support accounts so far useH10. Do not continue candle threshold tuning.",
+    "domain_basis": "H3 is the existing short repair scale studied in the separate parent mechanism; H5 is one trading-week scale and lies between H3 and originalH10. Their profitability does not transfer automatically to support entries. Two coarse predeclared shorter horizons, not adjacent integer/phase optimization. H10 remains three exact baseline controls."
+  },
+  "new_variants": [
+    "support_entry_H3",
+    "support_exit_reserve_H3",
+    "support_first_profit_exit_H3",
+    "support_entry_H5",
+    "support_exit_reserve_H5",
+    "support_first_profit_exit_H5"
+  ],
+  "candidate_ids": {
+    "support_entry_H3": "S014-C0062",
+    "support_exit_reserve_H3": "S014-C0063",
+    "support_first_profit_exit_H3": "S014-C0064",
+    "support_entry_H5": "S014-C0065",
+    "support_exit_reserve_H5": "S014-C0066",
+    "support_first_profit_exit_H5": "S014-C0067"
+  },
+  "baseline_mapping": {
+    "support_entry_H3": "support_entry_H10",
+    "support_exit_reserve_H3": "support_exit_reserve_H10",
+    "support_first_profit_exit_H3": "support_first_profit_exit_H10",
+    "support_entry_H5": "support_entry_H10",
+    "support_exit_reserve_H5": "support_exit_reserve_H10",
+    "support_first_profit_exit_H5": "support_first_profit_exit_H10"
+  },
+  "reused_candidates": {
+    "support_entry_H10": "S014-C0034",
+    "support_exit_reserve_H10": "S014-C0056",
+    "support_first_profit_exit_H10": "S014-C0057"
+  },
+  "entry": "Original support only, no candle/high-environment filter:60 evaluation-session warmup,Close>=minimum previous5completed evaluationcloses,originalfreshlimit/failedBUYreset/fullcash. Do not change the support lookback when changing holding horizon.",
+  "clock": "Actual BUY atE sets timeout decision E+H-1, SELL fromE+H next session. R/P retain reservation E+H across earlySELL/flat, permit nextBUYdecisionat/afterE+Hclose. Thus earliest nextrealBUY E+H+1. B onlytimeout has same normal cycle but no added reserve field. Own actual clock, nofuturecounterfactualbaseline.",
+  "exit": "B onlytimeout; R any strict supportbreak or timeout; P atFIRST supportbreak strictly before E+H-1close tests Close/(actualBUYprice*1.001)-1>0 once, exitsiftrueelseholdtotimeout with no recheck. PendingSELLcannotwithdraw. ActualBUYday can be earlybreak. EqualPzero notpositive. OriginalfailedSELL/status/limitdownruleunchanged.",
+  "sampling": "Six fixed configurations (H3/H5 x B/R/P) pre-enqueuedOptuna seed17, three H10 baseline accounts authenticated and reused, ninecell comparison. No supportwindow/price/phase threshold optimization, no free sampling or pruning; maxworkers2/native1.",
+  "analysis": "Alloriginal7annualtargets and60*CLOSED/1642; fees andexposure; actualpre2026NAV; actualmatched/uniqueentry paths; horizon-withinexit and exit-withinhorizon comparisons. Boundary improvement atH3 requires a subsequent reasoned lower-bound check, not automatic optimality claim. Accountpath results remain seen-sample research.",
+  "refutation": "Shorter cycles can cut winners, increase fees or amplify repeated losses. If neither short horizon improves remaining targets or viable tradeoffs, do not keep scanning everyinteger. Annual strengths must not be spliced with hindsight year switches. H20 uniformcycles arefrequency-infeasible; this doesnotforbid separatelyjustifiedmixedhorizons.",
+  "frozen": "Same nominal2020-01-01..2026-10-15,1642sessions,100000cash,.001eachside,100lot,maxqty1m,HFQ,originallimitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;eachyearreturn>=1.5positiveBHelse>0,eachyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "ExistingS014pinneddataonly,allseen,noannouncements,newdata,platform,phase4,production,remote."
+}

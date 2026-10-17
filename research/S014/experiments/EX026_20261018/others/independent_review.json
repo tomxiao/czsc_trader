@@ -1,0 +1,87 @@
+{
+  "status": "PASS",
+  "scope": "EX026 six short-cycle accounts with three exact H10 baselines: independent actual-fill clock/execution audit, annual targets, path decomposition and final report/proposed publication. Reviewer performs no new account replay, source calls or publication.",
+  "checks": [
+    "Six COMPLETE fixed Optuna trials match C0062..C0067 locked order; all six worst-target-margin objectives independently recalculated.",
+    "All63 annual return/drawdown rows reconstructed from nine formal dailyNAV tables using previous-year closing NAV; all frequencies, counts and all-target flags independently agree.",
+    "248 causal/public prechecks and189200 independent execution/state checks PASS; source closure and full-audit bytes authenticated. Original BuyHold, fullcashlot quantities, fee/cash accounting, canonical prices and stock status independently reconciled.",
+    "Deadline E+H-1 and R/P reservation E+H rebuilt from actual fills, with support window5 and warmup60 unchanged. H3 P evaluations only E/E+1; H5 only E..E+3. Rejected first break never re-evaluates.",
+    "H3P108firstbreaks allnonpositive, selects0/rejects108, ignores25laterbreaks. B_H3/P_H3 daily,fills,orders,trades excluding identity IDs exact;19common decision fields exact. Six configurations yield five distinct economic paths, not independent validation.",
+    "H5P119firstbreaks=3positive+116nonpositive, selects3/rejects116, ignores81laterbreaks. The3selected dates occur at E or E+1, demonstrating H3 zeroevents is observed-path-specific rather than a mathematical impossibility.",
+    "H3 all352actualentries;H5 all245. R_H3/H5 earlyexit108/119, retainedreservationflat170/330 andblockedeligible107/207. P_H5 waits11/blocked9. H3each2failedSELL/H5each1retainlatch. Actual suspension0 distinguished from synthetic coverage.",
+    "18 full/pre2026 account cycle/NAV reconciliations PASS;30 aggregate paired logdifferences independently equal actual log1p-return differences. OutputCSV/helper hashes authenticated.",
+    "Final7 formal-relative report links, four final report/source hashes, route fingerprints and EX027 trigger hashes independently verified. Route preserves annual reversals, H10 superiority and already-seen adaptive lower-bound nature.",
+    "Proposed CANDIDATES/10 inherits51 and adds6 to57 unique identities. Zero phase-four handoff. Budget changes completed only, preserves allocated8; stage7 complete/stage8 executing."
+  ],
+  "findings": [],
+  "economic_result": {
+    "new_total_returns": [
+      1.4512229799999945,
+      1.8212632599999905,
+      1.4512229799999945,
+      0.25807613000000185,
+      0.8906143999999976,
+      0.3989878899999999
+    ],
+    "new_annual_return_pass_counts": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "new_annual_drawdown_pass_counts": [
+      5,
+      5,
+      5,
+      3,
+      7,
+      3
+    ],
+    "new_distinct_economic_paths": 5,
+    "fully_passing_comparison_accounts": 0,
+    "phase_four_ready": false
+  },
+  "limitations_to_preserve": [
+    "All six new return goals pass only2020/2024; H5R allannualDDpass does not establish fulltarget readiness.",
+    "H3 exceeds H5 fullreturn but not every year; all six are below corresponding H10 full/pre2026return. No monotone shorter-is-better claim.",
+    "P_H5 has only3selected early exits; H3 B/P equivalence is path-specific.",
+    "Short clocks replace entry opportunities and alter holding/earlyexit/cash/fees jointly; log decomposition is arithmetic, not independent causal effect.",
+    "EX027 is a separately locked adaptive boundary follow-up on already-seen data, no extra acceptance gate or automatic phase-four action."
+  ],
+  "publication_review": {
+    "reviewed_only": true,
+    "formal_publication_executed": false,
+    "intended_delivery": "CANDIDATES/10",
+    "registered_count_after_success": 57,
+    "hash_binding": "Material changes after reviewed bytes require renewed review."
+  },
+  "source_file_sha256": {
+    "research/S014/experiments/EX026_20261018/protocols/account_report.md": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+    "research/S014/experiments/EX026_20261018/src/write_report.py": "36679bfbb5388337fb4525cfff9e111a7732770fee6a9f1f279206f29810aba6",
+    "research/S014/experiments/EX026_20261018/others/comparison.json": "682034fb032f08cf408fbd1784bbfab49f06ce6c64315d726c75bdfce0998324",
+    "research/S014/experiments/EX026_20261018/src/publish_accounts.py": "944cad04d06f8ab2fc7accfeeb6f60288397480dc273af776f3f36045fce60e6",
+    "research/S014/experiments/EX026_20261018/protocols/comparison_lock.json": "dbcce8eec163b08cd44756712a2752f6a1d937b5f6c6cf44775a91612a86d06c",
+    "research/S014/experiments/EX026_20261018/src/run_accounts.py": "8eb2abc159b7f4d262e6db1dd06bd767515ad1e3ab28c5578fbf2debebc24939",
+    "research/S014/experiments/EX026_20261018/src/compare_accounts.py": "fc7ee5fc2b307bfd3816a48434c3377bc0ca1f6ff7ea6f730ab102a793dd6dec",
+    "research/S014/experiments/EX026_20261018/src/path_diagnostics.py": "bb729563ba89a0da9d9a004367bae4961155f87b2ef5556ec066a0981a8d8181",
+    "research/S014/experiments/EX026_20261018/src/audit_accounts.py": "28db757b419dff30e50c1591011a540856947230ece52b9064b29393b84a250a",
+    "research/S014/experiments/EX026_20261018/src/strategy_runtime/strategies/repair.py": "17c21f3086fa2222a44b5a773f32f310549871da1470053f1c389ed7ea3fb491",
+    "research/S014/experiments/EX026_20261018/others/precheck.json": "344b4b2f427b2a95cf90506b29c802758548b33bc1547ae61ed23d85c389b6d8",
+    "research/S014/experiments/EX026_20261018/others/account_audit.json": "47bc4a9f0c55626396187fe543ce9179cbaca337b46e450ae5412619038494d0",
+    "research/S014/experiments/EX026_20261018/others/account_results.json": "d83203b689ad6afa76b16c03cb8947189e99a4619c599798524919d78668e75f",
+    "research/S014/experiments/EX026_20261018/others/comparison_accounts.json": "b05b6dbca83ac918101b893756964cdde6adb38d3ac034a0f307970918946d29",
+    "research/S014/experiments/EX026_20261018/others/annual_comparison.csv": "84ed5e8f9901f49b2680ab3bf2705489b0460e60a18db54376fdecb0af278afd",
+    "research/S014/experiments/EX026_20261018/others/optuna_trials.json": "27dfe0b043577f77caa1f4eb45032af828b0dac61c25d70eb60971428abb3d5a",
+    "research/S014/experiments/EX026_20261018/others/path_diagnostics.json": "d5199e67ffcb1d9b058c1ad7b8fc9b3e485a5beb6304bca4070d59d25b898a3d",
+    "research/S014/experiments/EX026_20261018/others/research_route_review.json": "6b36538355e7824c8aa632e46addc50c8453f36f1ed4018c4c663ec2b9bca3c3",
+    "research/S014/experiments/EX026_20261018/others/method_review.json": "5a0fcddb43091e7a0293f5e044dcc15c374c0b2c5afffb24f4ab02ebeff10773",
+    "research/S014/experiments/EX027_20261018/protocols/comparison_lock.json": "fab58c672b14a29723e41a25b6854cdcbc80d095141e6709548bd7c4b76b6cf2"
+  },
+  "account_audit_check_count": 189200,
+  "annual_rows_independently_recalculated": 63,
+  "aggregate_path_pairs_independently_recalculated": 30,
+  "external_calls": 0,
+  "new_account_runs": 0
+}
