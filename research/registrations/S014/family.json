@@ -450,12 +450,12 @@
       "original_pdfs": 32
     },
     "pending": [
-      "请用户批准阶段三四组连续账户对照；批准前不执行。"
+      "待用户确认最小2019预窗口及最多15次补数额度；已批准阶段三四方案，无需重复批准阶段推进。"
     ],
-    "phase_three_approved": false,
+    "phase_three_approved": true,
     "phase_three_proposal": {
       "calibration": "EX016 src/annual_followup.py::calibrate + EX013 src/component.py::gap_sequence_context",
-      "execution_authorized": false,
+      "execution_authorized": true,
       "report": {
         "evidence_id": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb.md",
         "experiment": {
@@ -493,7 +493,68 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二完成：建议阶段三，等待用户批准",
+    "stage": "阶段三：四方案连续账户对照",
+    "stage_three_authorization": {
+      "experiment": {
+        "experiment_id": "EX017_20261017",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "scope": "S014四方案及固定BuyHold；不改年度目标和费用执行，不扩数据、不恢复公告",
+      "verbatim": "同意进入阶段三，按这四种方案做连续账户对照，保持费用、执行约定和年度目标不变，你自主推进，我看结果。"
+    },
+    "stage_three_preparation": {
+      "actual_account_runs": 0,
+      "checks": 37,
+      "experiment": {
+        "experiment_id": "EX017_20261017",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "implementation": {
+        "evidence_id": "a2c8a2d5e08d842336cf47f0c692a121cff6fe5e08d77237da851c0abf84c739.py",
+        "experiment": {
+          "experiment_id": "EX017_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/x-python",
+        "name": "src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "a2c8a2d5e08d842336cf47f0c692a121cff6fe5e08d77237da851c0abf84c739",
+        "type": "EvidenceRef"
+      },
+      "loaded_variants": 4,
+      "precheck": {
+        "evidence_id": "2446e542a91d6812ee86e24ac387b5e4aa707dc58b8e3c650a4968e2380a6a7d.json",
+        "experiment": {
+          "experiment_id": "EX017_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "others-precheck-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "2446e542a91d6812ee86e24ac387b5e4aa707dc58b8e3c650a4968e2380a6a7d",
+        "type": "EvidenceRef"
+      },
+      "proposed_extension": {
+        "authorization": "PENDING_USER_REPLY",
+        "calendar_and_stock_status": [
+          "2019-12-01",
+          "2019-12-31"
+        ],
+        "evaluation_window_unchanged": [
+          "2020-01-01",
+          "2026-10-15"
+        ],
+        "proposed_call_cap": 15,
+        "stock_hfq_and_raw": "经日历/状态确认的前一可交易日"
+      },
+      "status": "PREPARATION_COMPLETE_AWAITING_PREWINDOW_AUTHORIZATION"
+    },
     "strategy_accounts": 0,
     "supported_components": 3,
     "supported_return_context_components": 1,
@@ -505,5 +566,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T22:51:26+08:00"
+  "updated_at": "2026-10-17T23:03:35+08:00"
 }
