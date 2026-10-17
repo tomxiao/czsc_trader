@@ -1,0 +1,52 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "authorization": "授权10轮实验额度，请你继续主导阶段三研究，达成可以推进至阶段四的状态",
+  "autonomous_round": 1,
+  "total_round_budget": 10,
+  "experiment": "EX020_20261018",
+  "hypothesis": "Repeated original recovery signals during an existing holding may carry information that is lost by exiting on a fixed earlier timer. Signal-driven renewal may capture later recovery without a fictional sell/rebuy.",
+  "prior_evidence": "EX019 profit extension improved common-entry cycles but missed44 original entries; losses from occupied-position paths exceeded common-entry gains. This motivates testing exit/entry coordination, not selecting future missed winners.",
+  "original_entry": "Keep ready & negative opening gap & positive intraday candle & original high environment; calibration/sample maturity/readiness unchanged.",
+  "grid": {
+    "h": [
+      3,
+      6
+    ],
+    "renewal": [
+      "qualified",
+      "parent"
+    ],
+    "max_hold": [
+      12,
+      0
+    ]
+  },
+  "new_variants": [
+    "renewal_qualified_H3_cap12",
+    "renewal_qualified_H3_cap0",
+    "renewal_parent_H3_cap12",
+    "renewal_parent_H3_cap0",
+    "renewal_qualified_H6_cap12",
+    "renewal_qualified_H6_cap0",
+    "renewal_parent_H6_cap12",
+    "renewal_parent_H6_cap0"
+  ],
+  "candidate_ids": {
+    "renewal_qualified_H3_cap12": "S014-C0025",
+    "renewal_qualified_H3_cap0": "S014-C0026",
+    "renewal_parent_H3_cap12": "S014-C0027",
+    "renewal_parent_H3_cap0": "S014-C0028",
+    "renewal_qualified_H6_cap12": "S014-C0029",
+    "renewal_qualified_H6_cap0": "S014-C0030",
+    "renewal_parent_H6_cap12": "S014-C0031",
+    "renewal_parent_H6_cap0": "S014-C0032"
+  },
+  "renewal_signal": "qualified = ready & parent & high; parent = ready & parent. Initial entry always qualified. Signals only, not hypothetical next-day buy fills.",
+  "clock": "BUY fill E starts deadline=E+h-1 close. Each held close i, including entry-day close, if qualifying renewal and no pending exit: new_deadline=max(old_deadline,i+h), capped at E+max_hold-1 when max_hold>0. At deadline close emit SELL for next session. cap0 means no absolute duration cap.",
+  "pending_exit": "Once SELL emitted, failed execution keeps exit latched and cannot be withdrawn by any later signal. No extra buy, sale, resizing, or fees during renewal.",
+  "sampling": "Optuna manages eight enqueued fixed-grid trials; no adaptive sampler or pruning. Seed17. Public TDR batch evaluation max_workers2/native_threads1. Exactly eight unique configs, old H3/H6 evidence reused.",
+  "frozen": "S014 existing pinned inputs, nominal2020-01-01..2026-10-15/1642sessions,100000cash,.001eachside,originalHFQ/limit-buy/market-sell rules/100sharelots/BuyHold/no annualreset/no terminalclose. No upstream calls or new source/phasefour.",
+  "targets": "Everyyear return>=1.5*BH if BH>0 else >0; everyyear DD strictly below BH; 2026partial included;60*CLOSED/1642>=3.",
+  "decision": "Retain valid negative outcomes, compare years and opportunity paths. At least one all-target passing candidate plus verified causal implementation, complete public evidence and registered frontier is required for phasefour readiness; full-period profit alone cannot close the goal.",
+  "limits": "All sample previously seen; adaptive research history disclosed; signal continuation is not causal attribution of future missed trades. No retrospective yearly switches. cap0 may suppress frequency and increase tails."
+}

@@ -270,8 +270,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "902db87bdf70ed9c93f3448ababc560ca94db5d9855f6d040ee54c1dd820f819",
-      "revision": 3,
+      "content_sha256": "f3767f99187761d8e266d67c42b33081a9204217ed46d010e9033bf566667a83",
+      "revision": 5,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -286,7 +286,7 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "当晚可知浮盈与单日收盘变化可因果实现，但本轮四种固定条件延长均显著降低原H3账户全期收益，且未增加年度收益达标年数；六构造全部目标通过0个。原交易配对均值不能兑现为连续账户增益，不支持将P/D及其AND/OR作为有效持仓延长规则；保留原基线，停止继续微调这组开关。",
+    "conclusion": "第2轮固定A/B/C账户中，B支撑入场固定10日全期净收益441.60%，去2026仍为163.69%，改善2021、2022收益，但年度收益仅3/7、回撤5/7通过。B与A仅9个共同入场，优势主要体现为交易时点及后续参与顺序改变，不能认定为稳定单笔过滤能力。C支撑破坏退出增加换手并降低B全期收益，损伤2022；6个对照全部原目标通过0个，尚不具备阶段四准备度。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -461,7 +461,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议停止微调简单浮盈/单日上涨延长开关，暂留阶段三，把下一研究问题转为退出与后续原入场信号的衔接：先核查持仓期间已经出现的原信号能否识别继续持仓的价值，再预先锁定最小对照。不能用未来错失交易做条件，不能擅改同日卖出重买或既定执行；不自动扩数据或推进阶段四。"
+      "继续已公开锁定的[第3轮EX022](../../../experiments/EX022_20261018/protocols/comparison_lock.json)：A/B各取首次决策延后0至10日，0精确复用，新增20账户；只改首次可决策日，不改变后续等待和固定10日持有。核对同偏移B−A的全部11组，不选择最佳偏移；11覆盖无失败时H10的理想周转长度，但真实失败订单打破周期性，不能称覆盖所有可能相位或11个独立样本。借此检验B优势的起始时点敏感性，再考虑与C0028续持路径的互补，只允许当时可知状态驱动，不按事后年度切换。暂不扩支撑窗口、阈值或主动止损参数，不自动推进阶段四。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -505,7 +505,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段三当晚可知状态与条件延长对照完成",
+    "stage": "阶段三自主第2轮支撑对照完成，第3轮起始偏移敏感性对照执行中",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -514,6 +514,45 @@
       },
       "scope": "S014四方案及固定BuyHold；不改年度目标和费用执行，不扩数据、不恢复公告",
       "verbatim": "同意进入阶段三，按这四种方案做连续账户对照，保持费用、执行约定和年度目标不变，你自主推进，我看结果。"
+    },
+    "stage_three_autonomous_budget": {
+      "allocated_rounds": 3,
+      "authorization": "授权10轮实验额度，请你继续主导阶段三研究，达成可以推进至阶段四的状态",
+      "completed_rounds": 2,
+      "data": "existing S014 pinned data only",
+      "experiments": [
+        {
+          "experiment_id": "EX020_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX021_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX022_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        }
+      ],
+      "latest_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "f3767f99187761d8e266d67c42b33081a9204217ed46d010e9033bf566667a83",
+        "revision": 5,
+        "stage": "CANDIDATES",
+        "type": "DeliveryReference"
+      },
+      "latest_result": "NO_ALL_TARGET_PASS",
+      "limits": "No relaxing targets, no hindsight yearly switches, all data already seen; preserve losing comparisons; stage-two old budget is separate.",
+      "new_upstream_calls": 0,
+      "remaining_unallocated_rounds": 7,
+      "success": "At least one complete causal executable candidate satisfies all original annual return, annual drawdown and frequency targets, with public evaluation evidence, independent audit, registered loadable candidate and FULL-valid stage-three delivery. No automatic phase-four execution.",
+      "total_rounds": 10
     },
     "stage_three_followup": {
       "authorization": "同意，继续阶段三。用退出决策当晚已知的浮动盈亏和价格变化，验证哪些交易值得延长持有，再做连续账户对照。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
@@ -623,7 +662,7 @@
       "status": "COMPLETE",
       "user_reply": "同意补齐，最多15次调用"
     },
-    "strategy_accounts": 14,
+    "strategy_accounts": 25,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0
@@ -634,5 +673,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T00:06:53+08:00"
+  "updated_at": "2026-10-18T01:04:33+08:00"
 }

@@ -1,0 +1,95 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 3,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX022_20261018"
+  },
+  "hypothesis": "EX021 B improvement may reflect favorable fixed-H10 account timing rather than a reliable support-entry mechanism. A complete set of predetermined initial delays tests sensitivity to this timing origin.",
+  "trigger": "EX021 B versus A shares only9 entrydates;134A-only and129B-only cycles. B-A logNAV difference1.432725 full and1.435032 before2026. Thus not merely2026, but almost entirely different paths. C supportexit did not improve yearlyreturn goals.",
+  "new_variants": [
+    "repeated_H10_delay1",
+    "repeated_H10_delay2",
+    "repeated_H10_delay3",
+    "repeated_H10_delay4",
+    "repeated_H10_delay5",
+    "repeated_H10_delay6",
+    "repeated_H10_delay7",
+    "repeated_H10_delay8",
+    "repeated_H10_delay9",
+    "repeated_H10_delay10",
+    "support_entry_H10_delay1",
+    "support_entry_H10_delay2",
+    "support_entry_H10_delay3",
+    "support_entry_H10_delay4",
+    "support_entry_H10_delay5",
+    "support_entry_H10_delay6",
+    "support_entry_H10_delay7",
+    "support_entry_H10_delay8",
+    "support_entry_H10_delay9",
+    "support_entry_H10_delay10"
+  ],
+  "candidate_ids": {
+    "repeated_H10_delay1": "S014-C0036",
+    "repeated_H10_delay2": "S014-C0037",
+    "repeated_H10_delay3": "S014-C0038",
+    "repeated_H10_delay4": "S014-C0039",
+    "repeated_H10_delay5": "S014-C0040",
+    "repeated_H10_delay6": "S014-C0041",
+    "repeated_H10_delay7": "S014-C0042",
+    "repeated_H10_delay8": "S014-C0043",
+    "repeated_H10_delay9": "S014-C0044",
+    "repeated_H10_delay10": "S014-C0045",
+    "support_entry_H10_delay1": "S014-C0046",
+    "support_entry_H10_delay2": "S014-C0047",
+    "support_entry_H10_delay3": "S014-C0048",
+    "support_entry_H10_delay4": "S014-C0049",
+    "support_entry_H10_delay5": "S014-C0050",
+    "support_entry_H10_delay6": "S014-C0051",
+    "support_entry_H10_delay7": "S014-C0052",
+    "support_entry_H10_delay8": "S014-C0053",
+    "support_entry_H10_delay9": "S014-C0054",
+    "support_entry_H10_delay10": "S014-C0055"
+  },
+  "grid": {
+    "base": [
+      "repeated_H10",
+      "support_entry_H10"
+    ],
+    "first_decision_delay": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  "baseline_reuse": {
+    "repeated_H10_delay0": {
+      "experiment": "EX021_20261018",
+      "variant": "repeated_H10",
+      "candidate": "S014-C0033"
+    },
+    "support_entry_H10_delay0": {
+      "experiment": "EX021_20261018",
+      "variant": "support_entry_H10",
+      "candidate": "S014-C0034"
+    }
+  },
+  "entry": "Only change earliest eligible decision from60th to(60+delay)th completed evaluation session. Delay0 reproduces EX021 A/B exactly. Support always excludes currentclose and pre2020executionwarmup. Same once-failedbuy reset; freshcurrentlimit; post-saleclose may plan nextday. No recurrent extra waiting or calendar forcing.",
+  "exit": "Same fixedH10: actualbuyE -> firstSELL decisionE+9close, executeE+10; failedSELL remainslatched. No supportearlyexit. Existingstockstatus,fullcash,fees,quantityandprices unchanged.",
+  "sampling": "20 new unique fixedconfigurations; delay0twoformalbaselines reused after exactequivalence check. Optuna20pre-enqueuedtrials,seed17,noadaptivesampling/pruning. PublicTDRbatchmaxworkers2/native1. Actualaccountresults only.",
+  "analysis": "Pair B-A at each sameinitialdelay; show all11, their full andannual return/DD differences andfrequency, medians/ranges and actualpre2026NAV. No selecting bestdelay. These are correlated sensitivity controls on same seenprices, not11 independent tests or newholdout.11isidealH10hold+nextdayreentrycycle; realfailedordersbreak periodicity, so notall possiblephases.",
+  "decision": "If B advantage survives acrossdelays, continue testing supportselection on common opportunityclock; if concentrated, stop treating originaldelay0winnerasstableincrement. Do not repairfailures by year-specificdelay or extendingdelaysafterresults. Thisdiagnosticdoesnotpromisegoalachievement. Keeporiginalhardtargets and candidate eligibility separate from diagnostics; no new performance veto threshold.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000cash,.001eachside,100sharefullcash,maxqty1000000,HFQresearch,original1percentlimitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose.",
+  "targets": "All7annualreturnandDDoriginalgates;60*CLOSED/1642>=3;partial2026unchanged.",
+  "scope": "ExistingS014pinnedonly,0newupstream,announcementsdeferred,stage3only. Allseen data; no independence claim. Sourceclosure/precheck/publicledger/independentaudit required."
+}

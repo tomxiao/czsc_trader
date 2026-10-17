@@ -1,0 +1,64 @@
+{
+  "experiment": "EX020_20261018",
+  "review_role": "RSCH independent method and account-audit reviewer",
+  "status": "METHOD_ACCEPTABLE_PENDING_ACCOUNT_AUDIT",
+  "scope": "S014 stage-three signal renewal; eight fixed new accounts; existing pinned data only; no upstream calls or account execution by this reviewer.",
+  "candidate_coordinates": [
+    {"candidate": "S014-C0025", "base_horizon": 3, "renewal": "qualified", "cap": 12},
+    {"candidate": "S014-C0026", "base_horizon": 3, "renewal": "qualified", "cap": 0},
+    {"candidate": "S014-C0027", "base_horizon": 3, "renewal": "parent", "cap": 12},
+    {"candidate": "S014-C0028", "base_horizon": 3, "renewal": "parent", "cap": 0},
+    {"candidate": "S014-C0029", "base_horizon": 6, "renewal": "qualified", "cap": 12},
+    {"candidate": "S014-C0030", "base_horizon": 6, "renewal": "qualified", "cap": 0},
+    {"candidate": "S014-C0031", "base_horizon": 6, "renewal": "parent", "cap": 12},
+    {"candidate": "S014-C0032", "base_horizon": 6, "renewal": "parent", "cap": 0}
+  ],
+  "exact_reused_baselines": {
+    "baseline_H3": "EX017_20261017 high_H3 S014-C0011",
+    "baseline_H6": "EX018_20261017 parent_high_H6 S014-C0016"
+  },
+  "findings": [
+    {
+      "topic": "研究问题与最强竞争解释",
+      "judgment": "固定到期退出可能恰逢新的同类买入信号；保留既有持仓可避免先退出再等待重新入场造成的空仓。竞争解释是延长市场暴露本身、减少费用及改变后续机会顺序，而非续持信号提供了额外收益预测。因此账户改善需要结合续持触发、实际延长天数、费用与逐年表现解释，不能仅凭全期收益提高认定新 Alpha。"
+    },
+    {
+      "topic": "因果时序",
+      "judgment": "实际买入日为 E，初始到期决策日为 E+h-1；交易日 i 收盘可知续持信号时，将 deadline 更新为 max(old_deadline,i+h)。这一时钟对应信号次日可能承接的新持有区间，而非假定已经发生新买入。先处理当日真实成交，再处理当晚续持与下一日目标；当日到期但此前未发出 SELL 时允许续持。"
+    },
+    {
+      "topic": "入场当晚与上限语义",
+      "judgment": "入场当日收盘也属于已有持仓，满足续持条件时可将 E+h-1 更新到 E+h。cap=12 表示 deadline 不晚于 E+11，计划 E+12 卖出，不能声称受阻时一定在十二日内完成退出。cap=0 表示不设持有上限，可能演变成长时间持有；全期闭合交易频率仍按原目标核验。"
+    },
+    {
+      "topic": "退出锁存",
+      "judgment": "当晚已经生成的 SELL 在下一日被拒绝或未成交时，退出意图必须锁存；当天新续持信号不能撤回卖出或推迟 deadline。成功卖出后才结束这一持仓周期；当晚可按原规则产生新的买入意图。独立审计必须依据前一日退出目标及实际 SELL fills 重建锁存，不能只比较两个共用逻辑的 shadow。"
+    },
+    {
+      "topic": "真实交易与持仓规模",
+      "judgment": "续持不生成虚拟买单，不扣虚拟买卖费，不重置实际入场日、成本或股数，也不补仓；股数只随真实 BUY/SELL fills 改变。续持不要求次日新限价买单可成交，因此它不能被表述为与先卖后买完全等价的可执行替代。"
+    },
+    {
+      "topic": "环境限制的作用位置",
+      "judgment": "八个账户初次买入始终要求 parent 且 high 且 ready。qualified 续持也要求三者；parent 续持仅要求 parent 且 ready，检验的是已持仓后是否仍需要环境门槛，不能解释为已验证取消初次入场环境限制。"
+    },
+    {
+      "topic": "选择历史与证据边界",
+      "judgment": "开发区间已被多轮研究使用，本轮八格为既定机制对照而非新的独立样本。相邻格差异同时包含资金占用、信号错位和退出变化；应保留全部账户结果，不将事后最佳格视为稳定普适规律。逐年与极端交易贡献是诊断，不追加用户未要求的经济硬门。"
+    },
+    {
+      "topic": "目标与执行合同",
+      "judgment": "保持初始十万元、单边 0.1% 费率、原限价买入与市价卖出、整手约定和固定 BuyHold，逐自然年验收收益与最大回撤；2026 按截至 10 月 15 日的实际部分年度计算，频率为 60×闭合交易数÷1642，不按年重置或强制末日平仓。审计通过不等于经济目标通过，也不自动进入下一阶段。"
+    }
+  ],
+  "audit_plan": [
+    "认证八候选 C0025..C0032、正式 EvidenceRef 与实现闭包、预检源和校准样本，并精确复用 C0011/C0016 原证据。",
+    "复用 EX017 load_frames/audit_ledger 验证全部真实订单、费用、现金、股数、成交价格、前一日信号与 BuyHold。",
+    "按实际 BUY 日期逐日独立重建初始 deadline、当晚续持条件、cap 截断和退出锁存，核对全部公开观测和下一日真实目标。",
+    "验证持仓期间股数不因续持变化；SELL 失败后目标持续为零，续持不产生新买单或虚拟费用。",
+    "完整检查与续持事件明细写入 assets/runs，others 保留小摘要及 SHA；失败证据保留后另发修正版。"
+  ],
+  "external_calls": 0,
+  "new_account_runs": 0,
+  "performance_conclusion": "待正式账户和独立审计完成；此文不作收益有效性判断。"
+}

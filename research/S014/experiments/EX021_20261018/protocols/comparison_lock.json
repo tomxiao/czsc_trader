@@ -1,0 +1,32 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 2,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX021_20261018"
+  },
+  "hypothesis": "The earlier EX007 support-break and recovery mechanism may regain exposure after protecting failed repairs; complete re-entry accounts must establish whether reduced adverse path is worth its lost participation.",
+  "trigger": "EX020 H3 original-signal renewal improves cumulative return and annual drawdown but leaves annual return passes at3/7; H6 renewal worsens risk/frequency. Change the complete entry/exit mechanism rather than widening a negative duration grid.",
+  "prior_design": "research/S014/experiments/EX007_20261017/protocols/report.md section5 A/B/C, proposed before these accounts; support lookback5 and maximumhold10 unchanged.",
+  "new_variants": [
+    "repeated_H10",
+    "support_entry_H10",
+    "support_exit_H10"
+  ],
+  "candidate_ids": {
+    "repeated_H10": "S014-C0033",
+    "support_entry_H10": "S014-C0034",
+    "support_exit_H10": "S014-C0035"
+  },
+  "entry": "A: flat after warmup; B and C: flat and T HFQ close >= minimum of previous5 HFQ closes, excluding T. No parent-gap or high-environment requirement. All variants share first60 actual evaluation sessions as cash warmup; first eligible decision is60th completed evaluation session, next-session entry. No2019 feature expansion.",
+  "exit": "A/B: BUY fill E -> decide at E+9 close, sell E+10. C: first close below previous5 closes minimum OR E+9, sell nextsession. On entryday close C may decide exit for nextday; no same-day roundtrip. SELL latched until actual fill; cannot revoke on recovery.",
+  "lifecycle": "Same failed-buy reset as prior accounts: one attempt, failed-buy close flat/reset, new decision only next completed close. After actual sell, that close may schedule new entry for following session. Fresh current close determines original +1% limit. No same-session sale/rebuy or terminalforcedclose.",
+  "sampling": "Exactly3 fixed configurations; no adaptive/free sampling, no threshold optimization. Optuna3 pre-enqueued trials record real full-account scores only. Public batch max_workers2/native_threads1/seed17.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000initial,.001eachside,fullcash100sharelots,maxquantity1000000,HFQresearch,unchanged originalplus1percentlimitbuy/openorlimitdownopenplusoneticksell,originalLimitBuyHold,noannualreset.",
+  "targets": "Everyyear return>=1.5*BH ifBHpositive else strictlypositive; everyyearDDstrictlybelowBH;60*CLOSED/1642>=3;2026partialincludedunchanged.",
+  "comparisons": "B-A entryfilter; C-B supportexit and ensuing opportunities; C-A fullmechanism. OriginalH3/H6/C28 contextual only, with different entrymechanism and startup disclosed. Include ex2026 and allannualresults; separate fee/exposure/path differences.",
+  "refutation": "Cash and lowerdrawdown alone cannot satisfy annualpositiveyearreturn. If reentry does not recover opportunitycost or2022whipsaw worsens, retain negative and do not autoexpand lookback/holding thresholds.",
+  "scope": "ExistingS014pinneddataonly,0newupstream,announcementsdeferred,allseen developmentpool,noindependentholdoutclaim,noautomaticphasefour."
+}

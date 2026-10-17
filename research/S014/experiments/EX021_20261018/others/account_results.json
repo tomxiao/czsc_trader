@@ -1,0 +1,88 @@
+{
+  "records": [
+    {
+      "variant": "repeated_H10",
+      "candidate": "S014-C0033",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "d1b05b41cfa9f50531015ceacb3f98e7cda0c749eb89d4c3d4f5c73f7834c457.json",
+        "sha256": "d1b05b41cfa9f50531015ceacb3f98e7cda0c749eb89d4c3d4f5c73f7834c457",
+        "media_type": "application/json",
+        "name": "account-repeated-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "54c851e515be3a5c6ba7841fc6380279d5f85be32eb06fb37313964cb7252f19",
+      "optuna_trial": 0,
+      "worst_target_margin": -0.9059330483035204
+    },
+    {
+      "variant": "support_entry_H10",
+      "candidate": "S014-C0034",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c.json",
+        "sha256": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c",
+        "media_type": "application/json",
+        "name": "account-support-entry-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "7a9316fadd5dddb7f02df8bbf2bc36f7d5188c91bfb1cd585a73bee275d15a20",
+      "optuna_trial": 1,
+      "worst_target_margin": -0.9106778182373847
+    },
+    {
+      "variant": "support_exit_H10",
+      "candidate": "S014-C0035",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "26db4c86afd6129ae03491aea889c12a8fab7908b3bf53a2398c690595486e81.json",
+        "sha256": "26db4c86afd6129ae03491aea889c12a8fab7908b3bf53a2398c690595486e81",
+        "media_type": "application/json",
+        "name": "account-support-exit-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "ebc8d200f5f74785c0874bb82f037cf38e79f6e2e3b4a69a9e16a4049962813c",
+      "optuna_trial": 2,
+      "worst_target_margin": -1.1866147363095605
+    }
+  ],
+  "resources": {
+    "max_workers": 2,
+    "native_threads_per_worker": 1,
+    "seed": 17
+  },
+  "actual_external_calls": 0,
+  "distinct_configurations": 3,
+  "nominal_window": [
+    "2020-01-01",
+    "2026-10-15"
+  ],
+  "actual_trading_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "review_scope": "EX020 final report, fixed-grid execution evidence, annual objective arithmetic, account/path checks and publication preconditions; publication itself not executed by this reviewer.",
+  "checks": [
+    "Eight actual COMPLETE Optuna trials match C0025..C0032 account records and the predeclared ordered grid; all enqueued before results, no free sampling or pruning. Actual sampler is RandomSampler, not GridSampler.",
+    "Each trial worst-target-margin independently recalculated from annual comparison and actual full-window closed-trade frequency; matches trial value and account record.",
+    "Seventy annual rows across ten formal account references independently recalculated from daily NAV including previous year-end opening NAV; strict drawdown, positive-BH 1.5x return and nonpositive-BH strictly-positive return checks match.",
+    "Full-window frequency is 60 times CLOSED trades divided by 1642; OPEN trades excluded. All ten account exact pass flags agree, and no account passes every original target.",
+    "All eight runtime closure hashes authenticate actual source files; strategy source matches causal precheck and independent ledger audit.",
+    "246 causal/boundary prechecks and 153704 actual-account checks passed. Full audit bytes and SHA agree with the compact summary.",
+    "Path script and all declared CSV output hashes agree; ten accounts at two cutoffs reconcile cycle-log returns to account returns, max absolute return error 1.7763568394002505e-15.",
+    "Report complete account and C0028 annual tables, exposure, fees, path contributions and event counts match the underlying comparison, path and audit evidence.",
+    "Report correctly describes development-sample selection, absence of independent unseen validation and unverified historical publication/revision/adjustment-factor availability.",
+    "Report correctly says zero fully passing accounts and no stage-four readiness; account audit PASS is not an economic acceptance.",
+    "Publication script reads current autonomous budget, increments completed only, and preserves allocated and remaining-unallocated fields; result explicitly separates allocated-uncompleted and unallocated capacity.",
+    "Final report supplement explicitly and accurately contrasts C0028 with H6: +41.449183 percentage points full-window, -11.687493 percentage points through 2025; full-window return ranking depends on 2026."
+  ],
+  "principal_result": {
+    "candidate": "S014-C0028",
+    "ending_equity": 443330.4000000004,
+    "total_return": 3.433304000000004,
+    "annual_return_pass": 3,
+    "annual_drawdown_pass": 7,
+    "annual_year_count": 7,
+    "closed_trades": 103,
+    "frequency_per_60": 3.763702801461632,
+    "all_targets_pass": false
+  },
+  "limitations_to_preserve": [
+    "C0028 is the best cumulative-return configuration in the already-seen fixed grid, not an independently validated optimum.",
+    "Before 2026, C0028 return is 55.680275%, above original H3 13.570849% but below original H6 67.367768%; final report now explicitly discloses this reversal against H6.",
+    "Cycle-log matched/missing/new-entry terms are an accounting decomposition, not independent causal effects. Entry cohorts differ from natural NAV years.",
+    "C0028 has 43 missing original-H3 entries, of which 19 were profitable and 24 losing; zero occur on C0028 liquidation dates. This supports not adding a one-day liquidation memory rule for this result, not a universal proof that memory can never help.",
+    "All real-account post-SELL-latch renewal-signal counts are zero; that special interaction is covered by explicit synthetic tests, not observed historical cases.",
+    "EX021 changes the full entry/support/startup mechanism; its subsequent difference must not be called a pure continuation change.",
+    "Budget is an upper bound; this review does not update the registration budget, execute EX021 or authorize a new research stage."
+  ],
+  "publication_review": {
+    "reviewed_only": true,
+    "formal_publication_executed": false,
+    "source_sha256_binding": "These hashes describe the reviewed bytes; material subsequent edits require renewed review.",
+    "registered_count_after_successful_publication": 22,
+    "phase_four_ready": false
+  },
+  "blocking_findings": [],
+  "source_file_sha256": {
+    "research/S014/experiments/EX020_20261018/protocols/account_report.md": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1",
+    "research/S014/experiments/EX020_20261018/protocols/comparison_lock.json": "f5c32cc67a599a79d0344f0ab194316874b46339b3ac06013dccbbc4ed8559d4",
+    "research/S014/experiments/EX020_20261018/src/publish_accounts.py": "edd52bcfb88a516cefac808f6aa5a260a840fe739193252eb69f501660b2b6d0",
+    "research/S014/experiments/EX020_20261018/src/write_report.py": "f6e08d7953798f907fa3fac3cb407310e7b330f555aa8e55c9b8cb38fbff1938",
+    "research/S014/experiments/EX020_20261018/src/run_accounts.py": "58167b6f527220dbda8748af2b7e345a5f7b74f4e2e1be6e694067d00e429b96",
+    "research/S014/experiments/EX020_20261018/src/compare_accounts.py": "c4a6b7f599710cd6f5ed3b583c09d9e492cb69157a273732975c963541c31d27",
+    "research/S014/experiments/EX020_20261018/src/path_diagnostics.py": "f5f24422997f9b5f2ee0dc1a63dcf2ff225a9d46f4dc14bab2ad4898b24a4537",
+    "research/S014/experiments/EX020_20261018/src/audit_accounts.py": "ceceab50b78bdf197e122069f74b1a86b3b1da28c8c0940fb05b00720830b601",
+    "research/S014/experiments/EX020_20261018/src/strategy_runtime/strategies/repair.py": "a4471703da5cdd896eabff0700c33acfbd111a05115cc72707acbd004b76245c",
+    "research/S014/experiments/EX020_20261018/others/precheck.json": "978fca7ddefb7bd64e705dbf7ddbc67fb1d3e74624dcaeb7ed23b66f2bdda042",
+    "research/S014/experiments/EX020_20261018/others/account_audit.json": "7bd0679e1378ea62d7e8694f3160c0e12b5f1c5ff1695d198165fcd12eea71b9",
+    "research/S014/experiments/EX020_20261018/others/account_results.json": "617d2338f9c0343c2164043cb8fffe5878490e26189ddadc6ddcc2cb751f5aac",
+    "research/S014/experiments/EX020_20261018/others/comparison_accounts.json": "a2677c902e2f6f7d47c3fe45b8f092e205311112c3f89fd510da6130e4a94004",
+    "research/S014/experiments/EX020_20261018/others/comparison.json": "71c917b0a61586b9574c5496368750206974f095a953c43a57ca1a024afb5273",
+    "research/S014/experiments/EX020_20261018/others/annual_comparison.csv": "885f365eea9a0bb4a61ab2d3b0e2f40cd49c4902fb2285a9142501087ed349ff",
+    "research/S014/experiments/EX020_20261018/others/optuna_trials.json": "e596b37027ce98d005a81bcb9b3cf8b19a3724f99a80df7c5209241254131f1e",
+    "research/S014/experiments/EX020_20261018/others/path_diagnostics.json": "cacffee86ddac6e99a34df4de1da0000ef2a4143849eed8afe16df7f4fcab0ed",
+    "research/S014/experiments/EX020_20261018/others/method_review.json": "a2eed4eb8a7cd8afbdb80483c9fae7d2358fb64fb0a3c0246b11e5bede573b32"
+  },
+  "account_audit_check_count": 153704,
+  "annual_rows_independently_recalculated": 70,
+  "external_calls": 0,
+  "new_account_runs": 0
+}

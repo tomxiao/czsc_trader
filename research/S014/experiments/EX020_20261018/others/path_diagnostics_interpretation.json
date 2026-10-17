@@ -1,0 +1,135 @@
+{
+  "status": "PASS",
+  "interpretation_only": true,
+  "upstream_calls": 0,
+  "account_runs": 0,
+  "sources": [
+    "research/S014/experiments/EX020_20261018/others/path_diagnostics.json",
+    "research/S014/experiments/EX020_20261018/others/comparison.json",
+    "research/S014/experiments/EX020_20261018/others/annual_comparison.csv"
+  ],
+  "next_route": "Proceed to the pre-existing EX007 support/recovery A/B/C complete account mechanism; do not prioritize bounded one-session re-entry memory after this result.",
+  "reason": "C28 improves return primarily by retaining original entries through subsequent qualifying repair signals. Unlike EX019 profit extension, its remaining missed H3 entries never occur on its liquidation session. The specific exit-day opportunity conflict that motivated one-session memory is absent in the best current renewal path; no new evidence supports paying an extra round to repair that absent conflict.",
+  "best_candidate": "S014-C0028 / renewal_parent_H3_cap0",
+  "best_vs_H3": {
+    "all": {
+      "matched_entries": 104,
+      "matched_cycle_log": 0.9439769364655385,
+      "omitted_entries": 43,
+      "omission_cycle_log": -0.0828129250289721,
+      "new_entries": 0,
+      "total_cycle_log_difference": 0.8611640114365661
+    },
+    "through_2025": {
+      "matched_entries": 87,
+      "matched_cycle_log": 0.025063202478533733,
+      "omitted_entries": 37,
+      "omission_cycle_log": 0.29031431996024465,
+      "new_entries": 0,
+      "total_cycle_log_difference": 0.31537752243877826
+    },
+    "meaning": "Full-period same-entry continuation helps, but before 2026 the larger improvement comes from omitting otherwise losing H3 entries. These are historical log-wealth path terms, not independent causal effects or additive percentage returns."
+  },
+  "remaining_opportunity_evidence": {
+    "omitted_H3_entries_on_C28_exit_session": 0,
+    "omitted_H3_entries_while_C28_remains_held": 43,
+    "omitted_trade_positive_count": 19,
+    "omitted_trade_negative_count": 24,
+    "omitted_trade_mean": 0.005302224163336514,
+    "omitted_trade_median": -0.009423612102183676,
+    "omitted_trade_mean_without2026": -0.00618280162030632,
+    "limit": "No delayed entry was simulated. These observations do not prove all deferred-entry rules ineffective; they remove the immediate account-specific rationale for prioritizing one now."
+  },
+  "exposure_and_frequency": {
+    "baseline_H3": {
+      "close_exposure_sessions": 441,
+      "closed_trades": 146,
+      "max_trade_elapsed_sessions": 4
+    },
+    "C28": {
+      "close_exposure_sessions": 601,
+      "closed_trades": 103,
+      "frequency_per60": 3.763702801461632,
+      "mean_trade_elapsed_sessions": 5.769230769230769,
+      "max_trade_elapsed_sessions": 23,
+      "holds_over12": 8
+    },
+    "H6_renewal_family": {
+      "close_exposure_sessions_range": [
+        740,
+        937
+      ],
+      "closed_trades_range": [
+        55,
+        80
+      ],
+      "frequency_per60_range": [
+        2.009744214372716,
+        2.92326431181486
+      ],
+      "all_frequency_failed": true,
+      "full_drawdown_range": [
+        0.7743727196993623,
+        0.7904227782986085
+      ]
+    },
+    "meaning": "Additional continuation has a genuine holding-time and turnover cost. H6 renewal is a counterexample to simply extending the successful H3 renewal design."
+  },
+  "year_outcomes_C28": [
+    {
+      "year": 2020,
+      "return": 0.303023,
+      "required_return": 0.0,
+      "comparison": "Improves H3 and H6; annual targets pass."
+    },
+    {
+      "year": 2021,
+      "return": 0.178865,
+      "required_return": 0.719038,
+      "comparison": "Improves H3 -14.91% and H6 +12.14%; drawdown improves to31.97%, but return remains far below target."
+    },
+    {
+      "year": 2022,
+      "return": -0.174304,
+      "required_return": 0.0,
+      "comparison": "Near H3 -17.58%, better than H6 -31.96%; remains a losing year."
+    },
+    {
+      "year": 2023,
+      "return": 0.106059,
+      "required_return": 0.033653,
+      "comparison": "Above H3 +9.94%, below H6 +14.40%; annual targets pass."
+    },
+    {
+      "year": 2024,
+      "return": 0.25894,
+      "required_return": 0.0,
+      "comparison": "Below H3 +37.01% and H6 +33.21%; annual targets still pass."
+    },
+    {
+      "year": 2025,
+      "return": -0.118518,
+      "required_return": 0.401879,
+      "comparison": "Slightly better than H3 -13.50%, much weaker than H6 +24.96%; return remains materially below target."
+    },
+    {
+      "year": 2026,
+      "return": 1.847698,
+      "required_return": 1.964644,
+      "comparison": "Improves H3 +64.99% and H6 +140.12%; still below required partial-year return."
+    }
+  ],
+  "factorial_interpretation": [
+    "At H3 without an absolute cap, parent renewal versus qualified renewal adds15.23pp return in2021 and2.66pp in2025, but loses1.55pp in2022 and3.52pp in2024. The parent rule is not uniformly superior.",
+    "Removing the12-session cap from parent H3 adds12.46pp in2021 and21.96pp in2026, but loses2.94pp in2025. Do not convert the best cumulative point into a universal uncapped-holding claim.",
+    "Removing the cap from qualified H3 slightly worsens2021 and2025 while improving2026; results depend on the renewal definition and resulting entry path.",
+    "All four H6 renewal accounts fail the original frequency target and have full-period drawdown above77%; no need to scan intermediate timer/cap values solely to seek a winner."
+  ],
+  "handoff": "Keep C28 as a valid nonqualifying economic-frontier reference. Next compare EX007's repeated10-day control, prior-five-close support entry control, and support-break exit/recovery re-entry mechanism using the already-declared60-session within-window startup. Attribute entry selection and exit/re-entry separately. Preserve full2020 cash path, all seven annual gates, original cost/execution, and no extra confirmations or threshold search.",
+  "limits": "The entire development pool is already seen. No candidate passes all targets; C28's7/7 annual drawdown passes do not compensate for3/7 annual return passes. The next route is a testable structural alternative, not a prediction that it will pass.",
+  "source_sha256": {
+    "research/S014/experiments/EX020_20261018/others/path_diagnostics.json": "cacffee86ddac6e99a34df4de1da0000ef2a4143849eed8afe16df7f4fcab0ed",
+    "research/S014/experiments/EX020_20261018/others/comparison.json": "735ee32bfec61e75e17b49770936df2fa6b6d7fafbcfa5ee9ecc0fd20f13ed3c",
+    "research/S014/experiments/EX020_20261018/others/annual_comparison.csv": "885f365eea9a0bb4a61ab2d3b0e2f40cd49c4902fb2285a9142501087ed349ff"
+  }
+}

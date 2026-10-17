@@ -1,0 +1,202 @@
+{
+  "status": "PASS",
+  "review_type": "S014 read-only evidence review and conditional research route; hypotheses are not prior passes",
+  "source_calls": 0,
+  "account_runs": 0,
+  "budget_interpretation": "New authorization permits at most 10 phase-three experiment rounds. EX020 is round 1. The remaining 9 rounds are an upper bound, not nine promised mechanisms or a requirement to exhaust the budget.",
+  "main_conclusion": "Existing evidence supports prioritizing complete exit, opportunity occupancy and re-entry mechanisms. It does not support inventing nine new price indicators. After EX020, three distinct mechanism directions have defensible next questions; the other six potential rounds should remain unallocated until an account result provides a specific, falsifiable reason.",
+  "unchanged_contract": {
+    "window": "2020-01-01 through 2026-10-15; 2026 partial natural year remains included",
+    "cost": "0.001 per side",
+    "execution": "Original daily close decision, next-session fixed prior-close plus 1% limit buy, original market sell/open or down-limit open plus one raw tick, full planned quantity, T+1, blocked-sale delay; no same-day round trip, no price chasing",
+    "account": "Continuous across years; HFQ research normalization; original initial capital and fixed executable LimitBuyHold",
+    "annual_return": "Every year: if BuyHold return > 0, strategy return >= 1.5 times BuyHold; otherwise strategy return > 0",
+    "annual_drawdown": "Every year strategy maximum drawdown strictly below BuyHold, including prior year-end NAV as the year's initial valuation",
+    "frequency": "60 times full-window closed trades / 1642 >= 3; no new rolling or per-year frequency gate",
+    "scope": "Existing S014 inputs only. Announcements remain paused. No upstream, platform changes or adjacent research batches. No year-based trading switches. No new position sizing or execution exception is assumed."
+  },
+  "stage_two_inventory": [
+    {
+      "direction": "Current true range as next-day two-sided volatility scale",
+      "status": "Supported only for its stated auxiliary role",
+      "evidence": "EX005: next-day volatility rank correlations 0.388, 0.522, 0.578, 0.578 across 2023-2026; direct current true range stronger than more complex next-day prediction models.",
+      "limit": "Not a loss predictor, no justification to ban high volatility, no direct annual drawdown protection; use to explain risk exposure before proposing any new rule."
+    },
+    {
+      "direction": "Limit-up close flags fixed-limit purchase nonfill risk",
+      "status": "Supported only for execution-risk reporting",
+      "evidence": "EX005: test nonfill 10/36 versus 11/877 elsewhere; EX006 confirms selective nonfills.",
+      "limit": "No support for skipping these trades or raising buy limits; continue original cost and execution."
+    },
+    {
+      "direction": "Low-gap, positive-intraday parent with annual gap-autocorrelation environment",
+      "status": "Conditional environment reference, not an independently validated Alpha or tail-risk filter",
+      "evidence": "COMPONENTS/12: causal annual calibration high-low H3 difference +1.6669pp overall, +0.9176pp without 2026; 2020-2022 only +0.0632pp. EX014: about 94% of original high-low difference from positive returns, high-state worst decile worse.",
+      "limit": "2021 environment ordering reverses; 2025 high state still loses; startup 2020-10-13. Preserve all years and original calibration; do not retune the median or 20-day window to repair individual years."
+    },
+    {
+      "direction": "Original low-environment H1 versus H3 duration",
+      "status": "Limited historical duration reference; early-period and annual counterexamples retained",
+      "evidence": "EX014 low H1-to-H3 -1.2656pp; EX016 causal full extension -0.6220pp, but 2020-2022 +0.2557pp and 2023 positive.",
+      "limit": "Existing full-account high-H3/low-H1 baseline already tested; do not count rerunning it as a new mechanism. Dynamic within-position environment has not been established by this signal-day result."
+    },
+    {
+      "direction": "Simple support exit followed by recovery re-entry",
+      "status": "Previously proposed complete mechanism, still a falsifiable account hypothesis rather than a supported return component",
+      "evidence": "EX007 specifically proposed A: repeated 10-day holds, B: prior-five-close support entry plus same exit, C: add support-break exit and later re-entry. The simple 5-day-hold midpoint support probe gave up only 0.026pp while reducing the diagnostic adverse path from 1.698% to 1.301%.",
+      "limit": "Exposure reduction is mechanical; independent probes did not improve mean return. A/B/C full-account attribution is necessary; do not add complex trend confirmation."
+    },
+    {
+      "direction": "Market/industry or lagged-industry sorting",
+      "status": "Unresolved weak information, not an approved strategy filter",
+      "evidence": "EX009/010: limited H3 market and H1 lagged-sector improvements; after direct stock-lag controls incremental industry raw values only about +0.0355/+0.0167pp, top-three deletion negative. Broad market+industry did not explain 2025 overnight losses.",
+      "limit": "Do not rebrand the same sign/lag/filter scans as new independent mechanisms; not first-priority account routes."
+    },
+    {
+      "direction": "Price-limit-down panic/recovery and other EX013 numerical families",
+      "status": "Incomplete or contradicted use evidence",
+      "evidence": "EX008 full-window limit-down touch/recovery 40/21 occasions, standalone frequency ceilings 1.462/0.767 per 60 days; 2025 counterexample. EX013 contraction, breakout-retest, concentration, impact, synchronization and drawdown-age families did not yield a supported additional return role.",
+      "limit": "Rare panic events cannot supply all entries. Any future complementary use requires a new allocation question and opportunity-cost comparison, not declaring old weak indicators effective."
+    }
+  ],
+  "bottlenecks": [
+    {
+      "year": 2021,
+      "observed": "EX006 identifies substantial post-entry upside in 2021, while EX016 high-low H3 difference is -0.8746pp. Actual H3 return -14.91%, H6 +12.14%; account drawdowns roughly 40.45%/45.80%. EX019 profit misses the 2021-02-05 H3 entry (+36.96%) while its preceding position exits that morning.",
+      "inference": "The present high-state repair subset is not a universal bull-cycle selector; missing an upside episode or switching entry phase matters. Longer holds can recover return but do not solve tail protection.",
+      "testable_implication": "Prioritize opportunity continuity and alternative simple recovery/re-entry structure; verify whether the same account action that prevents missed upside worsens drawdown. Do not use 2021 as a trading switch."
+    },
+    {
+      "year": 2022,
+      "observed": "EX006 unconditional independent 3/5/20-day means -0.425/-0.620/-1.693%; its 5-day up-state -2.425% versus down-state +0.718%. EX016 2022 matched high-low effect negative. Actual H3 -17.58%, H6 -31.96%. EX019 same 2022-04-15 entry changes from +7.41% H3 to -11.22% under profit extension.",
+      "inference": "This is not solely an insufficient-duration problem. Longer persistence can worsen loss, and an annual high environment is not downside protection.",
+      "testable_implication": "An alternative full mechanism must demonstrate a known-at-decision exit/re-entry tradeoff in this down-cycle; longer hold or generic rising-state extension alone has concrete counterevidence."
+    },
+    {
+      "year": 2025,
+      "observed": "EX008/009: parent H1 first-day cash contribution +0.2911%, later segment -0.4548%, fees about 0.1958%; H3 subsequent segment about -0.923%. EX010 market+industry proxy for later loss +0.0195% with residual -0.4743%, not an explanation. High environment remains negative. Actual H3 -13.50%, H6 +24.96%; EX019 profit misses the 2025-06-12 H3 entry (+33.77%) while the earlier position exits.",
+      "inference": "Initial price repair, subsequent reversal and opportunity occupancy coexist. More general market filters and unconditional broadening to positive candles have not repaired this.",
+      "testable_implication": "Compare complete recovery/continuation paths against both H3 and H6, record missed/new entries and distinguish a return improvement from merely reducing exposure. No same-day sale to harvest the first-day move."
+    }
+  ],
+  "conditional_priority": [
+    {
+      "rank": 1,
+      "name": "One-session deferred opportunity after scheduled liquidation",
+      "when": "After EX020, only if its account attribution still shows valuable repair signals blocked by an existing position on the planned exit session; if EX020 already resolves this question, do not duplicate it.",
+      "mechanism": "A qualified parent signal observed at the liquidation decision close may retain information through the unavoidable sell-first session; carrying that one observed opportunity to the next decision could recover an otherwise lost entry without keeping the old position indefinitely.",
+      "fixed_minimal_design": "Compare existing fresh-signal-only re-entry with a pending signal remembered for at most one tradable session. Sell under the existing plan. At the next completed close, permit a new buy only if the observed repair has not broken its original signal-day open and the required environment is still available. Recompute the original plus-1% buy limit from that latest close; submit on the following session. Never buy on the sale session, never reuse an unexecuted old limit, never retry indefinitely. These are hypotheses to lock before any run, not instructions to modify EX020.",
+      "available_inputs": "Existing HFQ closes/opens, original parent/environment, actual position/order lifecycle and limits/status.",
+      "comparisons": "Fresh-only re-entry versus one-session remembered/revalidated opportunity on identical exit logic; no joint threshold search.",
+      "refutation": "Recovered opportunities fail the unchanged limit, incur worse entry prices/fees, replace more valuable future opportunities, or fail to improve the relevant annual return/drawdown tradeoff. Retire instead of extending memory lengths until a winner appears.",
+      "basis": [
+        "EX007 full exit/re-entry question",
+        "EX019 path_diagnostics: 44 missing H3 entries all overlap actual profit holdings; two major misses occur on liquidation dates"
+      ],
+      "status": "UNTESTED_HYPOTHESIS"
+    },
+    {
+      "rank": 2,
+      "name": "Original five-close support break and recovery account",
+      "when": "If EX020 or the bounded deferred-entry route cannot materially resolve the present parent/high-state limitations; do not wait for nine repetitions of the repair family.",
+      "mechanism": "Exit when short-term closing support fails and regain participation after its recovery, allowing continuous re-entry to offset the independent early-exit opportunity cost.",
+      "fixed_minimal_design": "Use the pre-existing EX007 A/B/C definitions: A repeated entry whenever flat with 10-day cap; B entry only if current close is no lower than the preceding five completed closes' minimum, same cap; C same entry plus next-session exit on support break or cap. Preserve original 60-session within-window warmup and all full-year cash periods; no 2019 feature expansion and no added MA/volume confirmation. Re-entry occurs only after an actual sale and a new completed eligible decision.",
+      "available_inputs": "Existing HFQ closes and original execution data.",
+      "comparisons": "B-A identifies entry selection; C-B identifies support exit plus ensuing path; keep fixed BuyHold and current H3/H6 for context without treating them as identical entry cohorts.",
+      "refutation": "Risk improvement is only mechanical cash exposure while missing positive-year return targets; re-entry fails to recover exit cost; 2022 whipsaw and costs remain; frequency below 3/60. Report actual account results, not an independent-probe proxy.",
+      "basis": [
+        "EX007 explicitly proposed complete mechanism not established by its midpoint probe",
+        "EX006 post-entry upside and simple float-profit exit counterexample"
+      ],
+      "status": "PREVIOUSLY_PROPOSED_ACCOUNT_HYPOTHESIS_NOT_PROVEN"
+    },
+    {
+      "rank": 3,
+      "name": "Frozen entry environment versus environment loss during holding",
+      "when": "Only if account loss attribution identifies meaningful high-to-low environment transitions before losses and the route is not equivalent to EX020's continuation test. First inspect all relevant opportunities, including profitable transitions, without selecting years or clusters.",
+      "mechanism": "The original relative environment may describe a condition that ceases while held; reevaluating that same historical state at a fixed close could change exposure without adding a new price/profit threshold.",
+      "fixed_minimal_design": "Keep original entries and causal annual calibration. At the first already-declared legal exit decision close, compare frozen-entry state with current completed-close state using the same 20-day autocorrelation and fixed annual threshold. Low means original next-session shorter exit, high means the already-declared finite horizon; decide once. Explicitly define missing state as unavailable before the run; do not search windows, medians or exit checkpoints.",
+      "available_inputs": "Existing closes/opens, original causal calibration history and public execution data.",
+      "comparisons": "Frozen versus current-state one-time decisions; report same-entry effects separately from path changes and include all seven years and genuine pre-2026 cutoff.",
+      "refutation": "Few transitions, gains confined to a few already-seen episodes, worsened tail loss, or changed entry paths negate paired gains. If equivalent to a completed EX020 comparison, skip entirely.",
+      "basis": [
+        "EX014/016 support is explicitly signal-day-fixed and does not validate dynamic reevaluation",
+        "EX014 high environment does not protect downside",
+        "EX019 paired effects and continuous account effects differ"
+      ],
+      "status": "LOWER_PRIORITY_UNTESTED_HYPOTHESIS; existing support must not be transferred"
+    }
+  ],
+  "remaining_round_policy": {
+    "remaining_capacity": 9,
+    "currently_defensible_distinct_next_questions": 3,
+    "unallocated_capacity": 6,
+    "ordering": "Choose the highest-priority still-distinct question after EX020. A successful mechanism may justify a narrowly bounded parameter-domain experiment under Optuna, followed by its specific path/coverage counterexample; neither is preallocated now. A failed mechanism does not automatically authorize a larger same-indicator sweep.",
+    "new_round_trigger": "Name the preceding account result, the causal decision-time information, the changed economic mechanism, a discriminating simple control and a result that would reverse the recommendation before calculating.",
+    "do_not_fill_budget": "If all three questions lose their economic rationale, stop with the existing failure evidence rather than invent nine numerical mechanisms. Data expansion, including announcements or commodity inputs, remains a separate decision."
+  },
+  "do_not_repeat": [
+    "EX019 profit/day-rise Boolean or neighboring threshold scans; P1D0 is sparse and loses top-three robustness without 2026, not an approved fifth rule.",
+    "Longer fixed holds selected because the full-period mean is higher; EX014/018/019 show 2026 concentration, tail loss and opportunity displacement.",
+    "Generic trend/range/RSI/MA or volume confirmation variants already controlled in EX004/005/007/013, without a distinct full-account mechanism.",
+    "EX007 daily-update/decay predictive models; they failed matched simple recent-mean/all-participation comparisons.",
+    "EX015 first-buy-close repair failure/weak follow-through filters; all four had negative independent incremental returns.",
+    "EX014 market-and-industry weakness as proven risk protection; matched clusters and de-overlap reversed its strongest support.",
+    "EX016 rolling calibration or altered startup merely to manufacture early-year support; preserve annual causal calibration and its disclosed startup gap.",
+    "Broad positive-candle entry replacing the gap condition: EX018 actual high-state account lost 48.50%, and EX019 path work explains opportunity substitution.",
+    "Skipping limit-up events, raising buy limits, selling on the buy day, same-session sell-and-rebuy, allocating by known bad years, or treating low net exposure as enough to satisfy the annual return target."
+  ],
+  "phase_four_readiness": {
+    "target": "Produce complete, loadable formal candidate evidence against the unchanged seven-year return and drawdown gates and full-window frequency. Report all qualifying configurations and the economic frontier, not just highest cumulative return.",
+    "diagnostic_limits": "Top-three deletion, every-component-year profitability, independent Alpha, confidence intervals and candidate counts are not new economic hard gates. They inform mechanism confidence and which next question deserves a round.",
+    "stop_early": "If a defensible candidate set meets the user's requested readiness, prepare the phase-three handoff and recommendation without spending the remaining budget. Stage-four execution/selection follows the relevant user authorization; no automatic freezing or production.",
+    "failure": "No qualifying candidate is a reportable research outcome; do not label a nonqualifying cumulative-return winner ready by silently relaxing annual targets."
+  },
+  "source_paths": [
+    "research/RSCH_AGENT.md",
+    "research/S014/deliveries/MANDATE/2/report.md",
+    "research/S014/deliveries/COMPONENTS/12/report.md",
+    "research/S014/deliveries/COMPONENTS/10/report.md",
+    "research/S014/experiments/EX004_20261016/protocols/component_report.md",
+    "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+    "research/S014/experiments/EX006_20261016/protocols/report.md",
+    "research/S014/experiments/EX007_20261017/protocols/report.md",
+    "research/S014/experiments/EX008_20261017/protocols/report.md",
+    "research/S014/experiments/EX009_20261017/protocols/report.md",
+    "research/S014/experiments/EX010_20261017/protocols/report.md",
+    "research/S014/experiments/EX011_20261017/protocols/report.md",
+    "research/S014/experiments/EX012_20261017/protocols/report.md",
+    "research/S014/experiments/EX013_20261017/protocols/coverage.md",
+    "research/S014/experiments/EX014_20261017/protocols/report.md",
+    "research/S014/experiments/EX015_20261017/protocols/report.md",
+    "research/S014/experiments/EX019_20261017/others/path_diagnostics.json",
+    "research/S014/experiments/EX019_20261017/others/state_diagnostics_v2.json",
+    "research/S014/experiments/EX018_20261017/others/account_diagnostics.json"
+  ],
+  "review_limitations": [
+    "This is an evidence-and-design review, not a new statistical computation or full source-code audit.",
+    "All observations are from the already-seen S014 development pool. Conditional next questions are adaptively proposed and must be disclosed as such.",
+    "EX020 implementation/results were not available for this review; avoid duplicating its final mechanism once published."
+  ],
+  "source_file_sha256": {
+    "research/RSCH_AGENT.md": "747e37c2304aebd8e46cee92093aab7642dc176b961c9b0b628f0edfc17f124a",
+    "research/S014/deliveries/MANDATE/2/report.md": "22d5d8134333645a5586636e18306009c75a6c66311816695f2ab250a14c8390",
+    "research/S014/deliveries/COMPONENTS/12/report.md": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+    "research/S014/deliveries/COMPONENTS/10/report.md": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+    "research/S014/experiments/EX004_20261016/protocols/component_report.md": "58cd8d855337355f27fa7abd5bfd3270ed9a70a63b6b7ff75a50cff5cefa513b",
+    "research/S014/experiments/EX005_20261016/protocols/final_report.md": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+    "research/S014/experiments/EX006_20261016/protocols/report.md": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+    "research/S014/experiments/EX007_20261017/protocols/report.md": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+    "research/S014/experiments/EX008_20261017/protocols/report.md": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+    "research/S014/experiments/EX009_20261017/protocols/report.md": "7bc43cce59f1d210025a2637353a263b0ab86f8b09ed9c0088b495d9dd8913d7",
+    "research/S014/experiments/EX010_20261017/protocols/report.md": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+    "research/S014/experiments/EX011_20261017/protocols/report.md": "1d354cc96d29494dd40731bacf77584d4171e1b9d768d00b0159167075b04157",
+    "research/S014/experiments/EX012_20261017/protocols/report.md": "033e93e1f154a75eca85fc62fefe399d668ace15293ad70da91004c4f2ef05c9",
+    "research/S014/experiments/EX013_20261017/protocols/coverage.md": "15d3d5606d7907f33b4b56cfed47433020ab75e8429edc38b26004d71e644db5",
+    "research/S014/experiments/EX014_20261017/protocols/report.md": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+    "research/S014/experiments/EX015_20261017/protocols/report.md": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+    "research/S014/experiments/EX019_20261017/others/path_diagnostics.json": "7572da3797df42b3146a2f678429477674a43d08795419b6c5e705734cbe1001",
+    "research/S014/experiments/EX019_20261017/others/state_diagnostics_v2.json": "5df09e4e30f7463cea6dba535b0ac0bb8a1fd2e803771e1bfd7fc051a1621fdc",
+    "research/S014/experiments/EX018_20261017/others/account_diagnostics.json": "1724362a1f37c383848e0e623ba606a17dc81722c8934a274b0c26b956638a7b"
+  }
+}
