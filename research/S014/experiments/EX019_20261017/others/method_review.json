@@ -1,0 +1,65 @@
+{
+  "experiment": "EX019_20261017",
+  "review_role": "RSCH independent method and account-audit reviewer",
+  "status": "METHOD_ACCEPTABLE_PENDING_ACCOUNT_AUDIT",
+  "scope": "S014 original high-environment entry, four fixed conditional extension rules, existing pinned data only; no upstream calls or new account execution by this reviewer.",
+  "reviewed_design": "research/S014/experiments/EX019_20261017/protocols/state_design.json",
+  "reviewed_strategy": "research/S014/experiments/EX019_20261017/src/strategy_runtime/strategies/repair.py",
+  "fixed_rules": {
+    "extend_profit": "S014-C0021: P",
+    "extend_rising": "S014-C0022: D",
+    "extend_both": "S014-C0023: P AND D",
+    "extend_either": "S014-C0024: P OR D"
+  },
+  "exact_reused_baselines": {
+    "baseline_H3": "EX017_20261017 high_H3 S014-C0011",
+    "baseline_H6": "EX018_20261017 parent_high_H6 S014-C0016"
+  },
+  "findings": [
+    {
+      "topic": "当晚可得性与时序",
+      "judgment": "实际买入成交日为 E；E+2 收盘后仅决定一次，在下一交易日 E+3 卖出，或固定延至 E+6。P/D 只依赖已成交买价、实际买费和已知收盘价，因此设计不需要未来价格。必须用前一信号驱动下一日执行，并逐笔核验。"
+    },
+    {
+      "topic": "浮盈的经济含义",
+      "judgment": "P 严格为正表示扣买入费后的持仓价格浮盈，不等于立即卖出后的净利润。独立审计采用实际股数乘当日归一化收盘价，除以实际 BUY 成交金额加实际 BUY 费用，再减一。此处不假扣卖费；实际退出仍按原规则收取卖费。D 为当晚收盘相对前一交易日收盘的变化。两项等于零均判为假，不能另加搜索阈值。"
+    },
+    {
+      "topic": "一次决策与退出受阻",
+      "judgment": "E+2 判定以后保持选定的 E+3 或 E+6 计划。跌停或停牌导致未成交时持续提交原退出意图，不重新判定、不撤销卖出。E+6 从实际买入 E 固定计数，不能从已经延迟的原 H3 成交退出日再加三日。"
+    },
+    {
+      "topic": "条件样本与选择偏差",
+      "judgment": "先诊断原 high_H3 的全部实际入场，不能只取 H3/H6 共同入场或已经获利的交易。独立交易反事实保持同一买价与股数，分别按原 TXE 模拟退出；样本尾部尚无法完成退出的记录保留为截尾，不记零收益。"
+    },
+    {
+      "topic": "标签与账户不是同一结论",
+      "judgment": "P/D 四格的未来 H6-H3 差只能作延长价值诊断，不能拿未来最优持有期当作入场当晚可知标签。连续账户延长持仓会占用资金并挤掉后续信号，必须独立回放四账户；逐交易增量不能直接相加解释复利账户收益。"
+    },
+    {
+      "topic": "样本适应与稳健性边界",
+      "judgment": "这是已经看过的开发区间，原 H3/H6 与本轮条件均受既有研究启发。逐年、剔除 2026、删除最好 3/5 笔是证据诊断，不是新增用户硬门。四规则按固定 P、D、AND、OR 全量披露，不能根据四格事后增设第五个 P 且非 D 规则并当作预先验证。"
+    },
+    {
+      "topic": "最终验收",
+      "judgment": "保留每个自然年的收益与回撤目标、原 BuyHold、全期闭合交易频率、单边 0.1% 费率、整手与原成交规则。2026 为截至 10 月 15 日的实际部分年度；不按年度重置资金，不强制末日平仓。方法可执行或账本审计通过均不等于年度目标通过，也不自动进入阶段四。"
+    }
+  ],
+  "observation_contract": {
+    "decision_evaluated": "仅实际 E+2 当日为真；每次实际持仓至多一次。",
+    "extend_selected": "仅 E+2 事件日记录选中与否，其余日期为假；持续持有由冻结的 holding_horizon 表示。",
+    "float_pnl_and_close_change": "仅 decision_evaluated 当日有经济含义，其他日期为 0，以满足公开观测有限数值约定。",
+    "entry_fill_price": "当前实际持仓的 TXE 后复权单位成交价；空仓为 0。与实际账户归一化成交价比较时须除以同一固定价格锚。",
+    "cutoff": "最后一日收盘可重建状态，但不能声称产生截止日之后的实际订单或成交。"
+  },
+  "audit_plan": [
+    "复用 EX017 公开 load_frames 与 audit_ledger，验证全部实际订单、费用、现金、股数、成交价格和前一日信号时序。",
+    "独立从实际 BUY fills 的数量、金额、fees 及 account_daily.close 重建 P/D，逐日验证一次判定、严格谓词和冻结退出日期。",
+    "验证新候选身份 C0021..C0024、正式 EvidenceRef 字节、单 run/full/baseline、实现闭包哈希与预检绑定。",
+    "精确复用 C0011/C0016 原正式证据，并核验所有新账户的完整 BuyHold 与原基准一致。",
+    "审计完整检查和逐笔判定明细写入 assets/runs，others 中仅保留摘要与文件 SHA；如失败保留原证据再发布修正版。"
+  ],
+  "external_calls": 0,
+  "new_account_runs": 0,
+  "performance_conclusion": "待正式账户和独立账本审计完成；本方法评审不作收益有效性结论。"
+}

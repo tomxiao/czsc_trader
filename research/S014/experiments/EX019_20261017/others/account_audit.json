@@ -1,0 +1,221 @@
+{
+  "status": "PASS",
+  "check_count": 88108,
+  "accounts": [
+    {
+      "variant": "extend_profit",
+      "candidate": "S014-C0021",
+      "sessions": 1642,
+      "no_order_days": 1415,
+      "buy_days": 113,
+      "sell_days": 112,
+      "failed_buy_orders": 2,
+      "ending_quantity": 8000,
+      "ending_cash": 911.268000000171,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 113,
+      "extension_decisions": 112,
+      "selected_extensions": 61,
+      "censored_before_decision": 1,
+      "observation_scope": "Authenticated runtime history independently reconciled to actual fills and daily close; cutoff-close state has no execution beyond cutoff."
+    },
+    {
+      "variant": "extend_rising",
+      "candidate": "S014-C0022",
+      "sessions": 1642,
+      "no_order_days": 1403,
+      "buy_days": 118,
+      "sell_days": 117,
+      "failed_buy_orders": 3,
+      "ending_quantity": 5200,
+      "ending_cash": 473.6889999999985,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 118,
+      "extension_decisions": 117,
+      "selected_extensions": 58,
+      "censored_before_decision": 1,
+      "observation_scope": "Authenticated runtime history independently reconciled to actual fills and daily close; cutoff-close state has no execution beyond cutoff."
+    },
+    {
+      "variant": "extend_both",
+      "candidate": "S014-C0023",
+      "sessions": 1642,
+      "no_order_days": 1399,
+      "buy_days": 120,
+      "sell_days": 119,
+      "failed_buy_orders": 3,
+      "ending_quantity": 5500,
+      "ending_cash": 227.8090000000666,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 120,
+      "extension_decisions": 119,
+      "selected_extensions": 48,
+      "censored_before_decision": 1,
+      "observation_scope": "Authenticated runtime history independently reconciled to actual fills and daily close; cutoff-close state has no execution beyond cutoff."
+    },
+    {
+      "variant": "extend_either",
+      "candidate": "S014-C0024",
+      "sessions": 1642,
+      "no_order_days": 1421,
+      "buy_days": 110,
+      "sell_days": 109,
+      "failed_buy_orders": 2,
+      "ending_quantity": 7400,
+      "ending_cash": 496.1280000002007,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 110,
+      "extension_decisions": 109,
+      "selected_extensions": 69,
+      "censored_before_decision": 1,
+      "observation_scope": "Authenticated runtime history independently reconciled to actual fills and daily close; cutoff-close state has no execution beyond cutoff."
+    },
+    {
+      "variant": "buyhold",
+      "sessions": 1642,
+      "no_order_days": 1641,
+      "buy_days": 1,
+      "sell_days": 0,
+      "failed_buy_orders": 0,
+      "ending_quantity": 20800,
+      "ending_cash": 476.57600000000093,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15"
+    }
+  ],
+  "new_accounts_audited": 4,
+  "reused_accounts": {
+    "baseline_H3": [
+      "EX017_20261017",
+      "high_H3",
+      "S014-C0011"
+    ],
+    "baseline_H6": [
+      "EX018_20261017",
+      "parent_high_H6",
+      "S014-C0016"
+    ]
+  },
+  "formal_evidence": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f.json",
+      "sha256": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+      "media_type": "application/json",
+      "name": "account-high-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f.json",
+      "sha256": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+      "media_type": "application/json",
+      "name": "account-high-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX018_20261017"
+      },
+      "evidence_id": "248a8eed62df1e37f8bbfdc5102aaca1d690621e524d2eed5e2dc932b295b35e.json",
+      "sha256": "248a8eed62df1e37f8bbfdc5102aaca1d690621e524d2eed5e2dc932b295b35e",
+      "media_type": "application/json",
+      "name": "account-parent-high-h6",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX019_20261017"
+      },
+      "evidence_id": "d9a7e8ab3c59f56fa301f4a9b07167e57a32d6f9e6f936ab0157aa4d659ce745.json",
+      "sha256": "d9a7e8ab3c59f56fa301f4a9b07167e57a32d6f9e6f936ab0157aa4d659ce745",
+      "media_type": "application/json",
+      "name": "account-extend-profit",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX019_20261017"
+      },
+      "evidence_id": "a9468e8767c34ac074270947bf6372c621b75dd2abcdbb23351cf7af571991a6.json",
+      "sha256": "a9468e8767c34ac074270947bf6372c621b75dd2abcdbb23351cf7af571991a6",
+      "media_type": "application/json",
+      "name": "account-extend-rising",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX019_20261017"
+      },
+      "evidence_id": "cb8b3e0773aba2435c6224f0c8cdc8b3a943cee07d998f8830f2f7db7a2bb2ec.json",
+      "sha256": "cb8b3e0773aba2435c6224f0c8cdc8b3a943cee07d998f8830f2f7db7a2bb2ec",
+      "media_type": "application/json",
+      "name": "account-extend-both",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX019_20261017"
+      },
+      "evidence_id": "7933b24a6c4598140a1d9df199bd4671cb77925067084b818c501d5f9a090ecc.json",
+      "sha256": "7933b24a6c4598140a1d9df199bd4671cb77925067084b818c501d5f9a090ecc",
+      "media_type": "application/json",
+      "name": "account-extend-either",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "source_sha256": "e85b3a2c58bcc2bb16f98ae4f7bfa9043d522f46fa751cb98adbd42add403eaf",
+  "calibration_sha256": "b7f684abf3bfba9616a76ff9e5a5c8eb0f66a0e3ccff400620b9580bb4021918",
+  "predecessor_audit_source_sha256": "c17e12b988812d1ff4a8613a552de44c6e7de3e8688f330a14aa248f1b9131a7",
+  "audit_source_sha256": "6f799a8bdd5e4d335cc85e679d65e9276f645021ca3b7f2c35c1471fa226f04d",
+  "method_review_sha256": "38f9837483e01609bcf7a8c7f070b5c142c8504d68f1f3672c58ed77f3380400",
+  "full_input_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "external_calls": 0,
+  "external_attempts": 0,
+  "new_account_runs": 0,
+  "full_audit": {
+    "path": "research/S014/assets/runs/EX019_20261017/account_audit_full.json",
+    "sha256": "1889380765b4c99e4e281fb95c6f3358c1a9f814c4cd3de24b54e7fb00234adf",
+    "bytes": 6916497
+  }
+}

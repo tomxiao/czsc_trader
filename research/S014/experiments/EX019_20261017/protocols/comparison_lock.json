@@ -1,0 +1,23 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "new_variants": [
+    "extend_profit",
+    "extend_rising",
+    "extend_both",
+    "extend_either"
+  ],
+  "new_accounts": 4,
+  "reused_accounts": {
+    "baseline_H3": "S014-C0011",
+    "baseline_H6": "S014-C0016"
+  },
+  "state_design_sha256": "be497ae23916aba3eccebe7289f575a81f0ae2dde24c02520edd9c9b41ca82f0",
+  "diagnostic_sha256": "5df09e4e30f7463cea6dba535b0ac0bb8a1fd2e803771e1bfd7fc051a1621fdc",
+  "precheck_sha256": "2cb5bc73d729bf39fd6e6ba15b911b24e65760539ed47fa8a9472f3848b44009",
+  "decision": "Retain predeclared P,D,AND,OR at strict zero; independent labels show weak/concentrated mean advantage, not a proven robust mechanism. Complete accounts test opportunity substitution and actual risk tradeoff.",
+  "no_added_rule": "P1_D0 22 pairs has +3.5229pp mean, but excluding2026 only17 pairs +0.6108pp and negative after top3 removal. Do not add a retrospective fifth rule; preserve subgroup evidence.",
+  "state_vs_hindsight": "P and actual next-session H3 sale profitability disagree10/146; do not use later sale PnL.",
+  "fixed_horizon": "H6 always actual entry E+6, not delayed actual H3 sale+3. Original H3 entry2026-07-23 sells delayed7/29; H6 planned7/31 may fill9.80 under original limit-open+tick rule.",
+  "rules": "Evaluate P,D once E+2 close; selected extend to6, otherwise3; failed exits remain pending. No new signals, cost/execution changes, annual switches or threshold optimization.",
+  "scope": "Existing S014 data only; all previously seen development sample; no upstream calls; no phase four"
+}

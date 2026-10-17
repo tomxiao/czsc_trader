@@ -1,0 +1,24 @@
+{
+  "authorization": "同意，继续阶段三。用退出决策当晚已知的浮动盈亏和价格变化，验证哪些交易值得延长持有，再做连续账户对照。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
+  "scope": "S014 existing pinned data; same nominal 2020-01-01..2026-10-15; 1642 sessions; original execution warmup only; no new upstream calls; no announcements, platform edits or phase four",
+  "hypothesis": "Early exit cuts some continuing recoveries; positive marked PnL and positive latest close change at the actual H3 exit decision may distinguish extension value without knowing next-session sale price.",
+  "timing": "Let actual BUY fill be E. At E+2 close, decide once to retain original E+3 sell or extend planned sale to E+6. Failed sells continue original exit intent. Calendar indices follow original market sessions.",
+  "profit": "P = C(E+2) / (actual BUY fill price * (1 + 0.001)) - 1 > 0. Uses same adjusted price basis; includes actual buy fee, no fictional sale fee. Quantity/residual cash do not alter price signal.",
+  "price_change": "D = C(E+2) / C(E+1) - 1 > 0, same HFQ basis.",
+  "thresholds": "Strict zero for both economic boundaries; equality belongs to false. No threshold/window search.",
+  "diagnosis": "All original high-H3 actual entries, not just matched H3/H6 entries. Four P/D cells; actual original H3 exit versus same position E+6 exit under original TXE. Mark right censoring. Overall, each entry-year and excluding2026; negative increments, tails, delete top3/top5 diagnostic only. Record mismatch with prior hindsight realized exit PnL.",
+  "conditional_accounts": [
+    "extend_profit",
+    "extend_rising",
+    "extend_both",
+    "extend_either"
+  ],
+  "accounts_rationale": "P, D and their AND/OR inspect continuation state versus broad inclusion; all hold H3 when false and H6 when true. Lock final applicable rules after diagnostic inspection before account execution; include negative outcomes and all years.",
+  "baselines": {
+    "baseline_H3": "S014-C0011",
+    "baseline_H6": "S014-C0016"
+  },
+  "frozen_contract": "Original parent=negative opening gap and positive intraday candle; high gap-autocorrelation environment; original annual matured-only calibration and readiness. Same 100000 continuous cash account, 0.001 each side, previous-close+1% limit buy, original open/lower-limit+one tick sell, 100share lots; fixed LimitBuyHold; no annual reset or forced terminal sale.",
+  "targets": "Every natural year strategy>=1.5*BH if BH>0 else strategy>0; annual DD strictly below BH; 2026 actual partial year included; frequency60*CLOSED/1642>=3.",
+  "limits": "Already-seen development sample; diagnostic subgroup does not establish tradable profit. Extension displaces later entries. H3/H6 fixed from prior research, not optimal horizons; disclose adaptation and verify causal availability. Do not directly implement future actual sale PnL as condition."
+}
