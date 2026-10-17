@@ -132,6 +132,120 @@
         "继续"
       ]
     },
+    "autonomous_stage_two_budget": {
+      "allocated_rounds": [
+        {
+          "experiment_id": "EX015_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX016_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        }
+      ],
+      "authorization": "授权10轮实验额度，请你继续主导阶段二研究，达成可以推进至阶段三的状态",
+      "completed_rounds": [
+        {
+          "evidence": [
+            {
+              "evidence_id": "7fc6ff5a2eaa897cc98484552564dcd2c9accee00f957fe0fb792d1ce892152d.json",
+              "experiment": {
+                "experiment_id": "EX015_20261017",
+                "strategy_id": "S014",
+                "type": "ExperimentRef"
+              },
+              "media_type": "application/json",
+              "name": "others-computation-json",
+              "schema": null,
+              "schema_version": null,
+              "sha256": "7fc6ff5a2eaa897cc98484552564dcd2c9accee00f957fe0fb792d1ce892152d",
+              "type": "EvidenceRef"
+            },
+            {
+              "evidence_id": "81b809c8baa2381f27e1b2346ee9a02a1cd154892feeeb5c224ea7fea11763ff.json",
+              "experiment": {
+                "experiment_id": "EX015_20261017",
+                "strategy_id": "S014",
+                "type": "ExperimentRef"
+              },
+              "media_type": "application/json",
+              "name": "others-audit-json",
+              "schema": null,
+              "schema_version": null,
+              "sha256": "81b809c8baa2381f27e1b2346ee9a02a1cd154892feeeb5c224ea7fea11763ff",
+              "type": "EvidenceRef"
+            },
+            {
+              "evidence_id": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76.md",
+              "experiment": {
+                "experiment_id": "EX015_20261017",
+                "strategy_id": "S014",
+                "type": "ExperimentRef"
+              },
+              "media_type": "text/markdown",
+              "name": "protocols-report-md",
+              "schema": null,
+              "schema_version": null,
+              "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+              "type": "EvidenceRef"
+            }
+          ],
+          "experiment": {
+            "experiment_id": "EX015_20261017",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "result": "RESEARCH_COMPLETE_NO_NEW_SUPPORTED_COMPONENT"
+        },
+        {
+          "evidence": [
+            {
+              "evidence_id": "1eada914807be5ba90db4c29bedd3e74bbbdf746fc27c48ea52517e7cfb23dcf.json",
+              "experiment": {
+                "experiment_id": "EX016_20261017",
+                "strategy_id": "S014",
+                "type": "ExperimentRef"
+              },
+              "media_type": "application/json",
+              "name": "ex016-others-final_audit-json",
+              "schema": null,
+              "schema_version": null,
+              "sha256": "1eada914807be5ba90db4c29bedd3e74bbbdf746fc27c48ea52517e7cfb23dcf",
+              "type": "EvidenceRef"
+            },
+            {
+              "evidence_id": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb.md",
+              "experiment": {
+                "experiment_id": "EX016_20261017",
+                "strategy_id": "S014",
+                "type": "ExperimentRef"
+              },
+              "media_type": "text/markdown",
+              "name": "ex016-protocols-report-md",
+              "schema": null,
+              "schema_version": null,
+              "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+              "type": "EvidenceRef"
+            }
+          ],
+          "experiment": {
+            "experiment_id": "EX016_20261017",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "result": "LIMITED_COMPONENT_EVIDENCE_SUFFICIENT_FOR_STAGE_THREE_PROPOSAL"
+        }
+      ],
+      "counting": "每个新的正式实验身份计一轮；同问题修正、事前锁定反证在该轮内披露，不以重新命名规避额度。",
+      "goal_status": "COMPLETE",
+      "readiness": "组件职责与证据足以支持具体可执行、可证伪的阶段三研究假设；不以数量或账户提前达标代替判断。",
+      "remaining_unallocated": 8,
+      "scope": "S014既有数据与阶段二；0新上游额度、公告暂停，费用与执行不变；阶段三推进仍待用户批准。",
+      "stop_reason": "已形成有证据支持的可执行阶段三对照；不以耗尽额度或数量收口。",
+      "total_rounds": 10
+    },
     "autonomy": {
       "resources": {
         "max_workers": 2,
@@ -156,12 +270,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "fa973cec8bcf033e7aa604b7d6f024e932219931c63e76eebb258161d51c55d6",
-      "revision": 11,
+      "content_sha256": "c1d33af057367cbb18a3b26b2ad599229989e8c2c5ecd5355a26fb15a8c1bf71",
+      "revision": 12,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "固定H3环境的均差约94%来自正收益；四风险假设未形成新增有效组件。补强原组件的低状态H1延长H3风险参考证据，26定义不变，未证明最优退出，阶段二PARTIAL。",
+    "conclusion": "阶段二完成并建议推进阶段三：保留26定义及2辅助/1环境参考，以原年度因果状态构建环境与期限四对照；早期反例和选择局限公开，未验证账户或年度绩效。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -197,17 +311,17 @@
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "fa973cec8bcf033e7aa604b7d6f024e932219931c63e76eebb258161d51c55d6",
-        "revision": 11,
+        "content_sha256": "c1d33af057367cbb18a3b26b2ad599229989e8c2c5ecd5355a26fb15a8c1bf71",
+        "revision": 12,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
       "decision_update": "撤回COMPONENTS/4直接推进阶段三建议；当前PARTIAL，阶段二继续。",
       "execution_scope_this_turn": "固定H3环境收益分解、四风险假设、同入场五期限与定向反证；0源调用。",
-      "judgment_update": "相对环境分层得到限定支持；对强筛选和账户用途保持证据边界，不在反证后追加无关硬门。",
+      "judgment_update": "环境信息有有限证据，主要未决问题为组合与账户兑现，归属阶段三；不要求组件先通过账户绩效。",
       "priority_question": "决策前可知的公司披露信息能否区分持续负面重定价与暂时修复？先验证事件目录、权限与真实发布时间。",
-      "recommended_minimum_design": "既有数据内区分低环境H1至H3损失的隔夜/盘中来源及事前互补条件；不重扫窗口，不自动进入策略组合或账户。",
-      "result": "固定H3环境的均差约94%来自正收益；四风险假设未形成新增有效组件。补强原组件的低状态H1延长H3风险参考证据，26定义不变，未证明最优退出，阶段二PARTIAL。",
+      "recommended_minimum_design": "同启动定义下父H1、父H3、高H3、高H3低H1四对照；原经济目标、费用执行不变。",
+      "result": "阶段二完成并建议推进阶段三：保留26定义及2辅助/1环境参考，以原年度因果状态构建环境与期限四对照；早期反例和选择局限公开，未验证账户或年度绩效。",
       "reviewed_commit": "623ce4f1",
       "reviewed_delivery": {
         "batch": {
@@ -223,8 +337,8 @@
         "primary": "阶段二：公司信息可得性与可证伪机制",
         "stage_three": "当前不建议且未批准"
       },
-      "routing_after_result": "继续阶段二；阶段三未推荐/批准。",
-      "verified": "COMPONENTS/11 PARTIAL/FULL/PASS；68项检查，4次年度复算；26定义不变。"
+      "routing_after_result": "建议进入阶段三，待用户明确批准。",
+      "verified": "EX015 47项及16复算，EX016 120项；COMPONENTS/12 COMPLETE/FULL/PASS。"
     },
     "h3_downside_duration": {
       "delivery": {
@@ -336,11 +450,36 @@
       "original_pdfs": 32
     },
     "pending": [
-      "既有数据内区分低环境H1至H3损失的隔夜/盘中来源及事前互补条件；不重扫窗口，不自动进入策略组合或账户。"
+      "请用户批准阶段三四组连续账户对照；批准前不执行。"
     ],
     "phase_three_approved": false,
-    "phase_three_ready": false,
-    "phase_two_complete": false,
+    "phase_three_proposal": {
+      "calibration": "EX016 src/annual_followup.py::calibrate + EX013 src/component.py::gap_sequence_context",
+      "execution_authorized": false,
+      "report": {
+        "evidence_id": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb.md",
+        "experiment": {
+          "experiment_id": "EX016_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "ex016-protocols-report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+        "type": "EvidenceRef"
+      },
+      "startup": "2020-10-13; retain full-year cash path and evaluation denominator",
+      "variants": [
+        "parent_H1",
+        "parent_H3",
+        "high_only_H3",
+        "high_H3_low_H1"
+      ]
+    },
+    "phase_three_ready": true,
+    "phase_two_complete": true,
     "ready": true,
     "remaining_source_calls": 0,
     "research_window": {
@@ -354,7 +493,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二进行中：H3环境下行和持续时间验证，补强既有组件期限风险参考",
+    "stage": "阶段二完成：建议阶段三，等待用户批准",
     "strategy_accounts": 0,
     "supported_components": 3,
     "supported_return_context_components": 1,
@@ -366,5 +505,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T22:28:18+08:00"
+  "updated_at": "2026-10-17T22:51:26+08:00"
 }
