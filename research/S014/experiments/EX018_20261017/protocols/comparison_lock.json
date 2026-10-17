@@ -1,0 +1,50 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "hypothesis": "The negative-gap requirement omits potentially useful intraday recovery opportunities, with environment and time-in-position interactions. Test removal of negative-gap only; do not infer universally longer holding from concentrated paired returns.",
+  "diagnostic_sha256": "587f3f525b6024445be87f99e2b75becc90da1a3c068b95fc61ace2bce978771",
+  "precheck_sha256": "95e0171021a6b865b504a07478fdd56976df0aac50d14930157799b5b7c88685",
+  "why_gap": "Gap-only absent 255 flat days net benchmark log +0.6790, but 2021 -0.3353; needs full account, all-year counterexample retained.",
+  "why_environment": "Low environment 96 flat days net log -0.1136 overall, +0.2318 in 2021 and -0.2080 in 2026: no unconditional removal claim.",
+  "why_H6": "Three extra sessions average paired incremental +0.6656 percentage points but -0.1163 after removing best three. H6 is a sensitivity/interaction control, not a supported general improvement nor optimal horizon.",
+  "design": {
+    "entry": [
+      "parent",
+      "up_candle"
+    ],
+    "environment": [
+      "all",
+      "high"
+    ],
+    "holding_sessions": [
+      3,
+      6
+    ]
+  },
+  "variants": [
+    "parent_all_H3",
+    "parent_all_H6",
+    "parent_high_H3",
+    "parent_high_H6",
+    "up_candle_all_H3",
+    "up_candle_all_H6",
+    "up_candle_high_H3",
+    "up_candle_high_H6"
+  ],
+  "new_variants": [
+    "parent_all_H6",
+    "parent_high_H6",
+    "up_candle_all_H3",
+    "up_candle_all_H6",
+    "up_candle_high_H3",
+    "up_candle_high_H6"
+  ],
+  "new_accounts": 6,
+  "reused_accounts": {
+    "parent_all_H3": "S014-C0010",
+    "parent_high_H3": "S014-C0011"
+  },
+  "contract_source": "protocols/attribution_design.json",
+  "primary_contrasts": "Three isolated changes relative to parent_high_H3, followed by all conditional factor effects. No annual switching, no parameter search, no further horizon search implied.",
+  "limits": "Already seen development data; descriptive flat-day contribution and exit-extension diagnostics overlap and are not additive causal shares; all accounts retain readiness and frozen execution.",
+  "upstream_calls": 0
+}

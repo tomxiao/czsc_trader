@@ -1,0 +1,14 @@
+{
+  "authorization": "同意，继续阶段三。先用现有数据查清上涨缺口来自入场信号、环境筛选还是退出过早，再做针对性对照。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
+  "scope": "S014 600722.SH; existing pinned 2019 execution warmup plus 2020-01-01..2026-10-15 development data only; no new upstream calls; announcements remain paused",
+  "frozen_contract": "Initial cash 100000; fee 0.001 per side; HFQ_RESEARCH; prior-close +1% limit buy; existing market-sell open/lower-limit+1 tick; whole planned quantity; full available cash/100-share lots; fixed LimitBuyHold; no annual resets or terminal forced liquidation",
+  "annual_targets": "Each year: strategy >=1.5*BuyHold if BuyHold positive else strategy>0; annual drawdown magnitude strictly below BuyHold. 2026 through Oct15 included without annualization. 60*CLOSED/1642>=3.",
+  "diagnosis": [
+    "On each completely flat day in high_H3, classify using previous signal-day information: unready, no parent, environment rejection, reset, execution failure. Classes must be exhaustive and exclusive. Decompose positive and negative benchmark log returns, not positive days alone.",
+    "Within no-parent days, distinguish missing negative opening gap from missing positive intraday candle and both. These are descriptive unfilled opportunity sets, not attainable alpha.",
+    "Assess exactly three extra trading days after actual exits as a separate overlapping diagnostic dimension. Include negative outcomes, all seven years, and excluding 2026. It cannot be added to the flat-day categories or treated as a tradable strategy."
+  ],
+  "conditional_comparison_proposal": "After reading attribution, lock a minimal fixed factorial if supported: entry parent vs up-candle (remove only negative-gap requirement), environment high vs all (all still require original readiness), H3 vs H6 (exactly three added sessions). Reuse original parent/all/H3 and parent/high/H3 authenticated accounts; six new complete accounts. Stop or revise proposal before account execution if attribution contradicts it, documenting reason.",
+  "selection_limits": "No new independent holdout: all dates already seen. Whole-period or per-year results must not create retrospective annual switches. Factorial identifies effects within these specified constructions, not universal causal effects or unique shares of missed market profits.",
+  "publication": "Public batch evaluation and evidence, preserve all valid negative results, independent daily ledger audit; final handoff contains prior frontier plus any new passing/frontier candidates. No automatic stage four or production."
+}

@@ -1,0 +1,73 @@
+{
+  "status": "FAIL",
+  "check_count": 29,
+  "accounts": [],
+  "formal_evidence": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f.json",
+      "sha256": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+      "media_type": "application/json",
+      "name": "account-high-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "98977c160d7b19f6e2e735c5362c800bfcc8df1607e80591f7419ff080dcb56f.json",
+      "sha256": "98977c160d7b19f6e2e735c5362c800bfcc8df1607e80591f7419ff080dcb56f",
+      "media_type": "application/json",
+      "name": "account-parent-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f.json",
+      "sha256": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+      "media_type": "application/json",
+      "name": "account-high-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX018_20261017"
+      },
+      "evidence_id": "9b1148dafd32fe2361da308f83a2b6ac52818f4565a670319482e4287079b14b.json",
+      "sha256": "9b1148dafd32fe2361da308f83a2b6ac52818f4565a670319482e4287079b14b",
+      "media_type": "application/json",
+      "name": "account-parent-all-h6",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "error": "KeyError: \"['up_candle'] not in index\"",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\CodeBase\\czsc_trader\\research\\S014\\experiments\\EX018_20261017\\src\\audit_accounts.py\", line 149, in main\n    visible[observed].dtypes.eq(float).all()\n    ~~~~~~~^^^^^^^^^^\n  File \"D:\\CodeBase\\czsc_trader\\.venv\\Lib\\site-packages\\pandas\\core\\frame.py\", line 4384, in __getitem__\n    indexer = self.columns._get_indexer_strict(key, \"columns\")[1]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\CodeBase\\czsc_trader\\.venv\\Lib\\site-packages\\pandas\\core\\indexes\\base.py\", line 6302, in _get_indexer_strict\n    self._raise_if_missing(keyarr, indexer, axis_name)\n  File \"D:\\CodeBase\\czsc_trader\\.venv\\Lib\\site-packages\\pandas\\core\\indexes\\base.py\", line 6355, in _raise_if_missing\n    raise KeyError(f\"{not_found} not in index\")\nKeyError: \"['up_candle'] not in index\"\n",
+  "external_calls": 0,
+  "external_attempts": 0,
+  "new_account_runs": 0,
+  "full_audit": {
+    "path": "research/S014/assets/runs/EX018_20261017/account_audit_full.json",
+    "sha256": "b21919aec33a8c5d448c38c776bd9903d16bde6501eeb0fb8c6efa0d12f56aec",
+    "bytes": 4629
+  }
+}

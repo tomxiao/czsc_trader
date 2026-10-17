@@ -270,8 +270,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "6665385684794f8582b19fbc994d9d0a78569b37b0f26d8d941f17605236b9a9",
-      "revision": 1,
+      "content_sha256": "bb2bc6840aa5b979d8d6e7b77f171ef600e29504fdb79833d801d72f310bc1cf",
+      "revision": 2,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -286,7 +286,7 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "四方案连续账户对照已完成，全部满足全期频率，0个满足所有年度收益与回撤目标。高环境筛选存在全期改善，但年度不稳；低环境缩短至1天未稳定改善高环境单独交易。建议保留阶段三，先定位上涨覆盖缺口与持仓亏损，不进入阶段四。",
+    "conclusion": "上涨缺口不能归结为单一筛选或退出条件。固定高环境低开收阳H6提高全期收益，但年度收益仍仅3/7、年度回撤5/7；放宽为收阳并未改善高环境方案，环境与期限存在显著交互。八构造全部经济目标通过数为0。保留高环境父H6和全环境收阳H6为风险收益取舍研究对象，不认定稳定有效策略、不推进阶段四。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -461,7 +461,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "根据四方案账户证据决定继续阶段三优化或回退阶段二；不自动进入阶段四。"
+      "当前构造均未达到年度目标；根据持仓延长与再入场归因决定下一轮，禁止事后年度切换。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -505,7 +505,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段三四方案账户对照完成，待用户决定后续研究",
+    "stage": "阶段三上涨缺口归因与针对性账户对照完成",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -514,6 +514,31 @@
       },
       "scope": "S014四方案及固定BuyHold；不改年度目标和费用执行，不扩数据、不恢复公告",
       "verbatim": "同意进入阶段三，按这四种方案做连续账户对照，保持费用、执行约定和年度目标不变，你自主推进，我看结果。"
+    },
+    "stage_three_followup": {
+      "authorization": "同意，继续阶段三。先用现有数据查清上涨缺口来自入场信号、环境筛选还是退出过早，再做针对性对照。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
+      "data": "existing S014 pinned inputs only",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "bb2bc6840aa5b979d8d6e7b77f171ef600e29504fdb79833d801d72f310bc1cf",
+        "revision": 2,
+        "stage": "CANDIDATES",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX018_20261017",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "new_accounts": 6,
+      "new_source_calls": 0,
+      "new_upstream_calls": 0,
+      "plan": "先分解与归因，之后锁定最小对照，不做事后年度开关，不自动进入阶段四。",
+      "reused_accounts": 2,
+      "status": "COMPLETE"
     },
     "stage_three_preparation": {
       "actual_account_runs": 4,
@@ -598,7 +623,7 @@
       "status": "COMPLETE",
       "user_reply": "同意补齐，最多15次调用"
     },
-    "strategy_accounts": 4,
+    "strategy_accounts": 10,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0
@@ -609,5 +634,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T23:27:55+08:00"
+  "updated_at": "2026-10-17T23:47:46+08:00"
 }
