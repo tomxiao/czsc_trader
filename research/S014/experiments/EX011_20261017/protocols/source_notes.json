@@ -1,0 +1,20 @@
+{
+  "observed_date": "2026-10-17",
+  "documentation": {
+    "url": "https://tushare.pro/document/2?doc_id=176",
+    "title": "Tushare上市公司全量公告anns_d",
+    "method": "本轮通过web打开官方页面，核对接口描述、权限、输入及输出表。",
+    "documented_history_start": "1999-01-01",
+    "documented_max_rows_per_call": 2000,
+    "separate_permission": "公告数据权限单独申请；日线访问成功不能证明公告权限。",
+    "optional_field": "rec_time被文档列为非默认输出，描述为发布时间。",
+    "limits": "说明书不能证明当前账号权限、600722.SH完整历史、实际rec_time语义或历史修订可得性。"
+  },
+  "actual_observation": "同一账号两次anns_d均HTTP200/业务码40203；第二次去掉rec_time后仍被拒，安全中文投影明确包含没有接口访问权限。",
+  "original_disclosure_checks": {
+    "status": "NOT_PERFORMED_NO_VENDOR_CATALOGUE",
+    "reason": "未取得供应商目录及原文URL，无法进行目录对原始披露的交叉核验。未以SSE/CNInfo替代完整数据源，未读取公司事件正文或进行事件收益关联。",
+    "future_checks": "获得访问后核对年度/中期报告锚点、选定披露期、原文URL和原始发布时间，保留时区、修订及抓取时刻的差别；不能用交易日覆盖率或缺行证明无事件。"
+  },
+  "interpretation": "当前账号的访问受权限阻断；不是Tushare不提供公告，也不证明该公司无公告或历史不完整。去掉可选字段仍失败，只能说明这样请求仍不获准，不能验证该字段自身可用性。"
+}
