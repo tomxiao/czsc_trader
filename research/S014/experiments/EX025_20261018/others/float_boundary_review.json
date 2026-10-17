@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "scope": "Actual first-break P boundary only; no threshold/source/account change",
+  "criterion": "abs(P)<1e-12 is a numerical proximity diagnostic, not an economic gate",
+  "accounts": [
+    {
+      "batch": "EX024_20261018",
+      "variant": "support_first_profit_exit_H10",
+      "events": 104,
+      "abs_P_below_1e_12": 0,
+      "minimum_abs_P": 0.0008682905879171532,
+      "nearest_event": {
+        "entry_date": "2022-07-26",
+        "decision_date": "2022-07-29",
+        "entry_index": 621,
+        "decision_index": 624,
+        "deadline_index": 630,
+        "actual_fill_price_normalized": 5.35,
+        "normalized_close": 5.36,
+        "float_pnl": 0.0008682905879171532,
+        "positive": true,
+        "early_exit_selected": true
+      },
+      "source_sha256": "28d7978808d1f33c0a801be68cbfa5d7aba017bf6bfb5d780b0c0afeb7a7503c"
+    },
+    {
+      "batch": "EX024_20261018",
+      "variant": "support_first_nonprofit_exit_H10",
+      "events": 103,
+      "abs_P_below_1e_12": 0,
+      "minimum_abs_P": 0.0008682905879171532,
+      "nearest_event": {
+        "entry_date": "2022-07-26",
+        "decision_date": "2022-07-29",
+        "entry_index": 621,
+        "decision_index": 624,
+        "deadline_index": 630,
+        "actual_fill_price_normalized": 5.35,
+        "normalized_close": 5.36,
+        "float_pnl": 0.0008682905879171532,
+        "positive": true,
+        "early_exit_selected": false
+      },
+      "source_sha256": "28d7978808d1f33c0a801be68cbfa5d7aba017bf6bfb5d780b0c0afeb7a7503c"
+    },
+    {
+      "batch": "EX025_20261018",
+      "variant": "support_up_first_profit_exit_H10",
+      "events": 99,
+      "abs_P_below_1e_12": 0,
+      "minimum_abs_P": 0.000999000999000521,
+      "nearest_event": {
+        "entry_date": "2021-04-01",
+        "decision_date": "2021-04-12",
+        "entry_index": 302,
+        "decision_index": 308,
+        "deadline_index": 311,
+        "actual_fill_price_normalized": 6.579999999999999,
+        "normalized_close": 6.580000000000002,
+        "float_pnl": -0.000999000999000521,
+        "positive": false,
+        "early_exit_selected": false
+      },
+      "source_sha256": "e4451bc98e042599fb536c139cd57f4f2502a8fb0eb9116f2318791a01545ec6"
+    }
+  ],
+  "all_near_zero_event_count": 0,
+  "new_account_runs": 0,
+  "external_calls": 0
+}

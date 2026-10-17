@@ -1,0 +1,65 @@
+{
+  "records": [
+    {
+      "variant": "support_first_profit_exit_H10",
+      "candidate": "S014-C0057",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX024_20261018"
+        },
+        "evidence_id": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3.json",
+        "sha256": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3",
+        "media_type": "application/json",
+        "name": "account-support-first-profit-exit-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "cde6b9e734a111f9c051e10246ca66b1e63cddbcd7433cb2c2964029a7d9b55c",
+      "optuna_trial": 0,
+      "worst_target_margin": -0.828032885356758
+    },
+    {
+      "variant": "support_first_nonprofit_exit_H10",
+      "candidate": "S014-C0058",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX024_20261018"
+        },
+        "evidence_id": "11ef0848bc63aff7b854006fcf0e3af142ef26e20efccd5d7c456e116c5e62e6.json",
+        "sha256": "11ef0848bc63aff7b854006fcf0e3af142ef26e20efccd5d7c456e116c5e62e6",
+        "media_type": "application/json",
+        "name": "account-support-first-nonprofit-exit-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "04f265d0e59a04e18a61814ccc15e033150c83954744084f44327dd60c4f758a",
+      "optuna_trial": 1,
+      "worst_target_margin": -0.5832216963501275
+    }
+  ],
+  "resources": {
+    "max_workers": 2,
+    "native_threads_per_worker": 1,
+    "seed": 17
+  },
+  "actual_external_calls": 0,
+  "distinct_configurations": 2,
+  "nominal_window": [
+    "2020-01-01",
+    "2026-10-15"
+  ],
+  "actual_trading_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ]
+}

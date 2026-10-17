@@ -1,0 +1,182 @@
+{
+  "status": "PASS",
+  "check_count": 71243,
+  "accounts": [
+    {
+      "variant": "support_first_profit_exit_H10",
+      "candidate": "S014-C0057",
+      "sessions": 1642,
+      "no_order_days": 1361,
+      "buy_days": 138,
+      "sell_days": 137,
+      "failed_buy_orders": 4,
+      "ending_quantity": 54500,
+      "ending_cash": 62502.8269999997,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 138,
+      "first_ready_decision": "2020-04-02",
+      "earliest_possible_entry": "2020-04-03",
+      "support_triggered_exits_before_time_cap": 15,
+      "failed_buy_reset_days": 4,
+      "reservation_wait_flat_sessions": 52,
+      "reservation_blocked_entry_signal_sessions": 29,
+      "last_actual_buy_reservation_index": 1649,
+      "first_break_evaluations": 104,
+      "first_break_positive": 15,
+      "first_break_nonpositive": 89,
+      "first_break_selected": 15,
+      "first_break_rejected": 89,
+      "later_predeadline_breaks_ignored_after_rejection": 144,
+      "exit_latch_carried_close_sessions": 2,
+      "failed_sell_orders": 2,
+      "observation_scope": "Support independently rebuilt from prior five actual normalized account closes, 60-session in-window startup, real fill entry clock, retained actual-entry-plus-ten reservation, once-only pre-deadline first-break P and complementary exit selection, and irreversible SELL intent; cutoff-close state has no subsequent execution.",
+      "actual_suspended_sessions": 0
+    },
+    {
+      "variant": "support_first_nonprofit_exit_H10",
+      "candidate": "S014-C0058",
+      "sessions": 1642,
+      "no_order_days": 1362,
+      "buy_days": 138,
+      "sell_days": 138,
+      "failed_buy_orders": 4,
+      "ending_quantity": 0,
+      "ending_cash": 540251.2440000001,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15",
+      "actual_entry_cycles": 138,
+      "first_ready_decision": "2020-04-02",
+      "earliest_possible_entry": "2020-04-03",
+      "support_triggered_exits_before_time_cap": 88,
+      "failed_buy_reset_days": 4,
+      "reservation_wait_flat_sessions": 568,
+      "reservation_blocked_entry_signal_sessions": 407,
+      "last_actual_buy_reservation_index": 1649,
+      "first_break_evaluations": 103,
+      "first_break_positive": 15,
+      "first_break_nonpositive": 88,
+      "first_break_selected": 88,
+      "first_break_rejected": 15,
+      "later_predeadline_breaks_ignored_after_rejection": 19,
+      "exit_latch_carried_close_sessions": 0,
+      "failed_sell_orders": 0,
+      "observation_scope": "Support independently rebuilt from prior five actual normalized account closes, 60-session in-window startup, real fill entry clock, retained actual-entry-plus-ten reservation, once-only pre-deadline first-break P and complementary exit selection, and irreversible SELL intent; cutoff-close state has no subsequent execution.",
+      "actual_suspended_sessions": 0
+    },
+    {
+      "variant": "buyhold",
+      "sessions": 1642,
+      "no_order_days": 1641,
+      "buy_days": 1,
+      "sell_days": 0,
+      "failed_buy_orders": 0,
+      "ending_quantity": 20800,
+      "ending_cash": 476.57600000000093,
+      "normalization_anchor": 5.892,
+      "last_session_verified": "2026-10-15"
+    }
+  ],
+  "new_accounts_audited": 2,
+  "reused_accounts": {
+    "support_entry_H10": [
+      "EX021_20261018",
+      "support_entry_H10",
+      "S014-C0034"
+    ],
+    "support_exit_reserve_H10": [
+      "EX023_20261018",
+      "support_exit_reserve_H10",
+      "S014-C0056"
+    ]
+  },
+  "formal_evidence": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX017_20261017"
+      },
+      "evidence_id": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f.json",
+      "sha256": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+      "media_type": "application/json",
+      "name": "account-high-h3",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX021_20261018"
+      },
+      "evidence_id": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c.json",
+      "sha256": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c",
+      "media_type": "application/json",
+      "name": "account-support-entry-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+      "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+      "media_type": "application/json",
+      "name": "account-support-exit-reserve-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX024_20261018"
+      },
+      "evidence_id": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3.json",
+      "sha256": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3",
+      "media_type": "application/json",
+      "name": "account-support-first-profit-exit-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX024_20261018"
+      },
+      "evidence_id": "11ef0848bc63aff7b854006fcf0e3af142ef26e20efccd5d7c456e116c5e62e6.json",
+      "sha256": "11ef0848bc63aff7b854006fcf0e3af142ef26e20efccd5d7c456e116c5e62e6",
+      "media_type": "application/json",
+      "name": "account-support-first-nonprofit-exit-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "source_sha256": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de",
+  "predecessor_audit_source_sha256": "c17e12b988812d1ff4a8613a552de44c6e7de3e8688f330a14aa248f1b9131a7",
+  "audit_source_sha256": "89179b71f08d86cdf36ffdccd4e086781afab6aa5e52497e49fa6b63eaacb980",
+  "method_review_sha256": "476c23e32abe6908038d8bbb49c91208764dc576927c0e599baf0ce6800e5506",
+  "full_input_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "external_calls": 0,
+  "external_attempts": 0,
+  "new_account_runs": 0,
+  "full_audit": {
+    "path": "research/S014/assets/runs/EX024_20261018/account_audit_full.json",
+    "sha256": "28d7978808d1f33c0a801be68cbfa5d7aba017bf6bfb5d780b0c0afeb7a7503c",
+    "bytes": 7705807
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "kind": "ANALYTIC_NECESSARY_FEASIBILITY_OF_EXISTING_FREQUENCY_TARGET",
+  "new_accounts": 0,
+  "new_trials": 0,
+  "new_upstream_calls": 0,
+  "new_budget_allocations": 0,
+  "source_fingerprints": [
+    {
+      "path": "research/S014/experiments/EX025_20261018/protocols/comparison_lock.json",
+      "sha256": "a9e2fb027dc32d5fa5b19cbc0687f77c585d3320e530275de5f302dbfb8c460f"
+    },
+    {
+      "path": "research/S014/experiments/EX023_20261018/protocols/comparison_lock.json",
+      "sha256": "e8144081e2c57ec486560b24276e31396a644135539f9e8554150d9d4b3a717f"
+    },
+    {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e"
+    },
+    {
+      "path": "research/S014/experiments/EX025_20261018/src/compare_accounts.py",
+      "sha256": "59fad0dd905a4344608b1bd7fa12ea44b89f488ba3f8abf895d1983f0c78f21b"
+    }
+  ],
+  "fixed_contract": {
+    "evaluation_sessions": 1642,
+    "warmup_completed_sessions": 60,
+    "first_eligible_decision_session_1based": 60,
+    "first_possible_actual_buy_session_1based": 61,
+    "last_counted_execution_session_1based": 1642,
+    "minimum_overnight_sell_delay_sessions": 1,
+    "minimum_actual_buy_spacing": "H+1 when every actual BUY E reserves new BUY decisions until E+H close; fixed H holds imply same spacing even without explicit reservation",
+    "frequency_formula": "60 * CLOSED / 1642 >= 3",
+    "required_closed": 83,
+    "open_trades_counted": false,
+    "terminal_forced_liquidation": false,
+    "annual_reset": false
+  },
+  "assumptions": [
+    "Ideal upper bound: every allowed signal is present, every BUY/SELL fills at first eligible session, enough funds and one-lot feasibility throughout. Real filters, rejected orders, failures and later sales can only reduce counts.",
+    "A BUY can be followed by a SELL decision at its completed close, but earliest actual SELL is the next evaluation session. A SELL may trigger a new BUY decision at its close, but the BUY is next session; no same-session round trip.",
+    "Indices in this evidence are one-based evaluation-session ordinals, not strategy history indices including2019-12-31."
+  ],
+  "derivation": {
+    "frequency": "K >= ceil(3 * 1642 / 60) = ceil(82.1) = 83",
+    "kth_earliest_entry": "E_k = 61 + (k-1)*(H+1)",
+    "fixed_hold_kth_sale": "S_k = E_k + H = 60 + k*(H+1)",
+    "fixed_hold_closed_upper": "K_fixed(H) = floor((1642-60)/(H+1)) = floor(1582/(H+1))",
+    "fixed_hold_horizon_boundary": "K_fixed >=83 requires 83*(H+1)<=1582; integer H<=18. This is necessary, not sufficient.",
+    "early_exit_with_reservation_kth_sale": "Earliest S_k = E_k+1 = 62+(k-1)*(H+1), even if every cycle exits as early as possible.",
+    "early_exit_with_reservation_closed_upper": "K_early_reserved(H) = 1 + floor((1642-62)/(H+1)) = 1 + floor(1580/(H+1))",
+    "early_exit_with_reservation_horizon_boundary": "K_early_reserved >=83 requires 82*(H+1)<=1580; integer H<=18. Early exits can close the final cycle sooner but cannot increase reserved entry rate.",
+    "boundary_H18": "Uniform fixed H18 can ideally close83 cycles, frequency3.0328867235; last such sale is session1637. Five unused tail sessions cannot complete another H18 cycle.",
+    "boundary_H19": "Uniform fixed H19 max79, earliest-exit reservation19 max80; both below83.",
+    "H20": "Uniform fixed H20 max75 closed, frequency2.7405602923; with earliest exits but uniform reservation20 max76, frequency2.7771010962. Both fail the unchanged original frequency requirement."
+  },
+  "bounds": [
+    {
+      "horizon": 10,
+      "uniform_fixed_hold_max_closed": 143,
+      "uniform_fixed_hold_max_frequency": 5.225334957369062,
+      "earliest_exit_with_same_reservation_max_closed": 144,
+      "earliest_exit_with_same_reservation_max_frequency": 5.261875761266748,
+      "uniform_fixed_hold_last_counted_sale_session": 1633,
+      "uniform_fixed_hold_next_sale_session": 1644
+    },
+    {
+      "horizon": 18,
+      "uniform_fixed_hold_max_closed": 83,
+      "uniform_fixed_hold_max_frequency": 3.032886723507917,
+      "earliest_exit_with_same_reservation_max_closed": 84,
+      "earliest_exit_with_same_reservation_max_frequency": 3.069427527405603,
+      "uniform_fixed_hold_last_counted_sale_session": 1637,
+      "uniform_fixed_hold_next_sale_session": 1656
+    },
+    {
+      "horizon": 19,
+      "uniform_fixed_hold_max_closed": 79,
+      "uniform_fixed_hold_max_frequency": 2.886723507917174,
+      "earliest_exit_with_same_reservation_max_closed": 80,
+      "earliest_exit_with_same_reservation_max_frequency": 2.92326431181486,
+      "uniform_fixed_hold_last_counted_sale_session": 1640,
+      "uniform_fixed_hold_next_sale_session": 1660
+    },
+    {
+      "horizon": 20,
+      "uniform_fixed_hold_max_closed": 75,
+      "uniform_fixed_hold_max_frequency": 2.7405602923264314,
+      "earliest_exit_with_same_reservation_max_closed": 76,
+      "earliest_exit_with_same_reservation_max_frequency": 2.7771010962241167,
+      "uniform_fixed_hold_last_counted_sale_session": 1635,
+      "uniform_fixed_hold_next_sale_session": 1656
+    }
+  ],
+  "validation": {
+    "method": "For each integer H1..100, enumerate ideal entries range(61,1643,H+1), count entry+H<=1642 and entry+1<=1642; each equals its corresponding analytic formula.",
+    "horizons_checked": 100,
+    "assertions": 200,
+    "account_replays": 0,
+    "all_pass": true
+  },
+  "interpretation": "在当前60日启动、1642日分母和每60日至少3笔闭合目标下，全仓串行的统一固定H20必然不达频率；即使允许提前卖出，只要每周期仍保留E+20重新入场时钟，也必然不达。统一固定期限或统一保留时钟的整数H必要上限都是18。该推导直接展开既有目标，不是新增硬门，不证明H18或更短期限具有收益机制或可实盘达标。",
+  "limits": [
+    "This does not rule out a strategy merely allowing maximum hold20 while some cycles are shorter and do not reserve20 sessions, nor mixed conditional horizon extensions; those require their own timing bound and actual CLOSED count.",
+    "Keeping reservation10 while selectively extending positions toH20 is a different clock contract; the uniform reservation20 bound cannot be applied to every cycle. It is not authorized or suggested by this evidence.",
+    "All-at-once hypothetical per-position H20 maturity labels are not account counts. Their existence does not remove the full-account frequency constraint.",
+    "No horizon is selected, no new experiment is locked, no budget is changed and no revenue efficacy ofH3/H5/H15/H18 is inferred."
+  ]
+}

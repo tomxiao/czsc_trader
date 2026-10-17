@@ -1,0 +1,341 @@
+{
+  "status": "PASS",
+  "kind": "TWO_PREDECLARED_SHORT_CYCLE_SCALES_WITH_UNCHANGED_ENTRY_AND_EXITS",
+  "new_accounts": 0,
+  "new_upstream_calls": 0,
+  "source_fingerprints": [
+    {
+      "path": "research/S014/experiments/EX025_20261018/others/account_results.json",
+      "sha256": "4b763777af6067079c32fe61e077e19b039ac70983f3ace1a3a573718e206ef9"
+    },
+    {
+      "path": "research/S014/experiments/EX025_20261018/others/account_comparison.csv",
+      "sha256": "8bca4dad4984727fad2507eb649b59117aa196b1e09a636a1a15240462efa598"
+    },
+    {
+      "path": "research/S014/experiments/EX025_20261018/others/annual_comparison.csv",
+      "sha256": "d456b6aad61db52f0badb9ef9249fec0735a2068dee5112bcf06e196d1f15c62"
+    },
+    {
+      "path": "research/S014/experiments/EX025_20261018/others/path_diagnostics.json",
+      "sha256": "752a17ce21c07b59ba1c37cdc953fc956002dbe112c1866b126bc5268746d53a"
+    },
+    {
+      "path": "research/S014/experiments/EX023_20261018/others/loss_state_diagnostics.json",
+      "sha256": "dfc6ba12a24f800f534c184c79cbe4cf2bfb7ebb814cf8339d4f395954fe8265"
+    },
+    {
+      "path": "research/S014/experiments/EX023_20261018/others/comparison_accounts.json",
+      "sha256": "705b6615a780cad897d34cafb0afb84a77702a8325f48020d49dd6dfcc95250f"
+    },
+    {
+      "path": "research/S014/experiments/EX023_20261018/others/account_audit.json",
+      "sha256": "b7cc022669138fb4cd0e833f03cae0c4432ba11ab68afd8c56af58fb16f14866"
+    }
+  ],
+  "recommendation": "撤回新增阳线入场门，回到原支撑入场；下一轮检验H3和H5两个预声明短周期，各与B无早退/R全部早退/P首次浮盈早退交互，共6个新完整账户，复用原H10三基线。只检验周转周期结构，不继续阳线阈值、不改费用或年度目标。",
+  "actual_negative_evidence": {
+    "paired_path": [
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_entry_H10",
+        "changed": "support_up_entry_H10",
+        "cycle_log_contributions": {
+          "matched": -0.0005804657574595088,
+          "left_only": -1.1810137620133403,
+          "right_only": -0.15282807341701804
+        },
+        "counts": {
+          "matched": 40,
+          "left_only": 98,
+          "right_only": 90
+        },
+        "total_cycle_log_difference": -1.334422301187817,
+        "actual_nav_log_difference": -1.3344223011878174,
+        "absolute_decomposition_error": 4.440892098500626e-16
+      },
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_exit_reserve_H10",
+        "changed": "support_up_exit_reserve_H10",
+        "cycle_log_contributions": {
+          "matched": 0.004145844779050958,
+          "left_only": -2.0922770827498605,
+          "right_only": -0.6346356803345603
+        },
+        "counts": {
+          "matched": 36,
+          "left_only": 102,
+          "right_only": 94
+        },
+        "total_cycle_log_difference": -2.7227669183053695,
+        "actual_nav_log_difference": -2.7227669183053695,
+        "absolute_decomposition_error": 0.0
+      },
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_first_profit_exit_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": -0.001759780277231282,
+          "left_only": -1.548568505388076,
+          "right_only": -0.6208908456383804
+        },
+        "counts": {
+          "matched": 40,
+          "left_only": 98,
+          "right_only": 90
+        },
+        "total_cycle_log_difference": -2.1712191313036877,
+        "actual_nav_log_difference": -2.1712191313036873,
+        "absolute_decomposition_error": 4.440892098500626e-16
+      },
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_entry_H10",
+        "changed": "support_up_exit_reserve_H10",
+        "cycle_log_contributions": {
+          "matched": -0.9874250530837896,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 130,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": -0.9874250530837896,
+        "actual_nav_log_difference": -0.9874250530837889,
+        "absolute_decomposition_error": 6.661338147750939e-16
+      },
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_entry_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": -0.4319831460071197,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 130,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": -0.4319831460071197,
+        "actual_nav_log_difference": -0.4319831460071204,
+        "absolute_decomposition_error": 7.216449660063518e-16
+      },
+      {
+        "window": "ALL",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_exit_reserve_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": 0.5554419070766698,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 130,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": 0.5554419070766698,
+        "actual_nav_log_difference": 0.5554419070766685,
+        "absolute_decomposition_error": 1.3322676295501878e-15
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_entry_H10",
+        "changed": "support_up_entry_H10",
+        "cycle_log_contributions": {
+          "matched": -0.0022805653183770955,
+          "left_only": -0.2776025793468595,
+          "right_only": -0.8203209121581179
+        },
+        "counts": {
+          "matched": 29,
+          "left_only": 93,
+          "right_only": 86
+        },
+        "total_cycle_log_difference": -1.100204056823354,
+        "actual_nav_log_difference": -1.1002040568233544,
+        "absolute_decomposition_error": 4.440892098500626e-16
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_exit_reserve_H10",
+        "changed": "support_up_exit_reserve_H10",
+        "cycle_log_contributions": {
+          "matched": 0.00032449830383951333,
+          "left_only": -0.5675606468083291,
+          "right_only": -0.9837282412606168
+        },
+        "counts": {
+          "matched": 29,
+          "left_only": 93,
+          "right_only": 86
+        },
+        "total_cycle_log_difference": -1.5509643897651069,
+        "actual_nav_log_difference": -1.550964389765106,
+        "absolute_decomposition_error": 8.881784197001252e-16
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_first_profit_exit_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": -0.002156652629869008,
+          "left_only": -0.6450080269743034,
+          "right_only": -1.2872388142121578
+        },
+        "counts": {
+          "matched": 29,
+          "left_only": 93,
+          "right_only": 86
+        },
+        "total_cycle_log_difference": -1.9344034938163304,
+        "actual_nav_log_difference": -1.9344034938163301,
+        "absolute_decomposition_error": 2.220446049250313e-16
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_entry_H10",
+        "changed": "support_up_exit_reserve_H10",
+        "cycle_log_contributions": {
+          "matched": -0.5261358035420928,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 115,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": -0.5261358035420928,
+        "actual_nav_log_difference": -0.526135803542092,
+        "absolute_decomposition_error": 7.771561172376096e-16
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_entry_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": -0.46883408827386314,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 115,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": -0.46883408827386314,
+        "actual_nav_log_difference": -0.4688340882738637,
+        "absolute_decomposition_error": 5.551115123125783e-16
+      },
+      {
+        "window": "WITHOUT2026",
+        "entry_cohort": "ALL",
+        "baseline": "support_up_exit_reserve_H10",
+        "changed": "support_up_first_profit_exit_H10",
+        "cycle_log_contributions": {
+          "matched": 0.05730171526822982,
+          "left_only": 0.0,
+          "right_only": 0.0
+        },
+        "counts": {
+          "matched": 115,
+          "left_only": 0,
+          "right_only": 0
+        },
+        "total_cycle_log_difference": 0.05730171526822982,
+        "actual_nav_log_difference": 0.05730171526822836,
+        "absolute_decomposition_error": 1.4641066137244252e-15
+      }
+    ],
+    "interpretation": "新增阳线条件后，B/P只剩40个共同入场、各遗漏98原入场并新增90；R共同36、遗漏102并新增94。共同部分收益差接近0，遗漏的是整体盈利的原路径，新增路径整体亏损。全期和真实去2026均如此，不能用个别2024改善抵销其他年度退化。",
+    "exit_interaction": "在同一新的130次阳线入场上，R相对新B减少0.98743 cyclelog，P减少0.43198；原支撑入场下P相对B原本增加0.40481。这进一步表明入场与退出的效果取决于具体路径，不能把分组标签直接当组件收益。",
+    "boundary": "EX025支持拒绝当前阳线条件，并不证明所有择时确认无效，也不直接证明H10是亏损根因。"
+  },
+  "why_cycle_is_distinct": {
+    "question": "退出或预约后是否因H10固定周期而过久保留现金、在另一组较差时点重入；较短H是否提升可交易机会质量，还是仅增加费用和噪声周转。",
+    "not_previously_answered": "EX022只改变最初可决策日，未改每笔实际BUY后持有/预约的H；EX024到期延长诊断针对加长持有，不等于缩短后重新入场的完整路径。",
+    "observed_reservation": "原R103次首次提前破位，实际研究窗口内提前卖出后、原E+10以前累计620个现金收盘等待日，与EX023独立审计一致。",
+    "lag_distribution": {
+      "0": 24,
+      "1": 14,
+      "2": 12,
+      "3": 13,
+      "4": 12,
+      "5": 8,
+      "6": 9,
+      "7": 6,
+      "8": 5
+    },
+    "early_branch_availability": {
+      "original_early_breaks": 103,
+      "strictly_before_H3_deadline": 38,
+      "strictly_before_H5_deadline": 63
+    },
+    "interpretation": "缩短H同时改变最长暴露、预约现金时间、首次早退分支机会和以后入场日期；因此需要B/R/P三种退出控制，不能把全部差异归为减少空仓。分布取原R路径，仅说明结构变化幅度，不预测新账户事件数。",
+    "waiting_count_boundary": {
+      "in_window_actual_flat_closes": 620,
+      "unclipped_reservation_distance_sum": 626,
+      "outside_window_distances": 6,
+      "reason": "最后一笔2026-10-12入场、10-15卖出；原E+10预约在评价期之后。未裁切的E+10减实际卖出序号合计626，其中6个序号在2026-10-15后。按实际daily窗口裁切为620；626不能称已观察等待日。",
+      "formula": "sum(max(0,min(actual_entry_index+10,last_evaluation_index+1)-actual_sell_index)) for actual early-exit cycles"
+    }
+  },
+  "why_H3_and_H5": {
+    "H3": "既有低开修复研究曾使用3日尺度，提供一个事前可解释的短修复周期候选；支撑入场未在此尺度验证，不能移植H3父机制收益或环境结论。",
+    "H5": "与当前5个已完成交易日的支撑观察长度相同，是周尺度周转对照；不是根据回测挑选邻近最优点。",
+    "simultaneous_reason": "两者代表不同持有和重入速度。H3明显压缩原早退可判定范围，H5保留更多早退机会；在同一轮完整报告能区分短周转收益与早退机制被削弱，不必看到H5后再择优加一个相邻值。",
+    "not_a_claim": "没有实质反证要求在实验前排除H3，但同样没有现成证据保证H3/H5优于H10。6配置是两个有限机制尺度，不是承诺哪个会达标。",
+    "cost": "更短周期可能截断上涨段、在震荡中频繁支付费用，也可能取消此前有效的提前退出保护；完整账户必须保留这些代价。"
+  },
+  "locked_design_recommendation": {
+    "new_configurations": 6,
+    "horizons": [
+      3,
+      5
+    ],
+    "exit_mechanisms": [
+      "B fixed timeout only",
+      "R support-break early exit with reservation",
+      "P first strictly-predeadline profitable support-break exit with reservation"
+    ],
+    "baseline_horizon": 10,
+    "reused_baselines": 3,
+    "entry": "移除EX025阳线门；其余原支撑入场、60日启动、实际失败BUYreset、fresh limit不变。不增加低开、高环境或其他条件。",
+    "clock": "每次实际BUY E，deadline=E+H-1收盘，计划E+H卖出。R/P预约到E+H收盘才允许新BUY计划，若实际SELL更晚则实际卖出收盘才可计划。B保持原无早退机制。",
+    "P": "只有首次support-break且i<E+H-1才判断P>0；拒绝后本周期不重评，到deadline强制SELL；已锁存SELL不取消。",
+    "frozen": "价格定义、单边0.1%费用、原执行、整手/现金、初始资金、1642频率分母、自然年收益与回撤、部分2026口径不变。",
+    "no_followup_grid": "预先固定H3/H5并完整报告；不因其中一个较好自动扫描H2/H4/H6或更密集周期，也不按年份选H。",
+    "feasibility": "按无失败且机会始终满足的理想上界，最多floor((1642-60)/(H+1))闭合。H20最多75，低于频率要求至少83笔；本轮不包含结构不可行的H20。此上界不保证H3/H5实际频率。"
+  },
+  "evaluate_and_refute": [
+    "每个退出机制分别比较H3/H5/H10的全部7自然年收益/DD和实际频率，并报告真实截2025末NAV；不用总收益或年度通过数量替代所有原目标。",
+    "归因区分同入场收益变化、提前重入新增机会、被替换机会以及实际费用/持仓/预约等待变化。保留盈利与亏损反例。",
+    "若H3/H5都仅增加交易成本或错失上涨参与而无目标改善，停止无依据缩短周期；不继续按阈值扫描补救。",
+    "若只一种退出机制在短H改善，保留交互结论，不能宣称短周期对所有支撑策略有效。",
+    "全部原验收未满足则继续阶段三；本轮不是以完成周期敏感性实验作为收口。"
+  ],
+  "remaining_uncertainty": [
+    "当前证据尚未证明H10是亏损年度的共同根因；这是此前未验证且可改变实际机会路径的结构性假设。",
+    "H3/H5会改变路径，不能把原620个窗口内等待日或103次破位标签机械转成账户盈利。",
+    "所有样本已经研究过，跨轮适应性选择继续披露；不能宣称样本外检验。",
+    "年度通过数、分组显著性、路径一致性等诊断不新增经济硬门。"
+  ]
+}

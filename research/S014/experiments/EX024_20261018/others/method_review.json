@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "scope": "Independent method and ledger-audit design for two fixed EX024 first-break-state accounts, C0057/C0058. No new replay or upstream by reviewer.",
+  "hypothesis_boundary": [
+    "EX023 original first-break labels are seen-data exploratory evidence. Positive P group15 versus nonpositive85 has different observed same-entry early-exit increments, but both tails and yearly counterexamples remain.",
+    "Paired labels omit unmatched or either-leg open cases; conditional account paths may change and cannot be formed by adding those labels. Two complementary policies retain both competing outcomes."
+  ],
+  "causal_contract": [
+    "At actual BUY E reset break_checked and capture actual public fill price; support remains prior-five completed evaluation closes.",
+    "At first support break strictly before E+9 only, calculate P=normalized actual-close/(actual normalized fill price*1.001)-1. P>0 selects profit branch, P<=0 selects nonpositive branch, including exactly zero. No prospective sell fee.",
+    "Evaluate only once per actual holding cycle. Rejecting early exit permanently ignores later support breaks in that cycle. E+9 close emits time exit unconditionally; E+9 first break is not an early classification.",
+    "Once SELL is emitted it remains latched until actual full fill. No reassessment during blocked SELL. Actual entry day can trigger the first break.",
+    "Reservation=actual BUY index+10 survives SELL and flat; next actual BUY resets. Required sell is never delayed by reservation. No future B shadow or same-session round trip."
+  ],
+  "independent_audit": [
+    "Reuse EX017 canonical ledger audit for actual orders, fills, quantities, price ticks, fees, residual cash, full-cash lots and identical BuyHold.",
+    "Reconstruct every support floor, entry/deadline, retained reservation and first-break state directly from actual fills and normalized account closes. Compare event flags, zero-on-nonevent P, selected/rejected branch, held-state break_checked and actual-fill price observation.",
+    "Require exact two new C0057/C0058 identities and authenticated original B/C0056 evidence reuse; bind source SHA, precheck and runtime closure.",
+    "Report first-break positive/nonpositive/selected/rejected counts and actual suspension sample count; absence of actual suspension does not imply real-world branch validation."
+  ],
+  "limitations": [
+    "Positive original group removal of its best five pairs turns mean negative;2021/2023 nonpositive early exit had protective increments. Neither is a new hard acceptance gate.",
+    "2024 had zero profitable first-break pairs in original matched evidence; this exit change alone is not presumed to cure entry losses.",
+    "All7 original annual return/drawdown targets and60*CLOSED/1642 frequency remain unchanged; no yearly switching or nearby threshold search.",
+    "Public finite observations do not disclose future state. New full-path outcomes, not labels or audit PASS, determine economic progress."
+  ],
+  "external_calls": 0,
+  "new_account_runs": 0
+}

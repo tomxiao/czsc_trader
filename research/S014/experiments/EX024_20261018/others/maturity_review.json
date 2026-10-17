@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "scope": "Independent read-only review of EX024 maturity hypothetical exit labels. No new account, upstream request or original-evidence modification.",
+  "checks": [
+    "35original C56 no-early-exit origins independently matched to EX023 full audit first-SELL events;105labels cover exactly3fixed modes each.",
+    "Independently reconstructed prior-five-close support and actual-fill-normalized entry denominator, all105maturity P values, state flags, hypothetical execution dates and net position returns.",
+    "FixedH20 decision E+19close executes E+20 or later after blocked/suspended sessions. Support modes decide at first support break from E+9 onward; capped mode forces decision no later E+19. Public resolve_fill, actual scale/tick/limits and irreversible exit retry retained.",
+    "Original and hypothetical returns use identical actual BUY price times1.001; hypothetical SELL fee0.001 deducted only when filled. Values are per-position labels, not cash-aware account returns.",
+    "All105labels currently uncensored. Code marks unresolved labels at final available close without fictitious exit fee and excludes them from summarized completed labels. No actual censoring case validates that branch empirically.",
+    "All18group summaries independently reconstructed, including decision-cohort filter, counts, means, medians and remove-top3/top5 means. CSV labels match JSON.",
+    "Source hashes authenticated; review also binds shared input-audit helper, cycle helper and pinned input reference."
+  ],
+  "findings": [],
+  "counts": {
+    "original_cycles": 35,
+    "labels_recomputed": 105,
+    "support_ok_cycles": 31,
+    "support_ok_nonpositive_P_cycles": 0,
+    "right_censored_labels": 0,
+    "hypothetical_exit_delayed_beyond_first_attempt_labels": 0
+  },
+  "judgment": "Current diagnostics do not justify prioritizing an unconditional maturity extension account: support-ok31allpositive P, full means smallpositive but become negative after removing top3; before2026decision-cohort25 means negative in all3modes. This is evidence weakness, not a new economic hard gate or proof every extension mechanism is invalid.",
+  "limitations": [
+    "DECISION_BEFORE2026 filters decision year, not actual2025year-end NAV; future labels may mature in2026. Do not describe it as excluding2026outcomes.",
+    "Selection is original C56 cycles still held at maturity with no earlier exit intent. A conditional policy can produce different surviving cycles and later entries.",
+    "Hypothetical holding extensions overlap later original positions and ignore lost later participation, residual cash, quantities and order sizing. Their mean or sum cannot be called executable full-account return.",
+    "All support-ok maturity cases are Ppositive in this data, so P cannot split that subset; extending only profitable maturities adds no observed discrimination here.",
+    "No queue, partial-fill or liquidity validation is added; unchanged public simplified daily execution applies.",
+    "Censoring and failed execution are handled structurally; current label counts determine which branches were actually observed."
+  ],
+  "source_sha256": {
+    "research/S014/experiments/EX024_20261018/src/maturity_diagnostics.py": "5658f60a80e283fc558f5d14dcba1599f0b8191e733bccf6837336ada4f536c8",
+    "research/S014/experiments/EX024_20261018/others/maturity_diagnostics.json": "2bb237006490b3b84a0bca1774dddcc1009ac7723eb3c353fefa4715a203acb0",
+    "research/S014/experiments/EX024_20261018/others/maturity_labels.csv": "4f0147c85f413ded7dc2e2c23b0d934decb2a576ce9707141f46f6b0dd437118",
+    "research/S014/experiments/EX017_20261017/src/audit_accounts.py": "c17e12b988812d1ff4a8613a552de44c6e7de3e8688f330a14aa248f1b9131a7",
+    "research/S014/experiments/EX018_20261017/src/account_diagnostics.py": "8802088123cfe0c26864daf4e74e4c8d6999eb474057d48a00f943fde7979fe7",
+    "research/S014/experiments/EX023_20261018/others/account_audit.json": "b7cc022669138fb4cd0e833f03cae0c4432ba11ab68afd8c56af58fb16f14866"
+  },
+  "full_input_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "external_calls": 0,
+  "new_account_runs": 0
+}
