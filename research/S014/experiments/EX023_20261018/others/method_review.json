@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "scope": "Independent method and audit design for fixed EX023 C0056 reservation control. One new account; original EX021 A/B/C evidence reused. No new execution or upstream request by reviewer.",
+  "causal_timing": [
+    "At actual BUY source index E, reservation=E+10. It persists after SELL and after expiry until the next actual BUY. First entry has reservation=-1.",
+    "Early support-break SELL and fixed E+9 close SELL are unchanged. Pending exits remain latched, independent of reservation.",
+    "Only a flat account at i>=reservation may plan a new BUY at current close; earliest subsequent actual entry E+11. Late SELL can permit a new plan at its same close, with next-session execution only.",
+    "Reservation refers to real account BUY, never a future hypothetical B fill or retrospective profitable/losing label. Support uses prior five completed evaluation closes and original60-session readiness."
+  ],
+  "independent_audit": [
+    "Reuse EX017 independent canonical ledger reconciliation for order prices, full-cash lots, fills, fees, cash, quantities, normalization and identical BuyHold.",
+    "Reconstruct support and reservation directly from actual daily closes and BUY/SELL fills; compare every shadow event, retained reservation and next-session target.",
+    "Separately count all flat sessions before reservation and eligible entry-intent days blocked only by reservation. These are days, not necessarily fillable missed trades.",
+    "Authenticate formal new and reused evidence, current runtime closure and source/precheck; verify stock status covers every session and no fills on suspension."
+  ],
+  "interpretation": [
+    "C56 versus original C identifies the policy change including all resulting cash and future-entry path effects; it does not yield isolated per-trade causal return.",
+    "C56 versus B can differ in actual entries due to failed orders or conditions. Check alignment empirically rather than assuming the clock guarantees identical entries.",
+    "2022 original C-only accelerated entry losses motivated the control, but full-period same category is positive and2021/2025 counterexamples must remain visible.",
+    "All data were seen; this fixed falsifiable control is not independent validation. No selection of years, new thresholds or diagnostic hard gates.",
+    "All seven original annual targets and full1642-session frequency remain authoritative; audit PASS does not authorize phase four."
+  ],
+  "outputs": {
+    "reservation_wait_flat_sessions": "Number of actual account closes flat with source index strictly less than retained last-actual-buy-plus-ten reservation; includes sale close if early.",
+    "reservation_blocked_entry_signal_sessions": "Subset of waiting closes satisfying ready/support and not a failed-buy reset; hypothetical unreserved BUY intent only, no assertion of fillability or PnL.",
+    "actual_suspended_sessions": "Count actual SUSPENDED statuses; distinguish zero observed samples from synthetic branch coverage."
+  },
+  "external_calls": 0,
+  "new_account_runs": 0
+}

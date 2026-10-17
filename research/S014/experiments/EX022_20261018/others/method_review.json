@@ -1,0 +1,53 @@
+{
+  "experiment": "EX022_20261018",
+  "review_role": "RSCH independent method and actual-ledger reviewer",
+  "status": "METHOD_ACCEPTABLE_PENDING_ACCOUNT_AUDIT",
+  "scope": "Autonomous stage-three round three: twenty fixed new initial-delay accounts, exact reuse of two original delay-zero accounts, existing S014 inputs only. No upstream or account execution by this reviewer.",
+  "design": "research/S014/experiments/EX022_20261018/protocols/comparison_lock.json",
+  "candidate_mapping": {
+    "S014-C0036..C0045": "repeated_H10_delay1..delay10",
+    "S014-C0046..C0055": "support_entry_H10_delay1..delay10",
+    "reused_S014-C0033": "repeated_H10_delay0, exact EX021 repeated_H10",
+    "reused_S014-C0034": "support_entry_H10_delay0, exact EX021 support_entry_H10"
+  },
+  "findings": [
+    {
+      "topic": "可辨别问题",
+      "judgment": "EX021 的 A/B 只有九个共同实际入场，改进大多体现为后续参与路径不同。本轮同一偏移下比较 B-A，检验这一优势是否强烈依赖初始允许入场的日期；这比继续增加支撑阈值更直接针对当前竞争解释。"
+    },
+    {
+      "topic": "唯一改动与因果可得性",
+      "judgment": "仅把首次可决策门槛由第六十个已完成评价交易日改为第六十加 delay 日。偏移在实验前固定，不依赖未来收益、自然年份或路径结果；不能在每次卖出后重复增加 delay，也不能重置十日持有时钟或滚动支撑起点。"
+    },
+    {
+      "topic": "固定时间控制不是独立样本",
+      "judgment": "delay=0..10 的十一组在同一已见价格区间上高度重叠，只是相关的敏感性对照，不是十一份独立检验或新封存样本。十一覆盖无执行失败时 H10 加下一日重新入场的理想周转长度；真实失败买卖和支撑等待会改变周期，不能宣称覆盖所有可能相位。"
+    },
+    {
+      "topic": "全部配对与选择边界",
+      "judgment": "完整披露同偏移 B-A 的十一组全期、自然年、真实截至 2025 年末、回撤和频率差异；不只报告最优 delay，不把最优年份的偏移拼接成策略。中位数、范围和偏移间变化用于诊断，不能另加用户未要求的稳健性硬门。"
+    },
+    {
+      "topic": "未改变的执行机制",
+      "judgment": "支撑仍是此前五个评价交易日收盘最低值，不含当日或 2019 执行前窗；A 无支撑入场门槛，B 采用原门槛。实际 BUY 日 E 后于 E+9 收盘计划卖出、E+10 执行，无支撑提前退出。买入失败重置、卖出锁存、实际卖出后下一日重入、整手满仓与原费用、限价和停牌约定全部不变。"
+    },
+    {
+      "topic": "复用与本金连续性",
+      "judgment": "delay0 必须在同一输入上与 EX021 A/B 的完整 history 逐值一致，直接复用原正式证据，不重复运行或新登记。所有新账户从同一十万元起步，额外初始空仓保留在年度收益、回撤与全期 1642 日频率分母中；不按首次入场缩短评价窗口或按年重置本金。"
+    },
+    {
+      "topic": "结果能说明什么",
+      "judgment": "若不同偏移结果明显分散，可削弱原 delay0 优势稳定性的主张；若 B 优势在这些控制中持续，可支持继续研究支撑选择，但仍没有把支撑信息与所有参与路径影响完全分离。无论哪种结果，逐自然年收益和最大回撤、全期频率仍按用户原目标单独验收，不自动进入阶段四。"
+    }
+  ],
+  "audit_plan": [
+    "核验二十个新候选、全部正式 EvidenceRef、实现闭包及预检源；核验两个 delay0 全列等价及原证据精确复用。",
+    "复用原独立执行账本核验全部真实订单、股数、现金、成交价、费用、股票状态和统一 BuyHold，不另建模拟执行器。",
+    "从实际已完成账户收盘独立重建支撑及评价日计数，分别验证首次门槛 60+delay、最早可能执行日和实际首次买入；不假设 B 在最早可能日一定满足支撑。",
+    "按真实 BUY/SELL 周期逐日复算 H10、退出锁存、失败买入重置、下一日目标及固定股数，验证后续没有重复 delay 或隐含支撑提前退出。",
+    "完整检查和事件明细保存在 assets/runs，others 保存紧凑摘要与 SHA；实际未出现的停牌等组合只按合成预检范围表述。"
+  ],
+  "external_calls": 0,
+  "new_account_runs": 0,
+  "performance_conclusion": "待二十个正式账户和配对比较完成；不预设相位稳健或经济达标结论。"
+}

@@ -1,0 +1,27 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 4,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX023_20261018"
+  },
+  "hypothesis": "The original C early-exit policy mixes loss avoidance with accelerated reentry. Preserve its original entry-cycle H10 planned end after an early exit to isolate whether the acceleration is damaging.",
+  "trigger": "EX022 shows B wins A across11initialdelays full-window,10/11 before2026, but B executionpaths converge by2021-04-14 and all annualgoal combinations still fail. EX021 C2022 newentrycohort losses:25of30 extraentries occurred on/before previousactualentry+10,netcyclelog -0.27627; other5 -0.14131. Counterexamples retained: corresponding extraearlyentries full133 net+1.18965;2021/2025positive. Thus waiting is a falsifiable hypothesis, not universally proven protection.",
+  "new_variants": [
+    "support_exit_reserve_H10"
+  ],
+  "candidate_ids": {
+    "support_exit_reserve_H10": "S014-C0056"
+  },
+  "entry": "OriginalEX021C at delay0:60evaluation-sessionwarmup,close>=previous5completedclosesminimum,originalfreshplus1percentlimit,onefailedbuyreset. If a preceding actualBUY occurred atE, do not allow a new BUY decision before E+10 close, even if earlySELLalreadyfilled. At or afterE+10close, normal current supportcondition applies. Firsteverentry has noextra waiting. No initialphase selection.",
+  "exit": "Exactly originalC: atcurrentclosebelowprior5closingminimum OR E+9close, emitSELLnextsession. On entrydayclose supportbreakmayemitnextdaysell. SELL latched through failures; if actualsale occursafterE+10, its close mayplan a newbuy. Never delayneededSELL to satisfywaiting.",
+  "reservation": "Index E+10 is fixed atactualBUY using existing evaluationtradingsequence. Retain throughsell andcashdays; nofutureprices, nofuture hypotheticalBfill and noactiveBshadowaccount. NewBUYresetsownclock. No same-sessionroundtrip. Waiting may shiftpaths relativeB iffailedorders differ; do notclaim perfect identicalentrycohorts.",
+  "comparisons": "One newfixedcandidate vs authenticated originalB C0034 and originalC C0035; A C0033 contextual. C_reserve-C isolates newreentrywait but allresultingcapital/pathchanges included. C_reserve-B tests earlyexitplusplannedclock, not automatically a purely matchedentry effect.",
+  "sampling": "One predeclared configuration; no parametersearch,thresholdgrid,phasechoice orpruning. PublicTDR/SRT/TXEaccount;0upstream. Baselinesreusedonlyafterauthenticitychecks.",
+  "analysis": "All7yearoriginaltargets andfullfrequency;actualpre2026NAV; allmatched/uniqueentrycycles andwaitingdays; verifywhetherBentriesalign and retain exceptions; report2021/2025positiveearlyreentrycounterexamples. No newdiagnosticacceptancegate.",
+  "refutation": "If waiting removes moreprofitableparticipation thanbadreentries, or earlyexititself losesneededreturns, do notkeepadding arbitrarycooldowns. A single2022improvement cannotmaskotherannualmisses. Nextstepmustderivefromfullaccount.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000cash,.001eachside,100sharefullcash,maxqty1m,HFQresearch,originallimitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;annualpositiveBHreturn>=1.5BHelse>0,eachyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "ExistingS014pinneddataonly;allseen;noannouncements,newdata,platform,phase4,productionorremote."
+}

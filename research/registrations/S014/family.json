@@ -270,8 +270,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "f3767f99187761d8e266d67c42b33081a9204217ed46d010e9033bf566667a83",
-      "revision": 5,
+      "content_sha256": "b9af53a91b8a8615931cee2dc9affec0aba4c6d270cce543b77889a44f40d02c",
+      "revision": 7,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
@@ -286,7 +286,7 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "第2轮固定A/B/C账户中，B支撑入场固定10日全期净收益441.60%，去2026仍为163.69%，改善2021、2022收益，但年度收益仅3/7、回撤5/7通过。B与A仅9个共同入场，优势主要体现为交易时点及后续参与顺序改变，不能认定为稳定单笔过滤能力。C支撑破坏退出增加换手并降低B全期收益，损伤2022；6个对照全部原目标通过0个，尚不具备阶段四准备度。",
+    "conclusion": "保留原10日时钟的C0056形成进一步账户改进：全期净收益708.72%、年度回撤7/7通过、闭合频率每60日5.04笔；年度收益4/7通过，仍在2022、2024、2025亏损，4个对照全部原目标通过0个。相对B的134个共同入场log贡献为负，额外领先主要来自2026改变后的参与日期；截至2025年末C0056累计144.54%仍低于B的163.69%。因此保留其完整账户构造与风险改善证据，不把提前退出解释为普遍收益优势，尚不具备阶段四准备度。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -461,7 +461,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "继续已公开锁定的[第3轮EX022](../../../experiments/EX022_20261018/protocols/comparison_lock.json)：A/B各取首次决策延后0至10日，0精确复用，新增20账户；只改首次可决策日，不改变后续等待和固定10日持有。核对同偏移B−A的全部11组，不选择最佳偏移；11覆盖无失败时H10的理想周转长度，但真实失败订单打破周期性，不能称覆盖所有可能相位或11个独立样本。借此检验B优势的起始时点敏感性，再考虑与C0028续持路径的互补，只允许当时可知状态驱动，不按事后年度切换。暂不扩支撑窗口、阈值或主动止损参数，不自动推进阶段四。"
+      "继续已公开锁定的[第5轮EX024](../../../experiments/EX024_20261018/protocols/comparison_lock.json)，新增两个竞争构造：首次支撑破坏且严格早于E+9收盘时，只在P>0提前退出，或只在P≤0提前退出；P为当晚价格相对含买费实际成交成本的浮盈。首次判断被拒绝后不逐日重评，固定到原H10退出；保留原E+10重新入场时钟，复用B从不早退和R全部早退作对照。保留P≤0早退在2021/2023的保护反例，不预称能修复全部三亏损年，不扩零阈值邻域。第5轮属于剩余6轮授权，尚未分配5轮；费用、执行、原年度目标不变，不自动进入阶段四。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -505,7 +505,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段三自主第2轮支撑对照完成，第3轮起始偏移敏感性对照执行中",
+    "stage": "阶段三自主第4轮保留时钟对照完成，第5轮首次破坏浮盈状态对照执行中",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -516,9 +516,9 @@
       "verbatim": "同意进入阶段三，按这四种方案做连续账户对照，保持费用、执行约定和年度目标不变，你自主推进，我看结果。"
     },
     "stage_three_autonomous_budget": {
-      "allocated_rounds": 3,
+      "allocated_rounds": 6,
       "authorization": "授权10轮实验额度，请你继续主导阶段三研究，达成可以推进至阶段四的状态",
-      "completed_rounds": 2,
+      "completed_rounds": 4,
       "data": "existing S014 pinned data only",
       "experiments": [
         {
@@ -535,6 +535,21 @@
           "experiment_id": "EX022_20261018",
           "strategy_id": "S014",
           "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX023_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX024_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        {
+          "experiment_id": "EX025_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
         }
       ],
       "latest_delivery": {
@@ -542,15 +557,15 @@
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "f3767f99187761d8e266d67c42b33081a9204217ed46d010e9033bf566667a83",
-        "revision": 5,
+        "content_sha256": "b9af53a91b8a8615931cee2dc9affec0aba4c6d270cce543b77889a44f40d02c",
+        "revision": 7,
         "stage": "CANDIDATES",
         "type": "DeliveryReference"
       },
       "latest_result": "NO_ALL_TARGET_PASS",
       "limits": "No relaxing targets, no hindsight yearly switches, all data already seen; preserve losing comparisons; stage-two old budget is separate.",
       "new_upstream_calls": 0,
-      "remaining_unallocated_rounds": 7,
+      "remaining_unallocated_rounds": 4,
       "success": "At least one complete causal executable candidate satisfies all original annual return, annual drawdown and frequency targets, with public evaluation evidence, independent audit, registered loadable candidate and FULL-valid stage-three delivery. No automatic phase-four execution.",
       "total_rounds": 10
     },
@@ -662,7 +677,7 @@
       "status": "COMPLETE",
       "user_reply": "同意补齐，最多15次调用"
     },
-    "strategy_accounts": 25,
+    "strategy_accounts": 46,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0
@@ -673,5 +688,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T01:04:33+08:00"
+  "updated_at": "2026-10-18T01:31:20+08:00"
 }

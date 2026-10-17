@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "scope": "EX023 C0056 actual-ledger and reservation audit, original targets, path exceptions, first-break-state diagnosis, final report and proposed CANDIDATES/7 publication. Reviewer performed zero new account runs, upstream calls or formal publication.",
+  "checks": [
+    "One COMPLETE real Optuna fixed trial matches locked C0056, with independently recomputed worst-target-margin -0.5246250918061576.",
+    "28 annual rows and four full-window frequency/all-target flags independently reconstructed from authenticated formal daily NAV and CLOSED trades; opening NAV includes preceding year end.",
+    "45 public causal prechecks and33693 independent ledger/support/reservation checks PASS. Runtime closure and source authenticate; full audit SHA/bytes match summary.",
+    "Reservation rebuilt from actual BUY E+10 and preserved through SELL/flat/expiry; exits remain latched and unpostponed.138 actual entries/exits,103 early support exits,620 flat waiting closes,436 otherwise-eligible blocked signal closes,4 failed BUY resets.",
+    "Eight full/pre2026 NAV-cycle reconciliations PASS and all six aggregate R-minus-baseline path log differences independently equal actual account log-return differences; path output/helper hashes verified.",
+    "R/B134 matched actual entries and four unique entries each confirmed directly from real fills. Unique cycles independently recomputed from actual buy-day cash-before and exit cash, retaining residual capital.",
+    "First displacement is B blocked SELL on2026-07-27/28 one-price lower-limit bars, while already-flat R can buy7/28under frozen limit semantics. Subsequent B8/31 and R10/8failed BUY/reset explain further timing and10/12reconvergence. This is implemented daily-model evidence, not real queue-fill validation.",
+    "Independent path review proves unique-path log+0.481967578 outweighs matched-entry -0.081048014, yielding full R-B +0.400919564. Prior common7/13trade actually harms R; full positive result does not establish universal early-exit benefit.",
+    "All103 first-break P values independently recomputed from actual fills and normalized daily closes against independent audit events.100 same-entry both-CLOSED labeled pairs comprise15 positive/85 nonpositive; ALL and WITHOUT2026 summary means match.",
+    "Loss-route review retains positive-state small sample, removal-top5 reversal,2021/23 nonpositive early-exit protection, and2024zero-positive-pair counterexamples; no extra acceptance gate introduced.",
+    "Final report tables, path dates, loss-state numbers, all nine formal relative links and final frozen hashes checked. EX024 is two predeclared complementary once-only first-break rules with unchanged reservation, H10, fees and annual objectives.",
+    "Publication inherits45 candidates from CANDIDATES/6, adds one C0056 to proposed CANDIDATES/7 totaling46, with empty phase-four handoff. Dynamic budget increments completed only and preserves allocated fifth round."
+  ],
+  "findings": [],
+  "economic_result": {
+    "candidate": "S014-C0056",
+    "total_return": 7.087224249999997,
+    "annual_return_pass_count": 4,
+    "annual_drawdown_pass_count": 7,
+    "failed_return_years": [
+      2022,
+      2024,
+      2025
+    ],
+    "frequency_per_60": 5.0426309378806335,
+    "fully_passing_comparison_accounts": 0,
+    "without_2026_R_return": 1.445422409999995,
+    "without_2026_B_return": 1.6368719399999945,
+    "phase_four_ready": false
+  },
+  "limitations_to_preserve": [
+    "All data have been seen and later mechanism selection is adaptive research, not fresh out-of-sample validation.",
+    "R full advantage over B depends arithmetically on2026unique participation paths initiated by blocked lower-limit sells and permitted lower-limit buy under the frozen simplified execution model.",
+    "Shared-entry and unique-path log terms are arithmetic decompositions; deleting or changing trades would alter cash and later entries and has not been simulated in this diagnosis.",
+    "620/436 are daily-state/signal counts, not fillable missed trades. Real suspension samples are zero; branch coverage is synthetic.",
+    "P split uses known first-break-close inputs, but selection labels need both legs CLOSED and same entry. These100 pairs cannot predict complete complementary strategy accounts or guarantee repairs in the three failing years.",
+    "Original seven annual objectives remain authoritative. Audit PASS, more candidates or DD7/7 do not satisfy stage-four readiness."
+  ],
+  "publication_review": {
+    "reviewed_only": true,
+    "formal_publication_executed": false,
+    "intended_delivery": "CANDIDATES/7",
+    "registered_count_after_success": 46,
+    "hash_binding": "Material changes after reviewed bytes require renewed review."
+  },
+  "source_file_sha256": {
+    "research/S014/experiments/EX023_20261018/protocols/account_report.md": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+    "research/S014/experiments/EX023_20261018/src/write_report.py": "47bc2b05ebd42e944595847f2ac1c9c8300298ecdd9f3cb5aca13f14f2631e7c",
+    "research/S014/experiments/EX023_20261018/others/comparison.json": "1b61dbd11ccdaf27d8168e73dd2f3f33d7e27646f19d49de14e76900775d48e3",
+    "research/S014/experiments/EX023_20261018/src/publish_accounts.py": "9aa90d80b1266fa45cc30f256f0145de934f7d79d2c4b47e678c098833763c7b",
+    "research/S014/experiments/EX023_20261018/others/loss_route_review.json": "00c54f9d3db1797341e08dd45708333eba0b90fbce90607a73e7cfad446701f6",
+    "research/S014/experiments/EX023_20261018/protocols/comparison_lock.json": "e8144081e2c57ec486560b24276e31396a644135539f9e8554150d9d4b3a717f",
+    "research/S014/experiments/EX023_20261018/src/run_accounts.py": "6a23be49f49c9dc633efd1befb28a39806b1cdfdf26c93ddb76cc9f9aa00b769",
+    "research/S014/experiments/EX023_20261018/src/compare_accounts.py": "2a3918e34ccc456c987b9d6bf9805e9e5a350202f0e3c3b1458455fa3ecba8af",
+    "research/S014/experiments/EX023_20261018/src/path_diagnostics.py": "b5c4fe82d0f67b3e1068e115a0c46396e467bb2a698074d6076dff8de989cc3c",
+    "research/S014/experiments/EX023_20261018/src/loss_state_diagnostics.py": "5957297920017843241f7aeb67e5bb72e6567061e70f74119a482dd6159fb9b8",
+    "research/S014/experiments/EX023_20261018/src/audit_accounts.py": "40c4664b6eb34d6438b0a2001cc1d51b5b0f17a8d70daa791463ffcfda9db485",
+    "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+    "research/S014/experiments/EX023_20261018/others/precheck.json": "c5415b0bf3270d7dd179729c8c4ecfc6d6a9196a9681edaf960bb607e605716a",
+    "research/S014/experiments/EX023_20261018/others/account_audit.json": "b7cc022669138fb4cd0e833f03cae0c4432ba11ab68afd8c56af58fb16f14866",
+    "research/S014/experiments/EX023_20261018/others/account_results.json": "7c742c6c6857885ab3c083040521506aed9b901ad05890fc385f5c73e954c006",
+    "research/S014/experiments/EX023_20261018/others/comparison_accounts.json": "705b6615a780cad897d34cafb0afb84a77702a8325f48020d49dd6dfcc95250f",
+    "research/S014/experiments/EX023_20261018/others/annual_comparison.csv": "426695c52ba12e3edf815ed5fc0812377d99f4e7426e7f6f0156ebad55589932",
+    "research/S014/experiments/EX023_20261018/others/optuna_trials.json": "5e445b3aeaf960a1813bd181501374a8e3a9cf97dbe9555d511255ff2425dd95",
+    "research/S014/experiments/EX023_20261018/others/path_diagnostics.json": "befe0797482cd9e4ff854ba50db8ac330698cb84b7197ae08de466e4f935e401",
+    "research/S014/experiments/EX023_20261018/others/path_exception_review.json": "b6f8579c50c77e84288ec41455430291cedc55f774a7fbae2e28a1af8482c3a5",
+    "research/S014/experiments/EX023_20261018/others/loss_state_diagnostics.json": "dfc6ba12a24f800f534c184c79cbe4cf2bfb7ebb814cf8339d4f395954fe8265",
+    "research/S014/experiments/EX023_20261018/others/method_review.json": "af07bd46a7567368c098d074e18d0f12c6216b2eb54da9c8fc3f3f064c4a096c",
+    "research/S014/experiments/EX024_20261018/protocols/comparison_lock.json": "54eef3f63e65e72c73913bb53cb56ae36b610c3f5b408f12f153b804897e43c5"
+  },
+  "account_audit_check_count": 33693,
+  "annual_rows_independently_recalculated": 28,
+  "first_break_P_independently_recalculated": 103,
+  "external_calls": 0,
+  "new_account_runs": 0
+}

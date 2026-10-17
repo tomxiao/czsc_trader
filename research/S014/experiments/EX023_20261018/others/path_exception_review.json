@@ -1,0 +1,559 @@
+{
+  "status": "PASS",
+  "scope": "Read-only EX023 stage-three exception explanation from original B and R formal ledgers and pinned inputs. No new account, upstream or phase-four action.",
+  "sources": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX021_20261018"
+      },
+      "evidence_id": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c.json",
+      "sha256": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c",
+      "media_type": "application/json",
+      "name": "account-support-entry-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+      "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+      "media_type": "application/json",
+      "name": "account-support-exit-reserve-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "source_sha256": {
+    "research/S014/experiments/EX023_20261018/others/path_diagnostics.json": "befe0797482cd9e4ff854ba50db8ac330698cb84b7197ae08de466e4f935e401",
+    "research/S014/experiments/EX023_20261018/others/path_cycles.csv": "47a6a70a358ca421e6df7d0caba2f794e284fb72518ae8337c8d41d48d55f4da",
+    "research/S014/experiments/EX023_20261018/others/path_matches.csv": "afb513636974018ab541be22206c245382323274174d2f067611f2313e305093",
+    "research/S014/experiments/EX023_20261018/others/account_audit.json": "b7cc022669138fb4cd0e833f03cae0c4432ba11ab68afd8c56af58fb16f14866",
+    "research/S014/experiments/EX023_20261018/others/comparison_accounts.json": "705b6615a780cad897d34cafb0afb84a77702a8325f48020d49dd6dfcc95250f",
+    "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+    "research/S014/experiments/EX021_20261018/src/strategy_runtime/strategies/repair.py": "461889c7c668bf7de68bfb47a2d40d94feac916a06f3f16561af2cf8e8dad19f"
+  },
+  "input_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "unique_actual_entries": {
+    "support_entry_H10": [
+      "2026-07-30",
+      "2026-08-14",
+      "2026-09-02",
+      "2026-09-17"
+    ],
+    "support_exit_reserve_H10": [
+      "2026-07-28",
+      "2026-08-12",
+      "2026-08-27",
+      "2026-09-11"
+    ]
+  },
+  "sequence": [
+    {
+      "date": "2026-07-13",
+      "finding": "Both accounts actually buy8.12. B fixed exit decision is7/24close, planned execution7/27. R owns identical reservation7/27close but its support exit is earlier."
+    },
+    {
+      "date": "2026-07-16 to2026-07-17",
+      "finding": "R7/16close7.75 falls below prior-five floor7.78; exits7/17at7.90. Reservation stays7/27close. This common-entry trade is worse for R than B and is retained as a negative counterexample."
+    },
+    {
+      "date": "2026-07-27 to2026-07-30",
+      "finding": "B SELL fails on7/27 and7/28: both daily bars are one-price lower-limit bars10.29 and9.26, while canonical sell requires open+one tick10.30 and9.27, outside range. Pending exit stays latched; sell7/29at9.41 then rebuy7/30at10.29. R flat reservation matures7/27close with support true10.29>=9.01; nextday buy limit10.39 allows7/28open9.26 fill. Lower-limit BUY is allowed by frozen simplified execution; no queue or liquidity inference."
+    },
+    {
+      "date": "2026-08-12 to2026-08-27",
+      "finding": "After R7/28entry its H10 sell8/11 permits8/12entry. R8/14close11.28<prior-five floor11.38 triggers8/17sale; its new reservation8/26close prevents early reentry, then8/27BUY. B shifted to8/14entry exits8/28. Reservation tracks each account actual entry, so it cannot force alignment after the original blocked B sale."
+    },
+    {
+      "date": "2026-08-31 to2026-09-02",
+      "finding": "B8/31BUY limit15.42 is below daily low15.64; order fails and8/31close resets, so no9/1 order. Fresh9/1signal buys9/2at18.24. This further extends timing difference from R8/27entry."
+    },
+    {
+      "date": "2026-09-11 to2026-10-12",
+      "finding": "R9/11entry breaks support at same close16.98<17.20; sells9/14at17.50 but retains9/28close reservation. Support false9/28and9/29, true9/30;10/8BUY limit14.86<daily low15.40 fails and resets10/8close. Fresh10/9signal buys10/12. B9/17entry exits10/9 then also buys10/12. Observed entry dates reconverge; capital and share counts do not become equal."
+    }
+  ],
+  "cycle_contributions_independently_recomputed": [
+    {
+      "variant": "support_entry_H10",
+      "entry_date": "2026-07-13",
+      "exit_date": "2026-07-29",
+      "entry_price": 8.12,
+      "exit_price": 9.41,
+      "cycle_return": 0.15639223655377932,
+      "cycle_log": 0.1453050176765875,
+      "is_unique_entry": false
+    },
+    {
+      "variant": "support_entry_H10",
+      "entry_date": "2026-07-30",
+      "exit_date": "2026-08-13",
+      "entry_price": 10.29,
+      "exit_price": 11.76,
+      "cycle_return": 0.14034516656741336,
+      "cycle_log": 0.13133099426920278,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_entry_H10",
+      "entry_date": "2026-08-14",
+      "exit_date": "2026-08-28",
+      "entry_price": 12.1,
+      "exit_price": 13.750000000000004,
+      "cycle_return": 0.12818848711965614,
+      "cycle_log": 0.12061323762679957,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_entry_H10",
+      "entry_date": "2026-09-02",
+      "exit_date": "2026-09-16",
+      "entry_price": 18.24,
+      "exit_price": 15.95,
+      "cycle_return": -0.12710294660521482,
+      "cycle_log": -0.13593765289690835,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_entry_H10",
+      "entry_date": "2026-09-17",
+      "exit_date": "2026-10-09",
+      "entry_price": 15.75,
+      "exit_price": 16.35,
+      "cycle_return": 0.035011176990383364,
+      "cycle_log": 0.03441222568354834,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "entry_date": "2026-07-13",
+      "exit_date": "2026-07-17",
+      "entry_price": 8.12,
+      "exit_price": 7.9,
+      "cycle_return": -0.0290311077370512,
+      "cycle_log": -0.029460848008379684,
+      "is_unique_entry": false
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "entry_date": "2026-07-28",
+      "exit_date": "2026-08-11",
+      "entry_price": 9.26,
+      "exit_price": 12.440000000000003,
+      "cycle_return": 0.3032769588829436,
+      "cycle_log": 0.26488183033967366,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "entry_date": "2026-08-12",
+      "exit_date": "2026-08-17",
+      "entry_price": 12.16,
+      "exit_price": 12.4,
+      "cycle_return": 0.017551579578482635,
+      "cycle_log": 0.017399329510218844,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "entry_date": "2026-08-27",
+      "exit_date": "2026-09-10",
+      "entry_price": 13.58,
+      "exit_price": 20.58,
+      "cycle_return": 0.48626172109731436,
+      "cycle_log": 0.39626405534823467,
+      "is_unique_entry": true
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "entry_date": "2026-09-11",
+      "exit_date": "2026-09-14",
+      "entry_price": 18.3,
+      "exit_price": 17.5,
+      "cycle_return": -0.04510971742379266,
+      "cycle_log": -0.046158832456221176,
+      "is_unique_entry": true
+    }
+  ],
+  "arithmetic": {
+    "B_four_unique_cycle_log_sum": 0.15041880468264235,
+    "R_four_unique_cycle_log_sum": 0.632386382741906,
+    "unique_path_net_R_minus_B": 0.4819675780592636,
+    "all134_matched_cycle_log_R_minus_B": -0.08104801402550058,
+    "total_cycle_log_R_minus_B": 0.40091956403376316,
+    "without_2026_cycle_log_R_minus_B": -0.0753754706003405
+  },
+  "critical_interpretation": [
+    "Full R-B advantage+0.400919564log is composed of exclusive-path+0.481967578log and matched-entry-0.081048014log. Thus the net advantage is explained arithmetically by2026path exceptions, while matched entries net negative. These are return-factor logs, not percentage-point annual returns.",
+    "R unique7/28and8/27cycles contribute most positive logs; R9/11is negative. The preceding common7/13cycle is materially worse for R. Do not describe all early exits as successful loss avoidance.",
+    "7/28lower-limit BUY versus blocked B SELL is correct under already frozen simplified daily execution. It is not evidence that real-market orders at those volumes necessarily fill.",
+    "Orders.limit_price on MARKET SELL rows carries a stored reference and is not the canonical open+tick execution threshold. Thresholds above are independently derived from pinned actual bars and lower-limit bounds.",
+    "This observed sequence explains how independent actual-entry clocks diverge. It does not estimate causal PnL of forcing B successful exits, removing failed buys, or deleting exceptional trades; no such counterfactual accounts were run."
+  ],
+  "key_pinned_quotes": [
+    {
+      "date": "2026-07-24",
+      "raw_quote": {
+        "Date": "2026-07-24",
+        "Open": 11.21,
+        "High": 11.9,
+        "Low": 10.6,
+        "Close": 11.43,
+        "Volume": 163411213.0,
+        "Amount": 1848058194.0
+      },
+      "limits": {
+        "Date": "2026-07-24",
+        "UpLimit": 11.99,
+        "DownLimit": 9.81
+      }
+    },
+    {
+      "date": "2026-07-27",
+      "raw_quote": {
+        "Date": "2026-07-27",
+        "Open": 10.29,
+        "High": 10.29,
+        "Low": 10.29,
+        "Close": 10.29,
+        "Volume": 14798600.0,
+        "Amount": 152277594.0
+      },
+      "limits": {
+        "Date": "2026-07-27",
+        "UpLimit": 12.57,
+        "DownLimit": 10.29
+      }
+    },
+    {
+      "date": "2026-07-28",
+      "raw_quote": {
+        "Date": "2026-07-28",
+        "Open": 9.26,
+        "High": 9.26,
+        "Low": 9.26,
+        "Close": 9.26,
+        "Volume": 13344900.0,
+        "Amount": 123573774.0
+      },
+      "limits": {
+        "Date": "2026-07-28",
+        "UpLimit": 11.32,
+        "DownLimit": 9.26
+      }
+    },
+    {
+      "date": "2026-07-29",
+      "raw_quote": {
+        "Date": "2026-07-29",
+        "Open": 9.41,
+        "High": 10.19,
+        "Low": 9.41,
+        "Close": 10.19,
+        "Volume": 54210527.0,
+        "Amount": 538163322.0
+      },
+      "limits": {
+        "Date": "2026-07-29",
+        "UpLimit": 10.19,
+        "DownLimit": 8.33
+      }
+    },
+    {
+      "date": "2026-08-31",
+      "raw_quote": {
+        "Date": "2026-08-31",
+        "Open": 16.0,
+        "High": 16.8,
+        "Low": 15.64,
+        "Close": 16.8,
+        "Volume": 161101835.0,
+        "Amount": 2635581403.0
+      },
+      "limits": {
+        "Date": "2026-08-31",
+        "UpLimit": 16.8,
+        "DownLimit": 13.74
+      }
+    },
+    {
+      "date": "2026-09-02",
+      "raw_quote": {
+        "Date": "2026-09-02",
+        "Open": 18.57,
+        "High": 19.86,
+        "Low": 17.58,
+        "Close": 19.26,
+        "Volume": 182274246.0,
+        "Amount": 3389343085.0
+      },
+      "limits": {
+        "Date": "2026-09-02",
+        "UpLimit": 19.87,
+        "DownLimit": 16.25
+      }
+    },
+    {
+      "date": "2026-10-08",
+      "raw_quote": {
+        "Date": "2026-10-08",
+        "Open": 15.4,
+        "High": 16.19,
+        "Low": 15.4,
+        "Close": 16.19,
+        "Volume": 82460207.0,
+        "Amount": 1317375290.0
+      },
+      "limits": {
+        "Date": "2026-10-08",
+        "UpLimit": 16.19,
+        "DownLimit": 13.25
+      }
+    },
+    {
+      "date": "2026-10-09",
+      "raw_quote": {
+        "Date": "2026-10-09",
+        "Open": 16.35,
+        "High": 17.05,
+        "Low": 15.43,
+        "Close": 16.88,
+        "Volume": 158276481.0,
+        "Amount": 2608503538.0
+      },
+      "limits": {
+        "Date": "2026-10-09",
+        "UpLimit": 17.81,
+        "DownLimit": 14.57
+      }
+    }
+  ],
+  "key_actual_orders": {
+    "support_entry_H10": [
+      {
+        "execution_date": "2026-07-13T00:00:00.000000000",
+        "signal_date": "2026-07-10T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 8.12,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-07-27T00:00:00.000000000",
+        "signal_date": "2026-07-24T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "limit_price": 11.43,
+        "status": "UNFILLED"
+      },
+      {
+        "execution_date": "2026-07-28T00:00:00.000000000",
+        "signal_date": "2026-07-27T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "limit_price": 10.29,
+        "status": "UNFILLED"
+      },
+      {
+        "execution_date": "2026-07-29T00:00:00.000000000",
+        "signal_date": "2026-07-28T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 9.26,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-07-30T00:00:00.000000000",
+        "signal_date": "2026-07-29T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 10.29,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-13T00:00:00.000000000",
+        "signal_date": "2026-08-12T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 11.86,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-14T00:00:00.000000000",
+        "signal_date": "2026-08-13T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 12.64,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-28T00:00:00.000000000",
+        "signal_date": "2026-08-27T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 13.88,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-31T00:00:00.000000000",
+        "signal_date": "2026-08-28T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "limit_price": 15.420000000000003,
+        "status": "UNFILLED"
+      },
+      {
+        "execution_date": "2026-09-02T00:00:00.000000000",
+        "signal_date": "2026-09-01T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 18.24,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-09-16T00:00:00.000000000",
+        "signal_date": "2026-09-15T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 15.81,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-09-17T00:00:00.000000000",
+        "signal_date": "2026-09-16T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 16.19,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-10-09T00:00:00.000000000",
+        "signal_date": "2026-10-08T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 16.19,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-10-12T00:00:00.000000000",
+        "signal_date": "2026-10-09T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 17.04,
+        "status": "FILLED"
+      }
+    ],
+    "support_exit_reserve_H10": [
+      {
+        "execution_date": "2026-07-13T00:00:00.000000000",
+        "signal_date": "2026-07-10T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 8.12,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-07-17T00:00:00.000000000",
+        "signal_date": "2026-07-16T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 7.75,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-07-28T00:00:00.000000000",
+        "signal_date": "2026-07-27T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 10.39,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-11T00:00:00.000000000",
+        "signal_date": "2026-08-10T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 12.52,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-12T00:00:00.000000000",
+        "signal_date": "2026-08-11T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 12.250000000000004,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-17T00:00:00.000000000",
+        "signal_date": "2026-08-14T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 11.28,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-08-27T00:00:00.000000000",
+        "signal_date": "2026-08-26T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 14.28,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-09-10T00:00:00.000000000",
+        "signal_date": "2026-09-09T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 20.0,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-09-11T00:00:00.000000000",
+        "signal_date": "2026-09-10T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 18.49,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-09-14T00:00:00.000000000",
+        "signal_date": "2026-09-11T00:00:00.000000000",
+        "side": "SELL",
+        "reason": "FILLED",
+        "limit_price": 16.98,
+        "status": "FILLED"
+      },
+      {
+        "execution_date": "2026-10-08T00:00:00.000000000",
+        "signal_date": "2026-09-30T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "limit_price": 14.86,
+        "status": "UNFILLED"
+      },
+      {
+        "execution_date": "2026-10-12T00:00:00.000000000",
+        "signal_date": "2026-10-09T00:00:00.000000000",
+        "side": "BUY",
+        "reason": "FILLED",
+        "limit_price": 17.04,
+        "status": "FILLED"
+      }
+    ]
+  },
+  "new_account_runs": 0,
+  "upstream_calls": 0
+}

@@ -1,0 +1,42 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 5,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX024_20261018"
+  },
+  "hypothesis": "A first support break while the position remains profitable may be profit protection; a first break while underwater may precede a recovery. Compare both complementary branches against all-break and no-break exit baselines.",
+  "trigger": {
+    "source": "research/S014/experiments/EX023_20261018/others/loss_state_diagnostics.json",
+    "sha256": "dfc6ba12a24f800f534c184c79cbe4cf2bfb7ebb814cf8339d4f395954fe8265",
+    "same_entry_closed_pairs": 100,
+    "profitable_first_break_n": 15,
+    "profitable_mean_increment": 0.026291567761646175,
+    "nonprofitable_n": 85,
+    "nonprofitable_mean_increment": -0.008693444870843767,
+    "interpretation": "Observed label evidence only; not a new account. P-positive remove-top3 remains+0.00456 but remove-top5 turns negative; nonpositive early exits help in2021/2023 and may be lost. No claim that all three failing years will be repaired."
+  },
+  "new_variants": [
+    "support_first_profit_exit_H10",
+    "support_first_nonprofit_exit_H10"
+  ],
+  "candidate_ids": {
+    "support_first_profit_exit_H10": "S014-C0057",
+    "support_first_nonprofit_exit_H10": "S014-C0058"
+  },
+  "entry": "Unchanged C56:60 evaluation-session warmup,Close>=minimum of previous5 completed evaluation closes; fresh original limit; failedBUY one attempt/reset; actualBUY E reserves reentry until E+10close. First entry no reservation. Full cash.",
+  "state": "At the FIRST support break while actually held strictly before E+9close, compute P=HFQ Close/(actual HFQ BUY fill price*1.001)-1. P>0 vs P<=0; zero is nonprofitable. Includes actual buy fee only; no future exit price/fee. Freeze this first-break decision for the cycle. Never reassess subsequent breaks if the first was rejected.",
+  "exit": "Profit variant exits at that first break only if P>0; nonpositive variant exits only if P<=0. Otherwise hold to original E+9close deadline then SELL next session, regardless of P. Already emitted SELL stays latched through failed sessions. First break on E+9 is timeout, not an early branch. Actual BUY day may be first break. P has no effect on sizing or entry.",
+  "reservation": "Own actualBUY E+10 retained across SELL and flat; earliest reentry decision E+10close. Late actual sale can plan nextBUY at its close. No hypothetical B shadow path. No same-sessionroundtrip.",
+  "baselines": {
+    "support_entry_H10": "S014-C0034",
+    "support_exit_reserve_H10": "S014-C0056"
+  },
+  "sampling": "Two fixed complementary complete configurations pre-enqueued in Optuna seed17; no threshold search, pruning, horizon change, annual switching or free sampler. Public TDR/SRT/TXE full1642sessions; maxworkers2/native1.",
+  "analysis": "Original7annual return/DD targets and frequency; actual pre2026NAV; first-break P counts, branch choices and accepted/rejected early exits; same/unique entry paths including limit-blockedSELL and failedBUY. Retain both outcomes. Complementary trade labels are not additive account results.",
+  "refutation": "If losses persist or lost2021/2023 protection outweighs repair, do not declare P rule effective solely from full return.2024 had no profitable early break in matched original paths so this rule alone is not expected to solve that entry deficit. No automatic extra zero-threshold neighbor scan.",
+  "frozen": "2020-01-01..2026-10-15 nominal,1642sessions,100000cash,.001eachside,100lot,maxqty1m,HFQresearch,originallimitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;eachannualpositiveBHreturn>=1.5BHelse>0,eachyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "ExistingS014pinneddataonly,allseen,noannouncements,newdata,platform,phase4,production,remote."
+}

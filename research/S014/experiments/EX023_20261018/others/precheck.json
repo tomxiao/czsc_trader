@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "check_count": 45,
+  "checks": [
+    "exact locked single new variant",
+    "unchanged execution helper tick",
+    "unchanged execution helper buy_limit",
+    "first entry no additional wait and prewindow excluded",
+    "ordinary H10 sale and next day reentry",
+    "early exit unchanged E close break E+1 sale",
+    "restored support cannot buy before original E+10 close",
+    "counterfactual original C immediately reenters",
+    "failed SELL persists beyond reservation with recovered support",
+    "failed BUY reset and reservation only after actual fill",
+    "suspended BUY has no invented clock",
+    "support excludes T and below support blocks entry",
+    "synthetic independent reservation reconstruction normal",
+    "synthetic independent reservation reconstruction early",
+    "synthetic independent reservation reconstruction late",
+    "synthetic independent reservation reconstruction failed_buy",
+    "synthetic independent reservation reconstruction suspended",
+    "HFQ raw scale leaves lifecycle unchanged",
+    "illegal parameters rejected",
+    "authenticated offline input calendar.trading_sessions",
+    "authenticated offline input stock.ohlcv",
+    "authenticated offline input stock.unadjusted_daily",
+    "authenticated offline input security.price_limits",
+    "authenticated offline input security.trading_status",
+    "same1642 evaluation sessions and original startup",
+    "baseline full history and public observation exact support_entry_H10",
+    "baseline full history and public observation exact support_exit_H10",
+    "new candidate unchanged execution inputs decision",
+    "real independent full reservation lifecycle",
+    "real original ready and first signal",
+    "real support unchanged",
+    "finite observations including reservation",
+    "causal prefix 60",
+    "causal prefix 61",
+    "causal prefix 62",
+    "causal prefix 72",
+    "causal prefix 500",
+    "causal prefix 1000",
+    "causal prefix 1643",
+    "future perturbation does not alter past",
+    "prewindow excluded from signal and reservation",
+    "locked candidate identity",
+    "public prepare reprepare inspect1642",
+    "zero upstream attempts",
+    "new files LF only"
+  ],
+  "candidates": [
+    {
+      "variant": "support_exit_reserve_H10",
+      "candidate": "S014-C0056",
+      "implementation_sha256": "d7c3fec9c4a4fbfc0281f04ebd66ebe93950447c5ff645338e79465b5e999da0",
+      "signal_sessions": 1642,
+      "first_ready_decision": "2020-04-02",
+      "input_binding_canonical_sha256": "9f48e708dca6774fed9b9633df422eb6e75c59e6768c09bbd30af3ef4de7841a"
+    }
+  ],
+  "baseline_equivalence": [
+    {
+      "variant": "support_entry_H10",
+      "rows": 1643,
+      "all_history_columns_equal": true,
+      "public_observations_equal": true,
+      "complete_definition_equal": true,
+      "new_identity": false
+    },
+    {
+      "variant": "support_exit_H10",
+      "rows": 1643,
+      "all_history_columns_equal": true,
+      "public_observations_equal": true,
+      "complete_definition_equal": true,
+      "new_identity": false
+    }
+  ],
+  "full_prepared_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "input_content_sha256": {
+    "calendar.trading_sessions": "3f28616dd8d0819a16067397dfea894de112c4d7068af9ccc71b3796649135e3",
+    "stock.ohlcv": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "stock.unadjusted_daily": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "security.price_limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "security.trading_status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "source_sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+  "source_files_sha256": {
+    "src/strategy_runtime/strategies/repair.py": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+    "src/build_candidates.py": "62ef0ed429dfe1f2cf57e7e81a8907819b796ea144dca0a73800f28781acc2ee",
+    "src/precheck.py": "cd146ff75095f01fc62e84b343f97970023f5e133bd5aa10869df242166e95ea",
+    "protocols/payload_support_exit_reserve_H10.json": "d71496777d1a75c6eee8e30f02bcf376f6065c3d9d70af0fe57fb117466be92a"
+  },
+  "account_runs": 0,
+  "supplier_calls": 0,
+  "supplier_attempts": 0,
+  "observation_semantics": {
+    "reservation_index": "Last actual BUY source index+10; retained after SELL; -1 before first actualBUY. Flat entry requires current index>=reservation.",
+    "deadline_index": "Current actual BUY source index+9; -1 when flat; unchanged SELL clock.",
+    "index_origin": "2019-12-31 is source index0, excluded from60-session warmup.",
+    "baseline_columns": "B/C remain exactly original; only new reserve candidate adds reservation_index observation."
+  },
+  "pending": [
+    "Parent formal-account replay and independent actual-ledger audit."
+  ]
+}
