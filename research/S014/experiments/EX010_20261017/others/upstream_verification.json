@@ -1,0 +1,33 @@
+{
+  "status": "FAILED",
+  "request": {
+    "dataset": "index.domestic_daily",
+    "symbol": "000813.SH",
+    "start": "2020-01-01",
+    "end": "2026-10-15",
+    "required_cutoff": "2026-10-15"
+  },
+  "policy": "REFRESH",
+  "call_cap": 5,
+  "verified_at": "2026-10-17T10:04:03.329458+00:00",
+  "availability_limit": "T completed market close assumed; source publication and revision history not proven.",
+  "prepare_status": "FAILED",
+  "errors": [
+    {
+      "status": "EMPTY",
+      "code": "EMPTY_DATA",
+      "message": "Tushare returned no data for domestic index daily 000813.SH"
+    }
+  ],
+  "source_calls": [
+    {
+      "ordinal": 1,
+      "api": "index_daily",
+      "symbol": "000813.SH",
+      "start_date": "20200101",
+      "end_date": "20261015"
+    }
+  ],
+  "source_calls_used": 1,
+  "remaining_source_calls": 4
+}

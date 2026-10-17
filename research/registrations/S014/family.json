@@ -6,9 +6,53 @@
     "approved_added_data": {
       "dataset": "index.domestic_daily",
       "end": "2026-10-15",
+      "requested_symbol": "000813.SH",
+      "same_index_identity_evidence": {
+        "evidence_id": "10117e84929fcc517d07ada975527caa6fb6f8552bea49ceae8feb538a14e065.json",
+        "experiment": {
+          "experiment_id": "EX010_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "vendor-identity",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "10117e84929fcc517d07ada975527caa6fb6f8552bea49ceae8feb538a14e065",
+        "type": "EvidenceRef"
+      },
       "start": "2020-01-01",
-      "symbol": "000001.SH"
+      "symbol": "000813.CSI"
     },
+    "approved_context_data": [
+      {
+        "dataset": "index.domestic_daily",
+        "end": "2026-10-15",
+        "start": "2020-01-01",
+        "symbol": "000001.SH"
+      },
+      {
+        "dataset": "index.domestic_daily",
+        "end": "2026-10-15",
+        "requested_symbol": "000813.SH",
+        "same_index_identity_evidence": {
+          "evidence_id": "10117e84929fcc517d07ada975527caa6fb6f8552bea49ceae8feb538a14e065.json",
+          "experiment": {
+            "experiment_id": "EX010_20261017",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "vendor-identity",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "10117e84929fcc517d07ada975527caa6fb6f8552bea49ceae8feb538a14e065",
+          "type": "EvidenceRef"
+        },
+        "start": "2020-01-01",
+        "symbol": "000813.CSI"
+      }
+    ],
     "attribution_authorization": {
       "confirmed_proposal": "回到阶段二，先做一轮数据归因；收益发生位置、固定退出回吐、事前区分能力",
       "experiment": {
@@ -56,26 +100,27 @@
       "No reading other research batches' data",
       "No merge or push authorization for this branch"
     ],
-    "component_definitions": 23,
+    "component_definitions": 25,
     "components": {
       "batch": {
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "aa59215cf9e10784a393b047b5484c792855f758939acb6f12687bff1995a853",
-      "revision": 6,
+      "content_sha256": "4a8d56b682d1ba6b29fbfeef7a8557ade34a4bafad89ef4f0aaf790f509be57a",
+      "revision": 7,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "阶段二继续：上证指数权限与1642交易日覆盖通过；市场3日条件排序有有限正向线索，但强基线、贡献集中和2025反例未解决，新增收益入场用途不认定。最小后续建议为同窗口000813.SH行业价格代理，获准后先验上游，不预先改平台或进入阶段三。",
+    "conclusion": "化工指数同名供应商代码000813.CSI已核验且1642交易日完整；市场+行业代理未缩小2025隔夜亏损。滞后行业有局部排序线索，但强股票滞后控制及贡献/阈值反证不足，不新增SUPPORTED收益组件。阶段二PARTIAL，建议下一步先核验同公司公告上游可用性及真实披露时点，未批准前不执行，不进入阶段三。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
-      "actual_calls": 1,
-      "dataset": "index.domestic_daily",
-      "remaining_calls": 5,
+      "actual_calls": 3,
+      "canonical_symbol": "000813.CSI",
+      "remaining_calls": 2,
+      "requested_symbol": "000813.SH",
+      "same_index_verified": true,
       "source": "Current human conversation",
-      "symbol": "000001.SH",
-      "verbatim": "同意扩展同周期上证指数日线，先验证上游权限和数据覆盖，再继续阶段二研究，你自主推进。",
+      "verbatim": "同意扩展同周期000813.SH日线，使用剩余5次调用额度，先验证上游权限和数据覆盖，再继续阶段二研究，你自主推进。",
       "window": [
         "2020-01-01",
         "2026-10-15"
@@ -83,12 +128,11 @@
     },
     "diagnostic_feedback": {
       "assessment": [
-        "原2项辅助职责保留，新增收益入场组件未认定；不以实验或组件数量收口。",
-        "000001.SH真实账号权限和1642交易日覆盖通过，数学因果时序已核对，源历史发布时间/修订仍未验证。",
-        "市场3日条件排序有正向线索，但增强股票基线、阈值、少数贡献及2026反例未解决；普通区间不是新增硬门。",
-        "2025低开修复的后续亏损不能由既定市场beta代理充分解释；这不证明损失因果来自公司。",
-        "固定市场修复定义未支持；其他直接机制保留正向与反证。优先提出000813.SH行业代理以区分剩余共同因素，尚未获批。",
-        "每个组件不承担完整策略逐年收益/回撤硬门，原经济目标不变且未验收；阶段三未批准。"
+        "同名化工指数代码已由目录确认000813.CSI，真实1642会话完整，3次计入原预算，剩余2。",
+        "现有市场/化工双因素代理未缩小2025后续损失，不把残差直接叫公司原因。",
+        "滞后行业存在受限线性排序线索；补充滞后股票后增量小、贡献集中和阈值反证未解决。",
+        "辅助职责仍2项，新收益入场0；组件无需单独满足完整策略逐年经济目标。",
+        "新增公告核验尚未获批，先验上游再申请必要DEV契约；不先开发或自动接入。"
       ],
       "attribution_delivery": {
         "batch": {
@@ -100,40 +144,40 @@
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
-      "authorization": "用户批准同周期000001.SH日线，先验上游权限覆盖再自主继续阶段二。其他新增数据仍需批准。",
+      "authorization": "用户批准同周期细分化工000813.SH、剩余5次，先验上游再自主继续阶段二。",
       "closure_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "aa59215cf9e10784a393b047b5484c792855f758939acb6f12687bff1995a853",
-        "revision": 6,
+        "content_sha256": "4a8d56b682d1ba6b29fbfeef7a8557ade34a4bafad89ef4f0aaf790f509be57a",
+        "revision": 7,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
       "decision_update": "撤回COMPONENTS/4直接推进阶段三建议；当前PARTIAL，阶段二继续。",
-      "execution_scope_this_turn": "EX009公开指数权限/覆盖实测、市场增量与强基线/阈值/直接机制反证；1次上游、无账户。",
-      "judgment_update": "不因新源可得或模型局部显著而收口；保留线索与有效负面结果。当前广义市场代理不足不证明损失来自公司。",
-      "priority_question": "剩余隔夜亏损是否仍是行业共同因素，何种已知条件可提供超越股票与广义市场的净收益增量？",
-      "recommended_minimum_design": "同窗口000813.SH固定行业价格代理，获批后先用公开DFLS实测权限覆盖，再验市场+行业相对市场单因子及强股票控制。",
-      "result": "1642完整通过；3日市场排序有正向线索但强基线/集中度反证不足；2025低开修复隔夜损失大部分仍是当前beta代理残差。",
-      "reviewed_commit": "8a71392e",
+      "execution_scope_this_turn": "同化工指数代码核验与完整覆盖、市场行业双因素、前一日行业及滞后自身控制；3次源调用，无账户。",
+      "judgment_update": "当前行业价格代理未回答关键亏损解释，但不证明公司原因或所有行业信息无效。保留正向与反证，不按实验数或单一置信门收口。",
+      "priority_question": "决策前可知的公司披露信息能否区分持续负面重定价与暂时修复？先验证事件目录、权限与真实发布时间。",
+      "recommended_minimum_design": "先核验600722.SH同周期公告anns_d及原始披露时间，最多剩余2次；不先实现平台、不做新事件收益分析。",
+      "result": "1642完整；2025市场+行业后段代理为正、损失残差未缩小；滞后行业局部线性增量在直接股票滞后控制后减弱，未确认新收益入场。",
+      "reviewed_commit": "d19738f9",
       "reviewed_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "aa59215cf9e10784a393b047b5484c792855f758939acb6f12687bff1995a853",
-        "revision": 6,
+        "content_sha256": "4a8d56b682d1ba6b29fbfeef7a8557ade34a4bafad89ef4f0aaf790f509be57a",
+        "revision": 7,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
       "routing": {
-        "primary": "阶段二：行业/公司共同因素辨别与净收益用途",
-        "stage_three": "未批准且当前不建议进入"
+        "primary": "阶段二：公司信息可得性与可证伪机制",
+        "stage_three": "当前不建议且未批准"
       },
-      "routing_after_result": "阶段二继续，最小行业代理范围待批准；既有范围暂不重复扫描。",
-      "verified": "COMPONENTS/6 PARTIAL/FULL/PASS；34项检查，全部主要/补充模型与144个比较复算。"
+      "routing_after_result": "公告上游可行性仅提案，待批准；不再无新问题地追加同类指数。",
+      "verified": "COMPONENTS/7 PARTIAL/FULL/PASS；40项检查、184模型和134比较复算及427现金分解。"
     },
     "mandate": {
       "batch": {
@@ -153,13 +197,13 @@
       "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool."
     },
     "pending": [
-      "000813.SH同窗口日线，行业价格代理；未批准、未取数。"
+      "600722.SH同窗口公司公告上游权限、事件覆盖和真实披露时间核验；最多剩余2次，未批准未查询。"
     ],
     "phase_three_approved": false,
     "phase_three_ready": false,
     "phase_two_complete": false,
     "ready": true,
-    "remaining_source_calls": 5,
+    "remaining_source_calls": 2,
     "research_window": {
       "confirmation": "CONFIRMED_BY_CURRENT_USER",
       "end": "2026-10-15",
@@ -169,9 +213,9 @@
       "initial_hours": 2,
       "max_workers": 2,
       "native_threads_per_worker": 1,
-      "remaining_source_calls": 5
+      "remaining_source_calls": 2
     },
-    "stage": "阶段二进行中：上证指数核验与机制反证已交付，行业价格代理扩展待批准",
+    "stage": "阶段二进行中：化工指数检验与反证完成，公告上游可行性核验待批准",
     "strategy_accounts": 0,
     "supported_components": 2,
     "supported_return_entry_components": 0
@@ -182,5 +226,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T01:36:39+08:00"
+  "updated_at": "2026-10-17T18:18:53+08:00"
 }

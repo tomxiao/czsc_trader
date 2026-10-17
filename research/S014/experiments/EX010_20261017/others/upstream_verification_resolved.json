@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "request": {
+    "dataset": "index.domestic_daily",
+    "symbol": "000813.CSI",
+    "start": "2020-01-01",
+    "end": "2026-10-15",
+    "required_cutoff": "2026-10-15"
+  },
+  "policy": "REFRESH",
+  "call_cap": 3,
+  "verified_at": "2026-10-17T10:07:25.017920+00:00",
+  "availability_limit": "T completed market close assumed; source publication and revision history not proven.",
+  "prepare_status": "READY",
+  "reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "484770f0-41ee-4e7d-aa20-656703281e1e",
+    "manifest_sha256": "7298b5a5b8eeb8a7917dead1c7c1b5700ef3074707f8282618cde530948dd5d1"
+  },
+  "identity": {
+    "dataset": "index.domestic_daily",
+    "source": "tushare",
+    "symbol": "000813.CSI",
+    "data_start": "2020-01-02T00:00:00",
+    "data_cutoff": "2026-10-15T00:00:00",
+    "content_sha256": "c5bc6462bd5e2f43065324f1c9de99eedb6650d15b5a16e480b3e65b3ebc1cc7",
+    "metadata": {
+      "vendor": "tushare",
+      "vendor_symbol": "000813.CSI",
+      "frequency": "daily",
+      "primary_key": [
+        "Date"
+      ],
+      "percent_change_unit": "decimal_return",
+      "availability_rule": "current session after market close",
+      "source_time_field": "Date",
+      "availability_time_field": "Date",
+      "source_calendar": "SOURCE_NATIVE",
+      "available_at": "current session after market close",
+      "request_range_policy": "EXACT",
+      "provider_binding": "index.domestic_daily",
+      "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+      "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+      "data_contract_version": 1
+    }
+  },
+  "rows": 1642,
+  "fields": [
+    "Date",
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "PreviousClose",
+    "Change",
+    "PercentChange",
+    "Volume",
+    "Amount"
+  ],
+  "checks": {
+    "live_account_access": true,
+    "source_symbol": true,
+    "unique_dates": true,
+    "exact_calendar": true,
+    "expected1642": true,
+    "finite": true,
+    "positive_prices": true,
+    "nonnegative_activity": true,
+    "ohlc_bounds": true,
+    "previous_close_continuity": true,
+    "change_identity": true,
+    "percent_change_identity": true
+  },
+  "missing_dates": [],
+  "extra_dates": [],
+  "source_calls": [
+    {
+      "ordinal": 1,
+      "api": "index_daily",
+      "symbol": "000813.SH",
+      "start_date": "20200101",
+      "end_date": "20261015"
+    },
+    {
+      "api": "index_basic",
+      "symbol": "000813",
+      "market": "CSI"
+    },
+    {
+      "ordinal": 1,
+      "api": "index_daily",
+      "symbol": "000813.CSI",
+      "start_date": "20200101",
+      "end_date": "20261015"
+    }
+  ],
+  "source_calls_used": 3,
+  "remaining_source_calls": 2
+}
