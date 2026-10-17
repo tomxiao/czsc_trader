@@ -1,0 +1,47 @@
+{
+  "authorization": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX017_20261017"
+    },
+    "evidence_id": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14.json",
+    "sha256": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14",
+    "media_type": "application/json",
+    "name": "prewindow-authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "records": [
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-12-01",
+        "end": "2019-12-31",
+        "required_cutoff": "2019-12-31",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "errors": []
+    }
+  ],
+  "calls": [
+    {
+      "number": 1,
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20191201",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    }
+  ],
+  "status": "INCOMPLETE"
+}

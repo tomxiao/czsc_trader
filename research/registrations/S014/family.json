@@ -3,6 +3,7 @@
   "created_by": "RSCH",
   "name": "金牛化工A股个股技术可行性试点",
   "research_intent": {
+    "all_targets_pass_count": 0,
     "announcement_feasibility": {
       "access": "PERMISSION_DENIED",
       "coverage": "UNVERIFIED",
@@ -264,6 +265,16 @@
       "No reading other research batches' data",
       "No merge or push authorization for this branch"
     ],
+    "candidates": {
+      "batch": {
+        "strategy_id": "S014",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "6665385684794f8582b19fbc994d9d0a78569b37b0f26d8d941f17605236b9a9",
+      "revision": 1,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
     "component_definitions": 26,
     "components": {
       "batch": {
@@ -275,7 +286,7 @@
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "阶段二完成并建议推进阶段三：保留26定义及2辅助/1环境参考，以原年度因果状态构建环境与期限四对照；早期反例和选择局限公开，未验证账户或年度绩效。",
+    "conclusion": "四方案连续账户对照已完成，全部满足全期频率，0个满足所有年度收益与回撤目标。高环境筛选存在全期改善，但年度不稳；低环境缩短至1天未稳定改善高环境单独交易。建议保留阶段三，先定位上涨覆盖缺口与持仓亏损，不进入阶段四。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -450,8 +461,9 @@
       "original_pdfs": 32
     },
     "pending": [
-      "待用户确认最小2019预窗口及最多15次补数额度；已批准阶段三四方案，无需重复批准阶段推进。"
+      "根据四方案账户证据决定继续阶段三优化或回退阶段二；不自动进入阶段四。"
     ],
+    "phase_four_approved": false,
     "phase_three_approved": true,
     "phase_three_proposal": {
       "calibration": "EX016 src/annual_followup.py::calibrate + EX013 src/component.py::gap_sequence_context",
@@ -481,7 +493,7 @@
     "phase_three_ready": true,
     "phase_two_complete": true,
     "ready": true,
-    "remaining_source_calls": 0,
+    "remaining_source_calls": 7,
     "research_window": {
       "confirmation": "CONFIRMED_BY_CURRENT_USER",
       "end": "2026-10-15",
@@ -493,7 +505,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段三：四方案连续账户对照",
+    "stage": "阶段三四方案账户对照完成，待用户决定后续研究",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -504,7 +516,7 @@
       "verbatim": "同意进入阶段三，按这四种方案做连续账户对照，保持费用、执行约定和年度目标不变，你自主推进，我看结果。"
     },
     "stage_three_preparation": {
-      "actual_account_runs": 0,
+      "actual_account_runs": 4,
       "checks": 37,
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -553,9 +565,40 @@
         "proposed_call_cap": 15,
         "stock_hfq_and_raw": "经日历/状态确认的前一可交易日"
       },
-      "status": "PREPARATION_COMPLETE_AWAITING_PREWINDOW_AUTHORIZATION"
+      "status": "ACCOUNT_COMPARISON_COMPLETE"
     },
-    "strategy_accounts": 0,
+    "stage_three_prewindow_authorization": {
+      "actual_calls": 8,
+      "actual_http_call_cap": 15,
+      "calendar_and_status": [
+        "2019-12-01",
+        "2019-12-31"
+      ],
+      "evaluation": [
+        "2020-01-01",
+        "2026-10-15"
+      ],
+      "evidence": {
+        "evidence_id": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14.json",
+        "experiment": {
+          "experiment_id": "EX017_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "prewindow-authorization",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14",
+        "type": "EvidenceRef"
+      },
+      "fees_and_execution_and_targets": "unchanged",
+      "prices": "Only last tradable prewindow day, HFQ and raw",
+      "remaining_calls": 7,
+      "status": "COMPLETE",
+      "user_reply": "同意补齐，最多15次调用"
+    },
+    "strategy_accounts": 4,
     "supported_components": 3,
     "supported_return_context_components": 1,
     "supported_return_entry_components": 0
@@ -566,5 +609,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T23:03:35+08:00"
+  "updated_at": "2026-10-17T23:27:55+08:00"
 }

@@ -1,0 +1,581 @@
+{
+  "authorization": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX017_20261017"
+    },
+    "evidence_id": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14.json",
+    "sha256": "0a1829fcd0ef11573d562b4d410b4c50438a059153bc78a0c7904e732a513a14",
+    "media_type": "application/json",
+    "name": "prewindow-authorization",
+    "schema": null,
+    "schema_version": null
+  },
+  "records": [
+    {
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2019-12-01",
+        "end": "2019-12-31",
+        "required_cutoff": "2019-12-31",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "errors": [],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "fd739634-9c39-44b4-9ec9-04238d169937",
+        "manifest_sha256": "1365414f5a5e468111e7d3a3715a0c0eaefc53cef34a3a19fa65aaf3bdd3a3c7"
+      },
+      "identity": {
+        "content_sha256": "2097fd979cf6ef659b0751cbabadaddb76251bf9afd3290172b6b336a8c48b1e",
+        "metadata": {
+          "vendor": "tushare",
+          "exchange": "SSE",
+          "frequency": "daily",
+          "primary_key": [
+            "Date"
+          ],
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "source_calendar": "SSE",
+          "available_at": "SOURCE_PERIOD_CLOSE",
+          "request_range_policy": "EXACT",
+          "provider_binding": "calendar.trading_sessions",
+          "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "data_contract_version": 1
+        }
+      },
+      "rows": 31
+    },
+    {
+      "request": {
+        "dataset": "security.trading_status",
+        "symbol": "600722.SH",
+        "start": "2019-12-01",
+        "end": "2019-12-31",
+        "required_cutoff": "2019-12-31",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "errors": [],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "08120aac-30d3-4384-940e-d98a285a0613",
+        "manifest_sha256": "53f63c4c883b7f282dd6db6f7c9415df19560f5b96d9016645049c6b875facd8"
+      },
+      "identity": {
+        "content_sha256": "a78abb26584764e4498ed4364174a70591602e3cd733b1cb46f7c2b5675349ea",
+        "metadata": {
+          "vendor": "tushare",
+          "source_calendar": "SSE",
+          "daily_session_coverage": {
+            "source": "trade_cal",
+            "exchange": "SSE",
+            "start_date": "2019-12-01",
+            "end_date": "2019-12-31",
+            "listing_date": "1996-06-26",
+            "listing_source": "stock_basic",
+            "verified_sessions": 22,
+            "expected_dates": [
+              "2019-12-02",
+              "2019-12-03",
+              "2019-12-04",
+              "2019-12-05",
+              "2019-12-06",
+              "2019-12-09",
+              "2019-12-10",
+              "2019-12-11",
+              "2019-12-12",
+              "2019-12-13",
+              "2019-12-16",
+              "2019-12-17",
+              "2019-12-18",
+              "2019-12-19",
+              "2019-12-20",
+              "2019-12-23",
+              "2019-12-24",
+              "2019-12-25",
+              "2019-12-26",
+              "2019-12-27",
+              "2019-12-30",
+              "2019-12-31"
+            ],
+            "calendar": [
+              {
+                "Date": "2019-12-01",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-02",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-03",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-04",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-05",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-06",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-07",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-08",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-09",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-10",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-11",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-12",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-13",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-14",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-15",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-16",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-17",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-18",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-19",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-20",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-21",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-22",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-23",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-24",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-25",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-26",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-27",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-28",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-29",
+                "is_open": 0
+              },
+              {
+                "Date": "2019-12-30",
+                "is_open": 1
+              },
+              {
+                "Date": "2019-12-31",
+                "is_open": 1
+              }
+            ],
+            "calendar_sha256": "f12921e1d7843e18959bdb2970ab5e6814a036c76a216d133766811e3b32182c",
+            "suspended_dates": [],
+            "suspension_evidence": []
+          },
+          "available_at": "historical session status; publication time unverified",
+          "source_publication_timestamp_verified": false,
+          "historical_revision_history_verified": false,
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "request_range_policy": "EXACT",
+          "provider_binding": "security.trading_status",
+          "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "data_contract_version": 1
+        }
+      },
+      "rows": 22
+    },
+    {
+      "request": {
+        "dataset": "stock.ohlcv",
+        "symbol": "600722.SH",
+        "start": "2019-12-31",
+        "end": "2019-12-31",
+        "required_cutoff": "2019-12-31",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "errors": [],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "fb3a5b1f-be82-432b-9668-00b44f879f1f",
+        "manifest_sha256": "f1d3358588f3d3946007b4b2872bd2b4681ce9f403e488ff779b19edaa3998f7"
+      },
+      "identity": {
+        "content_sha256": "878c990d073588ee345dc3877183e600dc0227e4937a3fcbc9851d9cd39f88ac",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "600722.SH",
+          "period": "daily",
+          "asset_type": "stock",
+          "daily_session_coverage": {
+            "source": "trade_cal",
+            "exchange": "SSE",
+            "start_date": "2019-12-31",
+            "end_date": "2019-12-31",
+            "listing_date": "1996-06-26",
+            "listing_source": "stock_basic",
+            "verified_sessions": 1,
+            "expected_dates": [
+              "2019-12-31"
+            ],
+            "calendar": [
+              {
+                "Date": "2019-12-31",
+                "is_open": 1
+              }
+            ],
+            "calendar_sha256": "9dcf2a6453e68fd084ef61198b52278ed9160b12710223b38203cf65ce0ee734",
+            "suspended_dates": [],
+            "suspension_evidence": []
+          },
+          "ohlcv_quality_evidence": {
+            "version": 1,
+            "frequency": "daily",
+            "reference_daily_sha256": "fb2d897f10d0e2338ecc53e8dff951e8ac6288321dd246cff753ed212c6b8d8f",
+            "price_tolerance": 0.005,
+            "volume_relative_tolerance": 1e-05,
+            "amount_relative_tolerance": 1e-05,
+            "sessions": {
+              "2019-12-31": {
+                "daily_complete": true,
+                "daily_accurate": true,
+                "daily_fields": [],
+                "daily_values": {
+                  "Open": 4.73,
+                  "High": 4.78,
+                  "Low": 4.72,
+                  "Close": 4.74,
+                  "Volume": 4527890.0,
+                  "Amount": 21512812.0
+                },
+                "daily_vwap": 4.751178142578552,
+                "daily_low": 4.72,
+                "daily_high": 4.78
+              }
+            },
+            "market": "a_share",
+            "observation_sha256": {
+              "2019-12-31T00:00:00": "948f0cb4bddc143e31bd9e9b9d82252f1b0edf27198f22f7a89532140de88ebb"
+            },
+            "publication_adjustment": "hfq"
+          },
+          "adjustment": "hfq",
+          "adjustment_factor_source": "adj_factor",
+          "adjustment_factor_sha256": "cc8a83968d24cded9f1f103cad049cfb3ba7228fd381375c07418e692c8d4740",
+          "adjustment_factor_publication_schedule": "trade day 09:15-09:20 Asia/Shanghai",
+          "adjustment_factor_publication_timestamp_verified": false,
+          "adjustment_factor_revision_history_verified": false,
+          "availability_time_field": "AvailableDate",
+          "available_at": "intraday bar close or daily 17:00 Asia/Shanghai conservative; historical publication unverified",
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1
+          },
+          "source_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "request_range_policy": "EXACT",
+          "provider_binding": "stock.ohlcv",
+          "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "data_contract_version": 1,
+          "ohlcv_quality": {
+            "version": 1,
+            "total_sessions": 1,
+            "daily": {
+              "complete_sessions": 1,
+              "accurate_sessions": 1,
+              "completeness": 1.0,
+              "accuracy": 1.0,
+              "minimum_accuracy": 0.99,
+              "incomplete_dates": [],
+              "inaccurate_dates": []
+            }
+          }
+        }
+      },
+      "rows": 1
+    },
+    {
+      "request": {
+        "dataset": "stock.unadjusted_daily",
+        "symbol": "600722.SH",
+        "start": "2019-12-31",
+        "end": "2019-12-31",
+        "required_cutoff": "2019-12-31",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "status": "READY",
+      "errors": [],
+      "reference": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "1734640b-a86d-4272-a02e-c22bfc475370",
+        "manifest_sha256": "c7800b06371b6baf98ba4b2b25f21ef1f6170b01e16d8fd83d2e17dd9df9e26c"
+      },
+      "identity": {
+        "content_sha256": "cfd7640274c17554232d0ef890ded1459e3a4100a0e66cd0656b134c47cb8ea7",
+        "metadata": {
+          "vendor": "tushare",
+          "market": "a_share",
+          "vendor_symbol": "600722.SH",
+          "period": "daily",
+          "asset_type": "stock",
+          "adjustment": "none",
+          "daily_session_coverage": {
+            "source": "trade_cal",
+            "exchange": "SSE",
+            "start_date": "2019-12-31",
+            "end_date": "2019-12-31",
+            "listing_date": "1996-06-26",
+            "listing_source": "stock_basic",
+            "verified_sessions": 1,
+            "expected_dates": [
+              "2019-12-31"
+            ],
+            "calendar": [
+              {
+                "Date": "2019-12-31",
+                "is_open": 1
+              }
+            ],
+            "calendar_sha256": "9dcf2a6453e68fd084ef61198b52278ed9160b12710223b38203cf65ce0ee734",
+            "suspended_dates": [],
+            "suspension_evidence": []
+          },
+          "ohlcv_quality_evidence": {
+            "version": 1,
+            "frequency": "daily",
+            "reference_daily_sha256": "fb2d897f10d0e2338ecc53e8dff951e8ac6288321dd246cff753ed212c6b8d8f",
+            "price_tolerance": 0.005,
+            "volume_relative_tolerance": 1e-05,
+            "amount_relative_tolerance": 1e-05,
+            "sessions": {
+              "2019-12-31": {
+                "daily_complete": true,
+                "daily_accurate": true,
+                "daily_fields": [],
+                "daily_values": {
+                  "Open": 4.73,
+                  "High": 4.78,
+                  "Low": 4.72,
+                  "Close": 4.74,
+                  "Volume": 4527890.0,
+                  "Amount": 21512812.0
+                },
+                "daily_vwap": 4.751178142578552,
+                "daily_low": 4.72,
+                "daily_high": 4.78
+              }
+            },
+            "market": "a_share",
+            "observation_sha256": {
+              "2019-12-31T00:00:00": "fa3fe808726b0ef145ffa58c11b12e402915be9a20d1c09e54212d0a163df651"
+            },
+            "publication_adjustment": "none"
+          },
+          "validation": {
+            "status": "PASS",
+            "findings": [],
+            "row_count": 1
+          },
+          "source_time_field": "Date",
+          "availability_time_field": "Date",
+          "source_calendar": "SOURCE_NATIVE",
+          "available_at": "SOURCE_PERIOD_CLOSE",
+          "request_range_policy": "EXACT",
+          "provider_binding": "stock.unadjusted_daily",
+          "provider_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "dfls_revision": "fbfe77331b101a321f6fbd57ab741456901ea7d1c5acf7981ad2961225515be6",
+          "data_contract_version": 1,
+          "ohlcv_quality": {
+            "version": 1,
+            "total_sessions": 1,
+            "daily": {
+              "complete_sessions": 1,
+              "accurate_sessions": 1,
+              "completeness": 1.0,
+              "accuracy": 1.0,
+              "minimum_accuracy": 0.99,
+              "incomplete_dates": [],
+              "inaccurate_dates": []
+            }
+          }
+        }
+      },
+      "rows": 1
+    }
+  ],
+  "calls": [
+    {
+      "number": 1,
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20191201",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 2,
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20191201",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 3,
+      "api": "stock_basic",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 4,
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20191201",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 5,
+      "api": "suspend_d",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20191202",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 6,
+      "api": "daily",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20191231",
+        "end_date": "20191231",
+        "offset": null,
+        "limit": null,
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 7,
+      "api": "adj_factor",
+      "parameters": {
+        "ts_code": "600722.SH",
+        "start_date": "20191231",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    },
+    {
+      "number": 8,
+      "api": "trade_cal",
+      "parameters": {
+        "exchange": "SSE",
+        "start_date": "20191231",
+        "end_date": "20191231",
+        "ts_type_name": "http://api.waditu.com/dataapi"
+      },
+      "status": "RETURNED",
+      "http_status": 200
+    }
+  ],
+  "status": "READY"
+}
