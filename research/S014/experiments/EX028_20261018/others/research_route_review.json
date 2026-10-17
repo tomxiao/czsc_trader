@@ -1,0 +1,370 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_upstream_calls": 0,
+  "source_sha256": {
+    "research/S014/experiments/EX028_20261018/others/account_results.json": "f13d5cdf4f9576fed60bcc459a17bf4270b90497a6214014d86b60fed98354bf",
+    "research/S014/experiments/EX028_20261018/others/annual_comparison.csv": "116268c0d170a4547ecbf61a0963cf79a38d4a2d9a0d57008594f59c746896eb",
+    "research/S014/experiments/EX028_20261018/others/path_diagnostics.json": "028cc96b0ceec6423709ecd96ec35e39d346496dd09332449ec28cfae9ee1bd5",
+    "research/S014/experiments/EX027_20261018/others/reservation_state_diagnostics.json": "f724283e449b079e1db705f06242d37d52b9d14839e56dcaaf3a047afab58af2",
+    "research/S014/experiments/EX027_20261018/others/capacity_review.json": "92af0d11331784d53aa2957eace93b48919a44f8ef8c68ae3a0da01357037fd7"
+  },
+  "uniform_horizon_decision": "End uniform horizon expansion. H15 B/R/P all fail original targets and each total return is below its correspondingH10. R15 improves2022 but sacrifices2020/2021/2025. H18 is frequency-excluded. No neighboring integer scan or year-based switch is justified.",
+  "economic_summary": [
+    {
+      "variant": "support_entry_H10",
+      "total_return": 4.416045839999995,
+      "annual_return_pass_count": 3,
+      "annual_drawdown_pass_count": 5,
+      "closed_trades": 137
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "total_return": 7.087224249999997,
+      "annual_return_pass_count": 4,
+      "annual_drawdown_pass_count": 7,
+      "closed_trades": 138
+    },
+    {
+      "variant": "support_first_profit_exit_H10",
+      "total_return": 7.118778269999996,
+      "annual_return_pass_count": 3,
+      "annual_drawdown_pass_count": 6,
+      "closed_trades": 137
+    },
+    {
+      "variant": "support_entry_H15",
+      "total_return": 1.3619338000000023,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 3,
+      "closed_trades": 96
+    },
+    {
+      "variant": "support_exit_reserve_H15",
+      "total_return": 0.32446215999999994,
+      "annual_return_pass_count": 1,
+      "annual_drawdown_pass_count": 6,
+      "closed_trades": 97
+    },
+    {
+      "variant": "support_first_profit_exit_H15",
+      "total_return": 2.1567026000000014,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 6,
+      "closed_trades": 96
+    }
+  ],
+  "path_evidence": [
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H10",
+      "changed": "support_entry_H15",
+      "cycle_log_contributions": {
+        "matched": -0.07965428177385205,
+        "left_only": -2.3216518263035404,
+        "right_only": 1.5714207989790294
+      },
+      "counts": {
+        "matched": 17,
+        "left_only": 121,
+        "right_only": 80
+      },
+      "total_cycle_log_difference": -0.8298853090983629,
+      "actual_nav_log_difference": -0.8298853090983622,
+      "absolute_decomposition_error": 6.661338147750939e-16
+    },
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_exit_reserve_H10",
+      "changed": "support_exit_reserve_H15",
+      "cycle_log_contributions": {
+        "matched": -0.020541995809303472,
+        "left_only": -2.6249595460924984,
+        "right_only": 0.8362224385334074
+      },
+      "counts": {
+        "matched": 17,
+        "left_only": 121,
+        "right_only": 80
+      },
+      "total_cycle_log_difference": -1.8092791033683941,
+      "actual_nav_log_difference": -1.8092791033683944,
+      "absolute_decomposition_error": 2.220446049250313e-16
+    },
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_first_profit_exit_H10",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": -0.09922081216316207,
+        "left_only": -2.715173621836575,
+        "right_only": 1.8697427522867236
+      },
+      "counts": {
+        "matched": 17,
+        "left_only": 121,
+        "right_only": 80
+      },
+      "total_cycle_log_difference": -0.9446516817130137,
+      "actual_nav_log_difference": -0.9446516817130133,
+      "absolute_decomposition_error": 4.440892098500626e-16
+    },
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H15",
+      "changed": "support_exit_reserve_H15",
+      "cycle_log_contributions": {
+        "matched": -0.578474230236268,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 97,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": -0.578474230236268,
+      "actual_nav_log_difference": -0.5784742302362689,
+      "absolute_decomposition_error": 8.881784197001252e-16
+    },
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H15",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": 0.2900473114941001,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 97,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": 0.2900473114941001,
+      "actual_nav_log_difference": 0.29004731149409846,
+      "absolute_decomposition_error": 1.6653345369377348e-15
+    },
+    {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "baseline": "support_exit_reserve_H15",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": 0.868521541730368,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 97,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": 0.868521541730368,
+      "actual_nav_log_difference": 0.8685215417303673,
+      "absolute_decomposition_error": 6.661338147750939e-16
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H10",
+      "changed": "support_entry_H15",
+      "cycle_log_contributions": {
+        "matched": -0.06923398341955472,
+        "left_only": -1.223763654045489,
+        "right_only": 0.3562620758378678
+      },
+      "counts": {
+        "matched": 14,
+        "left_only": 108,
+        "right_only": 72
+      },
+      "total_cycle_log_difference": -0.9367355616271761,
+      "actual_nav_log_difference": -0.9367355616271754,
+      "absolute_decomposition_error": 6.661338147750939e-16
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_exit_reserve_H10",
+      "changed": "support_exit_reserve_H15",
+      "cycle_log_contributions": {
+        "matched": -0.022219971065464368,
+        "left_only": -1.2088544035999176,
+        "right_only": -0.32169302005513617
+      },
+      "counts": {
+        "matched": 14,
+        "left_only": 108,
+        "right_only": 72
+      },
+      "total_cycle_log_difference": -1.552767394720518,
+      "actual_nav_log_difference": -1.5527673947205185,
+      "absolute_decomposition_error": 4.440892098500626e-16
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_first_profit_exit_H10",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": -0.08835836983205439,
+        "left_only": -1.5777555012809112,
+        "right_only": 0.7272841607553924
+      },
+      "counts": {
+        "matched": 14,
+        "left_only": 108,
+        "right_only": 72
+      },
+      "total_cycle_log_difference": -0.9388297103575732,
+      "actual_nav_log_difference": -0.9388297103575729,
+      "absolute_decomposition_error": 3.3306690738754696e-16
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H15",
+      "changed": "support_exit_reserve_H15",
+      "cycle_log_contributions": {
+        "matched": -0.6914073036936825,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 86,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": -0.6914073036936825,
+      "actual_nav_log_difference": -0.6914073036936834,
+      "absolute_decomposition_error": 8.881784197001252e-16
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_entry_H15",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": 0.36327119998871565,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 86,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": 0.36327119998871565,
+      "actual_nav_log_difference": 0.3632711999887146,
+      "absolute_decomposition_error": 1.0547118733938987e-15
+    },
+    {
+      "window": "WITHOUT2026",
+      "entry_cohort": "ALL",
+      "baseline": "support_exit_reserve_H15",
+      "changed": "support_first_profit_exit_H15",
+      "cycle_log_contributions": {
+        "matched": 1.0546785036823985,
+        "left_only": 0.0,
+        "right_only": 0.0
+      },
+      "counts": {
+        "matched": 86,
+        "left_only": 0,
+        "right_only": 0
+      },
+      "total_cycle_log_difference": 1.0546785036823985,
+      "actual_nav_log_difference": 1.054678503682398,
+      "absolute_decomposition_error": 4.440892098500626e-16
+    }
+  ],
+  "next_question": {
+    "recommendation": "One two-sided conditional-reservation falsification is justified by a distinct unresolved capital-path question, not by remaining budget.",
+    "mechanism": "Keep every R support-break early SELL unchanged. At the first strictly early SELL decision, classify known P=decisionClose/(actualBUYfill*1.001)-1. One account preserves originalE+10 reentry reservation only whenP>0; the complementary account preserves it only whenP<=0. The other state permits fresh support entry after actualSELL.",
+    "controls": "Reuse original C35 no-reservation and R56 all-reservation accounts. Existing P-exit accounts change whether to SELL; this question changes only the wait after the same support-break SELL.",
+    "causal_contract": "Classify once at the first early decision, before knowing future actualSELL price; freeze selection through blockedSELL. Deadline-only exits do not create an earlier reentry opportunity. If actualSELL occurs afterE+10, fresh entry may be planned at that sale close under either condition. EqualP belongs to nonpositive.",
+    "value": "C/R endpoint accounts demonstrate that waiting changes opportunity replacement. The proposed binary state is already defined and known at decision close, avoiding an additional threshold search. Complete accounts answer the changed-path question that matched windows cannot.",
+    "limitations": "No evidence presently establishes the state as effective. Only46 complete common C/R windows,6 positiveP;56 of103 R early exits are unmatched. Both orientations are hypotheses, not prior winners.",
+    "refutation": "If neither conditional policy improves the original target-relevant gaps, stop this reservation classification route; do not subdivide P, tune a threshold, or choose by calendar year. Preserve every failure.",
+    "no_new_gate": "Tail concentration, median signs and sample counts guide interpretation only; original user annual return,drawdown and full-windowfrequency remain the acceptance criteria."
+  },
+  "state_coverage": {
+    "R_early_exits": 103,
+    "matched_same_entry_and_exit": 47,
+    "unmatched_R_early_exits": 56,
+    "R_positive_early_exits": 15,
+    "matched_positive_early_exits": 6,
+    "complete_reservation_windows": 46,
+    "right_censored_windows": 1,
+    "windows_with_C_position_at_reservation_close": 35
+  },
+  "state_summaries": [
+    {
+      "window": "COMPLETE_WINDOWS",
+      "positive_mark": false,
+      "n": 40,
+      "reentered_windows": 40,
+      "reentry_count": 60,
+      "open_at_reservation_close": 30,
+      "mean_return": 0.0024525673092398725,
+      "median_return": -0.011214705207259756,
+      "positive_return_n": 15,
+      "negative_return_n": 25,
+      "zero_return_n": 0,
+      "window_log_sum": 0.02779504714068648,
+      "mean_remove_top3": -0.01151661956229339
+    },
+    {
+      "window": "COMPLETE_WINDOWS",
+      "positive_mark": true,
+      "n": 6,
+      "reentered_windows": 6,
+      "reentry_count": 7,
+      "open_at_reservation_close": 5,
+      "mean_return": -0.011619265534810205,
+      "median_return": 0.0004321726995357711,
+      "positive_return_n": 3,
+      "negative_return_n": 3,
+      "zero_return_n": 0,
+      "window_log_sum": -0.07198795888110911,
+      "mean_remove_top3": -0.031552523583724734
+    },
+    {
+      "window": "RESERVATION_CLOSE_BEFORE2026",
+      "positive_mark": false,
+      "n": 35,
+      "reentered_windows": 35,
+      "reentry_count": 52,
+      "open_at_reservation_close": 25,
+      "mean_return": 0.004426132077735748,
+      "median_return": -0.007993281911981676,
+      "positive_return_n": 14,
+      "negative_return_n": 21,
+      "zero_return_n": 0,
+      "window_log_sum": 0.10570848938799987,
+      "mean_remove_top3": -0.008340596707486499
+    },
+    {
+      "window": "RESERVATION_CLOSE_BEFORE2026",
+      "positive_mark": true,
+      "n": 5,
+      "reentered_windows": 5,
+      "reentry_count": 5,
+      "open_at_reservation_close": 5,
+      "mean_return": -0.003727546746337018,
+      "median_return": 0.00493663812249423,
+      "positive_return_n": 3,
+      "negative_return_n": 2,
+      "zero_return_n": 0,
+      "window_log_sum": -0.01955943143693904,
+      "mean_remove_top3": -0.021789855636999034
+    }
+  ],
+  "account_audit_note": "This route reads completed result/path arithmetic; formal EX028 independent actual-ledger audit remains a separate delivery."
+}

@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "scope": "Read-only independent opportunity table and longest-path proof verification; no new account or upstream",
+  "input_rows_independently_verified": 1642,
+  "eligible_dates": 1202,
+  "independent_algorithm": "Longest compatible-entry path ending at each eligible completed cycle, enumerating all previous compatible nodes rather than earliest-entry greedy",
+  "results": [
+    {
+      "horizon": 15,
+      "mode": "fixed_exit",
+      "independent_max_closed": 96,
+      "frequency_upper": 3.507917174177832
+    },
+    {
+      "horizon": 15,
+      "mode": "reserved_optimistic_early_exit",
+      "independent_max_closed": 97,
+      "frequency_upper": 3.544457978075518
+    },
+    {
+      "horizon": 18,
+      "mode": "fixed_exit",
+      "independent_max_closed": 80,
+      "frequency_upper": 2.92326431181486
+    },
+    {
+      "horizon": 18,
+      "mode": "reserved_optimistic_early_exit",
+      "independent_max_closed": 81,
+      "frequency_upper": 2.9598051157125456
+    }
+  ],
+  "proof_review": [
+    "Eligible entries relax cash/lot/reset restrictions and allow arbitrary skipped days, so every actual permitted entry remains included.",
+    "For each fixed entry an earlier legal sell cannot delay future entry under max(E+H+1,sell+1); any real path maps to a feasible relaxed path with at least as many closed cycles.",
+    "Reserved early model permits arbitrary E+1 earliest sell regardless of support/P, so upper bound applies to both R/P; fixed model begins sell at E+H.",
+    "Beyond-window unsold cycles excluded; all witness entries and public exit times fit the evaluated window.",
+    "H18 bound80/81<83 excludes uniform H18 under unchanged entry/reservation/execution. H15 bound96/97>=83 does not establish an actual feasible strategy path, real frequency or return.",
+    "Does not exclude mixed/conditional horizons or changed reservation; no economics or candidate registration performed."
+  ],
+  "source_sha256": {
+    "research/S014/experiments/EX027_20261018/src/capacity_upper_bound.py": "2c4533799f813f87a5cd4fbb5357aeb51dff7ec2a9333725fb370b11bc8814f6",
+    "research/S014/experiments/EX027_20261018/others/capacity_upper_bound.json": "7696fe773e20d2d81e0de61533b069fcfaf0768369f27139011841fa2fe04c81",
+    "research/S014/experiments/EX027_20261018/others/capacity_opportunities.csv": "cfcdb99e61cf7949d06b8291747834a9c1d1710b41e45b5442053ffa010658a0"
+  },
+  "new_accounts": 0,
+  "upstream_calls": 0
+}

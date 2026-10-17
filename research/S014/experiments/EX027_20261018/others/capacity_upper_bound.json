@@ -1,0 +1,2215 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_trials": 0,
+  "upstream_calls": 0,
+  "synthetic_exhaustive_checks": 1025,
+  "evaluation_sessions": 1642,
+  "first_possible_entry_session": 61,
+  "eligible_buy_dates": 1202,
+  "prepared_reference": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+    "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+  },
+  "source_sha256": {
+    "research/S014/experiments/EX027_20261018/src/capacity_upper_bound.py": "2c4533799f813f87a5cd4fbb5357aeb51dff7ec2a9333725fb370b11bc8814f6",
+    "research/S014/experiments/EX027_20261018/src/strategy_runtime/strategies/repair.py": "54aca40976d5427f6f2e5c90a808cb55c25dc570ba7054ddf106e23308ab9d1d",
+    "research/S014/experiments/EX017_20261017/src/audit_accounts.py": "c17e12b988812d1ff4a8613a552de44c6e7de3e8688f330a14aa248f1b9131a7",
+    "research/S014/experiments/EX017_20261017/src/pinned_inputs.py": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84",
+    "research/S014/experiments/EX025_20261018/others/frequency_feasibility.json": "8e362ba6aa085b92b0d8d3a034f809ab24ce50b505e435c703e2a784139d042c"
+  },
+  "input_canonical_csv_sha256": {
+    "stock.ohlcv": "6ce13e368773a1a54f5cbeb8cc3c6cb9eab69ec37c7e0feb762e5d74921bbac6",
+    "stock.unadjusted_daily": "cb55d1554b3979de0d62c54e7cf1ceecdd805d4cc24753262867c48ef3978ae9",
+    "security.price_limits": "227962492646ef59eb6c3984b98806aba7e56745406ecaaa60c25a02fed58427",
+    "security.trading_status": "8fea4eff725b264c5faccf45a150938e98de2f1424a17b8114ed72d76a513954"
+  },
+  "proof": {
+    "superset": "Every actual entry must be in the prior-ready/support, public-limit-fillable set. Cash/lot affordability is ignored; every opportunity may be skipped; failed-buy reset is ignored. Early exits may occur at the first public SELL-fillable session after E+1 irrespective of support/P conditions. Every real legal path is therefore in or dominated by this relaxed timing set.",
+    "recurrence": "D[e]=max(D[e+1],1+D[max(E+H+1,first_possible_public_sell(E)+1)]), eligible entries only; beyondN=0. Maximizes count over all possible choices, not a single greedy schedule.",
+    "exit_dominance": "For a fixed entry, any actual SELL is no earlier than the chosen public-fillable earliest exit. Replacing a real exit with that optimistic exit cannot delay any later entry. Thus using earliest legal SELL preserves an upper bound even if actual branch decisions differ.",
+    "indices": "Evaluation session1=2020-01-02; sourceindex0=2019-12-31 is excluded from warmup/support.",
+    "no_profit_use": "DP optimizes only opportunity count; witness is an optimistic retrospective feasibility certificate, not an executable strategy or a tested return."
+  },
+  "rows": [
+    {
+      "horizon": 15,
+      "mode": "fixed_exit",
+      "ideal_calendar_upper": 98,
+      "eligible_buy_ideal_sell_upper": 96,
+      "eligible_buy_public_sell_upper": 96,
+      "frequency_upper": 3.507917174177832,
+      "required_closed": 83,
+      "excluded_by_frequency": false,
+      "witness": [
+        {
+          "entry_session": 61,
+          "entry_date": "2020-04-03",
+          "optimistic_exit_session": 76,
+          "optimistic_exit_date": "2020-04-27"
+        },
+        {
+          "entry_session": 80,
+          "entry_date": "2020-05-06",
+          "optimistic_exit_session": 95,
+          "optimistic_exit_date": "2020-05-27"
+        },
+        {
+          "entry_session": 96,
+          "entry_date": "2020-05-28",
+          "optimistic_exit_session": 111,
+          "optimistic_exit_date": "2020-06-18"
+        },
+        {
+          "entry_session": 112,
+          "entry_date": "2020-06-19",
+          "optimistic_exit_session": 127,
+          "optimistic_exit_date": "2020-07-14"
+        },
+        {
+          "entry_session": 128,
+          "entry_date": "2020-07-15",
+          "optimistic_exit_session": 143,
+          "optimistic_exit_date": "2020-08-05"
+        },
+        {
+          "entry_session": 144,
+          "entry_date": "2020-08-06",
+          "optimistic_exit_session": 159,
+          "optimistic_exit_date": "2020-08-27"
+        },
+        {
+          "entry_session": 160,
+          "entry_date": "2020-08-28",
+          "optimistic_exit_session": 175,
+          "optimistic_exit_date": "2020-09-18"
+        },
+        {
+          "entry_session": 176,
+          "entry_date": "2020-09-21",
+          "optimistic_exit_session": 191,
+          "optimistic_exit_date": "2020-10-20"
+        },
+        {
+          "entry_session": 192,
+          "entry_date": "2020-10-21",
+          "optimistic_exit_session": 207,
+          "optimistic_exit_date": "2020-11-11"
+        },
+        {
+          "entry_session": 208,
+          "entry_date": "2020-11-12",
+          "optimistic_exit_session": 223,
+          "optimistic_exit_date": "2020-12-03"
+        },
+        {
+          "entry_session": 225,
+          "entry_date": "2020-12-07",
+          "optimistic_exit_session": 240,
+          "optimistic_exit_date": "2020-12-28"
+        },
+        {
+          "entry_session": 241,
+          "entry_date": "2020-12-29",
+          "optimistic_exit_session": 256,
+          "optimistic_exit_date": "2021-01-20"
+        },
+        {
+          "entry_session": 257,
+          "entry_date": "2021-01-21",
+          "optimistic_exit_session": 272,
+          "optimistic_exit_date": "2021-02-18"
+        },
+        {
+          "entry_session": 276,
+          "entry_date": "2021-02-24",
+          "optimistic_exit_session": 291,
+          "optimistic_exit_date": "2021-03-17"
+        },
+        {
+          "entry_session": 292,
+          "entry_date": "2021-03-18",
+          "optimistic_exit_session": 307,
+          "optimistic_exit_date": "2021-04-09"
+        },
+        {
+          "entry_session": 308,
+          "entry_date": "2021-04-12",
+          "optimistic_exit_session": 323,
+          "optimistic_exit_date": "2021-05-06"
+        },
+        {
+          "entry_session": 324,
+          "entry_date": "2021-05-07",
+          "optimistic_exit_session": 339,
+          "optimistic_exit_date": "2021-05-28"
+        },
+        {
+          "entry_session": 340,
+          "entry_date": "2021-05-31",
+          "optimistic_exit_session": 355,
+          "optimistic_exit_date": "2021-06-22"
+        },
+        {
+          "entry_session": 356,
+          "entry_date": "2021-06-23",
+          "optimistic_exit_session": 371,
+          "optimistic_exit_date": "2021-07-14"
+        },
+        {
+          "entry_session": 372,
+          "entry_date": "2021-07-15",
+          "optimistic_exit_session": 387,
+          "optimistic_exit_date": "2021-08-05"
+        },
+        {
+          "entry_session": 388,
+          "entry_date": "2021-08-06",
+          "optimistic_exit_session": 403,
+          "optimistic_exit_date": "2021-08-27"
+        },
+        {
+          "entry_session": 404,
+          "entry_date": "2021-08-30",
+          "optimistic_exit_session": 419,
+          "optimistic_exit_date": "2021-09-22"
+        },
+        {
+          "entry_session": 420,
+          "entry_date": "2021-09-23",
+          "optimistic_exit_session": 435,
+          "optimistic_exit_date": "2021-10-21"
+        },
+        {
+          "entry_session": 436,
+          "entry_date": "2021-10-22",
+          "optimistic_exit_session": 451,
+          "optimistic_exit_date": "2021-11-12"
+        },
+        {
+          "entry_session": 452,
+          "entry_date": "2021-11-15",
+          "optimistic_exit_session": 467,
+          "optimistic_exit_date": "2021-12-06"
+        },
+        {
+          "entry_session": 468,
+          "entry_date": "2021-12-07",
+          "optimistic_exit_session": 483,
+          "optimistic_exit_date": "2021-12-28"
+        },
+        {
+          "entry_session": 484,
+          "entry_date": "2021-12-29",
+          "optimistic_exit_session": 499,
+          "optimistic_exit_date": "2022-01-20"
+        },
+        {
+          "entry_session": 501,
+          "entry_date": "2022-01-24",
+          "optimistic_exit_session": 516,
+          "optimistic_exit_date": "2022-02-21"
+        },
+        {
+          "entry_session": 517,
+          "entry_date": "2022-02-22",
+          "optimistic_exit_session": 532,
+          "optimistic_exit_date": "2022-03-15"
+        },
+        {
+          "entry_session": 534,
+          "entry_date": "2022-03-17",
+          "optimistic_exit_session": 549,
+          "optimistic_exit_date": "2022-04-11"
+        },
+        {
+          "entry_session": 552,
+          "entry_date": "2022-04-14",
+          "optimistic_exit_session": 567,
+          "optimistic_exit_date": "2022-05-10"
+        },
+        {
+          "entry_session": 568,
+          "entry_date": "2022-05-11",
+          "optimistic_exit_session": 583,
+          "optimistic_exit_date": "2022-06-01"
+        },
+        {
+          "entry_session": 584,
+          "entry_date": "2022-06-02",
+          "optimistic_exit_session": 599,
+          "optimistic_exit_date": "2022-06-24"
+        },
+        {
+          "entry_session": 600,
+          "entry_date": "2022-06-27",
+          "optimistic_exit_session": 615,
+          "optimistic_exit_date": "2022-07-18"
+        },
+        {
+          "entry_session": 616,
+          "entry_date": "2022-07-19",
+          "optimistic_exit_session": 631,
+          "optimistic_exit_date": "2022-08-09"
+        },
+        {
+          "entry_session": 632,
+          "entry_date": "2022-08-10",
+          "optimistic_exit_session": 647,
+          "optimistic_exit_date": "2022-08-31"
+        },
+        {
+          "entry_session": 650,
+          "entry_date": "2022-09-05",
+          "optimistic_exit_session": 665,
+          "optimistic_exit_date": "2022-09-27"
+        },
+        {
+          "entry_session": 666,
+          "entry_date": "2022-09-28",
+          "optimistic_exit_session": 681,
+          "optimistic_exit_date": "2022-10-26"
+        },
+        {
+          "entry_session": 682,
+          "entry_date": "2022-10-27",
+          "optimistic_exit_session": 697,
+          "optimistic_exit_date": "2022-11-17"
+        },
+        {
+          "entry_session": 698,
+          "entry_date": "2022-11-18",
+          "optimistic_exit_session": 713,
+          "optimistic_exit_date": "2022-12-09"
+        },
+        {
+          "entry_session": 714,
+          "entry_date": "2022-12-12",
+          "optimistic_exit_session": 729,
+          "optimistic_exit_date": "2023-01-03"
+        },
+        {
+          "entry_session": 730,
+          "entry_date": "2023-01-04",
+          "optimistic_exit_session": 745,
+          "optimistic_exit_date": "2023-02-01"
+        },
+        {
+          "entry_session": 746,
+          "entry_date": "2023-02-02",
+          "optimistic_exit_session": 761,
+          "optimistic_exit_date": "2023-02-23"
+        },
+        {
+          "entry_session": 762,
+          "entry_date": "2023-02-24",
+          "optimistic_exit_session": 777,
+          "optimistic_exit_date": "2023-03-17"
+        },
+        {
+          "entry_session": 778,
+          "entry_date": "2023-03-20",
+          "optimistic_exit_session": 793,
+          "optimistic_exit_date": "2023-04-11"
+        },
+        {
+          "entry_session": 795,
+          "entry_date": "2023-04-13",
+          "optimistic_exit_session": 810,
+          "optimistic_exit_date": "2023-05-09"
+        },
+        {
+          "entry_session": 811,
+          "entry_date": "2023-05-10",
+          "optimistic_exit_session": 826,
+          "optimistic_exit_date": "2023-05-31"
+        },
+        {
+          "entry_session": 827,
+          "entry_date": "2023-06-01",
+          "optimistic_exit_session": 842,
+          "optimistic_exit_date": "2023-06-26"
+        },
+        {
+          "entry_session": 844,
+          "entry_date": "2023-06-28",
+          "optimistic_exit_session": 859,
+          "optimistic_exit_date": "2023-07-19"
+        },
+        {
+          "entry_session": 860,
+          "entry_date": "2023-07-20",
+          "optimistic_exit_session": 875,
+          "optimistic_exit_date": "2023-08-10"
+        },
+        {
+          "entry_session": 876,
+          "entry_date": "2023-08-11",
+          "optimistic_exit_session": 891,
+          "optimistic_exit_date": "2023-09-01"
+        },
+        {
+          "entry_session": 892,
+          "entry_date": "2023-09-04",
+          "optimistic_exit_session": 907,
+          "optimistic_exit_date": "2023-09-25"
+        },
+        {
+          "entry_session": 910,
+          "entry_date": "2023-09-28",
+          "optimistic_exit_session": 925,
+          "optimistic_exit_date": "2023-10-27"
+        },
+        {
+          "entry_session": 926,
+          "entry_date": "2023-10-30",
+          "optimistic_exit_session": 941,
+          "optimistic_exit_date": "2023-11-20"
+        },
+        {
+          "entry_session": 942,
+          "entry_date": "2023-11-21",
+          "optimistic_exit_session": 957,
+          "optimistic_exit_date": "2023-12-12"
+        },
+        {
+          "entry_session": 958,
+          "entry_date": "2023-12-13",
+          "optimistic_exit_session": 973,
+          "optimistic_exit_date": "2024-01-04"
+        },
+        {
+          "entry_session": 974,
+          "entry_date": "2024-01-05",
+          "optimistic_exit_session": 989,
+          "optimistic_exit_date": "2024-01-26"
+        },
+        {
+          "entry_session": 990,
+          "entry_date": "2024-01-29",
+          "optimistic_exit_session": 1005,
+          "optimistic_exit_date": "2024-02-27"
+        },
+        {
+          "entry_session": 1006,
+          "entry_date": "2024-02-28",
+          "optimistic_exit_session": 1021,
+          "optimistic_exit_date": "2024-03-20"
+        },
+        {
+          "entry_session": 1022,
+          "entry_date": "2024-03-21",
+          "optimistic_exit_session": 1037,
+          "optimistic_exit_date": "2024-04-15"
+        },
+        {
+          "entry_session": 1040,
+          "entry_date": "2024-04-18",
+          "optimistic_exit_session": 1055,
+          "optimistic_exit_date": "2024-05-14"
+        },
+        {
+          "entry_session": 1060,
+          "entry_date": "2024-05-21",
+          "optimistic_exit_session": 1075,
+          "optimistic_exit_date": "2024-06-12"
+        },
+        {
+          "entry_session": 1076,
+          "entry_date": "2024-06-13",
+          "optimistic_exit_session": 1091,
+          "optimistic_exit_date": "2024-07-04"
+        },
+        {
+          "entry_session": 1092,
+          "entry_date": "2024-07-05",
+          "optimistic_exit_session": 1107,
+          "optimistic_exit_date": "2024-07-26"
+        },
+        {
+          "entry_session": 1108,
+          "entry_date": "2024-07-29",
+          "optimistic_exit_session": 1123,
+          "optimistic_exit_date": "2024-08-19"
+        },
+        {
+          "entry_session": 1124,
+          "entry_date": "2024-08-20",
+          "optimistic_exit_session": 1139,
+          "optimistic_exit_date": "2024-09-10"
+        },
+        {
+          "entry_session": 1140,
+          "entry_date": "2024-09-11",
+          "optimistic_exit_session": 1155,
+          "optimistic_exit_date": "2024-10-11"
+        },
+        {
+          "entry_session": 1156,
+          "entry_date": "2024-10-14",
+          "optimistic_exit_session": 1171,
+          "optimistic_exit_date": "2024-11-04"
+        },
+        {
+          "entry_session": 1172,
+          "entry_date": "2024-11-05",
+          "optimistic_exit_session": 1187,
+          "optimistic_exit_date": "2024-11-26"
+        },
+        {
+          "entry_session": 1188,
+          "entry_date": "2024-11-27",
+          "optimistic_exit_session": 1203,
+          "optimistic_exit_date": "2024-12-18"
+        },
+        {
+          "entry_session": 1206,
+          "entry_date": "2024-12-23",
+          "optimistic_exit_session": 1221,
+          "optimistic_exit_date": "2025-01-14"
+        },
+        {
+          "entry_session": 1222,
+          "entry_date": "2025-01-15",
+          "optimistic_exit_session": 1237,
+          "optimistic_exit_date": "2025-02-13"
+        },
+        {
+          "entry_session": 1238,
+          "entry_date": "2025-02-14",
+          "optimistic_exit_session": 1253,
+          "optimistic_exit_date": "2025-03-07"
+        },
+        {
+          "entry_session": 1254,
+          "entry_date": "2025-03-10",
+          "optimistic_exit_session": 1269,
+          "optimistic_exit_date": "2025-03-31"
+        },
+        {
+          "entry_session": 1271,
+          "entry_date": "2025-04-02",
+          "optimistic_exit_session": 1286,
+          "optimistic_exit_date": "2025-04-24"
+        },
+        {
+          "entry_session": 1287,
+          "entry_date": "2025-04-25",
+          "optimistic_exit_session": 1302,
+          "optimistic_exit_date": "2025-05-21"
+        },
+        {
+          "entry_session": 1303,
+          "entry_date": "2025-05-22",
+          "optimistic_exit_session": 1318,
+          "optimistic_exit_date": "2025-06-13"
+        },
+        {
+          "entry_session": 1322,
+          "entry_date": "2025-06-19",
+          "optimistic_exit_session": 1337,
+          "optimistic_exit_date": "2025-07-10"
+        },
+        {
+          "entry_session": 1338,
+          "entry_date": "2025-07-11",
+          "optimistic_exit_session": 1353,
+          "optimistic_exit_date": "2025-08-01"
+        },
+        {
+          "entry_session": 1354,
+          "entry_date": "2025-08-04",
+          "optimistic_exit_session": 1369,
+          "optimistic_exit_date": "2025-08-25"
+        },
+        {
+          "entry_session": 1370,
+          "entry_date": "2025-08-26",
+          "optimistic_exit_session": 1385,
+          "optimistic_exit_date": "2025-09-16"
+        },
+        {
+          "entry_session": 1386,
+          "entry_date": "2025-09-17",
+          "optimistic_exit_session": 1401,
+          "optimistic_exit_date": "2025-10-16"
+        },
+        {
+          "entry_session": 1404,
+          "entry_date": "2025-10-21",
+          "optimistic_exit_session": 1419,
+          "optimistic_exit_date": "2025-11-11"
+        },
+        {
+          "entry_session": 1420,
+          "entry_date": "2025-11-12",
+          "optimistic_exit_session": 1435,
+          "optimistic_exit_date": "2025-12-03"
+        },
+        {
+          "entry_session": 1438,
+          "entry_date": "2025-12-08",
+          "optimistic_exit_session": 1453,
+          "optimistic_exit_date": "2025-12-29"
+        },
+        {
+          "entry_session": 1454,
+          "entry_date": "2025-12-30",
+          "optimistic_exit_session": 1469,
+          "optimistic_exit_date": "2026-01-22"
+        },
+        {
+          "entry_session": 1470,
+          "entry_date": "2026-01-23",
+          "optimistic_exit_session": 1485,
+          "optimistic_exit_date": "2026-02-13"
+        },
+        {
+          "entry_session": 1487,
+          "entry_date": "2026-02-25",
+          "optimistic_exit_session": 1502,
+          "optimistic_exit_date": "2026-03-18"
+        },
+        {
+          "entry_session": 1503,
+          "entry_date": "2026-03-19",
+          "optimistic_exit_session": 1518,
+          "optimistic_exit_date": "2026-04-10"
+        },
+        {
+          "entry_session": 1519,
+          "entry_date": "2026-04-13",
+          "optimistic_exit_session": 1534,
+          "optimistic_exit_date": "2026-05-07"
+        },
+        {
+          "entry_session": 1535,
+          "entry_date": "2026-05-08",
+          "optimistic_exit_session": 1550,
+          "optimistic_exit_date": "2026-05-29"
+        },
+        {
+          "entry_session": 1552,
+          "entry_date": "2026-06-02",
+          "optimistic_exit_session": 1567,
+          "optimistic_exit_date": "2026-06-24"
+        },
+        {
+          "entry_session": 1568,
+          "entry_date": "2026-06-25",
+          "optimistic_exit_session": 1583,
+          "optimistic_exit_date": "2026-07-16"
+        },
+        {
+          "entry_session": 1586,
+          "entry_date": "2026-07-21",
+          "optimistic_exit_session": 1601,
+          "optimistic_exit_date": "2026-08-11"
+        },
+        {
+          "entry_session": 1602,
+          "entry_date": "2026-08-12",
+          "optimistic_exit_session": 1617,
+          "optimistic_exit_date": "2026-09-02"
+        },
+        {
+          "entry_session": 1618,
+          "entry_date": "2026-09-03",
+          "optimistic_exit_session": 1633,
+          "optimistic_exit_date": "2026-09-24"
+        }
+      ]
+    },
+    {
+      "horizon": 15,
+      "mode": "reserved_optimistic_early_exit",
+      "ideal_calendar_upper": 99,
+      "eligible_buy_ideal_sell_upper": 97,
+      "eligible_buy_public_sell_upper": 97,
+      "frequency_upper": 3.544457978075518,
+      "required_closed": 83,
+      "excluded_by_frequency": false,
+      "witness": [
+        {
+          "entry_session": 61,
+          "entry_date": "2020-04-03",
+          "optimistic_exit_session": 62,
+          "optimistic_exit_date": "2020-04-07"
+        },
+        {
+          "entry_session": 80,
+          "entry_date": "2020-05-06",
+          "optimistic_exit_session": 81,
+          "optimistic_exit_date": "2020-05-07"
+        },
+        {
+          "entry_session": 96,
+          "entry_date": "2020-05-28",
+          "optimistic_exit_session": 97,
+          "optimistic_exit_date": "2020-05-29"
+        },
+        {
+          "entry_session": 112,
+          "entry_date": "2020-06-19",
+          "optimistic_exit_session": 113,
+          "optimistic_exit_date": "2020-06-22"
+        },
+        {
+          "entry_session": 128,
+          "entry_date": "2020-07-15",
+          "optimistic_exit_session": 129,
+          "optimistic_exit_date": "2020-07-16"
+        },
+        {
+          "entry_session": 144,
+          "entry_date": "2020-08-06",
+          "optimistic_exit_session": 145,
+          "optimistic_exit_date": "2020-08-07"
+        },
+        {
+          "entry_session": 160,
+          "entry_date": "2020-08-28",
+          "optimistic_exit_session": 161,
+          "optimistic_exit_date": "2020-08-31"
+        },
+        {
+          "entry_session": 176,
+          "entry_date": "2020-09-21",
+          "optimistic_exit_session": 177,
+          "optimistic_exit_date": "2020-09-22"
+        },
+        {
+          "entry_session": 192,
+          "entry_date": "2020-10-21",
+          "optimistic_exit_session": 193,
+          "optimistic_exit_date": "2020-10-22"
+        },
+        {
+          "entry_session": 208,
+          "entry_date": "2020-11-12",
+          "optimistic_exit_session": 209,
+          "optimistic_exit_date": "2020-11-13"
+        },
+        {
+          "entry_session": 225,
+          "entry_date": "2020-12-07",
+          "optimistic_exit_session": 226,
+          "optimistic_exit_date": "2020-12-08"
+        },
+        {
+          "entry_session": 241,
+          "entry_date": "2020-12-29",
+          "optimistic_exit_session": 242,
+          "optimistic_exit_date": "2020-12-30"
+        },
+        {
+          "entry_session": 257,
+          "entry_date": "2021-01-21",
+          "optimistic_exit_session": 258,
+          "optimistic_exit_date": "2021-01-22"
+        },
+        {
+          "entry_session": 276,
+          "entry_date": "2021-02-24",
+          "optimistic_exit_session": 277,
+          "optimistic_exit_date": "2021-02-25"
+        },
+        {
+          "entry_session": 292,
+          "entry_date": "2021-03-18",
+          "optimistic_exit_session": 293,
+          "optimistic_exit_date": "2021-03-19"
+        },
+        {
+          "entry_session": 308,
+          "entry_date": "2021-04-12",
+          "optimistic_exit_session": 309,
+          "optimistic_exit_date": "2021-04-13"
+        },
+        {
+          "entry_session": 324,
+          "entry_date": "2021-05-07",
+          "optimistic_exit_session": 325,
+          "optimistic_exit_date": "2021-05-10"
+        },
+        {
+          "entry_session": 340,
+          "entry_date": "2021-05-31",
+          "optimistic_exit_session": 341,
+          "optimistic_exit_date": "2021-06-01"
+        },
+        {
+          "entry_session": 356,
+          "entry_date": "2021-06-23",
+          "optimistic_exit_session": 357,
+          "optimistic_exit_date": "2021-06-24"
+        },
+        {
+          "entry_session": 372,
+          "entry_date": "2021-07-15",
+          "optimistic_exit_session": 373,
+          "optimistic_exit_date": "2021-07-16"
+        },
+        {
+          "entry_session": 388,
+          "entry_date": "2021-08-06",
+          "optimistic_exit_session": 389,
+          "optimistic_exit_date": "2021-08-09"
+        },
+        {
+          "entry_session": 404,
+          "entry_date": "2021-08-30",
+          "optimistic_exit_session": 405,
+          "optimistic_exit_date": "2021-08-31"
+        },
+        {
+          "entry_session": 420,
+          "entry_date": "2021-09-23",
+          "optimistic_exit_session": 421,
+          "optimistic_exit_date": "2021-09-24"
+        },
+        {
+          "entry_session": 436,
+          "entry_date": "2021-10-22",
+          "optimistic_exit_session": 437,
+          "optimistic_exit_date": "2021-10-25"
+        },
+        {
+          "entry_session": 452,
+          "entry_date": "2021-11-15",
+          "optimistic_exit_session": 453,
+          "optimistic_exit_date": "2021-11-16"
+        },
+        {
+          "entry_session": 468,
+          "entry_date": "2021-12-07",
+          "optimistic_exit_session": 469,
+          "optimistic_exit_date": "2021-12-08"
+        },
+        {
+          "entry_session": 484,
+          "entry_date": "2021-12-29",
+          "optimistic_exit_session": 485,
+          "optimistic_exit_date": "2021-12-30"
+        },
+        {
+          "entry_session": 501,
+          "entry_date": "2022-01-24",
+          "optimistic_exit_session": 502,
+          "optimistic_exit_date": "2022-01-25"
+        },
+        {
+          "entry_session": 517,
+          "entry_date": "2022-02-22",
+          "optimistic_exit_session": 518,
+          "optimistic_exit_date": "2022-02-23"
+        },
+        {
+          "entry_session": 534,
+          "entry_date": "2022-03-17",
+          "optimistic_exit_session": 535,
+          "optimistic_exit_date": "2022-03-18"
+        },
+        {
+          "entry_session": 552,
+          "entry_date": "2022-04-14",
+          "optimistic_exit_session": 553,
+          "optimistic_exit_date": "2022-04-15"
+        },
+        {
+          "entry_session": 568,
+          "entry_date": "2022-05-11",
+          "optimistic_exit_session": 569,
+          "optimistic_exit_date": "2022-05-12"
+        },
+        {
+          "entry_session": 584,
+          "entry_date": "2022-06-02",
+          "optimistic_exit_session": 585,
+          "optimistic_exit_date": "2022-06-06"
+        },
+        {
+          "entry_session": 600,
+          "entry_date": "2022-06-27",
+          "optimistic_exit_session": 601,
+          "optimistic_exit_date": "2022-06-28"
+        },
+        {
+          "entry_session": 616,
+          "entry_date": "2022-07-19",
+          "optimistic_exit_session": 617,
+          "optimistic_exit_date": "2022-07-20"
+        },
+        {
+          "entry_session": 632,
+          "entry_date": "2022-08-10",
+          "optimistic_exit_session": 633,
+          "optimistic_exit_date": "2022-08-11"
+        },
+        {
+          "entry_session": 650,
+          "entry_date": "2022-09-05",
+          "optimistic_exit_session": 651,
+          "optimistic_exit_date": "2022-09-06"
+        },
+        {
+          "entry_session": 666,
+          "entry_date": "2022-09-28",
+          "optimistic_exit_session": 667,
+          "optimistic_exit_date": "2022-09-29"
+        },
+        {
+          "entry_session": 682,
+          "entry_date": "2022-10-27",
+          "optimistic_exit_session": 683,
+          "optimistic_exit_date": "2022-10-28"
+        },
+        {
+          "entry_session": 698,
+          "entry_date": "2022-11-18",
+          "optimistic_exit_session": 699,
+          "optimistic_exit_date": "2022-11-21"
+        },
+        {
+          "entry_session": 714,
+          "entry_date": "2022-12-12",
+          "optimistic_exit_session": 715,
+          "optimistic_exit_date": "2022-12-13"
+        },
+        {
+          "entry_session": 730,
+          "entry_date": "2023-01-04",
+          "optimistic_exit_session": 731,
+          "optimistic_exit_date": "2023-01-05"
+        },
+        {
+          "entry_session": 746,
+          "entry_date": "2023-02-02",
+          "optimistic_exit_session": 747,
+          "optimistic_exit_date": "2023-02-03"
+        },
+        {
+          "entry_session": 762,
+          "entry_date": "2023-02-24",
+          "optimistic_exit_session": 763,
+          "optimistic_exit_date": "2023-02-27"
+        },
+        {
+          "entry_session": 778,
+          "entry_date": "2023-03-20",
+          "optimistic_exit_session": 779,
+          "optimistic_exit_date": "2023-03-21"
+        },
+        {
+          "entry_session": 795,
+          "entry_date": "2023-04-13",
+          "optimistic_exit_session": 796,
+          "optimistic_exit_date": "2023-04-14"
+        },
+        {
+          "entry_session": 811,
+          "entry_date": "2023-05-10",
+          "optimistic_exit_session": 812,
+          "optimistic_exit_date": "2023-05-11"
+        },
+        {
+          "entry_session": 827,
+          "entry_date": "2023-06-01",
+          "optimistic_exit_session": 828,
+          "optimistic_exit_date": "2023-06-02"
+        },
+        {
+          "entry_session": 844,
+          "entry_date": "2023-06-28",
+          "optimistic_exit_session": 845,
+          "optimistic_exit_date": "2023-06-29"
+        },
+        {
+          "entry_session": 860,
+          "entry_date": "2023-07-20",
+          "optimistic_exit_session": 861,
+          "optimistic_exit_date": "2023-07-21"
+        },
+        {
+          "entry_session": 876,
+          "entry_date": "2023-08-11",
+          "optimistic_exit_session": 877,
+          "optimistic_exit_date": "2023-08-14"
+        },
+        {
+          "entry_session": 892,
+          "entry_date": "2023-09-04",
+          "optimistic_exit_session": 893,
+          "optimistic_exit_date": "2023-09-05"
+        },
+        {
+          "entry_session": 910,
+          "entry_date": "2023-09-28",
+          "optimistic_exit_session": 911,
+          "optimistic_exit_date": "2023-10-09"
+        },
+        {
+          "entry_session": 926,
+          "entry_date": "2023-10-30",
+          "optimistic_exit_session": 927,
+          "optimistic_exit_date": "2023-10-31"
+        },
+        {
+          "entry_session": 942,
+          "entry_date": "2023-11-21",
+          "optimistic_exit_session": 943,
+          "optimistic_exit_date": "2023-11-22"
+        },
+        {
+          "entry_session": 958,
+          "entry_date": "2023-12-13",
+          "optimistic_exit_session": 959,
+          "optimistic_exit_date": "2023-12-14"
+        },
+        {
+          "entry_session": 974,
+          "entry_date": "2024-01-05",
+          "optimistic_exit_session": 975,
+          "optimistic_exit_date": "2024-01-08"
+        },
+        {
+          "entry_session": 990,
+          "entry_date": "2024-01-29",
+          "optimistic_exit_session": 991,
+          "optimistic_exit_date": "2024-01-30"
+        },
+        {
+          "entry_session": 1006,
+          "entry_date": "2024-02-28",
+          "optimistic_exit_session": 1007,
+          "optimistic_exit_date": "2024-02-29"
+        },
+        {
+          "entry_session": 1022,
+          "entry_date": "2024-03-21",
+          "optimistic_exit_session": 1023,
+          "optimistic_exit_date": "2024-03-22"
+        },
+        {
+          "entry_session": 1040,
+          "entry_date": "2024-04-18",
+          "optimistic_exit_session": 1041,
+          "optimistic_exit_date": "2024-04-19"
+        },
+        {
+          "entry_session": 1060,
+          "entry_date": "2024-05-21",
+          "optimistic_exit_session": 1061,
+          "optimistic_exit_date": "2024-05-22"
+        },
+        {
+          "entry_session": 1076,
+          "entry_date": "2024-06-13",
+          "optimistic_exit_session": 1077,
+          "optimistic_exit_date": "2024-06-14"
+        },
+        {
+          "entry_session": 1092,
+          "entry_date": "2024-07-05",
+          "optimistic_exit_session": 1093,
+          "optimistic_exit_date": "2024-07-08"
+        },
+        {
+          "entry_session": 1108,
+          "entry_date": "2024-07-29",
+          "optimistic_exit_session": 1109,
+          "optimistic_exit_date": "2024-07-30"
+        },
+        {
+          "entry_session": 1124,
+          "entry_date": "2024-08-20",
+          "optimistic_exit_session": 1125,
+          "optimistic_exit_date": "2024-08-21"
+        },
+        {
+          "entry_session": 1140,
+          "entry_date": "2024-09-11",
+          "optimistic_exit_session": 1141,
+          "optimistic_exit_date": "2024-09-12"
+        },
+        {
+          "entry_session": 1156,
+          "entry_date": "2024-10-14",
+          "optimistic_exit_session": 1157,
+          "optimistic_exit_date": "2024-10-15"
+        },
+        {
+          "entry_session": 1172,
+          "entry_date": "2024-11-05",
+          "optimistic_exit_session": 1173,
+          "optimistic_exit_date": "2024-11-06"
+        },
+        {
+          "entry_session": 1188,
+          "entry_date": "2024-11-27",
+          "optimistic_exit_session": 1189,
+          "optimistic_exit_date": "2024-11-28"
+        },
+        {
+          "entry_session": 1206,
+          "entry_date": "2024-12-23",
+          "optimistic_exit_session": 1207,
+          "optimistic_exit_date": "2024-12-24"
+        },
+        {
+          "entry_session": 1222,
+          "entry_date": "2025-01-15",
+          "optimistic_exit_session": 1223,
+          "optimistic_exit_date": "2025-01-16"
+        },
+        {
+          "entry_session": 1238,
+          "entry_date": "2025-02-14",
+          "optimistic_exit_session": 1239,
+          "optimistic_exit_date": "2025-02-17"
+        },
+        {
+          "entry_session": 1254,
+          "entry_date": "2025-03-10",
+          "optimistic_exit_session": 1255,
+          "optimistic_exit_date": "2025-03-11"
+        },
+        {
+          "entry_session": 1271,
+          "entry_date": "2025-04-02",
+          "optimistic_exit_session": 1272,
+          "optimistic_exit_date": "2025-04-03"
+        },
+        {
+          "entry_session": 1287,
+          "entry_date": "2025-04-25",
+          "optimistic_exit_session": 1288,
+          "optimistic_exit_date": "2025-04-28"
+        },
+        {
+          "entry_session": 1303,
+          "entry_date": "2025-05-22",
+          "optimistic_exit_session": 1304,
+          "optimistic_exit_date": "2025-05-23"
+        },
+        {
+          "entry_session": 1322,
+          "entry_date": "2025-06-19",
+          "optimistic_exit_session": 1323,
+          "optimistic_exit_date": "2025-06-20"
+        },
+        {
+          "entry_session": 1338,
+          "entry_date": "2025-07-11",
+          "optimistic_exit_session": 1339,
+          "optimistic_exit_date": "2025-07-14"
+        },
+        {
+          "entry_session": 1354,
+          "entry_date": "2025-08-04",
+          "optimistic_exit_session": 1355,
+          "optimistic_exit_date": "2025-08-05"
+        },
+        {
+          "entry_session": 1370,
+          "entry_date": "2025-08-26",
+          "optimistic_exit_session": 1371,
+          "optimistic_exit_date": "2025-08-27"
+        },
+        {
+          "entry_session": 1386,
+          "entry_date": "2025-09-17",
+          "optimistic_exit_session": 1387,
+          "optimistic_exit_date": "2025-09-18"
+        },
+        {
+          "entry_session": 1404,
+          "entry_date": "2025-10-21",
+          "optimistic_exit_session": 1405,
+          "optimistic_exit_date": "2025-10-22"
+        },
+        {
+          "entry_session": 1420,
+          "entry_date": "2025-11-12",
+          "optimistic_exit_session": 1421,
+          "optimistic_exit_date": "2025-11-13"
+        },
+        {
+          "entry_session": 1438,
+          "entry_date": "2025-12-08",
+          "optimistic_exit_session": 1439,
+          "optimistic_exit_date": "2025-12-09"
+        },
+        {
+          "entry_session": 1454,
+          "entry_date": "2025-12-30",
+          "optimistic_exit_session": 1455,
+          "optimistic_exit_date": "2025-12-31"
+        },
+        {
+          "entry_session": 1470,
+          "entry_date": "2026-01-23",
+          "optimistic_exit_session": 1471,
+          "optimistic_exit_date": "2026-01-26"
+        },
+        {
+          "entry_session": 1487,
+          "entry_date": "2026-02-25",
+          "optimistic_exit_session": 1488,
+          "optimistic_exit_date": "2026-02-26"
+        },
+        {
+          "entry_session": 1503,
+          "entry_date": "2026-03-19",
+          "optimistic_exit_session": 1504,
+          "optimistic_exit_date": "2026-03-20"
+        },
+        {
+          "entry_session": 1519,
+          "entry_date": "2026-04-13",
+          "optimistic_exit_session": 1520,
+          "optimistic_exit_date": "2026-04-14"
+        },
+        {
+          "entry_session": 1535,
+          "entry_date": "2026-05-08",
+          "optimistic_exit_session": 1536,
+          "optimistic_exit_date": "2026-05-11"
+        },
+        {
+          "entry_session": 1552,
+          "entry_date": "2026-06-02",
+          "optimistic_exit_session": 1553,
+          "optimistic_exit_date": "2026-06-03"
+        },
+        {
+          "entry_session": 1568,
+          "entry_date": "2026-06-25",
+          "optimistic_exit_session": 1569,
+          "optimistic_exit_date": "2026-06-26"
+        },
+        {
+          "entry_session": 1586,
+          "entry_date": "2026-07-21",
+          "optimistic_exit_session": 1587,
+          "optimistic_exit_date": "2026-07-22"
+        },
+        {
+          "entry_session": 1602,
+          "entry_date": "2026-08-12",
+          "optimistic_exit_session": 1603,
+          "optimistic_exit_date": "2026-08-13"
+        },
+        {
+          "entry_session": 1618,
+          "entry_date": "2026-09-03",
+          "optimistic_exit_session": 1619,
+          "optimistic_exit_date": "2026-09-04"
+        },
+        {
+          "entry_session": 1638,
+          "entry_date": "2026-10-09",
+          "optimistic_exit_session": 1639,
+          "optimistic_exit_date": "2026-10-12"
+        }
+      ]
+    },
+    {
+      "horizon": 18,
+      "mode": "fixed_exit",
+      "ideal_calendar_upper": 83,
+      "eligible_buy_ideal_sell_upper": 80,
+      "eligible_buy_public_sell_upper": 80,
+      "frequency_upper": 2.92326431181486,
+      "required_closed": 83,
+      "excluded_by_frequency": true,
+      "witness": [
+        {
+          "entry_session": 61,
+          "entry_date": "2020-04-03",
+          "optimistic_exit_session": 79,
+          "optimistic_exit_date": "2020-04-30"
+        },
+        {
+          "entry_session": 80,
+          "entry_date": "2020-05-06",
+          "optimistic_exit_session": 98,
+          "optimistic_exit_date": "2020-06-01"
+        },
+        {
+          "entry_session": 99,
+          "entry_date": "2020-06-02",
+          "optimistic_exit_session": 117,
+          "optimistic_exit_date": "2020-06-30"
+        },
+        {
+          "entry_session": 118,
+          "entry_date": "2020-07-01",
+          "optimistic_exit_session": 136,
+          "optimistic_exit_date": "2020-07-27"
+        },
+        {
+          "entry_session": 137,
+          "entry_date": "2020-07-28",
+          "optimistic_exit_session": 155,
+          "optimistic_exit_date": "2020-08-21"
+        },
+        {
+          "entry_session": 156,
+          "entry_date": "2020-08-24",
+          "optimistic_exit_session": 174,
+          "optimistic_exit_date": "2020-09-17"
+        },
+        {
+          "entry_session": 176,
+          "entry_date": "2020-09-21",
+          "optimistic_exit_session": 194,
+          "optimistic_exit_date": "2020-10-23"
+        },
+        {
+          "entry_session": 201,
+          "entry_date": "2020-11-03",
+          "optimistic_exit_session": 219,
+          "optimistic_exit_date": "2020-11-27"
+        },
+        {
+          "entry_session": 220,
+          "entry_date": "2020-11-30",
+          "optimistic_exit_session": 238,
+          "optimistic_exit_date": "2020-12-24"
+        },
+        {
+          "entry_session": 239,
+          "entry_date": "2020-12-25",
+          "optimistic_exit_session": 257,
+          "optimistic_exit_date": "2021-01-21"
+        },
+        {
+          "entry_session": 258,
+          "entry_date": "2021-01-22",
+          "optimistic_exit_session": 276,
+          "optimistic_exit_date": "2021-02-24"
+        },
+        {
+          "entry_session": 277,
+          "entry_date": "2021-02-25",
+          "optimistic_exit_session": 295,
+          "optimistic_exit_date": "2021-03-23"
+        },
+        {
+          "entry_session": 299,
+          "entry_date": "2021-03-29",
+          "optimistic_exit_session": 317,
+          "optimistic_exit_date": "2021-04-23"
+        },
+        {
+          "entry_session": 320,
+          "entry_date": "2021-04-28",
+          "optimistic_exit_session": 338,
+          "optimistic_exit_date": "2021-05-27"
+        },
+        {
+          "entry_session": 339,
+          "entry_date": "2021-05-28",
+          "optimistic_exit_session": 357,
+          "optimistic_exit_date": "2021-06-24"
+        },
+        {
+          "entry_session": 359,
+          "entry_date": "2021-06-28",
+          "optimistic_exit_session": 377,
+          "optimistic_exit_date": "2021-07-22"
+        },
+        {
+          "entry_session": 378,
+          "entry_date": "2021-07-23",
+          "optimistic_exit_session": 396,
+          "optimistic_exit_date": "2021-08-18"
+        },
+        {
+          "entry_session": 397,
+          "entry_date": "2021-08-19",
+          "optimistic_exit_session": 415,
+          "optimistic_exit_date": "2021-09-14"
+        },
+        {
+          "entry_session": 416,
+          "entry_date": "2021-09-15",
+          "optimistic_exit_session": 434,
+          "optimistic_exit_date": "2021-10-20"
+        },
+        {
+          "entry_session": 435,
+          "entry_date": "2021-10-21",
+          "optimistic_exit_session": 453,
+          "optimistic_exit_date": "2021-11-16"
+        },
+        {
+          "entry_session": 455,
+          "entry_date": "2021-11-18",
+          "optimistic_exit_session": 473,
+          "optimistic_exit_date": "2021-12-14"
+        },
+        {
+          "entry_session": 474,
+          "entry_date": "2021-12-15",
+          "optimistic_exit_session": 492,
+          "optimistic_exit_date": "2022-01-11"
+        },
+        {
+          "entry_session": 493,
+          "entry_date": "2022-01-12",
+          "optimistic_exit_session": 511,
+          "optimistic_exit_date": "2022-02-14"
+        },
+        {
+          "entry_session": 512,
+          "entry_date": "2022-02-15",
+          "optimistic_exit_session": 530,
+          "optimistic_exit_date": "2022-03-11"
+        },
+        {
+          "entry_session": 531,
+          "entry_date": "2022-03-14",
+          "optimistic_exit_session": 549,
+          "optimistic_exit_date": "2022-04-11"
+        },
+        {
+          "entry_session": 552,
+          "entry_date": "2022-04-14",
+          "optimistic_exit_session": 570,
+          "optimistic_exit_date": "2022-05-13"
+        },
+        {
+          "entry_session": 571,
+          "entry_date": "2022-05-16",
+          "optimistic_exit_session": 589,
+          "optimistic_exit_date": "2022-06-10"
+        },
+        {
+          "entry_session": 590,
+          "entry_date": "2022-06-13",
+          "optimistic_exit_session": 608,
+          "optimistic_exit_date": "2022-07-07"
+        },
+        {
+          "entry_session": 609,
+          "entry_date": "2022-07-08",
+          "optimistic_exit_session": 627,
+          "optimistic_exit_date": "2022-08-03"
+        },
+        {
+          "entry_session": 629,
+          "entry_date": "2022-08-05",
+          "optimistic_exit_session": 647,
+          "optimistic_exit_date": "2022-08-31"
+        },
+        {
+          "entry_session": 650,
+          "entry_date": "2022-09-05",
+          "optimistic_exit_session": 668,
+          "optimistic_exit_date": "2022-09-30"
+        },
+        {
+          "entry_session": 669,
+          "entry_date": "2022-10-10",
+          "optimistic_exit_session": 687,
+          "optimistic_exit_date": "2022-11-03"
+        },
+        {
+          "entry_session": 688,
+          "entry_date": "2022-11-04",
+          "optimistic_exit_session": 706,
+          "optimistic_exit_date": "2022-11-30"
+        },
+        {
+          "entry_session": 707,
+          "entry_date": "2022-12-01",
+          "optimistic_exit_session": 725,
+          "optimistic_exit_date": "2022-12-27"
+        },
+        {
+          "entry_session": 726,
+          "entry_date": "2022-12-28",
+          "optimistic_exit_session": 744,
+          "optimistic_exit_date": "2023-01-31"
+        },
+        {
+          "entry_session": 745,
+          "entry_date": "2023-02-01",
+          "optimistic_exit_session": 763,
+          "optimistic_exit_date": "2023-02-27"
+        },
+        {
+          "entry_session": 765,
+          "entry_date": "2023-03-01",
+          "optimistic_exit_session": 783,
+          "optimistic_exit_date": "2023-03-27"
+        },
+        {
+          "entry_session": 784,
+          "entry_date": "2023-03-28",
+          "optimistic_exit_session": 802,
+          "optimistic_exit_date": "2023-04-24"
+        },
+        {
+          "entry_session": 805,
+          "entry_date": "2023-04-27",
+          "optimistic_exit_session": 823,
+          "optimistic_exit_date": "2023-05-26"
+        },
+        {
+          "entry_session": 825,
+          "entry_date": "2023-05-30",
+          "optimistic_exit_session": 843,
+          "optimistic_exit_date": "2023-06-27"
+        },
+        {
+          "entry_session": 844,
+          "entry_date": "2023-06-28",
+          "optimistic_exit_session": 862,
+          "optimistic_exit_date": "2023-07-24"
+        },
+        {
+          "entry_session": 863,
+          "entry_date": "2023-07-25",
+          "optimistic_exit_session": 881,
+          "optimistic_exit_date": "2023-08-18"
+        },
+        {
+          "entry_session": 882,
+          "entry_date": "2023-08-21",
+          "optimistic_exit_session": 900,
+          "optimistic_exit_date": "2023-09-14"
+        },
+        {
+          "entry_session": 902,
+          "entry_date": "2023-09-18",
+          "optimistic_exit_session": 920,
+          "optimistic_exit_date": "2023-10-20"
+        },
+        {
+          "entry_session": 923,
+          "entry_date": "2023-10-25",
+          "optimistic_exit_session": 941,
+          "optimistic_exit_date": "2023-11-20"
+        },
+        {
+          "entry_session": 942,
+          "entry_date": "2023-11-21",
+          "optimistic_exit_session": 960,
+          "optimistic_exit_date": "2023-12-15"
+        },
+        {
+          "entry_session": 961,
+          "entry_date": "2023-12-18",
+          "optimistic_exit_session": 979,
+          "optimistic_exit_date": "2024-01-12"
+        },
+        {
+          "entry_session": 988,
+          "entry_date": "2024-01-25",
+          "optimistic_exit_session": 1006,
+          "optimistic_exit_date": "2024-02-28"
+        },
+        {
+          "entry_session": 1007,
+          "entry_date": "2024-02-29",
+          "optimistic_exit_session": 1025,
+          "optimistic_exit_date": "2024-03-26"
+        },
+        {
+          "entry_session": 1026,
+          "entry_date": "2024-03-27",
+          "optimistic_exit_session": 1044,
+          "optimistic_exit_date": "2024-04-24"
+        },
+        {
+          "entry_session": 1045,
+          "entry_date": "2024-04-25",
+          "optimistic_exit_session": 1063,
+          "optimistic_exit_date": "2024-05-24"
+        },
+        {
+          "entry_session": 1064,
+          "entry_date": "2024-05-27",
+          "optimistic_exit_session": 1082,
+          "optimistic_exit_date": "2024-06-21"
+        },
+        {
+          "entry_session": 1083,
+          "entry_date": "2024-06-24",
+          "optimistic_exit_session": 1101,
+          "optimistic_exit_date": "2024-07-18"
+        },
+        {
+          "entry_session": 1103,
+          "entry_date": "2024-07-22",
+          "optimistic_exit_session": 1121,
+          "optimistic_exit_date": "2024-08-15"
+        },
+        {
+          "entry_session": 1122,
+          "entry_date": "2024-08-16",
+          "optimistic_exit_session": 1140,
+          "optimistic_exit_date": "2024-09-11"
+        },
+        {
+          "entry_session": 1141,
+          "entry_date": "2024-09-12",
+          "optimistic_exit_session": 1159,
+          "optimistic_exit_date": "2024-10-17"
+        },
+        {
+          "entry_session": 1161,
+          "entry_date": "2024-10-21",
+          "optimistic_exit_session": 1179,
+          "optimistic_exit_date": "2024-11-14"
+        },
+        {
+          "entry_session": 1183,
+          "entry_date": "2024-11-20",
+          "optimistic_exit_session": 1201,
+          "optimistic_exit_date": "2024-12-16"
+        },
+        {
+          "entry_session": 1202,
+          "entry_date": "2024-12-17",
+          "optimistic_exit_session": 1220,
+          "optimistic_exit_date": "2025-01-13"
+        },
+        {
+          "entry_session": 1221,
+          "entry_date": "2025-01-14",
+          "optimistic_exit_session": 1239,
+          "optimistic_exit_date": "2025-02-17"
+        },
+        {
+          "entry_session": 1240,
+          "entry_date": "2025-02-18",
+          "optimistic_exit_session": 1258,
+          "optimistic_exit_date": "2025-03-14"
+        },
+        {
+          "entry_session": 1259,
+          "entry_date": "2025-03-17",
+          "optimistic_exit_session": 1277,
+          "optimistic_exit_date": "2025-04-11"
+        },
+        {
+          "entry_session": 1278,
+          "entry_date": "2025-04-14",
+          "optimistic_exit_session": 1296,
+          "optimistic_exit_date": "2025-05-13"
+        },
+        {
+          "entry_session": 1297,
+          "entry_date": "2025-05-14",
+          "optimistic_exit_session": 1315,
+          "optimistic_exit_date": "2025-06-10"
+        },
+        {
+          "entry_session": 1316,
+          "entry_date": "2025-06-11",
+          "optimistic_exit_session": 1334,
+          "optimistic_exit_date": "2025-07-07"
+        },
+        {
+          "entry_session": 1335,
+          "entry_date": "2025-07-08",
+          "optimistic_exit_session": 1353,
+          "optimistic_exit_date": "2025-08-01"
+        },
+        {
+          "entry_session": 1354,
+          "entry_date": "2025-08-04",
+          "optimistic_exit_session": 1372,
+          "optimistic_exit_date": "2025-08-28"
+        },
+        {
+          "entry_session": 1373,
+          "entry_date": "2025-08-29",
+          "optimistic_exit_session": 1391,
+          "optimistic_exit_date": "2025-09-24"
+        },
+        {
+          "entry_session": 1392,
+          "entry_date": "2025-09-25",
+          "optimistic_exit_session": 1410,
+          "optimistic_exit_date": "2025-10-29"
+        },
+        {
+          "entry_session": 1411,
+          "entry_date": "2025-10-30",
+          "optimistic_exit_session": 1429,
+          "optimistic_exit_date": "2025-11-25"
+        },
+        {
+          "entry_session": 1430,
+          "entry_date": "2025-11-26",
+          "optimistic_exit_session": 1448,
+          "optimistic_exit_date": "2025-12-22"
+        },
+        {
+          "entry_session": 1449,
+          "entry_date": "2025-12-23",
+          "optimistic_exit_session": 1467,
+          "optimistic_exit_date": "2026-01-20"
+        },
+        {
+          "entry_session": 1468,
+          "entry_date": "2026-01-21",
+          "optimistic_exit_session": 1486,
+          "optimistic_exit_date": "2026-02-24"
+        },
+        {
+          "entry_session": 1487,
+          "entry_date": "2026-02-25",
+          "optimistic_exit_session": 1505,
+          "optimistic_exit_date": "2026-03-23"
+        },
+        {
+          "entry_session": 1506,
+          "entry_date": "2026-03-24",
+          "optimistic_exit_session": 1524,
+          "optimistic_exit_date": "2026-04-20"
+        },
+        {
+          "entry_session": 1525,
+          "entry_date": "2026-04-21",
+          "optimistic_exit_session": 1543,
+          "optimistic_exit_date": "2026-05-20"
+        },
+        {
+          "entry_session": 1546,
+          "entry_date": "2026-05-25",
+          "optimistic_exit_session": 1564,
+          "optimistic_exit_date": "2026-06-18"
+        },
+        {
+          "entry_session": 1566,
+          "entry_date": "2026-06-23",
+          "optimistic_exit_session": 1584,
+          "optimistic_exit_date": "2026-07-17"
+        },
+        {
+          "entry_session": 1586,
+          "entry_date": "2026-07-21",
+          "optimistic_exit_session": 1604,
+          "optimistic_exit_date": "2026-08-14"
+        },
+        {
+          "entry_session": 1606,
+          "entry_date": "2026-08-18",
+          "optimistic_exit_session": 1624,
+          "optimistic_exit_date": "2026-09-11"
+        }
+      ]
+    },
+    {
+      "horizon": 18,
+      "mode": "reserved_optimistic_early_exit",
+      "ideal_calendar_upper": 84,
+      "eligible_buy_ideal_sell_upper": 81,
+      "eligible_buy_public_sell_upper": 81,
+      "frequency_upper": 2.9598051157125456,
+      "required_closed": 83,
+      "excluded_by_frequency": true,
+      "witness": [
+        {
+          "entry_session": 61,
+          "entry_date": "2020-04-03",
+          "optimistic_exit_session": 62,
+          "optimistic_exit_date": "2020-04-07"
+        },
+        {
+          "entry_session": 80,
+          "entry_date": "2020-05-06",
+          "optimistic_exit_session": 81,
+          "optimistic_exit_date": "2020-05-07"
+        },
+        {
+          "entry_session": 99,
+          "entry_date": "2020-06-02",
+          "optimistic_exit_session": 100,
+          "optimistic_exit_date": "2020-06-03"
+        },
+        {
+          "entry_session": 118,
+          "entry_date": "2020-07-01",
+          "optimistic_exit_session": 119,
+          "optimistic_exit_date": "2020-07-02"
+        },
+        {
+          "entry_session": 137,
+          "entry_date": "2020-07-28",
+          "optimistic_exit_session": 138,
+          "optimistic_exit_date": "2020-07-29"
+        },
+        {
+          "entry_session": 156,
+          "entry_date": "2020-08-24",
+          "optimistic_exit_session": 157,
+          "optimistic_exit_date": "2020-08-25"
+        },
+        {
+          "entry_session": 176,
+          "entry_date": "2020-09-21",
+          "optimistic_exit_session": 177,
+          "optimistic_exit_date": "2020-09-22"
+        },
+        {
+          "entry_session": 201,
+          "entry_date": "2020-11-03",
+          "optimistic_exit_session": 202,
+          "optimistic_exit_date": "2020-11-04"
+        },
+        {
+          "entry_session": 220,
+          "entry_date": "2020-11-30",
+          "optimistic_exit_session": 221,
+          "optimistic_exit_date": "2020-12-01"
+        },
+        {
+          "entry_session": 239,
+          "entry_date": "2020-12-25",
+          "optimistic_exit_session": 240,
+          "optimistic_exit_date": "2020-12-28"
+        },
+        {
+          "entry_session": 258,
+          "entry_date": "2021-01-22",
+          "optimistic_exit_session": 259,
+          "optimistic_exit_date": "2021-01-25"
+        },
+        {
+          "entry_session": 277,
+          "entry_date": "2021-02-25",
+          "optimistic_exit_session": 278,
+          "optimistic_exit_date": "2021-02-26"
+        },
+        {
+          "entry_session": 299,
+          "entry_date": "2021-03-29",
+          "optimistic_exit_session": 300,
+          "optimistic_exit_date": "2021-03-30"
+        },
+        {
+          "entry_session": 320,
+          "entry_date": "2021-04-28",
+          "optimistic_exit_session": 321,
+          "optimistic_exit_date": "2021-04-29"
+        },
+        {
+          "entry_session": 339,
+          "entry_date": "2021-05-28",
+          "optimistic_exit_session": 340,
+          "optimistic_exit_date": "2021-05-31"
+        },
+        {
+          "entry_session": 359,
+          "entry_date": "2021-06-28",
+          "optimistic_exit_session": 360,
+          "optimistic_exit_date": "2021-06-29"
+        },
+        {
+          "entry_session": 378,
+          "entry_date": "2021-07-23",
+          "optimistic_exit_session": 379,
+          "optimistic_exit_date": "2021-07-26"
+        },
+        {
+          "entry_session": 397,
+          "entry_date": "2021-08-19",
+          "optimistic_exit_session": 398,
+          "optimistic_exit_date": "2021-08-20"
+        },
+        {
+          "entry_session": 416,
+          "entry_date": "2021-09-15",
+          "optimistic_exit_session": 417,
+          "optimistic_exit_date": "2021-09-16"
+        },
+        {
+          "entry_session": 435,
+          "entry_date": "2021-10-21",
+          "optimistic_exit_session": 436,
+          "optimistic_exit_date": "2021-10-22"
+        },
+        {
+          "entry_session": 455,
+          "entry_date": "2021-11-18",
+          "optimistic_exit_session": 456,
+          "optimistic_exit_date": "2021-11-19"
+        },
+        {
+          "entry_session": 474,
+          "entry_date": "2021-12-15",
+          "optimistic_exit_session": 475,
+          "optimistic_exit_date": "2021-12-16"
+        },
+        {
+          "entry_session": 493,
+          "entry_date": "2022-01-12",
+          "optimistic_exit_session": 494,
+          "optimistic_exit_date": "2022-01-13"
+        },
+        {
+          "entry_session": 512,
+          "entry_date": "2022-02-15",
+          "optimistic_exit_session": 513,
+          "optimistic_exit_date": "2022-02-16"
+        },
+        {
+          "entry_session": 531,
+          "entry_date": "2022-03-14",
+          "optimistic_exit_session": 532,
+          "optimistic_exit_date": "2022-03-15"
+        },
+        {
+          "entry_session": 552,
+          "entry_date": "2022-04-14",
+          "optimistic_exit_session": 553,
+          "optimistic_exit_date": "2022-04-15"
+        },
+        {
+          "entry_session": 571,
+          "entry_date": "2022-05-16",
+          "optimistic_exit_session": 572,
+          "optimistic_exit_date": "2022-05-17"
+        },
+        {
+          "entry_session": 590,
+          "entry_date": "2022-06-13",
+          "optimistic_exit_session": 591,
+          "optimistic_exit_date": "2022-06-14"
+        },
+        {
+          "entry_session": 609,
+          "entry_date": "2022-07-08",
+          "optimistic_exit_session": 610,
+          "optimistic_exit_date": "2022-07-11"
+        },
+        {
+          "entry_session": 629,
+          "entry_date": "2022-08-05",
+          "optimistic_exit_session": 630,
+          "optimistic_exit_date": "2022-08-08"
+        },
+        {
+          "entry_session": 650,
+          "entry_date": "2022-09-05",
+          "optimistic_exit_session": 651,
+          "optimistic_exit_date": "2022-09-06"
+        },
+        {
+          "entry_session": 669,
+          "entry_date": "2022-10-10",
+          "optimistic_exit_session": 670,
+          "optimistic_exit_date": "2022-10-11"
+        },
+        {
+          "entry_session": 688,
+          "entry_date": "2022-11-04",
+          "optimistic_exit_session": 689,
+          "optimistic_exit_date": "2022-11-07"
+        },
+        {
+          "entry_session": 707,
+          "entry_date": "2022-12-01",
+          "optimistic_exit_session": 708,
+          "optimistic_exit_date": "2022-12-02"
+        },
+        {
+          "entry_session": 726,
+          "entry_date": "2022-12-28",
+          "optimistic_exit_session": 727,
+          "optimistic_exit_date": "2022-12-29"
+        },
+        {
+          "entry_session": 745,
+          "entry_date": "2023-02-01",
+          "optimistic_exit_session": 746,
+          "optimistic_exit_date": "2023-02-02"
+        },
+        {
+          "entry_session": 765,
+          "entry_date": "2023-03-01",
+          "optimistic_exit_session": 766,
+          "optimistic_exit_date": "2023-03-02"
+        },
+        {
+          "entry_session": 784,
+          "entry_date": "2023-03-28",
+          "optimistic_exit_session": 785,
+          "optimistic_exit_date": "2023-03-29"
+        },
+        {
+          "entry_session": 805,
+          "entry_date": "2023-04-27",
+          "optimistic_exit_session": 806,
+          "optimistic_exit_date": "2023-04-28"
+        },
+        {
+          "entry_session": 825,
+          "entry_date": "2023-05-30",
+          "optimistic_exit_session": 826,
+          "optimistic_exit_date": "2023-05-31"
+        },
+        {
+          "entry_session": 844,
+          "entry_date": "2023-06-28",
+          "optimistic_exit_session": 845,
+          "optimistic_exit_date": "2023-06-29"
+        },
+        {
+          "entry_session": 863,
+          "entry_date": "2023-07-25",
+          "optimistic_exit_session": 864,
+          "optimistic_exit_date": "2023-07-26"
+        },
+        {
+          "entry_session": 882,
+          "entry_date": "2023-08-21",
+          "optimistic_exit_session": 883,
+          "optimistic_exit_date": "2023-08-22"
+        },
+        {
+          "entry_session": 902,
+          "entry_date": "2023-09-18",
+          "optimistic_exit_session": 903,
+          "optimistic_exit_date": "2023-09-19"
+        },
+        {
+          "entry_session": 923,
+          "entry_date": "2023-10-25",
+          "optimistic_exit_session": 924,
+          "optimistic_exit_date": "2023-10-26"
+        },
+        {
+          "entry_session": 942,
+          "entry_date": "2023-11-21",
+          "optimistic_exit_session": 943,
+          "optimistic_exit_date": "2023-11-22"
+        },
+        {
+          "entry_session": 961,
+          "entry_date": "2023-12-18",
+          "optimistic_exit_session": 962,
+          "optimistic_exit_date": "2023-12-19"
+        },
+        {
+          "entry_session": 988,
+          "entry_date": "2024-01-25",
+          "optimistic_exit_session": 989,
+          "optimistic_exit_date": "2024-01-26"
+        },
+        {
+          "entry_session": 1007,
+          "entry_date": "2024-02-29",
+          "optimistic_exit_session": 1008,
+          "optimistic_exit_date": "2024-03-01"
+        },
+        {
+          "entry_session": 1026,
+          "entry_date": "2024-03-27",
+          "optimistic_exit_session": 1027,
+          "optimistic_exit_date": "2024-03-28"
+        },
+        {
+          "entry_session": 1045,
+          "entry_date": "2024-04-25",
+          "optimistic_exit_session": 1046,
+          "optimistic_exit_date": "2024-04-26"
+        },
+        {
+          "entry_session": 1064,
+          "entry_date": "2024-05-27",
+          "optimistic_exit_session": 1065,
+          "optimistic_exit_date": "2024-05-28"
+        },
+        {
+          "entry_session": 1083,
+          "entry_date": "2024-06-24",
+          "optimistic_exit_session": 1084,
+          "optimistic_exit_date": "2024-06-25"
+        },
+        {
+          "entry_session": 1103,
+          "entry_date": "2024-07-22",
+          "optimistic_exit_session": 1104,
+          "optimistic_exit_date": "2024-07-23"
+        },
+        {
+          "entry_session": 1122,
+          "entry_date": "2024-08-16",
+          "optimistic_exit_session": 1123,
+          "optimistic_exit_date": "2024-08-19"
+        },
+        {
+          "entry_session": 1141,
+          "entry_date": "2024-09-12",
+          "optimistic_exit_session": 1142,
+          "optimistic_exit_date": "2024-09-13"
+        },
+        {
+          "entry_session": 1161,
+          "entry_date": "2024-10-21",
+          "optimistic_exit_session": 1162,
+          "optimistic_exit_date": "2024-10-22"
+        },
+        {
+          "entry_session": 1183,
+          "entry_date": "2024-11-20",
+          "optimistic_exit_session": 1184,
+          "optimistic_exit_date": "2024-11-21"
+        },
+        {
+          "entry_session": 1202,
+          "entry_date": "2024-12-17",
+          "optimistic_exit_session": 1203,
+          "optimistic_exit_date": "2024-12-18"
+        },
+        {
+          "entry_session": 1221,
+          "entry_date": "2025-01-14",
+          "optimistic_exit_session": 1222,
+          "optimistic_exit_date": "2025-01-15"
+        },
+        {
+          "entry_session": 1240,
+          "entry_date": "2025-02-18",
+          "optimistic_exit_session": 1241,
+          "optimistic_exit_date": "2025-02-19"
+        },
+        {
+          "entry_session": 1259,
+          "entry_date": "2025-03-17",
+          "optimistic_exit_session": 1260,
+          "optimistic_exit_date": "2025-03-18"
+        },
+        {
+          "entry_session": 1278,
+          "entry_date": "2025-04-14",
+          "optimistic_exit_session": 1279,
+          "optimistic_exit_date": "2025-04-15"
+        },
+        {
+          "entry_session": 1297,
+          "entry_date": "2025-05-14",
+          "optimistic_exit_session": 1298,
+          "optimistic_exit_date": "2025-05-15"
+        },
+        {
+          "entry_session": 1316,
+          "entry_date": "2025-06-11",
+          "optimistic_exit_session": 1317,
+          "optimistic_exit_date": "2025-06-12"
+        },
+        {
+          "entry_session": 1335,
+          "entry_date": "2025-07-08",
+          "optimistic_exit_session": 1336,
+          "optimistic_exit_date": "2025-07-09"
+        },
+        {
+          "entry_session": 1354,
+          "entry_date": "2025-08-04",
+          "optimistic_exit_session": 1355,
+          "optimistic_exit_date": "2025-08-05"
+        },
+        {
+          "entry_session": 1373,
+          "entry_date": "2025-08-29",
+          "optimistic_exit_session": 1374,
+          "optimistic_exit_date": "2025-09-01"
+        },
+        {
+          "entry_session": 1392,
+          "entry_date": "2025-09-25",
+          "optimistic_exit_session": 1393,
+          "optimistic_exit_date": "2025-09-26"
+        },
+        {
+          "entry_session": 1411,
+          "entry_date": "2025-10-30",
+          "optimistic_exit_session": 1412,
+          "optimistic_exit_date": "2025-10-31"
+        },
+        {
+          "entry_session": 1430,
+          "entry_date": "2025-11-26",
+          "optimistic_exit_session": 1431,
+          "optimistic_exit_date": "2025-11-27"
+        },
+        {
+          "entry_session": 1449,
+          "entry_date": "2025-12-23",
+          "optimistic_exit_session": 1450,
+          "optimistic_exit_date": "2025-12-24"
+        },
+        {
+          "entry_session": 1468,
+          "entry_date": "2026-01-21",
+          "optimistic_exit_session": 1469,
+          "optimistic_exit_date": "2026-01-22"
+        },
+        {
+          "entry_session": 1487,
+          "entry_date": "2026-02-25",
+          "optimistic_exit_session": 1488,
+          "optimistic_exit_date": "2026-02-26"
+        },
+        {
+          "entry_session": 1506,
+          "entry_date": "2026-03-24",
+          "optimistic_exit_session": 1507,
+          "optimistic_exit_date": "2026-03-25"
+        },
+        {
+          "entry_session": 1525,
+          "entry_date": "2026-04-21",
+          "optimistic_exit_session": 1526,
+          "optimistic_exit_date": "2026-04-22"
+        },
+        {
+          "entry_session": 1546,
+          "entry_date": "2026-05-25",
+          "optimistic_exit_session": 1547,
+          "optimistic_exit_date": "2026-05-26"
+        },
+        {
+          "entry_session": 1566,
+          "entry_date": "2026-06-23",
+          "optimistic_exit_session": 1567,
+          "optimistic_exit_date": "2026-06-24"
+        },
+        {
+          "entry_session": 1586,
+          "entry_date": "2026-07-21",
+          "optimistic_exit_session": 1587,
+          "optimistic_exit_date": "2026-07-22"
+        },
+        {
+          "entry_session": 1606,
+          "entry_date": "2026-08-18",
+          "optimistic_exit_session": 1607,
+          "optimistic_exit_date": "2026-08-19"
+        },
+        {
+          "entry_session": 1626,
+          "entry_date": "2026-09-15",
+          "optimistic_exit_session": 1627,
+          "optimistic_exit_date": "2026-09-16"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "An upper below83 rules out the uniform H mechanism under current contracts. An upper at least83 proves neither actual count nor profitability.",
+    "Early-exit upper applies both R/P as a relaxation; it does not assert either rule actually exits that early.",
+    "H15/H18 are requested feasibility checks, not newly registered configurations."
+  ],
+  "opportunity_table_sha256": "cfcdb99e61cf7949d06b8291747834a9c1d1710b41e45b5442053ffa010658a0"
+}

@@ -1,0 +1,45 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 9,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX028_20261018"
+  },
+  "hypothesis": "Check one coarse longer complete capital cycle, crossing the same B/R/P exits, after shorter boundaries failed. Same-entry H15 labels show limited positive average increments, but cannot measure the actual changed entry path or annual targets.",
+  "trigger": {
+    "source_sha256": {
+      "research/S014/experiments/EX027_20261018/others/account_comparison.csv": "9403b10a702338f735849482f838a3cf58a93fba259eeb0581dbcea32cf58102",
+      "research/S014/experiments/EX027_20261018/others/capacity_upper_bound.json": "7696fe773e20d2d81e0de61533b069fcfaf0768369f27139011841fa2fe04c81",
+      "research/S014/experiments/EX027_20261018/others/capacity_review.json": "92af0d11331784d53aa2957eace93b48919a44f8ef8c68ae3a0da01357037fd7",
+      "research/S014/experiments/EX027_20261018/others/h15_label_lock.json": "84ad0c25acebfa9441bdfc955726f38cf586f5f97dceb25ceab25a2c79cf1a31",
+      "research/S014/experiments/EX027_20261018/others/h15_labels.json": "b81daa3ee16845ff062ce14a384b519dd9a8d250309594a9d6d280605ce40584"
+    },
+    "support": "All138 H10-B actual entries examined;136 complete paired H15 labels,71 positive65 negative, mean+.9416pp;true pre2026 mean+.5353pp. H15 optimistic capacity96/97 has not excluded83 required closed trades. H10 total outcomes exceed corresponding short-cycle outcomes.",
+    "counterevidence": "Tail concentration: removing top5 full changes mean negative; pre2026 removing top3 negative.2022/2024 entry cohorts worsen. H18 upper80/81 rules it out. Neither same-entry labels nor capacity establishes account profitability; H15 is a falsifiable bounded research judgment, not a supported component or a new economic gate."
+  },
+  "new_variants": [
+    "support_entry_H15",
+    "support_exit_reserve_H15",
+    "support_first_profit_exit_H15"
+  ],
+  "candidate_ids": {
+    "support_entry_H15": "S014-C0072",
+    "support_exit_reserve_H15": "S014-C0073",
+    "support_first_profit_exit_H15": "S014-C0074"
+  },
+  "reused_candidates": {
+    "support_entry_H10": "S014-C0034",
+    "support_exit_reserve_H10": "S014-C0056",
+    "support_first_profit_exit_H10": "S014-C0057"
+  },
+  "entry": "Original60 evaluation close warmup, Close>=minimum prior5 completed evaluation closes; no candle/environment filter. Same fresh limit, failedBUY reset, fullcash.",
+  "clock": "ActualBUY E; deadline decisionE+14;SELLfromE+15. R/P reservationE+15 survives earlySELL; freshBUYdecision at earliestE+15close. SELLfailure latch and actuallateSELL rules unchanged.",
+  "exit": "B timeout only. R supportbreak or timeout. P FIRST strictly predeadline supportbreak tests Close/(actualBUYfill*1.001)-1>0 once; if nonpositive wait timeout without rechecking. Deadline always TIME; no future information.",
+  "sampling": "Exactly3 fixed pre-enqueuedOptuna(seed17) configurations;3 reused H10 baseline accounts;6 comparison records. Maxworkers2/native1. NoH11..17 grid, noH18, no adaptive/free sampling.",
+  "analysis": "Every original annual return and DD target,frequency,cutoff2025actualNAV,fees/exposure,matched and unique entry paths,firstbreak eligibility. Compare eachH15 withH10 andB/R/P withinH15; identify benefits and counterexamples including2022/24. Fullcycle effects cannot be inferred by summing hypothetical labels.",
+  "refutation": "No automatic nearby horizon sweep. If full accounts fail to improve target-relevant gaps, close uniform horizon expansion. Positive all-period return alone never authorizes stage4; original all-target pass plus independent audit required.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000cash,.001eachside,100lot,maxqty1m,HFQ,original limitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;eachyearreturn>=1.5positiveBHelse>0,eachyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "Existing S014 pinned data only; all seen development data; no announcements, upstream, platform, stage4, production, merge or remote."
+}

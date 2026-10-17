@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "Independent H15 same-entry labels with public execution; no account runs",
+  "actual_H10_entries_and_fills_reproduced": 138,
+  "window_labels_independently_recalculated": 260,
+  "summary_groups_checked": 16,
+  "checks": [
+    "Actual BUY quantities/prices/fees supply common denominator; all138 H10 public exits reproduce actuals.",
+    "H15 decision E+14/earliestSELL E+15, blocked/suspended SELL retries and both fixed cutoffs reproduced.",
+    "136complete/2censored full and121complete/1censored through2025; censored marks have no fake sell fee and are excluded from completed means.",
+    "All16 summary groups mean/median/extremes/top3/top5 independently recalculated."
+  ],
+  "limits": [
+    "B labels only: cannot assert R/P support, actual H15 capital/next-entry path, compound wealth or calendar annual targets.",
+    "Positive means depend on few labels: full removal top5 turns negative, through2025 removal top3 turns negative;2022/2024 entry-cohorts negative.",
+    "Seen-data outcome label, not decision-time feature or independent validation."
+  ],
+  "sources": {
+    "research/S014/experiments/EX027_20261018/src/h15_labels.py": "be1a29366b6bbcc9ad187d5d2d6062e3219da7e737a6c6b19b5ed1211bc9a001",
+    "research/S014/experiments/EX027_20261018/others/h15_labels.json": "b81daa3ee16845ff062ce14a384b519dd9a8d250309594a9d6d280605ce40584",
+    "research/S014/experiments/EX027_20261018/others/h15_labels.csv": "6d03cb435ed428e97b7122c08e892e6f8c0d77cd8667e985e3b3fc40b4711527",
+    "research/S014/experiments/EX027_20261018/others/h15_label_lock.json": "84ad0c25acebfa9441bdfc955726f38cf586f5f97dceb25ceab25a2c79cf1a31",
+    "research/S014/experiments/EX027_20261018/others/h15_baseline_binding.json": "694cd46ad4305dcbfc5cc3a253d1c9c82821388fe4e37a84b40268d9d66b5cd8"
+  },
+  "new_accounts": 0,
+  "upstream_calls": 0
+}

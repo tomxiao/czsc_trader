@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_upstream_calls": 0,
+  "source_sha256": {
+    "research/S014/experiments/EX027_20261018/others/account_results.json": "4ea4d2385fa63e9048193557436df25213d8456f4916417928de3968b3a4ef9d",
+    "research/S014/experiments/EX027_20261018/others/annual_comparison.csv": "16e97cc6765f53af3c2a62b294fba1eee22fde1e639b4eee5766520121f89fe4",
+    "research/S014/experiments/EX027_20261018/others/path_diagnostics.json": "54c24787b40babdaaa3726127d199426549a991a909fc0242f1cfe00c2cab4c4",
+    "research/S014/experiments/EX027_20261018/others/capacity_upper_bound.json": "7696fe773e20d2d81e0de61533b069fcfaf0768369f27139011841fa2fe04c81",
+    "research/S014/experiments/EX027_20261018/others/capacity_review.json": "92af0d11331784d53aa2957eace93b48919a44f8ef8c68ae3a0da01357037fd7",
+    "research/S014/experiments/EX027_20261018/others/h15_label_lock.json": "84ad0c25acebfa9441bdfc955726f38cf586f5f97dceb25ceab25a2c79cf1a31",
+    "research/S014/experiments/EX027_20261018/others/h15_baseline_binding.json": "694cd46ad4305dcbfc5cc3a253d1c9c82821388fe4e37a84b40268d9d66b5cd8",
+    "research/S014/experiments/EX027_20261018/others/h15_labels.json": "b81daa3ee16845ff062ce14a384b519dd9a8d250309594a9d6d280605ce40584",
+    "research/S014/experiments/EX027_20261018/others/h15_labels.csv": "6d03cb435ed428e97b7122c08e892e6f8c0d77cd8667e985e3b3fc40b4711527"
+  },
+  "short_cycle_route": "H1/H2 natural lower boundary is tested. Do not add further uniform short-cycle neighbors or infer a selector from annual complementarity.",
+  "capacity_conclusion": {
+    "H18": "Uniform fixed max80 or optimistic reserved early max81 < required83. Excluded under current contracts. No return labels/accounts warranted.",
+    "H15": "Fixed max96/reserved early max97 only prove not excluded; actual accounts may be below83."
+  },
+  "H15_same_entry_labels": {
+    "population": "All138 actual B-H10 entries,136 complete and2 right-censored.",
+    "ALL_mean_increment_pp": 0.9416008679639463,
+    "ALL_remove_top3_pp": 0.25898906266543537,
+    "ALL_remove_top5_pp": -0.02070542907415856,
+    "true_through2025_complete": 121,
+    "true_through2025_mean_increment_pp": 0.5352844704915437,
+    "true_through2025_remove_top3_pp": -0.14471306665854053,
+    "true_through2025_remove_top5_pp": -0.3946170596347108,
+    "counterexamples": "2022 entry-year mean -2.12748pp;2024 -.42560pp.2025 true cutoff mean +2.33269pp but removal top5 slightly negative. Not a universal extension benefit or demonstrated repair of all failed years."
+  },
+  "next_recommendation": "Research judgment adopted by lead: one fixed H15 capital-cycle contrast with existing B/R/P exit mechanisms, three new accounts and three H10 baselines; no11..17 grid and noH18. Positive all-entry B labels, including before2026, and nonexcluded capacity justify testing whether opportunity gains survive changed entry paths. The R/P interactions are unproven hypotheses, not supported by B labels by transfer. This is a one-horizon contrast holding each existing exit mechanism fixed. If target improvement fails, do not automatically expand neighboring horizons.",
+  "alternative": "The remaining budget itself is no experimental rationale. The lead selected a complete path test because same-entry labels cannot answer the path replacement question; no account has been run or parameter lock created by this diagnostic.",
+  "limitations": [
+    "No new acceptance criterion imposed by top-removal diagnostics.",
+    "Entry-year per-position labels are not calendar-year NAV targets.",
+    "H15 labels do not include altered entry timing, position quantities, or reserved cash exposure.",
+    "No year-based horizon switching, new threshold, announcement data or upstream calls."
+  ],
+  "validation": "Capacity independently reviewed PASS. H15 script internally checks all138 original H10 public exit reproductions and baseline wealth reconciliation; separate label review pending.",
+  "judgment_not_gate": "Positive averages, concentration diagnostics and feasibility bounds inform research priority. Only existing user targets are acceptance gates; neither trimmed means nor component annual profitability are new hard conditions. The existing frequency gate alone logically excludes uniformH18."
+}

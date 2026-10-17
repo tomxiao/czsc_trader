@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "scope": "Independent reservation-state actual C/R continuation windows; no new account or policy",
+  "matched_windows_independently_recalculated": 47,
+  "summaries_checked": 6,
+  "coverage": {
+    "R_early_exits": 103,
+    "matched_same_entry_and_exit": 47,
+    "unmatched_R_early_exits": 56,
+    "R_positive_early_exits": 15,
+    "matched_positive_early_exits": 6,
+    "complete_reservation_windows": 46,
+    "right_censored_windows": 1,
+    "windows_with_C_position_at_reservation_close": 35
+  },
+  "checks": [
+    "Shared actual BUY and SELL dates verified from both ledgers; stateP independently rebuilt from actual Rfill and decisionclose.",
+    "Original E+10 endpoint and actual C NAV continuation, Rcash throughout, reentries and terminal Copenpositions reproduced.",
+    "46complete windows;1lastwindow rightcensored and excluded from primary complete summary. Six group means/medians/top3/logs independently verified."
+  ],
+  "limits": [
+    "Only47of103earlyRexits match;56unmatched cannot receive the same state attribution.",
+    "35window-end Cpositions remain open: windowNAVreturn is not closed tradeprofit.",
+    "Ppositive n6 and nonpositive top3 sensitivity support insufficient priority, not proof all conditional reservation invalid.",
+    "No conditional strategy constructed; changed entry/capital paths require actual accounts before economic claims."
+  ],
+  "sources": {
+    "research/S014/experiments/EX027_20261018/src/reservation_state_diagnostics.py": "e86ae5b2c3b66f329578744deb734b8f5cc76adc5343006ecc4e453b1fdcc53e",
+    "research/S014/experiments/EX027_20261018/others/reservation_state_diagnostics.json": "f724283e449b079e1db705f06242d37d52b9d14839e56dcaaf3a047afab58af2"
+  },
+  "new_accounts": 0,
+  "upstream_calls": 0
+}

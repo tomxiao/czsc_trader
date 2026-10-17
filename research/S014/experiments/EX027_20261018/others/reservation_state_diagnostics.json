@@ -1,0 +1,1422 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_trials": 0,
+  "upstream_calls": 0,
+  "sources": {
+    "research/S014/experiments/EX027_20261018/src/reservation_state_diagnostics.py": "e86ae5b2c3b66f329578744deb734b8f5cc76adc5343006ecc4e453b1fdcc53e",
+    "research/S014/experiments/EX018_20261017/src/account_diagnostics.py": "8802088123cfe0c26864daf4e74e4c8d6999eb474057d48a00f943fde7979fe7",
+    "research/S014/experiments/EX023_20261018/others/comparison_accounts.json": "705b6615a780cad897d34cafb0afb84a77702a8325f48020d49dd6dfcc95250f",
+    "research/S014/experiments/EX023_20261018/others/path_cycles.csv": "47a6a70a358ca421e6df7d0caba2f794e284fb72518ae8337c8d41d48d55f4da",
+    "research/S014/experiments/EX023_20261018/others/loss_state_diagnostics.json": "dfc6ba12a24f800f534c184c79cbe4cf2bfb7ebb814cf8339d4f395954fe8265"
+  },
+  "source_records": [
+    {
+      "variant": "support_exit_H10",
+      "candidate": "S014-C0035",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "26db4c86afd6129ae03491aea889c12a8fab7908b3bf53a2398c690595486e81.json",
+        "sha256": "26db4c86afd6129ae03491aea889c12a8fab7908b3bf53a2398c690595486e81",
+        "media_type": "application/json",
+        "name": "account-support-exit-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "ebc8d200f5f74785c0874bb82f037cf38e79f6e2e3b4a69a9e16a4049962813c",
+      "optuna_trial": 2,
+      "worst_target_margin": -1.1866147363095605,
+      "reused": true,
+      "original_variant": "support_exit_H10"
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "candidate": "S014-C0056",
+      "status": "SUCCEEDED",
+      "error": null,
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+        "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+        "media_type": "application/json",
+        "name": "account-support-exit-reserve-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+      "optuna_trial": 0,
+      "worst_target_margin": -0.5246250918061576
+    }
+  ],
+  "coverage": {
+    "R_early_exits": 103,
+    "matched_same_entry_and_exit": 47,
+    "unmatched_R_early_exits": 56,
+    "R_positive_early_exits": 15,
+    "matched_positive_early_exits": 6,
+    "complete_reservation_windows": 46,
+    "right_censored_windows": 1,
+    "windows_with_C_position_at_reservation_close": 35
+  },
+  "methodology": {
+    "condition": "Already recorded first early-break decision close P=Close/(actual BUY price*1.001)-1>0; no threshold search.",
+    "anchor": "Only actual C35/R56 entries with the same actual entry date and actual sale date. Start at common sale close; end at original entry+10 close, inclusive. R stays cash throughout. One end beyond the evaluation cutoff is explicitly right-censored and excluded from the primary COMPLETE_WINDOWS summary.",
+    "label": "Actual C account NAV at reservation close / its NAV at common sale close - 1. Includes subsequent execution fees and marks open positions, without synthetic terminal sale.",
+    "cutoff": "Reservation-close-before2026 subset, not entry-year grouping; no post-cutoff mark is used.",
+    "comparison": "A diagnostic of actual C continuation relative to R cash inside common anchored windows. Different prior capital levels, selective common-entry coverage, and future policy path changes prevent interpreting it as a new conditional account."
+  },
+  "summaries": [
+    {
+      "window": "ALL_OBSERVED_INCLUDING_CENSORED",
+      "positive_mark": false,
+      "n": 41,
+      "reentered_windows": 40,
+      "reentry_count": 60,
+      "open_at_reservation_close": 30,
+      "mean_return": 0.0023927485943803636,
+      "median_return": -0.011140439285153958,
+      "positive_return_n": 15,
+      "negative_return_n": 25,
+      "zero_return_n": 1,
+      "window_log_sum": 0.02779504714068648,
+      "mean_remove_top3": -0.011213550626443563
+    },
+    {
+      "window": "ALL_OBSERVED_INCLUDING_CENSORED",
+      "positive_mark": true,
+      "n": 6,
+      "reentered_windows": 6,
+      "reentry_count": 7,
+      "open_at_reservation_close": 5,
+      "mean_return": -0.011619265534810205,
+      "median_return": 0.0004321726995357711,
+      "positive_return_n": 3,
+      "negative_return_n": 3,
+      "zero_return_n": 0,
+      "window_log_sum": -0.07198795888110911,
+      "mean_remove_top3": -0.031552523583724734
+    },
+    {
+      "window": "COMPLETE_WINDOWS",
+      "positive_mark": false,
+      "n": 40,
+      "reentered_windows": 40,
+      "reentry_count": 60,
+      "open_at_reservation_close": 30,
+      "mean_return": 0.0024525673092398725,
+      "median_return": -0.011214705207259756,
+      "positive_return_n": 15,
+      "negative_return_n": 25,
+      "zero_return_n": 0,
+      "window_log_sum": 0.02779504714068648,
+      "mean_remove_top3": -0.01151661956229339
+    },
+    {
+      "window": "COMPLETE_WINDOWS",
+      "positive_mark": true,
+      "n": 6,
+      "reentered_windows": 6,
+      "reentry_count": 7,
+      "open_at_reservation_close": 5,
+      "mean_return": -0.011619265534810205,
+      "median_return": 0.0004321726995357711,
+      "positive_return_n": 3,
+      "negative_return_n": 3,
+      "zero_return_n": 0,
+      "window_log_sum": -0.07198795888110911,
+      "mean_remove_top3": -0.031552523583724734
+    },
+    {
+      "window": "RESERVATION_CLOSE_BEFORE2026",
+      "positive_mark": false,
+      "n": 35,
+      "reentered_windows": 35,
+      "reentry_count": 52,
+      "open_at_reservation_close": 25,
+      "mean_return": 0.004426132077735748,
+      "median_return": -0.007993281911981676,
+      "positive_return_n": 14,
+      "negative_return_n": 21,
+      "zero_return_n": 0,
+      "window_log_sum": 0.10570848938799987,
+      "mean_remove_top3": -0.008340596707486499
+    },
+    {
+      "window": "RESERVATION_CLOSE_BEFORE2026",
+      "positive_mark": true,
+      "n": 5,
+      "reentered_windows": 5,
+      "reentry_count": 5,
+      "open_at_reservation_close": 5,
+      "mean_return": -0.003727546746337018,
+      "median_return": 0.00493663812249423,
+      "positive_return_n": 3,
+      "negative_return_n": 2,
+      "zero_return_n": 0,
+      "window_log_sum": -0.01955943143693904,
+      "mean_remove_top3": -0.021789855636999034
+    }
+  ],
+  "windows": [
+    {
+      "entry_date": "2020-04-03",
+      "decision_date": "2020-04-15",
+      "exit_date": "2020-04-16",
+      "reservation_close_date": "2020-04-20",
+      "reservation_index": 70,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.011166950098247752,
+      "positive_mark": false,
+      "C_start_equity": 98537.40699999999,
+      "C_end_equity": 97439.65699999999,
+      "C_window_return": -0.011140439285153958,
+      "C_window_log": -0.011202958742011902,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2020-04-17"
+      ]
+    },
+    {
+      "entry_date": "2020-04-23",
+      "decision_date": "2020-04-27",
+      "exit_date": "2020-04-28",
+      "reservation_close_date": "2020-05-12",
+      "reservation_index": 83,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.022086093326198708,
+      "positive_mark": false,
+      "C_start_equity": 95135.15099999997,
+      "C_end_equity": 96456.19499999995,
+      "C_window_return": 0.013885971547992648,
+      "C_window_log": 0.013790444750873841,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2020-05-06"
+      ]
+    },
+    {
+      "entry_date": "2020-06-15",
+      "decision_date": "2020-06-23",
+      "exit_date": "2020-06-24",
+      "reservation_close_date": "2020-07-01",
+      "reservation_index": 117,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.01096508282137032,
+      "positive_mark": true,
+      "C_start_equity": 98424.87699999998,
+      "C_end_equity": 98910.76499999998,
+      "C_window_return": 0.00493663812249423,
+      "C_window_log": 0.00492449287923151,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2020-07-01"
+      ]
+    },
+    {
+      "entry_date": "2020-09-21",
+      "decision_date": "2020-09-22",
+      "exit_date": "2020-09-23",
+      "reservation_close_date": "2020-10-13",
+      "reservation_index": 185,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.02524659806213203,
+      "positive_mark": false,
+      "C_start_equity": 108920.30500000004,
+      "C_end_equity": 109491.89800000004,
+      "C_window_return": 0.0052478093960535155,
+      "C_window_log": 0.005234087629533015,
+      "C_reentry_count": 3,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2020-09-24",
+        "2020-09-30",
+        "2020-10-12"
+      ]
+    },
+    {
+      "entry_date": "2020-11-18",
+      "decision_date": "2020-11-26",
+      "exit_date": "2020-11-27",
+      "reservation_close_date": "2020-12-02",
+      "reservation_index": 221,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.010313695628380803,
+      "positive_mark": false,
+      "C_start_equity": 132858.49000000005,
+      "C_end_equity": 132113.09400000004,
+      "C_window_return": -0.005610450638118825,
+      "C_window_log": -0.005626248332130722,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2020-11-30"
+      ]
+    },
+    {
+      "entry_date": "2021-04-15",
+      "decision_date": "2021-04-15",
+      "exit_date": "2021-04-16",
+      "reservation_close_date": "2021-04-29",
+      "reservation_index": 320,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.019102808229661594,
+      "positive_mark": false,
+      "C_start_equity": 193133.99300000005,
+      "C_end_equity": 181739.22300000003,
+      "C_window_return": -0.05899929796408243,
+      "C_window_log": -0.06081139334398835,
+      "C_reentry_count": 3,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2021-04-19",
+        "2021-04-23",
+        "2021-04-28"
+      ]
+    },
+    {
+      "entry_date": "2021-06-08",
+      "decision_date": "2021-06-11",
+      "exit_date": "2021-06-15",
+      "reservation_close_date": "2021-06-23",
+      "reservation_index": 355,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.12174339655255673,
+      "positive_mark": false,
+      "C_start_equity": 193696.474,
+      "C_end_equity": 189761.60400000005,
+      "C_window_return": -0.02031461863368733,
+      "C_window_log": -0.020523798283836766,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2021-06-17",
+        "2021-06-23"
+      ]
+    },
+    {
+      "entry_date": "2021-08-12",
+      "decision_date": "2021-08-17",
+      "exit_date": "2021-08-18",
+      "reservation_close_date": "2021-08-26",
+      "reservation_index": 401,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.04450388321356069,
+      "positive_mark": false,
+      "C_start_equity": 181564.531,
+      "C_end_equity": 176778.098,
+      "C_window_return": -0.02636215880732784,
+      "C_window_log": -0.026715870775028627,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2021-08-19",
+        "2021-08-24"
+      ]
+    },
+    {
+      "entry_date": "2021-10-08",
+      "decision_date": "2021-10-13",
+      "exit_date": "2021-10-14",
+      "reservation_close_date": "2021-10-22",
+      "reservation_index": 435,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.06288401863623094,
+      "positive_mark": false,
+      "C_start_equity": 173067.18300000002,
+      "C_end_equity": 176648.46700000003,
+      "C_window_return": 0.020693027631934147,
+      "C_window_log": 0.02048183543693654,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2021-10-15"
+      ]
+    },
+    {
+      "entry_date": "2021-11-09",
+      "decision_date": "2021-11-16",
+      "exit_date": "2021-11-17",
+      "reservation_close_date": "2021-11-23",
+      "reservation_index": 457,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.004510428060515936,
+      "positive_mark": false,
+      "C_start_equity": 166582.27099999998,
+      "C_end_equity": 172996.67899999995,
+      "C_window_return": 0.038505946410107184,
+      "C_window_log": 0.037783090278259886,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2021-11-18"
+      ]
+    },
+    {
+      "entry_date": "2021-12-24",
+      "decision_date": "2022-01-04",
+      "exit_date": "2022-01-05",
+      "reservation_close_date": "2022-01-10",
+      "reservation_index": 490,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.024929269204078564,
+      "positive_mark": true,
+      "C_start_equity": 214899.38599999988,
+      "C_end_equity": 216941.50999999992,
+      "C_window_return": 0.00950269816033833,
+      "C_window_log": 0.009457831536215815,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2022-01-07"
+      ]
+    },
+    {
+      "entry_date": "2022-01-27",
+      "decision_date": "2022-01-27",
+      "exit_date": "2022-01-28",
+      "reservation_close_date": "2022-02-17",
+      "reservation_index": 513,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.03692198212746145,
+      "positive_mark": false,
+      "C_start_equity": 188316.912,
+      "C_end_equity": 196687.93099999995,
+      "C_window_return": 0.04445176437472553,
+      "C_window_log": 0.04349212035906595,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2022-02-07"
+      ]
+    },
+    {
+      "entry_date": "2022-06-02",
+      "decision_date": "2022-06-07",
+      "exit_date": "2022-06-08",
+      "reservation_close_date": "2022-06-17",
+      "reservation_index": 593,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.014778325123152691,
+      "positive_mark": false,
+      "C_start_equity": 189405.39099999986,
+      "C_end_equity": 182093.22999999978,
+      "C_window_return": -0.03860587579579555,
+      "C_window_log": -0.03937083524866658,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2022-06-09",
+        "2022-06-13"
+      ]
+    },
+    {
+      "entry_date": "2022-06-24",
+      "decision_date": "2022-06-29",
+      "exit_date": "2022-06-30",
+      "reservation_close_date": "2022-07-08",
+      "reservation_index": 608,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.020906629602281623,
+      "positive_mark": false,
+      "C_start_equity": 178907.39099999974,
+      "C_end_equity": 176453.96599999975,
+      "C_window_return": -0.013713379789882407,
+      "C_window_log": -0.013808276753341935,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2022-07-01"
+      ]
+    },
+    {
+      "entry_date": "2022-10-24",
+      "decision_date": "2022-10-24",
+      "exit_date": "2022-10-25",
+      "reservation_close_date": "2022-11-07",
+      "reservation_index": 688,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.01852533431480785,
+      "positive_mark": false,
+      "C_start_equity": 168728.45399999974,
+      "C_end_equity": 172983.1739999997,
+      "C_window_return": 0.025216375182338657,
+      "C_window_log": 0.024903688051245973,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2022-10-26",
+        "2022-11-01"
+      ]
+    },
+    {
+      "entry_date": "2023-02-07",
+      "decision_date": "2023-02-16",
+      "exit_date": "2023-02-17",
+      "reservation_close_date": "2023-02-21",
+      "reservation_index": 758,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.0029109833415117414,
+      "positive_mark": true,
+      "C_start_equity": 170682.2079999997,
+      "C_end_equity": 172474.8219999997,
+      "C_window_return": 0.010502641259480416,
+      "C_window_log": 0.010447871672551555,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-02-20"
+      ]
+    },
+    {
+      "entry_date": "2023-03-09",
+      "decision_date": "2023-03-10",
+      "exit_date": "2023-03-13",
+      "reservation_close_date": "2023-03-23",
+      "reservation_index": 780,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.01460407296983146,
+      "positive_mark": false,
+      "C_start_equity": 163244.02799999967,
+      "C_end_equity": 158610.57699999967,
+      "C_window_return": -0.028383586565261743,
+      "C_window_log": -0.028794188795142586,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-03-16",
+        "2023-03-20"
+      ]
+    },
+    {
+      "entry_date": "2023-04-13",
+      "decision_date": "2023-04-18",
+      "exit_date": "2023-04-19",
+      "reservation_close_date": "2023-04-27",
+      "reservation_index": 804,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.004987028939124616,
+      "positive_mark": false,
+      "C_start_equity": 152920.5399999997,
+      "C_end_equity": 152129.1799999997,
+      "C_window_return": -0.005174975186459485,
+      "C_window_log": -0.005188411746505858,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-04-27"
+      ]
+    },
+    {
+      "entry_date": "2023-05-18",
+      "decision_date": "2023-05-19",
+      "exit_date": "2023-05-22",
+      "reservation_close_date": "2023-06-01",
+      "reservation_index": 826,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.017443461887906353,
+      "positive_mark": false,
+      "C_start_equity": 154524.61399999968,
+      "C_end_equity": 153391.79699999967,
+      "C_window_return": -0.007330980940033371,
+      "C_window_log": -0.00735798463747514,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-05-30",
+        "2023-06-01"
+      ]
+    },
+    {
+      "entry_date": "2023-06-19",
+      "decision_date": "2023-06-19",
+      "exit_date": "2023-06-20",
+      "reservation_close_date": "2023-07-05",
+      "reservation_index": 848,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.009204348013382768,
+      "positive_mark": false,
+      "C_start_equity": 159693.0089999997,
+      "C_end_equity": 164814.9389999997,
+      "C_window_return": 0.032073601919543115,
+      "C_window_log": 0.031569984205722615,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-06-28"
+      ]
+    },
+    {
+      "entry_date": "2023-08-09",
+      "decision_date": "2023-08-09",
+      "exit_date": "2023-08-10",
+      "reservation_close_date": "2023-08-23",
+      "reservation_index": 883,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.008943342939366716,
+      "positive_mark": false,
+      "C_start_equity": 165226.1479999997,
+      "C_end_equity": 159076.3039999997,
+      "C_window_return": -0.03722076726015544,
+      "C_window_log": -0.03793114295702775,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2023-08-11",
+        "2023-08-17"
+      ]
+    },
+    {
+      "entry_date": "2023-09-13",
+      "decision_date": "2023-09-13",
+      "exit_date": "2023-09-14",
+      "reservation_close_date": "2023-09-27",
+      "reservation_index": 908,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.0030545586101142774,
+      "positive_mark": false,
+      "C_start_equity": 159417.7999999997,
+      "C_end_equity": 154253.04299999968,
+      "C_window_return": -0.03239761808279895,
+      "C_window_log": -0.03293403857380796,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2023-09-18",
+        "2023-09-25"
+      ]
+    },
+    {
+      "entry_date": "2023-09-28",
+      "decision_date": "2023-10-09",
+      "exit_date": "2023-10-10",
+      "reservation_close_date": "2023-10-20",
+      "reservation_index": 919,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.0031200222283023216,
+      "positive_mark": false,
+      "C_start_equity": 153300.4829999997,
+      "C_end_equity": 145688.60299999968,
+      "C_window_return": -0.04965333344709699,
+      "C_window_log": -0.05092844879084969,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2023-10-11",
+        "2023-10-13"
+      ]
+    },
+    {
+      "entry_date": "2023-11-24",
+      "decision_date": "2023-11-30",
+      "exit_date": "2023-12-01",
+      "reservation_close_date": "2023-12-08",
+      "reservation_index": 954,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.013157228167370083,
+      "positive_mark": false,
+      "C_start_equity": 151485.8379999997,
+      "C_end_equity": 148573.0219999997,
+      "C_window_return": -0.01922830568491818,
+      "C_window_log": -0.019415574009584616,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2023-12-04"
+      ]
+    },
+    {
+      "entry_date": "2023-12-12",
+      "decision_date": "2023-12-19",
+      "exit_date": "2023-12-20",
+      "reservation_close_date": "2023-12-26",
+      "reservation_index": 966,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.005043539456494939,
+      "positive_mark": false,
+      "C_start_equity": 146922.75499999968,
+      "C_end_equity": 145748.35999999967,
+      "C_window_return": -0.007993281911981676,
+      "C_window_log": -0.008025399454048445,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2023-12-21"
+      ]
+    },
+    {
+      "entry_date": "2023-12-27",
+      "decision_date": "2023-12-27",
+      "exit_date": "2023-12-28",
+      "reservation_close_date": "2024-01-11",
+      "reservation_index": 977,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.007078114583185413,
+      "positive_mark": false,
+      "C_start_equity": 144577.35799999966,
+      "C_end_equity": 147744.78199999966,
+      "C_window_return": 0.021908160750869543,
+      "C_window_log": 0.02167162546466358,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2023-12-29"
+      ]
+    },
+    {
+      "entry_date": "2024-01-12",
+      "decision_date": "2024-01-12",
+      "exit_date": "2024-01-15",
+      "reservation_close_date": "2024-01-26",
+      "reservation_index": 988,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.01663893836105179,
+      "positive_mark": false,
+      "C_start_equity": 144049.94199999966,
+      "C_end_equity": 153176.27399999966,
+      "C_window_return": 0.06335533269426796,
+      "C_window_log": 0.061429316968798484,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2024-01-25"
+      ]
+    },
+    {
+      "entry_date": "2024-05-22",
+      "decision_date": "2024-05-23",
+      "exit_date": "2024-05-24",
+      "reservation_close_date": "2024-06-05",
+      "reservation_index": 1070,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.05179566196515328,
+      "positive_mark": false,
+      "C_start_equity": 157934.29899999968,
+      "C_end_equity": 150748.0639999997,
+      "C_window_return": -0.045501420815500015,
+      "C_window_log": -0.04656912436170666,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2024-05-27",
+        "2024-05-30"
+      ]
+    },
+    {
+      "entry_date": "2024-06-11",
+      "decision_date": "2024-06-17",
+      "exit_date": "2024-06-18",
+      "reservation_close_date": "2024-06-25",
+      "reservation_index": 1083,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.02635435630359484,
+      "positive_mark": false,
+      "C_start_equity": 148556.30699999968,
+      "C_end_equity": 140769.80699999968,
+      "C_window_return": -0.052414469349995496,
+      "C_window_log": -0.05383807628432206,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2024-06-19"
+      ]
+    },
+    {
+      "entry_date": "2024-06-26",
+      "decision_date": "2024-07-08",
+      "exit_date": "2024-07-09",
+      "reservation_close_date": "2024-07-10",
+      "reservation_index": 1094,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.006284720570434721,
+      "positive_mark": false,
+      "C_start_equity": 141228.1049999997,
+      "C_end_equity": 139633.78499999968,
+      "C_window_return": -0.011288971129365555,
+      "C_window_log": -0.011353175220020944,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2024-07-10"
+      ]
+    },
+    {
+      "entry_date": "2024-12-25",
+      "decision_date": "2024-12-25",
+      "exit_date": "2024-12-26",
+      "reservation_close_date": "2025-01-09",
+      "reservation_index": 1217,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.04321031081594451,
+      "positive_mark": false,
+      "C_start_equity": 164532.4179999997,
+      "C_end_equity": 182201.52899999972,
+      "C_window_return": 0.10738984581141953,
+      "C_window_log": 0.10200575596918718,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2024-12-27",
+        "2025-01-06"
+      ]
+    },
+    {
+      "entry_date": "2025-04-25",
+      "decision_date": "2025-04-28",
+      "exit_date": "2025-04-29",
+      "reservation_close_date": "2025-05-14",
+      "reservation_index": 1296,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.026463732346085234,
+      "positive_mark": false,
+      "C_start_equity": 164371.9439999998,
+      "C_end_equity": 172633.61999999982,
+      "C_window_return": 0.05026208122232845,
+      "C_window_log": 0.04903973418836624,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-04-30"
+      ]
+    },
+    {
+      "entry_date": "2025-05-30",
+      "decision_date": "2025-05-30",
+      "exit_date": "2025-06-03",
+      "reservation_close_date": "2025-06-16",
+      "reservation_index": 1318,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.02051073926073932,
+      "positive_mark": false,
+      "C_start_equity": 159679.26599999977,
+      "C_end_equity": 199769.70599999977,
+      "C_window_return": 0.25106853885463165,
+      "C_window_log": 0.22399801723790952,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-06-04"
+      ]
+    },
+    {
+      "entry_date": "2025-06-19",
+      "decision_date": "2025-06-25",
+      "exit_date": "2025-06-26",
+      "reservation_close_date": "2025-07-03",
+      "reservation_index": 1331,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.08484119010434787,
+      "positive_mark": false,
+      "C_start_equity": 217908.83899999977,
+      "C_end_equity": 208076.27299999975,
+      "C_window_return": -0.045122382575770725,
+      "C_window_log": -0.04617209600722991,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-06-27",
+        "2025-07-01"
+      ]
+    },
+    {
+      "entry_date": "2025-07-08",
+      "decision_date": "2025-07-14",
+      "exit_date": "2025-07-15",
+      "reservation_close_date": "2025-07-22",
+      "reservation_index": 1344,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.00906847595054383,
+      "positive_mark": false,
+      "C_start_equity": 205481.5079999998,
+      "C_end_equity": 209995.95999999982,
+      "C_window_return": 0.021970113242501643,
+      "C_window_log": 0.021732247951275787,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-07-17"
+      ]
+    },
+    {
+      "entry_date": "2025-09-08",
+      "decision_date": "2025-09-17",
+      "exit_date": "2025-09-18",
+      "reservation_close_date": "2025-09-22",
+      "reservation_index": 1388,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.013822972279945667,
+      "positive_mark": true,
+      "C_start_equity": 224779.15099999984,
+      "C_end_equity": 215898.70699999985,
+      "C_window_return": -0.03950741855057538,
+      "C_window_log": -0.040309020437476376,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-09-22"
+      ]
+    },
+    {
+      "entry_date": "2025-09-25",
+      "decision_date": "2025-09-25",
+      "exit_date": "2025-09-26",
+      "reservation_close_date": "2025-10-17",
+      "reservation_index": 1401,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.019788988441025945,
+      "positive_mark": false,
+      "C_start_equity": 209633.19999999978,
+      "C_end_equity": 210204.24799999973,
+      "C_window_return": 0.0027240341701597615,
+      "C_window_log": 0.0027203307131175086,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2025-09-29"
+      ]
+    },
+    {
+      "entry_date": "2025-10-21",
+      "decision_date": "2025-10-30",
+      "exit_date": "2025-10-31",
+      "reservation_close_date": "2025-11-04",
+      "reservation_index": 1413,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.0021425115764737157,
+      "positive_mark": true,
+      "C_start_equity": 210441.64999999967,
+      "C_end_equity": 209584.6699999996,
+      "C_window_return": -0.004072292723422688,
+      "C_window_log": -0.004080607087461541,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-11-03"
+      ]
+    },
+    {
+      "entry_date": "2025-11-20",
+      "decision_date": "2025-11-20",
+      "exit_date": "2025-11-21",
+      "reservation_close_date": "2025-12-04",
+      "reservation_index": 1435,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.016135379771743175,
+      "positive_mark": false,
+      "C_start_equity": 215350.64299999957,
+      "C_end_equity": 211885.8049999996,
+      "C_window_return": -0.016089285602922443,
+      "C_window_log": -0.016220123448114614,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2025-11-25"
+      ]
+    },
+    {
+      "entry_date": "2025-12-08",
+      "decision_date": "2025-12-09",
+      "exit_date": "2025-12-10",
+      "reservation_close_date": "2025-12-22",
+      "reservation_index": 1447,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.02204764441393292,
+      "positive_mark": false,
+      "C_start_equity": 207050.6649999996,
+      "C_end_equity": 204712.5699999997,
+      "C_window_return": -0.011292381021813735,
+      "C_window_log": -0.011356624052115143,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2025-12-11",
+        "2025-12-18"
+      ]
+    },
+    {
+      "entry_date": "2026-04-08",
+      "decision_date": "2026-04-14",
+      "exit_date": "2026-04-15",
+      "reservation_close_date": "2026-04-22",
+      "reservation_index": 1525,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": 0.027894737222286192,
+      "positive_mark": true,
+      "C_start_equity": 395117.69299999945,
+      "C_end_equity": 374935.92699999944,
+      "C_window_return": -0.051077859477176135,
+      "C_window_log": -0.052428527444170064,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": [
+        "2026-04-17",
+        "2026-04-21"
+      ]
+    },
+    {
+      "entry_date": "2026-04-23",
+      "decision_date": "2026-04-27",
+      "exit_date": "2026-04-28",
+      "reservation_close_date": "2026-05-12",
+      "reservation_index": 1536,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.03131657387763953,
+      "positive_mark": false,
+      "C_start_equity": 357016.47999999946,
+      "C_end_equity": 343947.73999999947,
+      "C_window_return": -0.03660542504928632,
+      "C_window_log": -0.03729221595122425,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2026-04-29"
+      ]
+    },
+    {
+      "entry_date": "2026-05-15",
+      "decision_date": "2026-05-19",
+      "exit_date": "2026-05-20",
+      "reservation_close_date": "2026-05-29",
+      "reservation_index": 1549,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.010825240333437236,
+      "positive_mark": false,
+      "C_start_equity": 328669.42999999947,
+      "C_end_equity": 319483.5699999994,
+      "C_window_return": -0.027948629113453194,
+      "C_window_log": -0.028346625211923476,
+      "C_reentry_count": 2,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2026-05-25",
+        "2026-05-29"
+      ]
+    },
+    {
+      "entry_date": "2026-06-02",
+      "decision_date": "2026-06-02",
+      "exit_date": "2026-06-03",
+      "reservation_close_date": "2026-06-16",
+      "reservation_index": 1561,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.03862615727022489,
+      "positive_mark": false,
+      "C_start_equity": 306841.9719999994,
+      "C_end_equity": 273495.91399999935,
+      "C_window_return": -0.10867502181220545,
+      "C_window_log": -0.11504618379318092,
+      "C_reentry_count": 3,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2026-06-04",
+        "2026-06-08",
+        "2026-06-11"
+      ]
+    },
+    {
+      "entry_date": "2026-06-23",
+      "decision_date": "2026-06-25",
+      "exit_date": "2026-06-26",
+      "reservation_close_date": "2026-07-07",
+      "reservation_index": 1575,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.060739924527299816,
+      "positive_mark": false,
+      "C_start_equity": 255131.5529999993,
+      "C_end_equity": 242542.8299999993,
+      "C_window_return": -0.04934208588461042,
+      "C_window_log": -0.05060099290943531,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2026-07-02"
+      ]
+    },
+    {
+      "entry_date": "2026-07-13",
+      "decision_date": "2026-07-16",
+      "exit_date": "2026-07-17",
+      "reservation_close_date": "2026-07-27",
+      "reservation_index": 1589,
+      "complete_reservation_window": true,
+      "end_semantics": "reservation_close",
+      "first_break_float_pnl": -0.04651998248057354,
+      "positive_mark": false,
+      "C_start_equity": 244336.09899999938,
+      "C_end_equity": 284837.0629999994,
+      "C_window_return": 0.1657592315083991,
+      "C_window_log": 0.15337257561845052,
+      "C_reentry_count": 1,
+      "C_open_at_reservation_close": true,
+      "C_reentry_dates": [
+        "2026-07-22"
+      ]
+    },
+    {
+      "entry_date": "2026-10-12",
+      "decision_date": "2026-10-14",
+      "exit_date": "2026-10-15",
+      "reservation_close_date": "2026-10-15",
+      "reservation_index": 1648,
+      "complete_reservation_window": false,
+      "end_semantics": "evaluation_end_before_reservation",
+      "first_break_float_pnl": -0.09951857188038082,
+      "positive_mark": false,
+      "C_start_equity": 363380.4139999995,
+      "C_end_equity": 363380.4139999995,
+      "C_window_return": 0.0,
+      "C_window_log": 0.0,
+      "C_reentry_count": 0,
+      "C_open_at_reservation_close": false,
+      "C_reentry_dates": []
+    }
+  ],
+  "unmatched_episodes": [
+    {
+      "entry_date": "2020-05-13",
+      "decision_date": "2020-05-13",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-05-28",
+      "decision_date": "2020-06-08",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2020-07-17",
+      "decision_date": "2020-07-17",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-08-03",
+      "decision_date": "2020-08-06",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-08-18",
+      "decision_date": "2020-08-25",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-09-02",
+      "decision_date": "2020-09-03",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-10-14",
+      "decision_date": "2020-10-23",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2020-12-03",
+      "decision_date": "2020-12-03",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-01-05",
+      "decision_date": "2021-01-06",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-01-20",
+      "decision_date": "2021-01-25",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-03-15",
+      "decision_date": "2021-03-19",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2021-03-30",
+      "decision_date": "2021-04-12",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-06-24",
+      "decision_date": "2021-06-24",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-07-09",
+      "decision_date": "2021-07-19",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2021-07-26",
+      "decision_date": "2021-07-26",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-09-13",
+      "decision_date": "2021-09-27",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2021-10-25",
+      "decision_date": "2021-10-25",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2021-11-24",
+      "decision_date": "2021-11-25",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-01-11",
+      "decision_date": "2022-01-13",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-02-18",
+      "decision_date": "2022-02-25",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-03-07",
+      "decision_date": "2022-03-08",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-04-08",
+      "decision_date": "2022-04-11",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-07-11",
+      "decision_date": "2022-07-11",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-07-26",
+      "decision_date": "2022-07-29",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2022-08-10",
+      "decision_date": "2022-08-18",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2022-08-25",
+      "decision_date": "2022-08-31",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-09-09",
+      "decision_date": "2022-09-13",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-11-08",
+      "decision_date": "2022-11-18",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2022-12-08",
+      "decision_date": "2022-12-12",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2023-02-22",
+      "decision_date": "2023-02-27",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2023-03-24",
+      "decision_date": "2023-03-30",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2023-07-06",
+      "decision_date": "2023-07-10",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-01-29",
+      "decision_date": "2024-01-31",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-03-22",
+      "decision_date": "2024-03-25",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-04-10",
+      "decision_date": "2024-04-15",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-07-15",
+      "decision_date": "2024-07-18",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-07-30",
+      "decision_date": "2024-08-05",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-08-14",
+      "decision_date": "2024-08-20",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-08-29",
+      "decision_date": "2024-09-06",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-09-13",
+      "decision_date": "2024-09-13",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-10-09",
+      "decision_date": "2024-10-17",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-11-08",
+      "decision_date": "2024-11-14",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-11-25",
+      "decision_date": "2024-11-27",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2024-12-10",
+      "decision_date": "2024-12-13",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-01-10",
+      "decision_date": "2025-01-20",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2025-01-27",
+      "decision_date": "2025-02-12",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2025-02-19",
+      "decision_date": "2025-02-26",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-03-21",
+      "decision_date": "2025-03-21",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-05-15",
+      "decision_date": "2025-05-22",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-07-23",
+      "decision_date": "2025-07-29",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-08-07",
+      "decision_date": "2025-08-14",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2025-11-05",
+      "decision_date": "2025-11-17",
+      "positive_mark": true
+    },
+    {
+      "entry_date": "2026-01-09",
+      "decision_date": "2026-01-16",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2026-03-20",
+      "decision_date": "2026-03-20",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2026-08-12",
+      "decision_date": "2026-08-14",
+      "positive_mark": false
+    },
+    {
+      "entry_date": "2026-09-11",
+      "decision_date": "2026-09-11",
+      "positive_mark": false
+    }
+  ],
+  "conclusion": "Insufficient priority evidence for conditional reservation: positive-state matched coverage is only six; nonpositive-state average continuation benefit reverses after removing the best three windows. Do not attribute unmatched C/R path differences to one exit state.",
+  "falsifiable_candidate": "If later justified, keep all support-triggered early SELLs; freeze P at the first early-break decision, retain E+10 reservation iff P>0, otherwise release only after actual SELL. Never revoke pending SELL or re-evaluate P. Compare complete actual accounts with unchanged C35/R56 and original annual goals.",
+  "limits": [
+    "This is a post-result route diagnostic, not a registered account or additional trial.",
+    "35 matched windows contain open C positions at the end; labels are NAV window changes, not closed-trade returns. One 2026-10-12 entry sells on the last session with its reservation beyond the cutoff; its zero observed continuation is not complete-window evidence.",
+    "No year switching, new threshold, parameter search, or rule change is implemented."
+  ]
+}

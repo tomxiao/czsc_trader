@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "scope": "Independent EX027 fixed lower-bound H1/H2 method and audit plan: four new real accounts and six exact H3/H10 reuse records; no new execution/upstream by reviewer.",
+  "causal_contract": [
+    "Actual BUY index E starts deadline E+H-1 and next-session SELL; H1 always decides exit at actual entry close, earliest execution E+1 under T+1.",
+    "H2 first strictly-predeadline support break is eligible only on actual entry close; E+1 is timeout. Current close/(actual fill*1.001)-1>0 selects once; reject does not re-evaluate.",
+    "R/P reservation E+H survives actual early SELL and flat; fresh BUY plan only from reservation close or later actual SELL close. B has no explicit reservation observation.",
+    "H1 has no strictly early time: R support-trigger and timeout can coincide but same SELL already required; P has no evaluation. Earliest reentry is actual SELL close at E+1, equal to reservation. SELL failures keep latch, so H1 B/R/P economic equivalence holds without registering redundant accounts.",
+    "Prior-five completed in-window support,60-session readiness,fullcashlot buy,canonical limit/open/tick fills,0.001 each-side fees,failedBUYreset and SELL latch remain unchanged; no candle or market-environment gate."
+  ],
+  "independent_audit": [
+    "Rebuild actual entry clock/deadline/reservation and quantities from real fills and independently calculate support/P from normalized account closes; compare every day to shadow/public output.",
+    "Explicitly check H1 entry-day exit target and H2 event lag0 only, P rejected/non-event zero semantics, no later recheck and no same-session BUY/SELL.",
+    "Authenticate C0068..C0071, six reused original EvidenceRefs, precheck/sourceclosure, all fees/cash/stock status and unchanged original BuyHold using EX017 canonical audit."
+  ],
+  "interpretation": [
+    "This is a newly locked adaptive lower-bound follow-up to seen H3/H5 results, not independent out-of-sample validation or a new unbounded integer search.",
+    "H1 represents three economically equivalent exit definitions but counts as one candidate/trial. Distinct H2 definitions need not create distinct economic paths; explicitly test actual ledger equivalence.",
+    "Shortening clocks changes exposure, future opportunities, branch availability and fees. No assumption that more trades or better total return means all annual targets pass.",
+    "H3 observed zero positive first-break is path-specific, not mathematical impossibility; H5 positive examples occurred at E/E+1.",
+    "All original annualreturn/drawdown and60*CLOSED/1642 goals unchanged; no phase-four readiness unless every goal is satisfied."
+  ],
+  "new_account_runs": 0,
+  "external_calls": 0
+}

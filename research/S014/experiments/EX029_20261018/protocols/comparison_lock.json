@@ -1,0 +1,45 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 10,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX029_20261018"
+  },
+  "hypothesis": "Conditional reservation is distinct from conditional SELL: all early breaks still sell, but the already known P state chooses whether to retain the original E+10 reentry reservation. Test both complementary zero-boundary states because the observed grouping has no stable supported direction.",
+  "trigger": {
+    "source_sha256": {
+      "research/S014/experiments/EX028_20261018/others/account_results.json": "f13d5cdf4f9576fed60bcc459a17bf4270b90497a6214014d86b60fed98354bf",
+      "research/S014/experiments/EX028_20261018/others/account_comparison.csv": "83c378a7acb7f50f3d7b45153ba596434427152482a7050e86d70332791c957d",
+      "research/S014/experiments/EX028_20261018/others/annual_comparison.csv": "116268c0d170a4547ecbf61a0963cf79a38d4a2d9a0d57008594f59c746896eb",
+      "research/S014/experiments/EX028_20261018/others/path_diagnostics.json": "028cc96b0ceec6423709ecd96ec35e39d346496dd09332449ec28cfae9ee1bd5",
+      "research/S014/experiments/EX028_20261018/others/account_audit.json": "cb259e769bd938d1726345ed26c12fec682648a754cf482fad687b914fb9cfdc",
+      "research/S014/experiments/EX028_20261018/others/research_route_review.json": "88a710505321e4f89e092c72168b173a2de0364e458eb01d61fbfbf948fdc43e",
+      "research/S014/experiments/EX027_20261018/others/reservation_state_diagnostics.json": "f724283e449b079e1db705f06242d37d52b9d14839e56dcaaf3a047afab58af2"
+    },
+    "support": "C35 versus C56 established material participation changes from reservation.46 complete same-entry/same-exit windows supply limited state-conditioned opportunity evidence, not causal full-policy returns. Uniform H1/2/3/5/15 alternatives have failed all original targets; H18 is impossible under the frequency contract. This last structural contrast addresses an untested timing decision, not a nearby holding-period scan.",
+    "counterevidence": "Only6 complete positive-P windows,3 win3 lose;40 nonpositive-P windows have positive mean but negative median and top3-removal mean.56 unmatched early exits and35 windows still held at reservation cutoff limit transportability. P labels do not establish either conditional rule effective. Budget remaining is not the rationale."
+  },
+  "new_variants": [
+    "support_exit_profit_reserve_H10",
+    "support_exit_nonprofit_reserve_H10"
+  ],
+  "candidate_ids": {
+    "support_exit_profit_reserve_H10": "S014-C0075",
+    "support_exit_nonprofit_reserve_H10": "S014-C0076"
+  },
+  "reused_candidates": {
+    "support_exit_H10": "S014-C0035",
+    "support_exit_reserve_H10": "S014-C0056"
+  },
+  "entry": "Same60evaluation-session warmup and Close>=prior5 completed closes minimum; original limit/fullcash/failedBUYreset, no new environment or candle filters.",
+  "exit": "Both new variants use R exactly: first supportbreak strictly before E+9 OR time E+9 close emits SELL nextsession. TIME precedence on E+9 even when support breaks. Same latched failure handling; never revoke or reprice a pending SELL based on P.",
+  "state": "At first strictly early break decision only, record P=HFQ Close/(actualHFQ BUYfill*1.001)-1. Profit-reserve keeps E+10 iff P>0; nonprofit-reserve keeps E+10 iff P<=0, including zero. No later P recheck and no future fill/end-of-day-after-decision outcome used.",
+  "clock": "Initialize original E+10 reservation. If selected keep, reservation survives early SELL and earliest freshBUYdecision E+10close. If not selected, release only upon actualSELL; that close may schedule original fresh limit BUY nextsession. No same-session sell/rebuy. Late SELL beyond reservation remains held/pending until actualfill; TIME exits retain natural original clock.",
+  "sampling": "Two fixed pre-enqueuedOptuna(seed17) candidates, two authenticated original endpoint accounts C35/C56 reused;4 comparison records. Maxworkers2/native1. No threshold neighborhood, year switches, posthoc best-state or extra configurations.",
+  "analysis": "All original annual return/DD and frequency targets; actual pre2026 NAV; branch counts/Pzero cases; matched and unique capital paths, repeated BUY blocks, SELLlatch. Compare both new rules against both endpoints and each other. Distinguish changed capital paths from same-entry SELL increments.",
+  "refutation": "If neither rule meets original targets, do not claim stage4 readiness or automatically expand state thresholds. Deliver failed years, best remaining frontier and a specific unresolved mechanism; any further account rounds require new budget authorization.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000cash,.001eachside,100lot,maxqty1m,HFQ,original limitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;everyyearreturn>=1.5positiveBHelse>0,everyyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "Existing S014 pinned data only, all seen, no upstream/announcements/platform/stage4/prod/merge/remote."
+}

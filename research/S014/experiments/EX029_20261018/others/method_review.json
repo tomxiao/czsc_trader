@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "scope": "EX029 two complementary conditional reservations and original C35/R56 endpoint controls, independent actual-fill audit only.",
+  "causal_contract": [
+    "Every actualBUY E sets deadline E+9/reservationE+10. Allsupportbreaks beforedeadline emitSELL regardlessP; TIME atE+9 takes precedence and doesnotclassify.",
+    "FirstearlySELLdecision records P=currentnormalizedClose/(actualfill*1.001)-1 once;profitvariant reserves iffP>0,nonprofit iffP<=0. No condition use of futureSELL/outcome.",
+    "selected/checkedpersist acrossactualSELL andflat untilnextactualBUY. BUY resetscheckedFalse/selectedTrue; TIME retainsnaturalclock. Nonselectedreservation remainsuntilactualSELL,thenreleases-1; futureentry canonlyplanatthatclose.",
+    "PendingSELL neverrevoked; failedSELL doesnotreclassify anddoesnotreleaseclock; no same-sessionBUYSELL. Support5,warmup60,fullcashlots,fees,execution andfailedBUYresetunchanged."
+  ],
+  "independent_audit": [
+    "Rebuild eventP fromactualfills andnormaldailyclose, compareallfiveextraobs withcrossflat persistence.",
+    "Verifyeveryactualentry/freshsignal,deadline/timeevent,selected/declinedreservation,releaseatactualSELL,waiting/blockedcounts andnoorderswithunreadyconditions.",
+    "AuthenticateC75/C76,originalC35/C56exactEvidenceRefs,closure/precheck andEX017publiccanonicalledgerchecks; preserveallchecksandhashfulloutput."
+  ],
+  "interpretation": [
+    "Stateonlychangesreentrytiming,notSELL;pathchangesmeanscomplementaryaccountreturnsnotadditive.",
+    "Prior46completewindows/6positives/56unmatched provideweakpost-resultdiagnostic,notproven direction;testbothlockedorientationswithoutthresholdorcalendarselection.",
+    "Finalauthorizedround10:alloriginalannualreturn/DD/frequencyremainsoleeconomicgates;noextraaccounts/phase4beyondexistingauthorization."
+  ],
+  "new_account_runs": 0,
+  "external_calls": 0
+}

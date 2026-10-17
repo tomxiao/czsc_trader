@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_upstream_calls": 0,
+  "source_sha256": {
+    "research/S014/experiments/EX029_20261018/others/account_results.json": "604a181819959e9bdbe668dbda049b8179f5e96d81732354fbb549b0f95ea6e1",
+    "research/S014/experiments/EX029_20261018/others/annual_comparison.csv": "d5d0a621a418b018d655c280ff15516dbf3cb14d95b067f0874c06c1f97d4524",
+    "research/S014/experiments/EX029_20261018/others/path_diagnostics.json": "f351fc017aef223ea7c181c408c1d9305deaa8207d88cb5e29d0a8517cc05426",
+    "research/S014/experiments/EX029_20261018/protocols/comparison_lock.json": "2af0184910389593322124ad584351261ef3ee71b32164444ede1a307a012dc1",
+    "research/S014/experiments/EX023_20261018/others/loss_state_diagnostics.json": "dfc6ba12a24f800f534c184c79cbe4cf2bfb7ebb814cf8339d4f395954fe8265"
+  },
+  "scope": "Interpret only final round C75/C76 and previously scoped S014 evidence. Do not assert a global candidate frontier before the separate budget summary.",
+  "final_round_results": [
+    {
+      "variant": "support_exit_profit_reserve_H10",
+      "candidate": "S014-C0075",
+      "total_return": 2.631033649999996,
+      "annual_return_pass_count": 1,
+      "annual_drawdown_pass_count": 6,
+      "annual_both_pass_count": 1,
+      "frequency_per_60": 8.221680876979294,
+      "all_targets_pass": false
+    },
+    {
+      "variant": "support_exit_nonprofit_reserve_H10",
+      "candidate": "S014-C0076",
+      "total_return": 2.802396050000001,
+      "annual_return_pass_count": 2,
+      "annual_drawdown_pass_count": 6,
+      "annual_both_pass_count": 2,
+      "frequency_per_60": 5.225334957369062,
+      "all_targets_pass": false
+    }
+  ],
+  "finding": {
+    "C75": "Positive-P reservation improves2025 versus no-reservation C, but +36.6200% remains below required+40.1879%;2024 turns negative(-5.8854%).2021+71.2503% remains below+71.9038%, without rounding or relaxing the target. Only2020 satisfies annual return.",
+    "C76": "Nonpositive-P reservation leaves2022/2024/2025 negative(-9.4742%,-27.3120%,-10.2433%). Only2020/2023 satisfy annual return.",
+    "shared": "Both frequency requirements pass, but neither meets all original annual return/drawdown targets. Conditional waiting does not establish an effective component.",
+    "route_stop": "End this once-only P-sign conditional-reservation route. Do not subdivide P, tune waits, combine annual winners, or reopen uniform horizon scans by default."
+  },
+  "research_limits": [
+    "The ten authorized autonomous account rounds are allocated/used; this is an authorization boundary, not evidence that research is exhaustive or sufficient.",
+    "No claim that existing data are exhausted, that the original goals are impossible, or that every possible strategy family has failed.",
+    "All studied paths reuse already-seen data and adaptive research choices. Candidate identities/economically identical paths are not independent discoveries.",
+    "Same-entry labels and common-window diagnostics do not identify capital-path effects; formal accounts often replace the opportunity set.",
+    "Original fee/execution/HFQ/BuyHold/calendar-year requirements stay unchanged. No stage4 readiness is inferred from high total return or partial-year success."
+  ],
+  "proposed_next_authorized_scope": {
+    "stage": "Return to stage-two targeted mechanism diagnosis before additional stage-three accounts.",
+    "question": "Does a new support-qualified opportunity arise because price has reclaimed the previously frozen broken support level, or because the rolling five-close minimum moved down? Do these causal states separate later repair returns, downside losses, and opportunity persistence?",
+    "known_inputs": "At each observed break, freeze the pre-break prior-five-close minimum. At each later recovery decision close, compare current close against that frozen value and current rolling support; use no future extrema, sale outcomes or annual labels in the condition.",
+    "population": "Enumerate the full declared break/recovery opportunity population with deterministic episode rules fixed before labels, rather than only C/R common trades. Keep every unavailable/overlap/censoring case explicit.",
+    "necessary_counterexample": {
+      "window": "ALL",
+      "entry_cohort": "ALL",
+      "dimension": "entry_below_previous_broken_floor",
+      "state": true,
+      "n": 69,
+      "positive_n": 31,
+      "negative_n": 38,
+      "positive_log": 2.423226654454555,
+      "negative_log": -1.2487100994722524,
+      "net_log": 1.1745165549823025,
+      "mean_position_return": 0.023374270140041255
+    },
+    "interpretation": "The prior69 below-old-floor actual R entries have positive net cyclelog1.1745166 and31positive/38negative trades. This directly prevents treating fixed-level reclaim as an already-supported filter. The next study must test both helpful and harmful opportunities and whether the moving threshold adds or removes actual economic information.",
+    "analysis_only_proposal": "Compare fixed holding labels and downside/upside contributions using existing costs/execution, all years and true pre2026 cutoff; account for overlapping episodes and tail concentration. These are diagnostic reports, not new hard gates or automatic strategy filters.",
+    "new_authorization_required": "Ask the user to authorize this scoped stage-two diagnosis and its bounded experiment allowance. If evidence later supports a complete strategy contrast, request a new stage-three account budget. No new upstream data are presently required for the proposed first diagnosis.",
+    "not_started": true
+  },
+  "validation_note": "Existing formal results and path arithmetic read only. Final independent EX029 account audit, global budget reconciliation, candidate frontier and public delivery validation are separate outputs."
+}

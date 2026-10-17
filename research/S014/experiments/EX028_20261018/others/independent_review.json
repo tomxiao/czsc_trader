@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "scope": "EX028 three H15 actual accounts and three exact H10 baselines; final report and proposed publication reviewed only. No new accounts or source calls by reviewer.",
+  "checks": [
+    "Three COMPLETE locked Optuna trials C0072..74 and targetmargin independently checked.42annual NAVreturn/DD rows and6frequency/alltarget flags independently recomputed.",
+    "172prechecks and90784independent execution/state checks PASS. ActualBUY E determines E+14deadline andR/P E+15reservation, fivepreviousclose support/warmup60 unchanged; allquantity/fees/cash/fills/order/status/BH reconciled.",
+    "Each account has97actualBUY. B/P96closed1open,R97closed0open; no contradiction with96fixed/97relaxedearly closedcapacity bounds.",
+    "P88firstbreaks=17positive71nonpositive,select17reject71,193laterbreaks ignored, events onlyE..E+13. R88earlyexits. R/Pretainedreservationflat905/96andblockedsignal666/64.",
+    "Actual failedSELL andsuspension counts0; these branches only syntheticprecheckcoverage, not claimedrealvalidation.",
+    "Twelve full/pre2026 cycle/NAV reconciliations and12aggregate logdecompositions independently match actualreturns; outputhashes checked.",
+    "H15/H10pairsmatched17,oldonly121,newonly80; sameH15B/R/P97entriesmatch. Label-average benefit is not transported to actualcapitalpath.",
+    "Finalfour source/reporthashes,7formalrelative links,route sources andallEX029triggerhashes independently agree.",
+    "ProposedCANDIDATES/12inherits61adds3to64,0handoff; completedround9andallocatedround10preserved, lastbudgetround executing."
+  ],
+  "findings": [],
+  "economic_result": {
+    "new_total_returns": [
+      1.3619338000000023,
+      0.32446215999999994,
+      2.1567026000000014
+    ],
+    "new_annual_return_pass_counts": [
+      2,
+      1,
+      2
+    ],
+    "new_annual_drawdown_pass_counts": [
+      3,
+      6,
+      6
+    ],
+    "new_closed_counts": [
+      96,
+      97,
+      96
+    ],
+    "fully_passing_comparison_accounts": 0,
+    "phase_four_ready": false
+  },
+  "limitations_to_preserve": [
+    "AllH15variants belowcorrespondingH10 full/pre2026return; frequencyadequate doesnotreplace annualeconomics.",
+    "P samepath exitincrement exists but no alltargetreadiness;R2022improvement accompanies2025large loss.",
+    "Seen-data adaptation andoverlappingreferences, not independent sample-out validation.",
+    "Conditionalreservation orientations remain unproven hypotheses, distinct from conditionalSELL; limitedmatched6positivewindows and56unmatchedcounterevidence retained.",
+    "Uniformdurationroute ended; finalEX029only aslocked, no additionalrounds/thresholdneighborhood/phase4withoutnewauthorization."
+  ],
+  "publication_review": {
+    "reviewed_only": true,
+    "formal_publication_executed": false,
+    "intended_delivery": "CANDIDATES/12",
+    "registered_count_after_success": 64,
+    "hash_binding": "Material changes after reviewed bytes require renewed review."
+  },
+  "source_file_sha256": {
+    "research/S014/experiments/EX028_20261018/protocols/account_report.md": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+    "research/S014/experiments/EX028_20261018/src/write_report.py": "1da1a7f14837248f3661c170a2e4d0d93be4378b7cb1215a8d6b426236567f67",
+    "research/S014/experiments/EX028_20261018/others/comparison.json": "acbd1b4941355226e27587686bc28edef7767cb0df02848bdb58e6c513a0d682",
+    "research/S014/experiments/EX028_20261018/src/publish_accounts.py": "b2ddf5364bf35a291b477466e3fecd4a15cbff3140809017dced3f8c350056f1",
+    "research/S014/experiments/EX028_20261018/src/audit_accounts.py": "d05375f970e93e0fd23c41172f136c7cdaa9a9bade354181a5c0885e85683e94",
+    "research/S014/experiments/EX028_20261018/src/strategy_runtime/strategies/repair.py": "8b2fdf7e73718315fc416f43cc08ab0c8d775b1060eca30a9614062903b7c329",
+    "research/S014/experiments/EX028_20261018/src/run_accounts.py": "848650d6503286d720b8912dbb8a82e6b42ddea3f953374236e020fe9b3b6c25",
+    "research/S014/experiments/EX028_20261018/src/compare_accounts.py": "90ca9fa75b0bea1a1d888adc756fb5de32e027b70dffb1657cb2ad96090a1515",
+    "research/S014/experiments/EX028_20261018/src/path_diagnostics.py": "8df22329ead202e8eadb94fd8b0773fc8fadebfb723681089a3b5ae838574791",
+    "research/S014/experiments/EX028_20261018/protocols/comparison_lock.json": "aad54161fd33a8b74d29700a88ceb4e1830e2658d7cec3787c067217f8f6a2cf",
+    "research/S014/experiments/EX028_20261018/others/precheck.json": "0d2d40619dff931759af694147f00c9dbbe6323f295f0d597a110bc81e451c0d",
+    "research/S014/experiments/EX028_20261018/others/account_audit.json": "cb259e769bd938d1726345ed26c12fec682648a754cf482fad687b914fb9cfdc",
+    "research/S014/experiments/EX028_20261018/others/account_results.json": "f13d5cdf4f9576fed60bcc459a17bf4270b90497a6214014d86b60fed98354bf",
+    "research/S014/experiments/EX028_20261018/others/comparison_accounts.json": "afa1b110c8bb51de5186d104dd3d759e3e4389f9858274aaa1a25d406fd841e2",
+    "research/S014/experiments/EX028_20261018/others/annual_comparison.csv": "116268c0d170a4547ecbf61a0963cf79a38d4a2d9a0d57008594f59c746896eb",
+    "research/S014/experiments/EX028_20261018/others/optuna_trials.json": "3bb12d37cae1fb870905ea691e5e3c904d3bc9ca3cd67a42bebbc282504cb4f1",
+    "research/S014/experiments/EX028_20261018/others/path_diagnostics.json": "028cc96b0ceec6423709ecd96ec35e39d346496dd09332449ec28cfae9ee1bd5",
+    "research/S014/experiments/EX028_20261018/others/method_review.json": "0dca5bcfcc216c27021037161f7721a58326f9f67f59ce25cc67dd972dc095ce",
+    "research/S014/experiments/EX028_20261018/others/research_route_review.json": "88a710505321e4f89e092c72168b173a2de0364e458eb01d61fbfbf948fdc43e",
+    "research/S014/experiments/EX029_20261018/protocols/comparison_lock.json": "2af0184910389593322124ad584351261ef3ee71b32164444ede1a307a012dc1"
+  },
+  "account_audit_check_count": 90784,
+  "annual_rows_independently_recalculated": 42,
+  "aggregate_path_pairs_independently_recalculated": 12,
+  "external_calls": 0,
+  "new_account_runs": 0
+}

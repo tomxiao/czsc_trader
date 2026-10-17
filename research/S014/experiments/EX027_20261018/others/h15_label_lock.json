@@ -1,0 +1,16 @@
+{
+  "status": "LOCKED_BEFORE_LABEL_CALCULATION",
+  "scope": "One fixed H15 label for every actual H10-B entry, no new account/candidate/data.",
+  "source_records_sha256": "4ea4d2385fa63e9048193557436df25213d8456f4916417928de3968b3a4ef9d",
+  "capacity_sha256": "7696fe773e20d2d81e0de61533b069fcfaf0768369f27139011841fa2fe04c81",
+  "population": "All actual support_entry_H10 BUYs; no selection on surviving to deadline or positive outcome.",
+  "target": "Same actual BUY date, quantity and fee; decision E+14 close, earliest public MARKET SELL E+15; on suspended/untouched exit keep SELL latched until public fill or cutoff.",
+  "baseline": "Actual H10 SELL and fees; independently reproduce earliest SELL from E+10 and require exact date/price agreement.",
+  "fee": "0.001 each side, actual buy outlay includes buy fee; hypothetical sell proceeds deduct 0.001. No artificial exit fee on right-censored mark.",
+  "windows": [
+    "Full cutoff2026-10-15",
+    "True cutoff2025-12-31; no2026 exits/prices used"
+  ],
+  "statistics": "For complete paired labels only: n, positive/negative/net increment, mean/median/min/max, mean removing top3/top5; ALL and every entry-year. Retain every censored entry separately, marked without fake sell fee, not mixed into completed-label means.",
+  "boundaries": "Future outcome label only. Overlapping same-entry positions are not an account; do not sum or compound them as wealth. Does not measure changed entry/quantity/reservation path or annual NAV targets. No H18 label, since capacity excludes it."
+}

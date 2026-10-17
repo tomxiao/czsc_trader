@@ -1,0 +1,48 @@
+{
+  "status": "LOCKED_BEFORE_NEW_ACCOUNTS",
+  "autonomous_round": 8,
+  "total_round_budget": 10,
+  "experiment": {
+    "type": "ExperimentRef",
+    "strategy_id": "S014",
+    "experiment_id": "EX027_20261018"
+  },
+  "hypothesis": "H3 improved over H5 on total return in all three exits and2024, but not the whole original target set or H10 superiority. Check the natural short-horizon boundary once instead of assuming H3 optimal or scanning further integer neighborhoods.",
+  "trigger": {
+    "source_sha256": {
+      "research/S014/experiments/EX026_20261018/others/account_results.json": "d83203b689ad6afa76b16c03cb8947189e99a4619c599798524919d78668e75f",
+      "research/S014/experiments/EX026_20261018/others/annual_comparison.csv": "84ed5e8f9901f49b2680ab3bf2705489b0460e60a18db54376fdecb0af278afd",
+      "research/S014/experiments/EX026_20261018/others/path_diagnostics.json": "d5199e67ffcb1d9b058c1ad7b8fc9b3e485a5beb6304bca4070d59d25b898a3d",
+      "research/S014/experiments/EX026_20261018/others/account_audit.json": "47bc4a9f0c55626396187fe543ce9179cbaca337b46e450ae5412619038494d0"
+    },
+    "counterexamples": "All six H3/H5 accounts pass return only2020/2024;2022/2023 and2025/2026 remain deficient. H3P accepted no early exit and is economically identical toH3B. There is no proven decision-time state for choosing a horizon from annual complementarity."
+  },
+  "new_variants": [
+    "support_entry_H1",
+    "support_entry_H2",
+    "support_exit_reserve_H2",
+    "support_first_profit_exit_H2"
+  ],
+  "candidate_ids": {
+    "support_entry_H1": "S014-C0068",
+    "support_entry_H2": "S014-C0069",
+    "support_exit_reserve_H2": "S014-C0070",
+    "support_first_profit_exit_H2": "S014-C0071"
+  },
+  "reused_candidates": {
+    "support_entry_H3": "S014-C0062",
+    "support_exit_reserve_H3": "S014-C0063",
+    "support_first_profit_exit_H3": "S014-C0064",
+    "support_entry_H10": "S014-C0034",
+    "support_exit_reserve_H10": "S014-C0056",
+    "support_first_profit_exit_H10": "S014-C0057"
+  },
+  "entry": "Original60-sessionwarmup and prior5closingminimum support, no candle/environment gates, originalfreshlimit and failedBUYreset/fullcash.",
+  "clock": "ActualBUY E; deadline decision E+H-1; SELLfromnextsession; R/P reservation E+H retained acrossflat; nextBUYdecision onlyafterreservation. Existing SELLlatch/lateactualsale/reentry/failedBUY unchanged.",
+  "exit": "B timeout only. H2R supportbreak or timeout; H2P FIRST supportbreak strictlybeforedeadline tests Close/(actualfill*1.001)-1>0 once,otherwisewaittimeout. H2 has onlyactualBUYday earlybranch. H1 has deadline atBUYdayclose and therefore no strict earlybranch; B/R/P mathematically identical undercurrentcontracts, so execute onlyB representative and proveequivalence inprecheck instead of creatingredundantaccounts.",
+  "sampling": "Four fixed pre-enqueuedOptuna(seed17) configurations, six authenticated H3/H10 baseline accounts reused, ten comparison records; noH0/samedayexit (T+1fixed), no furtherlowerneighborsearch. maxworkers2/native1.",
+  "analysis": "Originalannualtargets/frequency,fees/turnover,pre2026actualNAV,matched/uniqueentrypaths,firstbreakbranchsupport. H1 representsallthreeexits but notthreeindependenttrials. No year-basedselection, portfolio averaging, or apparent totalreturn optimum treated as economicpass.",
+  "refutation": "If shortedge fails, close the uniformshortcycle route rather than automatically adding thresholds. If it improves meaningfultargettradeoffs, explain actualcause before nextconstruction. H1 isnaturalminimum underfixedT+1, so this completes lowerboundary coverage.",
+  "frozen": "Same1642sessions2020-01-02..2026-10-15,100000cash,.001eachside,100lot,maxqty1m,HFQ,originallimitbuy/openorlimitdownplusoneticksell/LimitBuyHold,noannualreset/noterminalclose;eachyearreturn>=1.5positiveBHelse>0,eachyearDD<BH,60*CLOSED/1642>=3.",
+  "scope": "ExistingS014pinneddataonly,allseen,noannouncements,newdata,platform,phase4,production,remote."
+}
