@@ -52,6 +52,7 @@
       },
       "timestamps": "UNVERIFIED"
     },
+    "announcement_tracing": "PAUSED_BY_USER",
     "approved_added_data": {
       "dataset": "index.domestic_daily",
       "end": "2026-10-15",
@@ -149,27 +150,25 @@
       "No reading other research batches' data",
       "No merge or push authorization for this branch"
     ],
-    "component_definitions": 25,
+    "component_definitions": 26,
     "components": {
       "batch": {
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "84879c35ed2efe054d562f7ee850df5770d63077362cc2264a3c5245be0b0949",
-      "revision": 9,
+      "content_sha256": "61ad6f63fa7816a6ed78db8a2aa24bed16687535de8f20daa545c6d3ed7df7e9",
+      "revision": 10,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "原始公告具有非行情事实内容，但小样本未支持可交易收益增量：15例5配对，3组共享事前财报，2024前后差异有披露后亏损反例，2026主要正例同日时点未核实。保持不采购、不接平台；下一问题仅建议追溯风电项目首次披露链。25项定义和2项辅助不变，0新增收益组件，阶段二PARTIAL。",
+    "conclusion": "七族数值机制完成覆盖盘点、批量及反证；新增1项有限SUPPORTED的H3低开收阳缺口序列环境参考，原2项辅助保留，共26项定义。该状态模型筛选用途未获支持，直接入场收益组件仍0；公告暂停，0源调用，阶段二PARTIAL。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
-      "actual_tushare_calls": 0,
-      "first_publication_time": "UNVERIFIED",
-      "full_period_coverage": "UNVERIFIED",
-      "remaining_tushare_calls": 0,
-      "scope": "SSE/CNInfo公开原始公告小样本，15例5窗口32PDF关键页，分类后解盲，不含平台、账户或采购",
+      "actual_source_calls": 0,
+      "remaining_source_calls": 0,
+      "scope": "仅S014既有股票/市场/行业数据及标签的数值机制研究；公告暂停，无源调用或平台、账户操作",
       "source": "Current human conversation",
-      "verbatim": "同意，暂不购买公告权限。先按你的建议开展小规模原始公告核查，判断是否有值得继续研究的信息增量，你自主推进。",
+      "verbatim": "同意，暂缓公告追溯，优先普查数值类收益机制。先梳理已有证据和未覆盖方向，再利用现有数据批量验证，你自主推进，以有证据支持的有效组件为目标。",
       "window": [
         "2020-01-01",
         "2026-10-15"
@@ -177,10 +176,10 @@
     },
     "diagnostic_feedback": {
       "assessment": [
-        "3组共享事前财报，2024年差异存在普通亏损反例。",
-        "2026盈利信号当天公告时点不明，禁止计入主判。",
-        "风电业务进展是内容线索，首次披露与短期收益尚未验证。",
-        "原25项定义及2项辅助保持，新增收益用途0。"
+        "新状态H3主差+2.7757个百分点，T-1、去2026及事件去重仍正。",
+        "匹配34簇等权+1.1339个百分点，删任一簇全期仍正；匹配覆盖及2023反例限制推广。",
+        "强基线加入状态后筛选未改善，高状态2025仍亏；只支持环境参考职责。",
+        "公告暂停、不扩源，原2辅助加1环境参考，阶段二未完成。"
       ],
       "attribution_delivery": {
         "batch": {
@@ -192,31 +191,31 @@
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
-      "authorization": "同意，暂不购买公告权限。先按你的建议开展小规模原始公告核查，判断是否有值得继续研究的信息增量，你自主推进。",
+      "authorization": "同意，暂缓公告追溯，优先普查数值类收益机制。先梳理已有证据和未覆盖方向，再利用现有数据批量验证，你自主推进，以有证据支持的有效组件为目标。",
       "closure_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "84879c35ed2efe054d562f7ee850df5770d63077362cc2264a3c5245be0b0949",
-        "revision": 9,
+        "content_sha256": "61ad6f63fa7816a6ed78db8a2aa24bed16687535de8f20daa545c6d3ed7df7e9",
+        "revision": 10,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
       "decision_update": "撤回COMPONENTS/4直接推进阶段三建议；当前PARTIAL，阶段二继续。",
-      "execution_scope_this_turn": "5窗口62条双源目录、32原文关键页、先分类后解盲15例，不新增Tushare调用或平台。",
-      "judgment_update": "公告有内容增量，但收益增量未获支持；先查首次披露，不能以购买目录替代时点和因果证据。",
+      "execution_scope_this_turn": "已有证据盘点、七族数值批量、直接条件、匹配/簇反证、用途检验；零上游调用。",
+      "judgment_update": "相对环境分层得到限定支持；对强筛选和账户用途保持证据边界，不在反证后追加无关硬门。",
       "priority_question": "决策前可知的公司披露信息能否区分持续负面重定价与暂时修复？先验证事件目录、权限与真实发布时间。",
-      "recommended_minimum_design": "建议有界追溯同公司天玥设立、风电项目核准、增资及设备合同的首次披露链，先核验新增事实与实际公开时间；仅在证据成立后提出时间保守的增量检验，不先批量扩公告、采购或进入阶段三。",
-      "result": "原始公告具有非行情事实内容，但小样本未支持可交易收益增量：15例5配对，3组共享事前财报，2024前后差异有披露后亏损反例，2026主要正例同日时点未核实。保持不采购、不接平台；下一问题仅建议追溯风电项目首次披露链。25项定义和2项辅助不变，0新增收益组件，阶段二PARTIAL。",
-      "reviewed_commit": "9e72e30f",
+      "recommended_minimum_design": "保持阶段二与已有数据，锁定新环境组件；优先查2025等高状态仍亏时的互补信息，不再优化同一自相关窗口。",
+      "result": "七族数值机制完成覆盖盘点、批量及反证；新增1项有限SUPPORTED的H3低开收阳缺口序列环境参考，原2项辅助保留，共26项定义。该状态模型筛选用途未获支持，直接入场收益组件仍0；公告暂停，0源调用，阶段二PARTIAL。",
+      "reviewed_commit": "d25037e7",
       "reviewed_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "84879c35ed2efe054d562f7ee850df5770d63077362cc2264a3c5245be0b0949",
-        "revision": 9,
+        "content_sha256": "61ad6f63fa7816a6ed78db8a2aa24bed16687535de8f20daa545c6d3ed7df7e9",
+        "revision": 10,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
@@ -224,8 +223,8 @@
         "primary": "阶段二：公司信息可得性与可证伪机制",
         "stage_three": "当前不建议且未批准"
       },
-      "routing_after_result": "阶段二PARTIAL；本次小规模核查完成，后续首次披露链为建议未执行。",
-      "verified": "COMPONENTS/9 PARTIAL/FULL/PASS；25项离线检查。"
+      "routing_after_result": "继续阶段二数值机制互补研究；阶段三尚未推荐/批准。",
+      "verified": "COMPONENTS/10 PARTIAL/FULL/PASS；24项检查、528次审核复算，原25定义保持。"
     },
     "mandate": {
       "batch": {
@@ -236,6 +235,27 @@
       "revision": 2,
       "stage": "MANDATE",
       "type": "DeliveryReference"
+    },
+    "numerical_census": {
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "61ad6f63fa7816a6ed78db8a2aa24bed16687535de8f20daa545c6d3ed7df7e9",
+        "revision": 10,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "entry_screening": "NOT_SUPPORTED",
+      "experiment": {
+        "experiment_id": "EX013_20261017",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "families": 7,
+      "new_sources": 0,
+      "supported_new_role": "H3低开收阳相对收益环境参考"
     },
     "objectives": {
       "annual_drawdown": "For every accepted calendar year: strategy drawdown magnitude < BuyHold drawdown magnitude. A tie fails.",
@@ -295,7 +315,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议有界追溯同公司天玥设立、风电项目核准、增资及设备合同的首次披露链，先核验新增事实与实际公开时间；仅在证据成立后提出时间保守的增量检验，不先批量扩公告、采购或进入阶段三。"
+      "保持阶段二与已有数据，锁定新环境组件；优先查2025等高状态仍亏时的互补信息，不再优化同一自相关窗口。"
     ],
     "phase_three_approved": false,
     "phase_three_ready": false,
@@ -313,9 +333,10 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二进行中：原始公告小样本核查完成，未支持收益增量，建议追溯首次披露",
+    "stage": "阶段二进行中：数值机制优先普查，新增有限收益环境参考，筛选用途待补",
     "strategy_accounts": 0,
-    "supported_components": 2,
+    "supported_components": 3,
+    "supported_return_context_components": 1,
     "supported_return_entry_components": 0
   },
   "research_state": "RESEARCHING",
@@ -324,5 +345,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-17T21:16:31+08:00"
+  "updated_at": "2026-10-17T21:53:51+08:00"
 }

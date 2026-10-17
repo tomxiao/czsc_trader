@@ -1,0 +1,15 @@
+{
+  "timing": "修正后80项结果已看；没有同时区间全正结果。追查线索不等于选定有效组件。",
+  "targets": [
+    {"family":"compression","horizon":5,"algorithm":"ridge","reason":"四个年度分配增量同号、MAE改善；绝对增量小且删极端后弱，检查是否只是波动/样本噪声。"},
+    {"family":"drawdown_age","horizon":5,"algorithm":"tree","reason":"原线索经过正确峰后修复及强区间位置控制后减弱，选择516次vs基线345次，需排除选择率和树叶同分影响。"}
+  ],
+  "fixed_checks": "每项复现修正主模型；训练标签1%/99%截尾但评价标签保持原值；仅用最近252条已成熟标签训练；精简基线对照；逐个去除族中5个特征。所有方案保持T+1执行和原H5标签。",
+  "lean_baseline": ["ret1","ret5","ret20","stock_ret60","range","volume_ratio","gap","intraday","market_ret5","market_ret20","sector_ret5","sector_ret20","vol20","vol60","drawdown60","range_location60","rise_from_low_speed60","volume_location","signed_volume","volume_momentum"],
+  "tie_diagnostic": "固定对每个信号以确定性哈希产生与收益无关的连续打破同分值，按(score,tie)计算相对过去126分数的秩，当前百分位>=0.75才选择。以同一规则分别作用于基线/新增模型，报告实际选择率，不能声称样本外次数完全相等。该规则仅比较同分影响，不改变原主结果。",
+  "direct_mechanisms": "compression：当日扩张>1且ret1>0为父条件，比较前期vol20/vol60<1和>=1。drawdown_age：drawdown60<0且ret1>0且峰后恢复比例>=0.5为父条件，比较峰值年龄>=20与<20。报告原净收益与扣除原强基线预测后的差，按年列样本；不是因果效应或新策略。",
+  "dependence": "原固定步长保留为稀疏诊断；严格不重叠使用全局按entry排序、下一entry>上一maturity，明确事后退出仅用于描述性去重。核验每年主区块日期连续，否则补完整网格敏感性。",
+  "decision": "本次不追逐新的最优参数或续增模型族。若原信号在简单控制、尾部或同分诊断下消失，保留反证并标为不足；若仍稳定且直接机制一致，再说明具体组件职责和局限。不能以比较次数完成作为有效性结论。",
+  "source_calls":0,
+  "phase_three_approved":false
+}

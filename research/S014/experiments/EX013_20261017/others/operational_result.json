@@ -1,0 +1,151 @@
+{
+  "fits": 24,
+  "splits": [
+    {
+      "year": 2023,
+      "threshold": -0.0760219368649267,
+      "first_signal": 728,
+      "latest_train_maturity": 727
+    },
+    {
+      "year": 2024,
+      "threshold": -0.0622164244375499,
+      "first_signal": 970,
+      "latest_train_maturity": 969
+    },
+    {
+      "year": 2025,
+      "threshold": -0.0576572815439245,
+      "first_signal": 1212,
+      "latest_train_maturity": 1211
+    },
+    {
+      "year": 2026,
+      "threshold": -0.045722303401452905,
+      "first_signal": 1455,
+      "latest_train_maturity": 1454
+    }
+  ],
+  "comparisons": [
+    {
+      "algorithm": "ridge",
+      "model": "continuous",
+      "scope": "all",
+      "delta": 0.00013750267032967034,
+      "ci_low": -6.582972225274769e-05,
+      "ci_high": 0.00036786210137362667,
+      "simultaneous_low": -0.00014559880198087782,
+      "simultaneous_high": 0.0004206041426402185
+    },
+    {
+      "algorithm": "ridge",
+      "model": "continuous",
+      "scope": "parent",
+      "delta": -0.0002931000462962953,
+      "ci_low": -0.0007583153498829915,
+      "ci_high": 0.0,
+      "simultaneous_low": -0.0008355577442630507,
+      "simultaneous_high": 0.0002493576516704601
+    },
+    {
+      "algorithm": "ridge",
+      "model": "binary",
+      "scope": "all",
+      "delta": -0.00013275503296703153,
+      "ci_low": -0.0004525504085164817,
+      "ci_high": 0.00018331240631868303,
+      "simultaneous_low": -0.000545572288100121,
+      "simultaneous_high": 0.00028006222216605804
+    },
+    {
+      "algorithm": "ridge",
+      "model": "binary",
+      "scope": "parent",
+      "delta": -0.0007821861574074065,
+      "ci_low": -0.0019381810433058012,
+      "ci_high": 0.0,
+      "simultaneous_low": -0.002083273330756348,
+      "simultaneous_high": 0.0005189010159415351
+    },
+    {
+      "algorithm": "tree",
+      "model": "continuous",
+      "scope": "all",
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "simultaneous_low": 0.0,
+      "simultaneous_high": 0.0
+    },
+    {
+      "algorithm": "tree",
+      "model": "continuous",
+      "scope": "parent",
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "simultaneous_low": 0.0,
+      "simultaneous_high": 0.0
+    },
+    {
+      "algorithm": "tree",
+      "model": "binary",
+      "scope": "all",
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "simultaneous_low": 0.0,
+      "simultaneous_high": 0.0
+    },
+    {
+      "algorithm": "tree",
+      "model": "binary",
+      "scope": "parent",
+      "delta": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "simultaneous_low": 0.0,
+      "simultaneous_high": 0.0
+    }
+  ],
+  "direct_filter": [
+    {
+      "year": "ALL",
+      "parent_n": 216,
+      "weak_n": 60,
+      "delta_per_parent": 0.0032524540740740456
+    },
+    {
+      "year": "WITHOUT2026",
+      "parent_n": 157,
+      "weak_n": 48,
+      "delta_per_parent": 0.003182128280254747
+    },
+    {
+      "year": "2023",
+      "parent_n": 35,
+      "weak_n": 13,
+      "delta_per_parent": -0.0025003420000000226
+    },
+    {
+      "year": "2024",
+      "parent_n": 46,
+      "weak_n": 16,
+      "delta_per_parent": 0.006521551956521688
+    },
+    {
+      "year": "2025",
+      "parent_n": 76,
+      "weak_n": 19,
+      "delta_per_parent": 0.0037778252631578725
+    },
+    {
+      "year": "2026",
+      "parent_n": 59,
+      "weak_n": 12,
+      "delta_per_parent": 0.0034395922033898067
+    }
+  ],
+  "source_calls": 0,
+  "strategy_accounts": 0
+}
