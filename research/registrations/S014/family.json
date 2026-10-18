@@ -1178,17 +1178,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      {
-        "automatic_accounts": false,
-        "automatic_horizon_or_direction_change": false,
-        "automatic_new_experiments": false,
-        "claim_data_or_mechanisms_exhausted": false,
-        "claim_new_data_required": false,
-        "fees_execution_annual_targets": "UNCHANGED",
-        "overall_target_status": "NOT_ACHIEVED",
-        "recommendation": "S014 restricted stop of new experiments pending user decision",
-        "restart_requirement": "New independent mechanism evidence distinguishable from rejected explanations, causal availability, intended trading use and a bounded falsification design, followed by applicable user authorization."
-      }
+      "建议暂停S014新增实验，保留原目标及历史证据；当前没有足够依据优先推荐新的收益机制。行业广度仅保留为尚未支持的备选，进一步机制/数据价值评审及实验均不自动启动。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1219,6 +1209,34 @@
     },
     "phase_three_ready": true,
     "phase_two_complete": true,
+    "post_ex032_learning_feedback": {
+      "authorization": "进入研究诊断和学习反馈状态，给出下一步研究建议",
+      "evidence": {
+        "evidence_id": "8e056689afe7da2c26f8f629e97e42caa728addc211a90f3eb31d1acebeb5e09.md",
+        "experiment": {
+          "experiment_id": "EX032_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "post-ex032-learning-feedback-report",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8e056689afe7da2c26f8f629e97e42caa728addc211a90f3eb31d1acebeb5e09",
+        "type": "EvidenceRef"
+      },
+      "fees_execution_annual_targets": "UNCHANGED",
+      "future_execution_authorized": false,
+      "new_accounts": 0,
+      "new_data_calls": 0,
+      "new_fits": 0,
+      "new_labels": 0,
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "primary_route": "STAGE_TWO_DIAGNOSTIC_AWAITING_DECISION",
+      "recommendation": "Pause new S014 experiments; preserve original targets and evidence.",
+      "status": "COMPLETE_RECOMMENDATION_PENDING_USER_DECISION"
+    },
     "ready": true,
     "remaining_source_calls": 7,
     "research_route_review": {
@@ -1354,7 +1372,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二固定交互检验完成：关闭该分支，受限停止建议待用户决定",
+    "stage": "研究诊断及学习反馈：EX032后诊断完成，暂停新增实验建议待用户决定",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1607,5 +1625,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T17:09:15+08:00"
+  "updated_at": "2026-10-18T17:54:07+08:00"
 }
