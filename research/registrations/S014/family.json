@@ -350,7 +350,7 @@
         "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
         "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
       },
-      "routing_after_result": "旧支撑过滤路线保持关闭；甲醇8次上游核查完成，主力日线/映射覆盖1642日，原合约和历史时点仍有限制；等待下一范围确认",
+      "routing_after_result": "旧过滤路线保持关闭；甲醇接入方案完成评审，等待口径及DEV实施授权，日历缺口与原合约补齐另行处理；未恢复模型账户研究。",
       "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
     "h3_downside_duration": {
@@ -383,6 +383,54 @@
       "revision": 2,
       "stage": "MANDATE",
       "type": "DeliveryReference"
+    },
+    "methanol_integration_review": {
+      "authorization": "同意，先评审“前一完整期货交易日数据＋同合约原价”的接入方案，明确时点限制、换月处理和最小平台修改范围。保持费用、执行约定和年度目标不变，暂不增加数据调用或启动模型、账户实验。",
+      "calendar_blocker": "Missing natural date 2022-12-31; existing strict completeness validation retained",
+      "extra_upstream_calls_authorized": false,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "implementation_authorized": false,
+      "new_accounts": 0,
+      "new_models": 0,
+      "new_platform_changes": 0,
+      "new_upstream_calls": 0,
+      "proposal": {
+        "evidence_id": "f4dc05f9a0fffd944971dc3c4c69a0d9a636878c56dfb32580f4162e1b4309c8.md",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "methanol-integration-review-proposal-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "f4dc05f9a0fffd944971dc3c4c69a0d9a636878c56dfb32580f4162e1b4309c8",
+        "type": "EvidenceRef"
+      },
+      "proposed_availability_policy": "NEXT_CZCE_SESSION_CLOSE_V1",
+      "proposed_datasets": [
+        "FUTURES_CZCE_METHANOL_DAILY",
+        "FUTURES_CZCE_METHANOL_MAPPING"
+      ],
+      "proposed_formula": "K=M(P); r(T)=C(K,P)/C(K,Q)-1; Q<P<T by CZCE open sessions",
+      "proposed_policy_accepted": false,
+      "proposed_startup": "Keep evaluation start; new feature unavailable on first two stock sessions; no 2019 extension",
+      "status": "READY_FOR_USER_REVIEW",
+      "verification": {
+        "evidence_id": "03dc278e137ff72f39faade0738ebd93d3497e34adb5542c13b456e93d0433a7.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-integration-review-review_verification-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "03dc278e137ff72f39faade0738ebd93d3497e34adb5542c13b456e93d0433a7",
+        "type": "EvidenceRef"
+      }
     },
     "methanol_upstream_feasibility": {
       "actual_calls": 8,
@@ -682,7 +730,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "先评审前一完整期货交易日可用约定及历史修订限制、原合约价格和滞后映射口径；其余18合约名义基础18次调用及DEV适配均尚未授权，不运行模型账户"
+      "确认前一完整期货交易日映射及同合约两日原价、显式滞后可用约定和起始两日未就绪；随后可授权两个甲醇数据集的离线DEV实施。额外调用、模型和账户均未授权。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -726,7 +774,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：甲醇上游8次核查完成，待确认时点约定与原合约补齐范围",
+    "stage": "研究诊断及学习反馈：甲醇接入方案评审完成，待确认时点口径与离线DEV范围",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -979,5 +1027,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T12:35:47+08:00"
+  "updated_at": "2026-10-18T13:08:03+08:00"
 }

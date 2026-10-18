@@ -1,0 +1,84 @@
+{
+  "status": "PASS_DOCUMENT_REVIEW_ONLY",
+  "scope": "Local source, prior evidence and proposal review; no implementation tests or experiments",
+  "user_instruction": "同意，先评审“前一完整期货交易日数据＋同合约原价”的接入方案，明确时点限制、换月处理和最小平台修改范围。保持费用、执行约定和年度目标不变，暂不增加数据调用或启动模型、账户实验。",
+  "independent_review": {
+    "agent": "diagnostic_audit",
+    "status": "PASS",
+    "required_corrections": [],
+    "scope": [
+      "Declared availability policy",
+      "M(P) and same-contract Q/P",
+      "Warmup and calendar gap",
+      "Two-dataset DEV scope",
+      "Public offline provider path"
+    ],
+    "root_followup": "Clarified that explicit ProviderConfig.bindings replaces default bindings"
+  },
+  "input_manifest": [
+    {
+      "path": "packages/dataflows/README.md",
+      "sha256": "f2e675c83b1771a9b624dcf4e59f3865de6320cab2da2451fc0b464d59d1e389"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/contract.py",
+      "sha256": "785925df164a9eff98aa153ea7311e6557320d935944c4e774808df259f25234"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/facade.py",
+      "sha256": "b2da132442d70cf6c084b9906f2cd790698ba04dff657291635615febfb96e29"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/temporal.py",
+      "sha256": "a5a8e0735d9b89e95c1843b6ad22fa9ce8bb8a1496d331ef4f149e601208d8f9"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/tushare_futures.py",
+      "sha256": "15aa1ba7643459a1b95482851c0474c7a4f86f456c2b2c722d9962dd43cfb4a8"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/tushare_strategy_data.py",
+      "sha256": "bf14e1cfb3301a5a8bb000e24c8c63b26700ec49b95e44fbda0044974d9426a6"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_temporal.py",
+      "sha256": "8e9490f70e4ed65e1804352ca461e26c0fbefd2bc37c825c8ed8ecc4b21781b0"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_tushare_futures.py",
+      "sha256": "f3167af30f94ca586f8e52d6680a32e4b42cbbbefcb67f5f5dcea99b9ee0997f"
+    },
+    {
+      "path": "research/S014/materials/20261018_methanol_feasibility/others/analysis.json",
+      "sha256": "0429b99e7dc62cfe3b7389460c5510ef24d6ba66fd31b210558a51e6a1361a4a"
+    },
+    {
+      "path": "research/S014/materials/20261018_methanol_feasibility/others/independent_audit.json",
+      "sha256": "2a4354d1fca8d915d4034abaa9e540e4c3b49d10acc16f8125614e5fa41b1ff9"
+    },
+    {
+      "path": "research/S014/materials/20261018_methanol_feasibility/others/source_review.json",
+      "sha256": "cd1322a39e7e11c3b707805d9da467b3af311326821c4e41de92b926321678f3"
+    },
+    {
+      "path": "research/S014/materials/20261018_methanol_feasibility/report.md",
+      "sha256": "8440f4fabfb684787d8eaef5672232a168a1e355e42c77f3c1a9b067d73957c4"
+    },
+    {
+      "path": "research/S014/materials/20261018_methanol_integration_review/proposal.md",
+      "sha256": "f4dc05f9a0fffd944971dc3c4c69a0d9a636878c56dfb32580f4162e1b4309c8"
+    }
+  ],
+  "new_upstream_calls": 0,
+  "new_models": 0,
+  "new_accounts": 0,
+  "new_platform_changes": 0,
+  "methanol_calls_used": 8,
+  "methanol_calls_remaining": 0,
+  "historical_candidates": 66,
+  "all_targets_pass_count": 0,
+  "fees_execution_annual_targets": "UNCHANGED",
+  "implementation_authorized": false,
+  "proposed_policy_accepted": false,
+  "next_step": "User decision on policy and offline DEV implementation; extra calls and models/accounts separately authorized"
+}
