@@ -116,6 +116,97 @@
       "status": "REVIEW_COMPLETE_EXECUTION_PENDING_AUTHORIZATION",
       "whole_project_pause": "NOT_IMPLEMENTED"
     },
+    "action_value_test": {
+      "actual_budget": {
+        "alternate_endpoints": 0,
+        "attribution_differences": 292,
+        "model_fits": 0,
+        "new_complete_accounts": 0,
+        "new_matching_calls": 0,
+        "new_upstream_calls": 0,
+        "node_groups": 146,
+        "primary_action_labels": 146,
+        "terminal_values": 438
+      },
+      "authorization": "批准执行",
+      "caps": {
+        "alternate_endpoints": 0,
+        "decision_node_groups": 146,
+        "fixed_wealth_differences_per_group": 3,
+        "model_fits": 0,
+        "new_complete_account_runs": 0,
+        "new_matching_calls": 0,
+        "new_upstream_calls": 0,
+        "primary_action_labels_per_group": 1,
+        "terminal_values_per_group": 3
+      },
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "e956baeda7691680817d81e6f0349bc20cdbda05bb37bbda58f219c27d2886ce",
+        "revision": 17,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "design": {
+        "evidence_id": "4c832760dc8895a481e33b2ad4213d9234880d78017dea086140f17981293c71.json",
+        "experiment": {
+          "experiment_id": "EX034_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex034-protocols-design-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "4c832760dc8895a481e33b2ad4213d9234880d78017dea086140f17981293c71",
+        "type": "EvidenceRef"
+      },
+      "experiment": {
+        "experiment_id": "EX034_20261018",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "fees_execution_annual_targets": "UNCHANGED",
+      "future_execution_authorized": false,
+      "judgment": {
+        "evidence_id": "c161a13d6b1a63f6750be756cb00fd5615467610394c06883508aae35a83f27e.json",
+        "experiment": {
+          "experiment_id": "EX034_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex034-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "c161a13d6b1a63f6750be756cb00fd5615467610394c06883508aae35a83f27e",
+        "type": "EvidenceRef"
+      },
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "next_step": "建议先评审固定E+9延伸的最小公共TDR账户方案，明确H卖出后恢复原政策、终点剩余状态及所需额度，再决定是否执行及提出D时可得的信息假设。不自动新增标签、数据、拟合、撮合或账户，不改变年度目标，不自动暂停S014。",
+      "pause_authorized": false,
+      "primary_hypothesis": "SUPPORTED_LOCAL_ACTION_LABEL_OMISSION",
+      "remaining_node_groups": 0,
+      "result": {
+        "evidence_id": "9d5c4771771b08a6d008e13d79a823dcd15b2fac3c0e7b4a62711333686f43d4.json",
+        "experiment": {
+          "experiment_id": "EX034_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex034-others-summary-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9d5c4771771b08a6d008e13d79a823dcd15b2fac3c0e7b4a62711333686f43d4",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_METHOD_SUPPORT_NO_NEW_PREDICTOR"
+    },
     "all_targets_pass_count": 0,
     "announcement_feasibility": {
       "access": "PERMISSION_DENIED",
@@ -580,12 +671,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "3a9527bbf3c133241955144de5e4419c12f5fff0ed43c1fd07d9de66558a3979",
-      "revision": 16,
+      "content_sha256": "e956baeda7691680817d81e6f0349bc20cdbda05bb37bbda58f219c27d2886ce",
+      "revision": 17,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "固定共同下跌且个股相对抗跌规则尚未建立有增量价值的有效退出组件。关闭本次固定设计，建议暂停S014当前研究路线；原年度策略目标仍未达成。",
+    "conclusion": "固定146组E+6对照确认：单笔退出标签遗漏的后续交易项会改变动作排序，25组严格反转及4组零值转为差异，跨7个决策年份和20个重叠簇；去2026保留21组、删绝对O最大5组保留22组。支持继续研究包含后续参与的局部动作价值，但不建立可预测收益机制；无新有效组件或合格账户。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -1477,7 +1568,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议批准146组固定E+6三支终值对照，失败计入；0新增数据、拟合、完整账户和撮合。当前仅完成方法评审，尚未生成新标签。"
+      "建议先评审固定E+9延伸的最小公共TDR账户方案，明确H卖出后恢复原政策、终点剩余状态及所需额度，再决定是否执行及提出D时可得的信息假设。不自动新增标签、数据、拟合、撮合或账户，不改变年度目标，不自动暂停S014。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1671,7 +1762,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "继续S014：账户动作价值方法评审完成，一期固定终值检验待授权",
+    "stage": "阶段二E6动作价值检验完成：支持测量改进，尚无新预测组件",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1924,5 +2015,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T21:27:20+08:00"
+  "updated_at": "2026-10-18T21:54:50+08:00"
 }

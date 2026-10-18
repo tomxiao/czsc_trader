@@ -1,0 +1,83 @@
+{
+  "status": "AUTHORIZED_FIXED_E6_LOCAL_WEALTH_TEST",
+  "role": "RSCH",
+  "route": "STAGE_TWO_ACTION_LABEL_METHOD_REVIEW",
+  "current_authorization": "批准执行",
+  "execution_authorized": true,
+  "whole_S014_pause": "NOT_IMPLEMENTED_CONTINUE_METHOD_REVIEW",
+  "historical_rule_conclusions_preserved": true,
+  "anchor": "S014-C0011 original H3 actual entries",
+  "rejected_anchor_reason": "C0056 reserves original E+10 reentry clock; before deadline the purported opportunity release mostly collapses to the old position contrast.",
+  "universe": "Inventory all 147 original entries; include iff D=E+2 and T=E+6 are observable. Do not require eventual successful exit or select by future returns.",
+  "verified_inventory": {
+    "original_entries": 147,
+    "E2_E6_complete_nodes": 146,
+    "decision_year_counts": {
+      "2020": 4,
+      "2021": 29,
+      "2022": 22,
+      "2023": 15,
+      "2024": 21,
+      "2025": 32,
+      "2026": 23
+    },
+    "E9_observable_nodes": 145,
+    "missing_decision_entry": "2026-10-14"
+  },
+  "primary_endpoint": "Original E+6 close, fixed before new outcome calculation",
+  "actions": {
+    "X": "Original E+3 exit followed by original C0011 policy; reuse authenticated existing account NAV at T",
+    "H": "Only original holding extended to E+6; reuse same-quantity saved EX019 sell outcome if executed by T, otherwise mark original holding at T; add common uninvested cash",
+    "C": "Original E+3 exit then cash until T; freeze first successful original exit total cash, otherwise original holding marked at T"
+  },
+  "normalization": "All arms start from identical D holdings/cash; denominator W_D is original D close equity; no capital reset, double charged buy fee or hypothetical terminal sale",
+  "primary_label": "A=(H_T-X_T)/W_D",
+  "attribution_labels": [
+    "L=(H_T-C_T)/W_D",
+    "O=(X_T-C_T)/W_D"
+  ],
+  "identity": "A=L-O",
+  "scope": "New local counterfactual wealth contrasts, not new complete accounts, annual returns or additive strategy PnL",
+  "input_identity": "Existing public EvidenceRefs and result hashes for C0011 ledger, EX019 v2 members/fill attempts and existing S014 calendar; same price scale and actual quantity",
+  "checks": [
+    "All 147 inventory rows and every year, no outcome-based inclusion",
+    "D cash/quantity/equity match original account; H3/H6 saved net proceeds and fees reconcile",
+    "Exact scheduled dates; future actual sell proceeds never used before execution",
+    "Common-denominator old label comparison; separate denominator/endpoint/delay from reinvestment term",
+    "All positive and negative reentries plus no-reentry and terminal-open cohorts",
+    "Decision-year primary, entry-year separate; without2026 requires both D and T observed by 2025-12-31",
+    "Inclusive transitive D-T overlap clusters, cluster-equal and leave-one-cluster-out statistics; delete top abs(O) 1/3/5 nodes (ties D then cycle_id) and recompute means/sign counts",
+    "No new fitting or signal rule; future decisions are outcome information only"
+  ],
+  "proposed_caps": {
+    "decision_node_groups": 146,
+    "terminal_values_per_group": 3,
+    "fixed_wealth_differences_per_group": 3,
+    "primary_action_labels_per_group": 1,
+    "new_upstream_calls": 0,
+    "model_fits": 0,
+    "new_complete_account_runs": 0,
+    "new_matching_calls": 0,
+    "alternate_endpoints": 0
+  },
+  "failure_accounting": "Failed nodes count toward146 and are reported, never filled with zero or silently replaced; no automatic expanded or alternate design",
+  "positive_route": "Review whether fixed E+9 continuation and causal information hypothesis deserve separate authorization; no automatic model or account",
+  "negative_route": "Close the claim that this local label omission is a useful next priority; do not rescue by searching horizons; no automatic whole-project pause",
+  "limitations": [
+    "E+6 may leave different remaining holding risks; no conclusion beyond this fixed local endpoint",
+    "Same stock exposure overlaps across arms; do not add whole missed trade return a second time",
+    "All historical data seen; overlapping nodes are not independent holdout events",
+    "Improved measurement supplies no new predictive information and cannot repair entry-day losses retrospectively",
+    "Historical data publication and revision times are not newly certified"
+  ],
+  "actual_new_calls": 0,
+  "actual_new_fits": 0,
+  "actual_new_labels": 0,
+  "actual_new_accounts": 0,
+  "actual_new_matching_calls": 0,
+  "fees_execution_annual_targets": "UNCHANGED",
+  "sign_zero_tolerance": 1e-10,
+  "monetary_comparison_absolute_tolerance": 1e-07,
+  "method_review": "research/S014/materials/20261018_action_value_method_review/publication.json",
+  "resources": "One-process vector arithmetic, trivial146-node non-CPU-intensive calculation; no model, account, matching or upstream"
+}
