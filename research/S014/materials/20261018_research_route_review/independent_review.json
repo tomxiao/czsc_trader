@@ -1,0 +1,88 @@
+{
+  "status": "PASS_NO_BLOCKING_FINDINGS",
+  "role": "RSCH_INDEPENDENT_REVIEW",
+  "scope": "Existing S014 evidence and proposed research design only; no economic endorsement.",
+  "activity": {
+    "new_fits": 0,
+    "new_labels": 0,
+    "new_accounts": 0,
+    "new_upstream_calls": 0,
+    "written_files": [
+      "research/S014/materials/20261018_research_route_review/independent_review.json"
+    ]
+  },
+  "arithmetic_verification": {
+    "status": "PASS",
+    "comparison_count": 404,
+    "breakdown": {
+      "duration_groups": 54,
+      "statistics_per_group": 7,
+      "duration_comparisons": 378,
+      "annual_rows": 7,
+      "annual_comparisons_per_row": 3,
+      "annual_comparisons": 21,
+      "source_sha256_checks": 5
+    },
+    "source": "EX031 others/predictions.csv existing A parent rows (216), existing Y1/Y3 and z/environment/year; EX029 existing budget_summary.json (66 accounts).",
+    "method": "Independently subset stored rows and recompute mean Y1, mean Y3, mean/median Y3-Y1, positive/negative counts; compare all annual counts and winner identities; verify five stored source hashes. No execution of review.py.main.",
+    "tolerance": {
+      "relative": 1e-12,
+      "absolute": 1e-12
+    },
+    "published_evidence_checks": {
+      "count": 3,
+      "status": "PASS",
+      "paths": [
+        "others/predictions.csv",
+        "others/analysis.json",
+        "others/label_inventory.json"
+      ],
+      "method": "Verify reference dicts equal EX031 result.json; resolve each EvidenceRef and compare bytes with original files."
+    }
+  },
+  "report_fact_review": [
+    {
+      "topic": "Low-environment extension",
+      "finding": "Existing labels support closing this continuation hypothesis: up n=37, H1 0.0035821008108109036, H3 -0.005208019189189105, delta -0.008790120000000007; without 2026 up n=28, delta -0.014347780714285736. No conversion into an H1 buy component is justified."
+    },
+    {
+      "topic": "Account path and support maturity",
+      "finding": "Quoted EX019 log attribution and EX028 common/unique entry counts match referenced account reports. EX024 support_uncapped n=31 mean 0.0178380620, median -0.01339599997, remove-top3 -0.03273655723; pre-2026 n=25 mean -0.00960533353 match stored diagnostics. These are checks of existing summaries, not new account audits."
+    },
+    {
+      "topic": "Historical coverage",
+      "finding": "EX005/007/013/015 already covered broad trend, repair and holding-state questions; EX010 directly tested sector laggard catch-up and its attenuation under stronger stock controls. These are retained as competing evidence."
+    },
+    {
+      "topic": "Novelty",
+      "finding": "EX031 design lists B, B+z and B+z_old5 only. The proposed stock-response S and commodity z*S interaction are distinct from those additive models. This is a previously untested structural question within a known delayed-response hypothesis, not a newly supported return mechanism."
+    }
+  ],
+  "design_review": {
+    "status": "PASS_FOR_PROPOSAL_REVIEW_ONLY",
+    "models": [
+      "M0=B65+S",
+      "M1=B65+S+z",
+      "M2=B65+S+z+z*S"
+    ],
+    "comparison": "M2 versus M1 isolates adding the fixed interaction; M1 versus M0 checks additive information. Complete main effects are retained.",
+    "timing": "P<T and Q<P, same K at Q/P, S uses Q-to-T HFQ closes available at T close, execution after T. Report requires actual Q stock close and prohibits fill or date substitution. Actual Q coverage remains an authorized implementation/preparation check, not established by this proposal review.",
+    "identification": "Four-cell contrast and both absolute net return and allocation comparisons are specified. Conditional prediction is distinguished from causal effect, low valuation and proof of unreacted information.",
+    "budget": "12 proposed fixed fits, failures counted, no automatic rerun; not authorized by this review. No additional labels, upstream data or accounts proposed.",
+    "objectives": "Original fees, execution, full-long account, annual return/drawdown and full-window frequency remain unchanged. At least 83 closures is ceil(1642*3/60), not an added performance target.",
+    "limits": "All historical data have been seen. Negative controls and subgroup robustness are diagnostics, not new per-year same-sign or significance economic gates. No inference that a positive subgroup or model comparison is sufficient for an account."
+  },
+  "blocking_findings": [],
+  "non_blocking_notes": [],
+  "conclusion": "Review goal achieved. Proposal is coherent for a separately authorized bounded test; no positive-return support or effective component has been established.",
+  "source_sha256": {
+    "research/S014/materials/20261018_research_route_review/report.md": "bb6fd310277d91110fd7fbea29a98e64f0798dc3c9e6dd3e3d1ffa98868c0a05",
+    "research/S014/materials/20261018_research_route_review/review.py": "37805c62c6c6a7df51359bfec8a6a045c585469e4ce60542486ddc4d7497ef96",
+    "research/S014/materials/20261018_research_route_review/evidence_review.json": "05e20cedbc0e11fd04c4a0f6fa12f4e2773a65167a142fba215603b0602ffd0f"
+  },
+  "limitations": [
+    "Did not re-audit all historical models or 66 account ledgers.",
+    "Did not independently reopen external primary announcements; business-link discussion is only a hypothesis-generating rationale.",
+    "This artifact records reviewed evidence and design correctness, not new experiment authorization or economic success."
+  ]
+}

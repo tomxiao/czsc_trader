@@ -1112,7 +1112,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议先评审低环境局部线索的事件依赖与用途诊断；不自动扩数据、改阈值、反转方向或追加拟合，不启动账户。"
+      "仅建议一次甲醇上涨与股票累计不涨交互的固定检验，最多12次新拟合（失败计数），0新数据、标签、账户；尚未授权。停止支撑期限扩展和低环境甲醇续持/H1路线，不自动追加实验。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1145,6 +1145,128 @@
     "phase_two_complete": true,
     "ready": true,
     "remaining_source_calls": 7,
+    "research_route_review": {
+      "actual_new_accounts": 0,
+      "actual_new_calls": 0,
+      "actual_new_fits": 0,
+      "actual_new_labels": 0,
+      "authorization": "用户同意基于已有证据完成研究路线重审，要求明确值得继续的新机制与依据；自主推进并交付结果。",
+      "automatic_retry": false,
+      "closed_priorities": [
+        "Support/profit/fixed-duration neighborhood",
+        "Low-environment methanol extension",
+        "Low-environment H1 promotion"
+      ],
+      "evidence": {
+        "design.json": {
+          "evidence_id": "568ee242f677817d6ec813aad2c19c784577cb94b3a0708be1fd8db92dacfce0.json",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex031-route-review-design-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "568ee242f677817d6ec813aad2c19c784577cb94b3a0708be1fd8db92dacfce0",
+          "type": "EvidenceRef"
+        },
+        "evidence_review.json": {
+          "evidence_id": "05e20cedbc0e11fd04c4a0f6fa12f4e2773a65167a142fba215603b0602ffd0f.json",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex031-route-review-evidence_review-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "05e20cedbc0e11fd04c4a0f6fa12f4e2773a65167a142fba215603b0602ffd0f",
+          "type": "EvidenceRef"
+        },
+        "independent_review.json": {
+          "evidence_id": "345a87abf236e00a51f8f4f2e41431b0508662ef249cf972bd156b2110fea1e3.json",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex031-route-review-independent_review-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "345a87abf236e00a51f8f4f2e41431b0508662ef249cf972bd156b2110fea1e3",
+          "type": "EvidenceRef"
+        },
+        "report.md": {
+          "evidence_id": "bb6fd310277d91110fd7fbea29a98e64f0798dc3c9e6dd3e3d1ffa98868c0a05.md",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/markdown",
+          "name": "post-ex031-route-review-report-md",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "bb6fd310277d91110fd7fbea29a98e64f0798dc3c9e6dd3e3d1ffa98868c0a05",
+          "type": "EvidenceRef"
+        },
+        "review.py": {
+          "evidence_id": "37805c62c6c6a7df51359bfec8a6a045c585469e4ce60542486ddc4d7497ef96.py",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/x-python",
+          "name": "post-ex031-route-review-review-py",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "37805c62c6c6a7df51359bfec8a6a045c585469e4ce60542486ddc4d7497ef96",
+          "type": "EvidenceRef"
+        },
+        "source_manifest.json": {
+          "evidence_id": "a7986fe79571646d3c17200d52c3a0a0c27ac19bf92d0aea679728ce7179d810.json",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex031-route-review-source_manifest-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "a7986fe79571646d3c17200d52c3a0a0c27ac19bf92d0aea679728ce7179d810",
+          "type": "EvidenceRef"
+        },
+        "verification.json": {
+          "evidence_id": "784e22ae92d55ed96b29570281937484516566a564f93f0b94e2a9f733a4b213.json",
+          "experiment": {
+            "experiment_id": "EX031_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex031-route-review-verification-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "784e22ae92d55ed96b29570281937484516566a564f93f0b94e2a9f733a4b213",
+          "type": "EvidenceRef"
+        }
+      },
+      "evidence_strength": "LOW_HYPOTHESIS_ONLY_NO_ESTABLISHED_POSITIVE_RETURN_INCREMENT",
+      "execution_authorized": false,
+      "failure_counts": true,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "proposed_new_fits_cap": 12,
+      "recommended_mechanism": "Prior complete methanol rise conditional on cumulative stock nonrise from Q close through T close; full main effects and fixed interaction.",
+      "status": "COMPLETE_FIXED_INTERACTION_PROPOSAL_PENDING_AUTHORIZATION"
+    },
     "research_window": {
       "confirmation": "CONFIRMED_BY_CURRENT_USER",
       "end": "2026-10-15",
@@ -1156,7 +1278,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二甲醇固定检验完成：主增量未获支持，局部低环境线索待诊断评审",
+    "stage": "研究诊断及学习反馈：路线重审完成，商品条件反应假设待授权",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1409,5 +1531,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T14:56:34+08:00"
+  "updated_at": "2026-10-18T16:02:00+08:00"
 }
