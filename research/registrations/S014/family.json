@@ -3,6 +3,119 @@
   "created_by": "RSCH",
   "name": "金牛化工A股个股技术可行性试点",
   "research_intent": {
+    "action_value_method_review": {
+      "actual_new_accounts": 0,
+      "actual_new_calls": 0,
+      "actual_new_fits": 0,
+      "actual_new_labels": 0,
+      "actual_new_matching_calls": 0,
+      "anchor": "S014-C0011 original H3 actual entries",
+      "authorization": "同意继续，请全力以赴；承接先评审方法、再决定实验投入的方案",
+      "evidence": {
+        "independent_review.json": {
+          "evidence_id": "f138360b9ede2f23882981b5e275a6113d888c95194ac3473376cf6815c9e11e.json",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "action-value-method-review-independent_review-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "f138360b9ede2f23882981b5e275a6113d888c95194ac3473376cf6815c9e11e",
+          "type": "EvidenceRef"
+        },
+        "inventory.json": {
+          "evidence_id": "4823baf6df3b77a572d2decd327e68ff402ae9bc5e9ed976e9353737e481d712.json",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "action-value-method-review-inventory-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "4823baf6df3b77a572d2decd327e68ff402ae9bc5e9ed976e9353737e481d712",
+          "type": "EvidenceRef"
+        },
+        "inventory.py": {
+          "evidence_id": "f46de2eaa4649c19502b6f8311f1755b9f2de0c4529e5c8e2554919582d6fc75.py",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/x-python",
+          "name": "action-value-method-review-inventory-py",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "f46de2eaa4649c19502b6f8311f1755b9f2de0c4529e5c8e2554919582d6fc75",
+          "type": "EvidenceRef"
+        },
+        "proposal.json": {
+          "evidence_id": "6e541564490cae6520d3d23f297f5e8022597965cf23490519a8210523c78507.json",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "action-value-method-review-proposal-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "6e541564490cae6520d3d23f297f5e8022597965cf23490519a8210523c78507",
+          "type": "EvidenceRef"
+        },
+        "publish.py": {
+          "evidence_id": "ac28087801df0aed2c09cc00a4e6800ec19414955f9b8dbaea66e8bb2782fb95.py",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/x-python",
+          "name": "action-value-method-review-publish-py",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "ac28087801df0aed2c09cc00a4e6800ec19414955f9b8dbaea66e8bb2782fb95",
+          "type": "EvidenceRef"
+        },
+        "report.md": {
+          "evidence_id": "f41a0e7a537a1fbda20f587fa3a972344b7a1d432ee120499899598f444d1da5.md",
+          "experiment": {
+            "experiment_id": "EX033_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/markdown",
+          "name": "action-value-method-review-report-md",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "f41a0e7a537a1fbda20f587fa3a972344b7a1d432ee120499899598f444d1da5",
+          "type": "EvidenceRef"
+        }
+      },
+      "execution_authorized": false,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "proposed_caps": {
+        "alternate_endpoints": 0,
+        "decision_node_groups": 146,
+        "fixed_wealth_differences_per_group": 3,
+        "model_fits": 0,
+        "new_complete_account_runs": 0,
+        "new_matching_calls": 0,
+        "new_upstream_calls": 0,
+        "primary_action_labels_per_group": 1,
+        "terminal_values_per_group": 3
+      },
+      "recommendation_update": "继续方法研究；取代此前整个S014暂停建议，不改变EX033及既有规则未获支持的证据结论。",
+      "status": "REVIEW_COMPLETE_EXECUTION_PENDING_AUTHORIZATION",
+      "whole_project_pause": "NOT_IMPLEMENTED"
+    },
     "all_targets_pass_count": 0,
     "announcement_feasibility": {
       "access": "PERMISSION_DENIED",
@@ -1364,7 +1477,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "请用户确认暂停S014；保留历史证据与候选资格。只有出现具体的新机制证据或独立新增时段的可比样本，再评审重启方案；不自动新增数据、拟合、账户或恢复公告追溯。"
+      "建议批准146组固定E+6三支终值对照，失败计入；0新增数据、拟合、完整账户和撮合。当前仅完成方法评审，尚未生成新标签。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1558,7 +1671,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二固定退出动作检验完成：未支持新组件，S014暂停建议待用户决定",
+    "stage": "继续S014：账户动作价值方法评审完成，一期固定终值检验待授权",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1811,5 +1924,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T20:15:48+08:00"
+  "updated_at": "2026-10-18T21:27:20+08:00"
 }
