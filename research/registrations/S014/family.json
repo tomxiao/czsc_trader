@@ -281,12 +281,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca",
-      "revision": 13,
+      "content_sha256": "bbfef98d7493c0708638d1abbe325bbe54eeca2fd9ab5d47c43a3095aafd535a",
+      "revision": 14,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
+    "conclusion": "甲醇单日上涨的通用H3收益增量未获支持；不新增有效组件，不推进账户。低环境存在有限正向线索，但仅3次选择改变且证据未充分。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -590,6 +590,36 @@
         "type": "EvidenceRef"
       }
     },
+    "methanol_information_test": {
+      "authorization": "同意，按此开展阶段二甲醇信息增量检验，最多12次固定模型拟合，不新增数据调用或账户实验。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "bbfef98d7493c0708638d1abbe325bbe54eeca2fd9ab5d47c43a3095aafd535a",
+        "revision": 14,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX031_20261018",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "fees_execution_annual_targets": "UNCHANGED",
+      "fits_cap": 12,
+      "fits_remaining": 0,
+      "fits_used": 12,
+      "low_environment": "LIMITED_DIAGNOSTIC_CLUE_NOT_COMPONENT",
+      "new_accounts": 0,
+      "new_data_calls": 0,
+      "new_labels": 0,
+      "new_supported_components": 0,
+      "next_step": "建议先评审低环境局部线索的事件依赖与用途诊断；不自动扩数据、改阈值、反转方向或追加拟合，不启动账户。",
+      "primary_hypothesis": "NOT_SUPPORTED",
+      "status": "COMPLETE_RESEARCH_PARTIAL"
+    },
     "methanol_integration_review": {
       "authorization": "同意，先评审“前一完整期货交易日数据＋同合约原价”的接入方案，明确时点限制、换月处理和最小平台修改范围。保持费用、执行约定和年度目标不变，暂不增加数据调用或启动模型、账户实验。",
       "calendar_blocker": "RESOLVED: CZCE_CALENDAR_20221231_V1 from official MA rules and government holiday notice",
@@ -687,9 +717,19 @@
       "actual_new_accounts": 0,
       "actual_new_data_calls": 0,
       "actual_new_labels": 0,
-      "actual_new_model_fits": 0,
+      "actual_new_model_fits": 12,
       "actual_new_return_computations": 0,
       "authorization": "用户同意切回RSCH评审甲醇信息增量收益机制方案，明确与已有实验区别、对照设计和验收标准；先给方案，暂不新增数据调用或模型账户实验。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "bbfef98d7493c0708638d1abbe325bbe54eeca2fd9ab5d47c43a3095aafd535a",
+        "revision": 14,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
       "design": {
         "evidence_id": "3414ca1ba21c9fc8e0f4ce8f380215080939d7880670cfbe9540fb24c5e88e97.json",
         "experiment": {
@@ -704,7 +744,7 @@
         "sha256": "3414ca1ba21c9fc8e0f4ce8f380215080939d7880670cfbe9540fb24c5e88e97",
         "type": "EvidenceRef"
       },
-      "execution_authorized": false,
+      "execution_authorized": true,
       "fees_execution_annual_targets": "UNCHANGED",
       "hypothesis": "Prior complete methanol positive same-contract change adds H3 executable net-cash information beyond stock, market and sector current/lagged states within original repair parent",
       "planned_evaluation_years": [
@@ -730,6 +770,20 @@
         "sha256": "91784069b057683371610f66420f50decaadee41d4380c749bb6c23fadc8c804",
         "type": "EvidenceRef"
       },
+      "result": {
+        "evidence_id": "8e890e64a899d375c96055756af29d9633366499bccd9af1bedcc95791398f76.json",
+        "experiment": {
+          "experiment_id": "EX031_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex031-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8e890e64a899d375c96055756af29d9633366499bccd9af1bedcc95791398f76",
+        "type": "EvidenceRef"
+      },
       "sources": {
         "evidence_id": "80027d188be93717e99b9f6c43dda687dfee1bd179013c7b2ecc2f064662f10e.json",
         "experiment": {
@@ -744,7 +798,7 @@
         "sha256": "80027d188be93717e99b9f6c43dda687dfee1bd179013c7b2ecc2f064662f10e",
         "type": "EvidenceRef"
       },
-      "status": "REVIEW_COMPLETE_PENDING_EXPERIMENT_AUTHORIZATION",
+      "status": "AUTHORIZED_STUDY_COMPLETED",
       "verification": {
         "evidence_id": "7a89329e903de0596080b7a2128583ab29ea324e6d27530013371f8f2a323d53.json",
         "experiment": {
@@ -1058,7 +1112,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议批准甲醇固定单日方向的阶段二信息增量检验：B/B+z/B+z_old5共最多12次H3年度拟合及既定反证，0新数据、0账户；本轮仅方案，尚未执行授权。"
+      "建议先评审低环境局部线索的事件依赖与用途诊断；不自动扩数据、改阈值、反转方向或追加拟合，不启动账户。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1102,7 +1156,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：甲醇信息增量方案评审完成，待阶段二固定检验授权",
+    "stage": "阶段二甲醇固定检验完成：主增量未获支持，局部低环境线索待诊断评审",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1355,5 +1409,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T14:22:32+08:00"
+  "updated_at": "2026-10-18T14:56:34+08:00"
 }
