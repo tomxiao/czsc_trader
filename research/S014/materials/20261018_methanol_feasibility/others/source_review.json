@@ -1,0 +1,43 @@
+{
+  "reviewed_date": "2026-10-18",
+  "public_document_reads_are_not_data_api_calls": true,
+  "sources": [
+    {
+      "url": "https://tushare.pro/document/2?doc_id=135",
+      "title": "期货合约信息表",
+      "finding": "合约目录提供产品、上市/到期与可选交易时段字段；文档限量10000。没有逐条首次发布时间或历史版本字段。交易时段不等于供应商可用时间。"
+    },
+    {
+      "url": "https://tushare.pro/document/2?doc_id=138",
+      "title": "期货日线行情",
+      "finding": "日线含OHLC、昨收、昨结、成交及持仓等；文档单次最多2000条。未提供逐条首次发布时间/修订历史；主力连续行情与单合约行情要分别核对。"
+    },
+    {
+      "url": "https://tushare.pro/document/2?doc_id=189",
+      "title": "期货主力与连续合约",
+      "finding": "映射输出ts_code、trade_date、mapping_ts_code。trade_date不是发布时间；文档未提供逐条首次发布、映射决策截止时点或历史修订版本。"
+    },
+    {
+      "url": "https://tushare.pro/document/1?doc_id=108",
+      "title": "关于权限及数据更新",
+      "finding": "期货日线描述为每日盘后更新。不能据此保证当日15:00已可用；常规次日可用只是保守研究约定，不能证明今天取回的历史记录当时未被修订。"
+    },
+    {
+      "url": "https://www.czce.com.cn/cn/uploadfile/2018/11/09/20181109184247707.pdf",
+      "title": "郑州商品交易所夜盘交易细则",
+      "finding": "第五条将一个交易日定义为夜盘开市至日盘收市；第九条夜盘集合竞价形成该交易日开盘价。按交易日对齐，T日15:00之后的夜盘不属于当时可用信息。"
+    },
+    {
+      "url": "https://www.czce.com.cn/cn/uploadfile/2024/02/07/20240207154824122.pdf",
+      "title": "郑州商品交易所甲醇期货业务细则",
+      "finding": "规则列示甲醇夜盘21:00至23:00、日盘至15:00，允许调整或暂停；不是全研究期逐日夜盘安排的证据。"
+    }
+  ],
+  "platform_review": {
+    "files": ["packages/dataflows/src/dataflows/contract.py", "packages/dataflows/src/dataflows/tushare_futures.py"],
+    "current_public_futures_scope": "AU.SHFE / AU.SHF / SHFE only",
+    "MA_formal_preparation_supported": false,
+    "changes_made": false,
+    "minimum_possible_DEV_scope": "MA/CZCE typed daily and mapping contract, identity/calendar binding, raw contract coverage and quality, explicit availability convention; no holding ranks/minutes/execution changes"
+  }
+}

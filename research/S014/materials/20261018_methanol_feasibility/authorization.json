@@ -1,0 +1,15 @@
+{
+  "user_instruction": "同意，先核查甲醇数据的上游权限、历史覆盖和时点可用性，最多8次调用，失败计入。暂不新增收益模型或账户实验，你自主推进，我看结果。",
+  "scope": "S014 methanol upstream feasibility only; 2020-01-01 through 2026-10-15; contract metadata may include dates outside evaluation window solely for identity and validity checks",
+  "max_actual_calls": 8,
+  "failures_pagination_retries_count": true,
+  "automatic_retries": false,
+  "new_models": false,
+  "new_account_experiments": false,
+  "new_platform_implementation": false,
+  "fees_execution_annual_targets": "UNCHANGED",
+  "formal_research_data_preparation": false,
+  "probe_method": "Same repository-configured account via existing dataflows.tushare_common.get_tushare_pro; guard every HTTP request, no redirects/retries; retain returned data as feasibility evidence, not a DFLS prepared asset",
+  "initial_requests": ["fut_basic CZCE MA contract identity", "fut_mapping verified main symbol full range", "fut_daily verified main symbol full range", "CZCE calendar full range"],
+  "remaining_requests": "Adapt to identity, permission and coverage results; single-contract checks at early/middle/late periods and roll boundary as budget allows. Do not spend budget merely to reach eight calls."
+}

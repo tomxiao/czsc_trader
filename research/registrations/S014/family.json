@@ -350,7 +350,7 @@
         "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
         "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
       },
-      "routing_after_result": "已按用户决定关闭旧支撑过滤路线，完成新收益机制方案；等待是否授权甲醇数据可用性核查，未启动新实验",
+      "routing_after_result": "旧支撑过滤路线保持关闭；甲醇8次上游核查完成，主力日线/映射覆盖1642日，原合约和历史时点仍有限制；等待下一范围确认",
       "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
     "h3_downside_duration": {
@@ -383,6 +383,104 @@
       "revision": 2,
       "stage": "MANDATE",
       "type": "DeliveryReference"
+    },
+    "methanol_upstream_feasibility": {
+      "actual_calls": 8,
+      "analysis": {
+        "evidence_id": "0429b99e7dc62cfe3b7389460c5510ef24d6ba66fd31b210558a51e6a1361a4a.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-feasibility-others-analysis-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "0429b99e7dc62cfe3b7389460c5510ef24d6ba66fd31b210558a51e6a1361a4a",
+        "type": "EvidenceRef"
+      },
+      "announcements": "PAUSED",
+      "audit": {
+        "evidence_id": "2a4354d1fca8d915d4034abaa9e540e4c3b49d10acc16f8125614e5fa41b1ff9.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-feasibility-others-independent_audit-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "2a4354d1fca8d915d4034abaa9e540e4c3b49d10acc16f8125614e5fa41b1ff9",
+        "type": "EvidenceRef"
+      },
+      "authorization": "同意，先核查甲醇数据的上游权限、历史覆盖和时点可用性，最多8次调用，失败计入。暂不新增收益模型或账户实验，你自主推进，我看结果。",
+      "authorization_evidence": {
+        "evidence_id": "75fcad3515211bd9dd232292489eaa24f4a688d2381654e45b860d254766ece6.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-feasibility-authorization-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "75fcad3515211bd9dd232292489eaa24f4a688d2381654e45b860d254766ece6",
+        "type": "EvidenceRef"
+      },
+      "cap": 8,
+      "data_quality": "Roll price gap, one sampled continuous pre_close discrepancy, oi_chg missing, calendar weekend row missing, one non-main zero-trade bar; retained explicitly",
+      "extra_upstream_calls_authorized": false,
+      "failed_calls": 0,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "main_daily_sessions": 1642,
+      "mapped_contracts": 22,
+      "mapped_sessions_checked_against_raw": 182,
+      "mapping_sessions": 1642,
+      "new_accounts": 0,
+      "new_candidates": 0,
+      "new_models": 0,
+      "new_platform_changes": 0,
+      "permission": "VERIFIED_FOR_REQUESTED_ENDPOINTS",
+      "phase_four_approved": false,
+      "raw_contracts_checked": 4,
+      "raw_full_history_verified": false,
+      "recommendation": "Review lagged availability convention and same-contract prices before approving raw-contract completion or DEV integration",
+      "remaining_calls": 0,
+      "remaining_raw_contracts": 18,
+      "report": {
+        "evidence_id": "8440f4fabfb684787d8eaef5672232a168a1e355e42c77f3c1a9b067d73957c4.md",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "methanol-feasibility-report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8440f4fabfb684787d8eaef5672232a168a1e355e42c77f3c1a9b067d73957c4",
+        "type": "EvidenceRef"
+      },
+      "rolls": 21,
+      "sources": {
+        "evidence_id": "cd1322a39e7e11c3b707805d9da467b3af311326821c4e41de92b926321678f3.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-feasibility-others-source_review-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "cd1322a39e7e11c3b707805d9da467b3af311326821c4e41de92b926321678f3",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_WITH_LIMITATIONS",
+      "time_availability": "T 15:00 use not supported by after-close documentation; lagged convention requires user review; strict historical first publication and revisions unverified"
     },
     "new_mechanism_proposal_review": {
       "account_budget_completed_rounds": 10,
@@ -438,6 +536,34 @@
         }
       },
       "fees_execution_annual_targets": "UNCHANGED",
+      "followup_authorization_evidence": {
+        "evidence_id": "75fcad3515211bd9dd232292489eaa24f4a688d2381654e45b860d254766ece6.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-feasibility-authorization-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "75fcad3515211bd9dd232292489eaa24f4a688d2381654e45b860d254766ece6",
+        "type": "EvidenceRef"
+      },
+      "followup_result": {
+        "evidence_id": "8440f4fabfb684787d8eaef5672232a168a1e355e42c77f3c1a9b067d73957c4.md",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "methanol-feasibility-report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8440f4fabfb684787d8eaef5672232a168a1e355e42c77f3c1a9b067d73957c4",
+        "type": "EvidenceRef"
+      },
       "git_branch_not_deleted": "codex/s014-jinniu-research",
       "historical_accounts": 66,
       "human_instruction": "同意，关闭这条过滤器分支，转向新的收益机制方案评审。先梳理哪些方向尚未验证，说明与已有实验的区别及依据，避免重复调参数。保持费用、执行约定和年度目标不变，先给方案，暂不新增账户实验。",
@@ -474,7 +600,7 @@
         "type": "DeliveryReference"
       },
       "route_status": "CLOSED_BY_USER",
-      "status": "READY_FOR_USER_REVIEW",
+      "status": "FEASIBILITY_ONLY_AUTHORIZED_AND_COMPLETED",
       "type": "post_diagnostic_research_routing"
     },
     "numerical_census": {
@@ -556,7 +682,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "评审甲醇商品冲击优先、行业扩散度后备的机制方案；拟议8次上游可用性核查未授权，暂不新增模型或账户"
+      "先评审前一完整期货交易日可用约定及历史修订限制、原合约价格和滞后映射口径；其余18合约名义基础18次调用及DEV适配均尚未授权，不运行模型账户"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -600,7 +726,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：旧支撑过滤路线已关闭，新收益机制方案待评审",
+    "stage": "研究诊断及学习反馈：甲醇上游8次核查完成，待确认时点约定与原合约补齐范围",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -853,5 +979,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T12:19:20+08:00"
+  "updated_at": "2026-10-18T12:35:47+08:00"
 }
