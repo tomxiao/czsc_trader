@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "acquisition_guard_mock": {
+    "status": "PASS",
+    "real_http_requests": 0,
+    "checks": [
+      "success reserves one call, retains exact safe table, rejects duplicate success",
+      "HTTP failure counted, Retry-After enforced, same-parameter retry counted, second retry blocked",
+      "malformed unknown columns are never persisted",
+      "non-integer vendor code is never persisted"
+    ],
+    "script_sha256": "0888d9cb6ade75be90b5a40cfdace71005df4d19d8dbb40ef129beafbab61ab3"
+  },
+  "independent_review": {
+    "agent": "methanol_code_review",
+    "status": "PASS",
+    "assertions_passed": 7074,
+    "scope": "18 request identities, 38 published source references, hashes, raw dates and values, independent reconstruction of 1640 endpoint pairs and 1662 distinct keys; all successful request replay blocked",
+    "network_calls": 0,
+    "file_writes": 0,
+    "prepare_fetch_rerun": false,
+    "required_open_fixes": 0
+  },
+  "real_data_acceptance": {
+    "path": "research/S014/materials/20261018_methanol_completion/acceptance.json",
+    "sha256": "b49475cfba18ebf899d5572720ea10499bbbb7232f3dcbc86305d6b297ff0aff"
+  },
+  "ruff": "PASS",
+  "diff_check": "PASS",
+  "full_repository_regression": "NOT_RUN_NOT_REQUESTED",
+  "new_platform_changes": false,
+  "new_models": 0,
+  "new_accounts": 0,
+  "report_sha256": "8032905e8816efd7a29c9f6da35dc2cf1fe05371a0f22d44012cc92d39d155ab"
+}

@@ -350,7 +350,7 @@
         "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
         "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
       },
-      "routing_after_result": "旧过滤路线保持关闭；甲醇离线接入完成且日历缺日已由官方证据补丁解决，4个原合约完成准备；其余18合约及新模型账户仍待授权。",
+      "routing_after_result": "旧过滤路线保持关闭；甲醇22个原合约已完成固定必要范围的离线准备，1640组同合约两日端点通过；建议下一步评审收益机制方案，未启动模型或账户实验。",
       "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
     "h3_downside_duration": {
@@ -385,13 +385,57 @@
       "type": "DeliveryReference"
     },
     "methanol_completion_plan": {
-      "acquisition_authorized": false,
+      "acceptance": {
+        "evidence_id": "b49475cfba18ebf899d5572720ea10499bbbb7232f3dcbc86305d6b297ff0aff.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-acceptance-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "b49475cfba18ebf899d5572720ea10499bbbb7232f3dcbc86305d6b297ff0aff",
+        "type": "EvidenceRef"
+      },
+      "acquisition_authorized": true,
       "actual_new_accounts": 0,
-      "actual_new_calls": 0,
+      "actual_new_calls": 18,
       "actual_new_models": 0,
-      "authorization": "用户仅批准评审剩余18个甲醇原合约补齐清单和调用上限，明确覆盖范围、预计次数及失败计数方式；暂不新增数据调用或模型账户实验。",
+      "approved_max_calls": 20,
+      "approved_retry_slots": 2,
+      "authorization": "同意，按上述18项固定范围补齐数据，最多20次调用，失败计入，受控重试最多2次，并完成离线验收。保持费用、执行约定和年度目标不变，暂不启动模型或账户实验，你自主推进，我看结果。",
+      "authorization_evidence": {
+        "evidence_id": "0637081afd24df678b34312eea0b9f568b58608649a5c2ad35a3f79dfa4461a1.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-source-authorization-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "0637081afd24df678b34312eea0b9f568b58608649a5c2ad35a3f79dfa4461a1",
+        "type": "EvidenceRef"
+      },
+      "completion_report": {
+        "evidence_id": "8032905e8816efd7a29c9f6da35dc2cf1fe05371a0f22d44012cc92d39d155ab.md",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "methanol-completion-report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8032905e8816efd7a29c9f6da35dc2cf1fe05371a0f22d44012cc92d39d155ab",
+        "type": "EvidenceRef"
+      },
       "conditional_complete_pairs": 1640,
-      "current_authorized_remaining_calls": 0,
+      "current_authorized_remaining_calls": 2,
       "existing_endpoint_pairs": 180,
       "expected_calls": 18,
       "expected_rows": 1478,
@@ -427,7 +471,8 @@
         "sha256": "39bada62e9fadaec1cfa78f0cb7e023772ba6c1cf6207b72f8b4e0e2e33a1ace",
         "type": "EvidenceRef"
       },
-      "status": "REVIEW_COMPLETE_PENDING_ACQUISITION_APPROVAL",
+      "status": "ACQUISITION_COMPLETE_OFFLINE_ACCEPTED",
+      "unused_slots_purpose": "Unused controlled retry reserve for completed fixed requests only; no additional requests authorized",
       "verification": {
         "evidence_id": "dca62dd2f86a948a84068302bcd640c48823929f6349f2de333e0193fa343145.json",
         "experiment": {
@@ -440,6 +485,108 @@
         "schema": null,
         "schema_version": null,
         "sha256": "dca62dd2f86a948a84068302bcd640c48823929f6349f2de333e0193fa343145",
+        "type": "EvidenceRef"
+      }
+    },
+    "methanol_data_completion": {
+      "acceptance": {
+        "evidence_id": "b49475cfba18ebf899d5572720ea10499bbbb7232f3dcbc86305d6b297ff0aff.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-acceptance-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "b49475cfba18ebf899d5572720ea10499bbbb7232f3dcbc86305d6b297ff0aff",
+        "type": "EvidenceRef"
+      },
+      "actual_calls": 18,
+      "actual_new_accounts": 0,
+      "actual_new_models": 0,
+      "all_prepared_raw_rows": 2265,
+      "all_raw_contracts": 22,
+      "authorization": "同意，按上述18项固定范围补齐数据，最多20次调用，失败计入，受控重试最多2次，并完成离线验收。保持费用、执行约定和年度目标不变，暂不启动模型或账户实验，你自主推进，我看结果。",
+      "controlled_retries": 0,
+      "covered_decision_days": 1640,
+      "cumulative_methanol_calls": 26,
+      "endpoint_checks": {
+        "evidence_id": "e38c9ee580a327a7fc93b51ac23c50e35ad32758fefb3a3683c8c2523770fa82.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-endpoint_checks-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "e38c9ee580a327a7fc93b51ac23c50e35ad32758fefb3a3683c8c2523770fa82",
+        "type": "EvidenceRef"
+      },
+      "failed_calls": 0,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "first_ready_decision": "2020-01-06",
+      "historical_publication_verified": false,
+      "historical_revision_history_verified": false,
+      "initial_unready_dates": [
+        "2020-01-02",
+        "2020-01-03"
+      ],
+      "last_decision": "2026-10-15",
+      "max_calls": 20,
+      "new_contracts": 18,
+      "new_rows": 1478,
+      "prepared": {
+        "manifest_sha256": "c3e805362169a33be8756ae7606c1f60f5b392495772fe9877c679d9ce993c8f",
+        "preparation_id": "4146c628-74a5-4404-ae3d-cb47cd2c124b",
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91"
+      },
+      "prior_methanol_calls": 8,
+      "report": {
+        "evidence_id": "8032905e8816efd7a29c9f6da35dc2cf1fe05371a0f22d44012cc92d39d155ab.md",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "methanol-completion-report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8032905e8816efd7a29c9f6da35dc2cf1fe05371a0f22d44012cc92d39d155ab",
+        "type": "EvidenceRef"
+      },
+      "source_publication": {
+        "evidence_id": "7546724411fccdd9dbb4ca25e967c04511e51c08865787efd28c9256c041416b.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-source_publication-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "7546724411fccdd9dbb4ca25e967c04511e51c08865787efd28c9256c041416b",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_OFFLINE_ACCEPTED",
+      "unused_retry_slots": 2,
+      "verification": {
+        "evidence_id": "412637ec17da46f4323f58d8dcca6cc13471bb90ef59dee2f805f5c465a62efe.json",
+        "experiment": {
+          "experiment_id": "EX030_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "methanol-completion-verification-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "412637ec17da46f4323f58d8dcca6cc13471bb90ef59dee2f805f5c465a62efe",
         "type": "EvidenceRef"
       }
     },
@@ -834,7 +981,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "确认18项固定合约日期范围、最多20次调用（含最多2次同参数受控重试，失败计入）与离线验收；当前未授权取数，模型和账户实验仍暂停。"
+      "建议切回RSCH评审甲醇信息增量的收益机制方案；模型、收益信号及账户实验未恢复，账户追加预算仍为0。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -878,7 +1025,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：甲醇18个原合约补齐清单评审完成，待取数授权",
+    "stage": "研究诊断及学习反馈：甲醇必要原合约补齐并离线验收完成，待收益机制方案评审",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1131,5 +1278,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T13:37:59+08:00"
+  "updated_at": "2026-10-18T13:50:26+08:00"
 }
