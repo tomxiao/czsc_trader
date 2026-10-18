@@ -281,12 +281,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "c1d33af057367cbb18a3b26b2ad599229989e8c2c5ecd5355a26fb15a8c1bf71",
-      "revision": 12,
+      "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca",
+      "revision": 13,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "本次授权的10轮阶段三研究已完成，原目标未达成，尚不能进入阶段四。10轮新增52个正式账户，加前序14个候选共66个唯一登记身份；它们共享已见数据，包含重复经济路径，不能视为66条独立有效策略。高全期收益、部分年度改善及审计通过均不能替代每个自然年的收益和回撤目标。完整候选的剩余年度缺口保留如下，研究不以实验完成或候选数量作为有效性结论。",
+    "conclusion": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -316,40 +316,42 @@
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
-      "authorization": "同意，按你的建议继续阶段二，用现有数据验证H3环境内的下行损失差异和修复收益持续时间。保持费用和执行约定不变，暂缓公告追溯，你自主推进，以有证据支持的有效组件为目标。",
+      "authorization": "进入“研究诊断及学习反馈”状态，开展定向诊断",
       "closure_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "c1d33af057367cbb18a3b26b2ad599229989e8c2c5ecd5355a26fb15a8c1bf71",
-        "revision": 12,
+        "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca",
+        "revision": 13,
         "stage": "COMPONENTS",
         "type": "DeliveryReference"
       },
       "decision_update": "撤回COMPONENTS/4直接推进阶段三建议；当前PARTIAL，阶段二继续。",
-      "execution_scope_this_turn": "固定H3环境收益分解、四风险假设、同入场五期限与定向反证；0源调用。",
-      "judgment_update": "环境信息有有限证据，主要未决问题为组合与账户兑现，归属阶段三；不要求组件先通过账户绩效。",
-      "priority_question": "决策前可知的公司披露信息能否区分持续负面重定价与暂时修复？先验证事件目录、权限与真实发布时间。",
+      "execution_scope_this_turn": "One bounded existing-data diagnostic; no new accounts, source calls, announcements, or changes to fees/execution/annual targets. Stage-three 10-round budget remains exhausted.",
+      "judgment_update": "原先担心滚动低点下移造成“虚假恢复”，可能解释亏损入场。现有证据不支持把它当成已查明的主要短板：首次恢复样本里真实收复的H10均值反而较低，全部机会、去2026与锚点敏感性不提供统一筛选优势；已有69笔未收复前一持仓周期支撑的账户交易仍有正的合计对数贡献。收复局部旧价位只描述状态，不等同于未来延续上涨；负结果针对本定义，不能推广为所有价格机制无效。",
+      "priority_question": "Do causal local fixed-support recovery states distinguish future executable net returns, or merely relabel rolling-low movement?",
       "recommended_minimum_design": "同启动定义下父H1、父H3、高H3、高H3低H1四对照；原经济目标、费用执行不变。",
-      "result": "阶段二完成并建议推进阶段三：保留26定义及2辅助/1环境参考，以原年度因果状态构建环境与期限四对照；早期反例和选择局限公开，未验证账户或年度绩效。",
+      "result": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
       "reviewed_commit": "623ce4f1",
       "reviewed_delivery": {
         "batch": {
           "strategy_id": "S014",
           "type": "ResearchBatchRef"
         },
-        "content_sha256": "fa973cec8bcf033e7aa604b7d6f024e932219931c63e76eebb258161d51c55d6",
-        "revision": 11,
-        "stage": "COMPONENTS",
+        "content_sha256": "f08d2db8cdf721b05792aab633caae8d9de08b568af8afd63581c8f723258370",
+        "revision": 13,
+        "stage": "CANDIDATES",
         "type": "DeliveryReference"
       },
       "routing": {
-        "primary": "阶段二：公司信息可得性与可证伪机制",
-        "stage_three": "当前不建议且未批准"
+        "decision": "关闭本定义下旧支撑确认过滤分支；保留历史组件和候选，等待新的具体研究决定",
+        "primary": "研究诊断及学习反馈：结果回传阶段二的信息增量判断",
+        "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
+        "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
       },
-      "routing_after_result": "建议进入阶段三，待用户明确批准。",
-      "verified": "EX015 47项及16复算，EX016 120项；COMPONENTS/12 COMPLETE/FULL/PASS。"
+      "routing_after_result": "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。",
+      "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
     "h3_downside_duration": {
       "delivery": {
@@ -461,7 +463,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议转入“研究诊断与学习反馈”，回到阶段二优先研究入场环境与持有段的有效收益机制：以完整候选仍失败的年份和同一套事前可知数值状态解释损失来源，检验能否跨状态稳定保留收益机会，不能按事后年份开关或降低原目标。已有证据否定的是本次具体构造，未证明现有数据已穷尽，也未证明需要购买公告或增加数据。若后续诊断显示关键变量缺失，再说明需扩展的数据、可得性和依据。10轮额度已用完，不自动追加账户、新数据或阶段四；新的账户实验需要新的预算授权。"
+      "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -505,7 +507,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段三自主10轮预算完成，等待下一阶段决策",
+    "stage": "研究诊断及学习反馈：定向诊断完成，等待研究路由决定",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -700,7 +702,43 @@
     "strategy_accounts": 66,
     "supported_components": 3,
     "supported_return_context_components": 1,
-    "supported_return_entry_components": 0
+    "supported_return_entry_components": 0,
+    "targeted_recovery_diagnosis": {
+      "authorization": "进入“研究诊断及学习反馈”状态，开展定向诊断",
+      "conclusion": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca",
+        "revision": 13,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX030_20261018",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "judgment_update": "原先担心滚动低点下移造成“虚假恢复”，可能解释亏损入场。现有证据不支持把它当成已查明的主要短板：首次恢复样本里真实收复的H10均值反而较低，全部机会、去2026与锚点敏感性不提供统一筛选优势；已有69笔未收复前一持仓周期支撑的账户交易仍有正的合计对数贡献。收复局部旧价位只描述状态，不等同于未来延续上涨；负结果针对本定义，不能推广为所有价格机制无效。",
+      "new_accounts": 0,
+      "new_candidates": 0,
+      "new_component_definitions": 0,
+      "new_source_calls": 0,
+      "new_stage_three_accounts_authorized": false,
+      "new_supported_components": 0,
+      "next_step": "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。",
+      "phase_four_approved": false,
+      "routing": {
+        "decision": "关闭本定义下旧支撑确认过滤分支；保留历史组件和候选，等待新的具体研究决定",
+        "primary": "研究诊断及学习反馈：结果回传阶段二的信息增量判断",
+        "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
+        "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
+      },
+      "scope": "One bounded existing-data diagnostic; no new accounts, source calls, announcements, or changes to fees/execution/annual targets. Stage-three 10-round budget remains exhausted.",
+      "status": "COMPLETE"
+    }
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -708,5 +746,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T02:52:39+08:00"
+  "updated_at": "2026-10-18T11:47:02+08:00"
 }
