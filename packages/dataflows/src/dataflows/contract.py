@@ -64,6 +64,8 @@ class Dataset(StrEnum):
     FUTURES_SHFE_GOLD_DAILY = "futures.shfe_gold.daily"
     FUTURES_SHFE_GOLD_MAPPING = "futures.shfe_gold.mapping"
     FUTURES_SHFE_GOLD_HOLDING = "futures.shfe_gold.holding"
+    FUTURES_CZCE_METHANOL_DAILY = "futures.czce_methanol.daily"
+    FUTURES_CZCE_METHANOL_MAPPING = "futures.czce_methanol.mapping"
     DOMESTIC_INDEX_DAILY = "index.domestic_daily"
     DOMESTIC_INDEX_CLOSE_DAILY = "index.domestic_close_daily"
     DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY = "index.domestic_close_turnover_daily"
@@ -278,6 +280,13 @@ class DataRequest:
         symbol = None if self.symbol is None else self.symbol.strip()
         if self.symbol is not None and not symbol:
             raise ValueError("symbol must be None or a non-empty string")
+        if dataset in {Dataset.FUTURES_CZCE_METHANOL_DAILY, Dataset.FUTURES_CZCE_METHANOL_MAPPING}:
+            valid_symbol = (symbol == "MA.ZCE" if dataset is Dataset.FUTURES_CZCE_METHANOL_MAPPING
+                            else bool(symbol and re.fullmatch(r"MA\d{2}(?:0[1-9]|1[0-2])\.ZCE", symbol)))
+            if not valid_symbol:
+                raise ValueError("methanol requires MA.ZCE mapping or an explicit MAyymm.ZCE daily contract")
+            if len(self.start) != 10 or len(self.end) != 10:
+                raise ValueError("methanol requires ISO date boundaries")
         if dataset in {
             Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY,
             Dataset.US_NOMINAL_YIELD_DAILY, Dataset.US_POLICY_UNCERTAINTY_DAILY,

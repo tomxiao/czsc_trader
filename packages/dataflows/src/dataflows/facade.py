@@ -44,6 +44,7 @@ from .errors import (
 from .history_validation import inspect_ohlcv_frame
 from .ohlcv_quality import _summarize_quality, validate_quality_metadata
 from .market_resolver import MARKET_A_SHARE, detect_market
+from .methanol_evidence import validate_methanol_output
 
 Provider = Callable[[DataRequest], tuple[pd.DataFrame, Mapping[str, Any]]]
 
@@ -68,6 +69,8 @@ _SOURCE_CALENDAR_BY_DATASET = {
     Dataset.FUTURES_SHFE_GOLD_DAILY.value: "SHFE",
     Dataset.FUTURES_SHFE_GOLD_MAPPING.value: "SHFE",
     Dataset.FUTURES_SHFE_GOLD_HOLDING.value: "SHFE",
+    Dataset.FUTURES_CZCE_METHANOL_DAILY.value: "CZCE",
+    Dataset.FUTURES_CZCE_METHANOL_MAPPING.value: "CZCE",
     Dataset.SELL_SIDE_FORECAST.value: "SSE",
     Dataset.STRATEGY_FEATURE_EVIDENCE.value: "REPOSITORY",
 }
@@ -145,6 +148,14 @@ _OHLCV_DATASETS = {
 }
 
 _DATASET_FIELDS: dict[str, tuple[set[str], set[str]]] = {
+    Dataset.FUTURES_CZCE_METHANOL_DAILY.value: (
+        {"Date", "Contract", "ListDate", "MaturityDate", "Close", "Settle", "Volume",
+         "Amount", "OpenInterest", "AvailableDate"},
+        {"Close", "Settle", "Volume", "Amount", "OpenInterest"},
+    ),
+    Dataset.FUTURES_CZCE_METHANOL_MAPPING.value: (
+        {"Date", "ContinuousSymbol", "Contract", "AvailableDate"}, set(),
+    ),
     Dataset.SECURITY_TRADING_STATUS.value: ({"Date", "Status"}, set()),
     Dataset.SECURITY_PRICE_LIMITS.value: ({"Date", "UpLimit", "DownLimit"}, {"UpLimit", "DownLimit"}),
     Dataset.ETF_CREATION_REDEMPTION_BASKET.value: (
@@ -771,6 +782,8 @@ def _validate_provider_output(
                 dataset=dataset,
                 invalid_rows=int(invalid.sum()),
             )
+    if dataset in {Dataset.FUTURES_CZCE_METHANOL_DAILY.value, Dataset.FUTURES_CZCE_METHANOL_MAPPING.value}:
+        validate_methanol_output(dataframe, request, metadata)
     if dataset == Dataset.FUTURES_SHFE_GOLD_DAILY.value:
         close_values = pd.to_numeric(dataframe["Close"])
         settle_values = pd.to_numeric(dataframe["Settle"])

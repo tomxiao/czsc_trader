@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "focused_tests": {
+    "passed": 79,
+    "duration_seconds": 11.14,
+    "command": ".venv/Scripts/python -m pytest packages/dataflows/tests/functional/test_methanol_evidence.py packages/dataflows/tests/functional/test_czce_calendar_patch.py packages/dataflows/tests/functional/test_tushare_futures.py packages/dataflows/tests/functional/test_temporal.py packages/dataflows/tests/functional/test_contract.py -q"
+  },
+  "ruff": "PASS",
+  "diff_check": "PASS",
+  "full_repository_regression": "NOT_RUN_NOT_REQUESTED",
+  "independent_code_review": {
+    "status": "PASS",
+    "required_open_fixes": 0,
+    "resolved_finding": "Include conversion and patch revision in binding.name, since REUSE key does not include binding.revision"
+  },
+  "source_manifest": [
+    {
+      "path": "packages/dataflows/src/dataflows/contract.py",
+      "sha256": "b469612acb5bfbd455840618182431621e2a69cdf21c67d2b61d3bfec3495759"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/facade.py",
+      "sha256": "37fae0cefff5c1fc23c6e94dc92ea8dc6e6e5f6703e9e4d75d4aeb13fede6d49"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/methanol_evidence.py",
+      "sha256": "7d4df25ec2290e564d505793e44b65a40d75b2dc5df2a4201c550ef20a2c9aad"
+    },
+    {
+      "path": "packages/dataflows/src/dataflows/_czce_calendar_patch.py",
+      "sha256": "a6384364ba08d58bace6ae1f5799b28e2b21257f23d5c836960ea21169f9404e"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_methanol_evidence.py",
+      "sha256": "049d962201ed441c54214ce57e9c2fa6fbcb79c02f36aafa71b88eefedbbb35a"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_czce_calendar_patch.py",
+      "sha256": "057d4fff56e10154fc1491376530ebd30d61a85a084647f1a816216b0645afa3"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_tushare_futures.py",
+      "sha256": "f3167af30f94ca586f8e52d6680a32e4b42cbbbefcb67f5f5dcea99b9ee0997f"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_temporal.py",
+      "sha256": "8e9490f70e4ed65e1804352ca461e26c0fbefd2bc37c825c8ed8ecc4b21781b0"
+    },
+    {
+      "path": "packages/dataflows/tests/functional/test_contract.py",
+      "sha256": "55c4a9a3a5f31a3d01791bf65263eb8a21a2dbedd437f6ecdb67423b5054406a"
+    },
+    {
+      "path": "packages/dataflows/README.md",
+      "sha256": "d481d4d77268870370e9cb346ef2499e43bdd034a3bc1e0202db056b960e0706"
+    },
+    {
+      "path": "packages/dataflows/patch_evidence/czce_20221231/source_manifest.json",
+      "sha256": "391de1bad7a44aea7774f2096d8c48441a6136cb457dcab796f86f07a0cbd4d9"
+    },
+    {
+      "path": "packages/dataflows/patch_evidence/czce_20221231/ma_rules_20221201.pdf",
+      "sha256": "64b6e3670a44f71c865aedb53ecd9a4505846f77dee45cdafe92a3c9f690d4e6"
+    },
+    {
+      "path": "packages/dataflows/patch_evidence/czce_20221231/gov_2023_holidays.html",
+      "sha256": "1e0d63309187bd8d6867328d2d4a79e32d593d0fa370fab5c19858881fd06eab"
+    }
+  ],
+  "real_data_acceptance": {
+    "path": "research/S014/materials/20261018_methanol_dev/acceptance.json",
+    "sha256": "790a0ea5b82a4a5f363d51ca182ff70c9ea72b71b09cb66efcdae815b0b3c503"
+  },
+  "new_tushare_calls": 0,
+  "new_models": 0,
+  "new_accounts": 0
+}
