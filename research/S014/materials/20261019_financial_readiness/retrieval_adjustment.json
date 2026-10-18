@@ -1,0 +1,45 @@
+{
+  "status": "RSCH_AUTHORIZED_ADAPTIVE_RETRIEVAL_WITHIN_USER_AUTONOMOUS_PRE_STAGE2_SCOPE",
+  "reason": "Official catalogue repeatedly returned the first 30 rows despite pageNum; 12 original catalogue requests retained, incomplete pagination is not complete coverage. Replace pagination with two non-overlapping date segments plus financial correction/supplement queries.",
+  "previous_catalogue_calls": 12,
+  "additional_catalogue_cap": 4,
+  "total_catalogue_cap": 16,
+  "pdf_cap_unchanged": 48,
+  "new_queries": [
+    {
+      "window": [
+        "2022-07-01",
+        "2023-12-31"
+      ],
+      "purpose": "remaining financial primary reports"
+    },
+    {
+      "window": [
+        "2024-01-01",
+        "2026-10-15"
+      ],
+      "purpose": "remaining financial primary reports"
+    },
+    {
+      "window": [
+        "2018-07-01",
+        "2026-10-15"
+      ],
+      "keyword": "更正",
+      "purpose": "financial corrections only"
+    },
+    {
+      "window": [
+        "2018-07-01",
+        "2026-10-15"
+      ],
+      "keyword": "补充",
+      "purpose": "financial supplements only"
+    }
+  ],
+  "no_auto_retry": true,
+  "failure_counts": true,
+  "no_scope_expansion_to_general_announcements": true,
+  "user_instruction_basis": "自主完成进入阶段二之前的工作",
+  "created_utc": "2026-10-18T16:12:07.529311+00:00"
+}

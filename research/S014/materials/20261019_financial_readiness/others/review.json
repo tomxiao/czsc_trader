@@ -1,0 +1,38 @@
+{
+  "status": "PASS_WITH_DECLARED_LIMITS",
+  "reviewer": "financial_review independent read-only agent",
+  "judgment": "Financial prerequisites are sufficient to start stage-two public-financial-information research under the stated date, field and source limitations; no remaining blocking defect identified.",
+  "actual_verification": [
+    "Reviewed acquisition, original-field reconciliation, dependency and admission scripts",
+    "Independently verified hashes of all 38 PDFs and extracted texts",
+    "Read-only SQLite check of space/preparation/manifest and four payload/content hashes",
+    "Checked all 297 field cells, eligible RecordIds, monetary amounts, original pages, actual SSE clocks and 28 event dependencies",
+    "Checked 2018 annual original/revised nine fields and read correction notice content",
+    "165 direct F1/F2 main field-period cells all reconciled"
+  ],
+  "reviewed_artifact_sha256": {
+    "others/preparation.json": "90b075d4521a5eebe18a61ac443415326f0c5497d41f6fa2cc4c4a2d34bbd7aa",
+    "others/original_acceptance.json": "4e6f81372c722f939b49752e5796a63ba5512ecb9a17aa7b9863a5e553573503",
+    "others/disclosure_clock_and_dependencies.json": "4472f3786495a1ce2449b6563dbb515ba66b2fb9edeef9382fa09b2177635d38",
+    "others/accepted_financial_inputs.json": "d9974d33be25c87bccd725466038a7c188856adbfca239ce485ae21552f1a085",
+    "official/inventory_v2.json": "bd54a1e1080664023f6ba8d871d0ef3455f782d4062cc0e642de6c8519a09854",
+    "official/catalogue_validation_v2.json": "3600ec7286732a0affe2c40e6d1bbf28c4c12a5d53b3818ef9fb8f40d189951b"
+  },
+  "result_counts": {
+    "reconciled_value_cells": 296,
+    "not_separately_disclosed_cells": 1,
+    "main_mechanism_cells_reconciled": 165,
+    "decision_dependencies": 28
+  },
+  "required_limits": [
+    "Only nine audited fields; other source fields are not original-certified",
+    "2018Q3 receivable remains unavailable, combined notes/receivables must not be silently substituted",
+    "2025H1 deducted-profit null observation remains null",
+    "25 evaluation disclosure dates must be clustered; 27 periods and 198 observations are not independent units",
+    "Public-original conservative availability assumption is not historical vendor PIT certification",
+    "No manual visual inspection claim for all report pages"
+  ],
+  "new_network_calls": 0,
+  "writes_by_reviewer": 0,
+  "new_labels_models_accounts": 0
+}
