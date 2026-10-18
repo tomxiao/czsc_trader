@@ -281,12 +281,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "bbfef98d7493c0708638d1abbe325bbe54eeca2fd9ab5d47c43a3095aafd535a",
-      "revision": 14,
+      "content_sha256": "577909b4128eff0b9fceb5a3b336236433d1cf091974aeb5428144a4a4554b6b",
+      "revision": 15,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "甲醇单日上涨的通用H3收益增量未获支持；不新增有效组件，不推进账户。低环境存在有限正向线索，但仅3次选择改变且证据未充分。",
+    "conclusion": "NOT_SUPPORTED: close the fixed z*S commodity-stock interaction branch. No effective buy component is established; the overall S014 objectives remain unmet.",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -713,6 +713,72 @@
         "type": "EvidenceRef"
       }
     },
+    "methanol_interaction_test": {
+      "authorization": "同意，按此开展甲醇上涨与股票累计不涨的固定交互检验，最多12次拟合，失败计入，不新增数据调用或账户实验。保持费用、执行约定和年度目标不变，你自主推进，我看结果。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "577909b4128eff0b9fceb5a3b336236433d1cf091974aeb5428144a4a4554b6b",
+        "revision": 15,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX032_20261018",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "failed_fits": 0,
+      "failure_counts": true,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "fits_cap": 12,
+      "fits_remaining": 0,
+      "fits_used": 12,
+      "new_accounts": 0,
+      "new_data_calls": 0,
+      "new_labels": 0,
+      "new_supported_components": 0,
+      "next_step": {
+        "automatic_accounts": false,
+        "automatic_horizon_or_direction_change": false,
+        "automatic_new_experiments": false,
+        "claim_data_or_mechanisms_exhausted": false,
+        "claim_new_data_required": false,
+        "fees_execution_annual_targets": "UNCHANGED",
+        "overall_target_status": "NOT_ACHIEVED",
+        "recommendation": "S014 restricted stop of new experiments pending user decision",
+        "restart_requirement": "New independent mechanism evidence distinguishable from rejected explanations, causal availability, intended trading use and a bounded falsification design, followed by applicable user authorization."
+      },
+      "primary_hypothesis": {
+        "allocation_M2_minus_M1": -2.7685185185184722e-05,
+        "branch_action": "CLOSE_FIXED_INTERACTION",
+        "equal_cluster_D": -0.0017108482360173134,
+        "interpretation": "Raw average advantage is concentrated in 2026 and vulnerable to one favorable opportunity. The fixed interaction adds one losing opportunity and removes none. Association is not a causal commodity effect or account return.",
+        "name": "Methanol rise adds useful repair information when stock Q-to-T cumulative return is nonpositive",
+        "raw_D": 0.008097667960185151,
+        "remove_top_one_D": -0.002958541898685815,
+        "residual_M1_D": 0.006008680211106519,
+        "status": "NOT_SUPPORTED",
+        "without_2026_D": -0.004826973642490422
+      },
+      "result": {
+        "evidence_id": "9581030372cb905928fec80a2803695bf3b1c33e616a33181201b98a838a5fda.json",
+        "experiment": {
+          "experiment_id": "EX032_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex032-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9581030372cb905928fec80a2803695bf3b1c33e616a33181201b98a838a5fda",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_BRANCH_CLOSED"
+    },
     "methanol_mechanism_design": {
       "actual_new_accounts": 0,
       "actual_new_data_calls": 0,
@@ -1112,7 +1178,17 @@
       "original_pdfs": 32
     },
     "pending": [
-      "仅建议一次甲醇上涨与股票累计不涨交互的固定检验，最多12次新拟合（失败计数），0新数据、标签、账户；尚未授权。停止支撑期限扩展和低环境甲醇续持/H1路线，不自动追加实验。"
+      {
+        "automatic_accounts": false,
+        "automatic_horizon_or_direction_change": false,
+        "automatic_new_experiments": false,
+        "claim_data_or_mechanisms_exhausted": false,
+        "claim_new_data_required": false,
+        "fees_execution_annual_targets": "UNCHANGED",
+        "overall_target_status": "NOT_ACHIEVED",
+        "recommendation": "S014 restricted stop of new experiments pending user decision",
+        "restart_requirement": "New independent mechanism evidence distinguishable from rejected explanations, causal availability, intended trading use and a bounded falsification design, followed by applicable user authorization."
+      }
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1278,7 +1354,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：路线重审完成，商品条件反应假设待授权",
+    "stage": "阶段二固定交互检验完成：关闭该分支，受限停止建议待用户决定",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -1531,5 +1607,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T16:02:00+08:00"
+  "updated_at": "2026-10-18T17:09:15+08:00"
 }

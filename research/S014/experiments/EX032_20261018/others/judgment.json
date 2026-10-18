@@ -1,0 +1,87 @@
+{
+  "status": "RESEARCH_JUDGMENT_COMPLETE_PENDING_FORMAL_DELIVERY",
+  "experiment_id": "EX032_20261018",
+  "conclusion": "NOT_SUPPORTED: close the fixed z*S commodity-stock interaction branch. No effective buy component is established; the overall S014 objectives remain unmet.",
+  "primary_hypothesis": {
+    "name": "Methanol rise adds useful repair information when stock Q-to-T cumulative return is nonpositive",
+    "status": "NOT_SUPPORTED",
+    "branch_action": "CLOSE_FIXED_INTERACTION",
+    "raw_D": 0.008097667960185151,
+    "residual_M1_D": 0.006008680211106519,
+    "allocation_M2_minus_M1": -0.000027685185185184722,
+    "without_2026_D": -0.004826973642490422,
+    "equal_cluster_D": -0.0017108482360173133,
+    "remove_top_one_D": -0.002958541898685815,
+    "interpretation": "Raw average advantage is concentrated in 2026 and vulnerable to one favorable opportunity. The fixed interaction adds one losing opportunity and removes none. Association is not a causal commodity effect or account return."
+  },
+  "new_supported_components": 0,
+  "component_definitions_retained": 26,
+  "historical_accounts_retained": 66,
+  "historical_all_target_passed": 0,
+  "fits_completed": 12,
+  "failed_fits": 0,
+  "remaining_fits": 0,
+  "new_source_calls": 0,
+  "new_labels": 0,
+  "new_accounts": 0,
+  "positive_counterevidence": {
+    "allocation_M1_minus_M0": 0.0009530514814814792,
+    "ordinary_conditional_95": [0.000052218546852945956, 0.00216213356822484],
+    "changed_choices": 5,
+    "added": 2,
+    "removed": 3,
+    "every_leave_one_cluster_positive": true,
+    "limits": "Limited additive information in the baseline containing S must not be denied. It is not evidence for the interaction. Contribution falls sharply after removing the largest contributors; only five choices differ, selected 2025 returns remain negative, and parent allocation remains below all participation. No supported component or automatic follow-on account is inferred.",
+    "chronological_dedup_D": 0.01075593930975272,
+    "chronological_dedup_limit": "Retrospective diagnostic uses realised exits; not an executable scheduling rule."
+  },
+  "raw_full_period": {
+    "calendar_days": 1642,
+    "parent_opportunities": 399,
+    "mature_state_complete": 394,
+    "simple_z1_S1_mature_attempts": 51,
+    "simple_z1_S1_mature_filled": 51,
+    "simple_z1_S1_all_triggers": 51,
+    "simple_z1_S1_frequency_upper_bound": 1.8635809987819731,
+    "parent_labels_not_generated": 4,
+    "parent_censored": 1,
+    "capacity_limit": "All 1642 input rows contain 51 fixed simple-rule triggers, all mature and filled. The four missing and one censored parent are not simple-rule triggers. At most one trade per trigger gives an optimistic full-period closed-trade upper bound 51 and frequency 60*51/1642=1.86358<3 before overlap/capital conflicts. This is not executable frequency and does not bound M0/M1/M2 or other combinations.",
+    "early_years_limit": "2020-2022 raw description only; not independent validation."
+  },
+  "preparation_incident": {
+    "status": "INVALID_PREPARATION_SUPERSEDED_BEFORE_FITTING",
+    "reason": "Date dtype mismatch produced missing exact price maps; original PASS invalidated and retained.",
+    "repair": "Normalize Date keys and verify exact T/Q maps; final missing_exact_q=0.",
+    "fits_consumed": 0,
+    "source": "others/preparation_attempts/01/incident.json"
+  },
+  "next_step": {
+    "recommendation": "S014 restricted stop of new experiments pending user decision",
+    "restart_requirement": "New independent mechanism evidence distinguishable from rejected explanations, causal availability, intended trading use and a bounded falsification design, followed by applicable user authorization.",
+    "automatic_new_experiments": false,
+    "automatic_accounts": false,
+    "automatic_horizon_or_direction_change": false,
+    "claim_data_or_mechanisms_exhausted": false,
+    "claim_new_data_required": false,
+    "fees_execution_annual_targets": "UNCHANGED",
+    "overall_target_status": "NOT_ACHIEVED"
+  },
+  "interpretation_limits": [
+    "Already-seen adaptive development evidence; no independent confirmation claim.",
+    "Fixed-score conditional intervals omit training uncertainty and historical selection adjustment.",
+    "Relative loss reduction alone cannot establish useful long entries.",
+    "No new economic hard gate or annual sign requirement is imposed.",
+    "Formal COMPONENTS/15 publication and final validation are pending, not claimed PASS."
+  ],
+  "sources": [
+    "protocols/design.json",
+    "protocols/run_lock.json",
+    "others/analysis.json",
+    "others/annual.csv",
+    "others/fit_receipt.json",
+    "others/inputs.json",
+    "others/analysis_precheck.json",
+    "others/independent_audit.json",
+    "others/preparation_attempts/01/incident.json"
+  ]
+}
