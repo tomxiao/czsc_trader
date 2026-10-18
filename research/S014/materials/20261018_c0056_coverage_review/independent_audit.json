@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "scope": "Independent saved-ledger accounting review only",
+  "audit_method": "Decimal cash-flow plus inventory-value identity, independent of original phase formulas; source hashes and saved entry-year cohort aggregation also verified.",
+  "checks": {
+    "daily_fill_cardinality": 1642,
+    "quantity_continuity": 1642,
+    "cash_continuity": 1642,
+    "valuation_identity": 1642,
+    "cash_flow": 1642,
+    "net_pnl_identity": 1642,
+    "flat_zero": 750,
+    "phase_classification": 1642,
+    "csv_atom": 6568,
+    "csv_actual_pnl": 1642,
+    "fee_rate": 276,
+    "annual_opening": 7,
+    "annual_net": 7,
+    "annual_return": 7,
+    "annual_phase_count": 7,
+    "annual_atom": 28,
+    "annual_additive_pp": 28,
+    "annual_pp_sum": 7,
+    "fixed_path_fee_addback": 7,
+    "source_hash": 3,
+    "cohort_aggregation": 77
+  },
+  "total_checks": 20908,
+  "daily_rows": 1642,
+  "annual_rows": 7,
+  "fills": 276,
+  "maximum_checked_absolute_error": "3E-10",
+  "cross_year_carry": [
+    {
+      "year": 2021,
+      "carried_quantity": 28200,
+      "previous_close": 4.65
+    },
+    {
+      "year": 2022,
+      "carried_quantity": 50800,
+      "previous_close": 6.89
+    },
+    {
+      "year": 2023,
+      "carried_quantity": 70800,
+      "previous_close": 4.88
+    },
+    {
+      "year": 2026,
+      "carried_quantity": 40800,
+      "previous_close": 5.940000000000001
+    }
+  ],
+  "account_evidence_sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+  "review_script_sha256": "e609320d09513fae2e813b8bf6a3f49d2a782751f7557e94b2567efbf3014480",
+  "account_review_sha256": "bd65fda1cf6571575be9e0bae29ce55a8ab17aaf0adb5859acb85ef0889461c0",
+  "daily_reconciliation_sha256": "4506ba6c4bc913abdc30660b9f15b10e70f60fc1170f51adc6698624320a0a87",
+  "new_data_calls": 0,
+  "new_fits": 0,
+  "new_labels": 0,
+  "new_accounts": 0,
+  "script_inspection": "review.py only reads saved account and diagnosis evidence; no replay, model fit, new future-return labels or data requests. Not rerun in audit.",
+  "limitations": [
+    "Accounting contributions identify when actual NAV changed, not why economically or what a different signal would earn.",
+    "Entry phase is actual buy fill to same-day close; hold includes previous close through current close; exit is previous close to actual sell fill, not total closed-trade PnL.",
+    "Annual opening NAV denominators make phase contributions additive within each year; contribution percentages are not standalone strategy returns.",
+    "Cross-year holding is carried continuously without reset. Entry-year trade cohorts are different units and must not be substituted for calendar-year returns.",
+    "Fee addback keeps actual capital and position paths unchanged and is not zero-fee simulation. Contract remains 0.1 percent per side.",
+    "No causal attribution, signal efficacy, out-of-sample validation or replay correctness audit is implied."
+  ]
+}

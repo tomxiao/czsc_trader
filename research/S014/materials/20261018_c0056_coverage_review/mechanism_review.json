@@ -1,0 +1,65 @@
+{
+  "status": "PASS_FOR_PROPOSAL_ONLY",
+  "reviewer": "RSCH independent mechanism coverage reviewer",
+  "date": "2026-10-18",
+  "scope": "Read-only review of report and fixed-rule proposal; no rule classification, label generation, fitting, account run or upstream call performed.",
+  "reviewed_files": [
+    {
+      "path": "research/S014/materials/20261018_c0056_coverage_review/report.md",
+      "sha256": "7d954f1406f911045bd732d764da6549df46d6769fbd1b9c2ff5463dcdc4d08b"
+    },
+    {
+      "path": "research/S014/materials/20261018_c0056_coverage_review/proposal.json",
+      "sha256": "25bf82b73109db0d70a7e6baf55a2ebaa160a535588300191da4c4b01c529c90"
+    }
+  ],
+  "blocking_findings": [],
+  "conclusion": "The materials support deferring a formal whole-S014 pause pending a separately authorized, bounded review of action information. They do not establish that the proposed market/sector state has predictive value or that S014 should resume broad experimentation. The fixed rule is a new task-specific interaction proposal using old information, not a new information source or an effective component.",
+  "checks": [
+    {
+      "topic": "Pause recommendation revision",
+      "result": "PASS",
+      "reason": "Revision is grounded in a specific uncovered decision and existing paired action evidence with low incremental computation cost. Report explicitly states no positive economic evidence for the new state, no automatic resumption and no promise to repair all three years. The argument is sufficient for a proposal, not an economic endorsement."
+    },
+    {
+      "topic": "EX007 overlap",
+      "result": "PASS",
+      "reason": "Report correctly acknowledges existing hold-versus-exit labels at midpoint decisions for H5/H10/H20. The distinction is first actual support-break decisions plus market/sector context, which EX007 did not contain; changing the sample alone is not claimed to be new information.",
+      "evidence": "research/S014/experiments/EX007_20261017/protocols/report.md:23-45"
+    },
+    {
+      "topic": "EX009/EX010/EX013 counterevidence",
+      "result": "PASS",
+      "reason": "Existing common-pressure, relative-resilience and industry-entry negative evidence is retained. The proposed zero-fit rule does not refute that evidence; it asks a narrower remaining-horizon action question. Report avoids treating returns residuals or relative price changes as identified causes.",
+      "evidence": "research/S014/experiments/EX010_20261017/protocols/report.md:70-81; research/S014/experiments/EX013_20261017/protocols/report.md:15-21"
+    },
+    {
+      "topic": "Event selection and outcome availability",
+      "result": "PASS",
+      "reason": "103 early exits, 100 matched and closed pairs, 85 nonpositive-P pairs, 15 positive-P pairs and 35 outside-scope non-early cycles are separately disclosed. The 100-pair restriction is a historical analyzable subset, not an ex-ante tradable universe. Missing pairs are not assigned zero. No annual-NAV or full-account claim is made from event averages."
+    },
+    {
+      "topic": "Confounding and usefulness",
+      "result": "PASS_WITH_LIMITS",
+      "reason": "Relative resilience mechanically depends on the stock decline, so raw group differences cannot establish independent sector information. Report requires own-return, amplitude, PnL and remaining-days comparisons and common-support diagnostics, and explicitly admits zero-fit diagnostics cannot fully control confounding. The candidate must be assessed over the fixed 100-event denominator, with changed-action counts and full alternatives retained."
+    },
+    {
+      "topic": "Authorization and budget",
+      "result": "PASS",
+      "reason": "Proposal remains unauthorized and unexecuted. It declares one fixed rule and zero new fits, labels, upstream calls and accounts. Fees, execution, annual targets and original H10 deadline remain unchanged. Positive results do not automatically authorize account integration or component promotion."
+    }
+  ],
+  "nonblocking_execution_clarifications": [
+    "Before any authorized test, lock the decision-date year as the primary event-year grouping and identify entry-year tables separately; neither is natural-year account performance.",
+    "Use exact existing stock HFQ and index close-to-close definitions and exact D/prior-session alignment. Disclose missing values and unavailable histories without filling or changing the fixed rule.",
+    "Lock common-support and contribution-sensitivity computations before inspecting new group outcomes. Matching on year and remaining days alone cannot justify an external-information claim if stock declines, volatility or floating PnL remain materially different.",
+    "If informative groups are sparse, calendar-concentrated or noncomparable, report the action mechanism unresolved and stop this design. Absence of sufficient support is not evidence the market mechanism is universally false, and does not itself authorize another model or broader data search.",
+    "Continued-to-H10 label comparison retains the original hypothetical fixed-exit execution semantics already encoded in B; it must not cancel a historically failed sell, extend H10 further, or be described as a simulated new continuous strategy."
+  ],
+  "recommendation": "Approve the report as an evidence-bounded coverage review and pending proposal. Recommend at most the declared fixed action-information test after user authorization; do not describe its expected economic benefit as established.",
+  "new_upstream_calls": 0,
+  "new_fits": 0,
+  "new_labels": 0,
+  "new_accounts": 0,
+  "files_written": ["research/S014/materials/20261018_c0056_coverage_review/mechanism_review.json"]
+}
