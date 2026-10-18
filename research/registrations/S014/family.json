@@ -350,7 +350,7 @@
         "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
         "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
       },
-      "routing_after_result": "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。",
+      "routing_after_result": "已按用户决定关闭旧支撑过滤路线，完成新收益机制方案；等待是否授权甲醇数据可用性核查，未启动新实验",
       "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
     "h3_downside_duration": {
@@ -383,6 +383,99 @@
       "revision": 2,
       "stage": "MANDATE",
       "type": "DeliveryReference"
+    },
+    "new_mechanism_proposal_review": {
+      "account_budget_completed_rounds": 10,
+      "account_budget_remaining_rounds": 0,
+      "all_targets_pass_count": 0,
+      "announcements": "PAUSED",
+      "closed_route": "automatic_old_support_reclaim_entry_filter",
+      "conditional_backup": "historical_sector_member_advance_breadth",
+      "current_scope": "Existing S014 evidence inventory and proposal review only",
+      "date": "2026-10-18",
+      "evidence": {
+        "proposal.md": {
+          "evidence_id": "11ae8f868512c10afeeb1c19ab03ea9a96a2cc0cc5efad9ef50b7a3c528807f3.md",
+          "experiment": {
+            "experiment_id": "EX030_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/markdown",
+          "name": "post-ex030-mechanism-review-proposal",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "11ae8f868512c10afeeb1c19ab03ea9a96a2cc0cc5efad9ef50b7a3c528807f3",
+          "type": "EvidenceRef"
+        },
+        "routing_decision.json": {
+          "evidence_id": "3965579b59b47a51eeacc38953dae1a5ea08a4cc8c8fe254472d56b78587a390.json",
+          "experiment": {
+            "experiment_id": "EX030_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex030-mechanism-review-routing-decision",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "3965579b59b47a51eeacc38953dae1a5ea08a4cc8c8fe254472d56b78587a390",
+          "type": "EvidenceRef"
+        },
+        "verification.json": {
+          "evidence_id": "6688cf24ef36ce81989bff5c4fab1deed6b78c46efb577d363c9606873baf5bd.json",
+          "experiment": {
+            "experiment_id": "EX030_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex030-mechanism-review-verification",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "6688cf24ef36ce81989bff5c4fab1deed6b78c46efb577d363c9606873baf5bd",
+          "type": "EvidenceRef"
+        }
+      },
+      "fees_execution_annual_targets": "UNCHANGED",
+      "git_branch_not_deleted": "codex/s014-jinniu-research",
+      "historical_accounts": 66,
+      "human_instruction": "同意，关闭这条过滤器分支，转向新的收益机制方案评审。先梳理哪些方向尚未验证，说明与已有实验的区别及依据，避免重复调参数。保持费用、执行约定和年度目标不变，先给方案，暂不新增账户实验。",
+      "new_accounts": 0,
+      "new_accounts_authorized": false,
+      "new_candidates": 0,
+      "new_mechanism_experiments": 0,
+      "new_mechanism_experiments_authorized": false,
+      "new_source_calls": 0,
+      "new_upstream_calls_authorized": false,
+      "next_step_proposed_not_authorized": {
+        "accounts": 0,
+        "actual_call_cap": 8,
+        "failures_and_pagination_count": true,
+        "full_coverage_not_guaranteed_by_probe_budget": true,
+        "models": 0,
+        "new_platform_implementation": false,
+        "paid_access_purchase": false,
+        "task": "Methanol upstream permission, identity, timing and coverage assessment only"
+      },
+      "phase_four_approved": false,
+      "primary_history": "Proposed in EX008; not ingested or tested",
+      "proposal_path": "research/S014/materials/20261018_mechanism_review/proposal.md",
+      "proposal_sha256": "11ae8f868512c10afeeb1c19ab03ea9a96a2cc0cc5efad9ef50b7a3c528807f3",
+      "recommended_primary": "methanol_commodity_shock_delayed_stock_response",
+      "reviewed_diagnostic_delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca",
+        "revision": 13,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "route_status": "CLOSED_BY_USER",
+      "status": "READY_FOR_USER_REVIEW",
+      "type": "post_diagnostic_research_routing"
     },
     "numerical_census": {
       "delivery": {
@@ -463,7 +556,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。"
+      "评审甲醇商品冲击优先、行业扩散度后备的机制方案；拟议8次上游可用性核查未授权，暂不新增模型或账户"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -507,7 +600,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "研究诊断及学习反馈：定向诊断完成，等待研究路由决定",
+    "stage": "研究诊断及学习反馈：旧支撑过滤路线已关闭，新收益机制方案待评审",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -731,10 +824,24 @@
       "next_step": "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。",
       "phase_four_approved": false,
       "routing": {
-        "decision": "关闭本定义下旧支撑确认过滤分支；保留历史组件和候选，等待新的具体研究决定",
+        "decision": "用户已确认关闭旧支撑确认过滤路线；后续仅新机制方案评审",
         "primary": "研究诊断及学习反馈：结果回传阶段二的信息增量判断",
         "stage_four": "0全部目标达标，尚不具备推进条件且未批准",
-        "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户"
+        "stage_three": "历史已获批准但10轮预算耗尽；本次不授权新账户",
+        "user_decision": {
+          "evidence_id": "3965579b59b47a51eeacc38953dae1a5ea08a4cc8c8fe254472d56b78587a390.json",
+          "experiment": {
+            "experiment_id": "EX030_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "post-ex030-mechanism-review-routing-decision",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "3965579b59b47a51eeacc38953dae1a5ea08a4cc8c8fe254472d56b78587a390",
+          "type": "EvidenceRef"
+        }
       },
       "scope": "One bounded existing-data diagnostic; no new accounts, source calls, announcements, or changes to fees/execution/annual targets. Stage-three 10-round budget remains exhausted.",
       "status": "COMPLETE"
@@ -746,5 +853,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T11:47:02+08:00"
+  "updated_at": "2026-10-18T12:19:20+08:00"
 }
