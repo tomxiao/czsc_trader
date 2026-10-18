@@ -1,0 +1,737 @@
+{
+  "status": "FEASIBILITY_COMPLETE_RESEARCH_INPUT_NOT_READY",
+  "actual_http_calls": 6,
+  "failed_calls": 0,
+  "empty_calls": 1,
+  "nonempty_successes": 5,
+  "calendar_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX033_20261018"
+    },
+    "evidence_id": "0a1390c2e28a1f5e7364dca5b10b168dc7e980da18e8aee143d70f704ab65aca.csv",
+    "sha256": "0a1390c2e28a1f5e7364dca5b10b168dc7e980da18e8aee143d70f704ab65aca",
+    "media_type": "text/csv",
+    "name": "ex033-others-calendar-csv",
+    "schema": null,
+    "schema_version": null
+  },
+  "queries": [
+    {
+      "api": "income",
+      "status": "RECEIVED",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 37,
+      "unique_periods": 27,
+      "unique_ann_dates": 25,
+      "period_range": [
+        "20191231",
+        "20260630"
+      ],
+      "ann_range": [
+        "20200305",
+        "20260827"
+      ],
+      "missing_expected_2020Q1_2026Q2": [],
+      "missing_values": {
+        "non_oper_income": 5,
+        "non_oper_exp": 7
+      },
+      "duplicate_key_groups": 10,
+      "null_vs_value_groups": 0,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 37,
+      "periods_with_any_complete_core_row": 27,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    },
+    {
+      "api": "balancesheet",
+      "status": "RECEIVED",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 37,
+      "unique_periods": 27,
+      "unique_ann_dates": 25,
+      "period_range": [
+        "20191231",
+        "20260630"
+      ],
+      "ann_range": [
+        "20200305",
+        "20260827"
+      ],
+      "missing_expected_2020Q1_2026Q2": [],
+      "missing_values": {
+        "notes_receiv": 34,
+        "contract_assets": 35,
+        "fix_assets": 1,
+        "cip": 14
+      },
+      "duplicate_key_groups": 10,
+      "null_vs_value_groups": 1,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 37,
+      "periods_with_any_complete_core_row": 27,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    },
+    {
+      "api": "cashflow",
+      "status": "RECEIVED",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 41,
+      "unique_periods": 27,
+      "unique_ann_dates": 25,
+      "period_range": [
+        "20191231",
+        "20260630"
+      ],
+      "ann_range": [
+        "20200305",
+        "20260827"
+      ],
+      "missing_expected_2020Q1_2026Q2": [],
+      "missing_values": {
+        "net_profit": 18,
+        "c_pay_acq_const_fiolta": 1
+      },
+      "duplicate_key_groups": 14,
+      "null_vs_value_groups": 0,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 41,
+      "periods_with_any_complete_core_row": 27,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    },
+    {
+      "api": "fina_indicator",
+      "status": "RECEIVED",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 43,
+      "unique_periods": 26,
+      "unique_ann_dates": 24,
+      "period_range": [
+        "20200331",
+        "20260630"
+      ],
+      "ann_range": [
+        "20200417",
+        "20260827"
+      ],
+      "missing_expected_2020Q1_2026Q2": [],
+      "missing_values": {
+        "profit_dedt": 1,
+        "extra_item": 1,
+        "q_dtprofit": 1,
+        "dt_netprofit_yoy": 1
+      },
+      "duplicate_key_groups": 17,
+      "null_vs_value_groups": 1,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 42,
+      "periods_with_any_complete_core_row": 26,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    },
+    {
+      "api": "forecast",
+      "status": "RECEIVED",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 5,
+      "unique_periods": 5,
+      "unique_ann_dates": 5,
+      "period_range": [
+        "20201231",
+        "20241231"
+      ],
+      "ann_range": [
+        "20210128",
+        "20250121"
+      ],
+      "missing_expected_2020Q1_2026Q2": [
+        "20200331",
+        "20200630",
+        "20200930",
+        "20210331",
+        "20210630",
+        "20210930",
+        "20220630",
+        "20221231",
+        "20230331",
+        "20230630",
+        "20230930",
+        "20231231",
+        "20240331",
+        "20240630",
+        "20240930",
+        "20250331",
+        "20250630",
+        "20250930",
+        "20251231",
+        "20260331",
+        "20260630"
+      ],
+      "missing_values": {},
+      "duplicate_key_groups": 0,
+      "null_vs_value_groups": 0,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 5,
+      "periods_with_any_complete_core_row": 5,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    },
+    {
+      "api": "express",
+      "status": "EMPTY",
+      "http_status": 200,
+      "vendor_code": 0,
+      "rows": 0,
+      "unique_periods": 0,
+      "unique_ann_dates": 0,
+      "period_range": null,
+      "ann_range": null,
+      "missing_expected_2020Q1_2026Q2": [
+        "20200331",
+        "20200630",
+        "20200930",
+        "20201231",
+        "20210331",
+        "20210630",
+        "20210930",
+        "20211231",
+        "20220331",
+        "20220630",
+        "20220930",
+        "20221231",
+        "20230331",
+        "20230630",
+        "20230930",
+        "20231231",
+        "20240331",
+        "20240630",
+        "20240930",
+        "20241231",
+        "20250331",
+        "20250630",
+        "20250930",
+        "20251231",
+        "20260331",
+        "20260630"
+      ],
+      "missing_values": {},
+      "duplicate_key_groups": 0,
+      "null_vs_value_groups": 0,
+      "conflicting_nonnull_groups": 0,
+      "complete_core_rows": 0,
+      "periods_with_any_complete_core_row": 0,
+      "at_conservative_row_cap": false,
+      "all_versions_complete": "UNVERIFIED"
+    }
+  ],
+  "same_key_value_differences": [
+    {
+      "api": "balancesheet",
+      "key": {
+        "ts_code": "600722.SH",
+        "end_date": "20220331",
+        "ann_date": "20220428",
+        "f_ann_date": "20220428",
+        "report_type": "1",
+        "comp_type": "1"
+      },
+      "differing_fields": [
+        "fix_assets",
+        "cip"
+      ],
+      "non_null_value_conflicts": [],
+      "rows": [
+        {
+          "ts_code": "600722.SH",
+          "ann_date": "20220428",
+          "f_ann_date": "20220428",
+          "end_date": "20220331",
+          "report_type": "1",
+          "comp_type": "1",
+          "update_flag": "1",
+          "total_assets": 1370372517.52,
+          "total_liab": 151136927.99,
+          "total_hldr_eqy_exc_min_int": 1072035114.36,
+          "total_hldr_eqy_inc_min_int": 1219235589.53,
+          "money_cap": 956158776.64,
+          "accounts_receiv": 426505.47,
+          "notes_receiv": null,
+          "inventories": 4493630.78,
+          "contract_assets": null,
+          "fix_assets": 133188469.97,
+          "cip": 5044247.76
+        },
+        {
+          "ts_code": "600722.SH",
+          "ann_date": "20220428",
+          "f_ann_date": "20220428",
+          "end_date": "20220331",
+          "report_type": "1",
+          "comp_type": "1",
+          "update_flag": "0",
+          "total_assets": 1370372517.52,
+          "total_liab": 151136927.99,
+          "total_hldr_eqy_exc_min_int": 1072035114.36,
+          "total_hldr_eqy_inc_min_int": 1219235589.53,
+          "money_cap": 956158776.64,
+          "accounts_receiv": 426505.47,
+          "notes_receiv": null,
+          "inventories": 4493630.78,
+          "contract_assets": null,
+          "fix_assets": null,
+          "cip": null
+        }
+      ]
+    },
+    {
+      "api": "fina_indicator",
+      "key": {
+        "ts_code": "600722.SH",
+        "end_date": "20250630",
+        "ann_date": "20250829"
+      },
+      "differing_fields": [
+        "profit_dedt",
+        "extra_item",
+        "q_dtprofit",
+        "dt_netprofit_yoy"
+      ],
+      "non_null_value_conflicts": [],
+      "rows": [
+        {
+          "ts_code": "600722.SH",
+          "ann_date": "20250829",
+          "end_date": "20250630",
+          "update_flag": "1",
+          "profit_dedt": 23254434.11,
+          "extra_item": 3453474.33,
+          "grossprofit_margin": 29.6646,
+          "ocfps": 0.038,
+          "roe": 2.2032,
+          "q_dtprofit": 11460548.09,
+          "q_gsprofit_margin": 32.4067,
+          "q_sales_yoy": 7.6718,
+          "q_netprofit_yoy": -2.7348,
+          "dt_netprofit_yoy": 5.31
+        },
+        {
+          "ts_code": "600722.SH",
+          "ann_date": "20250829",
+          "end_date": "20250630",
+          "update_flag": "0",
+          "profit_dedt": null,
+          "extra_item": null,
+          "grossprofit_margin": 29.6646,
+          "ocfps": 0.038,
+          "roe": 2.2032,
+          "q_dtprofit": null,
+          "q_gsprofit_margin": 32.4067,
+          "q_sales_yoy": 7.6718,
+          "q_netprofit_yoy": -2.7348,
+          "dt_netprofit_yoy": null
+        }
+      ]
+    }
+  ],
+  "common_report_periods": [
+    "20200331",
+    "20200630",
+    "20200930",
+    "20201231",
+    "20210331",
+    "20210630",
+    "20210930",
+    "20211231",
+    "20220331",
+    "20220630",
+    "20220930",
+    "20221231",
+    "20230331",
+    "20230630",
+    "20230930",
+    "20231231",
+    "20240331",
+    "20240630",
+    "20240930",
+    "20241231",
+    "20250331",
+    "20250630",
+    "20250930",
+    "20251231",
+    "20260331",
+    "20260630"
+  ],
+  "common_report_period_count": 26,
+  "income_distinct_disclosure_dates": [
+    "20200305",
+    "20200417",
+    "20200808",
+    "20201027",
+    "20210428",
+    "20210806",
+    "20211022",
+    "20220428",
+    "20220812",
+    "20221021",
+    "20230415",
+    "20230428",
+    "20230816",
+    "20231027",
+    "20240412",
+    "20240426",
+    "20240828",
+    "20241025",
+    "20250412",
+    "20250430",
+    "20250829",
+    "20251029",
+    "20260415",
+    "20260430",
+    "20260827"
+  ],
+  "checks": [
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20260630",
+      "difference_yuan": 7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20260331",
+      "difference_yuan": 1.862645149230957e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20251231",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20250930",
+      "difference_yuan": -7.450580596923828e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20250630",
+      "difference_yuan": -3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20250331",
+      "difference_yuan": -1.862645149230957e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20241231",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20240930",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20240630",
+      "difference_yuan": 3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20240331",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20231231",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20230930",
+      "difference_yuan": -3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20230630",
+      "difference_yuan": -3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20230331",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20221231",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20220930",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20220630",
+      "difference_yuan": 3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20220331",
+      "difference_yuan": -1.862645149230957e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20211231",
+      "difference_yuan": 0.0,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20210930",
+      "difference_yuan": 3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20210630",
+      "difference_yuan": -3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20210331",
+      "difference_yuan": 9.313225746154785e-10,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20201231",
+      "difference_yuan": -9.313225746154785e-10,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20200930",
+      "difference_yuan": -1.862645149230957e-09,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20200630",
+      "difference_yuan": -9.313225746154785e-10,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20200331",
+      "difference_yuan": -4.656612873077393e-10,
+      "pass": true
+    },
+    {
+      "name": "consolidated_profit_equals_parent_plus_minority",
+      "period": "20191231",
+      "difference_yuan": 3.725290298461914e-09,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20260630",
+      "difference_percentage_points": -5.975004736313849e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20260331",
+      "difference_percentage_points": 4.020278989713688e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20251231",
+      "difference_percentage_points": -1.7138229807756034e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20250930",
+      "difference_percentage_points": -4.431717680830616e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20250630",
+      "difference_percentage_points": 2.5385697934865448e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20250331",
+      "difference_percentage_points": -2.346947929510179e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20241231",
+      "difference_percentage_points": -3.176630459478247e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20240930",
+      "difference_percentage_points": 2.6843765596140656e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20240630",
+      "difference_percentage_points": 2.48668422742071e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20240331",
+      "difference_percentage_points": 3.146511247109629e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20231231",
+      "difference_percentage_points": -3.562539477641735e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20230930",
+      "difference_percentage_points": 3.7177618246175825e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20230630",
+      "difference_percentage_points": -5.682781818450167e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20230331",
+      "difference_percentage_points": 2.0282162868312525e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20221231",
+      "difference_percentage_points": 2.8055717304908967e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20220930",
+      "difference_percentage_points": 2.144634766310105e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20220630",
+      "difference_percentage_points": 1.7760941474875835e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20220331",
+      "difference_percentage_points": 3.1624052500234257e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20211231",
+      "difference_percentage_points": 3.503669138638088e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20210930",
+      "difference_percentage_points": 1.2295965881037318e-06,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20210630",
+      "difference_percentage_points": 2.6610808458116253e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20210331",
+      "difference_percentage_points": 4.170093683164566e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20201231",
+      "difference_percentage_points": 2.1651457281279818e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20200930",
+      "difference_percentage_points": -2.2520063810205215e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20200630",
+      "difference_percentage_points": -1.1317983144465416e-05,
+      "pass": true
+    },
+    {
+      "name": "ytd_gross_margin_recomputed",
+      "period": "20200331",
+      "difference_percentage_points": 2.6140299562271707e-05,
+      "pass": true
+    }
+  ],
+  "checks_passed": 53,
+  "checks_total": 53,
+  "no_pre2020_disclosure_request": true,
+  "no_price_returns_loaded": true,
+  "new_models": 0,
+  "new_account_experiments": 0,
+  "new_return_labels": 0,
+  "limitations": [
+    "No independent source proves all original historical versions",
+    "Same-date missing/value alternatives have no revision timestamps",
+    "2019 prewindow and 2019 annual indicators not requested",
+    "Empty express is not evidence of complete absence of issuer express announcements",
+    "No daily row multiplication constitutes new independent evidence"
+  ]
+}

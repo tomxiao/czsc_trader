@@ -1,0 +1,98 @@
+{
+  "status": "FEASIBILITY_COMPLETE_RESEARCH_INPUT_NOT_READY",
+  "prioritized_mechanisms": [
+    "F1_OPERATING_IMPROVEMENT",
+    "F2_CASH_BACKED_EARNINGS"
+  ],
+  "secondary": "F3_INCREMENT_OVER_PRIOR_GUIDANCE_NOT_STANDALONE_MODEL",
+  "user_authorized_scope": "Data list, historical-date requirements, upstream permission/coverage checks; design fixed tests only after data adequacy.",
+  "actual_calls": 6,
+  "researcher_self_cap": 6,
+  "user_numeric_cap_specified": false,
+  "failures": 0,
+  "empty": 1,
+  "retries": 0,
+  "new_fits": 0,
+  "new_labels": 0,
+  "new_accounts": 0,
+  "new_supported_components": 0,
+  "new_qualified_candidates": 0,
+  "fees_execution_annual_targets": "UNCHANGED",
+  "platform_changed": false,
+  "future_platform_change_authorized": false,
+  "future_model_account_execution_authorized": false,
+  "research_input_ready": false,
+  "date_policy": "First SSE session strictly after max(valid ann_date,f_ann_date), decision 15:00, execution next session. A proposed conservative date policy, not proof of vintage or vendor arrival.",
+  "new_dataset_proposal": {
+    "count": 1,
+    "name_descriptive": "Company financial disclosure records",
+    "report_kinds": [
+      "income",
+      "balancesheet",
+      "cashflow",
+      "fina_indicator"
+    ],
+    "preserve": [
+      "raw values and nulls",
+      "report period and report type",
+      "ann_date and f_ann_date",
+      "update_flag without interpreting as PIT version",
+      "retrieved_at",
+      "source identity and version limitations"
+    ],
+    "excluded": [
+      "forecast/express production integration",
+      "PE/PB day series",
+      "announcement text platform",
+      "TXE changes",
+      "model built into platform"
+    ]
+  },
+  "fixed_test_proposal": {
+    "F1": "quarter revenue YoY improvement AND quarter gross margin YoY improvement, zero cutoffs; parent-profit-only comparator",
+    "F2": "YoY change in (quarter consolidated OCF - quarter consolidated net profit)/mean(begin-quarter,end-quarter consolidated assets); receivable/inventory change as competing explanations",
+    "population": "all eligible financial disclosure/state update events, not restricted to old low-gap/up-close H3 cohort",
+    "independent_unit": "report-period chains and same-date disclosure clusters",
+    "main_horizon_proposed": 20,
+    "horizon_status": "single proposed information-observation horizon; exact tradable label protocol to lock before computation; not optimizing holding days",
+    "F3": "compare same-period final parent profit with latest previously known guidance interval; forecast units ten-thousand yuan, statement yuan",
+    "multiple_testing": "no grids of windows or thresholds; all future configurations and outcomes disclosed"
+  },
+  "required_before_formal_research": [
+    "Original-source core-field/vintage/date acceptance for all 27 statement periods; four summaries provide 16 reusable checks only, remaining 23 have no current spot-check.",
+    "prewindow authorization and coverage",
+    "DEV public dataset contract with explicit timing/quality semantics",
+    "public formal preparation and frozen label protocol"
+  ],
+  "next_dev_proposal": {
+    "offline_only": true,
+    "new_api_calls": 0,
+    "new_models": 0,
+    "new_accounts": 0,
+    "changes": "one dataset and focused tests; production unchanged"
+  },
+  "prewindow_proposal_not_executed": {
+    "periods": [
+      "20180630",
+      "20180930",
+      "20181231",
+      "20190331",
+      "20190630",
+      "20190930"
+    ],
+    "income_balancesheet_cashflow_ann_range": [
+      "20180701",
+      "20191231"
+    ],
+    "indicator_report_period_range": [
+      "20180630",
+      "20191231"
+    ],
+    "max_calls": 4,
+    "failures_count": true,
+    "retry": false,
+    "evaluation_start_unchanged": "20200101",
+    "additional_indicator_period": "20191231 (published within original evaluation range)"
+  },
+  "historical_version_scope": "Default statement report_type=1 latest consolidated; adjusted/original type 4/5 not separately probed; duplicate rows not a complete revision chain."
+}
