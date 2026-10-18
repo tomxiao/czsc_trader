@@ -1,0 +1,62 @@
+{
+  "status": "AUTHORIZED_FIXED_ACTION_TEST",
+  "primary_route": "STAGE_TWO_ACTION_INFORMATION",
+  "recommendation": "Defer formal whole-S014 pause; propose one bounded exit-action test. Do not resume account experiments.",
+  "mechanism": "At the first actual support break, common market/sector decline with stock relative resilience may distinguish recoverable shocks from extra stock weakness.",
+  "economic_support": "NONE_ESTABLISHED_FOR_THIS_STATE",
+  "existing_event_inventory": 103,
+  "existing_matched_closed_pairs": 100,
+  "primary_nonpositive_mark_pairs": 85,
+  "positive_mark_control_pairs": 15,
+  "non_early_cycles_outside_scope": 35,
+  "signal": "D first support-break decision close before original E+9. C=(market_return_D<0 and sector_return_D<0); R=(stock_return_D-sector_return_D>=0). Fixed daily close-to-close returns, zero boundaries, exact dates. Missing is not zero.",
+  "action": "Continue to original H10 only when P<=0 and C and R; otherwise original early exit. No repeated decision or extended deadline.",
+  "existing_label": "Same-entry B net position return minus R net position return, reused from EX023; no new labels.",
+  "comparators": [
+    "All immediate exits",
+    "All holds to original H10",
+    "P<=0 hold, P>0 exit"
+  ],
+  "comparison_population": "All 100 matched closed early-exit events, report 85/15 separately, all seven entry/decision years with explicit date semantics; not only failed years.",
+  "comparability": "Inspect same-year, same-remaining-days common support and own decline, amplitude, floating PnL distributions. No claim of full confounding adjustment from this zero-fit test.",
+  "proposed_new_fits_cap": 0,
+  "proposed_new_labels_cap": 0,
+  "proposed_new_data_calls_cap": 0,
+  "proposed_new_account_runs_cap": 0,
+  "proposed_fixed_rules_cap": 1,
+  "negative_result_action": "Close mechanism; no reverse direction, nearby threshold, new model or automatic data expansion.",
+  "insufficient_common_support_action": "Report inconclusive; stop this design without automatic extension.",
+  "positive_result_action": "Review coverage, alternative explanations and account integration before seeking separate authorization; no automatic component promotion.",
+  "fees_execution_annual_targets": "UNCHANGED",
+  "all_historical_data_seen": true,
+  "execution_authorized": true,
+  "authorization": "同意执行检验",
+  "primary_year": "decision_year; entry_year separately retained, neither is account natural-year return",
+  "return_inputs": "Stock HFQ and canonical 000001.SH / 000813.CSI daily Close[D]/Close[previous SSE session]-1. Exact date match, no filling.",
+  "action_delta": "B_position_return-R_position_return from existing EX023 episodes; positive means hold better. Baseline R, B, P and candidate are per-event actions, not accounts.",
+  "common_support": "Within P<=0 and common_decline, strata=(decision_year,remaining_to_H10_sessions). Compare resilient vs extra-weak only in strata containing both, weight by min(n_resilient,n_weak). Preserve all outside-stratum events separately.",
+  "confounders": [
+    "close_net_of_buy_fee_return",
+    "stock_return",
+    "amplitude",
+    "remaining_to_H10_sessions"
+  ],
+  "confounder_analysis": "Report distributions and weighted standardized mean differences in common support using pooled SD of the full eligible nonpositive common-decline cohort. No fitted adjustment, propensity or optimized matching.",
+  "concentration": "Fixed top-positive contribution deletion k=1,3,5 on candidate-minus-R, candidate-minus-P and raw group contrast; if n<=k report unavailable. No refit or alternate rule.",
+  "clusters": "Overlapping inclusive [entry_date, max(B_exit_date,R_exit_date)] intervals, transitive connected components across all 100 pairs. Report cluster-equal means and leave-one-cluster-out.",
+  "bootstrap": {
+    "seed": 13,
+    "repetitions": 2000,
+    "block_sessions": 20,
+    "method": "Nonoverlapping full SSE calendar blocks within decision-year, include zero-event blocks and short final blocks; resample block count within each year; recompute denominators. Conditional on saved labels; invalid group draws counted, never replaced."
+  },
+  "prechecks": "Synthetic equality/zero boundaries, missing dates, action algebra, support weights, interval clusters, no first-support-break future inputs.",
+  "stopping": "One fixed rule. Sparse or absent common support -> inconclusive/no supported component, no broadened rule. Negative action usefulness -> close. No automatic further models/data/accounts.",
+  "caps": {
+    "data_calls": 0,
+    "model_fits": 0,
+    "new_return_labels": 0,
+    "account_runs": 0,
+    "fixed_rules": 1
+  }
+}
