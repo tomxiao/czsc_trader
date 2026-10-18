@@ -1,0 +1,128 @@
+{
+  "status": "PASS",
+  "reviewer": "independent e9_api_review agent",
+  "scope": "Metadata-only independent audit of published dates and policy flags; review of fixed E9 design and public API feasibility. No E9 wealth values extracted or calculated.",
+  "artifact_sha256": {
+    "report.md": "1d6af648f5471ff4f5eff2da57f68a1b8741cbbb06b446c7555e299844a37fb8",
+    "proposal.json": "fafd65a0b42f9d7d81660abae124d85c72b1ef70eb2d4e7fb0f35c06b0c267db",
+    "inventory.py": "515575011368bd577dd9f94b0c24be95d7f1f3fab5f12e5eae5b1ab789371516",
+    "inventory.json": "b2aadf866f7a0e7016600ca31a8fb32c456d13de5926a3b3ccde732170be26bf"
+  },
+  "source_sha256": {
+    "research/S014/assets/candidates/C0011/source/4fa691aaf4107e7dd3d3a1decfabe5f8920926d7b9155f926f335f35bb760141/strategy_runtime/strategies/repair_v3.py": "f6c06e1720cceda7cdc476731c64d3056ef798cf1d10461cff18e97bb0c8a6a3",
+    "src/czsc_trader/research_tools/evaluation.py": "6488bb6fa841d4461818fccda86181e69c8741074d37947219e5df3cd93a2218",
+    "src/czsc_trader/backtesting/srt_bridge.py": "a9fdd63ecaf5f9601f0a6b899b121b4e2592d00fa4051c0a6acd673cbc5b9f46",
+    "research/S014/materials/20261018_action_value_method_review/inventory.json": "4823baf6df3b77a572d2decd327e68ff402ae9bc5e9ed976e9353737e481d712"
+  },
+  "public_source_sha256": {
+    "C0011_account": "ec0b3b0538e110de55f74b5f32f473d487c71c39ee7f7abbc9107f079ae3928f",
+    "calendar": "0a1390c2e28a1f5e7364dca5b10b168dc7e980da18e8aee143d70f704ab65aca",
+    "EX019_members": "0380657b078564aae4a84ba5d7e9acfd92ef89cb50d16481e350c47c2bfdf2f5",
+    "EX019_H6_fill_attempts": "f21402d3e500df9d44f0228c4f9f4a9e6e71ec82015e67d8b0627f9553d506fe"
+  },
+  "independent_counts": {
+    "original_entries": 147,
+    "E9_eligible": 145,
+    "H_replay": 68,
+    "H_cash_reuse": 77,
+    "censored": 2,
+    "proposed_accounts_including_one_noop_control": 69
+  },
+  "independent_by_decision_year": {
+    "2020": {
+      "eligible": 4,
+      "replay": 0,
+      "cash_reuse": 4
+    },
+    "2021": {
+      "eligible": 29,
+      "replay": 16,
+      "cash_reuse": 13
+    },
+    "2022": {
+      "eligible": 22,
+      "replay": 9,
+      "cash_reuse": 13
+    },
+    "2023": {
+      "eligible": 15,
+      "replay": 2,
+      "cash_reuse": 13
+    },
+    "2024": {
+      "eligible": 21,
+      "replay": 10,
+      "cash_reuse": 11
+    },
+    "2025": {
+      "eligible": 32,
+      "replay": 17,
+      "cash_reuse": 15
+    },
+    "2026": {
+      "eligible": 22,
+      "replay": 14,
+      "cash_reuse": 8
+    }
+  },
+  "censored_entries": [
+    "2026-09-29",
+    "2026-10-14"
+  ],
+  "checks": [
+    {
+      "name": "Independent metadata reconstruction",
+      "status": "PASS",
+      "detail": "Resolved and SHA-verified public C0011 trades and decisions, calendar, EX019 member exit dates and horizon6 filled attempt dates. Rebuilt all147 entries, D/E6/E7/E8/E9,145 eligibility,68/77 routing and annual counts without invoking inventory.py."
+    },
+    {
+      "name": "Exact cash-route proof",
+      "status": "PASS",
+      "detail": "Frozen ready,parent,high depend only on market data and fixed causal calibration. All eligible H6 fills occur at E6. No qualifying E6/E7/E8 close means no H buy through E9; E9 signals execute E10. Original state-gated entry_signal is not used."
+    },
+    {
+      "name": "Single intervention and full-state fidelity",
+      "status": "PASS",
+      "detail": "Original account start,100000 capital,full-window input/calibration/fee/pricing binding maintained. Change target holding horizon once at D, not at entry. Resume original H3 immediately after actual sale. No-op plus prefix and H6 equivalence required. Public EvaluationRequest exposes initial_cash but not complete account/strategy resume state."
+    },
+    {
+      "name": "Budget and authorization",
+      "status": "PASS",
+      "detail": "At most69 dispatched evaluations including1 no-op and68 H; first H is pilot inside68. No-op or pilot equivalence failure stops remaining dispatch; failed/cancelled/unknown dispatch counts and no automatic retries.145 node groups; zero new upstream/fits/alternative endpoints/account-external matching. Execution remains pending authorization."
+    },
+    {
+      "name": "Algebra and interpretation",
+      "status": "PASS",
+      "detail": "Common W_D; A9=L9-O9; C9=C6 by verified exits; L9=L6+J9 and A9-A6=J9-(O9-O6). L9 includes H-side reentry, not solely old-position holding. E9 residual holdings/pending state must be disclosed."
+    },
+    {
+      "name": "Coverage and fixed diagnostics",
+      "status": "PASS",
+      "detail": "All145 nodes retained, including77 reused and68 replay; old25 reversals only intersected subgroup with censored cases explicit. Compare A6/A9 on same145. D/E9-based 2026 exclusion, D-E9 overlap clusters, fixed top-absolute-change deletions and terminal-state diagnostics. No new predictive-information, unseen-sample, Alpha or annual-target claims."
+    },
+    {
+      "name": "Artifact syntax and duplicate-key guard",
+      "status": "PASS",
+      "detail": "Final proposal and inventory parsed with duplicate-key rejection. Label formulas under label_definitions; new_labels=0 is actual current review count."
+    }
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "issue": "proposal duplicate new_labels key would overwrite formula definitions",
+      "resolution": "Formula object renamed label_definitions; final JSON duplicate-key audit passes."
+    }
+  ],
+  "current_actuals": {
+    "new_upstream_calls": 0,
+    "new_wealth_labels": 0,
+    "new_account_evaluations": 0,
+    "new_matching": 0,
+    "new_fits": 0
+  },
+  "limits": [
+    "This is a method and metadata review, not approval of new execution or proof of alpha.",
+    "Future entry flags select exact computation route only and must not become D-known signal features.",
+    "Independent audit extracted no E9 account wealth or new returns."
+  ]
+}

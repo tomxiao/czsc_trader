@@ -743,6 +743,119 @@
       "routing_after_result": "旧过滤路线保持关闭；甲醇22个原合约已完成固定必要范围的离线准备，1640组同合约两日端点通过；建议下一步评审收益机制方案，未启动模型或账户实验。",
       "verified": "EX030 independent audit PASS; COMPONENTS/13 COMPLETE/FULL/PASS; no new accounts or upstream calls"
     },
+    "e9_extension_review": {
+      "H_replay_paths": 68,
+      "authorization": "同意，请继续；承接固定E9延伸方案评审",
+      "control_accounts": 1,
+      "evidence": {
+        "independent_review.json": {
+          "evidence_id": "23aeaee914a6cdcdb0e7b81751c7c36fa6762671086ee21fcb4222f99803d381.json",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "e9-review-independent_review-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "23aeaee914a6cdcdb0e7b81751c7c36fa6762671086ee21fcb4222f99803d381",
+          "type": "EvidenceRef"
+        },
+        "inventory.json": {
+          "evidence_id": "b2aadf866f7a0e7016600ca31a8fb32c456d13de5926a3b3ccde732170be26bf.json",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "e9-review-inventory-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "b2aadf866f7a0e7016600ca31a8fb32c456d13de5926a3b3ccde732170be26bf",
+          "type": "EvidenceRef"
+        },
+        "inventory.py": {
+          "evidence_id": "515575011368bd577dd9f94b0c24be95d7f1f3fab5f12e5eae5b1ab789371516.py",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/x-python",
+          "name": "e9-review-inventory-py",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "515575011368bd577dd9f94b0c24be95d7f1f3fab5f12e5eae5b1ab789371516",
+          "type": "EvidenceRef"
+        },
+        "proposal.json": {
+          "evidence_id": "fafd65a0b42f9d7d81660abae124d85c72b1ef70eb2d4e7fb0f35c06b0c267db.json",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "e9-review-proposal-json",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "fafd65a0b42f9d7d81660abae124d85c72b1ef70eb2d4e7fb0f35c06b0c267db",
+          "type": "EvidenceRef"
+        },
+        "publish.py": {
+          "evidence_id": "83cf2c075f5554c2024571b1018a2fa7e41d6ac5b8dc12520cf7dcd4dc19a744.py",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/x-python",
+          "name": "e9-review-publish-py",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "83cf2c075f5554c2024571b1018a2fa7e41d6ac5b8dc12520cf7dcd4dc19a744",
+          "type": "EvidenceRef"
+        },
+        "report.md": {
+          "evidence_id": "1d6af648f5471ff4f5eff2da57f68a1b8741cbbb06b446c7555e299844a37fb8.md",
+          "experiment": {
+            "experiment_id": "EX034_20261018",
+            "strategy_id": "S014",
+            "type": "ExperimentRef"
+          },
+          "media_type": "text/markdown",
+          "name": "e9-review-report-md",
+          "schema": null,
+          "schema_version": null,
+          "sha256": "1d6af648f5471ff4f5eff2da57f68a1b8741cbbb06b446c7555e299844a37fb8",
+          "type": "EvidenceRef"
+        }
+      },
+      "exact_H_cash_reuse": 77,
+      "execution_authorized": false,
+      "fees_execution_annual_targets": "UNCHANGED",
+      "new_accounts": 0,
+      "new_calls": 0,
+      "new_fits": 0,
+      "new_labels": 0,
+      "new_matching": 0,
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "proposed_caps": {
+        "account_external_matching_trials": 0,
+        "account_runs": 69,
+        "alternate_endpoints": 0,
+        "fixed_attribution_values": 435,
+        "model_fits": 0,
+        "new_upstream_calls": 0,
+        "node_groups": 145,
+        "primary_A9_labels": 145,
+        "terminal_values": 435
+      },
+      "status": "REVIEW_COMPLETE_EXECUTION_PENDING_AUTHORIZATION"
+    },
     "h3_downside_duration": {
       "delivery": {
         "batch": {
@@ -1568,7 +1681,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议先评审固定E+9延伸的最小公共TDR账户方案，明确H卖出后恢复原政策、终点剩余状态及所需额度，再决定是否执行及提出D时可得的信息假设。不自动新增标签、数据、拟合、撮合或账户，不改变年度目标，不自动暂停S014。"
+      "建议批准固定E9敏感性检验：最多69次诊断账户（1控制+68H路径，失败计入）及145组局部标签；77组H现金精确复用，0新数据/拟合，不自动新增期限或候选。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1762,7 +1875,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二E6动作价值检验完成：支持测量改进，尚无新预测组件",
+    "stage": "阶段二固定E9延伸方案评审完成：69次诊断账户及145组局部标签待授权",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -2015,5 +2128,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T21:54:50+08:00"
+  "updated_at": "2026-10-18T22:09:56+08:00"
 }
