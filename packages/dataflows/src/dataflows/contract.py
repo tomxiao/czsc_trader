@@ -85,6 +85,7 @@ class Dataset(StrEnum):
     INDEX_CONSTITUENT_EVENTS = "index.constituent_events"
     INDEX_CONSTITUENTS_DAILY = "index.constituents_daily"
     SELL_SIDE_FORECAST = "stock.sell_side_forecast"
+    COMPANY_FINANCIAL_DISCLOSURES = "stock.company_financial_disclosures"
     STOCK_MONEYFLOW = "stock.moneyflow"
     TRADING_CALENDAR = "calendar.trading_sessions"
     STRATEGY_FEATURE_EVIDENCE = "strategy.feature_evidence"
@@ -257,7 +258,64 @@ class EvidenceParameters:
         _sha256(self.source_sha256, "source_sha256")
 
 
-DataParameters = NoParameters | PcfParameters | MoneyflowParameters | EvidenceParameters
+class FinancialReportKind(StrEnum):
+    INCOME = "income"
+    BALANCE_SHEET = "balancesheet"
+    CASH_FLOW = "cashflow"
+    FINANCIAL_INDICATOR = "fina_indicator"
+
+
+class FinancialReportType(StrEnum):
+    """Supported consolidated cumulative statement vintages (not PIT proof)."""
+
+    LATEST_CONSOLIDATED = "1"
+    ADJUSTED_CONSOLIDATED = "4"
+    BEFORE_ADJUSTMENT_CONSOLIDATED = "5"
+
+
+@dataclass(frozen=True, slots=True)
+class FinancialDisclosureParameters:
+    """Select observed disclosures, never automatically select a historical vintage.
+
+    DataRequest.start/end bound max(ann_date, f_ann_date), not end_date.
+    Report-period bounds are independent and mandatory. Indicators have mixed
+    per-field accounting bases and require report_type=None. expected_periods
+    optionally declares coverage; READY alone does not certify all filings.
+    """
+
+    report_kind: FinancialReportKind
+    report_period_start: str
+    report_period_end: str
+    report_type: FinancialReportType | None = FinancialReportType.LATEST_CONSOLIDATED
+    expected_periods: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.report_kind, FinancialReportKind):
+            raise TypeError("report_kind must be FinancialReportKind")
+        for name in ("report_period_start", "report_period_end"):
+            value = getattr(self, name)
+            _timestamp(value, name)
+            if len(value) != 10:
+                raise ValueError(f"{name} must be an ISO date")
+        if self.report_period_start > self.report_period_end:
+            raise ValueError("report-period start must not be after end")
+        if self.report_kind is FinancialReportKind.FINANCIAL_INDICATOR:
+            if self.report_type is not None:
+                raise ValueError("financial indicators require report_type=None")
+        elif not isinstance(self.report_type, FinancialReportType):
+            raise TypeError("statements require FinancialReportType")
+        if not isinstance(self.expected_periods, tuple):
+            raise TypeError("expected_periods must be a tuple of ISO report-period dates")
+        for period in self.expected_periods:
+            _timestamp(period, "expected_periods item")
+            if len(period) != 10 or not self.report_period_start <= period <= self.report_period_end:
+                raise ValueError("expected periods must be ISO dates within report-period bounds")
+        if tuple(sorted(set(self.expected_periods))) != self.expected_periods:
+            raise ValueError("expected_periods must be unique and ascending")
+
+
+DataParameters = (NoParameters | PcfParameters | MoneyflowParameters | EvidenceParameters
+                  | FinancialDisclosureParameters)
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,6 +345,11 @@ class DataRequest:
                 raise ValueError("methanol requires MA.ZCE mapping or an explicit MAyymm.ZCE daily contract")
             if len(self.start) != 10 or len(self.end) != 10:
                 raise ValueError("methanol requires ISO date boundaries")
+        if dataset is Dataset.COMPANY_FINANCIAL_DISCLOSURES:
+            if symbol is None or re.fullmatch(r"\d{6}\.(?:SH|SZ|BJ)", symbol) is None:
+                raise ValueError("financial disclosures require an explicit A-share symbol")
+            if not all(isinstance(value, str) and len(value) == 10 for value in (self.start, self.end)):
+                raise ValueError("financial disclosures require ISO disclosure-date boundaries")
         if dataset in {
             Dataset.SHIBOR_DAILY, Dataset.US_REAL_YIELD_DAILY,
             Dataset.US_NOMINAL_YIELD_DAILY, Dataset.US_POLICY_UNCERTAINTY_DAILY,
@@ -333,6 +396,8 @@ class DataRequest:
             frequencies = intraday
         elif dataset is Dataset.INDEX_CONSTITUENT_WEIGHT:
             frequencies = {"daily", "snapshot"}
+        elif dataset is Dataset.COMPANY_FINANCIAL_DISCLOSURES:
+            frequencies = {"event"}
         elif dataset in {Dataset.INDEX_CONSTITUENT_CHANGES, Dataset.INDEX_CONSTITUENT_EVENTS,
                          Dataset.INDEX_CONSTITUENTS_DAILY}:
             frequencies = {"daily"} if dataset is Dataset.INDEX_CONSTITUENTS_DAILY else {"event"}
@@ -346,9 +411,13 @@ class DataRequest:
             Dataset.ETF_CREATION_REDEMPTION_BASKET: (NoParameters, PcfParameters),
             Dataset.STOCK_MONEYFLOW: (NoParameters, MoneyflowParameters),
             Dataset.STRATEGY_FEATURE_EVIDENCE: (EvidenceParameters,),
+            Dataset.COMPANY_FINANCIAL_DISCLOSURES: (FinancialDisclosureParameters,),
         }.get(dataset, (NoParameters,))
         if type(self.parameters) not in allowed:
             raise TypeError(f"parameters are not valid for {dataset}")
+        if isinstance(self.parameters, FinancialDisclosureParameters):
+            if self.parameters.report_period_end > self.end:
+                raise ValueError("report periods must not end after the disclosure cutoff")
         if isinstance(self.parameters, MoneyflowParameters):
             if symbol is not None:
                 raise ValueError("explicit trading_dates require an all-market request")

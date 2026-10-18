@@ -512,6 +512,11 @@ def _validate_provider_output(
         return validate_quality_metadata(metadata, request, dataframe)
 
     specification = _DATASET_FIELDS.get(dataset)
+    if dataset == Dataset.COMPANY_FINANCIAL_DISCLOSURES.value:
+        from .financial_disclosures import validate_financial_disclosures
+
+        validate_financial_disclosures(dataframe, request, metadata)
+        return
     if specification is None:
         return
     required, numeric = specification
@@ -1028,6 +1033,13 @@ def _end_timestamp(value: str) -> pd.Timestamp:
 def _validate_coverage(frame: pd.DataFrame, request: DataRequest) -> None:
     if request.dataset is Dataset.GLOBAL_INDEX_DAILY:
         validate_global_index_history(frame, request.symbol)
+    if request.dataset is Dataset.COMPANY_FINANCIAL_DISCLOSURES:
+        if "end_date" not in frame:
+            raise DataContractError("financial disclosure report-period field is missing")
+        periods = pd.to_datetime(frame["end_date"], format="%Y%m%d", errors="raise")
+        missing = set(request.parameters.expected_periods).difference(periods.dt.strftime("%Y-%m-%d"))
+        if missing:
+            raise IncompleteDataError("financial disclosure expected periods are missing", missing_periods=sorted(missing))
     coverage = request.coverage
     if coverage is None:
         return
@@ -1489,6 +1501,7 @@ class Dataflows:
 
 
 def _default_providers(env_file: Path | None) -> dict[str, Provider]:
+    from .financial_disclosures import fetch_company_financial_disclosures
     from .index_constituent_changes import fetch_index_constituent_changes
     from .index_membership import fetch_index_constituent_events, fetch_index_constituents_daily
     from .chinaamc_pcf import verify_chinaamc_pcf_components
@@ -1828,6 +1841,9 @@ def _default_providers(env_file: Path | None) -> dict[str, Provider]:
         Dataset.INDEX_CONSTITUENT_EVENTS.value: fetch_index_constituent_events,
         Dataset.INDEX_CONSTITUENTS_DAILY.value: index_membership_daily,
         Dataset.SELL_SIDE_FORECAST.value: sell_side_forecast,
+        Dataset.COMPANY_FINANCIAL_DISCLOSURES.value: lambda request: fetch_company_financial_disclosures(
+            request, env_file=env_file,
+        ),
         Dataset.STOCK_MONEYFLOW.value: stock_moneyflow,
         Dataset.TRADING_CALENDAR.value: trading_calendar,
         Dataset.STRATEGY_FEATURE_EVIDENCE.value: fetch_strategy_feature_evidence,
