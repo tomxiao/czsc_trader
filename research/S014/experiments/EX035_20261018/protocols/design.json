@@ -1,0 +1,94 @@
+{
+  "status": "AUTHORIZED_FIXED_E9_TEST",
+  "authorization": "同意，请继续；承接固定E9延伸方案评审",
+  "execution_authorized": true,
+  "question": "Does the fixed local action comparison remain informative at original E+9 after the extended branch resumes the original policy?",
+  "anchor": "S014-C0011 high_H3, same actual entry E and decision D=E+2",
+  "universe": "All147 original entries inventoried;145 have D and E9 observable. Keep all145, not only EX034 reversals, profitable trades or replay-required nodes.",
+  "endpoint": "Original E+9 close only; no search over endpoints, no forced liquidation",
+  "branches": {
+    "X9": "Authenticated original C0011 account equity at E9",
+    "H9": "Single intervention at D: original position H3 becomes H6 once; after actual sale resume unmodified original high_H3 policy, including sale-close eligibility for next-session entry",
+    "C9": "Original E3 actual sale followed by cash; current eligible inventory sold by E6 so C9=C6"
+  },
+  "state_contract": "All paths start 2020-01-02 with100000 and identical full-window data bindings; match original state through D. No hypothetical cash or position reset. No further interventions.",
+  "normalization": "Original D equity W_D, same as EX034",
+  "label_definitions": {
+    "primary": "A9=(H9-X9)/W_D",
+    "attribution": [
+      "L9=(H9-C9)/W_D",
+      "O9=(X9-C9)/W_D",
+      "J9=(H9-H6)/W_D"
+    ]
+  },
+  "identities": [
+    "A9=L9-O9",
+    "L9=L6+J9",
+    "A9-A6=J9-(O9-O6)"
+  ],
+  "label_semantics": "L9 includes H post-sale reentry and must not be called the old-position holding benefit. C9=C6 identity is conditional on current verified exits by E6.",
+  "exact_reuse": {
+    "nodes": 77,
+    "rule": "Verified H sale at E6 and no ready&parent&high at any E6/E7/E8 close implies no H buy by E9, hence H9=H6 cash",
+    "proof": "These three inputs are portfolio-independent in frozen C0011; E9 close signal executes at E10. Do not use state-gated entry_signal or original fills.",
+    "purpose": "Choose exact computation route only; all nodes remain in final population, future flags never become D features"
+  },
+  "new_account_paths": {
+    "H_paths": 68,
+    "noop_control": 1,
+    "maximum_total": 69,
+    "execution": "First no-op full-account equivalence control; then first of68 H paths ordered by D and cycle_id as pilot; after both pass evaluate remaining67 via public evaluate_many. Pilot is inside68, not additional. Any control/pilot equivalence failure stops remaining dispatch.",
+    "failure_counting": "Every dispatched account evaluation including no-op/pilot/FAILED/CANCELLED/UNKNOWN counts; no automatic retry or replacement. A pure prepare failure is logged without claiming a completed account. Any uncertain dispatch conservatively consumes a slot.",
+    "resources": {
+      "max_workers": 2,
+      "native_threads_per_worker": 1,
+      "request_workers": 1
+    },
+    "meaning": "Diagnostic paths, not69 new eligible strategies; no automatic candidate registration or promotion"
+  },
+  "proposed_caps": {
+    "account_runs": 69,
+    "node_groups": 145,
+    "primary_A9_labels": 145,
+    "fixed_attribution_values": 435,
+    "terminal_values": 435,
+    "new_upstream_calls": 0,
+    "model_fits": 0,
+    "alternate_endpoints": 0,
+    "account_external_matching_trials": 0
+  },
+  "implementation_scope": "Research-owned runtime and runner only; use public SRT/TXE/TDR and existing pinned DFLS inputs; no platform interfaces or production changes",
+  "required_checks": [
+    "Synthetic one-time intervention, failed buys, suspended/delayed sale, sale-close reentry and terminal pending valuation boundaries",
+    "No-op control economic ledgers and original signal fields equal C0011; new audit columns and identity hashes are compared separately",
+    "Each H path matches original through D-before-intervention; D cash/quantity/equity same, exactly one E2 intervention, H6 cash/exit matches EX034",
+    "Raw execution and HFQ scale, fee identity, all source refs and calibration bytes pinned; missing data stops rather than requests upstream",
+    "A6 and A9 compared on same145 nodes; exclude only missing E9, not execution outcome; fail nodes explicit, no silent complete-case claims",
+    "Full distribution and signs of A9 versus A6 and old L6; original25 reversal set intersected with145 observable nodes reported as a diagnostic subgroup only, with censored members separately disclosed",
+    "Decision-year primary, entry-year secondary; exclude2026 only when D and E9 both no later than2025-12-31",
+    "Inclusive transitive D-E9 clusters, cluster-equal and leave-one-cluster-out summaries; delete top absolute A9-A6 1/3/5, tie D then cycle_id",
+    "All145, exact-cash77 and replay68 reported separately without treating route selection as a signal",
+    "Terminal cash/holding/pending and next planned exits disclosed; E9 does not guarantee flat positions or identical future risk"
+  ],
+  "decision_routes": {
+    "persistent_broad_difference": "Supports finite-horizon label-method relevance; next review a concrete D-known predictive hypothesis, without claiming new information or alpha",
+    "endpoint_or_few_nodes_dominant": "Downgrade EX034 generalization; do not rescue by scanning E12/E15 or restoring old rule searches",
+    "technical_noncomparability": "Report unavailable/failed cases and resolve within scope; no silent shortened replay, cash reset, custom matcher or automatic new budget"
+  },
+  "fees_execution_annual_targets": "UNCHANGED",
+  "all_history_seen": true,
+  "new_calls": 0,
+  "new_labels": 0,
+  "new_fits": 0,
+  "new_accounts": 0,
+  "new_matching": 0,
+  "new_qualified_candidates": 0,
+  "current_authorization": "批准执行",
+  "sign_zero_tolerance": 1e-10,
+  "monetary_comparison_absolute_tolerance": 1e-07,
+  "source_review_hashes": {
+    "research/S014/materials/20261018_e9_extension_review/proposal.json": "fafd65a0b42f9d7d81660abae124d85c72b1ef70eb2d4e7fb0f35c06b0c267db",
+    "research/S014/materials/20261018_e9_extension_review/inventory.json": "b2aadf866f7a0e7016600ca31a8fb32c456d13de5926a3b3ccde732170be26bf",
+    "research/S014/materials/20261018_e9_extension_review/independent_review.json": "23aeaee914a6cdcdb0e7b81751c7c36fa6762671086ee21fcb4222f99803d381"
+  }
+}

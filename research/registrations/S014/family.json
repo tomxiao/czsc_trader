@@ -671,12 +671,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "e956baeda7691680817d81e6f0349bc20cdbda05bb37bbda58f219c27d2886ce",
-      "revision": 17,
+      "content_sha256": "e4aa2f035bdb040d562db8a38bb403287753211b865d26e24a97b0eaa97685f4",
+      "revision": 18,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "固定146组E+6对照确认：单笔退出标签遗漏的后续交易项会改变动作排序，25组严格反转及4组零值转为差异，跨7个决策年份和20个重叠簇；去2026保留21组、删绝对O最大5组保留22组。支持继续研究包含后续参与的局部动作价值，但不建立可预测收益机制；无新有效组件或合格账户。",
+    "conclusion": "固定E9检验完成69次诊断账户及145组比较。旧25个单笔/账户反向保留19个，全体L6/A9反向29个；剔除最大5个期限变化后仍有26个。后续参与的测量差异持续，但A均值由E6的+0.4095变为E9的-0.3703个百分点，删最大5组又变为+0.5446，平均方向对尾部敏感；未新增有效预测组件或合格策略。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -855,6 +855,98 @@
         "terminal_values": 435
       },
       "status": "REVIEW_COMPLETE_EXECUTION_PENDING_AUTHORIZATION"
+    },
+    "e9_extension_test": {
+      "actual_budget": {
+        "account_external_matching_trials": 0,
+        "account_runs": 69,
+        "alternate_endpoints": 0,
+        "fixed_attribution_values": 435,
+        "model_fits": 0,
+        "new_qualified_candidates": 0,
+        "new_upstream_calls": 0,
+        "node_groups": 145,
+        "primary_A9_labels": 145,
+        "terminal_values": 435
+      },
+      "authorization": "批准执行",
+      "caps": {
+        "account_external_matching_trials": 0,
+        "account_runs": 69,
+        "alternate_endpoints": 0,
+        "fixed_attribution_values": 435,
+        "model_fits": 0,
+        "new_upstream_calls": 0,
+        "node_groups": 145,
+        "primary_A9_labels": 145,
+        "terminal_values": 435
+      },
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "e4aa2f035bdb040d562db8a38bb403287753211b865d26e24a97b0eaa97685f4",
+        "revision": 18,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "design": {
+        "evidence_id": "2d88fc38bdc95b34c9611b1167ac919eec7ab62ab59913f22e0d6b11acac5fd8.json",
+        "experiment": {
+          "experiment_id": "EX035_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex035-protocols-design-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "2d88fc38bdc95b34c9611b1167ac919eec7ab62ab59913f22e0d6b11acac5fd8",
+        "type": "EvidenceRef"
+      },
+      "diagnostic_accounts": 69,
+      "experiment": {
+        "experiment_id": "EX035_20261018",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "fees_execution_annual_targets": "UNCHANGED",
+      "future_execution_authorized": false,
+      "judgment": {
+        "evidence_id": "81fa10fa37a3a5e0b7c184a793fdaa3bfeb94c8464e685a97baf8033a5b9be90.json",
+        "experiment": {
+          "experiment_id": "EX035_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex035-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "81fa10fa37a3a5e0b7c184a793fdaa3bfeb94c8464e685a97baf8033a5b9be90",
+        "type": "EvidenceRef"
+      },
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "next_step": "继续S014，先评审D以前原入场条件的重复程度与间隔能否识别退出后的再参与相对价值；先核对已有覆盖，区别于旧P/D盈利和涨跌阈值，不把未来路线或重入作为输入。本轮不启动新特征检验、模型或账户，不扩大观察终点；新检验额度另行确认。",
+      "pause_authorized": false,
+      "remaining_account_runs": 0,
+      "result": {
+        "evidence_id": "24553ad0c565e6645b8918474f8dc8134aaf17f7c44b2054ad447663c08300cf.json",
+        "experiment": {
+          "experiment_id": "EX035_20261018",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex035-others-summary-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "24553ad0c565e6645b8918474f8dc8134aaf17f7c44b2054ad447663c08300cf",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE"
     },
     "h3_downside_duration": {
       "delivery": {
@@ -1681,7 +1773,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "建议批准固定E9敏感性检验：最多69次诊断账户（1控制+68H路径，失败计入）及145组局部标签；77组H现金精确复用，0新数据/拟合，不自动新增期限或候选。"
+      "继续S014，先评审D以前原入场条件的重复程度与间隔能否识别退出后的再参与相对价值；先核对已有覆盖，区别于旧P/D盈利和涨跌阈值，不把未来路线或重入作为输入。本轮不启动新特征检验、模型或账户，不扩大观察终点；新检验额度另行确认。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -1875,7 +1967,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二固定E9延伸方案评审完成：69次诊断账户及145组局部标签待授权",
+    "stage": "阶段二固定E9延伸检验完成：方法诊断，不新增合格策略",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -2128,5 +2220,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-18T22:09:56+08:00"
+  "updated_at": "2026-10-18T23:03:24+08:00"
 }
