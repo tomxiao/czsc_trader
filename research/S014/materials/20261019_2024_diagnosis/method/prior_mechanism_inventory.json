@@ -1,0 +1,623 @@
+{
+  "status": "READ_ONLY_PRIOR_METHOD_REVIEW_COMPLETE_NO_NEW_POLICY_EXECUTION",
+  "identity": "RSCH",
+  "branch": "codex/s014-jinniu-research",
+  "baseline_head": "89d5e51c7485ecbcf7ef1fd8663adc86d526bb5d",
+  "historical_scope": "S014 only EX001..043 and explicitly listed existing S014 material; no other research batch or memory",
+  "line_basis": "LF-delimited bytes as rg",
+  "existing_mechanisms": [
+    {
+      "id": "old_price_models_and_direct_entry_confirmations",
+      "exact_rule": "回落父条件为C>MA60且近5日回落，加当日C>O；突破为C突破前20日High，加量高于前20日均量；另有急跌后收于当日上半区。固定3/5/10日独立尝试，不是C0056资金账户。",
+      "negative_and_counterevidence": "回落收阳、突破量确认未支持增量；急跌修复2024仅2个样本，删除最好1例差转负。20日波动对单侧不利跌幅方向跨年变，ATR是幅度参考而非止损保证。",
+      "role": "INDEPENDENT_ENTRY_COMPONENTS_NOT_CONTINUOUS_POLICY",
+      "repeat_warning": "MA/ATR/反弹修复/量确认已是旧信息，换名字或邻近窗口不能称新机制。",
+      "experiment": "EX005_20261016",
+      "report_locator": {
+        "path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+        "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+        "bytes": 16890,
+        "line": 21,
+        "anchor": "固定机制对照",
+        "line_excerpt": "3. **固定机制对照。**检验上升背景回落后收阳、突破时成交量确认、急跌后收于日内上半区；均与更简单的父条件比较，期限3/5/10日，不搜索参数。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": null,
+        "public_content_identity_verified": false
+      },
+      "source_locator": null
+    },
+    {
+      "id": "past20_rise_and_profit_single_day_weakening",
+      "exact_rule": "独立H3/H5/H10/H20尝试的买入D/中点D：扣双侧费用估值浮盈>0且当日跌，下一可执行日退出；另描述过去20日上涨/下跌。",
+      "negative_and_counterevidence": "8个盈利且单日弱化退出比较合并均负；2024局部改善不能抵消强行情提前退出代价。过去20日涨在2022/25较差、2026较好，不能当作稳定跨年入场状态。",
+      "role": "LOCAL_EXIT_PROBE_AND_STATE_DESCRIPTION",
+      "repeat_warning": "没有验证一般亏损止损，也没有跨已实现交易的连亏状态。",
+      "experiment": "EX006_20261016",
+      "report_locator": {
+        "path": "research/S014/experiments/EX006_20261016/protocols/report.md",
+        "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+        "bytes": 14029,
+        "line": 84,
+        "anchor": "8个期限/检查点比较的合并差值全部为负",
+        "line_excerpt": "8个期限/检查点比较的合并差值全部为负。例如20日持有中点的差值约-2.216个百分点，普通95%区间[-3.896,-0.427]，78项名义历史调整区间仍跨0，且4个年份差值均非正。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": null,
+        "public_content_identity_verified": false
+      },
+      "source_locator": {
+        "path": "research/S014/experiments/EX006_20261016/src/attribution.py",
+        "sha256": "f1eb6d4dee250ddf526e5bd678ecfa35ef4b5217bb8aca459af740778c4c1b8d",
+        "bytes": 6739,
+        "line": 85,
+        "anchor": "\"selected\": mark > 0 and ret1 < 0",
+        "line_excerpt": "                \"selected\": mark > 0 and ret1 < 0, \"control\": mark > 0 and ret1 >= 0,",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX006_20261016"
+          },
+          "evidence_id": "f1eb6d4dee250ddf526e5bd678ecfa35ef4b5217bb8aca459af740778c4c1b8d.py",
+          "sha256": "f1eb6d4dee250ddf526e5bd678ecfa35ef4b5217bb8aca459af740778c4c1b8d",
+          "media_type": "text/x-python",
+          "name": "attribution",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      }
+    },
+    {
+      "id": "MA_ATR_peak_and_adaptive_response",
+      "exact_rule": "MA20位置、MA5/20排列、MA20五日变化、前5收盘支撑距离/ATR20，及当前浮盈、Close峰值回吐/ATR，在H5/10/20中点一次退出模型/简单探针；另每日扩展、126/252半衰期成熟结果更新入场。",
+      "negative_and_counterevidence": "结构增量各期限合并均负，完整组合弱于固定持有；持仓路径H10较基线小正但较固定持有仍负。近期模型不及简单近期均值和全部参与。",
+      "role": "HOLDING_COMPONENTS_AND_MATURE_LABEL_MODELS",
+      "repeat_warning": "模型近期结果更新不等于实际账户连亏后暂停；新动作职责只能另行明确检验，不能宣称出现新MA/ATR/峰值输入。",
+      "experiment": "EX007_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+        "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+        "bytes": 14100,
+        "line": 45,
+        "anchor": "价格结构增量在三个期限的合并均值均为负",
+        "line_excerpt": "价格结构增量在三个期限的合并均值均为负；成交参与在5日有微弱改善，但其他期限为负，剔除2026后5日改善也消失；持仓路径在10日相对基线约+0.067个百分点，其他期限为负，且10日相对继续固定持有仍约-0.236个百分点。相关区间跨0，跨期限、年份及简单对照的证据不充分。完整树模型也没有解决这一问题。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": null,
+        "public_content_identity_verified": false
+      },
+      "source_locator": {
+        "path": "research/S014/experiments/EX007_20261017/src/components.py",
+        "sha256": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+        "bytes": 3498,
+        "line": 38,
+        "anchor": "\"trend_preserved\": (close >= ma20) & (ma5 >= ma20)",
+        "line_excerpt": "        \"trend_preserved\": (close >= ma20) & (ma5 >= ma20),",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX007_20261017"
+          },
+          "evidence_id": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276.py",
+          "sha256": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+          "media_type": "text/x-python",
+          "name": "components",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      }
+    },
+    {
+      "id": "market_sector_state_models",
+      "exact_rule": "股票与市场/行业1/5/20日收益、波幅、隔夜盘中响应及截至T-1的60日共同回归，在固定岭/树收益预测中做增量。",
+      "negative_and_counterevidence": "行业滞后有局部线索，被更强股票滞后对照削弱；3日当前行业组合多数增量负。不能称外部趋势已经解决入场或亏损退出。",
+      "role": "PREDICTION_COMPONENT_NOT_C0056_ACTION_GATE",
+      "repeat_warning": "同一已知市场特征换作订单职责是新动作假设，不是新信息；换20日窗口本身不构成新机制。",
+      "experiment": "EX010_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX010_20261017/protocols/report.md",
+        "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+        "bytes": 15627,
+        "line": 31,
+        "anchor": "新增行业日内/隔夜、1/5/20日",
+        "line_excerpt": "基线为前轮已验证的股票19项加市场7项及相对响应4项。新增行业日内/隔夜、1/5/20日、波幅等信息；两因素回归用**截至T-1的过去60日**股票、市场和行业对数收益，含截距、市场与行业系数。实际1581个可拟合日均满秩，中心化两因素矩阵最大条件数约7.566，没有以不完整拟合填补数据。截距不叫共同市场收益，也不进入共同因素现金代理。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": null,
+        "public_content_identity_verified": false
+      },
+      "source_locator": null
+    },
+    {
+      "id": "H3_causal_environment",
+      "exact_rule": "低开收阳父机会内，20日缺口序列相关与每年成熟H3训练中位数做环境分层；同时普查收缩扩张、市场行业同步、吸收等信息。",
+      "negative_and_counterevidence": "高低H3相对环境用途有有限支持；2023匹配反例、2025高组仍亏、全序列不单调。排低状态原标签有平均增量，尚非资金账户入场门。",
+      "role": "BOUNDED_RELATIVE_ENVIRONMENT_COMPONENT",
+      "repeat_warning": "高环境不是普遍上涨/安全状态；原阈值包含年度成熟校准，不是无拟合固定零界规则。",
+      "experiment": "EX013_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX013_20261017/protocols/report.md",
+        "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+        "bytes": 11391,
+        "line": 69,
+        "anchor": "直接排除低状态相对保留所有父机会",
+        "line_excerpt": "- 直接排除低状态相对保留所有父机会，在既有标签上平均每个父信号增量约+0.3252个百分点；2023为−0.2500，其余三年为正。这仍是减少部分独立尝试的暴露，不包含持仓冲突、空仓再入场及年度账户表现。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX013_20261017"
+          },
+          "evidence_id": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1.md",
+          "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+          "media_type": "text/markdown",
+          "name": "ex013-protocols-report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": {
+        "path": "research/S014/experiments/EX013_20261017/src/features.py",
+        "sha256": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8",
+        "bytes": 6451,
+        "line": 32,
+        "anchor": "out['ma_slope']",
+        "line_excerpt": "    out['ma_slope']=c.rolling(20).mean()/c.rolling(20).mean().shift(5)-1",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX013_20261017"
+          },
+          "evidence_id": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8.py",
+          "sha256": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8",
+          "media_type": "text/x-python",
+          "name": "features",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      }
+    },
+    {
+      "id": "common_decline_and_loss_diagnostics",
+      "exact_rule": "在固定H3高环境独立尝试内比较20日下行波动占比、修复未完成、下跌日成交量占比、市场行业过去5日同跌；-3%仅诊断损失线。",
+      "negative_and_counterevidence": "共同下跌原损失关联随匹配/簇等权及去重反号；其他三项原风险方向未获支持。低环境H1延H3有风险参考，但没有新入场门/止损账户。",
+      "role": "RISK_STATE_DIAGNOSTICS_NOT_STOP_LOSS_POLICY",
+      "repeat_warning": "不能把-3%诊断线说成已测止损，也不能把市场同跌原始关联包装成已验证禁买条件。",
+      "experiment": "EX014_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX014_20261017/protocols/report.md",
+        "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+        "bytes": 9247,
+        "line": 42,
+        "anchor": "匹配31个高风险腿行情簇等权",
+        "line_excerpt": "| 匹配31个高风险腿行情簇等权 | +0.1443个百分点 |",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX014_20261017"
+          },
+          "evidence_id": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9.md",
+          "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+          "media_type": "text/markdown",
+          "name": "ex014-protocols-report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "entry_day_failed_repair_probes",
+      "exact_rule": "已实际买入D的C低于原signal O、C低于原signal C、股票日内弱于大盘、越过前高但收在当日下半区，分别下一日退出与固定H3比较。",
+      "negative_and_counterevidence": "四条件每个已成交父机会差-0.2272/-0.4206/-0.1677/-0.1813pp；无新增有效组件。最后一条件不是严格突破失败，也不能定位High发生在买入后。",
+      "role": "LOCAL_FIRST_CLOSE_EXIT_PROBE_NOT_ACCOUNT",
+      "repeat_warning": "不能把一般‘买后不涨/反弹失败’当作未试新口号；但不等同Z5>2且当前亏损的人口。",
+      "experiment": "EX015_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX015_20261017/protocols/report.md",
+        "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+        "bytes": 2944,
+        "line": 3,
+        "anchor": "四个首次买入日收盘条件均未支持改善H3持有",
+        "line_excerpt": "**本轮未新增有效组件。四个首次买入日收盘条件均未支持改善H3持有；模型增量也不足以优于已有低环境的较短持有对照。** 10轮额度已使用第1轮，阶段三准备目标仍在推进。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX015_20261017"
+          },
+          "evidence_id": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76.md",
+          "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+          "media_type": "text/markdown",
+          "name": "protocols-report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "environment_and_entry_filters_in_accounts",
+      "exact_rule": "低开收阳/仅收阳 × 原高环境/全部环境 × H3/H6，共8资金账户格（其中2复用）；EX017原高低期限交互为先行完整账户。",
+      "negative_and_counterevidence": "全8原目标通过0；环境作用依赖入场和期限。EX017的2024四旧路径收益均正，不可说2024任何老策略皆无机会；它们在2021/22/25等仍失败。",
+      "role": "COMPLETE_FUNDED_ENTRY_ENVIRONMENT_ACCOUNTS",
+      "repeat_warning": "不按2024选旧赢家切换策略，不能忽略其他年份代价；这些不是C0056的新退出职责。",
+      "experiment": "EX018_20261017",
+      "report_locator": {
+        "path": "research/S014/experiments/EX018_20261017/protocols/account_report.md",
+        "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+        "bytes": 11071,
+        "line": 21,
+        "anchor": "据此锁定2×2×2",
+        "line_excerpt": "据此锁定2×2×2：低开收阳／只要求收阳，原高环境／全部环境，成交后3日／6日。全部方案保留原成熟队列、60样本启动和年度校准；“全部环境”不绕过启动要求。H6仅是一次预先指定的延长敏感性对照，不是最优期限。先发布锁定证据，再执行6个新增账户；原两个H3账户通过全列逐值复现后复用，未重复登记基线。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX018_20261017"
+          },
+          "evidence_id": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440.md",
+          "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+          "media_type": "text/markdown",
+          "name": "ex018-protocols-account_report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "support_entry_start_phase_and_reservation",
+      "exact_rule": "C0056原支撑入场、破支撑次日卖、原真实entry+10再入场预约；EX021比较支撑门/固定H10/无预约早退，EX022只改变首次启动delay0..10。",
+      "negative_and_counterevidence": "支撑入场有限长期改善、预约R较即时C全期显著改善，但R2024-27.32%、全部原目标未达。首次delay不是每次亏损后的冷却。",
+      "role": "COMPLETE_ACCOUNT_TIMING_AND_RESERVATION",
+      "repeat_warning": "保留原预约是已测强上下文；新跳过买入不能伪造真实entry锚点或把未成交记亏损。",
+      "experiment": "EX023_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX023_20261018/protocols/account_report.md",
+        "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+        "bytes": 12179,
+        "line": 13,
+        "anchor": "R−C检验限制提前退出后的重新入场",
+        "line_excerpt": "R−C检验限制提前退出后的重新入场，但包含后续资金、交易日期和复利路径的所有变化；R−B比较主动支撑退出与保留原时钟的整体效果，不能事先假设入场逐笔对齐。A是重复持有的上下文对照。四者均使用原60评价交易日启动，不选择新的初始偏移。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX023_20261018"
+          },
+          "evidence_id": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116.md",
+          "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+          "media_type": "text/markdown",
+          "name": "ex023-protocols-account_report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "first_support_profit_or_loss_exit",
+      "exact_rule": "P/N互补：仅首次严格早于deadline支撑破坏判断含买费P>0或<=0；不符则整个剩余cycle忽略support直到原H10。P不含未来卖费，零归N，不每日重判。",
+      "negative_and_counterevidence": "P有限正退出增量须保留，但未全部达标；N整体弱于R。2024 P约-14.71%、N约-27.31%；不能称亏损才卖已解决。",
+      "role": "COMPLETE_ACCOUNT_FIRST_BREAK_ONCE_CONDITIONAL_EXIT",
+      "repeat_warning": "N不是不依赖support的任意亏损止损，更不是Z5>2不论P退出；两个人口/时点不同。",
+      "experiment": "EX024_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX024_20261018/protocols/account_report.md",
+        "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+        "bytes": 11676,
+        "line": 14,
+        "anchor": "C0058：首次破坏时P≤0才提前退出",
+        "line_excerpt": "- C0058：首次破坏时P≤0才提前退出，否则本周期持有到原期限。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX024_20261018"
+          },
+          "evidence_id": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9.md",
+          "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+          "media_type": "text/markdown",
+          "name": "ex024-protocols-account_report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "positive_candle_entry_gate",
+      "exact_rule": "原空仓支撑BUY候选D额外要求当日HFQ C>O，分别配B/R/P固定退出规则；持仓阴线不单独卖。",
+      "negative_and_counterevidence": "B/R2024变+13.94/+10.64%，但三新账户去2026仍全亏；共同入场少，遗漏旧盈利路径/增加较差路径为主要代价。",
+      "role": "COMPLETE_ACCOUNT_ENTRY_GATE_NEGATIVE",
+      "repeat_warning": "2024局部改善既不是通用入场有效，也不证明所有新入场职责均无用；新Z gate不能从旧交易删除收益相加代替重跑账户。",
+      "experiment": "EX025_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+        "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+        "bytes": 12342,
+        "line": 3,
+        "anchor": "B/R在2024由亏转盈的局部改善被其他年度损伤覆盖",
+        "line_excerpt": "阳线确认未形成有效的统一入场过滤。C0059/C0060/C0061全期净收益分别42.61%、−46.87%、−7.41%，均显著低于各自原B/R/P基线；年度收益仅2/7、2/7、1/7通过，6个对照全部原目标通过0个。B/R在2024由亏转盈的局部改善被其他年度损伤覆盖，去2026三个新增账户仍全部亏损。共同入场仅40/36/40笔且收益差接近零，主要损失来自遗漏原盈利参与并转到较差的新路径，不能把旧交易阳线分组强度当作连续账户有效性。保留完整负面结果，不据此扩大阳线阈值或按年度切换，尚不具备阶段四准备度。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX025_20261018"
+          },
+          "evidence_id": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0.md",
+          "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+          "media_type": "text/markdown",
+          "name": "ex025-protocols-account_report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "P_conditional_reservation",
+      "exact_rule": "原所有support破坏都卖，仅首次P正/非正决定是否保留本周期原entry+10预约；P冻结，不依据最终卖出盈亏、不累计前几笔亏损。",
+      "negative_and_counterevidence": "互补预约两组均弱于全部预约R，全目标0/4；部分2024改善但2021/22等损伤，不支持零边界选择等待。",
+      "role": "COMPLETE_ACCOUNT_SINGLE_CYCLE_WAIT_RULE",
+      "repeat_warning": "不是连亏后暂停；不得把原单cycle浮盈条件改名成跨cycle学习。",
+      "experiment": "EX029_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+        "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+        "bytes": 12040,
+        "line": 9,
+        "anchor": "首次严格早于E+9收盘的破坏时",
+        "line_excerpt": "本轮新增C0075/C0076两个账户，复用C0035即时再入场与C0056全部预约两个端点，共4格；新增上游调用0。全部支撑破坏仍照常触发提前卖出，只改变卖出后是否继续等待原E+10预约。首次严格早于E+9收盘的破坏时，冻结含实际买费浮盈P=收盘价/(实际买价×1.001)−1；一组只在P>0保留预约，另一组只在P≤0保留，零属于非正组。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX029_20261018"
+          },
+          "evidence_id": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae.md",
+          "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+          "media_type": "text/markdown",
+          "name": "ex029-protocols-account_report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "old_support_recovery_gate_diagnosis",
+      "exact_rule": "连续supportbreak首日冻结旧L，后首次滚动合格分C>=L真实/低于L表面；另持续锚点未收复前不重设；对全部机会H10与旧账户69未收复entry做只读诊断。",
+      "negative_and_counterevidence": "首次恢复真实减表面H10均值全期-0.6074pp、去2026-1.4238pp，69未收复entry仍正总log贡献；不支持筛掉表面恢复。",
+      "role": "NO_NEW_ACCOUNT_OPPORTUNITY_LABEL_DIAGNOSIS",
+      "repeat_warning": "‘等反弹确认/收复旧支撑’已被明确诊断，换锚点名不算新信息；也未证明实际gate账户必然更差。",
+      "experiment": "EX030_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+        "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+        "bytes": 13442,
+        "line": 4,
+        "anchor": "不支持把“先收复旧支撑”加入为自动买入过滤条件",
+        "line_excerpt": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX030_20261018"
+          },
+          "evidence_id": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9.md",
+          "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+          "media_type": "text/markdown",
+          "name": "ex030-research-S014-experiments-EX030_20261018-protocols-report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "common_down_relative_resilience_loss_hold",
+      "exact_rule": "C0056首次破位P<=0，market1d<0、sector1d<0且stock1d>=sector1d，改为等原H10；100已闭合配对中改变10次，不新跑完整账户。",
+      "negative_and_counterevidence": "100事件平均+0.3862pp，较简单P少0.3527pp；2024-09-13单例占90.79%，删最大3/5事件负。不能宣称2024行情共同冲击可事前稳定识别。",
+      "role": "LOCAL_EXIT_ACTION_LABEL_NOT_FUNDED_POLICY",
+      "repeat_warning": "这是亏损时等一等，不是亏损时额外卖；旧支撑已破人口与正Z状态原则上不重合。",
+      "experiment": "EX033_20261018",
+      "report_locator": {
+        "path": "research/S014/experiments/EX033_20261018/protocols/report.md",
+        "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+        "bytes": 10432,
+        "line": 48,
+        "anchor": "该笔占本轮相对R总增量的90.79%",
+        "line_excerpt": "最关键的一笔是2024-09-13入场且当晚首次破位的事件：R在09-18卖出，净收益-1.5485%；B在10-08卖出，净收益+33.5165%，差35.0649个百分点。该笔占本轮相对R总增量的90.79%。删除贡献最大的1笔，全部剩余事件平均优势降至+0.0359个百分点；删除最大的3笔，降至-0.0292个百分点；删除5笔为-0.0417个百分点。这是按预定方法做的集中性诊断，不是事后修改可交易规则。",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX033_20261018"
+          },
+          "evidence_id": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df.md",
+          "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+          "media_type": "text/markdown",
+          "name": "ex033-protocols-report-md",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": null
+    },
+    {
+      "id": "EX043_grace_shock_and_giveback",
+      "exact_rule": "ENTRY_GRACE只在实际BUY D豁免support一次；SHOCK_PROFIT在真实held、无既存pending、D<deadline、净P>0、Z5>2时下一执行日卖；不限制support。GIVEBACK须曾净涨>=2ATR且Closepeak回吐>=1ATR，当前可负；TREND只entryD固定MA/ATR保护。",
+      "negative_and_counterevidence": "9完整账户2024全负：[-27.3319%,-21.1573%]，最佳GRACE+SHOCK仍失败。TREND2025不启动，不能说它覆盖May30。GRACE+SHOCK的2022/2025改善与2021代价均保留；9路径distinct但非独立样本。",
+      "role": "COMPLETE_DATE_FREE_FIXED_POLICY_3X3",
+      "repeat_warning": "同Z5在空仓BUY前禁买、或现仓不论P退出均尚未执行；不是新增指标，而是同信息不同持仓人口/决策时点/动作职责。",
+      "experiment": "EX043_20261019",
+      "report_locator": {
+        "path": "research/S014/experiments/EX043_20261019/protocols/design.json",
+        "sha256": "8c3551e4a0ac13314fb8c9138b850e7f8936020c29d9aa18cf2fea77ad3d8fcc",
+        "bytes": 5754,
+        "line": 18,
+        "anchor": "\"hold_rule\": \"ENTRY_GRACE\"",
+        "line_excerpt": "      \"hold_rule\": \"ENTRY_GRACE\",",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "8c3551e4a0ac13314fb8c9138b850e7f8936020c29d9aa18cf2fea77ad3d8fcc.json",
+          "sha256": "8c3551e4a0ac13314fb8c9138b850e7f8936020c29d9aa18cf2fea77ad3d8fcc",
+          "media_type": "application/json",
+          "name": "ex043-locked-protocols-design.json",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      },
+      "source_locator": {
+        "path": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py",
+        "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+        "bytes": 21043,
+        "line": 279,
+        "anchor": "shock = bool(eligible and feature.shock_known and net_profit > 0 and feature.z5 > 2)",
+        "line_excerpt": "            shock = bool(eligible and feature.shock_known and net_profit > 0 and feature.z5 > 2)",
+        "line_basis": "LF-delimited bytes, same as rg; trailing CR stripped from excerpts",
+        "public_ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX043_20261019"
+          },
+          "evidence_id": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a.py",
+          "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+          "media_type": "text/x-python",
+          "name": "ex043-locked-src-strategy_runtime-strategies-exante_hold_exit.py",
+          "schema": null,
+          "schema_version": null
+        },
+        "public_content_identity_verified": true
+      }
+    }
+  ],
+  "exact_Z_conclusion": {
+    "prior_complete_policy": "Only EX043 positive-current-net-P SHOCK_PROFIT among reviewed source/report/design files",
+    "entry_candidate_Z_gate": "No exact complete account or fixed opportunity-gate evaluation found",
+    "held_Z_exit_without_P_guard": "No exact complete account or eligible population evaluation found",
+    "not_new_information": "same old price-only Z5 and same fixed >2; new proposals change population, timing, and action only",
+    "N_not_same": "EX024 N requires first supportbreak, once-frozen P<=0; positive Z5 implies C_D>C_D-5 and cannot coincide with strict S5 downside break when sigma is finite positive",
+    "case_limit": "Root/B targeted Oct8/9 observation motivates a hypothesis only. This review does not recompute those features or infer an entry-gate account value from the current-inventory loss."
+  },
+  "cross_cycle_loss_pause": {
+    "finding": "No exact funded rule using consecutive actual completed net losses and a finite pause/restart found in the searched source/report/design scope",
+    "not_equivalent": [
+      "EX007 mature-label adaptive prediction",
+      "EX022 initial-only delay",
+      "EX023 fixed reservation independent of profit",
+      "EX029 first-break current-cycle frozen P"
+    ],
+    "D_known_needed_if_later_selected": [
+      "actually completed cycle fills and both-side fees",
+      "net realized loss known only after actual sale",
+      "finite pause unit and fixed restart rule",
+      "reservation and failedBUY distinction",
+      "no retrospective use of future cycle outcome"
+    ],
+    "current_recommendation": "Keep as a competing explanation; do not add a third factor or run it concurrently before root2024 attribution."
+  },
+  "minimal_discriminating_design": {
+    "status": "METHOD_RECOMMENDATION_ONLY_ROOT_ATTRIBUTION_AND_FINAL_LOCK_PENDING",
+    "baseline": "EX043 ENTRY_GRACE/SHOCK_PROFIT, formal actual run004; original C0056 remains reused context",
+    "fixed_information": "Use exact EX043 causal_features Z5/sigma-known masks, threshold2 and original HFQ/in-window membership; no new window, data or fit",
+    "factor_A_entry": [
+      "original entry participation",
+      "suppress a new flat BUY intent when known Z5>2"
+    ],
+    "factor_B_exit": [
+      "original netP>0 AND known Z5>2",
+      "known Z5>2 regardless current P"
+    ],
+    "four_cells": [
+      "A0 B0 fresh source economic-control exact EX043run004",
+      "A1 B0 entry-gate only",
+      "A0 B1 remove P guard only",
+      "A1 B1 combined actual funded path"
+    ],
+    "D_known_entry": "after actual D fills: flat, originalready/supportok, original reservation reached, not failedBUYreset; exact D-known Z with positive scale",
+    "D_known_exit": "actual held, no inherited prior SELLpending, before originaldeadline; fee-adjusted current P from actualentryfill; D-known Z, not future sell price",
+    "suppressed_entry_semantics": "No BUY intent/order/accepted signal, no failedBUY, no phantom entry/deadline/reservation; next D may assess again. Original still-open cycle reservation remains.",
+    "exit_priority": "inherited pending/deadline mandatory > selected shock risk exit > ENTRY_GRACE support protection; when gap-filled actual BUY D already loses but Z>2, B1 may plan next-session SELL, never same-day turnover",
+    "missing_Z": "preserve existing unknown flags/rawnull; unknown does not satisfy gate or new exit, no zero-filled valid feature/fallback/new data",
+    "full_execution": "Original1642-session full window preserves warmup, cash/units/fees/reservations and2026 technicaltail; no date/year rules, no year reset, no forced2025 end sale",
+    "economic_evaluation": "All2020..2025 own-opening annual return/drawdown plus original frequency; retain original full-contract metrics as historical context, do not promote a new candidate or change old eligibility",
+    "comparisons": "A effect at each B, B effect at each A, combination interaction as descriptive whole-policy return differences. Recompute full cash-funded paths; never add/delete old trade profits to synthesize results.",
+    "population_and_attribution": "Count original flat candidateD Z>2 and actualheld Z>2 by current P before economic claims; report covered/uncovered major2024 loss cycles and crossyear triggers. Cases/missed rises/opportunity counts are explanations, not a value label.",
+    "control_gate": "new source synthetic/causal/source-identity review; fresh A0B0 exact economic equivalence to EX043run004 plus independent actual-state audit before any other3; technicalfailure retained and stops dependent dispatch",
+    "no_economic_stopping_or_search": "Run all4 fixed cells if later authorized regardless gain/loss; no Z/return/ATR threshold sweep, no date/year-specific switch, no no-harm/CI/concentration hardgate",
+    "count_is_proposal_not_user_cap": 4,
+    "alternative_not_parallel": "If root attribution does not indicate appreciable D-known candidate/held coverage, state that mechanism is not applicable and reconsider role hypothesis; do not shift threshold to hit Oct8/9."
+  },
+  "reusable_public_route": {
+    "source": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py",
+    "runner": "research/S014/experiments/EX043_20261019/src/run_accounts.py",
+    "previous_source_lock": "research/S014/experiments/EX043_20261019/protocols/execution_lock.json",
+    "existing_input_route": "EX017 pinned_inputs.get_context existing authenticated offline provider; publicprepare must verify original execution identities/fingerprint and causal plan except new runtime identity",
+    "new_identity_required": "If selected later: new experiment/public source+payload identity and unused diagnostic CID, fresh source-specific control; do not mutate EX043 or register formal candidate",
+    "not_now": "No experiment allocation, source modification, prepared binding, account dispatch or formal publication performed by this inventory"
+  },
+  "source_verification": {
+    "files_with_public_ref": 15,
+    "source_sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "EX043_findings_sha256": "376615f80ddbce27ec5dac39b465d55d8cd18b3a8e8a77a6528bb36c36e1c5a3",
+    "new_market_input_loads": 0,
+    "new_market_supplier_calls": 0,
+    "new_fits": 0,
+    "new_strategy_histories_or_accounts": 0,
+    "new_state_PnL_computations": 0,
+    "new_platform_or_prod_or_git_mutations": 0
+  },
+  "execution_authorized_here": false,
+  "next_step": "Root finishes2024 principal-loss attribution and locks or rejects this role2x2 before any new experiment/strategy/account."
+}

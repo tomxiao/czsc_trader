@@ -1,0 +1,71 @@
+{
+  "status": "CLOSED_AUDIT_COMPARISON_CORRECTION_WITH_ACCOUNT_AND_SOURCE_UNCHANGED",
+  "original_observation": "The clock001 BUY atE2026Jan6 filled6.1 while savedlimit6.099999999999999; original exact float<= shortcut fails.",
+  "diagnosis": "Original publicdailyquote resolver already uses its unchanged roundoff crossover predicate. OriginalD planner reproduces savedlimit exactly; originalE resolver returnsactualfill exactly; no real execution contract violation identified.",
+  "scope": "2026technical tail was fully investigated; not waived or used tochooseeconomicrule.",
+  "minimal_helper_change_proven_AST": "Only required approved_fill_prices parameter and BUY comparison replaced; normalize those2syntaxchanges and old/newfunction AST exact. Full state/economic audit unchanged.",
+  "comparison_successor": "Require actual price == original public resolve_fill returnedprice for everyactualfill; no newlychosen epsilon/tick/limit/rule.",
+  "exact_fill_count": 262,
+  "audit_new_epsilon": 0,
+  "numeric_tolerances_expanded": false,
+  "account_contents_modified": false,
+  "strategy_source_modified": false,
+  "source_lock_modified": false,
+  "fresh000_review_modified": false,
+  "EX044original44manifest_members_unchanged": true,
+  "original_failure_preserved": true,
+  "helper_reference_binding": "Oldhelper SHA retained transitively bylocked clock_financial_helper_review.json; both oldJSON andoldhelper unchanged, successornewfile only.",
+  "resources": {
+    "actualEX045dispatches": 2,
+    "accountSUCCEEDED": 2,
+    "accountFAILED": 0,
+    "accountUNKNOWN": 0,
+    "account_reruns": 0,
+    "independent_audit_expression_corrections": 1,
+    "new_fits": 0,
+    "new_supplier_calls": 0
+  },
+  "successor_result": "PASS148124 checks; sourceNOOP original000 PASS295005 preserved; final443129 checks acrossbothvalidreviews.",
+  "references": {
+    "clock_account_001_independent_failure.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json",
+      "sha256": "1b02c31cc2c54840b32ce6994bc27412aaa67dd52f964ef01397cc660a6c605d"
+    },
+    "clock_account_000_independent_review.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_000_independent_review.json",
+      "sha256": "caae1c717f7b8e423bb20205f4cea0e0408c7f8536e40e1050316077ec6e4fb5"
+    },
+    "audit_clock_accounts.py": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/audit_clock_accounts.py",
+      "sha256": "32cda52a8160121283f9cf7cea814d0c3aa3b625804e18a7eae908bb075d299b"
+    },
+    "clock_financial_audit.py": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_audit.py",
+      "sha256": "7ab41a1ddf3a1e8809a7cfb90158a9f61eb69bcb5bb1175d1591c219590e0c10"
+    },
+    "clock_financial_audit_v2.py": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_audit_v2.py",
+      "sha256": "4988a17622252157a8904f8047a122b9ef7e41f4688bcfcb753757efd756e6e7"
+    },
+    "audit_clock_accounts_v2.py": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/audit_clock_accounts_v2.py",
+      "sha256": "4655fcc2b86c3bf2385cf2c4a53d6c079b3f993af4b8710bc2f6369665246df2"
+    },
+    "clock_execution_oracle.py": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_execution_oracle.py",
+      "sha256": "4fae73e8a821833bbaf7819fbae1c23aa18c534b7b55647dd74c2b7143fda789"
+    },
+    "clock_limit_boundary_investigation.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_limit_boundary_investigation.json",
+      "sha256": "a7678a4cdf4b21849a4a96cc275df49bbbff2c42519bdddacad1cb72cb8a7ff9"
+    },
+    "clock_account_001_independent_review_v2.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_review_v2.json",
+      "sha256": "ee2ef040e7aa500c3fe058184c180d6cbeed48f075d1803088beeaa4490baa68"
+    },
+    "independent_clock_audit_summary.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_clock_audit_summary.json",
+      "sha256": "35a5eb88893072417ede20cb19f9dcb121b750ca8695cf28fb1cb958564e7dd4"
+    }
+  }
+}

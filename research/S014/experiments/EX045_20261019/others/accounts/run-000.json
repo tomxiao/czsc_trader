@@ -1,0 +1,118 @@
+{
+  "index": 0,
+  "mode": "RETRY_EACH_D",
+  "parameters": {
+    "clock_profile": "RETRY_EACH_D"
+  },
+  "candidate": "S014-C9410",
+  "payload_sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+  "published_payload_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75.json",
+    "sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+    "media_type": "application/json",
+    "name": "ex045-payload-000",
+    "schema": null,
+    "schema_version": null
+  },
+  "runtime_implementation_sha256": "9a491a78dbcdde9c3dcc5adb1997b7180cf9661243053bd0eb5063cfd9e38247",
+  "runtime_sha256": "ddc4c2a16ceff8e52347019f413978de137871cd7b79ea5cd435d0209acd9030",
+  "published_source_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68.py",
+    "sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+    "media_type": "text/x-python",
+    "name": "ex045-locked-src-strategy_runtime-strategies-blocked_clock_review.py",
+    "schema": null,
+    "schema_version": null
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "2df60a1fe726bee40fbbff88d511d37bccd1430c9650bdde4041aa42c8494707.json",
+    "sha256": "2df60a1fe726bee40fbbff88d511d37bccd1430c9650bdde4041aa42c8494707",
+    "media_type": "application/json",
+    "name": "ex045-binding-000",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "ca5419d74bc1055f3196be500c17fa0b42bdc352e5b6a9adf63c77ecb7255674.json",
+    "sha256": "ca5419d74bc1055f3196be500c17fa0b42bdc352e5b6a9adf63c77ecb7255674",
+    "media_type": "application/json",
+    "name": "ex045-preflight-000",
+    "schema": null,
+    "schema_version": null
+  },
+  "status": "SUCCEEDED",
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "b637c44cceb3b2651dd731515c2567576673a7982afd9e42c6a3e39593690d7f.json",
+    "sha256": "b637c44cceb3b2651dd731515c2567576673a7982afd9e42c6a3e39593690d7f",
+    "media_type": "application/json",
+    "name": "blocked-clock-000-retry_each_d",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "47ec5911eb44f7400d61837940011c390935646c5392e1afd5a454acf321970f",
+  "audit": {
+    "status": "PASS",
+    "kind": "EX045_FIXED_CLOCKS",
+    "checks": 452038,
+    "errors": [],
+    "original_projection_numeric_tolerance": 0,
+    "identity_link_fields_mapped_separately": [
+      "cycle_id",
+      "decision_id",
+      "fill_id",
+      "order_id"
+    ],
+    "arithmetic_only_currency_epsilon": 1e-07,
+    "parameters": {
+      "clock_profile": "RETRY_EACH_D"
+    },
+    "strict_control_against_EX044001": true,
+    "baseline_result_hash": "ba695f2464e7d201f2fc25a44bb7ed6658197c22c25a98c8e4bb5b8f5eddabc4",
+    "first_state_divergence_D": null,
+    "first_target_divergence_D": null,
+    "target_path_equals_frozen": true,
+    "funded_wealth_path_equals_frozen": true,
+    "wealth_equality_fields": [
+      "date",
+      "cash",
+      "cash_before",
+      "equity",
+      "quantity",
+      "quantity_before"
+    ],
+    "actual_funded_state_and_feature_math": "independent A/B reviews required"
+  },
+  "error": null,
+  "request_content_sha256": "91163dd04c6c846a477d875a27a1d22b9aec02341d39aa5283493968b637f24d",
+  "runtime_binding_hash": "564663a7c0c65b65bce257572d5c0fabf25cdf9ec46cf023b4f62171d366877a"
+}

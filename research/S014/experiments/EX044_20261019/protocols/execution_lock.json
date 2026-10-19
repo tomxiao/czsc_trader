@@ -1,0 +1,176 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 1,
+  "planned_account_count": 5,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "28cd90bdad296a36c79b74d514f971936c72d1ed942af496996338eb5a317c56",
+  "source_hashes": {
+    "protocols/design.json": "a794a2066fcc9bafe23bcc32363de7ff6254a47f1e51e39415119743a83cc233",
+    "others/synthetic_precheck.json": "dcebf874af70587f3851c27b681fc4dfae33af3a2dc04791377fd35b941d4c62",
+    "src/audit_accounts.py": "3c960e26547990bfac8397c585d1aaf242361b37b09edc3f572d569e2ac96319",
+    "src/precheck.py": "a93f8d779b267ccecb13d05ae52e04562bb78ed1166059aac9e04f9d641bc0b8",
+    "src/run_accounts.py": "28dd6c3fcc482b71c60b3f1ff4e3419c48e6fa1354bf287735a14bbc7b771dce",
+    "src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+  },
+  "external_source_hashes": {
+    "research/S014/materials/20261019_2024_diagnosis/authorization.json": "21398014adabc5c068ba6ada912f256e26872093c37e54cd00badfc9d3182db7",
+    "research/S014/materials/20261019_2024_diagnosis/design_decision.json": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846",
+    "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47",
+    "research/S014/materials/20261019_2024_diagnosis/official/method_adversarial_review.json": "483813567d58f7978119809d4e328a43882e9fa343fdf8711b2a00341c305a4b",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/evaluation_protocol_ex044.json": "4c478f25fbd8c9ba7020759fc1d6b79971dbbdb0efb15d54270ae07bed51cec9",
+    "research/S014/materials/20261019_2024_diagnosis/official/source_state_review.json": "32e8e72775038660e36d0fe70bffbb62a8403b65f71ef68b8ef19b5a6fde36e4",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/independent_source_pre_review.json": "e53f38aadb7169d343376152180cf721a1fe4c9a460a9138114b484e857f8adf",
+    "research/S014/materials/20261019_2024_diagnosis/method/prior_mechanism_inventory.json": "ff78c5dc8a5f2e0d738fee0fbb6ef5d492a6552497c8b8e2d5a60af9e0ac59ba",
+    "research/S014/materials/20261019_2024_diagnosis/method/cost_anchor_addendum.json": "2d42960a701520934e75d00d9d1886ce61829d5531770bb4c11a5f8d65e7184b",
+    "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "research/S014/experiments/EX043_20261019/protocols/execution_lock.json": "e626848fd04b29d450d60ca60ee6e2e0e8eeb93acdb38dbb464952b4a1ba6e24",
+    "research/S014/experiments/EX043_20261019/others/accounts/run-004.json": "74bd125ec8230b377294ee00a4ebb63c180a84867898b1a17ce495867aca2f94",
+    "research/S014/experiments/EX043_20261019/src/precheck.py": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46",
+    "research/S014/experiments/EX041_20261019/src/precheck.py": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a",
+    "research/S014/experiments/EX040_20261019/src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3",
+    "research/S014/experiments/EX017_20261017/src/pinned_inputs.py": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "mode": "BASE/POSITIVE_P/BASE",
+      "parameters": {
+        "entry_guard": "BASE",
+        "exit_domain": "POSITIVE_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9400",
+      "runtime_sha256": "0ec798985c465100a34fa551724c2136ecd7fd329fa6c18cce54296c23463332",
+      "payload_sha256": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b.json",
+        "sha256": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b",
+        "media_type": "application/json",
+        "name": "ex044-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "BLOCK_SHOCK/POSITIVE_P/BASE",
+      "parameters": {
+        "entry_guard": "BLOCK_SHOCK",
+        "exit_domain": "POSITIVE_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9401",
+      "runtime_sha256": "d4de416dc862d42f2b65c9041e5ea39698516f2116cea1334c60d5e6df64c24e",
+      "payload_sha256": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a.json",
+        "sha256": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a",
+        "media_type": "application/json",
+        "name": "ex044-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 2,
+      "mode": "BASE/ANY_P/BASE",
+      "parameters": {
+        "entry_guard": "BASE",
+        "exit_domain": "ANY_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9402",
+      "runtime_sha256": "3954166d9a8c6210764715e498266b23749f8a73074bc14f414725a8db41ce4c",
+      "payload_sha256": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902.json",
+        "sha256": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902",
+        "media_type": "application/json",
+        "name": "ex044-payload-002",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 3,
+      "mode": "BLOCK_SHOCK/ANY_P/BASE",
+      "parameters": {
+        "entry_guard": "BLOCK_SHOCK",
+        "exit_domain": "ANY_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9403",
+      "runtime_sha256": "d598641a8253afa7f7e2a93c850171670123a8713448765afc9d379e4e5de876",
+      "payload_sha256": "be2dc843a726c50edfad986b9fdf6fe6aefd08156ec723eaf228a5110f50d76e",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "be2dc843a726c50edfad986b9fdf6fe6aefd08156ec723eaf228a5110f50d76e.json",
+        "sha256": "be2dc843a726c50edfad986b9fdf6fe6aefd08156ec723eaf228a5110f50d76e",
+        "media_type": "application/json",
+        "name": "ex044-payload-003",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 4,
+      "mode": "BASE/POSITIVE_P/NET_LOSS_1ATR",
+      "parameters": {
+        "entry_guard": "BASE",
+        "exit_domain": "POSITIVE_P",
+        "cost_stop": "NET_LOSS_1ATR"
+      },
+      "candidate": "S014-C9404",
+      "runtime_sha256": "6ffb00afb5d369692ea64d446c83500198ae43ac6b806f81ab9f19ffda36d87d",
+      "payload_sha256": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270.json",
+        "sha256": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270",
+        "media_type": "application/json",
+        "name": "ex044-payload-004",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "f1d6ca1abe352540a4254dc1cce94eaad8ecf982c727d6bf05afffe7045cc474",
+  "economic_complete_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "2026_role": "technical full-contract tail"
+}

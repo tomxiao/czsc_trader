@@ -1,0 +1,123 @@
+{
+  "status": "EXISTING_PUBLIC_CONTRACT_EXACTLY_REPRODUCES_FILL_OLD_AUDIT_PREDICATE_TOO_STRICT",
+  "account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94.json",
+    "sha256": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94",
+    "media_type": "application/json",
+    "name": "blocked-clock-001-keep_planned_slot",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "c131b5eeb6d604d16ce716585d6738653ae563728998dab2f1ba9f63e6d2f397",
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "4ddbb7400abaae1a38ce5f338e5969aa6dcab1eead3065a1ea02395a92d733c6.json",
+    "sha256": "4ddbb7400abaae1a38ce5f338e5969aa6dcab1eead3065a1ea02395a92d733c6",
+    "media_type": "application/json",
+    "name": "ex045-binding-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "prepared_ref": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "execution_input_identities": {
+    "trading_calendar": "1889d261dc734526df6e1f45523207352d6aad93b7aacff2e7b5d8a54efd54ca",
+    "adjusted_daily": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "execution_daily": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "price_limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "trading_status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "boundary": {
+    "order": {
+      "cycle_id": "CYC-2591DC307D6FD68BFB70",
+      "decision_id": "DEC-C5718E1D89E6DA4BC5D5",
+      "execution_date": "2026-01-06T00:00:00.000000000",
+      "limit_price": 6.099999999999999,
+      "order_id": "ORD-19992B9B52E21CC61CBC",
+      "order_type": "LIMIT",
+      "quantity": 65400,
+      "reason": "FILLED",
+      "side": "BUY",
+      "signal_date": "2026-01-05T00:00:00.000000000",
+      "status": "FILLED"
+    },
+    "fill": {
+      "cycle_id": "CYC-2591DC307D6FD68BFB70",
+      "decision_id": "DEC-C5718E1D89E6DA4BC5D5",
+      "fees": 398.94,
+      "fill_id": "FIL-CDE03EB5D20AEA3EB402",
+      "fill_time": "2026-01-06T09:30:00.000000000",
+      "order_id": "ORD-19992B9B52E21CC61CBC",
+      "price": 6.1,
+      "quantity": 65400,
+      "side": "BUY",
+      "signal_date": "2026-01-05T00:00:00.000000000",
+      "time_precision": "TIMESTAMP",
+      "trigger": "OPEN"
+    },
+    "public_expected_price": 6.1,
+    "public_trigger": "OPEN",
+    "saved_limit_repr": "6.099999999999999",
+    "fill_repr": "6.1",
+    "fill_minus_saved_limit": 8.881784197001252e-16,
+    "projected_E_open": 6.1,
+    "projected_E_low": 6.09,
+    "projected_E_high": 6.6,
+    "existing_public_daily_quote_roundoff": 6.599999999999999e-12,
+    "price_tick": 0.01,
+    "audit_added_epsilon": 0,
+    "D_projection_trace": {
+      "raw_reference_close": 6.04,
+      "full_HFQ_reference_close": 35.58768,
+      "ledger_execution_reference_close": 6.039999999999999,
+      "price_scale_decimal": "0.9999999999999998344370860927",
+      "price_scale_float": 0.9999999999999999,
+      "unadjusted_reference_recovered": 6.04,
+      "public_rebuilt_limit_exact": 6.099999999999999,
+      "public_rebuilt_quantity_exact": 65400
+    }
+  },
+  "all_actual_fill_prices_exact_original_public_resolver": 262,
+  "new_audit_epsilon": 0,
+  "new_resolver_epsilon": 0,
+  "old_failure": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json",
+    "sha256": "1b02c31cc2c54840b32ce6994bc27412aaa67dd52f964ef01397cc660a6c605d"
+  },
+  "original_helper": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_audit.py",
+    "sha256": "7ab41a1ddf3a1e8809a7cfb90158a9f61eb69bcb5bb1175d1591c219590e0c10"
+  },
+  "public_resolver": {
+    "path": "packages/trading_execution_engine/src/trading_execution_engine/fills.py",
+    "sha256": "8e543cf6ec21b5653b827195a5cee48b912004f0944a6179098597cf1d2db992",
+    "existing_daily_quote_path_lines": "fills.py129-136; tolerance predates this audit and applies only roundoff, original code unchanged"
+  },
+  "public_pricing_and_planner_sources": {
+    "packages\\strategy_runtime\\src\\strategy_runtime\\execution_planner.py": "d9db780d1e0f1239d3908cfddc0338f487f91d9678f08cd8977d28f95bb01711",
+    "packages\\strategy_runtime\\src\\strategy_runtime\\execution_rules.py": "6ede66f327fd92aa2ad8e3401d3280a30d28a2f3a466c6255ea724a00aa72bfe",
+    "packages\\strategy_runtime\\src\\strategy_runtime\\pricing.py": "ea586b6600b28beb5f7f797af4cd9995f12ba09d53a17011baa3384edc732bcc",
+    "packages\\strategy_runtime\\src\\strategy_runtime\\data.py": "e8b126b6ff975202111a70007e8fd946b422907015f688ced6144555905d90b4"
+  },
+  "interpretation": "The failed float<=limit shortcut imposes a stronger bound than original daily_quote resolver. Replace audit comparator with exact public resolver return, preserving failed snapshot/old helpers/source locks/000review and all account bytes. Do not add epsilon, ignore2026, rerun accounts or change platform.",
+  "remaining_gate": "Successor independent financial helper/full001 state and economic audit; no final economicPASS yet.",
+  "new_accounts": 0,
+  "new_fits": 0,
+  "new_policy_replays": 0,
+  "new_supplier_calls": 0,
+  "raw_market_dataset_exports": 0
+}

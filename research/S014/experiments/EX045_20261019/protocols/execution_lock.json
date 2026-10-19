@@ -1,0 +1,95 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 1,
+  "planned_account_count": 2,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "9a491a78dbcdde9c3dcc5adb1997b7180cf9661243053bd0eb5063cfd9e38247",
+  "source_hashes": {
+    "protocols/design.json": "4c0b75e1c7a63385cbccd613e2c9fa2cda2b66b01f4af28663aa08eab054d961",
+    "others/synthetic_precheck.json": "31d91fcf6b508b6bf43c1510012585e7817ab60679057badf15324d589ea5e47",
+    "others/audit_prefix_precheck.json": "e19e343ef09d63b6ebb4257382c535778a99ecb9556534f7a96eaeb3e2fd563d",
+    "src/audit_accounts.py": "9dbac18bd3b2f4040093ff4d410bf35ff10d6f4fefcaad76ede584ce61238cf7",
+    "src/precheck.py": "7594392f80738e006d41b6bb3a2e9f9037fb328388d5e39226e00ac6503169bc",
+    "src/run_accounts.py": "0b908f72c8737691a91a1baf841cf5992587a57daef4ab70df39e48a43d0ae4e",
+    "src/strategy_runtime/strategies/blocked_clock_review.py": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68"
+  },
+  "external_source_hashes": {
+    "research/S014/materials/20261019_2024_diagnosis/authorization.json": "21398014adabc5c068ba6ada912f256e26872093c37e54cd00badfc9d3182db7",
+    "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989",
+    "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_method_review.json": "28facb7477bc98e692adffdf105ca010fd3c23632e3783dc324b79ccd82fc4de",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_evaluation_protocol.json": "4827ee89aefc76eef1e1d4483b023f5f4cb4400459e42db63ae9c927549bb1bd",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_source_state_review.json": "59d448620cad064dbbeeb4bb750cd2c705a73a09b9216088a576c0e218b6dc2f",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_source_pre_review.json": "7ac524ce3ed3a92c2e74f6aa57b43a36205fcf8b963959ad749c026388ddca03",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_helper_review.json": "a4b2b6ad9b756bb928e48c29cd74f4866a2b46893fae43c75bf44ef531a2647e",
+    "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "research/S014/experiments/EX044_20261019/protocols/execution_lock.json": "76aae354bdefd8f510e54eae0005fcab7b7e9306e7915abd35d43990c8cfe4b1",
+    "research/S014/experiments/EX044_20261019/others/accounts/run-001.json": "147b1f8dc76da0b2caa9a945b5bbfb9a5799b84d06caee7bad7f348f75df27fe",
+    "research/S014/experiments/EX044_20261019/others/final_verification.json": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37",
+    "research/S014/experiments/EX043_20261019/src/precheck.py": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46",
+    "research/S014/experiments/EX041_20261019/src/precheck.py": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a",
+    "research/S014/experiments/EX040_20261019/src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3",
+    "research/S014/experiments/EX017_20261017/src/pinned_inputs.py": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "mode": "RETRY_EACH_D",
+      "parameters": {
+        "clock_profile": "RETRY_EACH_D"
+      },
+      "candidate": "S014-C9410",
+      "runtime_sha256": "ddc4c2a16ceff8e52347019f413978de137871cd7b79ea5cd435d0209acd9030",
+      "payload_sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75.json",
+        "sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+        "media_type": "application/json",
+        "name": "ex045-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "KEEP_PLANNED_SLOT",
+      "parameters": {
+        "clock_profile": "KEEP_PLANNED_SLOT"
+      },
+      "candidate": "S014-C9411",
+      "runtime_sha256": "987657d43a5d31d4c83fb16c00a6d75e6c6c1326bb4b0b8b796b4a133546a683",
+      "payload_sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d.json",
+        "sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+        "media_type": "application/json",
+        "name": "ex045-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "64e66bc80eef89853c6b12189aa5e737b4c019301029e2d4efb8554925f4c685",
+  "economic_complete_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "2026_role": "technical full-contract tail"
+}

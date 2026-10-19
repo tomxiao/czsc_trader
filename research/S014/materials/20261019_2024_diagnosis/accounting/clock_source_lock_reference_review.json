@@ -1,0 +1,131 @@
+{
+  "status": "PASS_PUBLIC_CLOCK_SOURCE_LOCK_BEFORE_FRESH_RETRY",
+  "public_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "a2adc7e1421ee1e1b56d4100940c34dfbbdcf5dc7a9eede8ad50de016126456f.json",
+    "sha256": "a2adc7e1421ee1e1b56d4100940c34dfbbdcf5dc7a9eede8ad50de016126456f",
+    "media_type": "application/json",
+    "name": "ex045-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+  "public_reference_count": 27,
+  "checks": 90,
+  "check_counts": {
+    "S014 references only": 3,
+    "published content SHA": 3,
+    "S014 source references only": 25,
+    "published source content SHA": 25,
+    "public clocklock bytes exact": 1,
+    "source registry hash exact": 1,
+    "locked source exact protocols/design.json": 1,
+    "locked source exact others/synthetic_precheck.json": 1,
+    "locked source exact others/audit_prefix_precheck.json": 1,
+    "locked source exact src/audit_accounts.py": 1,
+    "locked source exact src/precheck.py": 1,
+    "locked source exact src/run_accounts.py": 1,
+    "locked source exact src/strategy_runtime/strategies/blocked_clock_review.py": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/authorization.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/official/clock_method_review.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/accounting/clock_evaluation_protocol.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/official/clock_source_state_review.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/accounting/clock_source_pre_review.json": 1,
+    "external reference currentbytes research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_helper_review.json": 1,
+    "external reference currentbytes research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": 1,
+    "external reference currentbytes research/S014/experiments/EX044_20261019/protocols/execution_lock.json": 1,
+    "external reference currentbytes research/S014/experiments/EX044_20261019/others/accounts/run-001.json": 1,
+    "external reference currentbytes research/S014/experiments/EX044_20261019/others/final_verification.json": 1,
+    "external reference currentbytes research/S014/experiments/EX043_20261019/src/precheck.py": 1,
+    "external reference currentbytes research/S014/experiments/EX041_20261019/src/precheck.py": 1,
+    "external reference currentbytes research/S014/experiments/EX040_20261019/src/audit_accounts.py": 1,
+    "external reference currentbytes research/S014/experiments/EX017_20261017/src/pinned_inputs.py": 1,
+    "exact two clock canonical params": 1,
+    "exact unique two candidateIDs": 2,
+    "clock payload exact parameters": 2,
+    "source closure exact": 2,
+    "clock review gate current lock": 1,
+    "clock gate exact final reviewer original bytes": 1
+  },
+  "locked_two_runs": [
+    {
+      "index": 0,
+      "mode": "RETRY_EACH_D",
+      "parameters": {
+        "clock_profile": "RETRY_EACH_D"
+      },
+      "candidate": "S014-C9410",
+      "runtime_sha256": "ddc4c2a16ceff8e52347019f413978de137871cd7b79ea5cd435d0209acd9030",
+      "payload_sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75.json",
+        "sha256": "115c619ad03549e99dc760fac922de0b168c7808249363a0a92b7830a8021f75",
+        "media_type": "application/json",
+        "name": "ex045-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "KEEP_PLANNED_SLOT",
+      "parameters": {
+        "clock_profile": "KEEP_PLANNED_SLOT"
+      },
+      "candidate": "S014-C9411",
+      "runtime_sha256": "987657d43a5d31d4c83fb16c00a6d75e6c6c1326bb4b0b8b796b4a133546a683",
+      "payload_sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX045_20261019"
+        },
+        "evidence_id": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d.json",
+        "sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+        "media_type": "application/json",
+        "name": "ex045-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "gate_source_review": {
+    "status": "PASS",
+    "source_lock_sha256": "a2adc7e1421ee1e1b56d4100940c34dfbbdcf5dc7a9eede8ad50de016126456f",
+    "review_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX045_20261019"
+      },
+      "evidence_id": "17937a2ef461b61c762c53d95c4372682b704c1bc73938c712939107ddff687f.json",
+      "sha256": "17937a2ef461b61c762c53d95c4372682b704c1bc73938c712939107ddff687f",
+      "media_type": "application/json",
+      "name": "ex045-independent-source-review",
+      "schema": null,
+      "schema_version": null
+    },
+    "review_sha256": "17937a2ef461b61c762c53d95c4372682b704c1bc73938c712939107ddff687f"
+  },
+  "actual_dispatches_seen": 0,
+  "new_fits": 0,
+  "auditor_dispatches": 0,
+  "new_replays": 0,
+  "remaining_gate": "FreshRETRY exactEX044001 and fundedstates before KEEP."
+}

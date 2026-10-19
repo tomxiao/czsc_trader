@@ -1,0 +1,161 @@
+{
+  "status": "AUTHORIZED_FIXED_FIVE_ACTION_RESPONSIBILITY_POLICIES_BEFORE_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BLOCK_SHOCK",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "ANY_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BLOCK_SHOCK",
+      "exit_domain": "ANY_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "NET_LOSS_1ATR"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9400",
+    "S014-C9401",
+    "S014-C9402",
+    "S014-C9403",
+    "S014-C9404"
+  ],
+  "planned_account_count": 5,
+  "user_numeric_account_limit": null,
+  "no_blind_retries": true,
+  "baseline_control": "Fresh new source cell000 exact all old economic/observation fields against EX043run004 ENTRY_GRACE/SHOCK_PROFIT; not EX043000 original R",
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX043_20261019"
+    },
+    "evidence_id": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab.json",
+    "sha256": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab",
+    "media_type": "application/json",
+    "name": "exante-policy-004-entry_grace-shock_profit",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "canonical_runtime_parameter_schema": "Only entry_guard BASE/BLOCK_SHOCK, exit_domain POSITIVE_P/ANY_P, cost_stop BASE/NET_LOSS_1ATR. Only the listed five cells valid; semantic OFF/ON/PROFIT_ONLY in prior method prose are explanatory labels, not identity values.",
+  "original_economic_targets_constraints_unchanged": true,
+  "complete_economic_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "2026_role": "Original full-contract technical tail only, no economic selection",
+  "feature_contract": "Exact prior causal_features AST, original in-window masks and HFQ units; no added market data",
+  "known_rule": "Unknown raw values remain null and are not numericSeries; finite known flags float; new guard/exit only when known positive normalization scale",
+  "legacy_observation_contract": "All EX043 old fields retained. shock_condition/selected_profit_exit remain positive-P subset; selected_shock_exit/selected_cost_exit/selected_risk_exit are actual new selected exits. Ordinary grace/support suppression reflects all selected risk precedence.",
+  "entry_guard_semantics": {
+    "candidate_D": "flat, original ready60/supportOK/reservation eligible, no failed-BUY reset that D; include all prospective BUY intents, including those that would later fail",
+    "rule": "BLOCK_SHOCK: if original feature shock_known and Z5_D>2, suppress this D BUY intent and stay cash; otherwise keep original candidate decision",
+    "clock": "Uses D-close feature, affects next E order. No entry fill or E-day P is used to decide the D gate",
+    "retry_semantics": "Recompute every eligible D. A blocked gate does not create an order/fill/new reservation. Existing reservation remains. This is recurring conditional participation, not one cancellation or permanently staying cash.",
+    "unknown": "Preserve explicit shock_known/positive-scale domain; no invented infinite score or imputation. Blocking requires known finite Z>2."
+  },
+  "cost_stop_semantics": {
+    "single_extra_arm": "Only on baseline fixed combination, not crossed with new Z controls",
+    "rule": "held eligible & ATR20_prior_D>0 & [actual_entry_fill*(1+.001)-C_D*(1-.001)] >= 1*ATR20_prior_D",
+    "loss_units": "Original runtime market HFQ price units. Entry fill is actual shadow-execution cost matched later against the real funded account; fees included in loss mark, actual ledger fees unchanged",
+    "ATR": "Original arithmetic mean20TR endingD-1, updates each D; not frozen at entry. Shrinking ATR may cause a threshold crossing without a new price decline; preserve that counter-explanation.",
+    "boundary": "NET cost loss with inclusive>= exactly; one multiplier fixed before successor policies, no lower threshold chosen after coverage",
+    "limitation": "A D-close exit cannot avoid already incurred entry-day loss or guarantee a maximal realized loss; E constraints/gaps/fees continue."
+  },
+  "priority": "Inherited pending sale and original deadline first; any chosen cost-risk or acceleration exit next; ENTRY_GRACE may suppress only ordinary support break; ordinary support preserved otherwise. Risk may act on actual BUY-filled D and schedules next-E sale, respecting T+1.",
+  "controls": "A/B final source review already passed; final runner/design/internal review required before public source lock. New source realNOOP internal+independent exact pass mandatory before all4 other accounts.",
+  "run_all_five_if_technically_valid": "No profitable stopping or further parameter/date/year search; original whole-account funded paths, own-year-opening, all counterexamples kept",
+  "no_local_action_wealth_labels": true,
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "not_claimed": "All original goals achieved, blind independent validation, formal candidate eligibility, production/PTE readiness",
+  "authorization": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/authorization.json",
+    "sha256": "21398014adabc5c068ba6ada912f256e26872093c37e54cd00badfc9d3182db7"
+  },
+  "method": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/design_decision.json",
+    "sha256": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/official/method_adversarial_review.json",
+    "sha256": "483813567d58f7978119809d4e328a43882e9fa343fdf8711b2a00341c305a4b"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/evaluation_protocol_ex044.json",
+    "sha256": "4c478f25fbd8c9ba7020759fc1d6b79971dbbdb0efb15d54270ae07bed51cec9"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/official/source_state_review.json",
+    "sha256": "32e8e72775038660e36d0fe70bffbb62a8403b65f71ef68b8ef19b5a6fde36e4"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_source_pre_review.json",
+    "sha256": "e53f38aadb7169d343376152180cf721a1fe4c9a460a9138114b484e857f8adf"
+  },
+  "prior_inventory": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/method/prior_mechanism_inventory.json",
+    "sha256": "ff78c5dc8a5f2e0d738fee0fbb6ef5d492a6552497c8b8e2d5a60af9e0ac59ba"
+  },
+  "cost_addendum": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/method/cost_anchor_addendum.json",
+    "sha256": "2d42960a701520934e75d00d9d1886ce61829d5531770bb4c11a5f8d65e7184b"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py",
+    "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a"
+  },
+  "previous_lock": {
+    "path": "research/S014/experiments/EX043_20261019/protocols/execution_lock.json",
+    "sha256": "e626848fd04b29d450d60ca60ee6e2e0e8eeb93acdb38dbb464952b4a1ba6e24"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX043_20261019/others/accounts/run-004.json",
+    "sha256": "74bd125ec8230b377294ee00a4ebb63c180a84867898b1a17ce495867aca2f94"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}

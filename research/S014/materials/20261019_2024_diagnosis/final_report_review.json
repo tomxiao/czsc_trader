@@ -1,0 +1,226 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "wording_findings": [],
+  "reviewed_hashes": {
+    "packages/trading_execution_engine/src/trading_execution_engine/fills.py": "8e543cf6ec21b5653b827195a5cee48b912004f0944a6179098597cf1d2db992",
+    "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "research/S014/experiments/EX044_20261019/others/accounts_index.json": "e5026e223e0b3f8e1ae5a386b28040f70aead482118ad1126b7679c4a2cad92d",
+    "research/S014/experiments/EX044_20261019/others/final_verification_ref.json": "636fc6480454ab132e9c51b7dd695984e54b882cff3f0f4829680e0076213784",
+    "research/S014/experiments/EX044_20261019/protocols/execution_lock.json": "76aae354bdefd8f510e54eae0005fcab7b7e9306e7915abd35d43990c8cfe4b1",
+    "research/S014/experiments/EX044_20261019/protocols/published_lock.json": "fc9c5145d40dd19259733d93c5229fea5daacc6723e71373926e8ba215ce9829",
+    "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "research/S014/experiments/EX045_20261019/notes.md": "f91c3bd0781675bdb9ffa92e350bbcb37be3f06778f61a62cdbc3fa86b911999",
+    "research/S014/experiments/EX045_20261019/others/accounts_index.json": "8bd03b2c4fa8ef10a10cc104297ff4f22aed22bf6642bc7299815a72e9d802d8",
+    "research/S014/experiments/EX045_20261019/protocols/execution_lock.json": "a2adc7e1421ee1e1b56d4100940c34dfbbdcf5dc7a9eede8ad50de016126456f",
+    "research/S014/experiments/EX045_20261019/protocols/published_lock.json": "7999672ed10e269530c2b841b4fadf762fd60d5b7aeb8cd79ba48d59fffcde01",
+    "research/S014/experiments/EX045_20261019/src/strategy_runtime/strategies/blocked_clock_review.py": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+    "research/S014/materials/20261019_2024_diagnosis/2024_accounting_bridge.png": "bd019ae9c0a5fccb78590afe6054adc3a266bea0e6c8afa5a3704f8ec1e60b92",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_000_independent_review.json": "98cce731ddbc0d2811c9995f48b243d9581799570e7e8d91943baa349c43b92b",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_001_independent_review.json": "941f0650d384cce4106248169d52db909bcbe4bbf3d7d1cd0ffa2e8079b188ae",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_002_independent_review.json": "eaa8a7ec5549270fdfd8badef4e99dacc89946668ac99a91ccdba2d9463325f1",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_003_independent_review.json": "e37eb83c07979a7691a3a04d37bd4bcb26fab652a2180ff5f3bd1c3690ff7255",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_004_independent_review.json": "9e29acc607799105b9efe24207d8feeb41b36b6bdd4f498cf3d360b22670573b",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/accounting_reconciliation_final.json": "97dc04bc1c50d6771d4c28805b39a5b7527346e62e25d59b13ecd8633d78125a",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/actual_2024_cycle_attribution.csv": "9f5e29fedbafa5c14cca3400fd1d5269643704c1865fb825f22cb152a3ce4748",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/audit_clock_accounts_v2.py": "4655fcc2b86c3bf2385cf2c4a53d6c079b3f993af4b8710bc2f6369665246df2",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/baseline_opportunity_state.csv": "108d02df2fd9f98eacbfc480dd091ca05f11362efb0f2a1a71e50570430dd5f7",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_000_independent_review.json": "caae1c717f7b8e423bb20205f4cea0e0408c7f8536e40e1050316077ec6e4fb5",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json": "1b02c31cc2c54840b32ce6994bc27412aaa67dd52f964ef01397cc660a6c605d",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_review_v2.json": "ee2ef040e7aa500c3fe058184c180d6cbeed48f075d1803088beeaa4490baa68",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_baseline_opportunity_state.csv": "2cd9d8d269936da96703877cdae7ca8ac339d629233abb38df4b2c699670b8f4",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_audit.py": "7ab41a1ddf3a1e8809a7cfb90158a9f61eb69bcb5bb1175d1591c219590e0c10",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_audit_v2.py": "4988a17622252157a8904f8047a122b9ef7e41f4688bcfcb753757efd756e6e7",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_limit_boundary_investigation.json": "a7678a4cdf4b21849a4a96cc275df49bbbff2c42519bdddacad1cb72cb8a7ff9",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_daily_equity_2020_25.csv": "32385df084b2facd96b41c96183701c047b871927c4c48228fbb6bf08312377e",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_summary.csv": "96d4aec589b2c677b1781c88712ec2d3ea7d2b119ea9be9d1b0783713a7e81bf",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_trigger_events.csv": "55194736d797ca5b9972e4708b0c3cc45a6710a24292e76c99206dce91b6570b",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_year_end_positions.csv": "ff32e0f2ac7e392b26e7dc1aee6a77f63b5ee18ced46eb31f5baf86ee6d69212",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_yearly_summary.csv": "3d92ba63065e7d0ed7ac703c9622445fa5a722662ad51853164963ea018f94aa",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/diagnosis_findings.json": "d6473b4ba9a276e969fb9c68d56c82217555e1b3120805afd2436f1ba9e47ea5",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/independent_clock_audit_summary.json": "35a5eb88893072417ede20cb19f9dcb121b750ca8695cf28fb1cb958564e7dd4",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/independent_ex044_audit_summary.json": "a7e03dbde99534d6dd68bfa800100ea4e6b4a948417e12abba02bfa11f389de8",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/original_accounts_diagnosis_delivery.json": "b527419aa3be167d9b825f9d6fb846b9ca24ffb7b36fa45e829c6a866003c0f2",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_daily_equity_2020_25.csv": "dc92dfb82bebc9b4c976ae911e383951b7788dad8ea7ef93cbc41023275efdb5",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_quarter_accounting_bridge.csv": "f785836793e2d81086cd84b0a88efbc726a0148e4b36094f53898a544f57a16d",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_summary.csv": "45dc500034b6cf1838238d3f73300057db925cea240034e4fa83fc56240062af",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_trigger_events.csv": "c7fb518ef3f3c3f279f23118e7ce20c431082888be2b3a76d24cd65afd15767e",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_year_accounting_bridge.csv": "5459a5e1d44949e365a50518e766e8681486825ce5b0aaa41c46a469cd34f209",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_year_end_positions.csv": "53c7b339e8060ca9a221a6facd25b8a9103513054aed62788f102eb6ee3b9c4d",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/policy_yearly_summary.csv": "ab510bb777f93a43341a60197d63805fabf70e6dd977a8db5368083b8a04a28a",
+    "research/S014/materials/20261019_2024_diagnosis/baseline_integrity.json": "d55480e24ba21a8b37845ec67425ccda516701ce771038a7a8571c52791b2907",
+    "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989",
+    "research/S014/materials/20261019_2024_diagnosis/design_decision.json": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846",
+    "research/S014/materials/20261019_2024_diagnosis/judgment.json": "a14bfa9a4b19c0b1084cb2ac2c8160f644cde6393fa2add9f191c22f9482faf2",
+    "research/S014/materials/20261019_2024_diagnosis/method/method_review.md": "a9a75e35807b8c29a8790dff00f194d8a627101c90ef0b914ce814deacdc3780",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_interpretation_notes.json": "8315cd3dce886a0ff7dfc7df03ded2486e640013e9d75045f439b009a8be02d3",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_interpretation_results.json": "dc8c2d20008c324e97af8d8d0d22ab1b185b4359d85f292fe841bcca7254bba8",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_method_review.json": "28facb7477bc98e692adffdf105ca010fd3c23632e3783dc324b79ccd82fc4de",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_numeric_boundary_review.json": "7ed93d76cf67b51d0b9b4ce9740b0ccb9bd7d7dc05338706d73a718ff161f041",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_source_state_review.json": "59d448620cad064dbbeeb4bb750cd2c705a73a09b9216088a576c0e218b6dc2f",
+    "research/S014/materials/20261019_2024_diagnosis/official/interpret_actual_results.py": "453a303dc8f53cd85aaa5c0518f3a79c7fcead1d180509efec7ee1efda556f48",
+    "research/S014/materials/20261019_2024_diagnosis/official/interpret_clock_results.py": "289ab7c0e1d48efff3aaebb15681d88c088d992dc800fd5601596c7ab709b1d4",
+    "research/S014/materials/20261019_2024_diagnosis/official/interpret_mechanism_notes.py": "8901df818a667fda04a075e49a13d01fdaaad8e9dd7113f3cba10d8f4c8117de",
+    "research/S014/materials/20261019_2024_diagnosis/official/interpretation_adversarial_notes.json": "b62c08af23df5fd148e2e30dea19b640a348d7e0d590595575b9e40b7ac3cea1",
+    "research/S014/materials/20261019_2024_diagnosis/official/interpretation_results.json": "04bceb1dbc6e03a8b7de2857606cf4247c8862f0b3331e3d6038306796647656",
+    "research/S014/materials/20261019_2024_diagnosis/official/known_state_and_timing_facts.json": "d462eec88a0e54f2bb64076707008ba615632bd1196c84f0e5e853a61cf67304",
+    "research/S014/materials/20261019_2024_diagnosis/official/method_adversarial_review.json": "483813567d58f7978119809d4e328a43882e9fa343fdf8711b2a00341c305a4b",
+    "research/S014/materials/20261019_2024_diagnosis/official/population_inventory.json": "de6a0bc0539d6aef3a2ec070ae4f7aaf2ec1fc0bd33c602507627f833cecf48e",
+    "research/S014/materials/20261019_2024_diagnosis/official/review_clock_source.py": "883dceb0221717f9369107ea691733f96049fe4e13abc0955b29d9330de942b9",
+    "research/S014/materials/20261019_2024_diagnosis/official/review_final_report.py": "3f319718c37af6645e95d5d054fa9744da339076a482b7e55b32fbf565720fe5",
+    "research/S014/materials/20261019_2024_diagnosis/official/review_successor_source.py": "8af16c80c025c4703f0c0842b0602d84107e2124c5486d6718a6656bd2f41fea",
+    "research/S014/materials/20261019_2024_diagnosis/official/source_state_review.json": "32e8e72775038660e36d0fe70bffbb62a8403b65f71ef68b8ef19b5a6fde36e4",
+    "research/S014/materials/20261019_2024_diagnosis/plot_diagnosis.py": "1d7b69771bd7dca5097aaf5f035a033589dcc313d2d497f478fe5d46ea35fff8",
+    "research/S014/materials/20261019_2024_diagnosis/report.md": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+    "research/S014/materials/20261019_exante_hold_exit/accounting/account_000_independent_review.json": "b84e18150f5baf35f294d95d45bf8369b9aa6b2e89c47e4b9a755eb9be83476f",
+    "research/S014/materials/20261019_exante_hold_exit/official/method_observability_audit.json": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560"
+  },
+  "checks": 1408,
+  "check_counts": {
+    "precise baseline population wording": 1,
+    "all report links relative": 22,
+    "report link resolves in repository": 22,
+    "all report links exist": 22,
+    "both independent consolidated PASS": 2,
+    "account audit immutable hash": 7,
+    "all seven account independent PASS": 7,
+    "audited output immutable hash": 12,
+    "audited output row count": 12,
+    "full independent check count": 1,
+    "seven actual successes five unique economic paths": 1,
+    "fixed five and two row counts": 1,
+    "judgment unique summary policy": 7,
+    "matching row key": 525,
+    "matching text boolean": 207,
+    "published numerical agreement": 364,
+    "judgment all five plus two fixed profiles": 1,
+    "judgment unique policy year": 18,
+    "original annual return goal exact": 42,
+    "original annual DD goal exact": 42,
+    "report five policy annual table rounded exact": 5,
+    "report clock annual table rounded exact": 2,
+    "phase table rounding exact": 4,
+    "phase actual annual reconciles": 1,
+    "cycle counts concentration exact": 1,
+    "official interpretation source hash exact": 57,
+    "figure four chronological quarters": 2,
+    "critical figure design failure evidence exists": 9,
+    "final strategies frozen reviewed bytes": 2,
+    "final source locks and account index exist": 6,
+    "original strategy acceptance untouched": 1,
+    "resources exact seven no account failure retry": 1,
+    "final report stable during review": 1
+  },
+  "relative_links": [
+    {
+      "href": "2024_accounting_bridge.png",
+      "path": "research/S014/materials/20261019_2024_diagnosis/2024_accounting_bridge.png"
+    },
+    {
+      "href": "accounting/diagnosis_findings.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/diagnosis_findings.json"
+    },
+    {
+      "href": "accounting/accounting_reconciliation_final.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/accounting_reconciliation_final.json"
+    },
+    {
+      "href": "accounting/actual_2024_cycle_attribution.csv",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/actual_2024_cycle_attribution.csv"
+    },
+    {
+      "href": "design_decision.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/design_decision.json"
+    },
+    {
+      "href": "method/method_review.md",
+      "path": "research/S014/materials/20261019_2024_diagnosis/method/method_review.md"
+    },
+    {
+      "href": "official/method_adversarial_review.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/method_adversarial_review.json"
+    },
+    {
+      "href": "official/known_state_and_timing_facts.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/known_state_and_timing_facts.json"
+    },
+    {
+      "href": "accounting/policy_yearly_summary.csv",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/policy_yearly_summary.csv"
+    },
+    {
+      "href": "accounting/policy_summary.csv",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/policy_summary.csv"
+    },
+    {
+      "href": "accounting/independent_ex044_audit_summary.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_ex044_audit_summary.json"
+    },
+    {
+      "href": "clock_followup_design.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json"
+    },
+    {
+      "href": "accounting/clock_policy_yearly_summary.csv",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_yearly_summary.csv"
+    },
+    {
+      "href": "accounting/clock_policy_summary.csv",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_summary.csv"
+    },
+    {
+      "href": "accounting/independent_clock_audit_summary.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_clock_audit_summary.json"
+    },
+    {
+      "href": "accounting/clock_account_001_independent_failure.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json"
+    },
+    {
+      "href": "accounting/clock_limit_boundary_investigation.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_limit_boundary_investigation.json"
+    },
+    {
+      "href": "../../experiments/EX044_20261019/others/final_verification_ref.json",
+      "path": "research/S014/experiments/EX044_20261019/others/final_verification_ref.json"
+    },
+    {
+      "href": "../../experiments/EX045_20261019/notes.md",
+      "path": "research/S014/experiments/EX045_20261019/notes.md"
+    },
+    {
+      "href": "accounting/original_accounts_diagnosis_delivery.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/original_accounts_diagnosis_delivery.json"
+    },
+    {
+      "href": "official/interpretation_results.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/interpretation_results.json"
+    },
+    {
+      "href": "official/interpretation_adversarial_notes.json",
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/interpretation_adversarial_notes.json"
+    }
+  ],
+  "figure_review": {
+    "file": "2024_accounting_bridge.png",
+    "visual_inspection": "PASS: readable Chinese labels, visible bars/negative fees and annual-contribution denominators; no clipping or unsupported economic outcomes",
+    "source_bridges_reconciled": true
+  },
+  "interpretive_review": {
+    "partial_cost_improvement": true,
+    "no_all_goal_strategy": true,
+    "cross_year_counterexamples_retained": true,
+    "no_2026_economic_selection": true,
+    "zero_2025_gate_vetoes_explained_as_path_dependence": true,
+    "clock_not_linear_causal_share": true,
+    "slot_not_actual_cycle": true,
+    "helper_failure_preserved_separate_from_account_failures": true,
+    "known_development_not_untouched_validation": true
+  },
+  "publication_readiness": "Content PASS. Root publisher must generate/verify local publication manifest and final public EX045 refs before delivery; those downstream artifacts are intentionally outside this content review cycle.",
+  "pre_delivery_conditions": [
+    "PREDELIVERY_PUBLICATION_REQUIRED: generate and authenticate publication.json against these reviewed report/judgment bytes",
+    "PREDELIVERY_EX045_FINAL_REFERENCE_REQUIRED: publisher validates public final refs and closed evidence inventory"
+  ],
+  "review_scope": "Only saved S014 evidence/data derivatives, existing source/locks and final report. No account reruns, policy changes, market queries, new labels/fits or broad regression."
+}

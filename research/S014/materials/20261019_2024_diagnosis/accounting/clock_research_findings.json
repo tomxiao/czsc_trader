@@ -1,0 +1,160 @@
+{
+  "status": "COMPLETE_CLOCK_DIAGNOSIS_WITH_ORIGINAL_GOALS_UNMET",
+  "completeyears": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "yearly_rows": 12,
+  "summary_rows": 2,
+  "annualreturns_percent": {
+    "RETRY_EACH_D": {
+      "2020": 27.01460400000004,
+      "2021": 69.51795401416983,
+      "2022": -17.749326539513667,
+      "2023": 19.43592083592105,
+      "2024": 11.307439688103681,
+      "2025": 4.004250069110871
+    },
+    "KEEP_PLANNED_SLOT": {
+      "2020": 31.52754600000003,
+      "2021": 102.21198607324426,
+      "2022": 7.18648791812464,
+      "2023": 19.964834742910952,
+      "2024": -13.458121075771235,
+      "2025": 34.268123441336094
+    }
+  },
+  "annual_failed_return_years": {
+    "RETRY_EACH_D": [
+      2021,
+      2022,
+      2025
+    ],
+    "KEEP_PLANNED_SLOT": [
+      2024,
+      2025
+    ]
+  },
+  "goals": "RETRY return3of6;KEEP4of6. Bothdrawdown6of6 andoriginalfrequency pass. No policymeetsalloriginalgoals.",
+  "KEEP_gate_slots_byyear": {
+    "2020": 1,
+    "2021": 2,
+    "2022": 1,
+    "2023": 0,
+    "2024": 2,
+    "2025": 1
+  },
+  "gate_slot_count": 7,
+  "slot_role": "Plannedflatopportunities, not actualcycles or independenttrials.",
+  "prefix": {
+    "first_clock_state_divergence_D": "2020-11-17",
+    "first_target_divergence_D": "2020-11-19",
+    "old_observation_state_equals_control": false,
+    "unchanged_funded_prefix_includes_first_clock_change_D": true,
+    "metadata_difference_is_not_economic_difference": true
+  },
+  "cumulative_resources": {
+    "actual_dispatches": 7,
+    "status_counts": {
+      "SUCCEEDED": 7
+    },
+    "economic_equivalence_classes": {
+      "d623810b9b46b2c90bf7bacc416d508bc0d88603f0521b44dca762364cdfd4c1": [
+        "EX044/BASE/POSITIVE_P/BASE"
+      ],
+      "76e40311b29f9ee480b34b2477d69d4f22dac2f32a47d37fb933f051ad00393e": [
+        "EX044/BLOCK_SHOCK/POSITIVE_P/BASE",
+        "EX044/BLOCK_SHOCK/ANY_P/BASE",
+        "EX045/RETRY_EACH_D"
+      ],
+      "348475ebde5cd403f9ad998af8c9ed04833f68e4360bc05a5f1edb4940b27887": [
+        "EX044/BASE/ANY_P/BASE"
+      ],
+      "a81b5d899e0ca0a5664936401a5f8ae14cd0306d708b01949d31c7b201e4ca9c": [
+        "EX044/BASE/POSITIVE_P/NET_LOSS_1ATR"
+      ],
+      "c41323fcc3ec9e2eda6c396a4bc2a6d1375e5920b12c8fd92e1e636e7aa23ba8": [
+        "EX045/KEEP_PLANNED_SLOT"
+      ]
+    },
+    "unique_economic_paths": 5,
+    "funded_wealth_equivalence_classes": {
+      "97b17c7752b061dd7317c67d522f0805332b795116488786e953dfbb8436f575": [
+        "EX044/BASE/POSITIVE_P/BASE"
+      ],
+      "d835bb2be15ae4474eaa140beca3eeb47a149e580f340856ddd74b919ece5970": [
+        "EX044/BLOCK_SHOCK/POSITIVE_P/BASE",
+        "EX044/BLOCK_SHOCK/ANY_P/BASE",
+        "EX045/RETRY_EACH_D"
+      ],
+      "ddbb3fb0b4cddbb53d98b4d7129a4814bc468e0a7e25be8ad2d94a4e984b8cdf": [
+        "EX044/BASE/ANY_P/BASE"
+      ],
+      "655282b3e9a75723c1ad641a90c562f077bee9aecb479333cbc9a8facb72c15f": [
+        "EX044/BASE/POSITIVE_P/NET_LOSS_1ATR"
+      ],
+      "b44211dd518a60bc99255cd8775c2faeba0de7c09acb1fc1cd84f71939515848": [
+        "EX045/KEEP_PLANNED_SLOT"
+      ]
+    },
+    "unique_funded_wealth_paths": 5,
+    "source_specific_control_repeats": 2,
+    "new_fits": 0
+  },
+  "audit_correction": {
+    "count": 1,
+    "account_execution_failures": 0,
+    "new_account_runs_for_correction": 0,
+    "new_epsilon": 0,
+    "closure_ref": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_audit_correction.json",
+      "sha256": "a7f416adc60542f13defe4e17526e726509f87f8b66eea16eb32b774ae3f1d3e"
+    }
+  },
+  "interpretation": [
+    "Keepingtheplannedslotchangeswholecrossyearfundedpath; repairs2021/22 andimproves2025 relativeRETRY but2024turnsnegative and2025stillmisses40.18786395%.",
+    "No2025 blockedcandidate inRETRY, so2025harm cannotbe attributedtoadirect2025gateaction.",
+    "AgainstfrozenEX043004,KEEP2024improves7.6992137pp while2025loses6.4611757pp.",
+    "All2020-25sharedseen;clockcontrastadaptivelychosenafterEX044,noholdoutclaim.",
+    "Full2026technicalboundarywasnotwaived;priceoracleclosureisexactoriginalcontract."
+  ],
+  "valid_independent_clock_checks": 443129,
+  "new_fits": 0,
+  "new_threshold_searches": 0,
+  "new_supplier_calls": 0,
+  "new_action_wealth_labels": 0,
+  "references": {
+    "independent_clock_audit_summary.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_clock_audit_summary.json",
+      "sha256": "35a5eb88893072417ede20cb19f9dcb121b750ca8695cf28fb1cb958564e7dd4"
+    },
+    "clock_policy_yearly_summary.csv": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_yearly_summary.csv",
+      "sha256": "3d92ba63065e7d0ed7ac703c9622445fa5a722662ad51853164963ea018f94aa"
+    },
+    "clock_policy_summary.csv": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_policy_summary.csv",
+      "sha256": "96d4aec589b2c677b1781c88712ec2d3ea7d2b119ea9be9d1b0783713a7e81bf"
+    },
+    "clock_readout.md": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_readout.md",
+      "sha256": "9ef1cf662c87e4bd34b68dfad720310af3e494f0b01dd5ced14ded3f616e49ef"
+    },
+    "clock_limit_boundary_investigation.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_limit_boundary_investigation.json",
+      "sha256": "a7678a4cdf4b21849a4a96cc275df49bbbff2c42519bdddacad1cb72cb8a7ff9"
+    },
+    "clock_account_001_independent_failure.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json",
+      "sha256": "1b02c31cc2c54840b32ce6994bc27412aaa67dd52f964ef01397cc660a6c605d"
+    },
+    "clock_account_001_independent_review_v2.json": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_review_v2.json",
+      "sha256": "ee2ef040e7aa500c3fe058184c180d6cbeed48f075d1803088beeaa4490baa68"
+    }
+  }
+}

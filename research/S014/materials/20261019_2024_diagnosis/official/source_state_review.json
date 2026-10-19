@@ -1,0 +1,93 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "research/S014/materials/20261019_2024_diagnosis/design_decision.json": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846",
+    "research/S014/materials/20261019_2024_diagnosis/official/review_successor_source.py": "8af16c80c025c4703f0c0842b0602d84107e2124c5486d6718a6656bd2f41fea",
+    "research/S014/materials/20261019_2024_diagnosis/official/method_adversarial_review.json": "483813567d58f7978119809d4e328a43882e9fa343fdf8711b2a00341c305a4b",
+    "research/S014/materials/20261019_exante_hold_exit/official/method_observability_audit.json": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560"
+  },
+  "checks": 35040,
+  "check_counts": {
+    "stable source expected hash": 1,
+    "locked design hash": 1,
+    "original source frozen hash": 1,
+    "unchanged AST causal_features": 1,
+    "unchanged AST tick": 1,
+    "unchanged AST buy_limit": 1,
+    "unchanged AST calendar_request": 1,
+    "unchanged AST derive_calculation_scope": 1,
+    "unchanged contract AST InputContract": 1,
+    "unchanged contract AST DecisionContract": 1,
+    "unchanged contract AST ExecutionPolicy": 1,
+    "unchanged contract AST MonitoringPolicy": 1,
+    "unchanged contract AST RequiredCapabilities": 1,
+    "five configs valid": 5,
+    "unplanned config rejected": 4,
+    "gate Z equality permits original BUY": 1,
+    "gate blocks no intent anchor reservation": 1,
+    "blocked gate retries next D no fake failed BUY": 1,
+    "unknown Z does not block": 1,
+    "real unfilled BUY retains original failed reset": 1,
+    "ANY_P actual fill negative NET P permits next E risk": 1,
+    "NET cost inclusive boundary and Tplus1": 1,
+    "cost just below threshold does not trigger": 1,
+    "dynamic ATR shrink can trigger unchanged close": 1,
+    "blocked sell inherited priority suppresses new risk": 1,
+    "reservation survives actual early sale": 1,
+    "reservation original retry date": 1,
+    "same S014 public evidence": 1,
+    "public binding byte hash": 1,
+    "same prepared content hash": 4,
+    "new state predicates and priority": 8215,
+    "candidate gate exact": 8215,
+    "gate current D only": 8215,
+    "net cost units exact": 3438,
+    "held pending priority exact": 3438,
+    "risk overrides entry grace": 3438,
+    "full history prefix exact": 10,
+    "blocked gate no fake trade or anchor": 28,
+    "new NOOP source history full old state exact": 1,
+    "zero network attempts": 1,
+    "source stable through audit": 1
+  },
+  "prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "prepared_content_hashes": {
+    "market": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "raw": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "public_binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX040_20261019"
+    },
+    "evidence_id": "3117cee30f4c1a3e0bdc9fee58c1498cd56b00587de30ad3c9ca323ab47743d2.json",
+    "sha256": "3117cee30f4c1a3e0bdc9fee58c1498cd56b00587de30ad3c9ca323ab47743d2",
+    "media_type": "application/json",
+    "name": "ex040-v2-binding-003",
+    "schema": null,
+    "schema_version": null
+  },
+  "network_attempts": [],
+  "new_accounts": 0,
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_data_preparations": 0,
+  "scope": "Five local source histories with original authenticated prepared inputs; independent new predicates, unchanged feature/contract AST, exact baseline old states, two prefix cutoffs and bounded synthetic boundaries. No cash account or policy economic outcomes computed; raw market inputs remain in memory. No repetition of prior full feature oracle.",
+  "limitations": [
+    "Source history NOOP exactness is not a funded account acceptance. A must independently audit fresh EX044 NOOP and all funded arms.",
+    "Dynamic ATR can create a cost crossing without a new decline; not filtered retrospectively.",
+    "D-close net-loss trigger cannot remove incurred entry-day damage or guarantee next-E fills/prices.",
+    "Eligibility/trigger counts and economic outcomes remain for the later actual-account interpretation; no policy selection here."
+  ]
+}

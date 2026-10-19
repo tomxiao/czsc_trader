@@ -1,0 +1,117 @@
+{
+  "status": "FIXED_INDEPENDENT_ACCOUNT_EVALUATION_BEFORE_NEW_POLICY_RESULTS",
+  "role": "RSCH independent accounting audit; no dispatch/strategy replay/fit/supplier call",
+  "design_ref": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/design_decision.json",
+    "sha256": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846"
+  },
+  "fixed_five_parameters": [
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BLOCK_SHOCK",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "ANY_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BLOCK_SHOCK",
+      "exit_domain": "ANY_P",
+      "cost_stop": "BASE"
+    },
+    {
+      "entry_guard": "BASE",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "NET_LOSS_1ATR"
+    }
+  ],
+  "strict_fresh_control": {
+    "baseline_account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX043_20261019"
+      },
+      "evidence_id": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab.json",
+      "sha256": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab",
+      "media_type": "application/json",
+      "name": "exante-policy-004-entry_grace-shock_profit",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "baseline_source_sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a",
+    "baseline_mode": "EX043004 ENTRY_GRACE/SHOCK_PROFIT",
+    "required": "New source BASE/POSITIVE_P/BASE must match full original economic projection exactly, numeric tolerance0. Verify original input identities/clock and each actual D held/buy/sell against runtime; do not substitute EX043000 or a previous-source NOOP."
+  },
+  "source_review": [
+    "Exact declared5 parameters; unknown finite flags, raw nulls and original causal features unchanged",
+    "Gate only original eligible candidate BUY D; veto creates neither order, failedBUY nor anchor/reservation; recompute each laterD",
+    "ANY_P removes only netP>0; same Z>2 strict boundary",
+    "NET loss entryfill*1.001-C*.999 >= positive current priorATR20, inclusive boundary, rolling scale; same market HFQ units",
+    "Pending/deadline highest; selected risk may override grace; real BUY D can schedule only nextE sale; original reservation retained",
+    "Actual funded quantity and runtime shadow state must align on everyD/E, including minimum lot affordability; no hidden fallback or tolerance"
+  ],
+  "economic_audit": [
+    "Authenticate source/payload/runtime/lock/request/account/result identities for each unique receipt",
+    "Audit full cash/positions/fees and original prepared execution constraints read-only; no raw price export",
+    "Every2020-25 own-year-opening annualreturn and initial-equity-inclusive maxdrawdown; same executable BuyHold and unchanged original goals",
+    "Full-window original mandate metrics/frequency preserved, plus separately named complete2020-25 diagnostic frequency;2026 only technical accounting, no2026 strategy choice",
+    "Own continuous original100000 wealth at2024end/2025end and2020-24development cumulative path; not untouched validation",
+    "Policy trigger D counts plus distinct affected actual cycles; new gate recurring attempts not independent samples",
+    "Exact economic-path equivalence classes; four-cell endpoint interaction is descriptive true joint path, never sum separate effects",
+    "All five fixed cells proceed regardless profit after technical gates; FAILED/UNKNOWN preserved, no automatic retry"
+  ],
+  "yearly_csv": {
+    "filename": "policy_yearly_summary.csv",
+    "rows": 30,
+    "columns": [
+      "policy_id",
+      "hold_rule",
+      "exit_rule",
+      "entry_guard",
+      "exit_domain",
+      "cost_stop",
+      "year",
+      "opening_equity",
+      "closing_equity",
+      "return",
+      "max_drawdown",
+      "buyhold_return",
+      "buyhold_drawdown",
+      "required_return",
+      "return_pass",
+      "drawdown_pass",
+      "return_difference_vs_original",
+      "return_difference_vs_frozen"
+    ],
+    "difference_comparators": {
+      "original": "EX043000/originalC0056 annual own-opening return",
+      "frozen": "EX043004 ENTRY_GRACE/SHOCK_PROFIT annual own-opening return"
+    }
+  },
+  "hard_goals": "Original annual BH>0 requiresreturn>=1.5BH, else return>0; DD strictly<BH; original closed/frequency window*60>=3. No added CI, sample, annualnonharm or stableyear gate.",
+  "resources": {
+    "planned_dispatches_including_fresh_control": 5,
+    "numeric_user_cap": null,
+    "new_fits": 0,
+    "new_threshold_searches": 0,
+    "new_suppliers": 0,
+    "failed_unknown_count": "All actual dispatch records explicitly counted, including unsuccessful technical attempts; prepare/build not falsely counted as accounts."
+  },
+  "stop_on_technical_failure": "Notify root and executor immediately, preserve failure and stop dependent dispatch. Immutable technical revision requires source review/new identity; no silent tolerance.",
+  "interpretive_limits": [
+    "All2020-25 seen;2024 failures motivated design. Gains do not prove a general signal or untouched validation.",
+    "Entryday loss already incurred cannot be repaired by later cost-stop signal. Marked loss is not a fill-price guarantee.",
+    "Changing entries changes funding/cycles/participation, so same-date independent-arm differences are not additive.",
+    "Falling ATR alone may trigger costrisk; report original support/mandatory overlap, grace override, newly-added exit separately."
+  ],
+  "accounting_scope": "Only this accounting directory and necessary .tmp; no historical source/report/intent/git/platform writes."
+}

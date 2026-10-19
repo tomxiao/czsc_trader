@@ -1,0 +1,118 @@
+{
+  "index": 1,
+  "mode": "KEEP_PLANNED_SLOT",
+  "parameters": {
+    "clock_profile": "KEEP_PLANNED_SLOT"
+  },
+  "candidate": "S014-C9411",
+  "payload_sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+  "published_payload_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d.json",
+    "sha256": "d24304dd8f041366375b55a5058db5d84402e80f7dfc29b008daf9c55782634d",
+    "media_type": "application/json",
+    "name": "ex045-payload-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "runtime_implementation_sha256": "9a491a78dbcdde9c3dcc5adb1997b7180cf9661243053bd0eb5063cfd9e38247",
+  "runtime_sha256": "987657d43a5d31d4c83fb16c00a6d75e6c6c1326bb4b0b8b796b4a133546a683",
+  "published_source_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68.py",
+    "sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+    "media_type": "text/x-python",
+    "name": "ex045-locked-src-strategy_runtime-strategies-blocked_clock_review.py",
+    "schema": null,
+    "schema_version": null
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "4ddbb7400abaae1a38ce5f338e5969aa6dcab1eead3065a1ea02395a92d733c6.json",
+    "sha256": "4ddbb7400abaae1a38ce5f338e5969aa6dcab1eead3065a1ea02395a92d733c6",
+    "media_type": "application/json",
+    "name": "ex045-binding-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "a5c8730e7debbaae2f91f2a776b8c57f9dc7826219b4a2b06e222e8a7f90a8fc.json",
+    "sha256": "a5c8730e7debbaae2f91f2a776b8c57f9dc7826219b4a2b06e222e8a7f90a8fc",
+    "media_type": "application/json",
+    "name": "ex045-preflight-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "status": "SUCCEEDED",
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX045_20261019"
+    },
+    "evidence_id": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94.json",
+    "sha256": "bf9abc68a01d7fd9a53eeffbf87ff96408ccadf1d2a50eadc99091525c547d94",
+    "media_type": "application/json",
+    "name": "blocked-clock-001-keep_planned_slot",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "c131b5eeb6d604d16ce716585d6738653ae563728998dab2f1ba9f63e6d2f397",
+  "audit": {
+    "status": "PASS",
+    "kind": "EX045_FIXED_CLOCKS",
+    "checks": 161765,
+    "errors": [],
+    "original_projection_numeric_tolerance": 0,
+    "identity_link_fields_mapped_separately": [
+      "cycle_id",
+      "decision_id",
+      "fill_id",
+      "order_id"
+    ],
+    "arithmetic_only_currency_epsilon": 1e-07,
+    "parameters": {
+      "clock_profile": "KEEP_PLANNED_SLOT"
+    },
+    "strict_control_against_EX044001": false,
+    "baseline_result_hash": "ba695f2464e7d201f2fc25a44bb7ed6658197c22c25a98c8e4bb5b8f5eddabc4",
+    "first_state_divergence_D": "2020-11-17",
+    "first_target_divergence_D": "2020-11-19",
+    "target_path_equals_frozen": false,
+    "funded_wealth_path_equals_frozen": false,
+    "wealth_equality_fields": [
+      "date",
+      "cash",
+      "cash_before",
+      "equity",
+      "quantity",
+      "quantity_before"
+    ],
+    "actual_funded_state_and_feature_math": "independent A/B reviews required"
+  },
+  "error": null,
+  "request_content_sha256": "438e45deeb4e75cd75cbab90ced933a063066ce226cd073f5908862a364f5ef2",
+  "runtime_binding_hash": "a2aea998c2c55e454e1a42dad837eea6e74db72928c039ded14d15b8da82443e"
+}

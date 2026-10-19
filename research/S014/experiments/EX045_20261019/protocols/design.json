@@ -1,0 +1,136 @@
+{
+  "status": "AUTHORIZED_FIXED_TWO_CLOCK_ADAPTIVE_FOLLOWUP_BEFORE_CLOCK_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "clock_profile": "RETRY_EACH_D"
+    },
+    {
+      "clock_profile": "KEEP_PLANNED_SLOT"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9410",
+    "S014-C9411"
+  ],
+  "planned_account_count": 2,
+  "user_numeric_account_limit": null,
+  "no_blind_retries": true,
+  "baseline_control": "Fresh RETRY_EACH_D must exactly replicate EX044actualrun001 BLOCK_SHOCK/POSITIVE_P/BASE, not EX044000 or originalR",
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911.json",
+    "sha256": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911",
+    "media_type": "application/json",
+    "name": "action-role-001-block_shock-positive_p-base",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "ba695f2464e7d201f2fc25a44bb7ed6658197c22c25a98c8e4bb5b8f5eddabc4",
+  "canonical_runtime_parameter_schema": "Exactly one canonical clock_profile enum: RETRY_EACH_D or KEEP_PLANNED_SLOT; all older3roles are fixed internal read-only properties BLOCK_SHOCK/POSITIVE_P/BASE",
+  "original_economic_targets_constraints_unchanged": true,
+  "complete_economic_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "2026_role": "Original full-contract technical tail, no economic selection",
+  "common_policy": "Always BLOCK_SHOCK entry gate with exact inherited known finite Z>2; held POSITIVE_P SHOCK and ENTRY_GRACE; cost BASE. Original actual BUY/SELL/price/fee/deadline/reservation contracts unchanged except explicitly gated flat-slot clock.",
+  "planned_slot_contract": {
+    "eligible_D": "Original actual flat candidate: ready/supportOK/reservation expired/no failedBUY reset, then inherited known finite Z>2 blocks BUY intent",
+    "planned_clock": "At blocked candidate market index i, set reservation=i+11: planned next execution E would be i+1, plus original10-session reservation. This is a scheduled opportunity window, not a simulated actual entry.",
+    "target_and_state": "target0, no order, fill, entry/deadline/peak/cost, fee or shadow held position; no synthetic failedBUY; only reservation and explicit gate-slot diagnostic change",
+    "subsequent": "Until reservation eligible remain flat; at expiration re-evaluate original candidate and same gate. Real BUY still sets entry=i,deadline=i+9,reservation=i+10.",
+    "future_information": "Do not inspect or condition on whether a next-E counterfactual buy would fill, market future data or subsequent profits. Session-index scheduled horizon is known planning, not a future price.",
+    "tradeoff": "Can consume a slot even if a buy would have failed, and can miss profitable rebound or change subsequent phase. Does not promise to restore original baseline schedule exactly."
+  },
+  "new_observations": "reservation_before_gate is after D actualfills and before flat gate; gate_slot_consumed only that D; planned_slot_until and active are a scheduled window, not entry/deadline/cost. ActualBUY clears planned_until=-1 and keeps reali+9/i+10.",
+  "unknown_rule": "Inherited rawnull/knownflags; no futurefill/status or price used for plannedblocked slot",
+  "no_extra_combinations": "No ANY_P or COST_STOP combinations, no changedZ/ATR/threshold/window/date/year, only two profiles",
+  "controls": "A/B final source review passed; final runner/design/internal review before public source lock. Every execution requires public final source review gate; new realRETRY internal+independent exact pass mandatory before sole KEEP arm.",
+  "selection_disclosure": "This is a newly chosen adaptive mechanism contrast after seeing all5 EX044 results; retain their source/locks/results/reviews unchanged. No pre-registration or pristine holdout claim. No parameter search.",
+  "all_two_run_if_technically_valid": true,
+  "no_local_action_wealth_labels": true,
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "prior_EX044_immutable": "Five source/payloads/locks/accounts/material45 accounting manifest and finalverification b58 remain unchanged; clock files separate, do not overwrite five-policy results",
+  "not_claimed": "Blindvalidation, returngoals achieved, economic independence of two profiles, exact restoration of baseline schedule, production/PTE readiness",
+  "authorization": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/authorization.json",
+    "sha256": "21398014adabc5c068ba6ada912f256e26872093c37e54cd00badfc9d3182db7"
+  },
+  "method": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json",
+    "sha256": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/official/clock_method_review.json",
+    "sha256": "28facb7477bc98e692adffdf105ca010fd3c23632e3783dc324b79ccd82fc4de"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_evaluation_protocol.json",
+    "sha256": "4827ee89aefc76eef1e1d4483b023f5f4cb4400459e42db63ae9c927549bb1bd"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/official/clock_source_state_review.json",
+    "sha256": "59d448620cad064dbbeeb4bb750cd2c705a73a09b9216088a576c0e218b6dc2f"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_source_pre_review.json",
+    "sha256": "7ac524ce3ed3a92c2e74f6aa57b43a36205fcf8b963959ad749c026388ddca03"
+  },
+  "financial_helper_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_helper_review.json",
+    "sha256": "a4b2b6ad9b756bb928e48c29cd74f4866a2b46893fae43c75bf44ef531a2647e"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+    "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+  },
+  "previous_lock": {
+    "path": "research/S014/experiments/EX044_20261019/protocols/execution_lock.json",
+    "sha256": "76aae354bdefd8f510e54eae0005fcab7b7e9306e7915abd35d43990c8cfe4b1"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX044_20261019/others/accounts/run-001.json",
+    "sha256": "147b1f8dc76da0b2caa9a945b5bbfb9a5799b84d06caee7bad7f348f75df27fe"
+  },
+  "previous_final_verification": {
+    "path": "research/S014/experiments/EX044_20261019/others/final_verification.json",
+    "sha256": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  },
+  "audit_prefix_contract": "first_state_divergence_D is first target OR reservation change, first_target_divergence_D separately recorded; all old observation/ledger prefixes anchored by state date. Compare actual daily cash/quantity/equity for wealth equality, never call a metadata clock difference a return change. Old target-only audit draft retained before lock; policy source unchanged."
+}

@@ -1,0 +1,108 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "review_scope": "Independent adversarial method review of root fixed5-policy design; no new policy accounts/outcomes/source modifications. This is methodological identifiability, not economic effectiveness or permission to add trials.",
+  "created_at_utc": "2026-10-19T15:25:43.530580+00:00",
+  "bindings": [
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/design_decision.json",
+      "sha256": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846"
+    },
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/population_plan.json",
+      "sha256": "a9b6502e7c6ef82ac9544020906b8355773413ba7dddee774a55a4e73b085aa0"
+    },
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/population_inventory.json",
+      "sha256": "de6a0bc0539d6aef3a2ec070ae4f7aaf2ec1fc0bd33c602507627f833cecf48e"
+    },
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/official/known_state_and_timing_facts.json",
+      "sha256": "d462eec88a0e54f2bb64076707008ba615632bd1196c84f0e5e853a61cf67304"
+    },
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/method/prior_mechanism_inventory.json",
+      "sha256": "ff78c5dc8a5f2e0d738fee0fbb6ef5d492a6552497c8b8e2d5a60af9e0ac59ba"
+    },
+    {
+      "path": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py",
+      "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a"
+    },
+    {
+      "path": "research/S014/experiments/EX024_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de"
+    },
+    {
+      "path": "research/S014/experiments/EX029_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "eec40a5ce0cd85af82421633d79870868ea01d692b28676c36f02004f8983ec3"
+    }
+  ],
+  "method_verdict": "固定Z职责2x2加单独NET成本锚1ATR臂可区分三个职责，不需再扩3轴全因子；全部用旧D-known输入、原参数边界和原完整资金路径，保留真实失败计划。方法可检验，但不能先称OctZ盲区为2024主因。",
+  "mechanism_refutations": [
+    {
+      "claim_to_reject": "2024只是与2022/25不同年份，应换年门或做相邻阈值",
+      "evidence": "6状态和公告旧比较跨年反号，2024全9固定策略仍负；这说明职责/覆盖尚不充分，不能把事后年度名当交易依据。"
+    },
+    {
+      "claim_to_reject": "任何高Z都不应入场，必然保留旧2025改进",
+      "evidence": "125原BUY计划含3failed；9次D-known高Z拟买中8成1failed，覆盖2025June18→June19旧组合已盈利cycle。重复逐D过滤不同EX040一次SKIP，不可当已验证或忽略旧负面。"
+    },
+    {
+      "claim_to_reject": "P门排除域广泛，足以解释主要2024损伤",
+      "evidence": "冻结组合全2020-25仅3D/2cycles：2022Sep9和2024Oct9/10。2022P约-0.1998%仅相当价格不变时双边费用的净mark损失，不能把所有P<=0都说成大幅价格下跌。稀疏不是新增经济硬门，但只能支持有限局部问题。"
+    },
+    {
+      "claim_to_reject": "1ATR收盘成本退出可避免A定位的已发生entry_day亏损",
+      "evidence": "D实际BUY后到Dclose的损伤已发生，最早次E退出只能改变以后路径/费用。已见Jan29/Apr10/May22净mark损失分别0.7512/0.779498/0.196421ATR，买入D不触发1ATR；Jul15为1.037445、Oct9为3.117778ATR且S5未破，可在S5外触发，但不等于有经济改善。"
+    },
+    {
+      "claim_to_reject": "2024经营利润改善或Sep24官方政策可以回填为早期已知策略信号",
+      "evidence": "2024年报2025Apr可用；H1报告保守D2024Aug29可用，不能提前解释May损伤；Sep24发生于Sep18退出意图之后，当前迁移网页不能认证当时first-arrival；年度叙事不是可交易分类。"
+    }
+  ],
+  "old_source_distinctions": [
+    "EX024 P/D是在首次supportbreak按P符号决定早退/持有；当前ANY_P保留Z>2、在正常HOLD亦可能退出，只有P门取消，不能把它叫旧D重跑。",
+    "EX029是首次break时按P决定预约处理；本5臂预约全部不变。",
+    "旧EX005/007/013已用ATR/均线/浮盈/峰值输入，当前NET成本1ATR不是新数据；目前旧规则盘点未见相同成本锚实账户，仍需以C完整inventory作为重复证据而非泛称从未研究止损。",
+    "EX043盈利回吐规则锚定已观察峰值后回吐；NET成本退出锚定真实entry成本，可在从未有过大浮盈、且S5不破时触发；两者不代数等价。"
+  ],
+  "locked_five_arm_evaluation": {
+    "root_order": "Exactly five fixed_parameters in bound design; fresh source-specific baseline NOOP exact EX043004 first, then4 other arms if technical checks pass, independent of early economic results.",
+    "entry_guard": "在flat/ready60/supportOK/reservation eligible、无failedBUY reset的D，对全部候选BUY逐日用已知Z>2拦截；不得偷用E实际fill/P。拦截不建order/假cycle/新reservation，也不伪装failedBUY；后续D重算。",
+    "ANY_P": "真实held且可自由处置，knownZ>2移除正P要求；原positive域保留，新增非正P域；不新增<0阈值或年门。",
+    "NET_LOSS_1ATR": "仅在baseline组合上加一臂，LossPrice=entry_fill*(1+.001)-Close_D*(1-.001)>=当D priorATR20>0；不与Z新开关继续交叉，不变intraday stop，不冻ATR入场值。",
+    "priority": "inherited pending/原deadline最高，然后选定cost或Z风险exit，再ENTRY_GRACE/普通support。原预约、停牌跌停续卖、整仓/费用/T+1保持。",
+    "not_a_guarantee": "D净mark不是E可兑现价格；ATR随D收缩可使成本阈值跨越而无新下跌，须记录，不事后加过滤。"
+  },
+  "precheck_review_targets": [
+    "新source无日期/年份经济门，原Z/P/ATR函数保持；公开输入与原HFQ单位不变。",
+    "严格P0/Z2/NETloss=ATR相等边界、未知和0ATR/0sigma不变有效信号，未发单不产生假预约。",
+    "actualBUY当D riskexit需次E才成交，cost/Z优先宽限；既有pending不能被新保护撤销；卖出受阻继续，原deadline/reservation不重置。",
+    "全部新增诊断小写key、astype(float)，实际SRT Observation数值边界，raw不可得量仍null+known flags。",
+    "freshNOOP全原组合经济/旧信号exact，新source身份不同不能复用EX043绿灯；后来实际资金状态必须A独审。"
+  ],
+  "smallest_information_to_change_decision": [
+    "固定5臂各年收益/回撤/频率与原2020-25目标、2026技术尾部分开。不要把每年delta同号或CI不过0变新门。",
+    "2x2看entry guard与ANY_P单独和组合，原正例被拦截/非正P退出的跨年机会成本全部留存；组合真实资金交互不能相加代替实跑。",
+    "成本单臂相对baseline的实际触发在原support intact/entry day/已有pending和ATR收缩域分别计数，仅区分职责，不把无法消除的entry损伤算避免损失。",
+    "继续判别2024实际损伤来源需A会计归因。当前库存只原组合125计划/645held，不可替代新政策改变后动态机会。"
+  ],
+  "scope_controls": {
+    "economic_years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "2026": "technical only",
+    "all_seen": true,
+    "new_fits": 0,
+    "new_quantitative_sources": 0,
+    "new_accounts_by_reviewer": 0,
+    "new_policy_returns_inspected": false,
+    "frozen_source_or_old_files_modified": false
+  },
+  "next_review": "待新source完成，只核未变feature函数字节/语义与newgate/noP/cost实际D状态/前缀，不重复20万项旧oracle；A负责真实全账本，root报告就绪后本目录追加精确hash终审。"
+}

@@ -1,0 +1,146 @@
+{
+  "status": "PASS_REAL_ACCOUNT_WEALTH_AND_CYCLE_RECONCILIATION",
+  "accounts": [
+    {
+      "policy": "BASE/BASE",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX043_20261019"
+        },
+        "evidence_id": "a448f5903cced103ab5d8a76ea1ef24db452f2dbf1e12796b811f1e89671a731.json",
+        "sha256": "a448f5903cced103ab5d8a76ea1ef24db452f2dbf1e12796b811f1e89671a731",
+        "media_type": "application/json",
+        "name": "exante-policy-000-base-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "f4689f9fc39d1ed6cfb44d42f090aca31b250bdf7b974bfe48fba5a68e52ee78",
+      "parameters": {
+        "hold_rule": "BASE",
+        "exit_rule": "BASE"
+      },
+      "runtime_sha256": "faf0df28fa2e64f42d5b13292fc10d5f714fec18f96994f25ea8bd6f90bc923d",
+      "original_independent_review_sha256": "b84e18150f5baf35f294d95d45bf8369b9aa6b2e89c47e4b9a755eb9be83476f"
+    },
+    {
+      "policy": "ENTRY_GRACE/SHOCK_PROFIT",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX043_20261019"
+        },
+        "evidence_id": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab.json",
+        "sha256": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab",
+        "media_type": "application/json",
+        "name": "exante-policy-004-entry_grace-shock_profit",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+      "parameters": {
+        "hold_rule": "ENTRY_GRACE",
+        "exit_rule": "SHOCK_PROFIT"
+      },
+      "runtime_sha256": "5e79699bba314c5a4e717a37a9b266eb7d5b4dba851134bbd8dd6508f9bfed32",
+      "original_independent_review_sha256": "e2d1148bededae8a4f90ba2bbd80246c965f55e3f7996d57bf732cd165ea5f4b"
+    }
+  ],
+  "economic_domain": [
+    "2020-01-01",
+    "2025-12-31"
+  ],
+  "2026_role": "Account bytes retain technical tail, but no2026 prices/fills/trade outcomes enter these economic calculations.",
+  "source_price_units": "Anchored HFQ_RESEARCH/RESEARCH_UNIT, original factor5.892. Runtime full-HFQ peak is divided by the anchor before ledger-money multiplication.",
+  "daily_identity": "DeltaW=BUY quantity*(sameEledgerClose-fillPrice) OR held quantity*(closeE-prevLedgerClose) OR SELL quantity*(fillPrice-prevLedgerClose) minus actual fees. Flat cash interest=0.",
+  "phase_and_posture": "actual_phase is ex-post accounting only. D_posture uses entry_signal, actual held state and exit_pending; a flat failed-BUY action SELL is FLAT.",
+  "benchmark_relative": "Actual net PnL/own year opening minus executable BuyHold PnL/its own year opening. Phase sums describe realized timing selection; they are not feasible counterfactual trades or D-known features.",
+  "cycle_years": "Calendar-year cycle contributions include only actual money/marks within that year, even when entry or exit crosses it. Whole-cycle outcomes are separately tagged by actual entry year and capped2025.",
+  "peak_giveback_limit": "Peak-to-sale is observed path accounting, not proof that a peak sale was knowable/executable or that another exit policy would improve full-year wealth.",
+  "outputs": {
+    "daily_atoms": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\daily_accounting_atoms_2020_25.csv",
+      "sha256": "fba95e67a68387f8a5d6e5a0ba54d766cc44ad4a96d47fa2c8c65b067644d0b0",
+      "rows": 2910
+    },
+    "annual_bridge": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\policy_year_accounting_bridge.csv",
+      "sha256": "5459a5e1d44949e365a50518e766e8681486825ce5b0aaa41c46a469cd34f209",
+      "rows": 12
+    },
+    "monthly_bridge": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\policy_month_accounting_bridge.csv",
+      "sha256": "40e993fdaf68e666304634fb5cc2351adfd9e4ae990538a7ce00021279fcacaa",
+      "rows": 144
+    },
+    "quarterly_bridge": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\policy_quarter_accounting_bridge.csv",
+      "sha256": "f785836793e2d81086cd84b0a88efbc726a0148e4b36094f53898a544f57a16d",
+      "rows": 48
+    },
+    "cycle_year": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\actual_cycle_year_contributions.csv",
+      "sha256": "c2053f1925c797c843fec98c255f7d45cfc60332c6891bef8366a6be6aac87b3",
+      "rows": 251
+    },
+    "cycles": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\actual_cycle_facts_2020_25.csv",
+      "sha256": "04c56b126d5f253541fd800bffc571c283c077fb9cc9df980da201e707feb6e9",
+      "rows": 244
+    },
+    "phase_year": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\actual_phase_year_contributions.csv",
+      "sha256": "883dec060fd5dd2b46e53413f69a2adefa7697b974a2db30ecc5f0ceb16f64ce",
+      "rows": 48
+    },
+    "Dposture_year": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\D_posture_year_contributions.csv",
+      "sha256": "097dba2552648c872e39982869fe9b75e4feb2d07351e8c98b9b353689acdd52",
+      "rows": 48
+    },
+    "boundaries": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\calendar_year_boundary_positions.csv",
+      "sha256": "0ea4cb505204fe8a8f20474ce352aa832791ada1b614701c4ef0c26c52c56e95",
+      "rows": 12
+    },
+    "matched_actual_entry_cycles": {
+      "path": "research\\S014\\materials\\20261019_2024_diagnosis\\accounting\\matched_actual_entry_cycles.csv",
+      "sha256": "3bd324fb028f38d055769569873cd3830cd8a3f44bd25eb8d14a7edc6fc2e55b",
+      "rows": 122
+    }
+  },
+  "check_counts": {
+    "frozen successful policy identity": 2,
+    "S014 scope": 2,
+    "public SHA exact": 2,
+    "actual result identity": 2,
+    "frozen actual source": 2,
+    "previous independent audited account identity": 2,
+    "economic1455 actual sessions only": 2,
+    "source decision clock": 2910,
+    "D actual holding equals runtime": 2910,
+    "daily actual net atoms": 2910,
+    "actual wealth cash position identity": 2910,
+    "new cycle flat actual entry": 244,
+    "actual held cycle exists": 1311,
+    "sale linked actual held cycle": 242,
+    "complete actual cycle net money": 242,
+    "observed peak-to-sale two part identity": 242,
+    "uncompleted inventory actual mark no sale fee": 2,
+    "period wealth bridge": 204
+  },
+  "checks": 14141,
+  "maximum_currency_error": 3.965396899729967e-10,
+  "arithmetic_absolute_tolerance": 1e-07,
+  "new_model_fits": 0,
+  "new_strategy_replays": 0,
+  "new_accounts": 0,
+  "new_data_supplier_calls": 0,
+  "prepared_fetches": 0,
+  "raw_market_data_exports": 0,
+  "source_sha256": "24b1d24571b189f5bae5bcf89e739eadf2e2f9fa45cc377cf928aeb40670f03b"
+}

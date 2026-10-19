@@ -1,0 +1,343 @@
+{
+  "records": [
+    {
+      "index": 0,
+      "mode": "BASE/POSITIVE_P/BASE",
+      "parameters": {
+        "entry_guard": "BASE",
+        "exit_domain": "POSITIVE_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9400",
+      "payload_sha256": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b.json",
+        "sha256": "e514e141bf7a029b04537edc8b87cee05a8f1fc162c60e98dc301405c64e7e4b",
+        "media_type": "application/json",
+        "name": "ex044-payload-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "28cd90bdad296a36c79b74d514f971936c72d1ed942af496996338eb5a317c56",
+      "runtime_sha256": "0ec798985c465100a34fa551724c2136ecd7fd329fa6c18cce54296c23463332",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+        "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+        "media_type": "text/x-python",
+        "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "5578f7694393e643a901bcf53211cb870fa154865f6524cd75ad22c9fc706c8d.json",
+        "sha256": "5578f7694393e643a901bcf53211cb870fa154865f6524cd75ad22c9fc706c8d",
+        "media_type": "application/json",
+        "name": "ex044-binding-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "9772a13b44bbfc35def4896d2e9129f78428ad2cea139ce9925a09eba1112d3c.json",
+        "sha256": "9772a13b44bbfc35def4896d2e9129f78428ad2cea139ce9925a09eba1112d3c",
+        "media_type": "application/json",
+        "name": "ex044-preflight-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4.json",
+        "sha256": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4",
+        "media_type": "application/json",
+        "name": "action-role-000-base-positive_p-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "a044488c88455161d74edef999c91856fe0fd9f9f8084d3a5efcabf5a0837d29",
+      "audit": {
+        "status": "PASS",
+        "kind": "EX044_FIXED_ROLES",
+        "checks": 384720,
+        "errors": [],
+        "original_projection_numeric_tolerance": 0,
+        "identity_link_fields_mapped_separately": [
+          "cycle_id",
+          "decision_id",
+          "fill_id",
+          "order_id"
+        ],
+        "arithmetic_only_currency_epsilon": 1e-07,
+        "parameters": {
+          "entry_guard": "BASE",
+          "exit_domain": "POSITIVE_P",
+          "cost_stop": "BASE"
+        },
+        "strict_control_against_EX043004": true,
+        "baseline_result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+        "first_target_divergence_D": null,
+        "economic_path_equals_frozen": true,
+        "actual_funded_state_and_feature_math": "independent A/B reviews required"
+      },
+      "error": null,
+      "request_content_sha256": "8b0398c297cd5de077607a0c52e742c84aaa36c60e707e331a8a4121986da89b",
+      "runtime_binding_hash": "de6960bbfaf176dd7e6b97d779a8c25ec317f280f137719b3e9561f1c8759de2"
+    },
+    {
+      "index": 1,
+      "mode": "BLOCK_SHOCK/POSITIVE_P/BASE",
+      "parameters": {
+        "entry_guard": "BLOCK_SHOCK",
+        "exit_domain": "POSITIVE_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9401",
+      "payload_sha256": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a.json",
+        "sha256": "baed39a62060a0f2291bdd1ea0067456403a0b0e59f0270c9d207a82756ebb0a",
+        "media_type": "application/json",
+        "name": "ex044-payload-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "28cd90bdad296a36c79b74d514f971936c72d1ed942af496996338eb5a317c56",
+      "runtime_sha256": "d4de416dc862d42f2b65c9041e5ea39698516f2116cea1334c60d5e6df64c24e",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+        "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+        "media_type": "text/x-python",
+        "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "5171fad15845541bedb24b7c2b5c867d205f4e99a0693f60a6349a2a093bfb8e.json",
+        "sha256": "5171fad15845541bedb24b7c2b5c867d205f4e99a0693f60a6349a2a093bfb8e",
+        "media_type": "application/json",
+        "name": "ex044-binding-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "8858e55b91f57d666fa9272766ac423ba58ae2d3437e252a713b8963442dad43.json",
+        "sha256": "8858e55b91f57d666fa9272766ac423ba58ae2d3437e252a713b8963442dad43",
+        "media_type": "application/json",
+        "name": "ex044-preflight-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911.json",
+        "sha256": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911",
+        "media_type": "application/json",
+        "name": "action-role-001-block_shock-positive_p-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "ba695f2464e7d201f2fc25a44bb7ed6658197c22c25a98c8e4bb5b8f5eddabc4",
+      "audit": {
+        "status": "PASS",
+        "kind": "EX044_FIXED_ROLES",
+        "checks": 145911,
+        "errors": [],
+        "original_projection_numeric_tolerance": 0,
+        "identity_link_fields_mapped_separately": [
+          "cycle_id",
+          "decision_id",
+          "fill_id",
+          "order_id"
+        ],
+        "arithmetic_only_currency_epsilon": 1e-07,
+        "parameters": {
+          "entry_guard": "BLOCK_SHOCK",
+          "exit_domain": "POSITIVE_P",
+          "cost_stop": "BASE"
+        },
+        "strict_control_against_EX043004": false,
+        "baseline_result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+        "first_target_divergence_D": "2020-11-17",
+        "economic_path_equals_frozen": false,
+        "actual_funded_state_and_feature_math": "independent A/B reviews required"
+      },
+      "error": null,
+      "request_content_sha256": "73cb73057890901f0c895b7d18cb5a0550cb305afebe39b6828817091553ca75",
+      "runtime_binding_hash": "d6c2002feed45a5cfb0041394f1de3f08d3846e503c73981d69c2c56a557f98d"
+    },
+    {
+      "index": 2,
+      "mode": "BASE/ANY_P/BASE",
+      "parameters": {
+        "entry_guard": "BASE",
+        "exit_domain": "ANY_P",
+        "cost_stop": "BASE"
+      },
+      "candidate": "S014-C9402",
+      "payload_sha256": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902.json",
+        "sha256": "fd7f0fd0f207a211daaf234ac7e530fd974f378840458d812234aff9541c4902",
+        "media_type": "application/json",
+        "name": "ex044-payload-002",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "28cd90bdad296a36c79b74d514f971936c72d1ed942af496996338eb5a317c56",
+      "runtime_sha256": "3954166d9a8c6210764715e498266b23749f8a73074bc14f414725a8db41ce4c",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+        "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+        "media_type": "text/x-python",
+        "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "71bdfd1d33e73cd4fc750667a820568de20f45c627a1da0f390efa4519bfbec2.json",
+        "sha256": "71bdfd1d33e73cd4fc750667a820568de20f45c627a1da0f390efa4519bfbec2",
+        "media_type": "application/json",
+        "name": "ex044-binding-002",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "0ed9c648816fa899ac04ca305f06913e70476f4c8354973ba0aa9f49193213d4.json",
+        "sha256": "0ed9c648816fa899ac04ca305f06913e70476f4c8354973ba0aa9f49193213d4",
+        "media_type": "application/json",
+        "name": "ex044-preflight-002",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "13be0793a17e34be3760b4be30927ac5ecf0171c907b8740299bd1eac948c827.json",
+        "sha256": "13be0793a17e34be3760b4be30927ac5ecf0171c907b8740299bd1eac948c827",
+        "media_type": "application/json",
+        "name": "action-role-002-base-any_p-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "54486701b506fa4547e30fa441af071be9f5079c71b7d834dbd940344a4d83b3",
+      "audit": {
+        "status": "PASS",
+        "kind": "EX044_FIXED_ROLES",
+        "checks": 212562,
+        "errors": [],
+        "original_projection_numeric_tolerance": 0,
+        "identity_link_fields_mapped_separately": [
+          "cycle_id",
+          "decision_id",
+          "fill_id",
+          "order_id"
+        ],
+        "arithmetic_only_currency_epsilon": 1e-07,
+        "parameters": {
+          "entry_guard": "BASE",
+          "exit_domain": "ANY_P",
+          "cost_stop": "BASE"
+        },
+        "strict_control_against_EX043004": false,
+        "baseline_result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+        "first_target_divergence_D": "2022-09-09",
+        "economic_path_equals_frozen": false,
+        "actual_funded_state_and_feature_math": "independent A/B reviews required"
+      },
+      "error": null,
+      "request_content_sha256": "703be9812bd2bae93429779fa5ecf9f0ad8f53cc26c61bdc8f5e89526e7a8236",
+      "runtime_binding_hash": "2985ecb6a7990159883f94ea493bf50fe136dc31e35f247efc887fad90faa2e8"
+    }
+  ],
+  "dispatched_count": 3,
+  "external_calls": 0,
+  "formal_registered_candidates": 0
+}

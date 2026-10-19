@@ -1,0 +1,59 @@
+{
+  "status": "FIXED_READ_ONLY_POPULATION_PLAN_BEFORE_COMPLETE_NEW_COUNTS",
+  "created_at_utc": "2026-10-19T15:19:30.585172+00:00",
+  "scope": "经济2020-25，原EX043 ENTRY_GRACE/SHOCK_PROFIT真实资金路径；2026只技术。只写本新official目录，不派账户/拟合/新quant源/raw导出或改既有锁。",
+  "selection": "2024已知亏损、Sep/Oct路径及2025改善均已见。拟议职责由已见Oct9 P<=0/Z>2盲区触发，故是适应性发展证据，非未见验证。",
+  "bindings": [
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_004_independent_review.json",
+      "sha256": "e2d1148bededae8a4f90ba2bbd80246c965f55e3f7996d57bf732cd165ea5f4b"
+    },
+    {
+      "path": "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py",
+      "sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/design_decision.json",
+      "sha256": "1d34067f621d8640be66c0b73bc63d1b6600360dfce504ef3ccaf757ae0f7892"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/official/method_observability_audit.json",
+      "sha256": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560"
+    }
+  ],
+  "fixed_thresholds": {
+    "P": "原runtime net_profit=Close_D*.999/(actual_entry_fill*1.001)-1，P>0原门，P<=0为排除域；flat无P不是0。",
+    "Z": "原EX043 z5=sum(logret[D-4:D])/(sqrt5*sample_std20(logret endingD-5))，严格>2；不改20/5窗口或2阈值。",
+    "units_and_clock": "原market HFQ同尺度，MA/TR/logret原in-window预热与Dec31仅prevClose语义完全继承。特征可得由原known flags判，不以当前网页可见或E行情倒填。"
+  },
+  "D_population": {
+    "all": "原实际source决策D 2020-01-01..2025-12-31全部行，日期和valid_session(E)分别保留。",
+    "actual_held": "held_at_close=1，包括实际买入日；另列mandatory pending/deadline与profit_exit_eligible，不能将全部held当自由动作。",
+    "actual_entry_fill_D": "buy_filled_today=1且held；是当日实际E成交后已知的持仓状态，不是前一拟买D。",
+    "original_buy_plan_D": "entry_signal=1，原flat/ready/support/reservation均满足后的原拟买计划；按D清点全部，包括下一E限价未成交，不能先按filled筛选。",
+    "eligible_entry_D": "该原路径上述完整入场前提成立的D（与原entry_signal作独立字段核对）；实际E失败单列，不从组中剔除。",
+    "changed_path_warning": "该库存只界定原冻结路径，不能覆盖将来干预改变资金/仓位后的全部新机会；正式账户若另获执行必须动态重算原同一入场前提。"
+  },
+  "fixed_counts": [
+    "逐2020-25年列all/held/actual_entry_fill/original_buy_plan及known/unknown",
+    "held eligible按P>0/P<=0与Z>2/Z<=2二维表，保留unknown；被P门排除的新域=eligible & P<=0 & Z>2",
+    "拟买D按Z>2/Z<=2/unknown，分别列原计划订单/下一E实际BUY fill/原failed或no-E；不对flat虚构P",
+    "不同D重复同entry_index须另报distinct cycle，跨政策/年度不当独立事件",
+    "同Z/P格跨年可见不等于未来动作方向一致，不计算新反事实收益标签"
+  ],
+  "minimal_candidate_factorial": {
+    "design": "原冻结ENTRY_GRACE/SHOCK_PROFIT为基线，entry_guard OFF/ON × remove_profit_gate OFF/ON固定4格，仅方法候选、当前不执行。",
+    "entry_guard_ON": "在每个真实可生成原BUY计划的D，若原已知Z>2则不发本次新BUY；后续D按相同原前提和Z再判断，不是永久禁买、不定年门、不指定日、不从E实际成交回推。原失败买单reset语义不能移植成被过滤单失败；未发单不建立cycle/reservation。",
+    "remove_profit_gate_ON": "真实held & 原profit_exit_eligible & shock_known & Z>2即可发次E真实整仓卖；保留旧P>0域，并新增P<=0域。原pending/deadline仍最高、原预约/blocked sale延续、真实卖后恢复。",
+    "hold_rule": "ENTRY_GRACE保持冻结，不变成整个cycle保护。",
+    "priority": "原inherited pending/期限 > selected Z exit > ENTRY_GRACE > ordinary support。",
+    "unknown": "Z未知不当作Z<=2；拟议经济策略保持原基线动作并独列unknown，不能无声放大或清空机会。",
+    "old_skip_boundary": "EX040取消一次DJune18买单恶化是必要反例；该账户不是本持续逐D Z guard，不能直接当已检验或忽略其竞争解释。",
+    "source_novelty": "不是新数据/新特征，只有动作职责和P门是否必要的固定表达；旧P/D是在首次supportbreak按P符号，不等于在正常HOLD高Z下移除P门。"
+  },
+  "not_concluded": [
+    "A本轮2024实际会计归因未齐，不能称此为主要亏损来源。",
+    "不根据看到的群数、2024是否命中或后续收益拟附近Z/P/窗口。",
+    "原年度收益/回撤/频率约束不变；旧2022/25改善必须保留检查，不能先承诺改动仍保留。"
+  ]
+}

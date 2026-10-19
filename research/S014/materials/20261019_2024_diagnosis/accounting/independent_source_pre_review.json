@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "scope": "FINAL SOURCE AND PURE SYNTHETIC ONLY; runner/source-lock/fresh actual NOOP remain separate gates",
+  "source_path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+  "source_sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+  "root_design_sha256": "64fadefd74eb267e173a14a1c747d6607c6630d3bf5c7c98755177a63f784846",
+  "evaluation_protocol_sha256": "4c478f25fbd8c9ba7020759fc1d6b79971dbbdb0efb15d54270ae07bed51cec9",
+  "checks": [
+    "causal_features AST exact against frozen EX043",
+    "tick AST exact against frozen EX043",
+    "buy_limit AST exact against frozen EX043",
+    "old numeric OBSERVED names exact",
+    "calendar_request AST exact",
+    "derive_calculation_scope AST exact",
+    "all input/decision/execution/monitoring/capability/Observation contract AST exact",
+    "95 synthetic checks and555actual SRT observations independently rerun; receipt byte structure equal",
+    "source manual review of5 strong cells; D-close gate/known/strictZ; no new gate anchor; recurringretry; funded risk priority; NET/inclusive/currentATR and positive scale; null rawfeatures notnumericObservation"
+  ],
+  "static_check_count": 9,
+  "synthetic_checks_rerun": 95,
+  "actual_SRT_observation_materializations_rerun": 555,
+  "synthetic_rerun": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/independent_synthetic_precheck_rerun.json",
+    "sha256": "dcebf874af70587f3851c27b681fc4dfae33af3a2dc04791377fd35b941d4c62"
+  },
+  "manual_semantic_checks": [
+    "Only five exact typed enum configurations",
+    "Inherited pending/deadline before selectedrisk; selectedrisk before grace",
+    "Originalprofit diagnostic remains positiveP; selectedrisk reports actualANY_P/costrisk",
+    "Same original actualfill and absolute H10reservation clock",
+    "Entrygate suppresses intent only; no synthetic failedBUY/anchor; reevaluates each original eligible D",
+    "NETloss uses both costs and same marketHFQ scale; positive current ATR; inclusive threshold",
+    "Unknown rawloss ratios remain null; numericObservation floats finite",
+    "No data/year/date-dependent economic rule or thresholdsearch added"
+  ],
+  "limitations": [
+    "Rerunning executor toy checks is reproducibility, not an independent numerical oracle; B separately audits real-input causal features/new-action arithmetic.",
+    "No real new policy history or account read; financial equivalence and funded state remain to be proven for freshsource."
+  ],
+  "new_real_policy_replays": 0,
+  "new_accounts": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0,
+  "ruff": "PASS all owned accounting scripts"
+}

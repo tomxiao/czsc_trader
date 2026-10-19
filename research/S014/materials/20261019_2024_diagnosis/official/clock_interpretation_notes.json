@@ -1,0 +1,106 @@
+{
+  "status": "COMPLETE_ADVERSARIAL_CLOCK_INTERPRETATION",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_interpretation_results.json": "dc8c2d20008c324e97af8d8d0d22ab1b185b4359d85f292fe841bcca7254bba8",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/account_000_independent_review.json": "98cce731ddbc0d2811c9995f48b243d9581799570e7e8d91943baa349c43b92b",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_numeric_boundary_review.json": "7ed93d76cf67b51d0b9b4ce9740b0ccb9bd7d7dc05338706d73a718ff161f041",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/independent_clock_audit_summary.json": "35a5eb88893072417ede20cb19f9dcb121b750ca8695cf28fb1cb958564e7dd4",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_limit_boundary_investigation.json": "a7678a4cdf4b21849a4a96cc275df49bbbff2c42519bdddacad1cb72cb8a7ff9",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_failure.json": "1b02c31cc2c54840b32ce6994bc27412aaa67dd52f964ef01397cc660a6c605d",
+    "research/S014/materials/20261019_2024_diagnosis/accounting/clock_account_001_independent_review_v2.json": "ee2ef040e7aa500c3fe058184c180d6cbeed48f075d1803088beeaa4490baa68",
+    "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989"
+  },
+  "conclusions": [
+    {
+      "finding": "Planned-slot clock does not jointly retain2024 flip and restore all prior passing years",
+      "evidence": "KEEP2024-13.458121%, versusRETRY+11.307440% andfrozen-21.157335%;KEEP2025+34.268123% remainsbelow40.187864% goal.KEEP4/6 annualreturn,DD6/6 andoriginalfrequency pass. No all-goal strategy among the7 executions.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "Clock convention changes crossyear outcome substantially",
+      "evidence": "2021KEEP102.211986% and2022+7.186488% bothpass,versusRETRY69.517954% and-17.749327% fail.KEEP2021 stillbelowfrozen110.607273% butaboveoriginalgoal71.903767%;negative delta isnot a newveto.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "Improvement is not confined to the2025 wealth multiplier",
+      "evidence": "KEEPend2024=295967.438,versusRETRY235433.348,frozen275765.241,original278758.908.KEEPend2025=397389.925 versusRETRY244860.688,frozen388082.491. All are owncontinuous100000 histories,not reset/refitted windows.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "Clock difference is path dependence,not a linear causal share",
+      "evidence": "Same inherited Z>2/P>0/grace rules, one new slot state. Future eligible population,reservations,cycles,cash change together. Endwealth difference152529.237 and annual own-opening deltas are realized simulation path contrasts; no numerical split into signalalpha andclock fractions isidentified.",
+      "status": "SUPPORTED_LIMIT"
+    },
+    {
+      "finding": "Planned slot is not an actual cycle or exactBASE schedule recovery",
+      "evidence": "KEEP7 consumedD(1/2/1/0/2/1 by2020..25) versusRETRY14 blockedD. Slot creates noactualentry/deadline/cost/fee.KEEPfirstreserve divergenceD2020Nov17,targetDNov19,actualfundedE Nov20;prefix mustanchor state,not onlytarget.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "2024 October same warning can yield different subsequent actual participation",
+      "evidence": "KEEPblockedD10/8 reservesuntilD10/23,earliestnewBUY E10/24actual4.40;RETRYblocked10/8,10/9,10/10 thenD10/11sendsBUY,actual10/14@4.19. They are different continuous clocks,not different values ofthe marketfeature.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "2025 June slot illustrates consuming an opportunity whose reference order did not fill",
+      "evidence": "KEEPonly2025block isD6/16(Z8.415544),reservesuntilD7/1,earliestnewBUY E7/2. In oldfrozen account,the sameD6/16nextE6/17 BUY wasUNFILLED.KEEPstill consumesplannedslot;D6/18 and6/19 haveblockedflag0 because candidate isalreadyreservationineligible. Thus it misses oldfrozen6/19profitableentry through earlierplanning state,not a directD6/18gate. This compares saved distinctpaths,doesnot simulate whether a hypotheticalKEEPorder wouldfill.",
+      "status": "SUPPORTED_REFERENCE_PATH_COMPARISON"
+    },
+    {
+      "finding": "Earlier2025 May30 holding behavior survives only inKEEP path",
+      "evidence": "KEEPactualMay30BUY5.12,graceDMay30,noexitpending;actualJune16SELL6.34. RETRYMay30flat andJune11entry;cannot infer unchanged actualaction nodes merely because sourcegrace rule isunchanged.",
+      "status": "SUPPORTED"
+    },
+    {
+      "finding": "One failed audit shortcut was corrected against existing execution contract",
+      "evidence": "Original001FAIL andoldhelpers retained;successorv2PASS exact262 resolverfills.No newepsilon/accountreplay/platformchange;7actualdispatchesSUCCEEDED0accountFAILED.The helperFAIL is separately disclosed.2026boundary has no economicselection role.",
+      "status": "SUPPORTED"
+    }
+  ],
+  "scope": "All2020-25 previouslyseen development; EX045 adaptive after fullEX044 results. Economic thresholds and originalgoals remainfixed. No furtheraccounts/fits/labels/data calls.",
+  "exact_goal_gaps_pp": {
+    "KEEP2024_to_positive_boundary": 13.458121075771235,
+    "KEEP2025_to_required": 5.919740510722448
+  },
+  "known_case_evidence": {
+    "old_frozen_account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX044_20261019"
+      },
+      "evidence_id": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4.json",
+      "sha256": "5bfd5f78856b4794ed6840cb464dce77c26e6d4138552d59dfb4a5716fafb2d4",
+      "media_type": "application/json",
+      "name": "action-role-000-base-positive_p-base",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "old_frozen_D2025_06_16_nextE_BUY_order": {
+      "cycle_id": "CYC-02F488CA055241EEE45D",
+      "decision_id": "DEC-807504454E3633D58E12",
+      "execution_date": "2025-06-17T00:00:00.000000000",
+      "limit_price": 6.4,
+      "order_id": "ORD-457BD7C20A998D566B26",
+      "order_type": "LIMIT",
+      "quantity": 62200,
+      "reason": "DAILY_RANGE_NOT_REACHED",
+      "side": "BUY",
+      "signal_date": "2025-06-16T00:00:00.000000000",
+      "status": "UNFILLED"
+    },
+    "old_frozen_actual_2025_06_19_cycle": {
+      "cycle_id": "CYC-AB17AA5BCD7E2E6E1948",
+      "entry_date": "2025-06-19T09:30:00.000000000",
+      "entry_price": 7.03,
+      "exit_date": "2025-06-20T09:30:00.000000000",
+      "exit_price": 7.81,
+      "net_return": 0.10873337189126664,
+      "quantity": 51400,
+      "status": "CLOSED"
+    }
+  },
+  "recommendation": "Report the fixedtwo-clock falsification of simpleguard+retry blame; neitherclock solvesallgoals. Preserve coststop aspartial2024 improvement fromEX044 and retainall counterexamples. No postresult retuning ofslotlength or crossedpolicy combination."
+}

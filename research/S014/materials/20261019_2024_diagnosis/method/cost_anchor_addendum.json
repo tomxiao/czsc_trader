@@ -1,0 +1,254 @@
+{
+  "status": "ROOT_FIVE_ARM_DEFINITION_RECORDED_BEFORE_NEW_SOURCE_OR_ACCOUNTS",
+  "supersedes": "The earlier inventory's provisional four-cell recommendation is extended by one orthogonal single cost-stop arm. All historical evidence/earlier recommendation retained byte-identical.",
+  "root_decision": "Root explicitly chose NET plus inclusive >=, rather than the reviewer's earlier gross strict> suggestion, before any new cost-stop coverage calculation/source/account. No choice made from target feature values or account outcomes.",
+  "prior_inventory_path": "research/S014/materials/20261019_2024_diagnosis/method/prior_mechanism_inventory.json",
+  "prior_inventory_sha256": "ff78c5dc8a5f2e0d738fee0fbb6ef5d492a6552497c8b8e2d5a60af9e0ac59ba",
+  "bounded_search_pattern": "stop.?loss|cost.{0,20}(?:atr|stop)|entry.{0,25}atr|atr.{0,25}(?:entry|buy|cost)|buy.{0,25}atr|实际.{0,12}(?:成本|买价).{0,15}(?:ATR|波幅)|跌.{0,12}(?:ATR|波幅)|成本锚|止损",
+  "bounded_search_file_count": 476,
+  "search_hits": [
+    {
+      "path": "research/S014/experiments/EX005_20261016/others/report.md",
+      "line": 22,
+      "excerpt": "4. **风险职责分开。**将持仓不利跌幅与未来双向价格波幅分开；检验20日真实波幅均值对未来1/3/5日波动大小预测的增量，并检查涨停收盘与次日未成交。"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/others/report.md",
+      "line": 78,
+      "excerpt": "职责是提示次日可能波动的大小，辅助阶段三研究风险暴露及交易环境。它不预测涨跌，不给止损保证，不是未来账户最大回撤。作为简单参考，直接以当天真实波幅估计次日真实波幅。"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/others/report.md",
+      "line": 132,
+      "excerpt": "本次面板共9项定义，SUPPORTED为2：基础次日波幅参考、涨停收盘成交风险提示。其余为趋势、原反转、原损失过滤、回落收阳、突破量确认、急跌收盘修复及新增波幅模型的负面、冗余或证据不足结果。没有将弱线索包装成入场Alpha，即可带来超出简单基线的可兑现收益。"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+      "line": 22,
+      "excerpt": "4. **风险职责分开。**将持仓不利跌幅与未来双向价格波幅分开；检验20日真实波幅均值对未来1/3/5日波动大小预测的增量，并检查涨停收盘与次日未成交。"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+      "line": 78,
+      "excerpt": "职责是提示次日可能波动的大小，辅助阶段三研究风险暴露及交易环境。它不预测涨跌，不给止损保证，不是未来账户最大回撤。作为简单参考，直接以当天真实波幅估计次日真实波幅。"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+      "line": 132,
+      "excerpt": "本次面板共9项定义，SUPPORTED为2：基础次日波幅参考、涨停收盘成交风险提示。其余为趋势、原反转、原损失过滤、回落收阳、突破量确认、急跌收盘修复及新增波幅模型的负面、冗余或证据不足结果。没有将弱线索包装成入场Alpha，即可带来超出简单基线的可兑现收益。"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/others/report.md",
+      "line": 29,
+      "excerpt": "简单基线包括当日、5日、20日涨跌、当天真实波幅、5/20日量比及当前扣费浮盈。新增三组分别加入基线，检验完整组合，并逐组删除。固定岭模型惩罚10；另用深度3、最小叶样本40的固定树表达检查交互，无参数搜索。"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "line": 29,
+      "excerpt": "简单基线包括当日、5日、20日涨跌、当天真实波幅、5/20日量比及当前扣费浮盈。新增三组分别加入基线，检验完整组合，并逐组删除。固定岭模型惩罚10；另用深度3、最小叶样本40的固定树表达检查交互，无参数搜索。"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/src/components.py",
+      "line": 45,
+      "excerpt": "def holding_features(close, entry, decision, buy, quantity, atr):"
+    },
+    {
+      "path": "research/S014/experiments/EX009_20261017/others/report.md",
+      "line": 33,
+      "excerpt": "将个股隔夜和盘中变化分别与市场对应变化比较。相对变化所用beta，是仅截至T-1的过去60个交易日个股与指数收盘对数收益协方差/指数方差。它表示历史共同变化的拟合比例，不是因果或对冲保证。特征同时保留市场1/5/20日涨跌与波幅、隔夜和盘中响应。首个可用信号为61；相比原60预热只在训练前端少一天，测试队列仍H1为912、H3为910。"
+    },
+    {
+      "path": "research/S014/experiments/EX009_20261017/protocols/report.md",
+      "line": 33,
+      "excerpt": "将个股隔夜和盘中变化分别与市场对应变化比较。相对变化所用beta，是仅截至T-1的过去60个交易日个股与指数收盘对数收益协方差/指数方差。它表示历史共同变化的拟合比例，不是因果或对冲保证。特征同时保留市场1/5/20日涨跌与波幅、隔夜和盘中响应。首个可用信号为61；相比原60预热只在训练前端少一天，测试队列仍H1为912、H3为910。"
+    },
+    {
+      "path": "research/S014/experiments/EX009_20261017/src/report.py",
+      "line": 67,
+      "excerpt": "将个股隔夜和盘中变化分别与市场对应变化比较。相对变化所用beta，是仅截至T-1的过去60个交易日个股与指数收盘对数收益协方差/指数方差。它表示历史共同变化的拟合比例，不是因果或对冲保证。特征同时保留市场1/5/20日涨跌与波幅、隔夜和盘中响应。首个可用信号为61；相比原60预热只在训练前端少一天，测试队列仍H1为912、H3为910。"
+    },
+    {
+      "path": "research/S014/experiments/EX014_20261017/others/report.md",
+      "line": 30,
+      "excerpt": "固定检验：20日下行波动占比、当天修复未完成、20日下跌日成交量占比、市场与化工行业过去5日同时下跌。连续占比分界只使用年初已成熟H3高环境训练样本中位数；3%损失线仅是诊断，未加入止损或新验收条件。"
+    },
+    {
+      "path": "research/S014/experiments/EX014_20261017/others/report.md",
+      "line": 80,
+      "excerpt": "因此判断为：**支持原组件增加“信号日固定低状态下，H1延长H3存在历史平均收益侵蚀”的风险参考证据。** 这是同一组件的期限含义补充，不是新的独立信息源。没有支持H1买入必赚、H1重新计算状态后动态退出、逐年成立、最优止盈止损或完整账户回撤改善。"
+    },
+    {
+      "path": "research/S014/experiments/EX014_20261017/protocols/design.json",
+      "line": 7,
+      "excerpt": "  \"decomposition\": \"H3高低环境：E[max(Y,0)]、E[min(Y,0)]相加为均值；另列亏损频率、Y<=-3%频率、最差10%均值。-3%是诊断线，不是新止损或验收门槛。\","
+    },
+    {
+      "path": "research/S014/experiments/EX014_20261017/protocols/report.md",
+      "line": 30,
+      "excerpt": "固定检验：20日下行波动占比、当天修复未完成、20日下跌日成交量占比、市场与化工行业过去5日同时下跌。连续占比分界只使用年初已成熟H3高环境训练样本中位数；3%损失线仅是诊断，未加入止损或新验收条件。"
+    },
+    {
+      "path": "research/S014/experiments/EX014_20261017/protocols/report.md",
+      "line": 80,
+      "excerpt": "因此判断为：**支持原组件增加“信号日固定低状态下，H1延长H3存在历史平均收益侵蚀”的风险参考证据。** 这是同一组件的期限含义补充，不是新的独立信息源。没有支持H1买入必赚、H1重新计算状态后动态退出、逐年成立、最优止盈止损或完整账户回撤改善。"
+    },
+    {
+      "path": "research/S014/experiments/EX015_20261017/protocols/design.json",
+      "line": 31,
+      "excerpt": "  \"attribution\": \"低环境H1-H3价格差按实际退出边界拆分隔夜/盘中，不用退出后或入场前Low当可成交止损。净差=q*(exit3-exit1)*0.999/100000；开盘+tick边界单列调整，未能精确复算则不发表分解。\","
+    },
+    {
+      "path": "research/S014/experiments/EX021_20261018/protocols/account_report.md",
+      "line": 66,
+      "excerpt": "C相对B共同62个入场贡献-0.098029，遗漏B的76笔贡献-1.860532，新增C的171笔贡献+1.559476。提前退出既直接改变共同交易收益，也释放资金导致后续不同日期重新参与，不能只评估被止损那一笔。"
+    },
+    {
+      "path": "research/S014/experiments/EX021_20261018/protocols/account_report.md",
+      "line": 88,
+      "excerpt": "继续已公开锁定的[第3轮EX022](../../../experiments/EX022_20261018/protocols/comparison_lock.json)：A/B各取首次决策延后0至10日，0精确复用，新增20账户；只改首次可决策日，不改变后续等待和固定10日持有。核对同偏移B−A的全部11组，不选择最佳偏移；11覆盖无失败时H10的理想周转长度，但真实失败订单打破周期性，不能称覆盖所有可能相位或11个独立样本。借此检验B优势的起始时点敏感性，再考虑与C0028续持路径的互补，只允许当时可知状态驱动，不按事后年度切换。暂不扩支撑窗口、阈值或主动止损参数，不自动推进阶段四。"
+    },
+    {
+      "path": "research/S014/experiments/EX021_20261018/src/write_report.py",
+      "line": 51,
+      "excerpt": "        \"只允许当时可知状态驱动，不按事后年度切换。暂不扩支撑窗口、阈值或主动止损参数，不自动推进阶段四。\""
+    },
+    {
+      "path": "research/S014/experiments/EX021_20261018/src/write_report.py",
+      "line": 97,
+      "excerpt": "        '提前退出既直接改变共同交易收益，也释放资金导致后续不同日期重新参与，不能只评估被止损那一笔。', '',"
+    },
+    {
+      "path": "research/S014/experiments/EX022_20261018/protocols/account_report.md",
+      "line": 9,
+      "excerpt": "A在空仓时按原规则重复计划买入；B仅当当日后复权收盘不低于此前5个评价交易日最低收盘时计划买入，支撑线不含当前日。两者均在实际买入日E后固定10日退出：E+9收盘决策、E+10计划卖出。卖出失败保持退出意图，失败买入按原规则清除并等后续完成日再判断；没有新增主动止损。"
+    },
+    {
+      "path": "research/S014/experiments/EX022_20261018/src/write_report.py",
+      "line": 44,
+      "excerpt": "        'A在空仓时按原规则重复计划买入；B仅当当日后复权收盘不低于此前5个评价交易日最低收盘时计划买入，支撑线不含当前日。两者均在实际买入日E后固定10日退出：E+9收盘决策、E+10计划卖出。卖出失败保持退出意图，失败买入按原规则清除并等后续完成日再判断；没有新增主动止损。', '',"
+    }
+  ],
+  "prior_exact_cost_stop": "No complete actual-entry-net-cost loss >= current priorATR20 fixed action found in the reviewed476 source/report/design files. Keyword absence alone is not universal proof; inspected related implementations confirm different action definitions.",
+  "nearest_prior_rules_and_differences": [
+    {
+      "prior": "EX005 true-range/ATR amplitude prediction",
+      "difference": "Forecasts magnitude; explicitly no stop guarantee or buy/sell action."
+    },
+    {
+      "prior": "EX007 current mark/Closepeak giveback/ATR holding features",
+      "difference": "One-time midpoint conditional prediction, no fixed net-cost1ATR policy; model negative/limited results retained."
+    },
+    {
+      "prior": "EX014 -3% adverse diagnostic",
+      "difference": "Explicit loss-description line, not a tested stop order or cost-anchor policy."
+    },
+    {
+      "prior": "EX024 N first supportbreak nonpositive P",
+      "difference": "Needs a first S5 break and freezes one decision; a losing actual cost while rollingS5 still intact is outside that rule."
+    },
+    {
+      "prior": "EX043 PROFIT_GIVEBACK",
+      "difference": "Needs actual observed Closepeak netgain >=2ATR then gross peakdrawdown>=1ATR; direct post-buy loss without a prior profitable runup is not covered."
+    },
+    {
+      "prior": "EX043 SHOCK_PROFIT",
+      "difference": "Requires current double-fee netP>0; cannot handle any existing loss even if Z>2."
+    }
+  ],
+  "fixed_five_cells": [
+    {
+      "index": 0,
+      "entry_guard": "OFF",
+      "exit_domain": "PROFIT_ONLY",
+      "cost_stop": "OFF",
+      "role": "fresh source strict economic control against EX043run004 ENTRY_GRACE/SHOCK_PROFIT"
+    },
+    {
+      "index": 1,
+      "entry_guard": "ON",
+      "exit_domain": "PROFIT_ONLY",
+      "cost_stop": "OFF",
+      "role": "same Z used on candidateD before entry"
+    },
+    {
+      "index": 2,
+      "entry_guard": "OFF",
+      "exit_domain": "ANY_P",
+      "cost_stop": "OFF",
+      "role": "same held Z removes current-profit restriction"
+    },
+    {
+      "index": 3,
+      "entry_guard": "ON",
+      "exit_domain": "ANY_P",
+      "cost_stop": "OFF",
+      "role": "actual combined Z roles, no summing independent wealth differences"
+    },
+    {
+      "index": 4,
+      "entry_guard": "OFF",
+      "exit_domain": "PROFIT_ONLY",
+      "cost_stop": "CURRENT_ATR1",
+      "role": "baseline plus cost anchor stop only, not combined with new Z roles"
+    }
+  ],
+  "cost_stop_definition": {
+    "formula": "lossprice_D = actual_entry_fill*(1+0.001) - C_D*(1-0.001); trigger when lossprice_D >= ATR20_prior_D",
+    "scale": "same runtime HFQ price units for actual fill, Close, ATR; source ledger fill projected back by original anchor5.892 if auditing ledger values",
+    "ATR": "original in-window arithmetic mean20 true ranges endingD-1, recomputed eachD; finite positive scale required; no entry-time volatility freeze",
+    "eligible": "actualheld afterD fills, no inherited pendingSELL, before mandatory deadline, ATR known positive",
+    "priority": "inherited pending/deadline > costrisk and existing shockrisk > ENTRY_GRACE support protection; retain original reservation/deadline anchors",
+    "entryD": "May plan next-session SELL if newly filled entry already breaches this net-cost threshold; never same-day SELL and never execution at an already observed threshold price",
+    "interpretation": "Falling ATR may create a trigger without a new price fall. This is a close-based exit signal, not an intraday price stop or guaranteed currency loss cap.",
+    "fees": "Trigger includes buy and hypothetical marked sale costs; actual sale still uses original TXE future execution price and real per-side fees, so marked P is not realized profit.",
+    "overlap_diagnostics": "Distinguish costrisk already coincident with baseline support/mandatory sale, costrisk that overrides grace, and costrisk truly new when baseline would continue. Count actualcycle once; no count inflation from multiple pendingD observations."
+  },
+  "entry_guard_contract": "Gate acts at each original flat candidateD, vetoes new intent/accepted/target without an order, failedBUY or new anchor/reservation. Every later D re-evaluates original eligibility plus same gate; it is not cancel-one-then-permanently-wait.",
+  "shared_D_known_and_missing_contract": "exact prior EX043 Z/ATR masks and in-window history; observed D Close only, actual fill cost, real held/pending/reservation; raw unknown remains null and finite knownflag; unknown cannot satisfy a new guard/exit, no fallback/provider call",
+  "economic_scope": "all five full original chronological funded paths; evaluate2020..2025 own-opening yearly goals and original frequency,2026 technical tail only. All years already seen; no blind-validation claim, no per-year branch.",
+  "current_stage": "method only; wait root source/design/protocol review then new experiment implementation and pure synthetic checks; no realaccount dispatch authorized by this file",
+  "formal_delivery_report_copy_proofs": [
+    {
+      "local_report_path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+      "formal_delivery_report_path": "research/S014/deliveries/COMPONENTS/2/report.md",
+      "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+      "bytes_exact": true,
+      "result_record": "research/S014/experiments/EX005_20261016/others/result.json",
+      "result_record_sha256": "f8fe46eaef82567003e8a934eacb7d1cfe336395599341727baaf3ed37ec0523",
+      "not_an_individual_EvidenceRef": true
+    },
+    {
+      "local_report_path": "research/S014/experiments/EX006_20261016/protocols/report.md",
+      "formal_delivery_report_path": "research/S014/deliveries/COMPONENTS/3/report.md",
+      "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+      "bytes_exact": true,
+      "result_record": "research/S014/experiments/EX006_20261016/others/result.json",
+      "result_record_sha256": "e07d350e5148812c3023fff52b12f3d8a70a1a4bb4d1ceaef7c3aea7f41c25a7",
+      "not_an_individual_EvidenceRef": true
+    },
+    {
+      "local_report_path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "formal_delivery_report_path": "research/S014/deliveries/COMPONENTS/4/report.md",
+      "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+      "bytes_exact": true,
+      "result_record": "research/S014/experiments/EX007_20261017/others/result.json",
+      "result_record_sha256": "1dcb837a6dd824cc5872c5e9eec9efdc048f554d2c39584b4df2810e03ed0cbc",
+      "not_an_individual_EvidenceRef": true
+    },
+    {
+      "local_report_path": "research/S014/experiments/EX010_20261017/protocols/report.md",
+      "formal_delivery_report_path": "research/S014/deliveries/COMPONENTS/7/report.md",
+      "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+      "bytes_exact": true,
+      "result_record": "research/S014/experiments/EX010_20261017/others/result.json",
+      "result_record_sha256": "ce7449bc85f1a643da71a96c6a9f72a4fee145aa50374b2fccd0548679f290ba",
+      "not_an_individual_EvidenceRef": true
+    }
+  ],
+  "cost_review_source_sha256": "dd4d65aa877854564c0271381528775b937decf216a588a2f88aee20e117c780",
+  "new_market_reads": 0,
+  "new_state_PnL_calculations": 0,
+  "new_strategy_replays": 0,
+  "new_account_dispatches": 0,
+  "new_fits": 0
+}

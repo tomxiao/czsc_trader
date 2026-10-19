@@ -1,0 +1,112 @@
+{
+  "index": 4,
+  "mode": "BASE/POSITIVE_P/NET_LOSS_1ATR",
+  "parameters": {
+    "entry_guard": "BASE",
+    "exit_domain": "POSITIVE_P",
+    "cost_stop": "NET_LOSS_1ATR"
+  },
+  "candidate": "S014-C9404",
+  "payload_sha256": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270",
+  "published_payload_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270.json",
+    "sha256": "697d37c3cc3e94a4f6e07aed5107bfbcf6d8785758dec27693cc544ab5e61270",
+    "media_type": "application/json",
+    "name": "ex044-payload-004",
+    "schema": null,
+    "schema_version": null
+  },
+  "runtime_implementation_sha256": "28cd90bdad296a36c79b74d514f971936c72d1ed942af496996338eb5a317c56",
+  "runtime_sha256": "6ffb00afb5d369692ea64d446c83500198ae43ac6b806f81ab9f19ffda36d87d",
+  "published_source_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+    "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "media_type": "text/x-python",
+    "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+    "schema": null,
+    "schema_version": null
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "c3dc4e0f321bf7c5c609ceee83c991784f99f36126138ea35e7de91446ffef48.json",
+    "sha256": "c3dc4e0f321bf7c5c609ceee83c991784f99f36126138ea35e7de91446ffef48",
+    "media_type": "application/json",
+    "name": "ex044-binding-004",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "384cea7e8625153dbde9816356478735234047c69d4cdab465001f4015784c46.json",
+    "sha256": "384cea7e8625153dbde9816356478735234047c69d4cdab465001f4015784c46",
+    "media_type": "application/json",
+    "name": "ex044-preflight-004",
+    "schema": null,
+    "schema_version": null
+  },
+  "status": "SUCCEEDED",
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+    "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+    "media_type": "application/json",
+    "name": "action-role-004-base-positive_p-net_loss_1atr",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05",
+  "audit": {
+    "status": "PASS",
+    "kind": "EX044_FIXED_ROLES",
+    "checks": 142527,
+    "errors": [],
+    "original_projection_numeric_tolerance": 0,
+    "identity_link_fields_mapped_separately": [
+      "cycle_id",
+      "decision_id",
+      "fill_id",
+      "order_id"
+    ],
+    "arithmetic_only_currency_epsilon": 1e-07,
+    "parameters": {
+      "entry_guard": "BASE",
+      "exit_domain": "POSITIVE_P",
+      "cost_stop": "NET_LOSS_1ATR"
+    },
+    "strict_control_against_EX043004": false,
+    "baseline_result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+    "first_target_divergence_D": "2020-10-15",
+    "economic_path_equals_frozen": false,
+    "actual_funded_state_and_feature_math": "independent A/B reviews required"
+  },
+  "error": null,
+  "request_content_sha256": "ba581c25e522ac2da5c6b9904349bdc548fb35175bca5195ef98d2f1893fbaa8",
+  "runtime_binding_hash": "4ea5cc8857504d2eca5a5238e287079f7076997959ba38b0d47c7a58b22cec38"
+}

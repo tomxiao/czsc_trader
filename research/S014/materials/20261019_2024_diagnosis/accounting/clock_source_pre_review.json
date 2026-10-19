@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "scope": "EX045 finalsource+puretoy only; actual newcontrol remains required",
+  "source_path": "research/S014/experiments/EX045_20261019/src/strategy_runtime/strategies/blocked_clock_review.py",
+  "source_sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+  "previous_source_sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+  "root_design_sha256": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989",
+  "protocol_sha256": "4827ee89aefc76eef1e1d4483b023f5f4cb4400459e42db63ae9c927549bb1bd",
+  "checks": [
+    "inherited helper AST exact causal_features",
+    "inherited helper AST exact tick",
+    "inherited helper AST exact buy_limit",
+    "inherited helper AST exact calendar_request",
+    "inherited helper AST exact derive_calculation_scope",
+    "manual unified diff only profile/schema/five slot diagnostics/plannedslotbranch; oldroles internallyfixed001",
+    "candidate eligibility reads reservation before gate; same blockedD updates onlyvirtualreserve=i+11",
+    "newgatebranch accesses no nextE price/status/fill result; failedrealBUY remains oldreset",
+    "actualBUY clears planneduntil and retains realentryH10; heldpending/deadline unchanged",
+    "numeric clock fields finite even initialization -1; no extraenum/date/roles allowed",
+    "54toy and444actual SRT observations independently reproduced exactreceipt"
+  ],
+  "check_count": 11,
+  "pure_synthetic_checks_rerun": 54,
+  "actual_SRT_materializations_rerun": 444,
+  "rerun_receipt": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_synthetic_precheck_rerun.json",
+    "sha256": "31d91fcf6b508b6bf43c1510012585e7817ab60679057badf15324d589ea5e47"
+  },
+  "independent_financial_helper_review": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/accounting/clock_financial_helper_review.json",
+    "sha256": "a4b2b6ad9b756bb928e48c29cd74f4866a2b46893fae43c75bf44ef531a2647e"
+  },
+  "limitations": [
+    "Rerun executor toy checks verify reproducibility; B separately audits source state/prefix.",
+    "plannedslot is an intentional opportunity clock, not a hypothetical actualBUY or guaranteed original schedule.",
+    "Newactual RETRY must match EX044001, not an earliercontrol."
+  ],
+  "new_accounts": 0,
+  "new_real_policy_replays": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0
+}

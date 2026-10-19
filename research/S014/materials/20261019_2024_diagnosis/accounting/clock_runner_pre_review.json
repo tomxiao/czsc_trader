@@ -1,0 +1,203 @@
+{
+  "status": "PASS",
+  "scope": "FINALCLOCK RUNNER/DESIGN/INTERNAL STATIC AND FIVE PURE PREFIX EDGE CASES ONLY",
+  "source_sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+  "hashes": {
+    "runner": {
+      "path": "research/S014/experiments/EX045_20261019/src/run_accounts.py",
+      "sha256": "0b908f72c8737691a91a1baf841cf5992587a57daef4ab70df39e48a43d0ae4e"
+    },
+    "internal_audit": {
+      "path": "research/S014/experiments/EX045_20261019/src/audit_accounts.py",
+      "sha256": "9dbac18bd3b2f4040093ff4d410bf35ff10d6f4fefcaad76ede584ce61238cf7"
+    },
+    "design": {
+      "path": "research/S014/experiments/EX045_20261019/protocols/design.json",
+      "sha256": "4c0b75e1c7a63385cbccd613e2c9fa2cda2b66b01f4af28663aa08eab054d961"
+    },
+    "source": {
+      "path": "research/S014/experiments/EX045_20261019/src/strategy_runtime/strategies/blocked_clock_review.py",
+      "sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68"
+    },
+    "precheck": {
+      "path": "research/S014/experiments/EX045_20261019/src/precheck.py",
+      "sha256": "7594392f80738e006d41b6bb3a2e9f9037fb328388d5e39226e00ac6503169bc"
+    },
+    "synthetic_receipt": {
+      "path": "research/S014/experiments/EX045_20261019/others/synthetic_precheck.json",
+      "sha256": "31d91fcf6b508b6bf43c1510012585e7817ab60679057badf15324d589ea5e47"
+    },
+    "audit_prefix_receipt": {
+      "path": "research/S014/experiments/EX045_20261019/others/audit_prefix_precheck.json",
+      "sha256": "e19e343ef09d63b6ebb4257382c535778a99ecb9556534f7a96eaeb3e2fd563d"
+    }
+  },
+  "checks": [
+    "final byte SHA runner",
+    "final byte SHA internal_audit",
+    "final byte SHA design",
+    "final byte SHA source",
+    "exact two single-enum profiles",
+    "exact EX044001 immutable baseline",
+    "upstream bytes authorization",
+    "upstream bytes method",
+    "upstream bytes source_bindings",
+    "upstream bytes independent_method_review",
+    "upstream bytes evaluation_protocol",
+    "upstream bytes observability_review",
+    "upstream bytes independent_source_review",
+    "upstream bytes financial_helper_review",
+    "upstream bytes previous_source",
+    "upstream bytes previous_lock",
+    "upstream bytes previous_control_receipt",
+    "upstream bytes previous_final_verification",
+    "upstream bytes fixture_source",
+    "upstream bytes helper_source",
+    "upstream bytes shared_account_audit",
+    "upstream bytes input_provider_source",
+    "parse runner",
+    "parse internal_audit",
+    "parse source",
+    "parse precheck",
+    "independent pureedge statebeforetarget",
+    "independent pureedge metadataonly",
+    "independent pureedge nochange",
+    "independent pureedge targetalone",
+    "independent pureedge unequal coverage rejects"
+  ],
+  "check_count": 31,
+  "pure_prefix_cases": [
+    {
+      "name": "statebeforetarget",
+      "prior": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": -1
+        },
+        {
+          "signal_date": "2024-01-03",
+          "target_position": 1,
+          "reservation_index": -1
+        },
+        {
+          "signal_date": "2024-01-04",
+          "target_position": 0,
+          "reservation_index": 5
+        }
+      ],
+      "new": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": 12
+        },
+        {
+          "signal_date": "2024-01-03",
+          "target_position": 0,
+          "reservation_index": 12
+        },
+        {
+          "signal_date": "2024-01-04",
+          "target_position": 0,
+          "reservation_index": 12
+        }
+      ],
+      "expected": [
+        "2024-01-02",
+        "2024-01-03"
+      ]
+    },
+    {
+      "name": "metadataonly",
+      "prior": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": -1
+        },
+        {
+          "signal_date": "2024-01-03",
+          "target_position": 0,
+          "reservation_index": -1
+        }
+      ],
+      "new": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": 12
+        },
+        {
+          "signal_date": "2024-01-03",
+          "target_position": 0,
+          "reservation_index": 12
+        }
+      ],
+      "expected": [
+        "2024-01-02",
+        null
+      ]
+    },
+    {
+      "name": "nochange",
+      "prior": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": -1
+        }
+      ],
+      "new": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": -1
+        }
+      ],
+      "expected": [
+        null,
+        null
+      ]
+    },
+    {
+      "name": "targetalone",
+      "prior": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 0,
+          "reservation_index": 1
+        }
+      ],
+      "new": [
+        {
+          "signal_date": "2024-01-02",
+          "target_position": 1,
+          "reservation_index": 1
+        }
+      ],
+      "expected": [
+        "2024-01-02",
+        "2024-01-02"
+      ]
+    }
+  ],
+  "unequal_coverage_must_reject": true,
+  "manual_checks": [
+    "Internal now cuts prefix byfirst_state targetORreservation;firsttarget separate; funded wealth equality derived separately",
+    "Gate/slot before-post reservation reconstructed; no nonexistentactualentry/deadline/fee, realfailedBUY staysold",
+    "Old sourceparams fixedBLOCK_SHOCK/POSITIVE_P/BASE; only2canonical clockprofile values",
+    "Public build binds source/54toy444SRT/auditprefix5receipt and all upstreamSHA",
+    "Source review currentlock public gate before000; clock_account_000 independent freshcontrol ref before001",
+    "Original execution pricing/window/cost/BH/input clock unchanged; no supplierHTTP",
+    "No retry after dispatch; any technicalfailure preservesreceipt andstopsdependence",
+    "Own final financialhelper onlyexplicitvirtualbranch; lifecycle recomputes allflags including nofalsefailedBUY",
+    "EX04445files/5accounts frozen; EX045source/accounting onlynewclockfiles"
+  ],
+  "required_public_source_gate_review": "this exactclock_runner_pre_review.json, not priorEX044report",
+  "new_accounts": 0,
+  "new_real_policy_replays": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0,
+  "remaining_gate": "FreshRETRY source actualfull economic/observational exactEX044001 before soleKEEPaccount."
+}

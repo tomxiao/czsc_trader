@@ -1,0 +1,71 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/experiments/EX045_20261019/src/strategy_runtime/strategies/blocked_clock_review.py": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+    "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989",
+    "research/S014/materials/20261019_2024_diagnosis/official/clock_method_review.json": "28facb7477bc98e692adffdf105ca010fd3c23632e3783dc324b79ccd82fc4de",
+    "research/S014/materials/20261019_2024_diagnosis/official/review_clock_source.py": "883dceb0221717f9369107ea691733f96049fe4e13abc0955b29d9330de942b9"
+  },
+  "checks": 16741,
+  "check_counts": {
+    "stable new source hash": 1,
+    "frozen source hash": 1,
+    "fixed followup design": 1,
+    "unchanged feature and execution helper AST causal_features": 1,
+    "unchanged feature and execution helper AST tick": 1,
+    "unchanged feature and execution helper AST buy_limit": 1,
+    "unchanged feature and execution helper AST calendar_request": 1,
+    "unchanged feature and execution helper AST derive_calculation_scope": 1,
+    "unchanged economic contract AST InputContract": 1,
+    "unchanged economic contract AST DecisionContract": 1,
+    "unchanged economic contract AST ExecutionPolicy": 1,
+    "unchanged economic contract AST MonitoringPolicy": 1,
+    "unchanged economic contract AST RequiredCapabilities": 1,
+    "invalid parameter rejected": 3,
+    "slot consume i59 reserves70 no phantom fill": 1,
+    "no candidate or consume inside original slot": 1,
+    "expiry D70 can reblock reserves81": 1,
+    "expiry D81 sends next E82 buy only": 1,
+    "retry original next D candidate": 1,
+    "strict Z2 not blocked": 1,
+    "unknown score not blocked": 1,
+    "true failed BUY original reset and no slot": 1,
+    "public binding bytes": 1,
+    "original authenticated prepared content": 4,
+    "fresh source RETRY all prior columns exact": 1,
+    "only blocked candidate consumes slot": 3286,
+    "reservation only actualfill or explicit gate slot": 3286,
+    "beforegate after actualfill exact": 3286,
+    "slot known numeric finite diagnostics": 3286,
+    "slot active exact": 3286,
+    "real fill original anchors and clears slot": 268,
+    "complete state prefix exact": 4,
+    "slot never creates actual state": 7,
+    "no network attempts": 1,
+    "source remains reviewed bytes": 1
+  },
+  "prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "prepared_content_hashes": {
+    "market": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "raw": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "new_accounts": 0,
+  "new_fits": 0,
+  "new_data_preparations": 0,
+  "new_return_labels": 0,
+  "network_attempts": [],
+  "scope": "Two local source state histories and bounded synthetic clocks. No account cash returns or policy outcome choice, no raw market exports, no full old feature oracle.",
+  "limits": [
+    "Funded fresh RETRY must be audited exact against EX044001 before new arm; local source equality does not substitute it.",
+    "KEEP consumes planned opportunities even if hypothetical BUY would fail. No fake actual cycle or promise of original BASE clock recovery.",
+    "All2020-25 development;2026 tail technical only, no economic outcome summarized by this reviewer."
+  ]
+}

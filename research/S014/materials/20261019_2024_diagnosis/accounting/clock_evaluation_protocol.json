@@ -1,0 +1,63 @@
+{
+  "status": "FIXED_TWO_CLOCK_ACCOUNT_INDEPENDENT_PROTOCOL_BEFORE_NEW_CLOCK_RESULTS",
+  "root_design": {
+    "path": "research/S014/materials/20261019_2024_diagnosis/clock_followup_design.json",
+    "sha256": "80ba902aca0662d9a604eb6d4f2d8b03f2d8a7208ee683dcedc41cf2de6a7989"
+  },
+  "fixed_profiles": [
+    "RETRY_EACH_D",
+    "KEEP_PLANNED_SLOT"
+  ],
+  "strict_new_source_control": {
+    "profile": "RETRY_EACH_D",
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX044_20261019"
+      },
+      "evidence_id": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911.json",
+      "sha256": "9388c9f9f8a6b6d33c63d25538234cd2b7eb97eb1d8ccb39f77bc63575e46911",
+      "media_type": "application/json",
+      "name": "action-role-001-block_shock-positive_p-base",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "result_hash": "ba695f2464e7d201f2fc25a44bb7ed6658197c22c25a98c8e4bb5b8f5eddabc4",
+    "zero_tolerance": "Full old economic/observation projection exact EX044001, notEX044000 orEX043004."
+  },
+  "clock_oracle": "Reconstruct reservation before gate from previous postrow reservation; actual BUY alone resets real entry=i/deadline=i+9/reservation=i+10. On fixedKEEP profile only, a knownZ>2 blocked original candidate sets postrow reservation=i+11 andgate_slot_consumed=1. No held/entry/deadline/order/fee/failure is created. Other branches retain old reservation; true failedBUY never consumes virtualslot.",
+  "eligibility": "Candidate uses pre-gate reservation; do not test eligibility against its own newly extended postrow reservation. Expiry i+11 reconsiders original rules; earliest next purchase i+12. No nextE price/status/fictional fill is consulted.",
+  "audits": [
+    "Same causal input/feature/priceunits/cost/T+1/pending original execution; strictfreshNOOP before single newclock cell",
+    "Funded actual D/E held/buy/sell, cash, fees, original price constraints, realH10 anchors and scheduled virtualslot separately checked",
+    "Minimal copied financial helper adds only the explicit virtual reservation branch; independent state oracle recomputes gate_slot_consumed, never trusts a fake BUY",
+    "Own-opening2020-25 annual goals; original fullwindow frequency and completeyearsdiagnostic separate;2026 technicalonly",
+    "All real dispatches includingFAILED/UNKNOWN retained, stop dependent on technicalfailure; no automatic retry",
+    "AllEX044 source/5accounts/30row+5row outputs frozen;EX045clock artifacts new names only"
+  ],
+  "outputs": {
+    "yearly": "clock_policy_yearly_summary.csv;12rows; addclock_profile andreturn_difference_vs_clock_control; retain original/frozen references explicitly",
+    "summary": "clock_policy_summary.csv;2rows",
+    "peraccount": "clock_account_000/001_independent_review.json",
+    "source_runner": "clock_source_pre_review.json,clock_runner_pre_review.json"
+  },
+  "hard_goals": "Original economic targets unchanged; no new annualnonharm/CI/samplesize veto.",
+  "selection_history": "Adaptive followup after all5EX044 outcomes; all2020-25 shared-seen; no heldout/preregisteredclaim.",
+  "resource_scope": {
+    "planned_actual_dispatches": 2,
+    "total_EX044_plus_EX045_planned": 7,
+    "new_fits": 0,
+    "threshold_searches": 0,
+    "new_suppliers": 0,
+    "new_action_wealth_labels": 0,
+    "raw_market_exports": 0,
+    "auditor_dispatches": 0
+  },
+  "limitations": [
+    "A plannedslot mayconsume an opportunity which would not fill; no nextE hypotheticalfill is used to choose it.",
+    "Skipping plannedslot does not guarantee the old original schedule or eventual annual targets.",
+    "Crossyear phase/capital inheritance means2025 poor performance need not follow a2025 gateblock."
+  ]
+}
