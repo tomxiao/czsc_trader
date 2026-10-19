@@ -1,0 +1,1687 @@
+{
+  "scope": "S014_ONLY",
+  "experiments": [
+    {
+      "experiment": "EX001_20261016",
+      "result_present": true,
+      "status": "DATA_PREPARATION_PASS_EXECUTION_GAP_CONFIRMED",
+      "conclusion": null,
+      "next_step": "请用户确认A股成交合同及授权DEV修改平台，再做固定订单的现金/持仓/权益账本验证；通过后再提交策略机制方案。",
+      "delivery": null,
+      "notes": "# 金牛化工数据与执行边界核验\n\n历史行情是否完整，现有成交接口能否正确表达涨跌停、停牌、T+1与费用边界？\n",
+      "counts": {},
+      "report_paths": [],
+      "result_sha256": "ca6b5d19335114c7d18ad8c323c96a192d6eed4f3b773036bcf8c6922cc0886b"
+    },
+    {
+      "experiment": "EX002_20261016",
+      "result_present": true,
+      "status": null,
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "MANDATE",
+        "revision": 1,
+        "content_sha256": "607b4233825de013b7591131a91643e53f4ce984f6662430cea2081f51fa775d"
+      },
+      "notes": "# 金牛化工策略研究约定与年度评价核验\n\n用户已授权新分支启动S014，并指定2020-01-01至2026-10-15。RSCH规则修改单独提交为a1441988。\n\n形成研究约定、连续账户年度指标计算程序及7组边界检查；通过TDR公共API发布MANDATE/1正式交付并完成FULL校验。\n交付为PARTIAL：2026部分年度、初始资金和固定基准仍为建议，阶段二推进待批准；新周期市场输入尚未全部READY。\n\n正式准备保留4次尝试的真实结果：首轮有空响应，第二次遇到研究脚本引用序列化错误且未继续，修正后继续准备仍失败。\n最后一次显式准备观测到5次HTTP502。窄窗口及确切失败区间的独立探针又能返回数据，当前不能据此推断历史覆盖缺失。\n累计73次上游调用，准备上限100次；日历READY，其余4类输入未就绪。没有策略账户评价、组件搜索或参数搜索。\n\n最终正式报告副本见others/report.md，与正式报告逐字节一致，核对记录见protocols/report_copy_verification.json。\n精确引用见others/result.json；下一步先审阅阶段一约定，并解决输入准备失败，再批准进入阶段二。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX002_20261016/others/report.md",
+          "sha256": "897bdad60200064ff346d882ca523aa69a6870117d42d132ad26e3e10856b82d",
+          "bytes": 4938
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/MANDATE/1/report.md",
+        "experiment_report": "research/S014/experiments/EX002_20261016/others/report.md",
+        "bytes": 4938,
+        "sha256": "897bdad60200064ff346d882ca523aa69a6870117d42d132ad26e3e10856b82d",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/MANDATE/1/report.md",
+        "sha256": "897bdad60200064ff346d882ca523aa69a6870117d42d132ad26e3e10856b82d",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX002_20261016/others/report.md"
+        ]
+      },
+      "result_sha256": "bacc488542768e274ba8acc086ddd821971c4cddf5cc93d72aed0f51479ce6be"
+    },
+    {
+      "experiment": "EX003_20261016",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "MANDATE",
+        "revision": 2,
+        "content_sha256": "1d0dc0090eac4f0ff6400d72ffcd9ded30b921c1f91825a4b8dfbb3a2987b3bf"
+      },
+      "notes": "# 阶段一确认及正式输入恢复\n\n用户确认后，完整研究周期输入是否全部READY并可据此开始组件研究？\n\n已完成：5类原生输入全部READY，公开交付MANDATE/2为COMPLETE，FULL/PASS。\n确认约定、输入身份、44次上游调用及剩余6次额度见`others/result.json`。\n`others/report.md`是正式报告的字节一致副本，核对记录见`protocols/report_copy_verification.json`。\n历史MANDATE/1及原实验报告保持不变；后续组件检验在EX004开展。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX003_20261016/others/report.md",
+          "sha256": "22d5d8134333645a5586636e18306009c75a6c66311816695f2ab250a14c8390",
+          "bytes": 3169
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/MANDATE/2/report.md",
+        "experiment_report": "research/S014/experiments/EX003_20261016/others/report.md",
+        "bytes": 3169,
+        "sha256": "22d5d8134333645a5586636e18306009c75a6c66311816695f2ab250a14c8390",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/MANDATE/2/report.md",
+        "sha256": "22d5d8134333645a5586636e18306009c75a6c66311816695f2ab250a14c8390",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX003_20261016/others/report.md"
+        ]
+      },
+      "result_sha256": "3e3f934b7297c61b323ceb6f115c5001fb75b0da98532ec969fbb3347f581580"
+    },
+    {
+      "experiment": "EX004_20261016",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 1,
+        "content_sha256": "796cdd4cd09423893ae45c8b6bba6c69df5a84cca6f3acf79d91664402ce6fb0"
+      },
+      "notes": "# 日频量价组件及执行衔接检验\n\n趋势、反转及风险组件在过去训练后的年度外推中，能否提供超出简单量价基线的决策信息？\n\n首轮已完成：192次固定模型拟合、32项对照，没有完整策略账户或参数搜索。SUPPORTED数量0。\n趋势在本次设计中未获增量支持；反转和风险有弱线索，但年度、模型或样本覆盖限制使证据不足。\n补充设计明确在看到初次结果后形成，不宣称独立验证；原设计、实现和初次结果均先发布再开展补充。\n公开交付COMPONENTS/1为COMPLETE，FULL/PASS；这只表示首轮问题及证据交付完成，不表示年度经济目标已达成。\n正式报告字节一致副本见`others/report.md`，精确引用见`others/result.json`。\n建议继续阶段二，核验2026状态变化及极少样本问题，呈现结果后由用户决定；本轮未自动进入阶段三。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX004_20261016/others/report.md",
+          "sha256": "58cd8d855337355f27fa7abd5bfd3270ed9a70a63b6b7ff75a50cff5cefa513b",
+          "bytes": 12638
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/1/report.md",
+        "experiment_report": "research/S014/experiments/EX004_20261016/others/report.md",
+        "bytes": 12638,
+        "sha256": "58cd8d855337355f27fa7abd5bfd3270ed9a70a63b6b7ff75a50cff5cefa513b",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/1/report.md",
+        "sha256": "58cd8d855337355f27fa7abd5bfd3270ed9a70a63b6b7ff75a50cff5cefa513b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX004_20261016/others/report.md"
+        ]
+      },
+      "result_sha256": "bdbc19c28b4841e4b3e7a6098838cf20b59cd93d58ab4c990c24e696d19eaed7"
+    },
+    {
+      "experiment": "EX005_20261016",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 2,
+        "content_sha256": "799ab04eb8a24f2167ace6d8d7a4fbaa91df778ceecae7c0a9a3a680fcfcf1b7"
+      },
+      "notes": "# 阶段二收口：状态、覆盖与固定机制反证\n\n旧线索来自阈值失配或稀少样本吗，是否存在职责明确且有增量的现有数据组件？\n\n已按用户“你来主导完成阶段二，我看结果”的授权自主完成阶段二。\n原反转与损失过滤的弱线索未形成稳定用途；补充固定机制和更强简单对照，保留所有必要反证。\n最终保留2项基础辅助上下文用途：当天真实波幅的次日波动尺度参考、涨停收盘的固定限价买入成交风险提示。\n没有证据充分的稳定收益入场组件，没有完整策略账户、参数搜索或年度经济验收。\n公开交付COMPONENTS/2为COMPLETE、FULL/PASS；精确引用见`others/result.json`。\n正式报告逐字节副本见`others/report.md`，校验见`protocols/report_copy_verification.json`；历史交付不变。\n用户审阅后决定是否进入阶段三。本实验56次固定拟合含32次原配置复现，新增源调用0。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX005_20261016/others/report.md",
+          "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+          "bytes": 16890
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/2/report.md",
+        "experiment_report": "research/S014/experiments/EX005_20261016/others/report.md",
+        "bytes": 16890,
+        "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/2/report.md",
+        "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX005_20261016/others/report.md"
+        ]
+      },
+      "result_sha256": "f8fe46eaef82567003e8a934eacb7d1cfe336395599341727baaf3ed37ec0523"
+    },
+    {
+      "experiment": "EX006_20261016",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 3,
+        "content_sha256": "c2b8c125e948eb5ec3efa88eecd7ec55ef07983e10e21a3a0d33d744c8da4a63"
+      },
+      "notes": "# 阶段二数据归因：入场、持有与退出\n\n收益发生在入场前还是成交后，固定退出是否回吐利润，现有事前条件能否区分？\n\n已完成获批的一轮阶段二数据归因。普遍入场过晚解释未获支持；买后收益与行情阶段相关，确有回吐，但朴素浮盈走弱提前退出没有显示稳定净收益改善。\n主归因使用1601个共同成熟信号，每期限1569条闭合与32条未成交，原生样本另列，保持原研究截止日。\n22项审核PASS，原1621次入场及6316条固定退出已复现。0次模型拟合、参数搜索、源调用及完整账户。\n正式交付COMPONENTS/3为COMPLETE、FULL/PASS，精确引用见`others/result.json`；报告逐字节副本及核对见`others/report.md`、`protocols/report_copy_verification.json`。\n归因完成不表示年度经济目标达标，阶段二继续。下一优先问题为行情持续性/失效与持有决策信息，未进入阶段三。\n实验于2026-10-16分配，2026-10-17收口，原身份保留；历史交付及报告不回写。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX006_20261016/others/report.md",
+          "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+          "bytes": 14029
+        },
+        {
+          "path": "research/S014/experiments/EX006_20261016/protocols/report.md",
+          "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+          "bytes": 14029
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/3/report.md",
+        "experiment_report": "research/S014/experiments/EX006_20261016/others/report.md",
+        "bytes": 14029,
+        "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/3/report.md",
+        "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX006_20261016/others/report.md",
+          "research/S014/experiments/EX006_20261016/protocols/report.md"
+        ]
+      },
+      "result_sha256": "e07d350e5148812c3023fff52b12f3d8a70a1a4bb4d1ceaef7c3aea7f41c25a7"
+    },
+    {
+      "experiment": "EX007_20261017",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 4,
+        "content_sha256": "7c15154a7cf2fd7f58f4dba7890ba4a1f5a5ab529298353ab092151ea59f73a3"
+      },
+      "notes": "# 行情持续性与持有决策信息\n\n量价结构、参与强度及持仓路径是否能改善继续持有相对下一可执行开盘退出的判断？\n\n用户要求以推进阶段三为目标自主完成阶段二。本轮先固定检验结构、成交参与及持仓路径，120次拟合未形成清楚增益；再事前发布近期响应更新设计，7244次求解（含年度模型重复求解）仍弱于简单近期均值。\n\n结论：新增4项定义未确认收益用途，保留原2项辅助用途；不继续邻近参数扫描。阶段二完成，建议下一步仅做近期支撑/再入场假设的3个连续账户对照，研究退出和再入场的完整作用；阶段三尚未批准，0个完整账户，用户年度目标未验收。\n\n初轮区块实际按20个合格观察处理，存在少量日期缺口；审核另存完整交易所日期网格敏感性，保持原结果不变。69项审核PASS，1621次入场、9214次退出及全部模型/学习到期边界已复算。\n\n正式结果、适应性选择及最强反证见[阶段二收口报告](../../deliveries/COMPONENTS/4/report.md)与[精确引用](others/result.json)。历史证据不回写，完整资产须随引用保留。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX007_20261017/others/report.md",
+          "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+          "bytes": 14100
+        },
+        {
+          "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+          "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+          "bytes": 14100
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/4/report.md",
+        "experiment_report": "research/S014/experiments/EX007_20261017/others/report.md",
+        "bytes": 14100,
+        "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/4/report.md",
+        "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX007_20261017/others/report.md",
+          "research/S014/experiments/EX007_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "1dcb837a6dd824cc5872c5e9eec9efdc048f554d2c39584b4df2810e03ed0cbc"
+    },
+    {
+      "experiment": "EX008_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 5,
+        "content_sha256": "87da3e8c1064433f800bd0ce7f01962ac4d77217fe8cbfa7e2e75c005a3f62e9"
+      },
+      "notes": "# 涨跌停约束与隔夜盘中信息冲突的收益机制\n\n涨跌停造成的延迟价格发现、极端卖压后的修复以及隔夜/盘中方向分歧，是否包含超出简单量价的可交易净收益信息？\n\n用户明确要求继续阶段二，不能以实验或组件数量收口。COMPONENTS/4历史建议已撤回，原文不改。\n\n新收益线索：低开收阳的1日相对低开未收阳差约+0.759个百分点，剔除2026仍正；触下限回收的10日相对一般大跌也有较强正向证据。按线索继续检验了普通收阳、四组交互、量价共同支持、事件簇及父条件，保留关键反证：2025亏损、匹配和去重不一致、触下限回收相对父机会没有一致增量，不能据此确认为策略可用组件。\n\n现金归因支持2025首持有日修复被后续价格变化及费用吞噬，不假装同日可卖。新机会不是完全不存在，但其来源和可用条件尚未识别。\n\n正式[COMPONENTS/5报告](../../deliveries/COMPONENTS/5/report.md)为PARTIAL；阶段二进行中，完整账户0。主审核57+补充4项PASS，精确[引用](others/result.json)及批次assets须共同保留。\n\n最小下一步是[上证指数同窗口日线扩展方案](protocols/data_extension_proposal.json)，先取得范围授权、验证上游权限覆盖和时点，再检验共同市场响应与个股特有重定价。未取新数、未改平台、未进入阶段三，原剩余6次上游额度不变。\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX008_20261017/others/report.md",
+          "sha256": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+          "bytes": 17468
+        },
+        {
+          "path": "research/S014/experiments/EX008_20261017/protocols/report.md",
+          "sha256": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+          "bytes": 17468
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/5/report.md",
+        "experiment_report": "research/S014/experiments/EX008_20261017/others/report.md",
+        "bytes": 17468,
+        "sha256": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/5/report.md",
+        "sha256": "438116ebb46055204acba05b89efa09d2140df622722548f3985248054b9a87b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX008_20261017/others/report.md",
+          "research/S014/experiments/EX008_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "f24582c3c5227c87fcb399a8fae05d2d3762fe1f4635c6f03bc3871da3e94511"
+    },
+    {
+      "experiment": "EX009_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 6,
+        "content_sha256": "aa59215cf9e10784a393b047b5484c792855f758939acb6f12687bff1995a853"
+      },
+      "notes": "# 市场共同冲击与个股低开修复\n\n先核验上证指数权限覆盖，再识别市场信息的预测增量及2025反例\n",
+      "counts": {
+        "new_source_calls": 1
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX009_20261017/others/report.md",
+          "sha256": "7bc43cce59f1d210025a2637353a263b0ab86f8b09ed9c0088b495d9dd8913d7",
+          "bytes": 13425
+        },
+        {
+          "path": "research/S014/experiments/EX009_20261017/protocols/report.md",
+          "sha256": "7bc43cce59f1d210025a2637353a263b0ab86f8b09ed9c0088b495d9dd8913d7",
+          "bytes": 13425
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/6/report.md",
+        "experiment_report": "research/S014/experiments/EX009_20261017/others/report.md",
+        "sha256": "7bc43cce59f1d210025a2637353a263b0ab86f8b09ed9c0088b495d9dd8913d7",
+        "bytes": 13425,
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/6/report.md",
+        "sha256": "7bc43cce59f1d210025a2637353a263b0ab86f8b09ed9c0088b495d9dd8913d7",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX009_20261017/others/report.md",
+          "research/S014/experiments/EX009_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "120d31eece405c3076aa38ed82910bb57682046e7c2628bd3f5057c1e7b61a3d"
+    },
+    {
+      "experiment": "EX010_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 7,
+        "content_sha256": "4a8d56b682d1ba6b29fbfeef7a8557ade34a4bafad89ef4f0aaf790f509be57a"
+      },
+      "notes": "# 化工行业价格代理与个股收益机制\n\n先验000813.SH权限覆盖，再检验行业相对广义市场的解释和预测增量\n",
+      "counts": {
+        "new_source_calls": 3
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX010_20261017/others/report.md",
+          "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+          "bytes": 15627
+        },
+        {
+          "path": "research/S014/experiments/EX010_20261017/protocols/report.md",
+          "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+          "bytes": 15627
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/7/report.md",
+        "experiment_report": "research/S014/experiments/EX010_20261017/others/report.md",
+        "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+        "bytes": 15627,
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/7/report.md",
+        "sha256": "97ad2a1163a20f60155b2aa9e9db4b6e1dae268fae5064cebc91e7f62849162b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX010_20261017/others/report.md",
+          "research/S014/experiments/EX010_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "ce7449bc85f1a643da71a96c6a9f72a4fee145aa50374b2fccd0548679f290ba"
+    },
+    {
+      "experiment": "EX011_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 8,
+        "content_sha256": "5b9feb16a262182c1bc73ba485efe003b30f7fa90e3a719bbbc0a0f3c90e8d03"
+      },
+      "notes": "# 金牛化工公告上游可行性核验\n\n同一账号anns_d是否有权限、同周期公告目录和可核验的历史发布时间？只核验上游，不进行事件收益研究。\n",
+      "counts": {
+        "new_source_calls": 2
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX011_20261017/others/report.md",
+          "sha256": "1d354cc96d29494dd40731bacf77584d4171e1b9d768d00b0159167075b04157",
+          "bytes": 4336
+        },
+        {
+          "path": "research/S014/experiments/EX011_20261017/protocols/report.md",
+          "sha256": "1d354cc96d29494dd40731bacf77584d4171e1b9d768d00b0159167075b04157",
+          "bytes": 4336
+        }
+      ],
+      "copy_verification_saved": {
+        "formal_report": "research/S014/deliveries/COMPONENTS/8/report.md",
+        "experiment_report": "research/S014/experiments/EX011_20261017/others/report.md",
+        "sha256": "1d354cc96d29494dd40731bacf77584d4171e1b9d768d00b0159167075b04157",
+        "bytes": 4336,
+        "status": "PASS"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/8/report.md",
+        "sha256": "1d354cc96d29494dd40731bacf77584d4171e1b9d768d00b0159167075b04157",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX011_20261017/others/report.md",
+          "research/S014/experiments/EX011_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "a540a0f81becde1120f602f7a6e7627d40c0e12dda9f0178859d66c2f10157ed"
+    },
+    {
+      "experiment": "EX012_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 9,
+        "content_sha256": "84879c35ed2efe054d562f7ee850df5770d63077362cc2264a3c5245be0b0949"
+      },
+      "notes": "# 原始公告小样本信息增量核查\n\n在固定样本和既有行情对照下，决策前可知公告是否提供值得扩大验证的区分信息？\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX012_20261017/others/report.md",
+          "sha256": "033e93e1f154a75eca85fc62fefe399d668ace15293ad70da91004c4f2ef05c9",
+          "bytes": 9649
+        },
+        {
+          "path": "research/S014/experiments/EX012_20261017/protocols/report.md",
+          "sha256": "033e93e1f154a75eca85fc62fefe399d668ace15293ad70da91004c4f2ef05c9",
+          "bytes": 9649
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "sha256": "033e93e1f154a75eca85fc62fefe399d668ace15293ad70da91004c4f2ef05c9",
+        "bytes": 9649,
+        "formal_report": "research/S014/deliveries/COMPONENTS/9/report.md",
+        "experiment_report": "research/S014/experiments/EX012_20261017/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/9/report.md",
+        "sha256": "033e93e1f154a75eca85fc62fefe399d668ace15293ad70da91004c4f2ef05c9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX012_20261017/others/report.md",
+          "research/S014/experiments/EX012_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "84167098a80fcefcfdbb68abd41e3230123860d66b5f8bf1ced43ac0ba6593de"
+    },
+    {
+      "experiment": "EX013_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 10,
+        "content_sha256": "61ad6f63fa7816a6ed78db8a2aa24bed16687535de8f20daa545c6d3ed7df7e9"
+      },
+      "notes": "# 现有数值机制覆盖审计与批量增量检验\n\n现有数据中尚未检验的路径和状态信息能否产生稳健且可执行的收益组件？\n",
+      "counts": {
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX013_20261017/others/report.md",
+          "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+          "bytes": 11391
+        },
+        {
+          "path": "research/S014/experiments/EX013_20261017/protocols/report.md",
+          "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+          "bytes": 11391
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+        "bytes": 11391,
+        "formal_report": "research/S014/deliveries/COMPONENTS/10/report.md",
+        "experiment_report": "research/S014/experiments/EX013_20261017/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/10/report.md",
+        "sha256": "9004b75f2859306bc0735921133340a52831d612f8ff62d6048621f8a77660f1",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX013_20261017/others/report.md",
+          "research/S014/experiments/EX013_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "4bb8f3559c563b6a7da27d7b59c8904353e35e77f2e4c8cebc894fe935989f7c"
+    },
+    {
+      "experiment": "EX014_20261017",
+      "result_present": true,
+      "status": "PARTIAL",
+      "conclusion": null,
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 11,
+        "content_sha256": "fa973cec8bcf033e7aa604b7d6f024e932219931c63e76eebb258161d51c55d6"
+      },
+      "notes": "# 固定H3环境内的下行损失与修复收益持续时间\n\n既有环境的收益差来自避损还是增益？事前数值状态能否进一步区分损失，修复优势持续多久？\n",
+      "counts": {
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX014_20261017/others/report.md",
+          "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+          "bytes": 9247
+        },
+        {
+          "path": "research/S014/experiments/EX014_20261017/protocols/report.md",
+          "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+          "bytes": 9247
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+        "bytes": 9247,
+        "formal": "research/S014/deliveries/COMPONENTS/11/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/11/report.md",
+        "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX014_20261017/others/report.md",
+          "research/S014/experiments/EX014_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "512d95fb376ff9fcdcd8ad48089ce85660d2fc44e79b5daa05bed70b40cfd59b"
+    },
+    {
+      "experiment": "EX015_20261017",
+      "result_present": false,
+      "status": null,
+      "conclusion": null,
+      "next_step": null,
+      "delivery": null,
+      "notes": "# 入场首日信息能否区分H1至H3持有损益\n\n修复后的首次可交易持有决策能否提供超出入场环境与浮盈的增量？\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX015_20261017/protocols/report.md",
+          "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+          "bytes": 2944
+        }
+      ]
+    },
+    {
+      "experiment": "EX016_20261017",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "阶段二完成并建议推进阶段三：保留26定义及2辅助/1环境参考，以原年度因果状态构建环境与期限四对照；早期反例和选择局限公开，未验证账户或年度绩效。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 12,
+        "content_sha256": "c1d33af057367cbb18a3b26b2ad599229989e8c2c5ecd5355a26fb15a8c1bf71"
+      },
+      "notes": "# 缺口序列环境全周期因果校准与机会覆盖\n\n不借未来年度阈值，环境信息能否在全研究窗口形成并保留用途、具备组合研究机会规模？\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX016_20261017/others/report.md",
+          "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+          "bytes": 7607
+        },
+        {
+          "path": "research/S014/experiments/EX016_20261017/protocols/report.md",
+          "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+          "bytes": 7607
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+        "formal": "research/S014/deliveries/COMPONENTS/12/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/12/report.md",
+        "sha256": "9b04f5c2b24219c48d62b83f3a20d2bce9a4ec3588569fff59b70f599a9ca1fb",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX016_20261017/others/report.md",
+          "research/S014/experiments/EX016_20261017/protocols/report.md"
+        ]
+      },
+      "result_sha256": "31aa44511478767382bae4bc3db070affe3727536a0257303e36b29ce123cf89"
+    },
+    {
+      "experiment": "EX017_20261017",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "四方案连续账户对照已完成，全部满足全期频率，0个满足所有年度收益与回撤目标。高环境筛选存在全期改善，但年度不稳；低环境缩短至1天未稳定改善高环境单独交易。建议保留阶段三，先定位上涨覆盖缺口与持仓亏损，不进入阶段四。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 1,
+        "content_sha256": "6665385684794f8582b19fbc994d9d0a78569b37b0f26d8d941f17605236b9a9"
+      },
+      "notes": "# 环境与期限四方案连续账户对照\n\n既有条件环境和期限取舍能否在真实单持仓、资金与执行约束下改善逐年收益和回撤？\n",
+      "counts": {},
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX017_20261017/others/report.md",
+          "sha256": "4b4a369ca3361c86f181bd69650aa8c5f092fe29e3c31539b69b941a39ec913f",
+          "bytes": 8218
+        },
+        {
+          "path": "research/S014/experiments/EX017_20261017/protocols/account_report.md",
+          "sha256": "8d0ad4a6cc9c0d1736b6b4f2828d2c1553660d55c9596e36e73f9e45d0cc1351",
+          "bytes": 8294
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/1/report.md",
+        "sha256": "4b4a369ca3361c86f181bd69650aa8c5f092fe29e3c31539b69b941a39ec913f",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX017_20261017/others/report.md"
+        ]
+      },
+      "result_sha256": "21d98ba6fd0aafaed14c137dfaf7ebd47a3951e66a1dfa64e422f3b3e48792c7"
+    },
+    {
+      "experiment": "EX018_20261017",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "上涨缺口不能归结为单一筛选或退出条件。固定高环境低开收阳H6提高全期收益，但年度收益仍仅3/7、年度回撤5/7；放宽为收阳并未改善高环境方案，环境与期限存在显著交互。八构造全部经济目标通过数为0。保留高环境父H6和全环境收阳H6为风险收益取舍研究对象，不认定稳定有效策略、不推进阶段四。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 2,
+        "content_sha256": "bb2bc6840aa5b979d8d6e7b77f171ef600e29504fdb79833d801d72f310bc1cf"
+      },
+      "notes": "# 上涨缺口归因与针对性构造\n\n用户批准先使用既有数据区分入场、环境与退出因素，再做针对性连续账户对照。保持费用、执行、年度目标及公告暂停。\n\n已完成：整日空仓互斥归因、原退出后3日配对诊断、事前锁定2×2×2、六新账户与两条原基线复用、逐日账本审计、实际交易路径归因、CANDIDATES/2正式交付。八构造全部目标通过0个；全期收益改善不能替代年度收益及回撤。\n\n使用入口：protocols/account_report.md；others/result.json。独立预检157项、完整账本审计76,354项通过。审计第一版列选择错误的失败保留，第二版通过；未重跑账户。发布前诊断schema检查曾在任何副作用前阻止执行，按真实reconciliation格式修正后独立核验。\n\n本轮新增上游调用0，阶段四未批准。下一研究问题是用原退出决策时已知信息区分延长价值，不把次日真实退出盈亏当作当晚信号。\n",
+      "counts": {
+        "new_accounts": 6,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX018_20261017/protocols/account_report.md",
+          "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+          "bytes": 11071
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/2/report.md",
+        "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX018_20261017/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "621e281b9dc147072b5424e774354bd4202ae58862222e18cff6edcb747c769a"
+    },
+    {
+      "experiment": "EX019_20261017",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "当晚可知浮盈与单日收盘变化可因果实现，但本轮四种固定条件延长均显著降低原H3账户全期收益，且未增加年度收益达标年数；六构造全部目标通过0个。原交易配对均值不能兑现为连续账户增益，不支持将P/D及其AND/OR作为有效持仓延长规则；保留原基线，停止继续微调这组开关。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 3,
+        "content_sha256": "902db87bdf70ed9c93f3448ababc560ca94db5d9855f6d040ee54c1dd820f819"
+      },
+      "notes": "# 退出时点可知状态与条件延长\n\n用户已批准用退出决策当晚的浮盈与价格变化检验延长价值，再做连续账户；研究分支及全部经济约定沿用。\n\n本轮完成全原H3入场状态诊断、事前固定P/D/AND/OR四规则、四新账户及两基线复用、独立逐日审计、机会占用与资金周期归因，交付CANDIDATES/3。四条规则未改善原H3全期收益或年度收益通过年数，0个全部目标通过。\n\n入口：protocols/account_report.md、others/result.json。173项预检、88,108项账本断言通过。诊断v2只修正真实截到2025末的跨年决策状态不可知，原记录保留，经济统计不变。固定H6是E+6，不从受阻后的实际H3卖日重新计时。\n\n路径说明：P对共同入场有正增量，但错失原信号及新增路径的损失更大。停止微调P/D阈值；下一问题为退出与已知原入场信号衔接，不允许未来信息或擅改同日卖出重买。\n\n新增上游调用0，费用执行年度目标保持，无阶段四、生产或远端操作。\n",
+      "counts": {
+        "new_accounts": 4,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX019_20261017/protocols/account_report.md",
+          "sha256": "98a410faa4ecc2f36c03b6e8dcbd58253964b8b56af1d57249bacc6a9cb2b237",
+          "bytes": 10574
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/3/report.md",
+        "sha256": "98a410faa4ecc2f36c03b6e8dcbd58253964b8b56af1d57249bacc6a9cb2b237",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX019_20261017/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "7be6ba7a7ca360e56b07fd6493dfa12b83beb1a999e235b21894eb3161333cbe"
+    },
+    {
+      "experiment": "EX020_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "第1轮8格原信号续持对照形成有限正面证据：H3基础四构造提高原H3全期收益并保持频率，C0028全期收益343.33%、年度回撤7/7通过，但年度收益仍仅3/7；10个对照全部原目标通过0个。H6基础续持恶化回撤且频率不足。保留H3续持为后续比较材料，不能据全期收益选择已达标策略，也不能把增加持仓暴露的路径变化视作独立Alpha。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 4,
+        "content_sha256": "6a7b7476ec14d171f2a0169ed2d6ad40b38ea111827f19ec978adcdc89eb55e0"
+      },
+      "notes": "# 持仓期间原信号续持与退出衔接\n\n原入场信号在持仓期间再次出现时续持，能否减少退出造成的行情漏接，同时满足全部年度目标？\n",
+      "counts": {
+        "new_accounts": 8,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX020_20261018/protocols/account_report.md",
+          "sha256": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1",
+          "bytes": 9530
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/4/report.md",
+        "sha256": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX020_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "b32b48fa969f65eb01abd040a547e4e1c7bac396fd8739fcd571069fb089cd67"
+    },
+    {
+      "experiment": "EX021_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "第2轮固定A/B/C账户中，B支撑入场固定10日全期净收益441.60%，去2026仍为163.69%，改善2021、2022收益，但年度收益仅3/7、回撤5/7通过。B与A仅9个共同入场，优势主要体现为交易时点及后续参与顺序改变，不能认定为稳定单笔过滤能力。C支撑破坏退出增加换手并降低B全期收益，损伤2022；6个对照全部原目标通过0个，尚不具备阶段四准备度。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 5,
+        "content_sha256": "f3767f99187761d8e266d67c42b33081a9204217ed46d010e9033bf566667a83"
+      },
+      "notes": "# 五日收盘支撑退出与恢复重入\n\n兑现EX007预声明的A/B/C机制：支撑入场、跌破退出及恢复重入能否改善全部年度收益和回撤？\n",
+      "counts": {
+        "new_accounts": 3,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX021_20261018/protocols/account_report.md",
+          "sha256": "225f4cac5e5c6b46e195bb4c54bafe7eab73227e3f2b2643cd84e74d54376c41",
+          "bytes": 10122
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/5/report.md",
+        "sha256": "225f4cac5e5c6b46e195bb4c54bafe7eab73227e3f2b2643cd84e74d54376c41",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX021_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "1c829f3a6573bdf02eab594ebd3fb4199898291832a455e212590c557bbb33eb"
+    },
+    {
+      "experiment": "EX022_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "B支撑入场在全部11个同起始偏移对照中，全期收益均高于A，说明原delay0的优势不完全由这一个启动日期解释。但去2026仅10/11高于A，delay10为反例（B+103.18%、A+124.29%）；各B路径最晚在2021年4月后成交日期收敛，不能当作11次独立验证。22个账户全部原目标通过0个；B年度收益仅1至3年通过，2023至2026四年所有偏移均未达收益目标，尚不具备阶段四准备度。保留支撑入场的有限账户路径证据，不认定为跨环境稳定单笔收益机制。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 6,
+        "content_sha256": "ecc862c8768b7c7bd6595e160cb6a689a2c3fcdcd3d2e35549df12d1ced57bd9"
+      },
+      "notes": "# 支撑入场与固定持仓的起始时点敏感性\n\nA/B的收益差是否依赖初始交易时点？保持H10与支撑定义，完整比较理想11日周期的0至10日首决策偏移。\n",
+      "counts": {
+        "new_accounts": 20,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX022_20261018/protocols/account_report.md",
+          "sha256": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1",
+          "bytes": 10578
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/6/report.md",
+        "sha256": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX022_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "9f2d86b368587ac4b042a165b623d3b99f8a77ae9dfbe14ac47094ff61bf51e7"
+    },
+    {
+      "experiment": "EX023_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "保留原10日时钟的C0056形成进一步账户改进：全期净收益708.72%、年度回撤7/7通过、闭合频率每60日5.04笔；年度收益4/7通过，仍在2022、2024、2025亏损，4个对照全部原目标通过0个。相对B的134个共同入场log贡献为负，额外领先主要来自2026改变后的参与日期；截至2025年末C0056累计144.54%仍低于B的163.69%。因此保留其完整账户构造与风险改善证据，不把提前退出解释为普遍收益优势，尚不具备阶段四准备度。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 7,
+        "content_sha256": "b9af53a91b8a8615931cee2dc9affec0aba4c6d270cce543b77889a44f40d02c"
+      },
+      "notes": "# 支撑早退后保留原持有周期再入场\n\n早退后保留原H10计划时钟，能否减少过早重入损伤，同时改善原B年度回撤和收益缺口？\n",
+      "counts": {
+        "new_accounts": 1,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX023_20261018/protocols/account_report.md",
+          "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+          "bytes": 12179
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/7/report.md",
+        "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX023_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "90da48595f1b831f4db4065f5d9adac272179b2e8622f18da754eed71b468d19"
+    },
+    {
+      "experiment": "EX024_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "C0057仅在首次支撑破坏仍浮盈时提前退出，形成相对B的有限正向退出增量：全期实际138个入场全部对齐，净收益711.88%，去2026累计279.98%。但年度收益仅3/7、回撤6/7通过，仍未满足全部目标；全期略高于C0056并不代表目标准备度更高。C0058仅在非盈利时提前退出，净收益440.25%、年度收益4/7和回撤5/7通过，整体弱于原C0056。4个对照全部原目标通过0个，暂不进入阶段四；期限延长标签集中于少数2026赢家，不据此扩持有期。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 8,
+        "content_sha256": "92ac623557fe8136897a121acde3583947289bed45a090d618ffe31ef26938f5"
+      },
+      "notes": "# 首次支撑破位按当晚浮盈亏选择提前退出\n\n支撑破位仅在浮盈状态保护收益，能否保留尚在浮亏交易的后续修复，同时维持连续账户年度风险目标？\n",
+      "counts": {
+        "new_accounts": 2,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX024_20261018/protocols/account_report.md",
+          "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+          "bytes": 11676
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/8/report.md",
+        "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX024_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "8ff96a6791d85b797f9453a2eb167f3571f2f032b7f99a066af495a09e838184"
+    },
+    {
+      "experiment": "EX025_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "阳线确认未形成有效的统一入场过滤。C0059/C0060/C0061全期净收益分别42.61%、−46.87%、−7.41%，均显著低于各自原B/R/P基线；年度收益仅2/7、2/7、1/7通过，6个对照全部原目标通过0个。B/R在2024由亏转盈的局部改善被其他年度损伤覆盖，去2026三个新增账户仍全部亏损。共同入场仅40/36/40笔且收益差接近零，主要损失来自遗漏原盈利参与并转到较差的新路径，不能把旧交易阳线分组强度当作连续账户有效性。保留完整负面结果，不据此扩大阳线阈值或按年度切换，尚不具备阶段四准备度。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 9,
+        "content_sha256": "800f1ab99e6a0b91f278549779ec5003604853179974b776e9eb7448703106b6"
+      },
+      "notes": "# 阳线入场确认与三种退出方式的最小交互对照\n\n支撑尚未破坏之外要求当日收盘高于开盘，能否改善剩余损失，且其效果是否依赖提前退出规则？\n",
+      "counts": {
+        "new_accounts": 3,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+          "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+          "bytes": 12342
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/9/report.md",
+        "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX025_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "623b8169371c9aa2fb2c2c0f2453e2be0a495f088acec76650d16df246dcc31f"
+    },
+    {
+      "experiment": "EX026_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "缩短完整交易周期尚未形成有效替代：六个H3/H5新构造均仅通过2020、2024两年的收益目标，全部原目标通过0/9。H3-R全期+182.13%，H5-R年度回撤7/7，但各期限均低于对应H10的全期和截至2025年末收益。实际路径显示短周期改变了参与机会，不能把结果只解释成提前卖出。H3-P未触发任何正浮盈早退，经济路径与H3-B完全相同；六配置只有五条不同经济路径，均非独立验证。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 10,
+        "content_sha256": "0613ce10f9cfde8cc7eacad2943ab2ee6992f4ccb0bfe0849293a67d85a3eb92"
+      },
+      "notes": "# 原支撑入场的三日五日短周期与退出交互\n\n回到原支撑入场，缩短整笔持有和预约重入周期能否改善机会替代，而非继续加强已失效的入场筛选？\n",
+      "counts": {
+        "new_accounts": 6,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX026_20261018/protocols/account_report.md",
+          "sha256": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+          "bytes": 11785
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/10/report.md",
+        "sha256": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX026_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "246fd4fadf58b9d74c66cb29fac1e4968607c22ce0c4a02ad2cbf66e986b7f16"
+    },
+    {
+      "experiment": "EX027_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "自然短周期边界未改善策略准备度：四个新账户全期均亏损，H1-B为−65.86%，H2-B/R/P分别−23.53%／−36.23%／−18.23%；年度收益仅通过1／2／1／2个年份，全部原目标通过0/10。其全期与截至2025年末收益均低于对应H3和H10。交易频率充足，但真实路径中共同持有、遗漏旧机会和新增参与均未形成可靠增量。H1已达固定T+1自然下界，结束当前统一短周期路线，不继续邻域调参或进入阶段四。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 11,
+        "content_sha256": "19b48fdfebad3e2f01cac756b3ff394d82b471128700f35603046941b5192157"
+      },
+      "notes": "# 支撑周期自然下界的一日两日反证\n\nH3较H5的短端改善是否延续至H1/H2自然边界，还是只反映特定周转路径？\n",
+      "counts": {
+        "new_accounts": 4,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX027_20261018/protocols/account_report.md",
+          "sha256": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9",
+          "bytes": 12533
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/11/report.md",
+        "sha256": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX027_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "5a8f9a2756545a9e4ed064338f1c42214d7f68bc43b22a635f1675324a72eb21"
+    },
+    {
+      "experiment": "EX028_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "H15完整账户未保留同入场标签的平均收益优势：B/R/P全期分别+136.19%／+32.45%／+215.67%，全部低于对应H10，年度收益仅通过2／1／2年，全部原目标通过0/6。三者实际闭合96／97／96笔，频率均合格；每个方案与H10只保留17次共同入场，80次新机会未补回121次H10独有机会的贡献。P在同一H15路径有退出增量，但仍不能解决全年度目标；本轮结束统一期限扩展，不自动增试邻近期限或进入阶段四。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 12,
+        "content_sha256": "934ec7ba561fd43cf62397267a6e05557bd673e3ae3bdfc671c4ffab9e744922"
+      },
+      "notes": "# 十五日完整资金周期与退出机制对照\n\n同入场延后期限的有限正增量能否在真实连续账户兑现，还是被预约和后续入场重排抵消？\n",
+      "counts": {
+        "new_accounts": 3,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX028_20261018/protocols/account_report.md",
+          "sha256": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+          "bytes": 8555
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/12/report.md",
+        "sha256": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX028_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "30a9c8ae638575548cbae542adea07191aa0896013ab3c4a97d5f283cc2155db"
+    },
+    {
+      "experiment": "EX029_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "本次授权的10轮阶段三研究已完成，原目标未达成，尚不能进入阶段四。10轮新增52个正式账户，加前序14个候选共66个唯一登记身份；它们共享已见数据，包含重复经济路径，不能视为66条独立有效策略。高全期收益、部分年度改善及审计通过均不能替代每个自然年的收益和回撤目标。完整候选的剩余年度缺口保留如下，研究不以实验完成或候选数量作为有效性结论。",
+      "next_step": null,
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "CANDIDATES",
+        "revision": 13,
+        "content_sha256": "f08d2db8cdf721b05792aab633caae8d9de08b568af8afd63581c8f723258370"
+      },
+      "notes": "# 按早退当晚浮盈亏选择冷却的互补反证\n\n退出均采用相同破位规则时，已知浮盈亏能否区分应保留原预约还是成交后释放，改善连续账户原年度目标？\n",
+      "counts": {
+        "new_accounts": 2,
+        "new_source_calls": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+          "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+          "bytes": 12040
+        }
+      ],
+      "formal_report": {
+        "path": "research/S014/deliveries/CANDIDATES/13/report.md",
+        "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX029_20261018/protocols/account_report.md"
+        ]
+      },
+      "result_sha256": "15f540e4cfff2118cf2b8c28e5919d097e1f9fc6e8bd8c505530ecf6e11866dd"
+    },
+    {
+      "experiment": "EX030_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。",
+      "next_step": "建议结束这条旧支撑确认过滤路线，保留诊断证据。若继续研究，应先提出能区别于本轮及既有账户比较、且可能改变研究决定的新机制与反证；当前没有足够证据支持追加相邻阈值账户，也未证明必须扩展数据。进一步机制研究或新增账户需另定范围与授权，不自动进入阶段三或四。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 13,
+        "content_sha256": "bc29de634b6a3ae2cadbcb2e6999c8ac2ec37a75a161540de3e00812a1af82ca"
+      },
+      "notes": "# 旧支撑真实收复与滚动低点表面恢复定向诊断\n\n在保持费用执行与目标不变的现有数据内，检验事前可知恢复状态的收益差异及反证；不新增账户。\n",
+      "counts": {
+        "new_accounts": 0,
+        "new_source_calls": 0,
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX030_20261018/others/report.md",
+          "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+          "bytes": 13442
+        },
+        {
+          "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+          "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+          "bytes": 13442
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/13/report.md",
+        "source": "research/S014/experiments/EX030_20261018/protocols/report.md",
+        "mirror": "research/S014/experiments/EX030_20261018/others/report.md",
+        "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+        "bytes": 13442,
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/13/report.md",
+        "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX030_20261018/others/report.md",
+          "research/S014/experiments/EX030_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "03292741994294f95a630cc6ac7af55d8919e8efa0956a9ad209040a66262dac"
+    },
+    {
+      "experiment": "EX031_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "甲醇单日上涨的通用H3收益增量未获支持；不新增有效组件，不推进账户。低环境存在有限正向线索，但仅3次选择改变且证据未充分。",
+      "next_step": "建议先评审低环境局部线索的事件依赖与用途诊断；不自动扩数据、改阈值、反转方向或追加拟合，不启动账户。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 14,
+        "content_sha256": "bbfef98d7493c0708638d1abbe325bbe54eeca2fd9ab5d47c43a3095aafd535a"
+      },
+      "notes": "# 甲醇单日方向的条件收益增量\n\n在强股票市场行业基线之外，甲醇前一完整交易日方向是否改善低开收阳机会的H3净收益？\n",
+      "counts": {
+        "new_accounts": 0,
+        "formal_fits": 12,
+        "new_data_calls": 0,
+        "new_labels": 0,
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX031_20261018/others/report.md",
+          "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+          "bytes": 8371
+        },
+        {
+          "path": "research/S014/experiments/EX031_20261018/protocols/report.md",
+          "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+          "bytes": 8371
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/14/report.md",
+        "mirror": "research/S014/experiments/EX031_20261018/others/report.md",
+        "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+        "bytes": 8371,
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/14/report.md",
+        "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX031_20261018/others/report.md",
+          "research/S014/experiments/EX031_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "883a35218aabe0697fe92d364e8a5312deb1ead77e037e779b7f960149a03e2a"
+    },
+    {
+      "experiment": "EX032_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "NOT_SUPPORTED: close the fixed z*S commodity-stock interaction branch. No effective buy component is established; the overall S014 objectives remain unmet.",
+      "next_step": {
+        "recommendation": "S014 restricted stop of new experiments pending user decision",
+        "restart_requirement": "New independent mechanism evidence distinguishable from rejected explanations, causal availability, intended trading use and a bounded falsification design, followed by applicable user authorization.",
+        "automatic_new_experiments": false,
+        "automatic_accounts": false,
+        "automatic_horizon_or_direction_change": false,
+        "claim_data_or_mechanisms_exhausted": false,
+        "claim_new_data_required": false,
+        "fees_execution_annual_targets": "UNCHANGED",
+        "overall_target_status": "NOT_ACHIEVED"
+      },
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 15,
+        "content_sha256": "577909b4128eff0b9fceb5a3b336236433d1cf091974aeb5428144a4a4554b6b"
+      },
+      "notes": "# 甲醇上涨与股票累计不涨固定交互检验\n\n固定四格与完整主项对照能否识别商品条件反应的可交易增量？\n",
+      "counts": {
+        "new_accounts": 0,
+        "formal_fits": 12,
+        "failed_fits": 0,
+        "new_data_calls": 0,
+        "new_labels": 0,
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX032_20261018/protocols/report.md",
+          "sha256": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9",
+          "bytes": 12180
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/15/report.md",
+        "source": "research/S014/experiments/EX032_20261018/protocols/report.md",
+        "sha256": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9",
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/15/report.md",
+        "sha256": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX032_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "ad70ee4d0eda46d4037b259276e209139c71e36c510541fbfaa9649124d1a7d8"
+    },
+    {
+      "experiment": "EX033_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "固定共同下跌且个股相对抗跌规则尚未建立有增量价值的有效退出组件。关闭本次固定设计，建议暂停S014当前研究路线；原年度策略目标仍未达成。",
+      "next_step": "请用户确认暂停S014；保留历史证据与候选资格。只有出现具体的新机制证据或独立新增时段的可比样本，再评审重启方案；不自动新增数据、拟合、账户或恢复公告追溯。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 16,
+        "content_sha256": "3a9527bbf3c133241955144de5e4419c12f5fff0ed43c1fd07d9de66558a3979"
+      },
+      "notes": "# 首次支撑破位的共同压力与退出动作检验\n\n共同下跌且相对抗跌能否区分C0056继续至原H10的动作收益？\n",
+      "counts": {
+        "new_accounts": 0,
+        "formal_fits": 0,
+        "new_data_calls": 0,
+        "new_labels": 0,
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX033_20261018/others/report.md",
+          "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+          "bytes": 10432
+        },
+        {
+          "path": "research/S014/experiments/EX033_20261018/protocols/report.md",
+          "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+          "bytes": 10432
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/16/report.md",
+        "source": "research/S014/experiments/EX033_20261018/protocols/report.md",
+        "copy": "research/S014/experiments/EX033_20261018/others/report.md",
+        "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+        "bytes": 10432,
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/16/report.md",
+        "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX033_20261018/others/report.md",
+          "research/S014/experiments/EX033_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "62186efaa11129001cba641076d6714e589dc7b607a9d3278dff7dd0db61d106"
+    },
+    {
+      "experiment": "EX034_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "固定146组E+6对照确认：单笔退出标签遗漏的后续交易项会改变动作排序，25组严格反转及4组零值转为差异，跨7个决策年份和20个重叠簇；去2026保留21组、删绝对O最大5组保留22组。支持继续研究包含后续参与的局部动作价值，但不建立可预测收益机制；无新有效组件或合格账户。",
+      "next_step": "建议先评审固定E+9延伸的最小公共TDR账户方案，明确H卖出后恢复原政策、终点剩余状态及所需额度，再决定是否执行及提出D时可得的信息假设。不自动新增标签、数据、拟合、撮合或账户，不改变年度目标，不自动暂停S014。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 17,
+        "content_sha256": "e956baeda7691680817d81e6f0349bc20cdbda05bb37bbda58f219c27d2886ce"
+      },
+      "notes": "# 固定E6三臂局部财富对照\n\n原H3/H6单笔标签是否遗漏后续交易价值并改变动作排序？\n",
+      "counts": {
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX034_20261018/others/report.md",
+          "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+          "bytes": 9622
+        },
+        {
+          "path": "research/S014/experiments/EX034_20261018/protocols/report.md",
+          "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+          "bytes": 9622
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/17/report.md",
+        "copy": "research/S014/experiments/EX034_20261018/others/report.md",
+        "source": "research/S014/experiments/EX034_20261018/protocols/report.md",
+        "bytes": 9622,
+        "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/17/report.md",
+        "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX034_20261018/others/report.md",
+          "research/S014/experiments/EX034_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "bdc524d005d3f76513b8b688e18d4e9b1819e539f427d45ca91d66ee6d86f5c4"
+    },
+    {
+      "experiment": "EX035_20261018",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "固定E9检验完成69次诊断账户及145组比较。旧25个单笔/账户反向保留19个，全体L6/A9反向29个；剔除最大5个期限变化后仍有26个。后续参与的测量差异持续，但A均值由E6的+0.4095变为E9的-0.3703个百分点，删最大5组又变为+0.5446，平均方向对尾部敏感；未新增有效预测组件或合格策略。",
+      "next_step": "继续S014，先评审D以前原入场条件的重复程度与间隔能否识别退出后的再参与相对价值；先核对已有覆盖，区别于旧P/D盈利和涨跌阈值，不把未来路线或重入作为输入。本轮不启动新特征检验、模型或账户，不扩大观察终点；新检验额度另行确认。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 18,
+        "content_sha256": "e4aa2f035bdb040d562db8a38bb403287753211b865d26e24a97b0eaa97685f4"
+      },
+      "notes": "# 固定E9单次干预及恢复原策略对照\n\n延长一次持有后恢复原策略，动作价值差异是否持续到固定E9？\n",
+      "counts": {
+        "new_diagnostic_accounts": 69,
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX035_20261018/others/report.md",
+          "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+          "bytes": 11631
+        },
+        {
+          "path": "research/S014/experiments/EX035_20261018/protocols/report.md",
+          "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+          "bytes": 11631
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "formal": "research/S014/deliveries/COMPONENTS/18/report.md",
+        "copy": "research/S014/experiments/EX035_20261018/others/report.md",
+        "source": "research/S014/experiments/EX035_20261018/protocols/report.md",
+        "bytes": 11631,
+        "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+        "byte_identical": true
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/18/report.md",
+        "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX035_20261018/others/report.md",
+          "research/S014/experiments/EX035_20261018/protocols/report.md"
+        ]
+      },
+      "result_sha256": "275704e74506693d54bfbcf9357c975e79df5a9bee4499775a2dd9c80dff1460"
+    },
+    {
+      "experiment": "EX036_20261019",
+      "result_present": true,
+      "status": "COMPLETE",
+      "conclusion": "财务原文与保守可用时点准备已完成，阶段二固定F1/F2检验已执行并独立复算。F1行业超额均值差+3.165个百分点，但相对归母利润改善对照为-0.061个百分点、8个正向事件中7个重合，前推误差未改善；F2在F1正向事件内的主风险效果-1.345个百分点，与预期方向相反，全事件+2.071个百分点但不稳定。四项描述性区间均跨零，本轮新增获支持组件0，不建议据此推进新的财务策略构造；该结论仅限固定表达与已见样本。",
+      "next_step": "保持阶段二，停止对这两个固定表达追加邻近阈值或持有期搜索。如继续财务路线，优先审议‘报告相对更早业绩预告/快报的新信息’的完整披露链补证方案；新增数据范围和执行预算需另行确认。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 19,
+        "content_sha256": "597a4c77810a4d19c0361aed47a2367ca37ee8215db807b847da2756fbed1762"
+      },
+      "notes": "# 财务信息固定双机制检验\n\n经营盈利改善与现金支持盈利是否提供量价之外的信息，并有可交易用途？\n",
+      "counts": {
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX036_20261019/others/report.md",
+          "sha256": "0309c0b5adf15ec26f6a73c765bca399b780211e679b85c39d23b0e81e028de6",
+          "bytes": 8289
+        },
+        {
+          "path": "research/S014/experiments/EX036_20261019/protocols/report.md",
+          "sha256": "0309c0b5adf15ec26f6a73c765bca399b780211e679b85c39d23b0e81e028de6",
+          "bytes": 8289
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "byte_identical": true,
+        "sha256": "0309c0b5adf15ec26f6a73c765bca399b780211e679b85c39d23b0e81e028de6",
+        "bytes": 8289,
+        "formal": "research/S014/deliveries/COMPONENTS/19/report.md",
+        "copy": "research/S014/experiments/EX036_20261019/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/19/report.md",
+        "sha256": "0309c0b5adf15ec26f6a73c765bca399b780211e679b85c39d23b0e81e028de6",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX036_20261019/others/report.md",
+          "research/S014/experiments/EX036_20261019/protocols/report.md"
+        ]
+      },
+      "result_sha256": "22532d6904dc63e83a62c97624c865f75b2304def6d9be0f29997a6fc6fb45fe"
+    },
+    {
+      "experiment": "EX037_20261019",
+      "result_present": true,
+      "status": "COMPLETE_BOUNDED_DIAGNOSIS",
+      "conclusion": "本轮没有找到足以继续开发直接财务买卖信号的新证据。已能核实披露链的24期中，5期有更早的利润预告、19期未找到更早同期间预告；本轮已核实的公司预告/快报链没有确认多数事件的归母利润已被提前披露；其他公告正文、分析师信息和市场预期渠道仍未排除，不能确认或充分排除“早已知道”这一解释。另3期受2026目录缺口影响，保持未知。5期更早预告均为左右近似单点，不是明确区间，无法按事前定义形成正负边界突破与区间覆盖的可比组；两项主效果不可估计，不得写成超预期机制已被证伪。5个最早预告事件的涨跌方向与公告预增预减并不一一对应，且样本极少、已见并受其他信息影响。",
+      "next_step": "当前标的与窗口下，停止追加财务直接入场路线的阈值、持有期或模型搜索；不把财务默认为有效风险过滤器。保留财务原文资产与未知项，未来只有取得新的、可核时点的预期对照及足够可比较的事件，并提出能改变判断的固定问题时再审议重启。本次不推进新的阶段三策略，不暂停或改写其他历史研究路线及候选资格。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 20,
+        "content_sha256": "25f65c53b131119277edaee807acb150ef2ddc152cd347cf24a6b03181a0f9c2"
+      },
+      "notes": "# 财报新增信息与预告快报披露链研究\n\n正式报告相对更早已公开预告和快报是否新增可交易的盈利信息？\n",
+      "counts": {
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX037_20261019/others/report.md",
+          "sha256": "1ab7de57ee9ae627129c1941e23b62dbc1bb3bf6bf03ddbb9b3e07b55895388b",
+          "bytes": 11272
+        },
+        {
+          "path": "research/S014/experiments/EX037_20261019/protocols/report.md",
+          "sha256": "1ab7de57ee9ae627129c1941e23b62dbc1bb3bf6bf03ddbb9b3e07b55895388b",
+          "bytes": 11272
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "byte_identical": true,
+        "sha256": "1ab7de57ee9ae627129c1941e23b62dbc1bb3bf6bf03ddbb9b3e07b55895388b",
+        "bytes": 11272,
+        "formal": "research/S014/deliveries/COMPONENTS/20/report.md",
+        "copy": "research/S014/experiments/EX037_20261019/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/20/report.md",
+        "sha256": "1ab7de57ee9ae627129c1941e23b62dbc1bb3bf6bf03ddbb9b3e07b55895388b",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX037_20261019/others/report.md",
+          "research/S014/experiments/EX037_20261019/protocols/report.md"
+        ]
+      },
+      "result_sha256": "8c1fd8472387c0f7af73a6aebb08e4fd398a5307bd9ce1fce8a92b0348432f43"
+    },
+    {
+      "experiment": "EX038_20261019",
+      "result_present": true,
+      "status": "COMPLETE_BOUNDED_CENSUS",
+      "conclusion": "普查已完成：21类接口均已尝试，11类有非空返回、5类明确无权限、5类因自动审批失败尚未核实。ETF份额变化优先、可比期权持仓结构其次，值得形成下一轮验证；当前没有新增获支持的买卖信号。",
+      "next_step": "建议下一轮先核清历史份额折算、发布时间及完整覆盖，再固定一个ETF净赎回状态，检验它在既有价格信息之外能否区分600722.SH的H3损失风险；期权待历史合约与调整口径核清后再检验。不优先购买新权限或重复价格指标。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 21,
+        "content_sha256": "d8db50020264c281184cfa82cfd2feebd351b96c1d233ed502a4880bd03a45e5"
+      },
+      "notes": "# 已有权限期权与ETF接口普查\n\n哪些已授权可得的期权及ETF数据能提供区别于既有量价与财务研究的可检验信息？\n",
+      "counts": {
+        "new_supported_components": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX038_20261019/others/report.md",
+          "sha256": "1b0a97da4aff4bb26366a095074f4d2511b8c5ab8967fd09f2632964a00e3524",
+          "bytes": 10796
+        },
+        {
+          "path": "research/S014/experiments/EX038_20261019/protocols/report.md",
+          "sha256": "1b0a97da4aff4bb26366a095074f4d2511b8c5ab8967fd09f2632964a00e3524",
+          "bytes": 10796
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "byte_identical": true,
+        "sha256": "1b0a97da4aff4bb26366a095074f4d2511b8c5ab8967fd09f2632964a00e3524",
+        "bytes": 10796,
+        "formal": "research/S014/deliveries/COMPONENTS/21/report.md",
+        "copy": "research/S014/experiments/EX038_20261019/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/21/report.md",
+        "sha256": "1b0a97da4aff4bb26366a095074f4d2511b8c5ab8967fd09f2632964a00e3524",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX038_20261019/others/report.md",
+          "research/S014/experiments/EX038_20261019/protocols/report.md"
+        ]
+      },
+      "result_sha256": "279ec6948b21aa8e74af0833b49dff2b7992ff7a015a99864a009585fd70e0f5"
+    },
+    {
+      "experiment": "EX039_20261019",
+      "result_present": true,
+      "status": "COMPLETE_FIXED_STUDY_DELIVERY",
+      "conclusion": "本轮ETF和期权固定检验已完成：510300份额主信号未表现出稳定新增用途；甲醇期权同合约看跌持仓占比变化有预测线索，但预设风险方向相反、年度和聚类反证较强，尚不能确认可交易优势；联合输入也未形成可靠改进。未发现可直接采用的进出场信号，不进入阶段三或新增账户。",
+      "next_step": "停止继续打磨本轮ETF份额直接信号；甲醇期权仅保留为待验证线索。如继续，先明确其反向关系的经济解释并核实历史可得性与调整链，再预留未使用的新样本进行一次独立验证；不在当前结果上反转方向、改期限或搜索阈值。请用户决定暂缓或仅继续期权补证。",
+      "delivery": {
+        "type": "DeliveryReference",
+        "batch": {
+          "type": "ResearchBatchRef",
+          "strategy_id": "S014"
+        },
+        "stage": "COMPONENTS",
+        "revision": 22,
+        "content_sha256": "eb1dd559a0417529ca50f6e53158acfb68d42d3056c138676e6d10d1cde457a5"
+      },
+      "notes": "# ETF份额与甲醇期权持仓结构固定检验\n\n在既有价格信息之外能否改善600722.SH固定H3机会的损失风险判断？\n",
+      "counts": {
+        "new_accounts": 0
+      },
+      "report_paths": [
+        {
+          "path": "research/S014/experiments/EX039_20261019/others/report.md",
+          "sha256": "2961f55fff93a3d673ae4ba688ef910f85c67605ef5f1b7da385a930ef006007",
+          "bytes": 13149
+        },
+        {
+          "path": "research/S014/experiments/EX039_20261019/protocols/report.md",
+          "sha256": "2961f55fff93a3d673ae4ba688ef910f85c67605ef5f1b7da385a930ef006007",
+          "bytes": 13149
+        }
+      ],
+      "copy_verification_saved": {
+        "status": "PASS",
+        "byte_identical": true,
+        "sha256": "2961f55fff93a3d673ae4ba688ef910f85c67605ef5f1b7da385a930ef006007",
+        "bytes": 13149,
+        "formal": "research/S014/deliveries/COMPONENTS/22/report.md",
+        "copy": "research/S014/experiments/EX039_20261019/others/report.md"
+      },
+      "formal_report": {
+        "path": "research/S014/deliveries/COMPONENTS/22/report.md",
+        "sha256": "2961f55fff93a3d673ae4ba688ef910f85c67605ef5f1b7da385a930ef006007",
+        "byte_identical_local_mirrors": [
+          "research/S014/experiments/EX039_20261019/others/report.md",
+          "research/S014/experiments/EX039_20261019/protocols/report.md"
+        ]
+      },
+      "result_sha256": "ced6a95f3058ba073e7105cf9550453f2450702f692ca17fc0cc57c673cc660f"
+    }
+  ],
+  "count": 39,
+  "not_independent_mechanism_count": true,
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_accounts": 0,
+  "new_market_data_calls": 0
+}

@@ -1,0 +1,424 @@
+{
+  "status": "PASS",
+  "scope": "Existing saved OPTION O0/O1 only; no fit, label, rule, account, source call or causal ablation",
+  "score_identity": "s1-s0 = centered_option_term + old_baseline_control_reallocation",
+  "margin_convention": "margin = saved_score - own_saved_threshold; keep iff margin < 0",
+  "margin_identity": "m1-m0 = raw_option_term + option_mean_centering_term + old_reallocation - threshold_delta",
+  "old_reallocation_definition": "Old columns contributions plus intercept difference; includes any mean/scale differences",
+  "mse_identity": "improvement = (2L-s0-s1)*(centered_option_term + old_reallocation)",
+  "mse_allocation_warning": "Symmetric algebraic allocation of cross terms; coordinate dependent, not causal or independent predictive value",
+  "interpretation_warning": "Centered option term, training centering offset and threshold movement jointly form saved model behavior. No term-alone scores or new keep rules are evaluated. Coefficients in both saved models were estimated jointly; feature addition can redistribute all old coefficients. Model intercept equals training mean loss, not a causal intercept.",
+  "pure_arithmetic_checks_max_error": {
+    "score_error": 4.1852086934133024e-17,
+    "score_difference_identity_error": 6.404429039469078e-17,
+    "margin_identity_error": 6.404429039469078e-17,
+    "mse_allocation_identity_error": 1.6741464477938087e-17,
+    "fit_receipt_score_error": 0.0,
+    "direct_raw_center_identity_error": 1.08e-46
+  },
+  "folds": [
+    {
+      "year": 2023,
+      "train_n": 101,
+      "test_n": 23,
+      "old_column_count": 72,
+      "new_standardized_coefficient": -0.00785004936944032,
+      "new_mean": 0.0009675310136510482,
+      "new_scale": 0.013636670633853468,
+      "threshold0": 0.02223031648261225,
+      "threshold1": 0.022731960310318246,
+      "threshold_delta": 0.000501643827705996,
+      "intercept_delta": 0.0,
+      "old_means_identical": true,
+      "old_scales_identical": true
+    },
+    {
+      "year": 2024,
+      "train_n": 125,
+      "test_n": 31,
+      "old_column_count": 72,
+      "new_standardized_coefficient": -0.0057503475214855685,
+      "new_mean": 0.002321588786955583,
+      "new_scale": 0.015394165267955453,
+      "threshold0": 0.021780106560171764,
+      "threshold1": 0.021112575515466747,
+      "threshold_delta": -0.000667531044705017,
+      "intercept_delta": 0.0,
+      "old_means_identical": true,
+      "old_scales_identical": true
+    },
+    {
+      "year": 2025,
+      "train_n": 156,
+      "test_n": 53,
+      "old_column_count": 72,
+      "new_standardized_coefficient": -0.00497614787498579,
+      "new_mean": 0.0020416006260628888,
+      "new_scale": 0.01422131692645021,
+      "threshold0": 0.02233545217566348,
+      "threshold1": 0.022770765138424527,
+      "threshold_delta": 0.000435312962761047,
+      "intercept_delta": 0.0,
+      "old_means_identical": true,
+      "old_scales_identical": true
+    },
+    {
+      "year": 2026,
+      "train_n": 209,
+      "test_n": 41,
+      "old_column_count": 72,
+      "new_standardized_coefficient": -0.007549830088883711,
+      "new_mean": 0.00021069519394142528,
+      "new_scale": 0.01406211792700268,
+      "threshold0": 0.025285227231518156,
+      "threshold1": 0.02539313238874923,
+      "threshold_delta": 0.000107905157231074,
+      "intercept_delta": 0.0,
+      "old_means_identical": true,
+      "old_scales_identical": true
+    }
+  ],
+  "all": {
+    "n": 148,
+    "changed_n": 11,
+    "removed_n": 6,
+    "added_n": 5,
+    "means": {
+      "score_delta": -0.00028652143686930167,
+      "direct_centered_option_term": -0.0009603549018118567,
+      "direct_raw_option_term": -0.0015157151070686243,
+      "option_mean_centering_term": 0.0005553602052567676,
+      "old_baseline_control_reallocation": 0.0006738334649425538,
+      "threshold_delta": 0.00012391921705535072,
+      "margin_delta": -0.00041044065392465236,
+      "allocation_difference": 0.0027157677027026934,
+      "mse_improvement": 0.00016460968423745494,
+      "symmetric_mse_allocation_direct": 0.0001082308309842541,
+      "symmetric_mse_allocation_old": 5.6378853253200945e-05
+    },
+    "mean_absolute_terms": {
+      "score_delta": 0.0057947038925427585,
+      "direct_centered_option_term": 0.005230624835447237,
+      "direct_raw_option_term": 0.005167978410596933,
+      "option_mean_centering_term": 0.0005553602052567676,
+      "old_baseline_control_reallocation": 0.0036120322992651385,
+      "threshold_delta": 0.00040356060064799295,
+      "margin_delta": 0.005735876935126609
+    },
+    "changed_rows_terms": {
+      "direct_centered_option_term": {
+        "aligned_with_observed_margin_change": 9,
+        "opposed_to_observed_margin_change": 2,
+        "mean_absolute": 0.00627133840187929
+      },
+      "direct_raw_option_term": {
+        "aligned_with_observed_margin_change": 10,
+        "opposed_to_observed_margin_change": 1,
+        "mean_absolute": 0.0059314410098133255
+      },
+      "option_mean_centering_term": {
+        "aligned_with_observed_margin_change": 6,
+        "opposed_to_observed_margin_change": 5,
+        "mean_absolute": 0.0005499787161549441
+      },
+      "old_baseline_control_reallocation": {
+        "aligned_with_observed_margin_change": 10,
+        "opposed_to_observed_margin_change": 1,
+        "mean_absolute": 0.004307821917007016
+      },
+      "negative_threshold_delta_margin_term": {
+        "aligned_with_observed_margin_change": 6,
+        "opposed_to_observed_margin_change": 5,
+        "mean_absolute": 0.0003731607382427743
+      }
+    }
+  },
+  "without_2026": {
+    "n": 107,
+    "changed_n": 8,
+    "removed_n": 6,
+    "added_n": 2,
+    "means": {
+      "score_delta": 0.0016094014638513199,
+      "direct_centered_option_term": 0.0005087999425939166,
+      "direct_raw_option_term": -0.00021601662274136333,
+      "option_mean_centering_term": 0.00072481656533528,
+      "old_baseline_control_reallocation": 0.0011006015212574039,
+      "threshold_delta": 0.00013005544558614834,
+      "margin_delta": 0.0014793460182651714,
+      "allocation_difference": 0.0012189644859812963,
+      "mse_improvement": 9.078948869158538e-05,
+      "symmetric_mse_allocation_direct": 1.7506349860148927e-05,
+      "symmetric_mse_allocation_old": 7.328313883143632e-05
+    },
+    "mean_absolute_terms": {
+      "score_delta": 0.005047056672523596,
+      "direct_centered_option_term": 0.00434437818882031,
+      "direct_raw_option_term": 0.004241869054036052,
+      "option_mean_centering_term": 0.00072481656533528,
+      "old_baseline_control_reallocation": 0.002930931009615357,
+      "threshold_delta": 0.0005168491350413918,
+      "margin_delta": 0.004944510896827871
+    },
+    "changed_rows_terms": {
+      "direct_centered_option_term": {
+        "aligned_with_observed_margin_change": 7,
+        "opposed_to_observed_margin_change": 1,
+        "mean_absolute": 0.006225878596837258
+      },
+      "direct_raw_option_term": {
+        "aligned_with_observed_margin_change": 8,
+        "opposed_to_observed_margin_change": 0,
+        "mean_absolute": 0.005744379628212635
+      },
+      "option_mean_centering_term": {
+        "aligned_with_observed_margin_change": 6,
+        "opposed_to_observed_margin_change": 2,
+        "mean_absolute": 0.0007138005711112799
+      },
+      "old_baseline_control_reallocation": {
+        "aligned_with_observed_margin_change": 7,
+        "opposed_to_observed_margin_change": 1,
+        "mean_absolute": 0.003251626298410195
+      },
+      "negative_threshold_delta_margin_term": {
+        "aligned_with_observed_margin_change": 3,
+        "opposed_to_observed_margin_change": 5,
+        "mean_absolute": 0.0004726315811221619
+      }
+    }
+  },
+  "years": {
+    "2023": {
+      "n": 23,
+      "changed_n": 1,
+      "removed_n": 1,
+      "added_n": 0,
+      "means": {
+        "score_delta": 0.0014347742929090377,
+        "direct_centered_option_term": -0.004163885926259514,
+        "direct_raw_option_term": -0.004720852243592876,
+        "option_mean_centering_term": 0.0005569663173333616,
+        "old_baseline_control_reallocation": 0.005598660219168555,
+        "threshold_delta": 0.000501643827705996,
+        "margin_delta": 0.0009331304652030418,
+        "allocation_difference": 0.0010031582608695478,
+        "mse_improvement": -4.646214698160731e-05,
+        "symmetric_mse_allocation_direct": -0.00015709446370426553,
+        "symmetric_mse_allocation_old": 0.00011063231672265823
+      },
+      "mean_absolute_terms": {
+        "score_delta": 0.008896865885312766,
+        "direct_centered_option_term": 0.008612028302385144,
+        "direct_raw_option_term": 0.008738122061136671,
+        "option_mean_centering_term": 0.0005569663173333616,
+        "old_baseline_control_reallocation": 0.00602732000634043,
+        "threshold_delta": 0.000501643827705996,
+        "margin_delta": 0.008831434081698942
+      },
+      "changed_rows_terms": {
+        "direct_centered_option_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.004146002329882322
+        },
+        "direct_raw_option_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.0035890360125489604
+        },
+        "option_mean_centering_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.0005569663173333616
+        },
+        "old_baseline_control_reallocation": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.012702286630164972
+        },
+        "negative_threshold_delta_margin_term": {
+          "aligned_with_observed_margin_change": 0,
+          "opposed_to_observed_margin_change": 1,
+          "mean_absolute": 0.000501643827705996
+        }
+      }
+    },
+    "2024": {
+      "n": 31,
+      "changed_n": 1,
+      "removed_n": 1,
+      "added_n": 0,
+      "means": {
+        "score_delta": -0.00042517075033618717,
+        "direct_centered_option_term": 0.0005263086644078646,
+        "direct_raw_option_term": -0.0003408992740938747,
+        "option_mean_centering_term": 0.0008672079385017394,
+        "old_baseline_control_reallocation": -0.0009514794147440506,
+        "threshold_delta": -0.000667531044705017,
+        "margin_delta": 0.00024236029436882985,
+        "allocation_difference": -0.0024760906451612935,
+        "mse_improvement": -5.381188048966828e-06,
+        "symmetric_mse_allocation_direct": -6.453003914561822e-05,
+        "symmetric_mse_allocation_old": 5.9148851096651126e-05
+      },
+      "mean_absolute_terms": {
+        "score_delta": 0.003588785355081361,
+        "direct_centered_option_term": 0.0023389930435622494,
+        "direct_raw_option_term": 0.002291967187066371,
+        "option_mean_centering_term": 0.0008672079385017394,
+        "old_baseline_control_reallocation": 0.002567233166554254,
+        "threshold_delta": 0.000667531044705017,
+        "margin_delta": 0.0035222730672650445
+      },
+      "changed_rows_terms": {
+        "direct_centered_option_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.0009598594767818019
+        },
+        "direct_raw_option_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 9.265153828006263e-05
+        },
+        "option_mean_centering_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.0008672079385017394
+        },
+        "old_baseline_control_reallocation": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.005289615423991986
+        },
+        "negative_threshold_delta_margin_term": {
+          "aligned_with_observed_margin_change": 1,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.000667531044705017
+        }
+      }
+    },
+    "2025": {
+      "n": 53,
+      "changed_n": 6,
+      "removed_n": 4,
+      "added_n": 2,
+      "means": {
+        "score_delta": 0.0028752158708604744,
+        "direct_centered_option_term": 0.0025263283314127193,
+        "direct_raw_option_term": 0.0018119566125701962,
+        "option_mean_centering_term": 0.0007143717188425229,
+        "old_baseline_control_reallocation": 0.00034888753944775506,
+        "threshold_delta": 0.000435312962761047,
+        "margin_delta": 0.0024399029080994276,
+        "allocation_difference": 0.0034738749056603623,
+        "mse_improvement": 0.00020660229245461466,
+        "symmetric_mse_allocation_direct": 0.0001412600625235511,
+        "symmetric_mse_allocation_old": 6.534222993106345e-05
+      },
+      "mean_absolute_terms": {
+        "score_delta": 0.004229335897930358,
+        "direct_centered_option_term": 0.0036653402056317963,
+        "direct_raw_option_term": 0.0034311735580501252,
+        "option_mean_centering_term": 0.0007143717188425229,
+        "old_baseline_control_reallocation": 0.0017999439569779513,
+        "threshold_delta": 0.000435312962761047,
+        "margin_delta": 0.00408960786785453
+      },
+      "changed_rows_terms": {
+        "direct_centered_option_term": {
+          "aligned_with_observed_margin_change": 5,
+          "opposed_to_observed_margin_change": 1,
+          "mean_absolute": 0.007450194494672323
+        },
+        "direct_raw_option_term": {
+          "aligned_with_observed_margin_change": 6,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.007045558245812009
+        },
+        "option_mean_centering_term": {
+          "aligned_with_observed_margin_change": 4,
+          "opposed_to_observed_margin_change": 2,
+          "mean_absolute": 0.0007143717188425229
+        },
+        "old_baseline_control_reallocation": {
+          "aligned_with_observed_margin_change": 5,
+          "opposed_to_observed_margin_change": 1,
+          "mean_absolute": 0.0013368513888541004
+        },
+        "negative_threshold_delta_margin_term": {
+          "aligned_with_observed_margin_change": 2,
+          "opposed_to_observed_margin_change": 4,
+          "mean_absolute": 0.000435312962761047
+        }
+      }
+    },
+    "2026": {
+      "n": 41,
+      "changed_n": 3,
+      "removed_n": 0,
+      "added_n": 3,
+      "means": {
+        "score_delta": -0.005234417787530436,
+        "direct_centered_option_term": -0.00479449071526107,
+        "direct_raw_option_term": -0.004907611151532452,
+        "option_mean_centering_term": 0.00011312043627138175,
+        "old_baseline_control_reallocation": -0.00043992707226937164,
+        "threshold_delta": 0.000107905157231074,
+        "margin_delta": -0.0053423229447615095,
+        "allocation_difference": 0.006622059024390241,
+        "mse_improvement": 0.00035726238968643157,
+        "symmetric_mse_allocation_direct": 0.0003449995987959432,
+        "symmetric_mse_allocation_old": 1.22627908904891e-05
+      },
+      "mean_absolute_terms": {
+        "score_delta": 0.00774588078381228,
+        "direct_centered_option_term": 0.007543512425424825,
+        "direct_raw_option_term": 0.007584897950889965,
+        "option_mean_centering_term": 0.00011312043627138175,
+        "old_baseline_control_reallocation": 0.0053895405429853,
+        "threshold_delta": 0.000107905157231074,
+        "margin_delta": 0.007801149278979415
+      },
+      "changed_rows_terms": {
+        "direct_centered_option_term": {
+          "aligned_with_observed_margin_change": 2,
+          "opposed_to_observed_margin_change": 1,
+          "mean_absolute": 0.006392564548658041
+        },
+        "direct_raw_option_term": {
+          "aligned_with_observed_margin_change": 2,
+          "opposed_to_observed_margin_change": 1,
+          "mean_absolute": 0.006430271360748502
+        },
+        "option_mean_centering_term": {
+          "aligned_with_observed_margin_change": 0,
+          "opposed_to_observed_margin_change": 3,
+          "mean_absolute": 0.00011312043627138175
+        },
+        "old_baseline_control_reallocation": {
+          "aligned_with_observed_margin_change": 3,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.00712434356659854
+        },
+        "negative_threshold_delta_margin_term": {
+          "aligned_with_observed_margin_change": 3,
+          "opposed_to_observed_margin_change": 0,
+          "mean_absolute": 0.000107905157231074
+        }
+      }
+    }
+  },
+  "outputs": [
+    "all_rows.csv",
+    "changed_rows.csv",
+    "source_hashes.json",
+    "decompose_saved_scores.py"
+  ],
+  "new_fits": 0,
+  "new_labels": 0,
+  "new_rules": 0,
+  "new_accounts": 0,
+  "source_calls": 0
+}

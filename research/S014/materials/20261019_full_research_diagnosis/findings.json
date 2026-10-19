@@ -1,0 +1,110 @@
+{
+  "status": "DIAGNOSIS_COMPLETE_ORIGINAL_ECONOMIC_OBJECTIVES_UNMET",
+  "authorization": "进入研究诊断状态，认真复盘整个研究过程，尽力寻找新的突破口。沿用当前研究分支。",
+  "scope": "S014 existing evidence only; one prelocked fixed exposure contrast, plus inventory and algebraic decomposition",
+  "branch": "codex/s014-jinniu-research",
+  "baseline_head": "02b666c3d8460a05b51b76ac291f0c17400d7e2c",
+  "current_role": "RSCH",
+  "historical_state": {
+    "experiments": 39,
+    "component_definitions": 28,
+    "registered_strategy_candidate_accounts": 66,
+    "additional_ex035_local_diagnostic_accounts": 69,
+    "all_original_targets_pass_count": 0,
+    "latest_components_revision": 22,
+    "stage_two_previously_completed": true,
+    "stage_three_previously_entered": true,
+    "independent_mechanisms_equal_candidate_count": false
+  },
+  "resources_used_this_diagnosis": {
+    "fixed_exposure_contrasts": 1,
+    "new_market_data_calls": 0,
+    "new_model_fits": 0,
+    "new_return_labels": 0,
+    "new_accounts": 0,
+    "new_candidates": 0,
+    "new_component_definitions": 0,
+    "new_supported_components": 0,
+    "new_qualified_candidates": 0
+  },
+  "findings": [
+    {
+      "id": "D01",
+      "classification": "VERIFIED_COVERAGE_GAP_NOT_NEW_SIGNAL",
+      "finding": "Both C0056 and C0057 have 138 actual entries, only 40 in A evaluation/use population and 98 outside it",
+      "primary_evidence": ["population_coverage.json", "entry_population_members.csv", "population_independent_review.json"],
+      "limits": ["Not a claim that EX031/32 training used only A dates", "Earlier broad/horizon studies exist", "Not a filtered account or annual attribution"]
+    },
+    {
+      "id": "D02",
+      "classification": "ACCOUNTING_LOCATION_NOT_CAUSAL_PREDICTION",
+      "finding": "C0056 2024 entry-day contribution -13.41pp; 2025 entry-day +22.10pp but other holding-day -29.70pp; different decision duties",
+      "primary_evidence": ["../20261018_c0056_coverage_review/account_review.json", "../20261018_c0056_coverage_review/daily_reconciliation.csv"],
+      "limits": ["Contribution denominator is year-opening equity", "No claim losses are foreseeable or avoidable", "Not one universal downside-filter solution"]
+    },
+    {
+      "id": "D03",
+      "classification": "MEASUREMENT_DIFFERENCE_ESTABLISHED_PREDICTIVE_COMPONENT_UNESTABLISHED",
+      "finding": "EX034/35 already show post-sale participation changes action ordering; fixed endpoints and policy duties matter",
+      "primary_evidence": ["../../experiments/EX034_20261018/protocols/report.md", "../../experiments/EX035_20261018/protocols/report.md"],
+      "limits": ["E6 and E9 are not new untested ideas", "C0011 and C0056 policies differ", "Tail and all-history-selection limits retained"]
+    },
+    {
+      "id": "D04",
+      "classification": "WEAK_DESCRIPTIVE_A9_ASSOCIATION_COMPETITION_ATTRIBUTION_NOT_SUPPORTED",
+      "finding": "Prelocked past-six-session extra-opportunity group has lower A9 but also lower O9; proposed higher subsequent-participation-value explanation is not supported",
+      "primary_evidence": ["opportunity_diagnostic_plan.json", "opportunity_diagnostic_lock_v2.json", "opportunity_diagnostic.json", "opportunity_diagnostic_independent_review.json"],
+      "all_extra_minus_none_decimal": {"A9": -0.008312847556578665, "L9": -0.013015051355839725, "O9": -0.004702203799261067},
+      "limits": ["All history seen; 145 nodes/59 overlapping clusters", "Common-strata population and weights differ from raw", "Only 25/2000 joint bootstrap draws retain all fixed common strata", "No new signal or causal attribution", "Do not reverse direction, scan windows or transfer to C0056"]
+    },
+    {
+      "id": "D05",
+      "classification": "SAVED_OPTION_MODEL_MIXED_ATTRIBUTION_AND_TIME_DEPENDENCE",
+      "finding": "2023/24 saved option model MSE worsens; 2025/26 improves; direct option and old coefficient reallocation both affect saved decisions",
+      "primary_evidence": ["external/results.json", "external/source_hashes.json", "external/independent_arithmetic_audit.json"],
+      "limits": ["Symmetric MSE allocation is algebra, not causal ablation or independent information", "No term-alone trading rule evaluated", "Not evidence all ETF/options data are ineffective"]
+    },
+    {
+      "id": "D06",
+      "classification": "FINANCIAL_NOVELTY_UNRESOLVED_NO_DIRECT_ENTRY_SUPPORT",
+      "finding": "No-earlier-forecast-found in 19 periods is not prior market ignorance; five point-like forecasts do not identify surprise-outside-an-interval effect",
+      "primary_evidence": ["../../experiments/EX036_20261019/protocols/report.md", "../../experiments/EX037_20261019/protocols/report.md"],
+      "limits": ["Other channels not exhausted", "Three source periods remain unknown", "Not proof financial information has no value"]
+    }
+  ],
+  "routing": {
+    "primary_stage": "STAGE_TWO_DECISION_DUTY_ALIGNMENT_REVIEW",
+    "dependency": "Original C0056 stage-three entry, exit, reservation and execution contract",
+    "question": "Do existing components and labels cover the actual full entry/holding/reparticipation decisions, and both downside damage and missed upside?",
+    "distinct_from_prior": "Quantify actual-policy use/evaluation coverage and changed-label duty gaps before choosing a new information claim; not rerun broad factors on a renamed queue",
+    "deliverable_next": "One explicit uncovered decision duty, its strongest competing explanation, minimal distinguishing design and budget; or evidence-based recommendation to stop",
+    "secondary": "Retain option line only after decision duty and distinct incremental question are established",
+    "new_model_label_account_execution_authorized_by_this_diagnosis": false,
+    "phase_advance_authorized": false,
+    "old_budgets_renewed": false,
+    "user_objectives_or_execution_changed": false
+  },
+  "technical_repair": {
+    "initial_source": "opportunity_diagnostic.py",
+    "initial_lock": "opportunity_diagnostic_lock.json",
+    "failure": "Two EX019 names declare identical state bytes/SHA, triggering overstrict len(matches)==1 before group result construction",
+    "successor_source": "opportunity_diagnostic_v2.py",
+    "successor_lock": "opportunity_diagnostic_lock_v2.json",
+    "repair": "Pin exact v2 material key and unchanged state SHA",
+    "statistics_changed": false,
+    "prior_real_group_results_before_repair": false,
+    "original_source_and_lock_preserved": true
+  },
+  "validation": {
+    "synthetic_checks": 11,
+    "population_independent_assertions": 598,
+    "opportunity_independent_assertions": 5774,
+    "external_independent_arithmetic_checks": 2220,
+    "full_repository_regression_run": false,
+    "economic_acceptance_run": false
+  },
+  "all_history_seen": true,
+  "unseen_validation_claimed": false,
+  "production_changed": false,
+  "remote_pushed": false
+}

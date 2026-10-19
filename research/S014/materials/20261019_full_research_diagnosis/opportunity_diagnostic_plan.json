@@ -1,0 +1,68 @@
+{
+  "status": "LOCKED_BEFORE_OUTCOME_GROUP_COMPARISON",
+  "authorization": "进入研究诊断状态，认真复盘整个研究过程，尽力寻找新的突破口。",
+  "scope": "One existing-evidence, zero-fit diagnostic contrast; does not renew account/model quotas or authorize phase advance",
+  "motivation": "EX035 report explicitly left historical opportunity clustering versus subsequent participation value untested; EX034/35 already established material single-exit/account-action ordering differences",
+  "question": "At an existing C0011 holding decision, does strictly past additional opportunity density distinguish extending the current holding from selling and resuming the original strategy?",
+  "sources": {
+    "outcomes": "research/S014/experiments/EX035_20261018/others/events.csv",
+    "past_feature_rows": "research/S014/materials/20261019_full_research_diagnosis/opportunity_feasibility_verified_rows.csv",
+    "past_feature_identity_checks": "research/S014/materials/20261019_full_research_diagnosis/opportunity_feasibility_verified.json",
+    "known_states": "research/S014/experiments/EX019_20261017/others/state_diagnostics_v2_members.csv"
+  },
+  "sample": {
+    "nodes": 145,
+    "population": "All previously saved EX035 decision nodes, not selected using future return, matching exact cycle/entry/decision dates",
+    "original_policy": "Published EX035 C9000 no-intervention equivalent to original C0011, not C0056",
+    "existing_clusters": "Use saved EX035 connected D-through-E9 cluster_id; expected original count 59",
+    "all_history_seen": true,
+    "independent_confirmation": false
+  },
+  "exposure": {
+    "definition": "Published original ready AND parent AND high eligibility, strictly preceding six pinned stock sessions, minus the verified triggering signal of the current position",
+    "groups": "additional_prior_opportunities = 0 versus >= 1",
+    "known_feasibility_counts": {"none": 60, "extra": 85},
+    "window_choice": "Six sessions span two H3 holding lengths; not two complete entry/exit/reentry cycles, no window scan",
+    "interpretation": "Past opportunity density, including signals before the current entry; not actually missed future orders or an independent market source"
+  },
+  "outcomes": {
+    "primary": "Existing A9=(H9-X9)/W_D: extend current holding then resume original policy versus original sale then original policy, at fixed E9 close",
+    "decomposition": "Existing L9=(H9-C9)/W_D and O9=(X9-C9)/W_D; verify A9=L9-O9",
+    "frozen_terminal": "Existing E9 and existing W_D denominator, no newly generated returns or forced liquidation",
+    "units": "Decimal local wealth differences; report percentage points, never annualized or summed into account returns"
+  },
+  "expected_directions": {
+    "primary_extra_minus_none_A9": "negative",
+    "attribution_extra_minus_none_O9": "positive",
+    "L9": "No required direction; report to distinguish general stock participation from relative action value",
+    "interpretation": "A larger O9 without lower A9 does not support the proposed relative-action mechanism; no reversal after results"
+  },
+  "fixed_analysis": {
+    "raw": "Same all-node sample for both groups and all three existing outcomes",
+    "known_states": "P = published P_value > 0 and D = published D_value > 0; verify from decision-day entry/close/previous-close fields, zero in nonpositive state",
+    "common_support": "decision_year x P x D; retain only strata with at least one node per exposure group; weight each stratum difference by min(n_none,n_extra). Record every sparse or excluded stratum and coverage; do not merge strata or fit controls",
+    "without_2026": "Decision date and saved terminal_date both <=2025-12-31",
+    "annual": "All seven decision years; not annual account acceptance, missing group returns null",
+    "cluster_equal": "Within each exposure group first average that group's nodes inside each original cluster, then average its observed clusters equally; report each group's observed cluster count, not a fully paired-cluster contrast",
+    "leave_one_cluster_out": "Delete each original cluster in turn, never select favorable deletion",
+    "bootstrap": "2000 draws seed 13 of whole original clusters with replacement; same cluster multiplicity for both groups and all rows; preserve null when a group absent, report valid replicate count, no resampling replacements",
+    "interval": "2.5 and 97.5 percentiles of valid descriptive replicates, not an economic hard gate or future success probability"
+  },
+  "decision_logic": [
+    "Evidence of lower A9 in extra-opportunity nodes can justify reviewing predictive decision-use research; alone does not establish causality or a trade rule",
+    "If lower A9 disappears under known-state/common-support or concentration views, retain competing explanation rather than claiming new information",
+    "If primary direction not supported, do not scan another window, flip the hypothesis, change terminal, or substitute an O9-only success claim",
+    "Feasibility/support insufficiency is distinct from ineffectiveness; no missing row filled with zero",
+    "Any result remains local to original C0011 policy; actual C0056 improvement and original yearly economic goals remain unanswered"
+  ],
+  "budget": {
+    "fixed_exposure_contrasts": 1,
+    "new_market_data_calls": 0,
+    "new_fits": 0,
+    "new_return_labels": 0,
+    "new_accounts": 0,
+    "new_candidates": 0,
+    "new_component_definitions": 0
+  },
+  "prohibited": ["Future reentry or payoff as a feature", "New window/threshold/terminal scan", "Post-result direction reversal", "New model or account", "Silent transfer to C0056", "New economic acceptance gate", "Claim unseen validation"]
+}

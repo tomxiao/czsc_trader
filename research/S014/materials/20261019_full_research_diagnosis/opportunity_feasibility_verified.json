@@ -1,0 +1,128 @@
+{
+  "status": "FEASIBLE_INPUT_VARIATION_ONLY_NOT_EFFECTIVENESS_TEST",
+  "events": 145,
+  "source_references": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX035_20261018"
+      },
+      "evidence_id": "cc64a36c42adbe97403e3a8aefa1edf7891cbd0a3514bc0754806280c43c8368.csv",
+      "sha256": "cc64a36c42adbe97403e3a8aefa1edf7891cbd0a3514bc0754806280c43c8368",
+      "media_type": "text/csv",
+      "name": "ex035-others-events-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX035_20261018"
+      },
+      "evidence_id": "a2056d371c3f8fcf0efb4cd851cbd4671c17672f3822a461e5899e7603f50934.json",
+      "sha256": "a2056d371c3f8fcf0efb4cd851cbd4671c17672f3822a461e5899e7603f50934",
+      "media_type": "application/json",
+      "name": "e9-diagnostic-000",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX035_20261018"
+      },
+      "evidence_id": "c7a20bb3c3de39bbfdd9ff56ae09d659d70149d6f43c9dc5a3f395f9ae4b67c0.json",
+      "sha256": "c7a20bb3c3de39bbfdd9ff56ae09d659d70149d6f43c9dc5a3f395f9ae4b67c0",
+      "media_type": "application/json",
+      "name": "ex035-others-accounts-run-000-json",
+      "schema": null,
+      "schema_version": null
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4.csv",
+      "sha256": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4",
+      "media_type": "text/csv",
+      "name": "ex032-others-calendar-csv",
+      "schema": null,
+      "schema_version": null
+    }
+  ],
+  "calendar_and_actual_order_trigger_checks": "PASS_ALL_145",
+  "original_policy_binding": "Published C9000 no-op audit equals original C0011; request/result identity and no intervention flags verified",
+  "definition": "U=published original ready AND parent AND high; count strictly preceding six sessions, remove compulsory trigger of current position",
+  "raw_count_distribution": {
+    "1": 60,
+    "2": 53,
+    "3": 22,
+    "4": 5,
+    "5": 5
+  },
+  "extra_count_distribution": {
+    "0": 60,
+    "1": 53,
+    "2": 22,
+    "3": 5,
+    "4": 5
+  },
+  "by_decision_year": {
+    "2020": {
+      "events": 4,
+      "no_additional": 1,
+      "at_least_one_additional": 3
+    },
+    "2021": {
+      "events": 29,
+      "no_additional": 10,
+      "at_least_one_additional": 19
+    },
+    "2022": {
+      "events": 22,
+      "no_additional": 10,
+      "at_least_one_additional": 12
+    },
+    "2023": {
+      "events": 15,
+      "no_additional": 9,
+      "at_least_one_additional": 6
+    },
+    "2024": {
+      "events": 21,
+      "no_additional": 13,
+      "at_least_one_additional": 8
+    },
+    "2025": {
+      "events": 32,
+      "no_additional": 8,
+      "at_least_one_additional": 24
+    },
+    "2026": {
+      "events": 22,
+      "no_additional": 9,
+      "at_least_one_additional": 13
+    }
+  },
+  "compulsory_trigger_present": 145,
+  "outcome_columns_loaded_or_compared": false,
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_accounts": 0,
+  "new_market_data_calls": 0,
+  "limitations": [
+    "Variation is necessary for a test, not evidence of predictive value",
+    "Original C0011 mechanism only; cannot silently transfer to C0056 reservation logic",
+    "Derived from existing prices and policy state; not a newly independent market source",
+    "Window and expression remain proposed research definitions, not validated signals"
+  ]
+}
