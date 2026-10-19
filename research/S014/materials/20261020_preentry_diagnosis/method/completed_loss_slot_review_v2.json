@@ -1,0 +1,61 @@
+{
+  "status": "METHOD_FEASIBILITY_ONLY_NOT_IMPLEMENTED_NOT_DISPATCH_AUTHORIZATION",
+  "role": "RSCH",
+  "root_proposed_profiles": [
+    "BASE",
+    "AFTER_NET_LOSS_SKIP1",
+    "AFTER_NET_PROFIT_SKIP1"
+  ],
+  "baseline": "EX044 actual run004 BASE/POSITIVE_P/NET_LOSS_1ATR with original ENTRY_GRACE and positive-P SHOCK_PROFIT; not EX044000, EX044001 or original C0056",
+  "feasibility": "Representable in strategy-owned causal history with unchanged target-position FROZEN_RULE/1% BUY policy, if actual funded completed-cycle state is independently verified. No live portfolio/fill callback is exposed to calculate_history; existing shadow fill reconstruction needs full actual-account alignment, not an assumption.",
+  "state_transition_contract_to_lock": {
+    "completed_sale": "Only actually filled full-position SELL closing a genuinely funded BUY cycle; SELL intent/pending, deadline, supportbreak, unfilled SELL, failed BUY and virtual planned slot are not close events.",
+    "BASE": "No added pause. Cost rule and other original decisions unchanged.",
+    "AFTER_NET_LOSS_SKIP1": "At each actual completed SELL, set armed from that completed cycle strict realized net<0. Positive/zero net does not arm. One SELL event can arm only once.",
+    "AFTER_NET_PROFIT_SKIP1": "At each actual completed SELL, set armed from that completed cycle strict realized net>0. Negative/zero does not arm. One SELL event can arm only once.",
+    "consume": "When flat and first original eligible BUY candidateD occurs while armed, suppress that intent, target=0 and consume exactly one planned opportunity slot: reservation=i+11. Clear armed on consumption. No order, actual entry/deadline/cost/peak, fee or failedBUY is created.",
+    "after_consumption": "Do not re-arm from a persistent last_loss flag. Remain governed by the planned reservation until expiry, then original candidate rule applies with no repeated pause unless a later genuinely completed SELL arms it.",
+    "existing_reservation": "A completed sale before original actual-entry reservation expiry arms state but does not shorten the old reservation. Consume only at the first date on which the original candidate is eligible. If original pending lasts beyond expiry, wait for actual sale; do not consume while held.",
+    "same_D": "After an actual SELL filled at D open, its completed net sign is known by D close. If original BUY eligibility and reservation are satisfied at D close, consume armed on that same D for next-session action; do not add a hard wait to another D, and never retroactively change the D sale.",
+    "priority": "Inherited pending/mandatory deadline and original cost/shock/support exits are preserved; added state changes only the flat new-BUY branch.",
+    "continuous_history": "No year/date switch or reset. Suppressed candidate is not classified using hypothetical next-session fill/status or future profitability. Every profile is a full cash-funded continuous path.",
+    "root_followup_note": "Unlike the earlier tentative count-of-consecutive-loss family, these proposed profiles use the most recently actually completed cycle, one-shot arming and one original planned H10 opportunity. No count threshold or extra pause-window scan is needed.",
+    "own_policy_history": "Each proposed policy uses only its own actual causal completed-trade history after its own prior skips. Never freeze baseline future completed trades and feed them into another policy."
+  },
+  "net_loss_definition_and_units": {
+    "candidate_per_unit_formula": "actual_sell_fill_HFQ*0.999 - actual_entry_fill_HFQ*1.001 < 0",
+    "required_oracle": "For every actual CLOSED cycle, independently match all positive-quantity actual entry/exit fills and exact charged fees; compare strict sign against actual net cash PnL and ledger trades.net_return. Do not infer loss from D close mark or aggregate annual loss.",
+    "cancellation_condition": "Per-unit sign cancellation requires equal positive full-position entry/exit quantity and the original proportional-fee semantics. Cash/fee rounding and exact zero boundaries must be checked from actual ledgers; never add an epsilon or let fixed100-unit shadow count a non-funded trade.",
+    "price_basis": "Runtime inputs/fill reconstruction HFQ_RESEARCH; ledger anchoredHFQ/RESEARCH_UNIT with original anchor5.892. Apply the authenticated projection before price/cash comparison. This preserves existing research treatment of adjustments; do not insert a new dividend/corporate-action/accounting model.",
+    "realized_time": "Outcome becomes known only after the closing fill actually occurred, no earlier than the fill date. Completed result trades are an audit oracle, not a future-complete input to the strategy."
+  },
+  "why_not_an_old_repeat": {
+    "EX022": "Initial startup offset, not a recurring actual-close event.",
+    "EX023": "Actual-entry reservation independent of net loss, not actual-SELL arming.",
+    "EX029": "Current-cycle first-support-break frozen unrealized P determines reservation retention, not completed actual net cash loss.",
+    "EX044": "Cost stop reacts while held; this proposal leaves that exit intact and asks what to do after the actual closing sale.",
+    "EX045": "Uses old Z>2 candidate to decide a planned-slot skip. Here reuse the slot action explicitly; new information is own completed-cycle net outcome. PROFIT compares the opposite completed-outcome sign under the same one-shot action; it is not a generic ANY_CLOSE timing control."
+  },
+  "minimal_protocol_before_real_execution": [
+    "Root locks exact three-profile schema and state semantics after A population/B adversarial review; no account permission is inferred from this file.",
+    "Fresh source BASE economic/old-observation exact EX044004, independent actual funded BUY/SELL/quantity/fee/closed-net sign audit, then the two fixed profiles if authorized.",
+    "Pure synthetic boundaries: loss/zero/profit close, unfilled BUY/SELL, price-limit/suspension pending, sale before/after reservation, same-D eligible sale, one-shot clearing, no indefinite pause, original expiry and no phantom entry.",
+    "All original2020..2025 annual goals/frequency, own-year opening wealth and complete path costs;2026 technical tail. All years already seen, including other-year comparisons.",
+    "Do not add the Z guard, ANY_P exit domain, new price cap or second clock factor. Do not choose arm direction/profile from2024-only benefits."
+  ],
+  "resources": {
+    "new_experiments": 0,
+    "new_strategy_implementations": 0,
+    "new_accounts": 0,
+    "new_fits": 0,
+    "new_market_reads": 0,
+    "new_vendor_calls": 0,
+    "platform_changes": 0
+  },
+  "supersedes_method_proposal": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/method/completed_loss_slot_review.json",
+    "sha256": "be4d7062396c23b288fb5cf3fbdbd7264d6249490fd6ec0b402917d0d5e55d70",
+    "reason": "Root later replaced any-close timing control with positive-completed-net-profit control; neither proposal executed."
+  },
+  "canonical_names_status": "Names in this feasibility note are proposed only; root final design/source must bind actual names before implementation."
+}

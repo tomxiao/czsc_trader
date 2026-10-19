@@ -1,0 +1,52 @@
+{
+  "status": "METHOD_PROPOSAL_BEFORE_NEW_DIAGNOSTIC_COUNTS_NOT_EXECUTION_LOCK",
+  "date": "2026-10-20",
+  "question": "Does realized completed-cycle loss provide useful direction-specific information before the next BUY, beyond a pause that also changes the opportunity clock?",
+  "comparator": "EX044004 BASE/POSITIVE_P/NET_LOSS_1ATR",
+  "proposed_fixed_profiles": [
+    "BASE",
+    "AFTER_NET_LOSS_SKIP1",
+    "AFTER_NET_PROFIT_SKIP1"
+  ],
+  "selection_history": "Prior2024 entry damage and EX045 clock dependence already seen. Proposed before A's new preentry population/decomposition counts. No claim of pristine preregistration.",
+  "feedback_observation": {
+    "available_when": "Actual SELL fill has completed a real BUY-to-SELL cycle by D decision time; neither sell intent nor mark-to-market is completion",
+    "net_per_unit": "actual_exit_fill * 0.999 - actual_entry_fill * 1.001 on the original consistent projected price basis",
+    "independent_requirement": "Completed-cycle sign must match actual funded account fills and both-side fees, with execution price projection authenticated",
+    "loss": "strictly < 0",
+    "profit": "strictly > 0",
+    "zero": "Neither loss nor profit trigger",
+    "no_prior_completed_cycle": "No trigger",
+    "failed_BUY": "Not a cycle, loss, or trigger"
+  },
+  "finite_pause": {
+    "arming": "Arm once after a real completion of selected sign; BASE never arms",
+    "consumption": "Only at first subsequent original eligible flat BUY decision D after original reservation permits; consume the one armed pause",
+    "planned_slot": "Set original reservation to D market-index i + 11, corresponding to hypothetical next E plus original H10 reservation",
+    "resume": "At reservation expiry re-evaluate original entry normally; no continued veto based on stale last-loss sign",
+    "virtual_state": "No actual BUY/SELL, position, entry price/deadline, fee, or trade return is invented",
+    "unfilled_opportunity": "Pause may consume a candidate whose original BUY would not fill; never condition on the future fill outcome",
+    "counter": "Do not count skipped slots as actual closed trades"
+  },
+  "unchanged": [
+    "Original 1% LimitBuyHold, limits, status, lots, capital, 0.001 each-side costs",
+    "Original support entry, actual-filled state, H10, reservation, failed-BUY reset, pending/deadline",
+    "ENTRY_GRACE plus positive-P SHOCK_PROFIT plus NET_LOSS_1ATR retained cost comparator",
+    "One continuous funded account from initial100000; no annual reset or year/date conditions",
+    "Original annual return/drawdown goals and original fullwindow frequency; no new economic veto",
+    "2020-25 economic interpretation;2026 original technical/control tail only"
+  ],
+  "before_any_execution": [
+    "Original actual-intent and filled-entry population with D-known prior completed signs, all years and failures retained",
+    "Read-only method/source feasibility and adversarial review",
+    "Root final decision to reject or lock this fixed contrast without threshold/time scans",
+    "If locked: new immutable identity, synthetic causality checks, fresh exact source control against EX044004 independently audited before any active profile"
+  ],
+  "limitations": [
+    "Opposite-sign pause is a mechanism contrast, not an equal-dose randomized clock control",
+    "New profiles change their own future completed cycles, eligible dates, cash, quantity, and state populations",
+    "Population associations and full-policy improvements cannot be interpreted as linearly separable causal information or timing contributions",
+    "All2020-25 are development history already seen; last loss is not evidence that future loss must follow"
+  ],
+  "not_authorized_by_this_proposal": "No experiment allocated or account dispatched yet; root final design lock remains pending"
+}

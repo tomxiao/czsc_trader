@@ -1,0 +1,88 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "scope": "Additive EX046 internal-audit technical revision only; review before publicv2lock,not a newstrategy/account or economicresultselection",
+  "reviewed_hashes": {
+    "research/S014/experiments/EX046_20261020/protocols/execution_lock.json": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e",
+    "research/S014/experiments/EX046_20261020/protocols/published_lock.json": "9b3e2c2dc8d34b148596160d758ff70fe1eac51bc257f8e3a511bd0a36c2f3a6",
+    "research/S014/experiments/EX046_20261020/protocols/published_sources.json": "6d19468840e6f92bbae669eae5980c0b2b1d178091a4a0e80ee46738b76e6120",
+    "research/S014/experiments/EX046_20261020/protocols/design.json": "f447784ad9f6d431b45c478f2ffd0d088d1e43ab61ea1c9cf0f0c00df1ee57cc",
+    "research/S014/experiments/EX046_20261020/src/audit_accounts.py": "a4bc7f8be15c955ef02c452a86e07444b5d961a10d786bb9ec626c1d3b3ee601",
+    "research/S014/experiments/EX046_20261020/src/run_accounts.py": "c4f90ffba71c9c16450b064bd2991cdcf0055b77f44704ee9574afb11f664f08",
+    "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+    "research/S014/experiments/EX046_20261020/others/accounts/run-000.json": "b79d2ea52e3c6e9aeaaf33e10284de839cdac1cfc1c9c3715f464e022b7f1e37",
+    "research/S014/experiments/EX046_20261020/others/accounts_index-000.json": "2c90fb0c4381a7c8548983f6a2387e908cd304e2af585f0d3f741f229e514370",
+    "research/S014/experiments/EX046_20261020/protocols/technical_revision.json": "56ebd15c618f786f91e2c81e8537cad31a78eaeaa655b1b790751dd9806cc7a9",
+    "research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py": "b9f80bfc4f5757e00d4984a2bd7481f6835c4d4654b1b7121341851d26d47324",
+    "research/S014/experiments/EX046_20261020/src/run_accounts_v2.py": "64994e8c8a7dccf4192e820969acf68f0b10d472ca2c8d2f8ebf005f66efb0ab",
+    "research/S014/experiments/EX046_20261020/src/recheck_control_v2.py": "6528a5ce41cfe515c21acad9841907443b55c0fdc46958269c4ae5fb3e276d7e",
+    "research/S014/experiments/EX046_20261020/others/control_audit_correction_v2.json": "6a1c9cac298a5a06c72c3977a6f12282f6de2b7ebc7a9343aa354c5f5840c99e",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_000_independent_review.json": "6b18343c78a5a87636fc182472b32d193e644b2720e885cbafc282172dc3deaf",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_runner_v2_review.json": "d1bbbcdf7584354badf5bd1de3bf002d8d7dddfb5e9c21d6ae1f5037d979670b",
+    "research/S014/materials/20261020_preentry_diagnosis/review/source_state_review.json": "313e82a31600ced0a236447b5049f8553ffb03c8d09f262cab99a19d8fd95498"
+  },
+  "original_parent_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e.json",
+    "sha256": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e",
+    "media_type": "application/json",
+    "name": "ex046-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "same_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4.json",
+    "sha256": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4",
+    "media_type": "application/json",
+    "name": "completed-sign-pause-000-base",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "same_result_hash": "c8762ae87e97b316c5fa82ff15b262e1ad27bcdf27d24f9530ab22f66680721f",
+  "independent_saved_account_clock_check": {
+    "D_E_rows": 1642,
+    "explicit_initial_prewindow_rows": 1,
+    "prewindow_D": "2019-12-31",
+    "initial_cash": 100000.0,
+    "initial_quantity": 0,
+    "corrected_Dheld_and_Dactual_buy_sell_flags": "ALL_EXACT",
+    "old_E_quantity_as_Dheld_false_mismatches": 276,
+    "market_fetches": 0
+  },
+  "minimal_diff_review": {
+    "audit": "AST normalized by reverting only new daily_by_date map, D->E assertion, explicitprewindow branch/cash assertion and Dheld variable maps EXACTLY tov1.audit; allother top-levelfunctions/imports exact. Net/completion/armed/reserve/risk/fee/tolerance calculations unchanged.",
+    "runner": "v2 path/lock/parent and gate metadata added; original prepare/evaluate code retained. execute rejects index0, CLIonlybatch1/2, no blindretry guard retained. Legacy build definition is not exposed by thev2CLI and is not an approved entrypoint.",
+    "recheck": "Saved174aaccount/evidence/result only, no prepare/evaluate; additive correction record,originalrun000 internalFAIL unchanged.",
+    "source": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846 unchanged; v1payload/runtime/request/fees/orders contract retained."
+  },
+  "failure_classification": {
+    "execution_status": "SUCCEEDED",
+    "old_internal_audit": "FAIL_RETAINED",
+    "successor_same_account_internal_audit": "PASS_425923",
+    "independent_A_BASE": "PASS",
+    "new_account_dispatches_for_correction": 0,
+    "newepsilon_or_economic_rule": 0,
+    "active_dispatched_at_this_review": 0
+  },
+  "required_before_active": [
+    "Publish newv2lock retaining publicv1parent/current strategy identity/all3original runparams and immutablepayloads; bind current v2audit/runner/technicalrevision/review bytes.",
+    "Independent A validates publishedv2source/parentchain and currentv2control gates beforeactive1/2. Controlgate must link original174aBASE plus separate PASS supplement,never rewriteoriginalFAIL asifpassed.",
+    "Runfixedactive1/2 only aftergates,withown actualcompletedhistory; source/fullfunded tests retain original meanings."
+  ],
+  "limitations": [
+    "This reviewer did not rerun strategy/source synthetic tests, prepareddata fetch or newaccount. Existing rawaccount ledger read only for clock/held/fill flags.",
+    "A fullfinancialown-account independentaudit and C425923 supplement provide separate checks; source toyPASS doesnot replace either.",
+    "Publicv2lock didnotyetexist when this prerelease minimaldiff review was written; A source-lock gate must authenticate downstreampublication."
+  ]
+}

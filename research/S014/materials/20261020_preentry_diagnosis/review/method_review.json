@@ -1,0 +1,94 @@
+{
+  "status": "PASS_METHOD_ONLY_A_POPULATION_AND_ROOT_LOCK_PENDING",
+  "blocking_findings": [],
+  "role": "RSCH independent adversarial method reviewer",
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_preentry_diagnosis/design_proposal.json": "4b984b7f53905317243e8a248a8cac474720226317ecf45e75d63949b50ba9e4",
+    "research/S014/materials/20261020_preentry_diagnosis/review/adversarial_method_review.json": "486f5e87983c18534863be244139585b2c009444ca34b2b38f8f06a378e82816",
+    "research/S014/materials/20261020_preentry_diagnosis/review/proposal_adversarial_review.json": "0d0893d2bc2d18c7ac03f7d468b4cc1dfbbbb76d0f9a0e481408cffdd0139ef2"
+  },
+  "conclusion": "仅保留一个新机制候选：已完成真实交易的净亏损是否持续到下一次原合格入场机会。建议BASE、亏后跳过一次、盈后跳过一次三个固定档；不新增第四档、等待天数或亏损次数扫描。尚未证明有效，也不授权账户执行。",
+  "profiles": [
+    "BASE",
+    "AFTER_NET_LOSS_SKIP1",
+    "AFTER_NET_PROFIT_SKIP1"
+  ],
+  "old_evidence": {
+    "old_online_learning": {
+      "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+      "line": 57,
+      "anchor": "包含未成交记0的全部到期尝试",
+      "line_excerpt": "针对原生5日和10日入场标签，包含未成交记0的全部到期尝试，信号至少60日预热；测试共1811个信号，5日908、10日903。它们是各期限原生队列，与上文中点共同队列不同，不能直接比较分母。"
+    },
+    "old_cycle_P_wait": {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "line": 9,
+      "anchor": "首次严格早于E+9收盘的破坏时",
+      "line_excerpt": "本轮新增C0075/C0076两个账户，复用C0035即时再入场与C0056全部预约两个端点，共4格；新增上游调用0。全部支撑破坏仍照常触发提前卖出，只改变卖出后是否继续等待原E+10预约。首次严格早于E+9收盘的破坏时，冻结含实际买费浮盈P=收盘价/(实际买价×1.001)−1；一组只在P>0保留预约，另一组只在P≤0保留，零属于非正组。"
+    },
+    "old_cycle_wait_counter": {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "line": 7,
+      "anchor": "相对即时再入场C0035的有限变化主要来自后续参与机会替换",
+      "line_excerpt": "两个互补条件预约均未达到原目标：仅正浮盈保留预约全期+263.10%，年度收益仅1/7、回撤6/7；仅非正浮盈保留预约全期+280.24%，年度收益2/7、回撤6/7；本轮全部目标通过0/4。两者频率充足，但均低于全部保留预约C0056的+708.72%、年度收益4/7和回撤7/7。相对即时再入场C0035的有限变化主要来自后续参与机会替换，不能证明浮盈状态能够稳定选择等待方式。结束该零边界条件预约路线，不追加阈值或年度开关。"
+    },
+    "Eclose_not_preentry": {
+      "path": "research/S014/experiments/EX015_20261017/protocols/report.md",
+      "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+      "line": 5,
+      "anchor": "入场当天收盘观察",
+      "line_excerpt": "本轮与EX007区别在首次可退出之前的决策时点、低开收阳父机会和固定H3环境，不是重复H5/10/20中点均线扫描。仅现有数据，公告暂停，费用与执行约定不变。213个已成交父机会（高153/低60），入场当天收盘观察，最早下一交易日按原H1退出；H3/H5使用相同原入场及股数。未成交不产生持有决策，没有连续账户。"
+    },
+    "positive_candle_accounts": {
+      "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+      "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+      "line": 3,
+      "anchor": "阳线确认未形成有效的统一入场过滤",
+      "line_excerpt": "阳线确认未形成有效的统一入场过滤。C0059/C0060/C0061全期净收益分别42.61%、−46.87%、−7.41%，均显著低于各自原B/R/P基线；年度收益仅2/7、2/7、1/7通过，6个对照全部原目标通过0个。B/R在2024由亏转盈的局部改善被其他年度损伤覆盖，去2026三个新增账户仍全部亏损。共同入场仅40/36/40笔且收益差接近零，主要损失来自遗漏原盈利参与并转到较差的新路径，不能把旧交易阳线分组强度当作连续账户有效性。保留完整负面结果，不据此扩大阳线阈值或按年度切换，尚不具备阶段四准备度。"
+    },
+    "support_recovery": {
+      "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+      "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+      "line": 4,
+      "anchor": "不支持把“先收复旧支撑”加入为自动买入过滤条件",
+      "line_excerpt": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。"
+    },
+    "old_Z_phase": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/report.md",
+      "sha256": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+      "line": 89,
+      "anchor": "新“每天重试”的禁买路径在2025实际阻买次数为0",
+      "line_excerpt": "五组独立复核发现：新“每天重试”的禁买路径在2025实际阻买次数为0，5月30日和6月19日却已经空仓。此前改变买入日期后，原预约和交易节拍已经改变。因此，旧组合曾有三次2025高Z拟买机会，不代表新路径也遇到并拦掉了它们；不能把2025损伤直接归为当年的禁买动作。"
+    },
+    "old_clock_tradeoff": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/report.md",
+      "sha256": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+      "line": 98,
+      "anchor": "跳过计划机会恢复了2021、2022的原收益达标",
+      "line_excerpt": "只改变这一等待规则，2024收益从 **+11.3074%** 变为 **-13.4581%**，2025从 **+4.0043%** 变为 **+34.2681%**。跳过计划机会恢复了2021、2022的原收益达标，但2024、2025仍未通过：六年收益4/6通过，回撤6/6通过，原完整窗口交易频率4.786845通过。它没有同时保住2024转正和2025达标。"
+    }
+  },
+  "novelty": "旧EX029在当前持仓首次破位时冻结浮盈并决定剩余预约；旧EX007在线模型学习全部已成熟独立尝试标签。本候选只读各自账户已经实际闭合的交易、扣双边费后严格净损/净盈，属于跨周期反馈。均线、旧支撑收复、阳线、成交量位置、高Z门不另换名追加。",
+  "accepted_clock_clarifications": [
+    "真实SELL在D开盘完成、当晚原BUY资格及预约已满足时，可同D消费；不偷偷多等一天。",
+    "严格净损<0、净盈>0；0/无闭合前史不触发；符号与真实资金账本费用闭环一致，不加epsilon。",
+    "每个相应真实闭合只armed一次，首次原eligible BUY D消费原H10计划槽位i+11后清armed；到期恢复，旧lastsign不得无限暂停。",
+    "消费不产生订单、实际仓位、entry/deadline/cost/费用或闭合交易；失败BUY/pendingSELL不触发。",
+    "各新路径只使用自己的因果实际闭合史，不用冻结BASE未来交易表提供反馈；原1%挂单及其余成本/退出合同不改。"
+  ],
+  "adversarial_limits": [
+    "反向盈后暂停比ALL_CLOSE更直接反驳亏损方向特异性，但不是等次数、等日期或随机时钟控制。",
+    "亏损含费用和旧退出规则影响；可能只是费用擦边或旧错误早退，不能直接称市场坏状态。",
+    "暂停改变后续自身周期、资格、现金、整手和跨年相位；年度/终值差不能线性拆成信息与排期份额。",
+    "原BUY计划人口必须保留未成交和未知；E买入日收盘损伤不是前D已知条件；旧交易分组不等于删掉交易后的资金曲线。",
+    "2020—2025均已见开发信息，2026只技术尾；原收益/回撤/频率门不变，不增CI/样本数/逐年不受损硬门。"
+  ],
+  "next_decision": "等A对旧实际闭合→原eligible BUY人口及时点的诊断，根会话决定固定锁定或停止此反馈分支；不能为维持研究凑第二机制。",
+  "new_accounts": 0,
+  "new_data_calls": 0,
+  "new_models_or_labels": 0,
+  "old_files_modified": 0
+}

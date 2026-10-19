@@ -1,0 +1,74 @@
+{
+  "status": "PASS",
+  "source_sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+  "implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/review_pause_runner_v2.py",
+    "sha256": "87d23681ad4c997129464f7a88af02e32b487628e07a0f86c0dbdb9781851f22"
+  },
+  "reviewed_files": [
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py",
+      "sha256": "b9f80bfc4f5757e00d4984a2bd7481f6835c4d4654b1b7121341851d26d47324"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/run_accounts_v2.py",
+      "sha256": "64994e8c8a7dccf4192e820969acf68f0b10d472ca2c8d2f8ebf005f66efb0ab"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/protocols/technical_revision.json",
+      "sha256": "56ebd15c618f786f91e2c81e8537cad31a78eaeaa655b1b790751dd9806cc7a9"
+    }
+  ],
+  "same_account_supplement": {
+    "path": "research/S014/experiments/EX046_20261020/others/control_audit_correction_v2.json",
+    "sha256": "6a1c9cac298a5a06c72c3977a6f12282f6de2b7ebc7a9343aa354c5f5840c99e"
+  },
+  "original_independent_BASE_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_000_independent_review.json",
+    "sha256": "6b18343c78a5a87636fc182472b32d193e644b2720e885cbafc282172dc3deaf"
+  },
+  "checks": [
+    "exact final successor bytes src/audit_accounts_v2.py",
+    "exact final successor bytes src/run_accounts_v2.py",
+    "exact final successor bytes protocols/technical_revision.json",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/src/audit_accounts.py",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/src/run_accounts.py",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/others/accounts/run-000.json",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/src/run_accounts_v2.py",
+    "revision exact linked bytes research/S014/experiments/EX046_20261020/others/control_audit_correction_v2.json",
+    "formal parent lock SHA and local preserved",
+    "all original locked bytes preserved protocols/design.json",
+    "all original locked bytes preserved others/synthetic_precheck.json",
+    "all original locked bytes preserved others/audit_prefix_precheck.json",
+    "all original locked bytes preserved src/audit_accounts.py",
+    "all original locked bytes preserved src/precheck.py",
+    "all original locked bytes preserved src/prefix_precheck.py",
+    "all original locked bytes preserved src/run_accounts.py",
+    "all original locked bytes preserved src/strategy_runtime/strategies/completed_pause_review.py",
+    "same actual successful BASE identity",
+    "independently rechecked same account internal successor425923 exact",
+    "old receipt failure unchanged",
+    "unchanged non-clock helper AST sign",
+    "unchanged non-clock helper AST frozen_baseline",
+    "unchanged non-clock helper AST divergence_dates",
+    "same exact actual request/candidate constructor EvaluationRequest",
+    "same exact actual request/candidate constructor StrategyCandidate",
+    "A actual BASE already independently PASS on original v1"
+  ],
+  "check_count": 28,
+  "same_account_internal_checks_reapplied": 425923,
+  "manual_diff": [
+    "Only internal clock comparison and D actual inventory selection corrected, explicit initial100000/zero state.",
+    "Source5e77, parameter payloads and execution/fee/price/lot/market/cutoff requests unchanged.",
+    "Original run000/auditFAIL and v1 immutable lock retain original bytes; supplemental PASS is same account, no new execution.",
+    "Runner uses successor audit and source/control gates, records active per-dispatch lockv2, only allows active indices1/2, no blind retry.",
+    "New locks and exact public corrected/independent gates still must be verified before active execution."
+  ],
+  "account_engine_failures": 0,
+  "retained_internal_audit_expression_incidents": 1,
+  "new_accounts": 0,
+  "fits": 0,
+  "price_epsilon_changed": false
+}

@@ -1,0 +1,145 @@
+{
+  "status": "AUTHORIZED_FIXED_THREE_OWN_COMPLETED_SIGN_PAUSES_BEFORE_NEW_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "pause_profile": "BASE"
+    },
+    {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1"
+    },
+    {
+      "pause_profile": "AFTER_NET_PROFIT_SKIP1"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9460",
+    "S014-C9461",
+    "S014-C9462"
+  ],
+  "planned_account_count": 3,
+  "user_numeric_account_limit": null,
+  "no_blind_retries": true,
+  "baseline_control": "Fresh BASE must exactly replicate EX044 actual run004 BASE/POSITIVE_P/NET_LOSS_1ATR, not EX044000/001 or originalR",
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+    "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+    "media_type": "application/json",
+    "name": "action-role-004-base-positive_p-net_loss_1atr",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05",
+  "canonical_runtime_parameter_schema": "Exactly pause_profile enum BASE/AFTER_NET_LOSS_SKIP1/AFTER_NET_PROFIT_SKIP1; fixed original cost baseline all other roles",
+  "complete_economic_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "2026_role": "Original full-contract technical tail, no economic selection",
+  "unchanged_contract": "Original support entry, ENTRY_GRACE, positiveP SHOCK_PROFIT, NET_LOSS_1ATR, actualBUY entry/deadline/reservation, original1% LIMIT BUY/MARKET SELL, .001 costs, fullcash100000, tick/lot/limits/status/HFQ_RESEARCH anchor5.892 and original1642-window inputclock.",
+  "completed_feedback": "Only actual filled SELL completing own actual positive funded BUY: exit*.999-entry*1.001 strict sign;0 neither. All policy history causal and own; no frozen futureBASE labels. Per-unit sign must match actual funded closed fees/cash ledger without epsilon.",
+  "arm_consume_resume": "Selected completed sign arms once after actual SELL at D. SameD eligible originalflat candidate including oldreservation may consume: noorder/target0/reservation=i+11/armedfalse, noactualentry/deadline/cost/peak/fee/failedBUY. Original reservation may defer first eligible consumption. At planned expiry normal originalentry; persistent oldnet never re-arms. Only a later actual completed cycle can arm again.",
+  "new_observations": "14 PAUSE_DIAGNOSTIC all finitefloat. completed_net_unit only actualsaleD; last_completed_net_unit only once a close observed; rawnull before known, not registered numericseries. reservation_before_pause is after actual Dfills before flat candidate. planned slot not actualposition.",
+  "four_divergence_dates": "first_feedback_state_D first actual completion stored in new memory or selected arm; separately first_armed_D selected sign arms (even if sameDconsumed). BASE can have completion memory without policy intervention. first_original_state_divergence_D any original column exceptmappedIDs; first_target_divergence_D; first_funded_state_E independently fromactualdaily cash/qty/equity. Old prefixes anchored firstoriginalD,notnewfeedback; metadata difference is not economicreturn.",
+  "controls": "A/B finalsource review and finalrunner/internal/design review; publicfrozen source/params/plan before BASE; internal+independent actual freshBASE0-tolerance economic/oldobservation exactEX044004 publicly gated beforeactive001/002. Failed/unknown kept and stop dependentdispatch; no retries or economicwinning stop.",
+  "selection_disclosure": "Root three proposals preceded A newpopulation counts; at lock known negative evidence weakens priorloss pause intuition. Both fixed directions retained, no winner. All2020-25 previouslyseen, not pristine validation; no fit/threshold/window/year/duration scan.",
+  "not_claimed": "Live authoritativefill callback, unseenholdout, allgoals achieved, threeindependent samples, linear signal-vs-clock shares, formalpromotion or productionreadiness",
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "all_three_run_if_technically_valid": true,
+  "authorization": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/authorization.json",
+    "sha256": "072ecb0dbc3daa131966d8b8e06b41357d7a26fbbde380bfba570f2021041216"
+  },
+  "method": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/design_decision.json",
+    "sha256": "7db4e057818200a176c823c953e6d05d9b1d00385364518a495de835b2804d2e"
+  },
+  "method_feasibility": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/method/completed_loss_slot_review_v2.json",
+    "sha256": "5071db6c2b46e10408ff36ea1b59559cfcb2f9e71664a50edee3a093d8345ebe"
+  },
+  "interface_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/method/interface_and_loss_pause_review.json",
+    "sha256": "2a75b716c1e68dac9a66d15d20ae3fc5710af4cec3fd8f0d959e9d466b1c20e9"
+  },
+  "method_inventory": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/method/historical_loss_memory_search.json",
+    "sha256": "e8dbff5f7d5245083b4cc026b62cbdda7e5f9939cc5e426d4925a62a56ef3c6a"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/review/locked_method_gate.json",
+    "sha256": "f2b70d6d1dac06d57ba3547724652455b8932fc9be9d9cfedab8a2d0ff6d3821"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_evaluation_protocol.json",
+    "sha256": "3151800365a450700a999c145ac0a95fe5996a34a7828b1b9ca43867ec5bd0b0"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/review/source_state_review.json",
+    "sha256": "313e82a31600ced0a236447b5049f8553ffb03c8d09f262cab99a19d8fd95498"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_source_review.json",
+    "sha256": "c0d7568670db1217f0739b4c3c4d4fac29e25a2575874936bab9a9259092d50a"
+  },
+  "population_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_accounting_summary_v2.json",
+    "sha256": "89a08750ce99423ebae4cd71b55332b1a82b5f9c77c490279dfc5a33e6828aaf"
+  },
+  "population_findings": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_research_findings.json",
+    "sha256": "67b62ba636171195dcd14e3ec7b0fbf26ce76ea690647a4a284cb9eb5d989151"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+    "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+  },
+  "previous_lock": {
+    "path": "research/S014/experiments/EX044_20261019/protocols/execution_lock.json",
+    "sha256": "76aae354bdefd8f510e54eae0005fcab7b7e9306e7915abd35d43990c8cfe4b1"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX044_20261019/others/accounts/run-004.json",
+    "sha256": "e8b18ae2874bfacfbf4dbf1093376ba6aa26c433b28459c52d587e052e4eecfa"
+  },
+  "previous_final_verification": {
+    "path": "research/S014/experiments/EX044_20261019/others/final_verification.json",
+    "sha256": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}

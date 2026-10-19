@@ -1,0 +1,150 @@
+{
+  "status": "PASS",
+  "source_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX044_20261019"
+    },
+    "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+    "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+    "media_type": "application/json",
+    "name": "action-role-004-base-positive_p-net_loss_1atr",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05",
+  "inputs": [
+    {
+      "path": "research/S014/experiments/EX044_20261019/others/accounts/run-004.json",
+      "sha256": "e8b18ae2874bfacfbf4dbf1093376ba6aa26c433b28459c52d587e052e4eecfa"
+    },
+    {
+      "path": "research/S014/materials/20261019_2024_diagnosis/accounting/account_004_independent_review.json",
+      "sha256": "9e29acc607799105b9efe24207d8feeb41b36b6bdd4f498cf3d360b22670573b"
+    },
+    {
+      "path": "research/S014/assets/evidence/EX044_20261019/e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+    }
+  ],
+  "implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/diagnose_preentry_v2.py",
+    "sha256": "f6da9bd3084ac5038d852e88f23751d3fe62a5ea122dbd36ef503a539e432db3"
+  },
+  "economic_window": [
+    "2020-01-01",
+    "2025-12-31"
+  ],
+  "same_seen_development_history": true,
+  "population": {
+    "actual_buy_intents": 125,
+    "actual_filled_entries": 122,
+    "actual_failed_buys": 3,
+    "known_prior_group_counts": {
+      "NO_PRIOR_CLOSED": 1,
+      "PREVIOUS_NET_LOSS": 68,
+      "PREVIOUS_NET_PROFIT": 56
+    },
+    "closed_actual_cycles": 121,
+    "open_actual_cycles_no_exit_fee": 1
+  },
+  "definitions": {
+    "prior_memory": "Actual closed cycle net of both actual fees, actual SELL execution_date <= D. Zero exact; never rounded into loss/profit.",
+    "D_known": [
+      "previous completed real cycle outcomes",
+      "consecutive completed real losses",
+      "D close",
+      "prior20 ATR",
+      "prior5 support floor",
+      "D Z5",
+      "reservation",
+      "planned limit"
+    ],
+    "not_D_known": [
+      "E fill or failure",
+      "E fill trigger",
+      "E actual fill price",
+      "E close",
+      "current prospective cycle later return"
+    ],
+    "price_bridge": "Q*(Eclose-Dclose) = Q*(fill-Dclose)+Q*(Eclose-fill). First term is not account profit/loss before purchase.",
+    "actual_entryday_net": "Q*(Eclose-fill)-actual buy fee; zero prior inventory.",
+    "open_cycle": "Mark to original 2025 last Close, subtract actual entry fee only. Never a completed prior outcome.",
+    "streak_grouping": "Full natural integer counts; no threshold/parameter sweep, no skip-account wealth, no new strategy or future label replay."
+  },
+  "resources": {
+    "new_accounts": 0,
+    "new_replays": 0,
+    "new_fits": 0,
+    "new_market_calls": 0,
+    "prepared_fetches": 0,
+    "new_counterfactual_wealth_labels": 0
+  },
+  "checks": {
+    "S014 only": 1,
+    "EvidenceRef exact bytes": 1,
+    "audited actual successful cost arm": 1,
+    "audited exact account/result": 1,
+    "cost arm exact parameters": 1,
+    "original source bytes": 1,
+    "one actual buy and at most one sell each cycle": 122,
+    "same anchored HFQ research units": 1,
+    "true D flat buy intent and E mapping": 125,
+    "buy FILLED status agrees actual fill": 125,
+    "D-fill-E price bridge": 122,
+    "actual entryday own wealth difference": 122,
+    "known prior cycle strictly completed by D": 122,
+    "all actual 2020-25 BUY fills represented exactly": 1,
+    "no duplicate attempts": 1
+  },
+  "check_count": 747,
+  "max_money_identity_error": 8.185452315956354e-11,
+  "outputs": [
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_actual_attempts_v2.csv",
+      "sha256": "1a78db6bbdb99a27fd2717b562c92c60bb0225ad60937f3434993cc4e94db676",
+      "rows": 125
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_actual_cycles_v2.csv",
+      "sha256": "e7fab28a2488d04c01146799604d761a8d96548bd7667e97985146ea64a4b781",
+      "rows": 122
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_yearly_prior_group_v2.csv",
+      "sha256": "88b687f4da3312dd0f326db6dd271cecd637f7b22eea87214d9b3c0c102e6e77",
+      "rows": 13
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_prior_group_v2.csv",
+      "sha256": "2e8ffc89555e73b9f357faaf79942459c4ea7d181c3a487046e17610b2e76141",
+      "rows": 3
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_yearly_loss_streak_v2.csv",
+      "sha256": "2eb40bbc4664a41cb111f4b2bf9f08716dac75fd3a9a44e1904b03fda5642761",
+      "rows": 28
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_yearly_trigger_v2.csv",
+      "sha256": "cb9c11a17325e209be0f8613e011635311bf67846ce5c8bbbb78f5acdacf1195",
+      "rows": 12
+    },
+    {
+      "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_yearly_v2.csv",
+      "sha256": "ecaed54f8a24de5f847c8018a5c9255406fded54de07fb0f9228f53318c9774d",
+      "rows": 6
+    }
+  ],
+  "base_implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/diagnose_preentry.py",
+    "sha256": "65b55168f0c03763347bb7f7a0dd2973421935dee22869214d35a9d2d23a30f3"
+  },
+  "supersedes_preliminary": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_accounting_summary.json",
+    "sha256": "b1b4d1ddbd35e066db72b82bf9aa249c301c797892ce10f21c2af0273da9e460"
+  },
+  "empty_group_rule": "No actual fills => aggregate entry outcomes null; no closed cycles => aggregate closed-cycle outcomes null. Counts of observations remain counts."
+}

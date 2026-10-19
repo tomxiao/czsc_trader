@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "source_sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+  "implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/review_pause_runner.py",
+    "sha256": "47af911490a7742795e7d067955de6bfaf49ee2eb9c91705cdb0d09edda33dd0"
+  },
+  "reviewed_files": [
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/run_accounts.py",
+      "sha256": "c4f90ffba71c9c16450b064bd2991cdcf0055b77f44704ee9574afb11f664f08"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/audit_accounts.py",
+      "sha256": "a4bc7f8be15c955ef02c452a86e07444b5d961a10d786bb9ec626c1d3b3ee601"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/protocols/design.json",
+      "sha256": "f447784ad9f6d431b45c478f2ffd0d088d1e43ab61ea1c9cf0f0c00df1ee57cc"
+    }
+  ],
+  "checks": [
+    "exact reviewed final bytes src/run_accounts.py",
+    "exact reviewed final bytes src/audit_accounts.py",
+    "exact reviewed final bytes protocols/design.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/authorization.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/design_decision.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/method/completed_loss_slot_review_v2.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/method/interface_and_loss_pause_review.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/method/historical_loss_memory_search.json",
+    "upstream byte identity research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/review/locked_method_gate.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/accounting/pause_evaluation_protocol.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/review/source_state_review.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/accounting/pause_source_review.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_accounting_summary_v2.json",
+    "upstream byte identity research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_research_findings.json",
+    "upstream byte identity research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+    "upstream byte identity research/S014/experiments/EX044_20261019/protocols/execution_lock.json",
+    "upstream byte identity research/S014/experiments/EX044_20261019/others/accounts/run-004.json",
+    "upstream byte identity research/S014/experiments/EX044_20261019/others/final_verification.json",
+    "upstream byte identity research/S014/experiments/EX043_20261019/src/precheck.py",
+    "upstream byte identity research/S014/experiments/EX041_20261019/src/precheck.py",
+    "upstream byte identity research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "upstream byte identity research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "fixed three profiles and IDs",
+    "correct frozen cost baseline",
+    "source toy and actual SRT receipt bound",
+    "source precheck exact receipt",
+    "final six audit boundaries bind final internal",
+    "new completion memory does not imply original or funded divergence",
+    "reservation changes before target or money",
+    "four independent dates retained"
+  ],
+  "check_count": 31,
+  "manual_boundary_review": [
+    "All dispatches validate immutable source/parameter/upstream byte hashes and public source-review gate first.",
+    "Active profiles require independently published current-lock fresh BASE and exact current account-ref gate before dispatch; no blind retry.",
+    "Original prepared data fingerprint/strategy causal plan except new strategy identity checked before evaluation; network blocked.",
+    "All UNKNOWN/FAILED/SUCCEEDED receipts retained, internal technical error blocks dependent evaluation, both fixed active profiles run irrespective economics.",
+    "Original 1% LIMIT BUY/market SELL, initial100000, .001 one-way, limits/lot/H10/HFQ anchor and original2026 tail unchanged.",
+    "First feedback enters new known memory even in BASE; first selected arm separate; original-prefix uses first original state not first target.",
+    "Internal actual-funded net sign and one-shot state checks do not replace independent exact fresh BASE/full-account review."
+  ],
+  "new_accounts": 0,
+  "fits": 0,
+  "new_market_calls": 0,
+  "real_control_gate": "NOT_YET_EXECUTED"
+}

@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "output": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_entryday_yearly_attribution.csv",
+    "sha256": "2aa780c8bd24ca0598e25fdab8bf7ce1bfe8f746c4a63d097055f9c262f5b409",
+    "rows": 18
+  },
+  "sources": [
+    {
+      "pause_profile": "BASE",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4.json",
+        "sha256": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-000-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "c8762ae87e97b316c5fa82ff15b262e1ad27bcdf27d24f9530ab22f66680721f",
+      "independent_audit": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_000_independent_review.json",
+        "sha256": "6b18343c78a5a87636fc182472b32d193e644b2720e885cbafc282172dc3deaf"
+      }
+    },
+    {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+        "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-001-after_net_loss_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+      "independent_audit": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json",
+        "sha256": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3"
+      }
+    },
+    {
+      "pause_profile": "AFTER_NET_PROFIT_SKIP1",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "dd90fca7b8805bf4aa1092934a0af95d74c501a59583102aabbf155fae8ccd33.json",
+        "sha256": "dd90fca7b8805bf4aa1092934a0af95d74c501a59583102aabbf155fae8ccd33",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-002-after_net_profit_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "eadad9442fbcc280a98fefed7c15a917ab991e1c24aadc4b296dbb348da4eae6",
+      "independent_audit": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_002_independent_review.json",
+        "sha256": "327691382ef1a779a875c3d0a8bbd4c2565e644e63430b0a9df23660995e5f64"
+      }
+    }
+  ],
+  "implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/attribute_pause_entrydays.py",
+    "sha256": "80bf3e1d6118d2ad49f9c65e9ea47c807a23ace8654fea3c8b1a7bae241f2c99"
+  },
+  "checks": {
+    "formal exact successfully audited own account": 3,
+    "same1455 economic dates per own policy": 3,
+    "daily actual phase and fees wealth bridge": 4365,
+    "entry from own actual flat capital": 291,
+    "actual original inventory sale": 288,
+    "annual net money exact bridge": 18,
+    "own year opening existing independent audit": 18,
+    "own year closing existing independent audit": 18,
+    "crosspolicy annual difference partition": 18
+  },
+  "check_count": 5022,
+  "max_money_bridge_error": 3.7834979593753815e-10,
+  "definitions": {
+    "actual_entryday_net": "Actual quantity*(E ledger Close - actual BUY fill)-actual BUYfee, E belongs to its natural year.",
+    "postentry_residual_net": "Actual no-fill-held close-to-close marks + SELLfill-prevledgerClose marks - actual SELLfees. Includes calendar-year carry correctly.",
+    "annual_pp": "Each own policy uses its own actual year-opening equity.",
+    "difference_partition": "Entryday net contribution difference + residual net contribution difference = annual return difference. Accounting attribution, not a causal intervention decomposition."
+  },
+  "no_counterfactual_labels": true,
+  "new_accounts": 0,
+  "fits": 0,
+  "market_calls": 0,
+  "scope": "2020-25; no2026 outcome selection"
+}

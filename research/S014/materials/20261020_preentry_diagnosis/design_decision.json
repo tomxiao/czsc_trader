@@ -1,0 +1,64 @@
+{
+  "status": "LOCKED_FIXED_THREE_CROSS_CYCLE_FEEDBACK_DIAGNOSTIC_POLICIES",
+  "date": "2026-10-20",
+  "execution_authorized": true,
+  "experiment": "EX046_20261020",
+  "role": "RSCH",
+  "fixed_parameter_key": "pause_profile",
+  "fixed_parameters": [
+    {"pause_profile": "BASE"},
+    {"pause_profile": "AFTER_NET_LOSS_SKIP1"},
+    {"pause_profile": "AFTER_NET_PROFIT_SKIP1"}
+  ],
+  "fixed_comparator": {
+    "experiment": "EX044_20261019", "index": 4,
+    "policy": "BASE/POSITIVE_P/NET_LOSS_1ATR",
+    "source": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+    "source_sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+    "account_evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+    "result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05"
+  },
+  "selection_disclosure": "Three proposed profiles were written before A's new historical population counts. At final lock A preliminary counts were known: prior-loss entries are not more adverse than prior-profit entries, weakening the loss-pause intuition. Keep all three predeclared directions to test complete financed policy value without favoring a newly chosen sign. All2020-25 previously seen; no pristine holdout claim.",
+  "question": "Does the known sign of the last actually completed net cycle have a useful pre-entry action role, or do finite pauses mainly change participation and the future clock?",
+  "no_predeclared_winner": true,
+  "completed_sign": {
+    "event": "Actual SELL fill completes an actual BUY-to-SELL cycle by D decision time",
+    "price_basis": "Original consistent projected fill prices, independently authenticated against actual funded fills and proportional both-side fees",
+    "formula": "exit_fill * 0.999 - entry_fill * 1.001",
+    "loss": "strict <0", "profit": "strict >0", "exact_zero": "Neither trigger",
+    "no_epsilon_or_missing_fill_fallback": true,
+    "not_completion": ["SELL intent", "unfilled SELL", "unrealized loss", "failed BUY", "virtual skipped slot"]
+  },
+  "one_pause_state_machine": {
+    "arm": "One actual completed cycle of the selected sign arms one pause. BASE never arms. Each policy uses its own causal completion history, never frozen future BASE trades.",
+    "same_day": "If actual SELL fills on D and original flat BUY eligibility is satisfied at D close including old reservation, the same D may consume the armed pause. No extra one-day delay is imposed.",
+    "consume": "At first original eligible flat BUY D while armed, issue no BUY, set reservation to original market index i+11, and clear armed immediately.",
+    "resume": "When reservation expires use original normal entry evaluation; persistent last loss/profit does not rearm. Only another actual completed cycle can arm again.",
+    "old_state": "Do not create entry/deadline/position/cost/fee/failedBUY state for a skipped slot. Preserve original historical reservation and mandatory pending/expiry behavior.",
+    "failed_buy": "A real failed BUY remains original failedBUY reset; it neither closes a cycle nor arms a pause.",
+    "future_fill": "Do not inspect whether the suppressed BUY would have filled. Pauses can consume opportunities that would not fill.",
+    "frequency": "Only real funded closed trades count; skipped planned slots are diagnostics."
+  },
+  "unchanged_contract": "Original support entry, ENTRY_GRACE, positive-P shock exit, NET_LOSS_1ATR, H10 and original reservation; LimitBuyHold1%, 0.001 each side, initial100000, status/limits/tick/lot/cash, original date-free continuous2020-01-02..2026-10-15 execution and input identities",
+  "economic_scope": "All2020-25 original own-opening annual return/drawdown and original fullwindow closed-trade frequency.2026 is original technical/control tail only; no new economic selection.",
+  "pre_dispatch_gates": [
+    "New unused diagnostic identities and public immutable source/parameters/review bindings",
+    "Synthetic state/strict sign/sameD/one-shot/failedBUY/censored/causality tests plus actual SRT observations",
+    "Independent source, clock and execution-contract reviews",
+    "Fresh new-source BASE actual account must reproduce EX044004 exact original economic and observed state columns",
+    "Independent funded BASE audit and published control gate before either active profile",
+    "Every active profile audited against its own real complete filled cycle states, prices, fees, cash, lifecycle and source observations"
+  ],
+  "planned_actual_dispatches": 3,
+  "user_numeric_account_cap": null,
+  "no_search_or_optional_success_stop": "Run both fixed active policies after valid control regardless which sign performs better. No threshold, streak length, waiting duration, year/date switch, fit, or additional outcome-driven policy.",
+  "failure_rule": "Preserve technical failure and halt dependent dispatch until understood; never conceal failure or silently relax contract. Account execution and independent audit-expression failure are reported separately.",
+  "interpretation": [
+    "Historical group associations are diagnostics, not executable policy returns",
+    "Opposite-sign pause is not an equal-dose randomized timing control; profile populations and quantities evolve",
+    "Do not infer linear causal information-versus-timing shares or transfer old hypothetical skipped trade profits",
+    "Only original user economic goals are hard acceptance; no CI, count, no-harm or new annual-stability veto",
+    "No registration, stage advance, platform/dependency/new-data/prod/PTE/remote Git action"
+  ],
+  "delivery": "Preserve supportive and negative evidence, explain in plain Chinese, publish local research evidence and commit locally"
+}

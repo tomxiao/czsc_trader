@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "source_sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+  "source": {
+    "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+  },
+  "design": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/design_decision.json",
+    "sha256": "7db4e057818200a176c823c953e6d05d9b1d00385364518a495de835b2804d2e"
+  },
+  "prior_source": {
+    "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+    "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+  },
+  "synthetic_receipt": {
+    "path": "research/S014/experiments/EX046_20261020/others/synthetic_precheck.json",
+    "sha256": "8cc4093b139c95e2468874983226fdbde2b42d02a52bc26bcdad6ce10fd1643a"
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/review_pause_source.py",
+    "sha256": "d0f1eedad862e87064f246d2a0de7d5d20c2797296512f36b6a83780f423cc17"
+  },
+  "checks": {
+    "exact frozen source": 1,
+    "exact fixed profiles": 1,
+    "original helper AST exact causal_features": 1,
+    "original helper AST exact tick": 1,
+    "original helper AST exact buy_limit": 1,
+    "original helper AST exact calendar_request": 1,
+    "original helper AST exact derive_calculation_scope": 1,
+    "strict finite sign": 4,
+    "invalid completed value rejected": 3,
+    "strict canonical schema rejected": 4,
+    "original execution/clock contract inputs": 3,
+    "original execution/clock contract decision": 3,
+    "original execution/clock contract execution": 3,
+    "original execution/clock contract monitoring": 3,
+    "original execution/clock contract capabilities": 3,
+    "BASE all prior columns exact rising": 1,
+    "completed only actual matched SELL": 666,
+    "no synthetic completion value": 643,
+    "stored last sign": 666,
+    "armed before eligibility includes sameD completion": 666,
+    "one shot consume first eligible": 666,
+    "armed cleared once, no stale sign rearm": 666,
+    "completion finite and selected strict sign": 23,
+    "own-feedback history synthetic prefix exact": 18,
+    "virtual slot exact original planned H10": 4,
+    "virtual slot no buy or fake state": 4,
+    "BASE all prior columns exact flat_afterfee_loss": 1,
+    "C synthetic bound exact source and test": 1
+  },
+  "check_count": 4058,
+  "review": [
+    "Strict own completed history; actual SELL before D close may arm and consume at same D.",
+    "Cost/support/shock/entry grace and original 1% order/limits/fees unchanged.",
+    "Pause only eligible flat candidate; no E success lookahead, fake fill, position, fee, deadline or completed cycle.",
+    "BASE synthetic equality is not yet fresh funded NOOP; actual shadow/positive-funded matching and perunit net sign remain account gates.",
+    "Separate first feedback-state D, original-state D including reservation, target D, and funded-state E."
+  ],
+  "new_accounts": 0,
+  "new_market_data": 0,
+  "fits": 0,
+  "real_funded_control": "NOT_YET_EXECUTED"
+}

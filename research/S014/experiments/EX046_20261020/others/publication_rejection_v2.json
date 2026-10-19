@@ -1,0 +1,14 @@
+{
+  "status": "AUTO_REVIEW_REJECTED_BEFORE_PROCESS_START",
+  "attempt": 1,
+  "command": ".venv/Scripts/python.exe -X utf8 -B .tmp/s014_ex046_publish_revision.py",
+  "execution_location": "repository root",
+  "tool": "exec_command require_escalated",
+  "exact_reason": "该命令会通过发布接口向“公共”证据目的地发送审计/账户派生材料（含同一BASE结果及独立审核内容）；用户授权了研究执行，但未明确授权将这些可能敏感的财务研究数据发布到该具体目的地。",
+  "exact_followup_instruction": "Do not bypass this rejection through a workaround or indirect execution. Continue with a safer alternative, or carry out checks to prove that the action is authorized or low risk before trying again. Complete unaffected work without asking for confirmation. Report anything that remains blocked, clarify why it was blocked by auto-review, inform the user of the risk and ask for approval.",
+  "process_started": false,
+  "publication_performed_by_rejected_command": false,
+  "new_account_dispatches": 0,
+  "active_profiles_dispatched": 0,
+  "action": "Stop publication and active account dependencies. Read original publisher implementation and document exact local filesystem destination. Parent will review evidence and decide whether to resubmit the same script with explicit destination and existing authorization; this agent will not retry or use an indirect write workaround."
+}

@@ -1,0 +1,80 @@
+{
+  "status": "READONLY_LOCAL_DESTINATION_AND_NO_NETWORK_IMPLEMENTATION_VERIFIED_NOT_PUBLISHED",
+  "sources": [
+    {
+      "path": "src/czsc_trader/application/evidence_service.py",
+      "sha256": "28c3c29026063163be22dc445fbb096d0b907dfac10d33ed9f88d4964f0ff218",
+      "anchors": [
+        {
+          "text": "def _publish_bytes",
+          "line": 20
+        },
+        {
+          "text": "def _publish_serialized",
+          "line": 89
+        },
+        {
+          "text": "def publish_evidence",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "path": "src/czsc_trader/research_tools/evidence.py",
+      "sha256": "6374c4b1584f1e0123329edb3c9e5b9daeead5eeb00c5328b33ed6a992623c2f",
+      "anchors": [
+        {
+          "text": "def managed_path",
+          "line": 18
+        },
+        {
+          "text": "def repository_path",
+          "line": 62
+        }
+      ]
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/run_accounts.py",
+      "sha256": "c4f90ffba71c9c16450b064bd2991cdcf0055b77f44704ee9574afb11f664f08",
+      "anchors": [
+        {
+          "text": "def publish_file",
+          "line": 66
+        },
+        {
+          "text": "requests.sessions.Session.request = no_network",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "path": ".tmp/s014_ex046_publish_revision.py",
+      "sha256": "402fbf7339d5b3a0f380582570eb46c56a92c3b56d626d2060e1d0e1e6bc7fbf",
+      "anchors": [
+        {
+          "text": "socket.socket.connect = deny_network",
+          "line": 17
+        },
+        {
+          "text": "socket.create_connection = deny_network",
+          "line": 18
+        }
+      ]
+    }
+  ],
+  "actual_publication_destination_relative": "research/S014/assets/evidence/EX046_20261020/<content-sha256>.json or .py",
+  "temporary_atomic_write_relative": ".tmp/evidence-publication/<uuid>.part",
+  "other_outputs_relative": "research/S014/experiments/EX046_20261020/protocols and others new v2 files only",
+  "publisher_call_chain": "MaterialEvidenceWrite -> publish_evidence -> _publish_serialized -> EvidenceRef.repository_path -> managed_path -> _publish_bytes. Only filesystem mkdir/open(xb)/write/fsync/link/unlink; no HTTP/upload API in chain. managed_path rejects symlink/junction and escape from repository.",
+  "data_scope": "Existing source/audit/technical metadata and same BASE result reference. No raw market dataset export, evaluation.prepare/evaluate, new supplier or new account call in this script.",
+  "network_guard": "Original runner blocks requests.Session.request; revised unlocked publication builder additionally raises on socket.socket.connect and socket.create_connection before context creation.",
+  "script_sha256": "402fbf7339d5b3a0f380582570eb46c56a92c3b56d626d2060e1d0e1e6bc7fbf",
+  "authorization_context_paths": [
+    "research/S014/materials/20261020_preentry_diagnosis/authorization.json",
+    "research/S014/materials/20261020_preentry_diagnosis/design_decision.json"
+  ],
+  "rejected_process_started": false,
+  "new_dispatches": 0,
+  "agent_will_retry": false,
+  "next_action": "Parent reviews this implementation evidence and may resubmit the same script to auto-review with exact local destination and previously granted immutable local research evidence authority."
+}

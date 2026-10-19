@@ -1,0 +1,78 @@
+{
+  "status": "AUTHORIZED_ADDITIVE_INTERNAL_AUDIT_TECHNICAL_REVISION_BEFORE_ACTIVE_ACCOUNTS",
+  "revision": 2,
+  "parent_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e.json",
+    "sha256": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e",
+    "media_type": "application/json",
+    "name": "ex046-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "strategy_source_unchanged": {
+    "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+  },
+  "original_audit": {
+    "path": "research/S014/experiments/EX046_20261020/src/audit_accounts.py",
+    "sha256": "a4bc7f8be15c955ef02c452a86e07444b5d961a10d786bb9ec626c1d3b3ee601"
+  },
+  "original_runner": {
+    "path": "research/S014/experiments/EX046_20261020/src/run_accounts.py",
+    "sha256": "c4f90ffba71c9c16450b064bd2991cdcf0055b77f44704ee9574afb11f664f08"
+  },
+  "original_control_record": {
+    "path": "research/S014/experiments/EX046_20261020/others/accounts/run-000.json",
+    "sha256": "b79d2ea52e3c6e9aeaaf33e10284de839cdac1cfc1c9c3715f464e022b7f1e37"
+  },
+  "same_successful_control_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4.json",
+    "sha256": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4",
+    "media_type": "application/json",
+    "name": "completed-sign-pause-000-base",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "same_result_hash": "c8762ae87e97b316c5fa82ff15b262e1ad27bcdf27d24f9530ab22f66680721f",
+  "retained_original_internal_status": "FAIL",
+  "engine_status": "SUCCEEDED",
+  "actual_execution_failures": 0,
+  "internal_audit_expression_corrections": 1,
+  "technical_cause": "The v1 internal loop zipped D decisions with their E account_daily rows but incorrectly required D==Edate and compared D held to E quantity. Source and actual BASE economics/old observations were already exact.",
+  "only_audit_change": "Use decision.valid_session==E.date and E.signal_date==D. D held compares authoritative daily[D].quantity. Explicit original prewindow2019-12-31 state100000cash/0shares only. Keep same actual D fills, net math and all original fee/tolerance rules.",
+  "audit_v2": {
+    "path": "research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py",
+    "sha256": "b9f80bfc4f5757e00d4984a2bd7481f6835c4d4654b1b7121341851d26d47324"
+  },
+  "runner_v2": {
+    "path": "research/S014/experiments/EX046_20261020/src/run_accounts_v2.py",
+    "sha256": "64994e8c8a7dccf4192e820969acf68f0b10d472ca2c8d2f8ebf005f66efb0ab"
+  },
+  "same_control_supplement": {
+    "path": "research/S014/experiments/EX046_20261020/others/control_audit_correction_v2.json",
+    "sha256": "6a1c9cac298a5a06c72c3977a6f12282f6de2b7ebc7a9343aa354c5f5840c99e"
+  },
+  "supplement_checks": 425923,
+  "source_and_parameters_and_input_contract_and_economic_rules": "UNCHANGED",
+  "control_no_redispatch": true,
+  "active_dispatches_remaining": [
+    1,
+    2
+  ],
+  "runner_guards": "Only batch001/002 allowed; allv1 sources/parent bytes retained. Newpreflight.source_lock and active receipts bindv2. Originalrun000/v1index/FAIL remain exact; aggregates carry separate control_supplement_ref, not rewrittenPASS.",
+  "control_gates": "Samecontrol supplementary internalPASS and A independent original174a/v1BASE audit publicly linked under currentv2; A/B review v2 minimal audit/runner/parentchain beforeactive. No new source or account.",
+  "original_goal_constraints": "UNCHANGED",
+  "no_new_account_or_source_or_market_or_model": true
+}

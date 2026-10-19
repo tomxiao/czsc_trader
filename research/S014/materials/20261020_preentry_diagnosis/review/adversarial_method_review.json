@@ -1,0 +1,210 @@
+{
+  "status": "READ_ONLY_METHOD_REVIEW_ONE_DISTINCT_MECHANISM_PENDING_ORIGINAL_POPULATION",
+  "role": "RSCH independent adversarial review",
+  "branch": "codex/s014-jinniu-research",
+  "baseline_HEAD": "b83da6805cab70205a49af8e3873ce4f038f97a1",
+  "scope": "ExistingS014 source/reports/account diagnosis only;2020-25 seen development,2026 technicaltail. No new market/publicdatafetch/account/model/labels/platform/Git/publication.",
+  "sources": {
+    "stage2_auxiliary_only": {
+      "path": "research/S014/experiments/EX005_20261016/protocols/final_report.md",
+      "sha256": "934c319283a828d710bc19d6a941e8f7ddd3e456f5dd8048ccc59dffa15eaa36",
+      "line": 5,
+      "anchor": "本阶段没有发现证据充分",
+      "line_excerpt": "本阶段没有发现证据充分、能够稳定增加净收益的入场组件。原有反转、趋势和风险过滤线索已补充检验；没有因少量正向结果直接晋级。完整策略尚未构建，用户要求的逐年收益、逐年回撤及全期交易频率均未验收。阶段二任务完成，整体策略目标尚未达成。"
+    },
+    "old_close_location": {
+      "path": "research/S014/experiments/EX005_20261016/src/methods.py",
+      "sha256": "b0731e07be4cb50ffabdbebd730c1e6bf1a42a050232ccaac98bccab471bc523",
+      "line": 39,
+      "anchor": "\"close_location\"",
+      "line_excerpt": "        \"close_location\": ((close - adjusted.Low) / (adjusted.High - adjusted.Low).replace(0, np.nan)).fillna(.5),"
+    },
+    "old_volume_location": {
+      "path": "research/S014/experiments/EX007_20261017/src/components.py",
+      "sha256": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+      "line": 9,
+      "anchor": "\"volume_location\"",
+      "line_excerpt": "    \"participation\": [\"volume_location\", \"signed_volume\", \"volume_momentum\"],"
+    },
+    "old_online_learning": {
+      "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+      "line": 57,
+      "anchor": "包含未成交记0的全部到期尝试",
+      "line_excerpt": "针对原生5日和10日入场标签，包含未成交记0的全部到期尝试，信号至少60日预热；测试共1811个信号，5日908、10日903。它们是各期限原生队列，与上文中点共同队列不同，不能直接比较分母。"
+    },
+    "unfilled_selection": {
+      "path": "research/S014/experiments/EX006_20261016/protocols/report.md",
+      "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+      "line": 94,
+      "anchor": "共同队列有32/1601次限价买入未成交",
+      "line_excerpt": "共同队列有32/1601次限价买入未成交。它们从次日开盘至计划退出开盘的未投资价格路径，3/5/10/20日均值约+8.496%/+8.319%/+11.621%/+16.546%。这只是未持仓价格变化，不扣为一个可投资收益，不假设按高开价可以买入原计划全部股数。"
+    },
+    "not_all_entry_late": {
+      "path": "research/S014/experiments/EX006_20261016/protocols/report.md",
+      "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+      "line": 47,
+      "anchor": "入场前价格变化不是普遍主因",
+      "line_excerpt": "**诊断更新：入场前价格变化不是普遍主因。成交后收益确实存在，但能否事前识别仍未知。**"
+    },
+    "environment_role": {
+      "path": "research/S014/experiments/EX014_20261017/protocols/report.md",
+      "sha256": "23431ec177ee5611fcce64a3895682c28ef5cdebb235a888d185b14ebc2826a9",
+      "line": 26,
+      "anchor": "高低差+2.7757个百分点中约94.21%",
+      "line_excerpt": "高低差+2.7757个百分点中约94.21%来自正收益贡献。高环境亏损次数比例更低，但最差一成交易更差，不能把该组件升级为全面尾部保护。2025高环境仍亏，其负收益贡献也比低环境更负。详情见[收益分解](../../../experiments/EX014_20261017/others/decomposition.csv)。没有将旧adverse字段误称为盘中最大不利波动或净账户回撤。"
+    },
+    "Eclose_not_preentry": {
+      "path": "research/S014/experiments/EX015_20261017/protocols/report.md",
+      "sha256": "47c3380160f51010a63425a9131e4934c448686e085ee6f58c4bca71e3f03c76",
+      "line": 5,
+      "anchor": "入场当天收盘观察",
+      "line_excerpt": "本轮与EX007区别在首次可退出之前的决策时点、低开收阳父机会和固定H3环境，不是重复H5/10/20中点均线扫描。仅现有数据，公告暂停，费用与执行约定不变。213个已成交父机会（高153/低60），入场当天收盘观察，最早下一交易日按原H1退出；H3/H5使用相同原入场及股数。未成交不产生持有决策，没有连续账户。"
+    },
+    "environment_accounts": {
+      "path": "research/S014/experiments/EX018_20261017/protocols/account_report.md",
+      "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+      "line": 3,
+      "anchor": "八个构造均未满足全部年度目标",
+      "line_excerpt": "本轮完成归因、事前锁定的六个新增连续账户和两个原账户复用。**八个构造均未满足全部年度目标；没有可推进阶段四的达标候选。** 高环境低开收阳持有6日显著提高全期收益，同时扩大部分年份亏损。"
+    },
+    "positive_candle_accounts": {
+      "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+      "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+      "line": 3,
+      "anchor": "阳线确认未形成有效的统一入场过滤",
+      "line_excerpt": "阳线确认未形成有效的统一入场过滤。C0059/C0060/C0061全期净收益分别42.61%、−46.87%、−7.41%，均显著低于各自原B/R/P基线；年度收益仅2/7、2/7、1/7通过，6个对照全部原目标通过0个。B/R在2024由亏转盈的局部改善被其他年度损伤覆盖，去2026三个新增账户仍全部亏损。共同入场仅40/36/40笔且收益差接近零，主要损失来自遗漏原盈利参与并转到较差的新路径，不能把旧交易阳线分组强度当作连续账户有效性。保留完整负面结果，不据此扩大阳线阈值或按年度切换，尚不具备阶段四准备度。"
+    },
+    "support_recovery": {
+      "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+      "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+      "line": 4,
+      "anchor": "不支持把“先收复旧支撑”加入为自动买入过滤条件",
+      "line_excerpt": "定向诊断完成：不支持把“先收复旧支撑”加入为自动买入过滤条件，也不支持仅因表面恢复而剔除交易。主比较与真实2025截止均未显示真实收复更高的H10均值，局部尾部差异不能稳定移植到全部机会；建议关闭本条旧支撑确认分支，不追阈值。保留26旧组件定义，新增有效组件0；历史66候选仍0全部达标，10轮账户额度保持耗尽，尚不能推进阶段四。"
+    },
+    "old_cycle_P_wait": {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "line": 9,
+      "anchor": "首次严格早于E+9收盘的破坏时",
+      "line_excerpt": "本轮新增C0075/C0076两个账户，复用C0035即时再入场与C0056全部预约两个端点，共4格；新增上游调用0。全部支撑破坏仍照常触发提前卖出，只改变卖出后是否继续等待原E+10预约。首次严格早于E+9收盘的破坏时，冻结含实际买费浮盈P=收盘价/(实际买价×1.001)−1；一组只在P>0保留预约，另一组只在P≤0保留，零属于非正组。"
+    },
+    "old_cycle_wait_counter": {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "line": 7,
+      "anchor": "相对即时再入场C0035的有限变化主要来自后续参与机会替换",
+      "line_excerpt": "两个互补条件预约均未达到原目标：仅正浮盈保留预约全期+263.10%，年度收益仅1/7、回撤6/7；仅非正浮盈保留预约全期+280.24%，年度收益2/7、回撤6/7；本轮全部目标通过0/4。两者频率充足，但均低于全部保留预约C0056的+708.72%、年度收益4/7和回撤7/7。相对即时再入场C0035的有限变化主要来自后续参与机会替换，不能证明浮盈状态能够稳定选择等待方式。结束该零边界条件预约路线，不追加阈值或年度开关。"
+    },
+    "old_Z_phase": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/report.md",
+      "sha256": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+      "line": 89,
+      "anchor": "新“每天重试”的禁买路径在2025实际阻买次数为0",
+      "line_excerpt": "五组独立复核发现：新“每天重试”的禁买路径在2025实际阻买次数为0，5月30日和6月19日却已经空仓。此前改变买入日期后，原预约和交易节拍已经改变。因此，旧组合曾有三次2025高Z拟买机会，不代表新路径也遇到并拦掉了它们；不能把2025损伤直接归为当年的禁买动作。"
+    },
+    "old_clock_tradeoff": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/report.md",
+      "sha256": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+      "line": 98,
+      "anchor": "跳过计划机会恢复了2021、2022的原收益达标",
+      "line_excerpt": "只改变这一等待规则，2024收益从 **+11.3074%** 变为 **-13.4581%**，2025从 **+4.0043%** 变为 **+34.2681%**。跳过计划机会恢复了2021、2022的原收益达标，但2024、2025仍未通过：六年收益4/6通过，回撤6/6通过，原完整窗口交易频率4.786845通过。它没有同时保住2024转正和2025达标。"
+    },
+    "known_2024_entry_damage": {
+      "path": "research/S014/materials/20261019_2024_diagnosis/report.md",
+      "sha256": "4ced3e338f4f56003282c4f695437a50abb777d89ff03a93510c234d19fb2187",
+      "line": 18,
+      "anchor": "买入当天的损伤是成交后才知道的",
+      "line_excerpt": "这支持优先研究入场时点和不利入场后的处置。买入当天的损伤是成交后才知道的，不能直接当作买入前的筛选条件；收盘发现亏损后再卖，也不能追回已经发生的损失。费用没有更改或机械加回作为“修复”。"
+    }
+  },
+  "readout": "Do not add another renamed MA/support-recovery/positive-candle/highZ/volume-location gate. One distinct inspectable question remains: does the last actually completed losing cycle carry persistent risk into the next admissible entry opportunity? It is a hypothesis, not a finding; if original population cannot distinguish it from scheduling, stop this branch before account work.",
+  "old_evidence_boundaries": [
+    {
+      "finding": "MA/trend and volume-location are old expressions",
+      "sources": [
+        "old_close_location",
+        "old_volume_location",
+        "stage2_auxiliary_only"
+      ],
+      "limit": "An earlier model negative does not mathematically exclude every new action role, but renaming or moving nearby thresholds alone gives no novel mechanism."
+    },
+    {
+      "finding": "E-close failed-repair probes cannot become D preentry features",
+      "sources": [
+        "Eclose_not_preentry",
+        "known_2024_entry_damage"
+      ],
+      "limit": "EX015 probes use filled-entry-day close and support only a later-exit question; Dplan may use completedD prices, never nextE close/high/low or actualE fill to decide whether to send its own order."
+    },
+    {
+      "finding": "Environment risk-reference evidence is not a validated entrygate",
+      "sources": [
+        "environment_role",
+        "environment_accounts"
+      ],
+      "limit": "OriginalH3 environment gain mostly positiveupside contribution; fullaccount filters also altered participation. Neither negative localtest nor wholeaccount failure proves every environment source has no information."
+    },
+    {
+      "finding": "Stronger confirmation and recovered support already have material counterevidence",
+      "sources": [
+        "positive_candle_accounts",
+        "support_recovery"
+      ],
+      "limit": "2024localpositive cannot override other originalgoalfailures; prior diagnosticCIcross0 is not a new hard economicgate."
+    },
+    {
+      "finding": "Execution selection and clock are real competing explanations",
+      "sources": [
+        "unfilled_selection",
+        "not_all_entry_late",
+        "old_Z_phase",
+        "old_clock_tradeoff"
+      ],
+      "limit": "EX006 oldunfilledstatistics include2026 as historicalcontext; do not use2026 tochoose currentrules. Do not change fixed+1%limit or claim higherfillrate necessarily improvesentryquality."
+    }
+  ],
+  "candidate_mechanisms": [
+    {
+      "id": "ACTUAL_CLOSED_CYCLE_LOSS_MEMORY",
+      "mechanism": "A realized loss may indicate that the recent participation regime has not repaired by the next entry opportunity. One bounded skippedslot tests a stateful riskpause; it doesnot assert that future nextentryloss is known.",
+      "novelty": "EX029 freezes currentcycle markP atfirstsupportbreak and chooses remainingoldreservation;EX007online learns allmatured independentH5/H10attemptlabels. Proposedstate uses ownactualclosedfilledcycle afterbothfees atactualSELL, then nextcycle eligibility. Not samepeople, clock orinformationcontract.",
+      "Dknown_state": "Only afteractualfullSELL completes: realizedexitproceeds minus entrycost minus bothactualfees <0. Exactly0 isnotaloss; no newepsilon, no pending/unfilledSELL asclosed, no failedBUY asclosed. Beforefirstactualclosedcycle stateunknown andnoarmedpause.",
+      "minimal_candidate_not_locked": "On one newly closed netlosscycle armonepause. Atfirstsubsequent originaleligibleBUY D consumeoneplannedH10slot, reservation=i+11, target0/noorder/noheld/entry/deadline/cost/fee. Disarmwhenconsumed; laterentryqualification resumes even iflastloss remainsnegative. Eachactualnewclosedcycle mayarmagain. ExistingactualBUY/failedBUY/SELLpending andoldreservation remain.",
+      "no_execution_change": "Retain originalDplan->nextE,+1%limit,fullcash,fees,lots/constraints,grace/positiveZ/cost baseline chosenbyroot. No newpricecap or syntheticfrozen-accountfeedback appliedtoactualnewpath.",
+      "main_competing_explanations": [
+        "Persistent adverse entryregime versus arbitrary lowfrequency/phase shift.",
+        "Netloss includesdoublefee andexitpolicy choice; may befee scratch orunnecessarilyearlyexit,not persistent marketdamage.",
+        "Owntradinghistory changes whenpausing,so newlastclosedstate andnexteligiblepopulation areendogenous. Originalledgercounts cannotbecome newpathperformance by deletingtrades.",
+        "Crossyear state/reservation/capital inherited: an annualchange can occur withzero localnewpause.",
+        "A pause can miss rebounds that oldcoststop/earlyexit hadalready sacrificed; failure inthe originalentryday may not persist to nextslot."
+      ],
+      "first_useful_step": "WaitA originalactualcycle-to-nexteligibleD inventory, includingbothnetloss/profit/zero/unknown, earliestknownactualSELL date, currentreserve, entrydaydamageandrealizedloss distinction. No state×futurePnL thresholdscan ornewpolicyresults inthisreview.",
+      "what_can_change_decision": "If statehasmeaningful distinct originaleligibleopportunities and can be contrastive beforeD, rootmaylockoneboundedfeedback test. If it merely reproduces existingclockstates or has no defensible adverseentryrelation, stopthisfeedbackbranch; do not rescuewithlosscount orwaitlength sweeps."
+    }
+  ],
+  "three_arm_control_review": {
+    "root_draft": [
+      "BASE",
+      "AFTER_NET_LOSS_SKIP1",
+      "AFTER_ANY_CLOSE_SKIP1"
+    ],
+    "no_blocker_for_policy_comparison": true,
+    "unresolved_by_ALL_CLOSE": "ALL_CLOSE skipsmore opportunities than lossconditionedpause. A difference can reflect differentpausequantity,timing,missedwinners andphase,not thatlossstate predictsentrydamage.",
+    "preferred_if_question_is_loss_valence": "Replace thirdarm withAFTER_NET_PROFIT_SKIP1(ownactualclosednet>0), keepingBASE/LOSS andno fourtharm. This is a directional falsification,not equalcount/timing control; exactlyzero remainsunpaused.",
+    "preferred_if_question_is_conditional_versus_generic_lowerfrequency": "KeepALL_CLOSE butnameit a stronger universalpausepolicy,not an identifiedlossinformationcontrol.",
+    "still_unidentified_under_either": "Neither alternative separates terminalwealth into information vsclock shares. Counts, actualstates andwholepaths change. Do not addallcontrols just tocompleteagrid; waitA population then rootdecides."
+  },
+  "stop_reasons_not_new_hard_gates": [
+    "No seconddistinctprice-onlymechanism established afteroldfeature/sourceinventory;do not inventone justtoreach2.",
+    "Do not letnewthresholdnames, pendingfutureentryclose ornewlimitpricing masquerade as newpreentryinformation.",
+    "If thenextquestion cannotseparate persistentlossinformation fromtime/exposure effects withinexistingdata, reportunresolved andstopthisbranch;not a claimallS014research/datafamilies exhausted.",
+    "No newCI/nonharm/minsampleveto; originalannualreturn/DD/frequencygoals remainonly economicacceptance."
+  ],
+  "awaiting": "A originalpopulation evidence and root fixeddesign. This isnot executionpermission orsourcepolicylock.",
+  "new_accounts": 0,
+  "new_data_calls": 0,
+  "new_fits": 0,
+  "new_labels": 0,
+  "old_file_changes": 0
+}

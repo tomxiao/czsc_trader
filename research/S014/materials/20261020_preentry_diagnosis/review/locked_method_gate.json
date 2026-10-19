@@ -1,0 +1,103 @@
+{
+  "status": "PASS_LOCKED_METHOD_PENDING_INDEPENDENT_SOURCE_AND_FRESH_FUNDED_BASE_GATES",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_preentry_diagnosis/design_decision.json": "7db4e057818200a176c823c953e6d05d9b1d00385364518a495de835b2804d2e",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_accounting_summary_v2.json": "89a08750ce99423ebae4cd71b55332b1a82b5f9c77c490279dfc5a33e6828aaf",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_prior_group_v2.csv": "2e8ffc89555e73b9f357faaf79942459c4ea7d181c3a487046e17610b2e76141",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/preentry_yearly_prior_group_v2.csv": "88b687f4da3312dd0f326db6dd271cecd637f7b22eea87214d9b3c0c102e6e77",
+    "research/S014/materials/20261020_preentry_diagnosis/review/method_review.json": "1ec8b660419912fd98bb9e69ff3af63f11ae212328970ec480a4a487ccb16fd0",
+    "research/S014/materials/20261020_preentry_diagnosis/review/adversarial_method_review.json": "486f5e87983c18534863be244139585b2c009444ca34b2b38f8f06a378e82816",
+    "research/S014/materials/20261020_preentry_diagnosis/review/proposal_adversarial_review.json": "0d0893d2bc2d18c7ac03f7d468b4cc1dfbbbb76d0f9a0e481408cffdd0139ef2",
+    "research/S014/materials/20261020_preentry_diagnosis/method/completed_loss_slot_review_v2.json": "5071db6c2b46e10408ff36ea1b59559cfcb2f9e71664a50edee3a093d8345ebe"
+  },
+  "root_locked_profiles": [
+    {
+      "pause_profile": "BASE"
+    },
+    {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1"
+    },
+    {
+      "pause_profile": "AFTER_NET_PROFIT_SKIP1"
+    }
+  ],
+  "control": "NewsourceBASE exactEX044004 coststop comparator,notEX044001/EX045RETRY.",
+  "selection_timing": "Three directions proposed before A newcounts,root final lock explicitly after preliminarycontrarycounts. Testingcompletepolicies is a deliberate falsification/actioncomparison,not confirmation that loss predicts danger or outcome-chosen direction.",
+  "A_prior_population": {
+    "actual_buy_intents": 125,
+    "actual_filled_entries": 122,
+    "actual_failed_buys": 3,
+    "known_prior_group_counts": {
+      "NO_PRIOR_CLOSED": 1,
+      "PREVIOUS_NET_LOSS": 68,
+      "PREVIOUS_NET_PROFIT": 56
+    },
+    "closed_actual_cycles": 121,
+    "open_actual_cycles_no_exit_fee": 1
+  },
+  "observed_competing_evidence": {
+    "previous_loss_filled_entries": 68,
+    "previous_profit_filled_entries": 53,
+    "previous_loss_entryday_negative_net_count": 28,
+    "previous_profit_entryday_negative_net_count": 27,
+    "negative_entryday_frequency_loss": 0.4117647058823529,
+    "negative_entryday_frequency_profit": 0.5094339622641509,
+    "mean_fill_to_Eclose_return_loss": 0.004137469306344347,
+    "mean_fill_to_Eclose_return_profit": 0.009102166494091771,
+    "mean_closed_next_cycle_net_return_loss": 0.025911825306416794,
+    "mean_closed_next_cycle_net_return_profit": 0.002734511328219126,
+    "year2024": {
+      "PREVIOUS_NET_LOSS": {
+        "filled_entries": "13",
+        "failed_buy_intents": "0",
+        "entryday_negative_net_count": "7",
+        "mean_fill_to_Eclose_return": "-0.005049521927303133",
+        "mean_closed_next_cycle_net_return": "-0.0003577504622497683"
+      },
+      "PREVIOUS_NET_PROFIT": {
+        "filled_entries": "8",
+        "failed_buy_intents": "2",
+        "entryday_negative_net_count": "6",
+        "mean_fill_to_Eclose_return": "-0.009868130111278184",
+        "mean_closed_next_cycle_net_return": "-0.02029421983932283"
+      }
+    },
+    "year2025_counterexample": {
+      "PREVIOUS_NET_LOSS": {
+        "filled_entries": "10",
+        "entryday_negative_net_count": "6",
+        "mean_fill_to_Eclose_return": "0.0007443569370501613"
+      },
+      "PREVIOUS_NET_PROFIT": {
+        "filled_entries": "11",
+        "entryday_negative_net_count": "4",
+        "mean_fill_to_Eclose_return": "0.020174454360322756"
+      }
+    }
+  },
+  "interpretation": "Thecountsweaken a uniform loss-persistence story;do not reverseit into unconditionalprofit-chasingor a claimlossalwayssafer. Frequency,amplitude,equal-weightcyclemean,currencycontribution andfullpolicywealth aredifferent quantities. No futureprospectiveEclose/fill/outcome entersDfeedback.",
+  "required_source_review": [
+    "Strongpause_profileenum/exactthreevalues;old roles internallyfixed tocostcomparator.",
+    "Owncausal actualBUYfill anchorsand actualSELLfill closes. Strictnet=exit*.999-entry*1.001 matches realfundedfees on samepricebasis,0/unknownnone;no epsilon.",
+    "Pending/failedSELL/unrealizedmark/failedBUY/virtualslot never completion. Expose signedfeedbackandcyclecompletedseparately from pausearmed/consumed.",
+    "ActualSELLbeforeDclose mayarm and sameDconsume if originalBUYeligible/reservation allows. NoextraoneDdelay.",
+    "ConsumeatfirstoriginaleligibleflatBUY D only, originalreservation pre-gate, reservation=i+11, noorder/held/entry/deadline/cost/fee/fakefailedBUY. Disarmimmediately;lastsignpersistenceneverrearms.",
+    "ActualBUYdeadline/reservation andriskpending/cost/grace/support remainoriginal;failedBUYoriginalreset andnever completion.",
+    "Prefixcausality withnewstate included; unchangedfeature/helpers/contracts AST,not anotherfulloldfeatureoracle. No readingBASE futuretrades.",
+    "FreshBASEsource/synthetic andreal fundedexactcontrol gates bothpassbeforeactive2. A audits eachactualpolicy ownrealclosedhistory andconstraints."
+  ],
+  "economic_reporting": [
+    "Runbothfixedactiveprofiles after validcontrol regardless earlyprofit. No postoutcome threshold/streak/wait/day/year revision.",
+    "Originalannualreturn/DD/frequency targets only;all2020-25seen;2026technicaltailnoeconomicchoice.",
+    "Record pause-sign populations andactualskip/failedorders/ownfuturecycles;oppositecontrolunequaldoseandcalendar,notrandomized.",
+    "No linearinformation/clockshares or subtraction oforiginalmissedtradeprofits asnewaccountresult.",
+    "If allpoliciesfail reportit;clockshifts orclosedcyclemeans cannotpromotequalifiedcandidate/stage."
+  ],
+  "scope": "Method review only. Rootdesign providesexecutionauthority; this receipt doesnot substitute newsource/fundedgates.",
+  "new_accounts_by_reviewer": 0,
+  "new_data_calls": 0,
+  "new_fits": 0,
+  "new_labels": 0,
+  "old_files_modified": 0
+}

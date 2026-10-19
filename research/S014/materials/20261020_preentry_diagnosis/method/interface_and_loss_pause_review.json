@@ -1,0 +1,405 @@
+{
+  "status": "COMPLETE_READONLY_METHOD_REVIEW_NO_EXECUTION_AUTHORIZED_HERE",
+  "role": "RSCH",
+  "verified_branch": "codex/s014-jinniu-research",
+  "verified_clean_HEAD": "b83da6805cab70205a49af8e3873ce4f038f97a1",
+  "evidence_locators": [
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/algorithm.py",
+      "sha256": "12ee95969c7fdf503a38a01f5cea1bb9323dd87a705d81350a2059483df706e7",
+      "bytes": 2346,
+      "anchor": "def calculate_history(",
+      "line": 56,
+      "excerpt": "    def calculate_history(",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/strategy.py",
+      "sha256": "8870ed65aa4e10405fb192cff7763693996bcb7f81ab4e19045d48c384dfdcbe",
+      "bytes": 24545,
+      "anchor": "for name, value in row.items():",
+      "line": 312,
+      "excerpt": "        for name, value in row.items():",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/strategy.py",
+      "sha256": "8870ed65aa4e10405fb192cff7763693996bcb7f81ab4e19045d48c384dfdcbe",
+      "bytes": 24545,
+      "anchor": "build_execution_plan(",
+      "line": 407,
+      "excerpt": "            build_execution_plan(",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/execution_rules.py",
+      "sha256": "6ede66f327fd92aa2ad8e3401d3280a30d28a2f3a466c6255ea724a00aa72bfe",
+      "bytes": 11420,
+      "anchor": "def _target_plan(",
+      "line": 69,
+      "excerpt": "def _target_plan(",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/execution_rules.py",
+      "sha256": "6ede66f327fd92aa2ad8e3401d3280a30d28a2f3a466c6255ea724a00aa72bfe",
+      "bytes": 11420,
+      "anchor": "execution_reference_price * (1 + float(entry[\"limit_parameter\"]))",
+      "line": 90,
+      "excerpt": "            execution_reference_price * (1 + float(entry[\"limit_parameter\"])),",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/execution_rules.py",
+      "sha256": "6ede66f327fd92aa2ad8e3401d3280a30d28a2f3a466c6255ea724a00aa72bfe",
+      "bytes": 11420,
+      "anchor": "price = min(requested, upper_guard) * request.price_scale",
+      "line": 104,
+      "excerpt": "        price = min(requested, upper_guard) * request.price_scale",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/contracts.py",
+      "sha256": "1bbc02df48a61263a168bdbc537c9343bb6650c671dde8c336363063c38191d7",
+      "bytes": 19635,
+      "anchor": "class ExecutionState:",
+      "line": 123,
+      "excerpt": "class ExecutionState:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/contracts.py",
+      "sha256": "1bbc02df48a61263a168bdbc537c9343bb6650c671dde8c336363063c38191d7",
+      "bytes": 19635,
+      "anchor": "class PortfolioSnapshot:",
+      "line": 144,
+      "excerpt": "class PortfolioSnapshot:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "packages/strategy_runtime/src/strategy_runtime/data.py",
+      "sha256": "e8b126b6ff975202111a70007e8fd946b422907015f688ced6144555905d90b4",
+      "bytes": 8446,
+      "anchor": "def price_reference(",
+      "line": 175,
+      "excerpt": "    def price_reference(self, signal_date: date, trading_date: date) -> PriceReference:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "src/czsc_trader/backtesting/benchmark_contracts.py",
+      "sha256": "f2eae7f9c271386905c40b232d95c4668473e7575d5383064b9a18106d3559ee",
+      "bytes": 3156,
+      "anchor": "class LimitBuyHold:",
+      "line": 26,
+      "excerpt": "class LimitBuyHold:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096,
+      "anchor": "\"entry\": {\"order_type\": \"LIMIT\", \"limit_parameter\": 0.01}",
+      "line": 517,
+      "excerpt": "                    \"entry\": {\"order_type\": \"LIMIT\", \"limit_parameter\": 0.01},",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096,
+      "anchor": "OrderSpec(\"BUY\", \"LIMIT\", 100, intent[\"limit\"])",
+      "line": 251,
+      "excerpt": "                    OrderSpec(\"BUY\", \"LIMIT\", 100, intent[\"limit\"])",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096,
+      "anchor": "cost_loss_price = entry_fill_price * (1 + 0.001) - close * (1 - 0.001)",
+      "line": 337,
+      "excerpt": "            cost_loss_price = entry_fill_price * (1 + 0.001) - close * (1 - 0.001)",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096,
+      "anchor": "eligible and feature.atr_positive and cost_loss_price >= feature.atr20_prior",
+      "line": 341,
+      "excerpt": "                eligible and feature.atr_positive and cost_loss_price >= feature.atr20_prior",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096,
+      "anchor": "if inherited or expired or risk_exit or ordinary_support:",
+      "line": 395,
+      "excerpt": "            if inherited or expired or risk_exit or ordinary_support:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX045_20261019/src/strategy_runtime/strategies/blocked_clock_review.py",
+      "sha256": "07088482b6a183e8315f9fc23c3eaeee44dbe840aa598f86f89201d59e925b68",
+      "bytes": 23861,
+      "anchor": "reservation = i + 11",
+      "line": 429,
+      "excerpt": "                reservation = i + 11",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX022_20261018/protocols/account_report.md",
+      "sha256": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1",
+      "bytes": 10578,
+      "anchor": "只改变首次可决策日",
+      "line": 11,
+      "excerpt": "只改变首次可决策日：完成60+delay个评价交易日后启动，delay固定为0至10；后续不重复加入等待，也不按日历强迫成交。11个偏移对应无失败订单时“持有10日加下一日重新入场”的理想周转长度；真实失败和支撑等待会改变节奏，所以并未覆盖所有可能相位。A/B同偏移配对比较，不能选择最高收益偏移充当策略，也不能把11对视为11份独立样本。",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "bytes": 12040,
+      "anchor": "首次严格早于E+9收盘的破坏时",
+      "line": 9,
+      "excerpt": "本轮新增C0075/C0076两个账户，复用C0035即时再入场与C0056全部预约两个端点，共4格；新增上游调用0。全部支撑破坏仍照常触发提前卖出，只改变卖出后是否继续等待原E+10预约。首次严格早于E+9收盘的破坏时，冻结含实际买费浮盈P=收盘价/(实际买价×1.001)−1；一组只在P>0保留预约，另一组只在P≤0保留，零属于非正组。",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+      "bytes": 14100,
+      "anchor": "未组合为连续停止策略",
+      "line": 33,
+      "excerpt": "标签是原固定退出净收益减下一TXE可执行退出净收益，正值表示继续持有较好。两者采用同一真实计划股数，扣相同双侧费用；不假设能在已观察的收盘价立即卖出。以预测正负进行一次性继续/退出探针，未组合为连续停止策略。",
+      "line_basis": "LF-delimited bytes"
+    }
+  ],
+  "price_ceiling_feasibility": {
+    "under_original_contract": "NO: the existing FROZEN_RULE planner derives BUY price from the authenticated reference, immutable entry.limit_parameter=.01, tick and price-limit guard. calculate_history exposes target plus observation/evidence; custom limit columns do not become orders.",
+    "D_close_cap": "A constant premium=0 can generally express a tick-rounded close ceiling with the existing planner, but that changes the strategy execution policy and its identity. It is not an authorized original-1%-contract experiment. Original LimitBuyHold benchmark must not be silently changed; comparability and user-approved amended contract would need an explicit decision.",
+    "dynamic_support_cap": "No per-D support-price argument is passed from strategy signal evidence into this public FROZEN_RULE order algorithm. A dynamic cap requires an explicit supported execution-policy capability/contract review; no monkeypatch, invented reference, adjusted input data, custom hidden executor or private-plan override is admissible here.",
+    "fully_contract_preserving": [
+      "Gate or postpone original BUY intent using D-known price/market/own realized-loss state; every accepted BUY still uses original1% planner.",
+      "Keep original cost-stop, fees, actual-entry anchors, mandatory exits and original reservation; separately lock any added waiting semantics.",
+      "Describe saved actual fills versus their prior D-close/S5 and next-session gap for attribution only; this is not the value of an unexecuted lower-limit order."
+    ],
+    "not_equivalent": "A D-known entry filter can change which original orders are submitted. It cannot ensure a future E fill is below D close/S5, and cannot by itself identify signal quality separately from chasing-price execution.",
+    "do_not_peek": "E open/low/close, whether an E order would fill and completed future return are unavailable at D. Reclassifying or cancelling with those facts is retrospective labeling, not an executable D filter."
+  },
+  "EX044_cost_baseline": {
+    "source": {
+      "path": "research/S014/experiments/EX044_20261019/src/strategy_runtime/strategies/action_role_review.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "bytes": 23096
+    },
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX044_20261019"
+      },
+      "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+      "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+      "media_type": "application/json",
+      "name": "action-role-004-base-positive_p-net_loss_1atr",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05",
+    "source_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX044_20261019"
+      },
+      "evidence_id": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527.py",
+      "sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527",
+      "media_type": "text/x-python",
+      "name": "ex044-locked-src-strategy_runtime-strategies-action_role_review.py",
+      "schema": null,
+      "schema_version": null
+    },
+    "public_final_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX044_20261019"
+      },
+      "evidence_id": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37.json",
+      "sha256": "b58efa67da182d67bd3bf0f98b09d460b72915cabfae7f5b49e8d30fd69b4f37",
+      "media_type": "application/json",
+      "name": "ex044-final-execution-verification",
+      "schema": null,
+      "schema_version": null
+    },
+    "formula": "actual_entry_fill*1.001 - C_D*.999 >= ATR20priorD; actual held, no inherited SELL pending, before deadline; risk precedes grace/support. ATR updates every D, not frozen at entry.",
+    "actual_known_results_only": {
+      "cost_annual_returns_percent": {
+        "2020": 35.59316100000003,
+        "2021": 116.69537374381287,
+        "2022": 3.3600224640518483,
+        "2023": 17.288354926705306,
+        "2024": -12.37245495392184,
+        "2025": 40.72140331103156
+      },
+      "frozen_annual_returns_percent": {
+        "2020": 33.960064000000024,
+        "2021": 110.60727322435429,
+        "2022": 3.3478184238125763,
+        "2023": 19.957719875309188,
+        "2024": -21.157334750339697,
+        "2025": 40.72929916500978
+      },
+      "cost_2025_terminal_equity": 439233.7639999993,
+      "cost_attribution": {
+        "annual_selected_cost_D": {
+          "2020": 1,
+          "2021": 3,
+          "2022": 5,
+          "2023": 5,
+          "2024": 9,
+          "2025": 3
+        },
+        "annual_added_cost_exit_D": {
+          "2020": 1,
+          "2021": 1,
+          "2022": 0,
+          "2023": 1,
+          "2024": 3,
+          "2025": 0
+        },
+        "annual_added_cost_distinct_cycles": {
+          "2020": 1,
+          "2021": 1,
+          "2022": 0,
+          "2023": 1,
+          "2024": 3,
+          "2025": 0
+        },
+        "2024_selected_cost_D": 9,
+        "2024_selected_cost_distinct_cycles": 9,
+        "2024_support_overlap": 6,
+        "2024_added_cost_cycles": 3,
+        "2024_grace_overrides": 0,
+        "actual_added_cost_events": [
+          {
+            "D": "2024-01-30",
+            "E": "2024-01-31",
+            "entry_index": 990.0,
+            "holding_age": 1.0,
+            "z5": 0.2478586697947705,
+            "net_profit": -0.06940118704824583,
+            "cost_loss_atr": 1.3863913043478238,
+            "gate_consecutive_candidate_D": 0,
+            "entry_guard_blocked": 0.0,
+            "selected_shock_exit": 0.0,
+            "selected_cost_exit": 1.0,
+            "selected_risk_exit": 1.0,
+            "shock_exit_added_vs_positive": 0.0,
+            "cost_exit_added_vs_baseline": 1.0,
+            "risk_exit_added_vs_baseline": 1.0,
+            "cost_support_overlap": 0.0,
+            "cost_grace_override": 0.0,
+            "entry_grace_applied": 0.0,
+            "support_exit_suppressed": 0.0
+          },
+          {
+            "D": "2024-07-15",
+            "E": "2024-07-16",
+            "entry_index": 1098.0,
+            "holding_age": 0.0,
+            "z5": 0.3520223027591882,
+            "net_profit": -0.029931900160907632,
+            "cost_loss_atr": 1.0374449339206984,
+            "gate_consecutive_candidate_D": 0,
+            "entry_guard_blocked": 0.0,
+            "selected_shock_exit": 0.0,
+            "selected_cost_exit": 1.0,
+            "selected_risk_exit": 1.0,
+            "shock_exit_added_vs_positive": 0.0,
+            "cost_exit_added_vs_baseline": 1.0,
+            "risk_exit_added_vs_baseline": 1.0,
+            "cost_support_overlap": 0.0,
+            "cost_grace_override": 0.0,
+            "entry_grace_applied": 0.0,
+            "support_exit_suppressed": 0.0
+          },
+          {
+            "D": "2024-10-09",
+            "E": "2024-10-10",
+            "entry_index": 1153.0,
+            "holding_age": 0.0,
+            "z5": 3.657145265014064,
+            "net_profit": -0.08244696479990599,
+            "cost_loss_atr": 3.117777777777777,
+            "gate_consecutive_candidate_D": 0,
+            "entry_guard_blocked": 0.0,
+            "selected_shock_exit": 0.0,
+            "selected_cost_exit": 1.0,
+            "selected_risk_exit": 1.0,
+            "shock_exit_added_vs_positive": 0.0,
+            "cost_exit_added_vs_baseline": 1.0,
+            "risk_exit_added_vs_baseline": 1.0,
+            "cost_support_overlap": 0.0,
+            "cost_grace_override": 0.0,
+            "entry_grace_applied": 0.0,
+            "support_exit_suppressed": 0.0
+          }
+        ],
+        "interpretation": "Most selected cost exits coincide with already planned ordinary support exits; count only3new2024 exits, not9new independent rescues. B separately examines ATR-shrink/no-new-decline transitions."
+      }
+    },
+    "scope": "Cost-stop reduced2024 loss from-21.1573% to-12.3725%; all6 annual drawdown targets and5/6 return targets pass,2024 still fails. It reacts after actual BUY damage and can trigger from ATR shrink; not a maximum-loss guarantee or new pre-entry gate. It has no completed-cycle loss memory and changes neither order price nor premium."
+  },
+  "completed_loss_pause": {
+    "historical_status": "NOT_FOUND_AS_EXACT_COMPLETE_POLICY_IN_BOUNDED_REVIEW; not a proven new edge",
+    "old_mechanisms_not_same": {
+      "EX007": "Mature outcome-label model and single midpoint holding/exit probes, not own actually closed-trade losing streak.",
+      "EX022": "One initial startup delay only; no recurring pause after losses.",
+      "EX023": "Reservation tied to actual entry H10 regardless of realized profit.",
+      "EX029": "P measured/frozen at current-cycle first support break chooses waiting; not net realized completed loss.",
+      "EX043": "Current positive mark-to-market profit exits, grace and actual-entry close-peak memory; not across completed trades.",
+      "EX044": "Cost drawdown within the current held trade; no cross-trade outcome memory.",
+      "EX045": "Reservation consumes a blocked high-Z planned opportunity; explicitly may have no fill, therefore not a completed losing trade."
+    },
+    "D_known_state": [
+      "Actual positive-quantity BUY fill date/time/price/quantity/fee, matching actual SELL fill(s), and completed-cycle net cash PnL after both-side fees.",
+      "Increment loss streak only after actual completed full-position SELL; an unfilled order, failed BUY reset, blocked virtual slot or still-pending SELL is not a completed loss.",
+      "D close may use a SELL already executed on D, then decide a later valid-session BUY; no same-session retroactive cancellation or sale.",
+      "A zero-PnL convention, positive-trade reset, finite pause duration/unit, pause start, restart condition and interaction with original reservation must all be fixed before execution.",
+      "Carry state continuously across years. Do not select losing streaks using future realized returns or reset each January.",
+      "Waiting only blocks new flat BUY intents; no phantom entry/deadline/cost/reservation, no interruption of pending/mandatory exits. Whether pause expiry is a calendar wait or skipped opportunity slot is a separate causal clock choice, as EX045 demonstrated."
+    ],
+    "implementation_boundary": "calculate_history(inputs,sessions) receives input market datasets, not authoritative portfolio/fills/trade history. PortfolioSnapshot and ExecutionState are passed to the SRT planner, not to the strategy's history method; ExecutionState carries only revision/as_of/cycle_target_quantity. Public completed result ledgers are available for ex-post audit, never a future-input source for D.",
+    "research_layer_possible_with_condition": "A causal full-history state machine may reconstruct fills using the unchanged public planner/resolve_fill and original fees/limits/status/lot/cash rules, without a platform change. It must use actual funded quantity/cash, not merely assume the existing100-unit shadow fill happened in the account. Require fresh-control exact economics, every-D actual funded-state/filled flags and completed net-PnL alignment before interpreting a new account. This is an unimplemented feasibility route, not proof of live authoritative fill feedback.",
+    "raw_states_available_in_existing_history": [
+      "held_at_close,buy_filled_today,sell_filled_today,failed_buy_reset",
+      "entry_fill_price,entry_index,deadline_index,reservation_index,exit_pending,pending_inherited",
+      "net_profit is current mark-to-market net estimate, not a completed realized loss",
+      "raw features may be null when unknown; numeric series need explicit finite known flags"
+    ],
+    "public_result_fields_for_audit": [
+      "run.ledgers.fills: side,quantity,price,fees,cycle_id,order_id,fill_time,signal_date",
+      "run.ledgers.orders: side,status,reason,execution_date,signal_date,decision_id",
+      "run.ledgers.account_daily: cash,cash_before,quantity,quantity_before,equity,date",
+      "run.ledgers.trades: cycle_id,entry_date,entry_price,exit_date,exit_price,quantity,status,net_return; exact fees come from linked fills, not a trades fee column. Do not seed strategy state from this future-complete table."
+    ],
+    "unit_constraint": "All runtime prices use HFQ_RESEARCH; account ledger anchoredHFQ/RESEARCH_UNIT uses anchor5.892. Compare cash PnL and prices only in matching units; fees must equal original ledger."
+  },
+  "minimal_next_design_recommendation_not_locked": "If root selects own completed-loss memory, compare one unchanged cost baseline and one date-free finite pause rule, fixing count/duration/restart/reservation and source-specific NOOP first. Do not combine new Z guards or price-policy changes; prior Z entry/exit roles and retry/planned-slot clocks are already tested. No threshold scan and no claim of unseen other-year validation: all2020..2025 have already been seen.",
+  "resources": {
+    "new_experiments": 0,
+    "new_account_dispatches": 0,
+    "new_strategy_runs": 0,
+    "new_fits": 0,
+    "new_market_reads": 0,
+    "new_data_calls": 0,
+    "platform_or_execution_contract_changes": 0
+  },
+  "source_sha256": "1704df7945920a928e6e7a106986d0d18672155743607e012ccd59b41dfcaea0"
+}
