@@ -1,0 +1,43 @@
+{
+  "status": "ROOT_DEFINITION_ALIGNMENT_BEFORE_EX043_ACCOUNTS",
+  "authority": "Explicit parent/root confirmation: root design_decision is the active business definition; no source or numerical threshold changes.",
+  "preserved_protocol": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/evaluation_protocol_v2.json",
+    "sha256": "3fa8ca39c0425a88e83a47eaefec8d4eb80b5ec31b7dc6f3ffae2630323c7f8c"
+  },
+  "root_primary_definition": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/design_decision.json",
+    "sha256": "1d34067f621d8640be66c0b73bc63d1b6600360dfce504ef3ccaf757ae0f7892"
+  },
+  "prewindow_clarification": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/method/prewindow_clarification.json",
+    "sha256": "37418e8bfec35a86340b3fb060224699227ff0faea6b0f3f7113b162e80f421f"
+  },
+  "clarifications": [
+    {
+      "item": "TREND_CYCLE depth boundary",
+      "active_definition": "Actual entry D support_break with 0<support_floor-Close<=ATR20_prior. Equality is included.",
+      "v2_wording_superseded": "strictly less than1ATR"
+    },
+    {
+      "item": "GIVEBACK price retreat",
+      "active_definition": "giveback_price=peak_close-Close, gross same-runtime-price retreat; peak_net_gain_price alone uses peak_close*.999-entryfill*1.001. Current ATR20prior sets the thresholds.",
+      "v2_wording_superseded": "difference of fee-adjusted net mark gains"
+    },
+    {
+      "item": "rolling-history membership",
+      "active_definition": "MA/TR/logreturn rolling observation membership begins2020-01-02. Compute real TR/logreturn with true prior Close first, then mask out prewindow bars.2019-12-31 may be previousClose for Jan2 gap/return but is not itself an MA/TR/return observation or original warmup/support bar."
+    }
+  ],
+  "unchanged": [
+    "Actual E..D observed Close peak, no entryfill candidate; actual BUY D retreat0.",
+    "ATR20 arithmetic prior, MA20prior slope5sessions, sigma20pre5ddof1, Z>2, fees and profit gates unchanged.",
+    "Source e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a unchanged.",
+    "Original population1455D/668held/639discretionary/122cycles unchanged.",
+    "Original v1/v2/peak clarification retained; no result-driven adjustment."
+  ],
+  "precedence": "Apply root design plus this clarification and prewindow clarification; other v2 evaluation/accounting clauses remain active.",
+  "new_accounts_by_author": 0,
+  "new_fits": 0,
+  "new_market_calls": 0
+}

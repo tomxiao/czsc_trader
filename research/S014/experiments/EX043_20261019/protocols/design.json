@@ -1,0 +1,132 @@
+{
+  "status": "AUTHORIZED_FIXED_3X3_EXANTE_POLICY",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "hold_rule": "BASE",
+      "exit_rule": "BASE"
+    },
+    {
+      "hold_rule": "BASE",
+      "exit_rule": "SHOCK_PROFIT"
+    },
+    {
+      "hold_rule": "BASE",
+      "exit_rule": "PROFIT_GIVEBACK"
+    },
+    {
+      "hold_rule": "ENTRY_GRACE",
+      "exit_rule": "BASE"
+    },
+    {
+      "hold_rule": "ENTRY_GRACE",
+      "exit_rule": "SHOCK_PROFIT"
+    },
+    {
+      "hold_rule": "ENTRY_GRACE",
+      "exit_rule": "PROFIT_GIVEBACK"
+    },
+    {
+      "hold_rule": "TREND_CYCLE",
+      "exit_rule": "BASE"
+    },
+    {
+      "hold_rule": "TREND_CYCLE",
+      "exit_rule": "SHOCK_PROFIT"
+    },
+    {
+      "hold_rule": "TREND_CYCLE",
+      "exit_rule": "PROFIT_GIVEBACK"
+    }
+  ],
+  "planned_account_count": 9,
+  "candidate_ids": [
+    "S014-C9300",
+    "S014-C9301",
+    "S014-C9302",
+    "S014-C9303",
+    "S014-C9304",
+    "S014-C9305",
+    "S014-C9306",
+    "S014-C9307",
+    "S014-C9308"
+  ],
+  "user_numeric_account_limit": null,
+  "no_blind_retries": true,
+  "no_threshold_or_year_or_date_search": true,
+  "economic_complete_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "2026_role": "Original full-contract technical tail, no rule selection or new economic validation",
+  "primary_comparison": "All fixed 9 complete funded paths and each of 2020..2025 own-opening annual return/drawdown; full original frequency unchanged; not fresh blind years",
+  "priority": "pending inherited before any new support flag; deadline > selected profit-risk exit > support protection; pending never cancelled",
+  "peak_close": "max actual observed Close over actual entry E..D; entryfill cost only, entry D giveback=0",
+  "feature_history_membership": "MA20/lag5 use in-window closes only; real TR/logreturn may use prior execution close but rolling mean/std numerator membership uses in-window evaluation days",
+  "known_null_rule": "raw unready values remain NaN/JSONnull and are not numeric observation Series; finite known/usable flags and action diagnostics are float Series; unknown/zero normalization scale does not satisfy a new trigger, original policy remains",
+  "extra_price_observations": "net_profit uses D sale-fee mark and paid buy fee, not guaranteed execution result; peak_net_gain_price and giveback are same runtime market HFQ price units",
+  "profit_increment_diagnostics": "profit_exit_added_vs_base_support excludes an original support sell; profit_exit_added_vs_selected_hold accounts for a protected support sell made by risk override; both are state accounting, not isolated causal wealth",
+  "new_external_calls": 0,
+  "new_model_fits": 0,
+  "local_action_wealth_labels": 0,
+  "formal_candidate_registrations": 0,
+  "run_all_9_even_if_economic_paths_repeat": true,
+  "technical_gate": "new source BASEBASE full original economy/observed/target exact plus independent review first; then all8 without profit-based stopping",
+  "no_phase_intent_or_platform_change": true,
+  "authorization": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/authorization.json",
+    "sha256": "027a8f250ead7e9774a176843d0d0a58bdedc0ac817309c839dbd0c7f19cb8ae"
+  },
+  "method": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/design_decision.json",
+    "sha256": "1d34067f621d8640be66c0b73bc63d1b6600360dfce504ef3ccaf757ae0f7892"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/official/method_adversarial_review.json",
+    "sha256": "29914fc0242598c356a5a7c6ec49c2014390149a7eee84bc9a00ff0f4cf869f5"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/evaluation_protocol_v2.json",
+    "sha256": "3fa8ca39c0425a88e83a47eaefec8d4eb80b5ec31b7dc6f3ffae2630323c7f8c"
+  },
+  "peak_clarification": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/peak_close_clarification.json",
+    "sha256": "dc3bc8a980e5579e30223cdd6fc6257d19d703082ebacfea864e1a0c0cb9bfd2"
+  },
+  "prior_exit_inventory": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/method/prior_exit_inventory.json",
+    "sha256": "c06c15321a218e16c7812b6baf7c712edda6e8ab89d0818fdd2f21953e38d11e"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/official/method_observability_audit.json",
+    "sha256": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560"
+  },
+  "prewindow_clarification": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/method/prewindow_clarification.json",
+    "sha256": "37418e8bfec35a86340b3fb060224699227ff0faea6b0f3f7113b162e80f421f"
+  },
+  "definition_alignment": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/definition_alignment_clarification.json",
+    "sha256": "39362078fb221fc64098701b3cfd0f7bdd514400a883a67560975706feb6d429"
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "status": "WAITING_FOR_ALL_NINE_ARMS_AND_INDEPENDENT_SUMMARY_CSVS",
+  "created_at_utc": "2026-10-19T14:41:22.662891+00:00",
+  "progress_at_creation": {
+    "index_path": "research/S014/experiments/EX043_20261019/others/accounts_index.json",
+    "index_sha256": "d14833afe1d6fa9c072424265613247639fc27b54586a76d9ee7ec1508e6363f",
+    "records": [
+      {
+        "index": 0,
+        "mode": "BASE/BASE",
+        "status": "SUCCEEDED",
+        "result_hash": "f4689f9fc39d1ed6cfb44d42f090aca31b250bdf7b974bfe48fba5a68e52ee78"
+      },
+      {
+        "index": 1,
+        "mode": "BASE/SHOCK_PROFIT",
+        "status": "SUCCEEDED",
+        "result_hash": "a0d7642336e20f87fca1717ba46e876ba87f00c1d362103d736f86cccafa373b"
+      }
+    ],
+    "planned_arms": 9,
+    "economic_interpretation_started": false
+  },
+  "immutable_review_basis": {
+    "method_adversarial_review.json": "29914fc0242598c356a5a7c6ec49c2014390149a7eee84bc9a00ff0f4cf869f5",
+    "method_observability_audit.json": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560",
+    "source_sha256": "e980a552367e9354a5f2fcfcd411e5c6a64a408ecb83bed115aa9b578029e57a"
+  },
+  "awaited_artifacts": [
+    "accounting/policy_yearly_summary.csv",
+    "accounting/policy_summary.csv",
+    "all nine final independent account reviews",
+    "root report.md and judgment.json when explicitly ready"
+  ],
+  "predeclared_interpretation_questions": [
+    {
+      "mechanism": "ENTRY_GRACE",
+      "question": "一次入场日破位宽限是否在其他年份仍有可利用作用，还是2025已见May30单例？",
+      "required_contrasts": [
+        "ENTRY_GRACE/BASE vs BASE/BASE",
+        "同一exit下ENTRY_GRACE vs BASE"
+      ],
+      "counterevidence": "2020-24真实资金与暴露损失是否抵消2025改善；同年多个宽限不能拆成独立验证。"
+    },
+    {
+      "mechanism": "TREND_CYCLE",
+      "question": "MA/ATR固定趋势条件是否超过一次宽限、且是否覆盖所声称需要保护的入场周期？",
+      "known_coverage": "观测审计已知2025启动0，2020和2023各1，不能事后换阈值使其命中May30。",
+      "required_contrasts": [
+        "TREND_CYCLE/BASE vs ENTRY_GRACE/BASE",
+        "各相同exit下TREND_CYCLE vs ENTRY_GRACE"
+      ],
+      "counterevidence": "命中少和缺覆盖单独说明；不把未覆盖May30说成该日H10延续本身无价值，亦不能把旧特征当新信息。"
+    },
+    {
+      "mechanism": "SHOCK_PROFIT",
+      "question": "相对历史低波动的短期上涨退出，能否在实际退出/预约/再参与后改善，还是砍掉更大趋势？",
+      "required_contrasts": [
+        "各同hold下SHOCK_PROFIT vs BASE"
+      ],
+      "counterevidence": "重点保留2021和其他上涨阶段被提前卖出的机会损失；原5日涨幅与sigma/Z一起显示，不能把全部Z>2叫绝对暴涨。"
+    },
+    {
+      "mechanism": "PROFIT_GIVEBACK",
+      "question": "已观察净盈利峰值后的回吐是否有独立作用，还是既有浮盈/持有年龄/ATR收缩的重表达？",
+      "required_contrasts": [
+        "各同hold下PROFIT_GIVEBACK vs BASE",
+        "各同hold下PROFIT_GIVEBACK vs SHOCK_PROFIT"
+      ],
+      "counterevidence": "当前P可负；同cycle累计Close峰值不是可保证兑现现金；2025Oct29因ATR收缩转true在9路径重复只算一个已见episode。"
+    },
+    {
+      "mechanism": "fixed combinations",
+      "question": "同资金完整路径下两类动作的相互作用、原年度收益/回撤/频率是否改善而不改变原目标？",
+      "required_contrasts": [
+        "全部9格保留，不只挑2025/全期赢家",
+        "实际组合收益与单独差额的差仅作账目交互"
+      ],
+      "counterevidence": "路径完全相等的格如实列出、不当独立证据；不通过某年才另选日期或阈值。"
+    }
+  ],
+  "year_context": {
+    "primary_years": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "strong_counterexample_selection": "九臂及A摘要齐备后，以各固定机制对应的年度净损益/回撤与实际动作损伤提炼，不只叙述最大正例；明确这是已见发展样本反证。",
+    "excluded2025_reaggregate": "仅重汇总2020-24连续历史，不重置本金、不称未见holdout。",
+    "2026": "原技术尾部，非新经济验证/选规则依据。"
+  },
+  "key2025_action_audit_to_fill": {
+    "May30": "逐path核实际买入后是否继续、原June3卖单是否仍在、实际退出，不用期末收益倒推当日动作。",
+    "June19": "逐path核真实当日BUY/hold/current quantity、是否次E退出、原预约与再参与；不强制原37900或后来48200。"
+  },
+  "future_classification_schema": {
+    "supported": "具体动作职责、覆盖和完整经济证据支持哪一有限主张；不直接升级组件/候选。",
+    "rejected": "实际结果如何反驳已锁具体规则，保留原假设、阈值与负结果。",
+    "unresolved": "覆盖不足/机制混淆/整体目标仍未达、且哪些问题需要不同证据，不自动加账户。"
+  },
+  "root_final_report_review_pending": {
+    "status": "NOT_READY",
+    "required_binding": [
+      "report.md",
+      "judgment.json",
+      "A yearly and policy summary CSVs",
+      "nine-arm independent account audit summaries",
+      "observable/source/method locks",
+      "plot inputs/figures if used"
+    ],
+    "blocking_findings": null,
+    "reviewed_hashes": {}
+  },
+  "resources": {
+    "new_accounts": 0,
+    "new_data_calls": 0,
+    "new_fits": 0,
+    "new_thresholds": 0,
+    "changes_to_frozen_source_or_audit": 0
+  }
+}

@@ -1,0 +1,445 @@
+{
+  "status": "COMPLETE_NINE_POLICY_FACTS_AND_RESEARCH_LIMITS",
+  "facts": {
+    "audit_status": {
+      "actual_dispatches": 9,
+      "SUCCEEDED": 9,
+      "FAILED": 0,
+      "UNKNOWN": 0,
+      "new_fits": 0,
+      "independent_account_checks": 821387,
+      "runtime_actual_inventory_buy_sell_all1642D_each_policy": "PASS",
+      "new_source_NOOP_exact_original": "PASS",
+      "execution_rule_and_fee_audit_all_policies": "PASS",
+      "unique_execution_economic_paths": 9,
+      "economic_equivalence_classes": {
+        "1d47482ea7fba75e35726bfb450456ae6e444aa84141ad112098bbadf443b176": [
+          "BASE/BASE"
+        ],
+        "c3f0cf0073ed412e1cf7adf5d04e2c5cb41ffbeccd3b3bef8c3207f093111ebb": [
+          "BASE/SHOCK_PROFIT"
+        ],
+        "9f79886b3662a10be192fa2a320202240c183c8ee6132d80853b9de51ebd8963": [
+          "BASE/PROFIT_GIVEBACK"
+        ],
+        "77488dc3bf258917d1b56ccbf688d49bc4c268784b7db7cf65fe9868ecfb3482": [
+          "ENTRY_GRACE/BASE"
+        ],
+        "d623810b9b46b2c90bf7bacc416d508bc0d88603f0521b44dca762364cdfd4c1": [
+          "ENTRY_GRACE/SHOCK_PROFIT"
+        ],
+        "9f742a3ece085c8f9e24c144a4a78288b4b8a0417bb71d14c8e49939cbeaa194": [
+          "ENTRY_GRACE/PROFIT_GIVEBACK"
+        ],
+        "5843d6120beb371130da7eb0e9d1dd7f4d552d4e953f4d5a1677c2a8e3eb325c": [
+          "TREND_CYCLE/BASE"
+        ],
+        "7eef25d67ef06e9b0d68dbad74b8a9d676d227ab9a27cff86eca04f79a63f552": [
+          "TREND_CYCLE/SHOCK_PROFIT"
+        ],
+        "9b6bdddc3e9907a020f3654b9119c230e7652fe5f88120322b12ab97100ceb60": [
+          "TREND_CYCLE/PROFIT_GIVEBACK"
+        ]
+      }
+    },
+    "original_2020_25": {
+      "annual_return_pass_count": 3,
+      "annual_drawdown_pass_count": 6,
+      "return_failed_years": [
+        2022,
+        2024,
+        2025
+      ]
+    },
+    "ENTRY_GRACE_SHOCK_PROFIT": {
+      "annual_return_pass_count": 5,
+      "annual_drawdown_pass_count": 6,
+      "return_failed_years": [
+        2024
+      ],
+      "2025_actual_return": 0.4072929916500978,
+      "2025_required_return": 0.40187863952058545,
+      "2025_return_margin_pp": 0.5414352129512356,
+      "2025_drawdown": 0.1507372439031388,
+      "2025_own_opening": 275765.2409999994,
+      "2025_closing_equity": 388082.49099999934,
+      "2021_actual_return": 1.1060727322435429,
+      "2021_original_return": 1.7889079186481762,
+      "2021_difference_vs_R_pp": -68.28351864046334,
+      "2021_still_passes_original_return_goal": true,
+      "2020_24_continuous_return": 1.7576524099999942,
+      "2020_24_original_continuous_return": 1.7875890799999965,
+      "2020_24_cumulative_return_difference_pp": -2.993667000000233
+    },
+    "2022_counterexamples": {
+      "all_nine_return_rows": [
+        {
+          "policy_id": "BASE/BASE",
+          "hold_rule": "BASE",
+          "exit_rule": "BASE",
+          "year": "2022",
+          "opening_equity": "365710.29300000006",
+          "closing_equity": "348021.77299999975",
+          "return": "-0.0483675749317789",
+          "max_drawdown": "0.1376809730646552",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.0"
+        },
+        {
+          "policy_id": "BASE/SHOCK_PROFIT",
+          "hold_rule": "BASE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2022",
+          "opening_equity": "289255.1239999999",
+          "closing_equity": "281764.7989999998",
+          "return": "-0.025895219750714182",
+          "max_drawdown": "0.1189133490561578",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.022472355181064718"
+        },
+        {
+          "policy_id": "BASE/PROFIT_GIVEBACK",
+          "hold_rule": "BASE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2022",
+          "opening_equity": "315023.39699999994",
+          "closing_equity": "299693.99899999984",
+          "return": "-0.048661141191364",
+          "max_drawdown": "0.13778226764534585",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "-0.0002935662595850985"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/BASE",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "BASE",
+          "year": "2022",
+          "opening_equity": "356432.1480000001",
+          "closing_equity": "366890.4359999998",
+          "return": "0.02934159575302875",
+          "max_drawdown": "0.13184636752349443",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "True",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.07770917068480765"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/SHOCK_PROFIT",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2022",
+          "opening_equity": "282129.6379999999",
+          "closing_equity": "291574.82599999965",
+          "return": "0.03347818423812576",
+          "max_drawdown": "0.1318628725618357",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "True",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.08184575916990466"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/PROFIT_GIVEBACK",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2022",
+          "opening_equity": "307122.55",
+          "closing_equity": "316116.328",
+          "return": "0.029284004056361113",
+          "max_drawdown": "0.1318298790849861",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "True",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.07765157898814001"
+        },
+        {
+          "policy_id": "TREND_CYCLE/BASE",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "BASE",
+          "year": "2022",
+          "opening_equity": "393391.64599999983",
+          "closing_equity": "374358.80899999983",
+          "return": "-0.0483813959791104",
+          "max_drawdown": "0.13771243123958",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "-1.3821047331497027e-05"
+        },
+        {
+          "policy_id": "TREND_CYCLE/SHOCK_PROFIT",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2022",
+          "opening_equity": "310708.7499999999",
+          "closing_equity": "302721.21399999986",
+          "return": "-0.025707470420450074",
+          "max_drawdown": "0.11901919902441693",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.022660104511328827"
+        },
+        {
+          "policy_id": "TREND_CYCLE/PROFIT_GIVEBACK",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2022",
+          "opening_equity": "338824.20799999987",
+          "closing_equity": "322423.92899999977",
+          "return": "-0.048403504273815345",
+          "max_drawdown": "0.13770386795975365",
+          "buyhold_return": "-0.2907602339701869",
+          "buyhold_drawdown": "0.3196916005343846",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "-3.592934203644482e-05"
+        }
+      ],
+      "ENTRY_GRACE_all_three_positive": true,
+      "BASE_and_TREND_all_six_still_negative": true,
+      "limit": "Pure SHOCK and GIVEBACK have no newly selected profit exits in D2022 on BASE/TREND paths. Changes in annual results can reflect earlier decisions and positions carried across the year boundary, not new2022 risk triggers. BASE/SHOCK exits on D2021-12-24/E12-27 and enters2022 flat, whereas R holds50800 research units at2021-12-31."
+    },
+    "2024_common_failure": {
+      "all_nine_negative": true,
+      "best_return": -0.21157334750339696,
+      "worst_return": -0.2733188903694824,
+      "required_return": 0.0,
+      "same_contract_BuyHold_return": -0.06184029980422867,
+      "ENTRY_GRACE_SHOCK_triggered_profit_exits": 4,
+      "all_nine_return_rows": [
+        {
+          "policy_id": "BASE/BASE",
+          "hold_rule": "BASE",
+          "exit_rule": "BASE",
+          "year": "2024",
+          "opening_equity": "383563.33499999973",
+          "closing_equity": "278758.90799999965",
+          "return": "-0.27323890851037724",
+          "max_drawdown": "0.37889025935268716",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.0"
+        },
+        {
+          "policy_id": "BASE/SHOCK_PROFIT",
+          "hold_rule": "BASE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2024",
+          "opening_equity": "342454.0019999997",
+          "closing_equity": "253471.97499999974",
+          "return": "-0.2598364349090013",
+          "max_drawdown": "0.29990760610490574",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.01340247360137592"
+        },
+        {
+          "policy_id": "BASE/PROFIT_GIVEBACK",
+          "hold_rule": "BASE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2024",
+          "opening_equity": "334325.9079999998",
+          "closing_equity": "245012.54799999975",
+          "return": "-0.2671445971216808",
+          "max_drawdown": "0.37372804503350376",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.006094311388696427"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/BASE",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "BASE",
+          "year": "2024",
+          "opening_equity": "399078.1869999995",
+          "closing_equity": "290662.32699999947",
+          "return": "-0.27166571246350824",
+          "max_drawdown": "0.390821728277317",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.0015731960468690076"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/SHOCK_PROFIT",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2024",
+          "opening_equity": "349766.51299999974",
+          "closing_equity": "275765.2409999994",
+          "return": "-0.21157334750339696",
+          "max_drawdown": "0.31343927923767645",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.061665561006980285"
+        },
+        {
+          "policy_id": "ENTRY_GRACE/PROFIT_GIVEBACK",
+          "hold_rule": "ENTRY_GRACE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2024",
+          "opening_equity": "348024.5740000002",
+          "closing_equity": "267083.596",
+          "return": "-0.2325725941410106",
+          "max_drawdown": "0.38582162557006416",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.04066631436936663"
+        },
+        {
+          "policy_id": "TREND_CYCLE/BASE",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "BASE",
+          "year": "2024",
+          "opening_equity": "421851.0869999998",
+          "closing_equity": "306551.2159999999",
+          "return": "-0.2733188903694824",
+          "max_drawdown": "0.3788305681895944",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "-7.998185910518263e-05"
+        },
+        {
+          "policy_id": "TREND_CYCLE/SHOCK_PROFIT",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "SHOCK_PROFIT",
+          "year": "2024",
+          "opening_equity": "376222.1659999998",
+          "closing_equity": "278506.34399999946",
+          "return": "-0.2597290399949491",
+          "max_drawdown": "0.29990296179142095",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.013509868515428125"
+        },
+        {
+          "policy_id": "TREND_CYCLE/PROFIT_GIVEBACK",
+          "hold_rule": "TREND_CYCLE",
+          "exit_rule": "PROFIT_GIVEBACK",
+          "year": "2024",
+          "opening_equity": "367789.1199999998",
+          "closing_equity": "269477.8939999997",
+          "return": "-0.2673032470346055",
+          "max_drawdown": "0.3736558425539823",
+          "buyhold_return": "-0.06184029980422867",
+          "buyhold_drawdown": "0.4321603942988207",
+          "required_return": "0.0",
+          "return_pass": "False",
+          "drawdown_pass": "True",
+          "return_difference_vs_original": "0.005935661475771736"
+        }
+      ]
+    },
+    "frequency": {
+      "BASE/BASE": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "BASE/SHOCK_PROFIT": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "BASE/PROFIT_GIVEBACK": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "ENTRY_GRACE/BASE": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "ENTRY_GRACE/SHOCK_PROFIT": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "ENTRY_GRACE/PROFIT_GIVEBACK": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "TREND_CYCLE/BASE": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "TREND_CYCLE/SHOCK_PROFIT": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      },
+      "TREND_CYCLE/PROFIT_GIVEBACK": {
+        "frequency_full_contract": 5.0426309378806335,
+        "frequency_completeyears_diagnostic": 4.989690721649485
+      }
+    },
+    "all_original_goals_fully_passed_policy_count": 0
+  },
+  "judgment": [
+    "The entry-day-only grace and positive-profit shock exit have historically useful complementary behavior: the combined recurring policy passes2022 and2025 original annual-return goals, unlike R. It still fails2024, so no qualifying strategy has been found.",
+    "The strongest cross-year cost is2021: the combined policy gives up68.2835 percentage points versus R while still passing that year original goals. This is an economic tradeoff, not a new no-harm rejection rule.",
+    "Without2025, the combined policy cumulative2020-24 return is slightly below R. Its strongest result therefore cannot be presented as uniform historical dominance or genuinely heldout validation.",
+    "TREND_CYCLE protection activates only one cycle in2020 and one in2023, and none in2025. Small later-year return differences when no protection triggers can come from the prior funded path; they are not evidence of a new same-year hold decision.",
+    "All nine2024 paths remain negative despite several selected profit exits. The current mechanisms do not resolve the main remaining year; moving a threshold to reproduce selected2024 examples would be a new development revision.",
+    "Every source shadow holding flag was matched to the actual cash-funded account and actual BUY/SELL fills, with original T+1, blocked-sale pending, fees, deadline and reservation checked. No actual/shadow inventory discrepancy was found.",
+    "Nine distinct economic hashes mean no exact account path repetitions in this family. The configurations nevertheless share one observed history and cannot be treated as nine independent validations."
+  ],
+  "limits": [
+    "Every2020-25 year is already seen.2020-24 excluding2025 is development reaggregation, not pristine heldout.",
+    "Own annual opening equities differ; the older common2025-opening fixed-date diagnostic denominator is not valid for these recurring policies.",
+    "2026 is technical full-contract tail only; no2026 economic selection.",
+    "No local counterfactual action-wealth labels or model fits were created; actual whole-account yearly returns and raw trigger/cycle counts support the conclusions.",
+    "CI/sample size/concentration and year-to-year no-harm are not added hard gates. Original economic goals are unchanged."
+  ],
+  "evidence_sha256": {
+    "independent_policy_audit_summary.json": "8991ec9909912a67b46804366580059f6fd12e3acb825065d6ffac6634ec2e5a",
+    "policy_yearly_summary.csv": "ed7a1ff9aa91ce3c2cedaeec835319aed3cdb0d12ea3b0576d451674a5fe184d",
+    "policy_summary.csv": "c109d17024cd3076e02a6865d69fbb08eb556b19b2a5764ebe9e834786c3256f",
+    "policy_year_end_positions.csv": "34bc96b8c36408906b5377076f08a4320b47d7f2b37cc73730c2b6c18d474c80",
+    "policy_trigger_events.csv": "c4688586ee2befa86cb077ee0dd53bce4c09c0c46bb2c78994497dbff09abd62",
+    "original_opportunity_state.csv": "0d93b4d546c589876b2b5e5bd7717adece650e2ce127a0905c58acab5ec453c6"
+  },
+  "source_sha256": "f129583f30e7b2520311509dd47189a95805b7d1013dc5df5f54eb94bff60bb6",
+  "next_step": "Main research should explain the remaining2024 failure and these cross-year tradeoffs before proposing another concrete mechanism; no automatic threshold/date search or phase advancement is implied."
+}

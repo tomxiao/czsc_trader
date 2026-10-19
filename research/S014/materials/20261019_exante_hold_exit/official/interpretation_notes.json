@@ -1,0 +1,640 @@
+{
+  "status": "COMPLETE_NINE_ARM_INTERPRETATION_FOR_ROOT_FINAL_REPORT_REVIEW",
+  "created_at_utc": "2026-10-19T14:47:06.722729+00:00",
+  "source_bindings": [
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/policy_yearly_summary.csv",
+      "sha256": "ed7a1ff9aa91ce3c2cedaeec835319aed3cdb0d12ea3b0576d451674a5fe184d"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/policy_summary.csv",
+      "sha256": "c109d17024cd3076e02a6865d69fbb08eb556b19b2a5764ebe9e834786c3256f"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/independent_policy_audit_summary.json",
+      "sha256": "8991ec9909912a67b46804366580059f6fd12e3acb825065d6ffac6634ec2e5a"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/policy_trigger_events.csv",
+      "sha256": "c4688586ee2befa86cb077ee0dd53bce4c09c0c46bb2c78994497dbff09abd62"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/policy_year_end_positions.csv",
+      "sha256": "34bc96b8c36408906b5377076f08a4320b47d7f2b37cc73730c2b6c18d474c80"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_000_independent_review.json",
+      "sha256": "b84e18150f5baf35f294d95d45bf8369b9aa6b2e89c47e4b9a755eb9be83476f"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_001_independent_review.json",
+      "sha256": "a2fc74003f4d6110fb295fd008c77e851f5c902dcf12f9d52dc1bda0851ec8d9"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_002_independent_review.json",
+      "sha256": "0f98a4261f9812c55e6117f9c2b8bb763e500cc158fbc05aca62daf8a757c084"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_003_independent_review.json",
+      "sha256": "a3082308fe54424c5865de021507987990524117fd7e2d2df9f632400d2c1b3b"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_004_independent_review.json",
+      "sha256": "e2d1148bededae8a4f90ba2bbd80246c965f55e3f7996d57bf732cd165ea5f4b"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_005_independent_review.json",
+      "sha256": "2c618301b828df6536d7dbc53ffe15266ab14aebe38f860ed8a213402c07d4a6"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_006_independent_review.json",
+      "sha256": "bbb66687da1825bffddaf4abe469097f2faa05640b8a91d1ef0b724b41f7d3a2"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_007_independent_review.json",
+      "sha256": "0be5ec2968ce1f941ffb228daf3c46bec641010d70515c54d5762735fa8e6481"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_008_independent_review.json",
+      "sha256": "e7e4ce91e717677eeda64e36371e183d33649b950101a5b152c34e438566aa44"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/official/method_observability_audit.json",
+      "sha256": "84479ae0530080842a19ae7f9c3ef9018839e0f747164ce165b7b53d16ab2560"
+    },
+    {
+      "path": "research/S014/materials/20261019_exante_hold_exit/design_decision.json",
+      "sha256": "1d34067f621d8640be66c0b73bc63d1b6600360dfce504ef3ccaf757ae0f7892"
+    }
+  ],
+  "source_state_formulas_unchanged": true,
+  "all_nine_accounts_independent_A_PASS": true,
+  "supported_limited_claims": [
+    {
+      "claim": "买入日宽限与波动归一化盈利退出组合，在已见历史中把2022和2025原收益失败改为通过，且2020-25回撤6/6、频率5.0426通过；属于实际部分突破。",
+      "policy": "ENTRY_GRACE/SHOCK_PROFIT",
+      "return2022": 0.03347818423812576,
+      "return2025": 0.4072929916500978,
+      "drawdown2025": 0.1507372439031388,
+      "original_required2025": 0.40187863952058545,
+      "annual_return_pass_2020_25": 5,
+      "remaining_failure_year": [
+        2024
+      ]
+    },
+    {
+      "claim": "一次宽限足以在2025May30避免当日误杀，下一D恢复原support判断，而非把全周期硬编码保护；June19则由真正D可知P/Z而非日期触发下一E退出。",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX043_20261019"
+        },
+        "evidence_id": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab.json",
+        "sha256": "302de307b9d951ded647cd76d8516bb677173088c978ecf93cb280d648637aab",
+        "media_type": "application/json",
+        "name": "exante-policy-004-entry_grace-shock_profit",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "account_result_hash": "9b4fa452a24699729ec18c6147132132d2466fe2719bcc5187c592b5a996b525",
+      "local_economic_labels_created": false
+    }
+  ],
+  "rejected_specific_claims": [
+    {
+      "claim": "两种退出或任何宽限单独就能满足全部目标",
+      "evidence": "ENTRY_GRACE/BASE2025收益-1.3135%、回撤31.4555%未过；BASE/SHOCK2025+8.6762%仍低原40.1879%；ENTRY_GRACE/GIVEBACK+26.0840%仍未过收益；九臂2024均负。"
+    },
+    {
+      "claim": "复杂趋势保护解释了May30并优于简单宽限",
+      "evidence": "TREND_CYCLE2025无激活、未保护May30；全2020-25仅2020/2023各一个启动cycle。固定趋势条件不能因这个已见反例再改阈值。不能据此否定所有趋势输入。"
+    },
+    {
+      "claim": "EG+SHOCK排除2025仍综合胜过原策略",
+      "evidence": {
+        "end2024_combo": 275765.2409999994,
+        "end2024_original": 278758.90799999965,
+        "difference": -2993.6670000002487,
+        "role": "已见2020-24连续再汇总，非未见holdout；只否定此具体综合优势说法，不能否定每年所有局部改善。"
+      }
+    }
+  ],
+  "unresolved_mechanisms": [
+    "9格均未修复2024，四个正浮盈SHOCK退出不能识别全部下跌/入场/后续再参与风险；没有证据把剩余全年损失归给唯一催化或这4次动作。",
+    "组合显著改善的主要经济来源集中2025，尚不能证明对未见未来有稳定识别力；跨年正例与反例都已见，9路径不是9个独立验证。",
+    "PROFIT_GIVEBACK单价尺度有ATR收缩竞争解释，当前结果不支持以更复杂回吐替代已锁SHOCK表达，亦不能由此否定整个盈利路径信息族。",
+    "不同策略2025开仓资金不同，年度收益以各路径自身年初权益为分母；年末财富和同hold/exit对照同时报告，不能套用上轮固定2025分支的共同年初分母。"
+  ],
+  "strong_crossyear_counterexamples": [
+    {
+      "year": 2021,
+      "policy": "ENTRY_GRACE/SHOCK_PROFIT",
+      "return": 1.1060727322435429,
+      "original_return": 1.7889079186481762,
+      "required_return": 0.7190376747427806,
+      "return_difference_pp": -68.28351864046334,
+      "interpretation": "提前退出在持续上涨中有机会成本，但本年仍过原收益及回撤门，不因负delta新增否决条件。"
+    },
+    {
+      "year": 2024,
+      "policy": "ENTRY_GRACE/SHOCK_PROFIT",
+      "return": -0.21157334750339696,
+      "original_return": -0.27323890851037724,
+      "drawdown": 0.31343927923767645,
+      "source_counts": {
+        "D_rows": 242,
+        "actual_held_D": 101,
+        "original_held_D": 108,
+        "induced_held_when_R_flat_D": 8,
+        "shock_condition": 4,
+        "giveback_condition": 0,
+        "entry_grace_eligible": 3,
+        "trend_cycle_eligible": 0,
+        "selected_profit_exit": 4,
+        "profit_exit_added_vs_base_support": 4,
+        "profit_exit_added_vs_selected_hold": 4,
+        "profit_support_overlap": 0,
+        "entry_grace_applied": 3,
+        "trend_cycle_activated": 0,
+        "support_exit_suppressed": 3
+      },
+      "distinct_cycles": {
+        "actual_cycles": 22,
+        "shock_condition": 4,
+        "selected_profit_exit": 4,
+        "profit_exit_added_vs_base_support": 4,
+        "profit_exit_added_vs_selected_hold": 4,
+        "entry_grace_eligible": 3,
+        "entry_grace_applied": 3,
+        "support_exit_suppressed": 3
+      },
+      "selected_profit_exit_D_E": [
+        {
+          "D": "2024-01-03",
+          "E": "2024-01-04",
+          "original_R_held": false,
+          "net_profit": 0.10326792882573854,
+          "z5": 3.407382640225504
+        },
+        {
+          "D": "2024-02-22",
+          "E": "2024-02-23",
+          "original_R_held": true,
+          "net_profit": 0.041870217694393475,
+          "z5": 2.5089845971052998
+        },
+        {
+          "D": "2024-05-06",
+          "E": "2024-05-07",
+          "original_R_held": true,
+          "net_profit": 0.22235903631252474,
+          "z5": 2.211301692063277
+        },
+        {
+          "D": "2024-11-25",
+          "E": "2024-11-26",
+          "original_R_held": true,
+          "net_profit": 0.031934065934066114,
+          "z5": 3.600508521154999
+        }
+      ],
+      "interpretation": "4新增SHOCK退出/4cycles，均不重合原supportbreak；3宽限、101heldD/22cycles，8heldD原R为空仓。年度仍负不代表4次exit每次有害，亦不能由某个次日收益直接宣称该退出解决全年风险。"
+    }
+  ],
+  "actual2025_nodes": {
+    "policy": "ENTRY_GRACE/SHOCK_PROFIT",
+    "decisions": {
+      "2025-05-30": {
+        "action": "HOLD",
+        "buy_filled_today": 1.0,
+        "held_at_close": 1.0,
+        "support_break": 1.0,
+        "support_exit_suppressed": 1.0,
+        "entry_grace_applied": 1.0,
+        "trend_cycle_eligible": 0.0,
+        "selected_profit_exit": 0.0,
+        "net_profit": -0.021490228521478638,
+        "z5": -0.6815453276202209,
+        "target_position": 1.0,
+        "exit_pending": 0.0,
+        "entry_index": 1309.0,
+        "deadline_index": 1318.0,
+        "reservation_index": 1319.0,
+        "valid_session": "2025-06-03T00:00:00.000000000"
+      },
+      "2025-06-03": {
+        "action": "HOLD",
+        "buy_filled_today": 0.0,
+        "held_at_close": 1.0,
+        "support_break": 0.0,
+        "support_exit_suppressed": 0.0,
+        "entry_grace_applied": 0.0,
+        "trend_cycle_eligible": 0.0,
+        "selected_profit_exit": 0.0,
+        "net_profit": -0.013693337912087933,
+        "z5": -0.5638679053349188,
+        "target_position": 1.0,
+        "exit_pending": 0.0,
+        "entry_index": 1309.0,
+        "deadline_index": 1318.0,
+        "reservation_index": 1319.0,
+        "valid_session": "2025-06-04T00:00:00.000000000"
+      },
+      "2025-06-19": {
+        "action": "SELL",
+        "buy_filled_today": 1.0,
+        "held_at_close": 1.0,
+        "support_break": 0.0,
+        "support_exit_suppressed": 0.0,
+        "entry_grace_applied": 0.0,
+        "trend_cycle_eligible": 0.0,
+        "selected_profit_exit": 1.0,
+        "net_profit": 0.15700089384299942,
+        "z5": 18.31797698316951,
+        "target_position": 0.0,
+        "exit_pending": 1.0,
+        "entry_index": 1322.0,
+        "deadline_index": 1331.0,
+        "reservation_index": 1332.0,
+        "valid_session": "2025-06-20T00:00:00.000000000"
+      }
+    },
+    "actual_cycle_trades": [
+      {
+        "cycle_id": "CYC-84B0C0DC057A3BAAFC88",
+        "entry_date": "2025-05-30T09:30:00.000000000",
+        "entry_price": 5.12,
+        "exit_date": "2025-06-16T09:30:00.000000000",
+        "exit_price": 6.34,
+        "net_return": 0.23580716158841164,
+        "quantity": 62400,
+        "status": "CLOSED"
+      },
+      {
+        "cycle_id": "CYC-9E20479B2DFEDC1C7B49",
+        "entry_date": "2025-06-19T09:30:00.000000000",
+        "entry_price": 7.03,
+        "exit_date": "2025-06-20T09:30:00.000000000",
+        "exit_price": 7.81,
+        "net_return": 0.10873337189126664,
+        "quantity": 51400,
+        "status": "CLOSED"
+      }
+    ],
+    "quantity_warning": "62400/51400为本一般策略完整资金前史下实际研究单位，不是此前固定日期账户58400/48200；不以不同本金/规模局部金额混作同仓因果。",
+    "unit_warning": "source raw feature价格在runtime HFQ尺度，actual ledger成交价在原锚定研究尺度；P/Z等无量纲可比，绝对价格不混用。"
+  },
+  "same_hold_exit_contrasts": [
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2020,
+      "return_difference_pp": -6.586701000000028,
+      "drawdown_difference_pp": -9.278799417961014,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2021,
+      "return_difference_pp": -46.63866583199145,
+      "drawdown_difference_pp": -12.807647942266954,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2022,
+      "return_difference_pp": 2.247235518106472,
+      "drawdown_difference_pp": -1.8767624008497408,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2023,
+      "return_difference_pp": 11.326504880487963,
+      "drawdown_difference_pp": -0.7681204611529324,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2024,
+      "return_difference_pp": 1.340247360137592,
+      "drawdown_difference_pp": -7.8982653247781425,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2025,
+      "return_difference_pp": 20.950846216851815,
+      "drawdown_difference_pp": -17.32942361133114,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2020,
+      "return_difference_pp": -4.728996999999957,
+      "drawdown_difference_pp": 1.6593194265985711,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2021,
+      "return_difference_pp": -29.665962361694564,
+      "drawdown_difference_pp": -12.617218218636062,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2022,
+      "return_difference_pp": -0.029356625958509852,
+      "drawdown_difference_pp": 0.010129458069063624,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2023,
+      "return_difference_pp": 1.3433030014681435,
+      "drawdown_difference_pp": -0.7568277904281162,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2024,
+      "return_difference_pp": 0.6094311388696427,
+      "drawdown_difference_pp": -0.51622143191834,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "BASE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2025,
+      "return_difference_pp": 16.37636413317427,
+      "drawdown_difference_pp": -11.630743399843213,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2020,
+      "return_difference_pp": -7.056074000000034,
+      "drawdown_difference_pp": -7.770543130870767,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2021,
+      "return_difference_pp": -42.152554874185725,
+      "drawdown_difference_pp": -12.330266548197189,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2022,
+      "return_difference_pp": 0.41365884850970147,
+      "drawdown_difference_pp": 0.0016505038341274592,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2023,
+      "return_difference_pp": 11.184596391654322,
+      "drawdown_difference_pp": -1.701269021666807,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2024,
+      "return_difference_pp": 6.009236496011128,
+      "drawdown_difference_pp": -7.738244903964054,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2025,
+      "return_difference_pp": 42.04277691749476,
+      "drawdown_difference_pp": -16.38174752138657,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2020,
+      "return_difference_pp": -5.080794000000011,
+      "drawdown_difference_pp": -0.0007248155946326662,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2021,
+      "return_difference_pp": -26.82701256823914,
+      "drawdown_difference_pp": -12.023793004068128,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2022,
+      "return_difference_pp": -0.005759169666763597,
+      "drawdown_difference_pp": -0.0016488438508321934,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2023,
+      "return_difference_pp": 1.3207069115913406,
+      "drawdown_difference_pp": -0.7468286925246037,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2024,
+      "return_difference_pp": 3.909311832249762,
+      "drawdown_difference_pp": -0.5000102707252818,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "ENTRY_GRACE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2025,
+      "return_difference_pp": 27.397444736365205,
+      "drawdown_difference_pp": -12.80291623249804,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2020,
+      "return_difference_pp": -7.175858999999973,
+      "drawdown_difference_pp": -7.762327336950503,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2021,
+      "return_difference_pp": -46.819375293547516,
+      "drawdown_difference_pp": -12.798096847803587,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2022,
+      "return_difference_pp": 2.2673925558660324,
+      "drawdown_difference_pp": -1.8693232215163058,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2023,
+      "return_difference_pp": 11.593780648697205,
+      "drawdown_difference_pp": -3.038595785152165,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2024,
+      "return_difference_pp": 1.3589850374533308,
+      "drawdown_difference_pp": -7.892760639817342,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "SHOCK_PROFIT",
+      "year": 2025,
+      "return_difference_pp": 20.957560240881755,
+      "drawdown_difference_pp": -17.336903134102656,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2020,
+      "return_difference_pp": -5.153162999999927,
+      "drawdown_difference_pp": -0.0008019247074053659,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2021,
+      "return_difference_pp": -29.581967525003925,
+      "drawdown_difference_pp": -12.604463775889096,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2022,
+      "return_difference_pp": -0.0022108294704947795,
+      "drawdown_difference_pp": -0.0008563279826345749,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2023,
+      "return_difference_pp": 1.3837456784823177,
+      "drawdown_difference_pp": -0.7345141946801026,
+      "return_pass": true,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2024,
+      "return_difference_pp": 0.6015643334876919,
+      "drawdown_difference_pp": -0.5174725635612054,
+      "return_pass": false,
+      "drawdown_pass": true
+    },
+    {
+      "hold": "TREND_CYCLE",
+      "exit": "PROFIT_GIVEBACK",
+      "year": 2025,
+      "return_difference_pp": 16.401730589877705,
+      "drawdown_difference_pp": -11.620431915190421,
+      "return_pass": false,
+      "drawdown_pass": true
+    }
+  ],
+  "path_accounting": {
+    "terminal2025_combo": 388082.49099999934,
+    "terminal2025_R": 244542.2409999995,
+    "difference": 143540.24999999983,
+    "end2024_difference": -2993.6670000002487,
+    "difference_of2025_within_year_wealth_changes": 146533.91700000007,
+    "joint_minus_independent_endpoint_differences": 70316.47699999996,
+    "interaction_interpretation": "同2020初始本金至2025末的描述性交互，包含早期资本路径与后续交易；不是2025两个局部动作的独立因果效应。"
+  },
+  "final_report_review": {
+    "status": "WRITTEN_SEPARATELY_AFTER_ROOT_WORDING_FINALIZED",
+    "path": "research/S014/materials/20261019_exante_hold_exit/final_report_review.json"
+  },
+  "recommendation": "保留ENTRY_GRACE+SHOCK为本次最有用但未全达标的研究方向；关闭本轮固定公式搜索，不加阈值/日期例外。下一未解决问题聚焦2024实际亏损/参与状态和新识别证据，不否认已取得2022/25目标改善。正式候选/阶段推进由根按授权判定，本review不注册。",
+  "resources": {
+    "new_accounts": 0,
+    "new_market_calls": 0,
+    "new_fits": 0,
+    "new_return_labels": 0,
+    "modified_frozen_formulas_or_audits": false
+  },
+  "pre_result_question_framework": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/official/interpretation_notes_pre_results.json",
+    "sha256": "f6baaeee33e08eae32f4f99e75e1b5303d93ac373450cccee0cbc8ed363690e6"
+  }
+}

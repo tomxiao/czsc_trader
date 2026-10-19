@@ -1,0 +1,13 @@
+{
+  "status": "ROOT_DEFINITION_CLARIFICATION_BEFORE_NEW_ACCOUNT_DISPATCH_OR_SOURCE_LOCK",
+  "origin": "Independent source review noticed an early known-mask difference; root in-window MA definition takes precedence",
+  "in_window_start": "2020-01-02",
+  "MA20_prior": "Mask closes before in-window start, then rolling20 mean and shift1; slope compares that prior series with lag5",
+  "ATR20_prior": "Compute true range using real previous close, mask TR bars before in-window start, then rolling20 arithmetic mean and shift1",
+  "log_return_history": "Compute log(C/previousC) from real quotes, mask return observations before in-window start; rolling5 numerator and lag5 rolling20 sample std use only in-window return observations",
+  "prewindow_role": "2019-12-31 real previous close may calculate the2020-01-02 gap/return. Its own close/bar/return is not a member of the new20-bar MA/TR/return history",
+  "unchanged_original_contract": "Original support history and warmup exclude the execution prewindow; original ready60, calendar, filling and all trading semantics unchanged",
+  "impact": "Correct exact early known/unknown states before trading warmup; does not change mature indicator values at original ready60",
+  "no_threshold_or_target_case_adjustment": true,
+  "no_new_accounts_in_this_clarification": true
+}

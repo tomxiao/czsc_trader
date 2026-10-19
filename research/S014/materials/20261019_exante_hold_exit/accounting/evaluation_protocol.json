@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "status": "INDEPENDENT_EVALUATION_PROTOCOL_BEFORE_NEW_STATE_STRATEGY_RESULTS",
+  "identity": {
+    "role": "RSCH independent evaluation auditor",
+    "strategy": "S014",
+    "branch": "codex/s014-jinniu-research",
+    "observed_HEAD": "e8328df3329056ee0d275f61428d5b3497bcb731",
+    "initial_working_tree": "CLEAN",
+    "owned_write_directory": "research/S014/materials/20261019_exante_hold_exit/accounting",
+    "authorization": "Parent relays the user's authorization for autonomous study of ex-ante hold/exit information and cross-year validation using existing S014 data; this auditor designs and later audits, never dispatches accounts.",
+    "RSCH_contract": {
+      "path": "research/RSCH_AGENT.md",
+      "sha256": "8d6f8b19637d093cbde175375dd48f72af7c5e932b442f012834f9083adb80df"
+    }
+  },
+  "research_question": {
+    "primary": "Can an information set actually known at each D close distinguish when preserving an existing position until its original H10 deadline is preferable to an executable early exit, across the original opportunity universe rather than two selected2025 dates?",
+    "economic_confirmation": "Does a small deterministic hold/exit policy family improve complete funded paths under the original execution contract, including later participation, and what happens in each other year?",
+    "competing_explanations": [
+      "The2025 May30 missed rise and June19 avoidable decline reflect a reusable distinction in D-known state.",
+      "These are selected favorable realized paths; the same D state in other years may reverse the preferred action.",
+      "An inventory disposition advantage exists but fees, reserved cash, blocked execution or later participation offset it.",
+      "State association partly reflects holding age, entry-day status, prior exposure or market regime rather than useful action information."
+    ],
+    "not_answered_by_old_work": [
+      "The earlier fixed-date accounts prove the realized economic effect of selected actions; their future returns did not supply an ex-ante general selection rule.",
+      "A W/state group mean or negative next-day HOLD contribution does not establish that a feasible early sale improves the complete account.",
+      "Predicting only L=max(-Y3,0) can miss the cost of giving up a rise; both hold and exit opportunity costs must be represented."
+    ]
+  },
+  "source_identity": {
+    "original_C0056_account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+      "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+      "media_type": "application/json",
+      "name": "account-support-exit-reserve-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "original_result_hash": "423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+    "existing_input_and_contract_inventory": {
+      "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+      "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+    },
+    "original_execution_prepared": {
+      "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+      "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+      "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+    },
+    "original_execution_fingerprint": "2ac71e151e5493e8314c9bd7179c26cd10a00b248483a4f5c45d70ea12abad3b",
+    "reuse": "Authenticate existing public EvidenceRefs and PreparedDataRef content identities. Reuse existing calendar, prices, limits, status and approved state/disclosure panels; do not fetch suppliers, duplicate market preparations, or copy data merely to create another source identity.",
+    "added_information": "Any state field absent from the original C0056 definition must have a frozen formula, permitted existing S014 source identity and D-availability dictionary before a result is examined. This protocol does not claim its historical causal availability merely because a field name exists."
+  },
+  "economic_and_technical_domains": {
+    "economic_decision_D_domain": ["2020-01-01", "2025-12-31"],
+    "economic_wealth_E_domain": ["2020-01-02", "2025-12-31"],
+    "formal_original_account_window": ["2020-01-02", "2026-10-15"],
+    "original_execution_anchor": "2019-12-31",
+    "2026": "Keep the original full-window contract and audit technical execution, original reported annual fields and carried inventory. Do not use2026 as a selected action-economic endpoint, label-selection set, validation year or missing-announcement substitute.",
+    "D_vs_E_boundary": "The D2025-12-31 decision is part of the state opportunity inventory, but its next execution is in2026. No2026 outcome may be used to give that D an uncensored2025 action-value label.",
+    "year_boundaries": "Never reset positions, pending orders, cash, reservations or starting capital on January1. Annual outcomes come from one complete continuous path."
+  },
+  "original_opportunity_universe": {
+    "population": "All original C0056 D decision rows in2020-25, before any A/low-open/positive-return/announcement/date selection. The old399 A-parent opportunity population is not an adequate replacement for these actual holding decisions.",
+    "source_fields": [
+      "signal_date", "valid_session", "warmup_sessions", "held_at_close", "buy_filled_today", "sell_filled_today",
+      "entry_index", "deadline_index", "reservation_index", "entry_signal", "exit_pending", "failed_buy_reset",
+      "support_break", "support_ok", "support_floor", "ready", "target_position", "holding_horizon", "action"
+    ],
+    "causal_roles": {
+      "pending_inherited_D": "Previous saved D decision exit_pending is true and the current D has no actual sell_filled_today. Determine before evaluating a new D exit reason; current exit_pending already includes a new support/deadline trigger.",
+      "holding_age": "warmup_sessions-entry_index, zero on the actual entry-fill D; runtime indices include the original prewindow and must not be used as zero-based ledger row indices without mapping.",
+      "role_priority": [
+        "If held_at_close is false: FLAT, outside the hold/exit action population but retained for coverage and later participation accounting.",
+        "If an inherited SELL is pending: MANDATORY_PENDING, retain pending; do not label cancellation as a discretionary hold choice.",
+        "Else if held and warmup_sessions>=deadline_index: MANDATORY_H10_DEADLINE, retain mandatory exit.",
+        "Else if held and support_break: DISCRETIONARY_ORIGINAL_SUPPORT_EXIT, eligible to test a declared remainder-of-cycle continuation exception.",
+        "Else if held: DISCRETIONARY_ORIGINAL_HOLD, eligible to test a declared next-session early sale."
+      ],
+      "failed_buy_action_warning": "An action string SELL on a flat failed-BUY reset is not a held-position sale opportunity. Use actual D holdings and intent fields.",
+      "entry_day": "A BUY that actually filled earlier on D is known by D close. A sale ordered at that D may execute no earlier than the next legal E session, consistent with T+1."
+    },
+    "read_only_inventory_before_new_state_outcomes": {
+      "D_rows": 1455,
+      "D_rows_by_year": {"2020": 243, "2021": 243, "2022": 242, "2023": 242, "2024": 242, "2025": 243},
+      "flat_D": 787,
+      "held_D": 668,
+      "distinct_actual_entry_index_cycles_represented": 122,
+      "discretionary_original_HOLD_D": 547,
+      "discretionary_original_support_exit_D": 92,
+      "mandatory_deadline_D": 29,
+      "inherited_pending_D": 0,
+      "discretionary_D_total": 639,
+      "method": "Read original decisions only, classify in the priority above, and count distinct entry_index among held rows. No future outcome/state association was computed for this inventory."
+    },
+    "dependence_and_overlap": "All668 held D rows are opportunity coverage, not668 independent trades. Retain original122-cycle identifiers. Report raw D counts and distinct-cycle counts; do not inflate evidence by summing repeated HOLD days within one cycle.",
+    "anchors": "For each locked action mechanism, declare its first eligible trigger per actual cycle before inspecting outcomes. A cycle-wide hold exception is entered once and keeps its original deadline; a first exit trigger becomes pending once. All D rows remain available to audit missed triggers and coverage. Do not choose the most profitable D retrospectively.",
+    "changed_policy_population": "A general policy changes future holdings and may create D holding opportunities absent in R. Report original common-population coverage separately from newly induced policy opportunities; evaluate every recurring rule on that policy's own actual D state. Never graft R's future holding flags, fill phases or quantities onto a changed path."
+  },
+  "exante_information_contract": {
+    "clock": "D close information -> next legal E order attempt -> actual E fill or blocked attempt. E actual phase/fill/return is an outcome or attribution field, never a D feature.",
+    "feature_families": [
+      "Original D support/ready/holding-age/entry-day/pending/reservation state.",
+      "A small frozen set of trailing stock/market/sector states from already permitted S014 data, if exact D cutoff and formula can be authenticated.",
+      "Existing published-disclosure state only if its first-available D and catalogue coverage are authenticated; do not use PDF text date as the disclosure timestamp."
+    ],
+    "feature_dictionary_required_fields": ["name", "source_ref_and_sha", "formula_and_units", "lookback", "D_availability", "missing_domain_rule", "role_in_hold_or_exit_action"],
+    "return_unit_consistency": "Do not subtract a simple stock return from a log market/sector return and call the difference a relative return. Freeze one consistent return convention for relative comparisons. Legacy sign-only states may be reused with their exact definitions; any new canonical transformation is a declared deterministic feature calculation on existing D-known prices, not a silent change to historical material.",
+    "announcement_boundaries": "If the prior W10-session state is reused, keep its original0..9 inclusive session rule and conservative first-available D. Initial E and the first9 D of2020 lack the full2019 notice prewindow and remain UNKNOWN;2026 is out-of-domain UNKNOWN. Do not impute missing coverage as no warning.",
+    "unknown_action_semantics": "Before execution, define whether an unknown field meets a positive trigger. Recommended deterministic rule: UNKNOWN does not satisfy a new overlay trigger, so the original policy acts; disclose affected opportunities. This is a policy definition, not proof of absence of risk.",
+    "forbidden_selectors": "No2025-specific dates, historical cycle IDs, realized future returns, eventual sale prices, future best exit dates or labels may select a supposedly general hold/exit action. Year is an evaluation grouping, not a feature chosen to reproduce the known repairs.",
+    "feature_freeze": "Fix the small state dictionary, threshold signs, action mapping and action duration before state-outcome comparisons or account results. A revised feature/rule after outcomes is a new disclosed development revision, not another independent validation."
+  },
+  "label_and_action_responsibilities": {
+    "avoid_mismatch": "Do not replace hold/exit advantage with next-day PnL, Y3, price-only upside, or L=max(-Y3,0). These may describe a price path but do not include the cost of relinquishing a rise, legal sale delays, original reservation or later capital participation.",
+    "level_1_observed_cycle": {
+      "definition": "Reuse the original actually funded cycle entry/exit prices, quantities, dates, fees and CLOSED versus marked-open status. Present the whole original cycle and remaining-after-D inventory path, rather than only its first adverse day.",
+      "limit": "The original realized cycle return is an observation under R, not a supervised label proving that a different hold/exit action was better."
+    },
+    "level_2_fixed_inventory_disposition_diagnostic": {
+      "current_pass_status": "NOT_SCHEDULED. Parent explicitly omits new fixed-inventory counterfactual labels for EX043. The definitions below explain the limit of such labels if revisited; they are not this pass's output or a gate.",
+      "purpose": "Do not construct per-D complete counterfactual accounts. EX043 uses actual recurring full-account results and original-opportunity trigger/state coverage. A later declared diagnostic could obtain both inventory dispositions in one batched admitted-quote pass, while retaining the limits below.",
+      "eligible": "Only discretionary actual-held D under the population definition, with no inherited pending. Preserve actual original Q(D), residual cash and entry-fixed clocks.",
+      "EXIT_NEXT_LEGAL": "Issue SELL at D; maintain pending and sell the same existing inventory at the first legal E under the original T+1/calendar/status/limits rules.",
+      "CONTINUE_ORIGINAL_H10": "For this already held cycle, suppress discretionary support exits through the original remaining H10 interval; original deadline or inherited mandatory pending has priority, and sale may be delayed by the same execution restrictions. Do not restart H10 at D.",
+      "comparison": "For a common capped evaluation time, freeze the actual hypothetical sale proceeds after each prescribed inventory disposition, without interest or reentry. Inventory advantage=net disposition value of CONTINUE_ORIGINAL_H10 minus EXIT_NEXT_LEGAL; a positive sign favors continuation for this inventory, and a negative sign favors exit. Include the original actual quantity and both prescribed sale fees; prior entry cost is already common in D wealth.",
+      "terminal": "Use each prescribed first full inventory disposition, with terminal cap2025-12-31. If not disposed by the cap, mark that inventory with the original common terminal price, explicitly not cash and without a fictive sale fee. A D whose action cannot execute before the cap is censored for a realized action label; do not use2026 as its economic target.",
+      "cohort_year": "Group these labels by D decision year and show cross-calendar-year cycle carry. This label grouping is not calendar-year account profit.",
+      "overlap": "Preserve cycle clustering and all denominators; show the fixed first trigger per policy/cycle as the primary trigger summary. All-D averages are overlapping descriptive summaries, not independent-trade averages.",
+      "limit": "This is a labelled inventory-disposition comparison with frozen sale cash. It is neither a financed replacement strategy account nor a label for complete subsequent participation. It cannot establish the annual hard goals."
+    },
+    "level_3_complete_funded_policy_value": {
+      "definition": "For each few locked recurring policies, execute one complete original-history account. Actual quantities/cash, skipped or new later entries, blocked exits, reservations, fees and uncompleted terminal holdings all contribute to the result.",
+      "post_participation_identity": "At a specified common actual intervention/cycle anchor and terminal T: W_j(T)=F_j(T)+G_j(T), where F_j is the same pre-intervention existing inventory's first actual disposition cash frozen to T, or its explicitly unsold terminal mark, and G_j=W_j-F_j. DeltaW=DeltaF+DeltaG. This is exact accounting after real branches, not independent causal components.",
+      "general_policy_limit": "Recurring policies can overlap and change later capital/eligibility. Do not sum per-trigger local advantages or annual event labels into claimed strategy profit. If paths do not share the same D inventory/cash, do not invent a matched local disposition attribution; report the complete path plus clearly labelled unmatched exposure differences.",
+      "interaction": "For each non-BASE hold level h and exit level e in the fixed3x3 family at the same T, report W(h,e)-W(h,BASE)-W(BASE,e)+W(BASE,BASE) as descriptive interaction; never assume additivity beforehand. Annual return interaction, if shown, must use actual annual returns with their respective opening equity rather than reuse this terminal-currency identity."
+    }
+  },
+  "minimal_complete_account_design": {
+    "fixed_first_pass": "One new source implementation and the parent's fixed3x3 structural contrast: hold BASE/ENTRY_GRACE/TREND_CYCLE crossed with exit BASE/SHOCK_PROFIT/PROFIT_GIVEBACK. Exactly nine planned complete configurations include the fresh-source(BASE,BASE) authentic NOOP, so a tenth control is unnecessary. Original C0056 remains the immutable reference. Nine is the declared first-pass design, not a new user-imposed account hard cap.",
+    "why_not_hundreds": "No per-opportunity complete account, no per-year capital reset, no six-fold annual account dispatch and no repeated market preparation. The original opportunity panel records causal features and first-per-cycle triggers without requiring counterfactual value labels. Optional inventory diagnostics are one batched calculation; annual and without2025 reports reuse the same nine ledgers.",
+    "state_rule_lock": "Freeze all nine fixed configurations and every exact state/action definition before outcomes. The3x3 is a complete structural contrast, with no numerical threshold fitting, date replacement or neighboring parameter grid. All nine are actually run; disclose identical resulting paths or zero effective triggers rather than claim nine independent samples. Any post-result revision is separately disclosed development.",
+    "planned_hold_levels": {
+      "BASE": "Original support-exit rule, original mandatory deadline and reservation.",
+      "ENTRY_GRACE": "Only on a real BUY-fill D, defer that D's support_break exit once. Reevaluate the original policy on later D; this is not automatically whole-cycle H10 protection.",
+      "TREND_CYCLE": "Only on a real BUY-fill D with support_break: the break is shallower than1 frozen prior ATR, D close is at least prior MA20 and prior MA20's5-session slope is positive. Protect only that actual cycle from support exits through its original H10 deadline; profit-exit overlay and mandatory/pending rules still have priority."
+    },
+    "planned_exit_levels": {
+      "BASE": "No additional profit exit.",
+      "SHOCK_PROFIT": "While actually held and discretionarily eligible: D-known net marked profit>0 and sum of the latest5 log returns divided by(preceding20-return volatility endingD-5 times sqrt5)>2. Emit one real pending next-session sale; no assumption that E will fill.",
+      "PROFIT_GIVEBACK": "While actually held and discretionarily eligible: the close-mark net gain peak since the actual entry has reached at least2 prior ATR and drawdown from that peak is at least1 prior ATR. Current marked profit need not remain positive. Emit one real pending sale."
+    },
+    "priority": ["Already pending sale or mandatory original H10 deadline", "New locked profit-exit trigger", "Applicable locked support-exit protection", "Original support exit and otherwise original hold/entry policy"],
+    "frozen_feature_formulas_from_parent": {
+      "source_price_representation": "All runtime price features use original market HFQ units. Support_floor, close, high, low, ATR and tracked entryfill must share that representation. Account ledgers use HFQ_RESEARCH normalized by anchor5.892; verify runtime entryfill equals actual ledger fill price times5.892 before comparing a runtime feature to ledger-derived values.",
+      "TR_t": "max(High_t-Low_t, abs(High_t-Close_(t-1)), abs(Low_t-Close_(t-1))).",
+      "ATR20prior_D": "Arithmetic mean of the20 TR observations endingD-1, with complete required causal observations. No Wilder smoothing, no current-D TR.",
+      "MA20prior_D": "Arithmetic mean of20 closes endingD-1.",
+      "MA20prior_5session_slope_D": "MA20 endingD-1 minus MA20 endingD-6; positive means>0.",
+      "TREND_CYCLE_entry_condition": "Actual bought-on-D and original support_break, 0<support_floor_D-Close_D<ATR20prior_D, Close_D>=MA20prior_D and MA20prior_5session_slope_D>0. Record persistent protection only for that actual entry cycle until its original mandatory deadline or earlier priority exit.",
+      "r_t": "log(Close_t/Close_(t-1)), from the same admitted stock price history.",
+      "Z5_D": "sum(r_(D-4)..r_D)/(sample_std_ddof1(r_(D-24)..r_(D-5))*sqrt(5)). The latest5 and preceding20 return observations do not overlap. Missing/zero/nonfinite denominator yields undefined Z and does not satisfy the shock trigger; retain the cause.",
+      "fee": 0.001,
+      "entryfill": "Known actual current-cycle entry price in runtime market HFQ units, set only on a real BUY fill and reset on the next real entry; never initialize from an unfilled plan or a future exit.",
+      "net_P_D": "Close_D*(1-fee)/(entryfill*(1+fee))-1. This is a D-known hypothetical fee-adjusted close mark, not a guarantee of profitable execution at E.",
+      "peak_price_D": "Initialize at actual entryfill and then update with only closes already observed since that actual entry, including D. Thus max(entryfill, seen closes); it is not an intraday high or a future full-cycle peak.",
+      "peak_net_gain_price_D": "peak_price_D*(1-fee)-entryfill*(1+fee).",
+      "net_mark_gain_price_D": "Close_D*(1-fee)-entryfill*(1+fee).",
+      "giveback_price_D": "peak_net_gain_price_D-net_mark_gain_price_D, in the same runtime HFQ price units as ATR20prior_D.",
+      "SHOCK_PROFIT_condition": "net_P_D>0 and Z5_D>2, evaluated on actual D-held state after inherited/mandatory priority.",
+      "PROFIT_GIVEBACK_condition": "peak_net_gain_price_D>=2*ATR20prior_D and giveback_price_D>=ATR20prior_D; current net_P_D may be zero or negative. Both ATR comparisons use the current D's prior ATR20, not an unannounced ATR captured on the peak date.",
+      "fee_feature_limit": "Hypothetical D-mark fee accounting is an observable deterministic feature. Actual next-E prices, fees, execution restrictions and subsequent capital path remain the complete-account evidence."
+    },
+    "definition_checks_before_source_lock": [
+      "Verify each implemented window endpoint, ddof, inequality and declared price unit against the frozen formulas; B independently validates numerical features/causal availability.",
+      "Record raw candidate triggers separately from effective actions after precedence. A profit trigger when the base already has a mandatory SELL must not be counted as an additional discretionary policy intervention.",
+      "Keep all nine actual account configurations and disclose exact-path duplicates, no-trigger cells and the prior selection history; these are structural contrasts on seen data."
+    ],
+    "action_scope": "A hold trigger must state whether it protects the remainder of the current cycle or only defers one D decision. An exit trigger must create an actual pending next-session full-position sale. Define precedence when triggers conflict; original mandatory deadline/inherited pending wins. No new skip-entry arm is included by default.",
+    "entry_after_actions": "Keep original entry eligibility and original absolute reservation. Because the policy's own holdings and cash differ, later actual entry dates and quantities may change naturally; never force them to R or remove them from evaluation.",
+    "comparison_baseline": "Original C0056 and its same-source NOOP; unchanged executable BuyHold. EX040-42 date-specific accounts explain selection history and are not the general-policy control.",
+    "execution_owner": "The execution agent dispatches through the existing public evaluation APIs after source/design/parameter/feature locks. This independent auditor dispatches zero accounts.",
+    "revision_policy": "Technical failure is retained with its identity and dependent work stops until a concrete correction is reviewed. Economic failure is retained as evidence and does not trigger an automatic nearby date/threshold replacement. Any extra structural investigation needs a stated unresolved question and a new pre-result design."
+  },
+  "original_execution_contract": {
+    "symbol": "600722.SH",
+    "initial_cash": 100000,
+    "one_way_cost": 0.001,
+    "pricing": {"basis": "HFQ_RESEARCH", "quantity_unit": "RESEARCH_UNIT", "anchor_date": "2019-12-31", "anchor_factor": 5.892},
+    "entry": "Original LimitBuyHold limit formula, original whole-lot100/maximum-order1000000 and raw-price ticks/limits converted using the original pricing representation.",
+    "exit": "Original market-sale resolution, actual first legal next-session fill, suspension/locked-price checks and retained pending.",
+    "clock": "Entry_index=i, original H10 deadline=i+9 and next-entry reservation=i+10 from the actual fill session. Early sale does not release the reservation; blocked sale may remain held beyond deadline/reservation.",
+    "unit_audit": "Use the frozen ExecutionPricing projection for raw quotes and bounds before multiplying by RESEARCH_UNIT quantities. Do not mix raw support/price fields with a differently represented quantity. Verify ledger close against projected execution close.",
+    "unchanged": "Same original full window, prewindow exclusion from warmup/support, starting capital, costs, benchmark, symbol, admitted execution content identities and frozen public execution contract. Only explicitly locked D-state action logic changes."
+  },
+  "annual_and_cross_year_evaluation": {
+    "primary_display": "For every actual policy and each2020-25 year: own opening equity, closing equity, annual return, maximum drawdown, BuyHold return/drawdown, original required return, original pass flags, held/flat exposure, closed trades and carried uncompleted state.",
+    "annual_denominator": "Each recurring policy's annual return=its own year-end equity / its own prior-year-end equity -1. General policies may have changed capital since2020. Difference of terminal wealth divided by R's year opening is not automatically a difference in annual returns when year openings differ.",
+    "comparable_reporting": "Show policy and R annual return percentages side by side and subtract those returns for a year-level percentage-point comparison. For capital-path differences, also show actual opening/closing wealth and the common initial100000 full-history normalized path, with the meaning kept separate.",
+    "year_by_year": "Derive annual metrics and counterexamples from each single continuous original-window ledger. These are descriptions of a fixed policy by year, not six separately fitted models or independently funded yearly accounts.",
+    "development_without2025": "Use2020-24 rows/years only as a development diagnostic. Do not concatenate2020-24 with2026 while skipping2025, splice away2025 capital effects, or claim a new fitted out-of-sample strategy. Any pooled descriptive summary should also show per-year values and a year-equal summary so a large year does not silently determine the result.",
+    "seen_information": "All2020-25 years and the2025 May30/June19 selected repairs have already been inspected in S014. Excluding2025 from a development table reduces direct dependence on those two examples but does not create genuinely untouched validation data. Leave-year-out or chronological descriptive views remain previously seen historical evidence.",
+    "counterexamples_required": "For each year and each locked action side, retain every triggered cycle and report both helpful and harmful realizations, the largest adverse action-value examples, opposite signs in the same state in other years, and losses after fees/blocked execution. Include no-trigger years explicitly; do not omit them because they are unfavorable or sparse.",
+    "empty_or_unknown": "No-trigger or missing-group cells remain null with their reason and population counts, never zero synthetic advantage or an invented matched comparator. A small but nonempty group is reported; no minimum count or confidence-interval veto is added.",
+    "confounding": "Alongside raw state contrasts report D holding age, same-day entry, original role, year, position exposure and observable open profit when available. At minimum show the original action-role/age context; pooled differences do not establish information beyond these contexts. Do not select a preferred adjusted result after seeing its sign.",
+    "concentration": "Report effect with and without2025, yearly signed contribution and the largest beneficial/harmful cycle contributions. These explain concentration, not extra qualification rules."
+  },
+  "unchanged_hard_goals": {
+    "annual_return": "For each originally included acceptance year, if same-contract BuyHold annual return>0, strategy annual return>=1.5*BuyHold; otherwise strategy annual return>0.",
+    "annual_drawdown": "Each originally included year's strategy maximum drawdown magnitude is strictly less than the same-contract BuyHold magnitude; retain prior-year closing/opening equity in annual peak calculations.",
+    "frequency": "(Closed trades / original evaluation trading days)*60>=3, using the original declared evaluation contract and excluding open trades from closed count. Keep the original full-window measure and label any2020-25-only frequency summary diagnostic rather than substituting it.",
+    "original_full_contract_years": "Audit the existing reported2020-26 annual fields without changing the old acceptance contract. Separately identify2020-25 as this ex-ante research's economic cross-year domain and2026 as technical tail; do not use2026 to make a new economic claim.",
+    "2025_known_reference": {"same_contract_BuyHold_return": 0.26791909301372363, "required_return": 0.40187863952058545, "role": "Existing fixed reference, never a policy feature or new selected target."},
+    "no_added_economic_gate": "No CI exclusion, p-value, minimum sample count, cross-year sign-consistency threshold, effect concentration threshold or required number of profitable years becomes an additional hard gate. Diagnostic uncertainty and counterexamples affect the research judgment and disclosed limits."
+  },
+  "independent_audit_gates_and_deliverables": {
+    "technical_gates": [
+      "Hash-check original and new source/feature formulas, parameter domain, public source/design lock, runtime closure, strategy identity, account request and existing data binding.",
+      "Pure synthetic examples cover unknown state, actual same-day entry, normal hold/support exit, deadline priority, prolonged suspended/locked sale, original reservation, failed BUY and restored later policy; actual public numeric observation boundaries are checked.",
+      "Fresh source-specific NOOP must match R's full original economic fields and signals exactly, with one-to-one identity mapping; prior-source green results do not substitute.",
+      "Independently reconstruct every daily cash/quantity/equity/fee/actual fill and original D->E clock, and verify no outcome feature leaked into a D action.",
+      "Reapply original public execution/pricing rules against authenticated existing prepared data; no new supplier call or whole-account rerun is needed for this consistency check.",
+      "Authenticate actual action triggers, all relevant D state fields, original deadlines/reservations, blocked pending and restored policy. Count induced opportunities separately.",
+      "Recompute original annual goals, closed-trade frequency, fixed terminal state and all reported inventory/participation/interaction identities. Preserve failures, unknowns and unsuccessful economic branches."
+    ],
+    "technical_vs_economic": "A technical identity, causality or accounting failure prevents interpretation of that result; it is not evidence that the economic mechanism is bad. Economic underperformance under a technically valid account remains a valid finding.",
+    "minimum_outputs": [
+      "Immutable original/full-opportunity state inventory and a feature-availability dictionary with source identities; no A-only selection.",
+      "No new fixed-inventory counterfactual label panel in this pass. Original-opportunity first-trigger/state coverage and actual funded cross-year accounts are primary.",
+      "Few actual public full-account receipts, full D-state/decisions/orders/fills/daily ledgers and source-specific NOOP audit.",
+      "Per-policy2020-25 annual table, without2025 development diagnostic, strongest opposite-sign yearly cases and trigger/coverage counts including null groups.",
+      "2025 and full2020-25 equity paths with correct denominators, terminal cash/quantity/pending and marked-open states;2026 separately technical.",
+      "All nine fixed structural configurations, base-row/base-column contrasts and descriptive interactions; no sum of overlapping local labels as policy profit, and no suppression of unfavorable cells when choosing a preferred route.",
+      "Independent source+numeric audit JSONs and reproducible implementation, all dispatched resource statuses, technical corrections and explicit interpretation limits."
+    ]
+  },
+  "decision_use": {
+    "support": "A fixed D state repeatedly distinguishes the two executable inventory alternatives outside the selected2025 nodes, and the complete recurring policy retains benefit after later participation and costs. Describe which years and counterexamples limit that support.",
+    "weaken": "Opposite signs in comparable state/age/action roles, benefit concentrated in the already selected2025 examples, or full-account loss despite inventory advantage weakens the proposed general mechanism.",
+    "retain_uncertainty": "If available state cannot separate the alternatives, or matched groups are absent, say which comparison is unsupported; do not conclude that more data or another model must be the answer.",
+    "next_step": "Before execution, main research locks the exact small state/rule/action family and feature identities under this evaluation contract. Thereafter this auditor independently reviews the new source, actual NOOP/branches and cross-year evidence. This protocol dispatches no accounts."
+  },
+  "resources_used_by_protocol_author": {
+    "new_account_dispatches": 0,
+    "new_strategy_history_replays": 0,
+    "new_counterfactual_labels": 0,
+    "new_model_fits": 0,
+    "new_market_API_calls": 0,
+    "new_preparations": 0,
+    "source_changes_to_platform_or_history": 0,
+    "read_only_calculation": "Original D opportunity/role counts only; no new state-by-outcome comparisons."
+  }
+}

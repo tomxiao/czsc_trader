@@ -1,0 +1,28 @@
+{
+  "status": "EXPLICIT_PRE_ACCOUNT_PEAK_CLOSE_CLARIFICATION",
+  "original_preserved": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/evaluation_protocol.json",
+    "sha256": "791ea998ade2df60d0e34cd81a58e8b8d6da9e031a40c2f3b807ac4e746180e2"
+  },
+  "revised_protocol": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/accounting/evaluation_protocol_v2.json",
+    "sha256": "3fa8ca39c0425a88e83a47eaefec8d4eb80b5ec31b7dc6f3ffae2630323c7f8c"
+  },
+  "changed_formula_path": "minimal_complete_account_design.frozen_feature_formulas_from_parent.peak_price_D",
+  "old_definition": "Initialize at actual entryfill and then update with only closes already observed since that actual entry, including D. Thus max(entryfill, seen closes); it is not an intraday high or a future full-cycle peak.",
+  "new_definition": "Maximum of the actual observed closes from the real BUY execution session E through the current D inclusive. Initialize with that actual entry session Close; entryfill is not a peak candidate. On the actual BUY D, peak_price_D equals Close_D and giveback_price_D is exactly zero. Track only already observed closes and reset on each real new entry; no intraday high or future full-cycle peak.",
+  "business_meaning": "TRAIL/PROFIT_GIVEBACK measures retreat from seen closing marks, not retreat from an entry transaction price. An adverse mark on the actual BUY D is not already a retreat from a previous closing peak.",
+  "explicit_invariants": [
+    "Actual BUY D giveback_price_D=0.",
+    "Entry fill remains in net_P, net_mark_gain_price and peak_net_gain_price cost formulas.",
+    "No ATR20/MA20/Z5/fee/threshold/action-priority/unknown/annual-return change.",
+    "1455 D,668 held D,122 actual cycles,639 discretionary D remain unchanged.",
+    "Original protocol bytes preserved; v2 is the active lock target."
+  ],
+  "structural_comparison": "After reverting only peak_price_D and removing new revision metadata, parsed v2 equals original exactly.",
+  "other_formulas_structurally_identical": true,
+  "new_accounts_dispatched_by_reviewer": 0,
+  "new_labels": 0,
+  "new_fits": 0,
+  "new_market_calls": 0
+}

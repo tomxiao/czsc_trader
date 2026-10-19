@@ -1,0 +1,1066 @@
+{
+  "status": "READ_ONLY_PRIOR_EXIT_RULE_INVENTORY_AND_PROPOSALS",
+  "scope": "Only S014 EX017..035 sources/results inspected; RSCH role; no other batch/memory/provider/API/model/account run",
+  "created_date": "2026-10-19",
+  "identity": "RSCH",
+  "existing_rules": [
+    {
+      "experiment": "EX017_20261017",
+      "mechanism": "原父信号与固定短持有",
+      "exact_rule": "低开收阳父机会H1/H3；高环境H3；高3/低1混合",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "NOT_ALL_ORIGINAL_TARGETS_MET_WITH_PARTIAL_POSITIVES",
+      "result_and_counterevidence": "高H3全期87.38%高于父H3 48.66%，但2021/2022/2025/2026收益均未达门；不是任何持仓状态机制已否定。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX017_20261017/src/strategy_runtime/strategies/repair.py",
+        "line": 12,
+        "match": "VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX017_20261017/protocols/account_report.md",
+        "line": 54,
+        "match": "高环境筛选有全期改善"
+      }
+    },
+    {
+      "experiment": "EX018_20261017",
+      "mechanism": "入场/环境/期限完整因子对照",
+      "exact_rule": "低开收阳或仅收阳×高或全部环境×固定H3/H6，共8格，6新2复用",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "NOT_ALL_TARGETS_MET",
+      "result_and_counterevidence": "8格无全年度达标；高环境H6增全期收益也加重部分年损伤；不可把事后真实退出盈利用于事前决策。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX018_20261017/src/strategy_runtime/strategies/repair.py",
+        "line": 12,
+        "match": "VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX018_20261017/protocols/account_report.md",
+        "line": 3,
+        "match": "八个构造均未满足"
+      }
+    },
+    {
+      "experiment": "EX019_20261017",
+      "mechanism": "当晚已知浮盈/上涨延长",
+      "exact_rule": "仅原高环境H3，在E+2收盘判断一次：P>0、当日涨幅>0、两者AND、OR，符合则从原entry延至E+6，不从延期卖出日再加3",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "SPECIFIC_FOUR_CONDITIONS_NOT_SUPPORTED",
+      "result_and_counterevidence": "四新账户全期10.91%/-28.03%/-24.15%/2.25%，均低于原H3 87.38%；有浮盈且不涨局部线索依赖少量事件；此处无持仓历史峰值条件。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX019_20261017/src/strategy_runtime/strategies/repair.py",
+        "line": 24,
+        "match": "floating=close/(entry_fill_price"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX019_20261017/protocols/account_report.md",
+        "line": 3,
+        "match": "四个新账户全期收益"
+      }
+    },
+    {
+      "experiment": "EX020_20261018",
+      "mechanism": "持仓内原机会续持",
+      "exact_rule": "基础H3/H6，遇原完整入场信号或只低开收阳，deadline=max(旧deadline,i+h)，最长12日或无上限；已pending不撤销",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "PARTIAL_IMPROVEMENT_NOT_ALL_TARGETS_MET",
+      "result_and_counterevidence": "H3低开收阳无上限C0028全期343.33%、回撤7/7、收益3/7；H6续持四格频率不足3。不是支持任意条件续持。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX020_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 65,
+        "match": "proposed=max(deadline"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX020_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "形成部分改进"
+      }
+    },
+    {
+      "experiment": "EX021_20261018",
+      "mechanism": "滚动支撑入场/退出和固定H10",
+      "exact_rule": "前5评价收盘最低值(不含D)为floor；B支撑入场只H10到期；C破位即早退并可立即重入",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "USEFUL_BASELINE_NOT_GENERAL_EARLY_EXIT_BENEFIT",
+      "result_and_counterevidence": "B全期441.60%、截至2025累计163.69%，C263.38%；均未全达标，C2022为-26.65%，不同启动/入场的H3仅上下文。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX021_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 38,
+        "match": "support=market.Close.where"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX021_20261018/protocols/account_report.md",
+        "line": 47,
+        "match": "主动支撑退出认作普遍改进"
+      }
+    },
+    {
+      "experiment": "EX022_20261018",
+      "mechanism": "初始相位敏感性而非持仓宽限",
+      "exact_rule": "A/B首次可决策延后0..10天，只改首个启动时点，不改每次entry后退出",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "PARTIAL_SENSITIVITY_EVIDENCE_NOT_NEW_EXIT_RULE",
+      "result_and_counterevidence": "11偏移全期B>A但去2026为10/11；2021后成交日期收敛非11独立验证。不能称已测每个实际入场当日宽限。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX022_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 11,
+        "match": "BASES="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX022_20261018/protocols/account_report.md",
+        "line": 1,
+        "match": "首次决策时点敏感性"
+      }
+    },
+    {
+      "experiment": "EX023_20261018",
+      "mechanism": "C0056原退出与预约",
+      "exact_rule": "D收盘破前5最低close或到期则pendingSELL；真实entry i设置deadline i+9/reservation i+10，早售不释放预约；新真实BUY才重设",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "PARTIAL_ACCOUNT_RISK_IMPROVEMENT_NOT_ALL_TARGETS_MET",
+      "result_and_counterevidence": "C0056全期708.72%、收益4/7回撤7/7；2022/24/25仍亏；共同入场134对log增量-0.081048，2026新增参与主导相对B优势。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 69,
+        "match": "if i>=deadline"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX023_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "仍在2022、2024、2025亏损"
+      }
+    },
+    {
+      "experiment": "EX024_20261018",
+      "mechanism": "P浮盈才早退与N互补",
+      "exact_rule": "第一次support_break且D<deadline，仅一次判断P=close/(实际同尺度买价*1.001)-1；P模式P>0才早退，N模式P<=0才早退，拒绝后整个周期不重判，继续原H10",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "LIMITED_POSITIVE_P_NOT_A_NEW_RULE_NOT_ALL_TARGETS_MET",
+      "result_and_counterevidence": "P=C0057全期711.88%、收益3/7回撤6/7；2025+23.58%仍低门40.19%，2024-14.71%且回撤45.08%>43.22%。P与B138真实entry全部对齐，有限退出增量应保留，不可笼统称P毫无价值。N全期440.25%、4/7收益5/7回撤。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX024_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 78,
+        "match": "early_exit_selected=float_pnl>0"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX024_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "形成相对B的有限正向退出增量"
+      }
+    },
+    {
+      "experiment": "EX025_20261018",
+      "mechanism": "入场阳线确认",
+      "exact_rule": "仅entry信号晚增加close>open，并分别配B/R/P退出",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "SPECIFIC_ENTRY_FILTER_NOT_SUPPORTED",
+      "result_and_counterevidence": "新增3完整账户全期42.61%/-46.87%/-7.41%；去2026全部亏。信号日阳线过滤不等于实际成交日buy_filled_today宽限。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX025_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 12,
+        "match": "UP_VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "阳线确认未形成有效"
+      }
+    },
+    {
+      "experiment": "EX026_20261018",
+      "mechanism": "统一短周期H3/H5",
+      "exact_rule": "B/R/P整套持仓期限及预约统一H3或H5，支撑回看仍5日",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "UNIFORM_SHORTENING_NOT_SUPPORTED",
+      "result_and_counterevidence": "六新配置无全目标达标；H3-P经济路径与H3-B完全一致(无正P提前退出)；已登记配置数不能当不同经济路径或独立证据。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX026_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 13,
+        "match": "SHORT_VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX026_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "六配置只有五条"
+      }
+    },
+    {
+      "experiment": "EX027_20261018",
+      "mechanism": "T+1自然下界H1/H2",
+      "exact_rule": "H1只B代表，H2 B/R/P；H1严格提前窗口空所以三者结构等价",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "UNIFORM_SHORTENING_BOUNDARY_NOT_SUPPORTED",
+      "result_and_counterevidence": "四新账户全期-65.86%/-23.53%/-36.23%/-18.23%；未全达标；不可改名再扫H1/H2。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX027_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 13,
+        "match": "SHORT_VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX027_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "自然短周期边界未改善"
+      }
+    },
+    {
+      "experiment": "EX028_20261018",
+      "mechanism": "统一H15延长及H20到期标签",
+      "exact_rule": "H15 B/R/P完整账户；此前原H10成熟仓H20及support延伸只为同entry标签",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "UNIFORM_EXTENSION_NOT_SUPPORTED",
+      "result_and_counterevidence": "H15全期136.19%/32.45%/215.67%均低H10；仅17共同entry，其余资本路径替换导致标签优势未兑现。EX024 H20正均值依赖2026前三赢家，非可复利账户。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX028_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 13,
+        "match": "SHORT_VARIANTS="
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX028_20261018/protocols/account_report.md",
+        "line": 3,
+        "match": "H15完整账户未保留"
+      }
+    },
+    {
+      "experiment": "EX029_20261018",
+      "mechanism": "浮盈选择早卖后的预约",
+      "exact_rule": "所有破位照常SELL，只用首次P>0或P<=0决定是否保留原E+10再入场时钟，未选中也必须等真实卖出后才可新BUY",
+      "evidence_level": "COMPLETE_ACCOUNT",
+      "outcome_class": "CONDITIONAL_RESERVATION_NOT_SUPPORTED",
+      "result_and_counterevidence": "正P预约C75全期263.10%/收益1/7回撤6/7；非正C76 280.24%/2/7/6/7；低于R，不能把退出与再参与用途混为P有效。",
+      "rule_locator": {
+        "path": "research/S014/experiments/EX029_20261018/src/strategy_runtime/strategies/repair.py",
+        "line": 80,
+        "match": "reservation_selected=reservation_float_pnl>0"
+      },
+      "report_locator": {
+        "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+        "line": 7,
+        "match": "两个互补条件预约均未达到"
+      }
+    },
+    {
+      "experiment": "EX030_20261018",
+      "mechanism": "跌破后真收复或滚动floor下移",
+      "exact_rule": "入场前收复冻结旧支撑L与仅滚动floor恢复；本地/持续锚点、首次/全部机会",
+      "evidence_level": "EVENT_PRICE_LABELS_NO_ACCOUNT",
+      "outcome_class": "SPECIFIC_ENTRY_CONFIRMATION_NOT_SUPPORTED",
+      "result_and_counterevidence": "全期首次H10真52/表面140，均值0.9457%/1.5531%；截至2025真47/表面123，均差-1.4238pp；不能用已知真恢复当退出持有证明。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+        "line": 4,
+        "match": "不支持把“先收复旧支撑”"
+      }
+    },
+    {
+      "experiment": "EX031_20261018",
+      "mechanism": "商品方向H3收益信息",
+      "exact_rule": "前完整甲醇同合约涨/非涨，强B65控制与固定岭alpha10/75%训练分数阈值",
+      "evidence_level": "FIT_AND_EXISTING_LABELS_NOT_EXIT_ACCOUNT",
+      "outcome_class": "SPECIFIC_ENTRY_INFORMATION_NOT_SUPPORTED",
+      "result_and_counterevidence": "12拟合；D2每父机会约+0.0007pp，无实质选择改善；不是C0056退出规则测试。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX031_20261018/protocols/report.md",
+        "line": 3,
+        "match": "通用“甲醇前日上涨"
+      }
+    },
+    {
+      "experiment": "EX032_20261018",
+      "mechanism": "商品上涨×股票尚未累计涨",
+      "exact_rule": "z甲醇涨×S股票Q至T不涨交互，H3，M2对M1",
+      "evidence_level": "FIT_AND_EXISTING_LABELS_NOT_EXIT_ACCOUNT",
+      "outcome_class": "SPECIFIC_INTERACTION_NOT_SUPPORTED_WITH_ADDITIVE_COUNTEREVIDENCE",
+      "result_and_counterevidence": "交互每父机会-0.0027685pp；M1对M0有限正增量+0.095305pp须保留，未证明商品完全无信息，更非H10退出已验证。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX032_20261018/protocols/report.md",
+        "line": 5,
+        "match": "固定交互假设未获支持"
+      }
+    },
+    {
+      "experiment": "EX033_20261018",
+      "mechanism": "共同冲击且抗跌时覆盖原退出",
+      "exact_rule": "首次破位且严格提前；P<=0、market1d<0、sector1d<0、stock1d>=sector1d才持有到原H10；其余R",
+      "evidence_level": "EXISTING_EVENT_ACTION_LABELS_NO_ACCOUNT",
+      "outcome_class": "FIXED_RULE_NOT_SUPPORTED_NOT_UNIVERSAL_INFORMATION_REJECTION",
+      "result_and_counterevidence": "100原同entry闭合对，仅10动作变；相对R+0.3862pp/事件，相对P-0.3527pp；90.79%优势集中2024一个事件，2025唯一触发负，不能重跑换名共同下跌。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX033_20261018/protocols/report.md",
+        "line": 30,
+        "match": "新规则仅改变10次退出"
+      }
+    },
+    {
+      "experiment": "EX034_20261018",
+      "mechanism": "C0011原仓/现金/原policy动作口径",
+      "exact_rule": "固定E6 H/C/X局部财富，纳入退出后的原policy再参与，与C0056预约不通用",
+      "evidence_level": "FIXED_LOCAL_ACTION_LABELS",
+      "outcome_class": "MEASUREMENT_SUPPORTED_NOT_NEW_EXIT_SIGNAL",
+      "result_and_counterevidence": "146节点不同标签可能反号；不可把C0011 H3的E6收益作为C0056动作值。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX034_20261018/protocols/report.md",
+        "line": 7,
+        "match": "尚未发现能够提前识别"
+      }
+    },
+    {
+      "experiment": "EX035_20261018",
+      "mechanism": "E9延伸并全账户干预测量",
+      "exact_rule": "C0011固定E9，69诊断账户复算145节点，59簇；未产生新的事前选动作规则",
+      "evidence_level": "LOCAL_DIAGNOSTIC_ACCOUNTS_AND_ACTION_LABELS",
+      "outcome_class": "MEASUREMENT_SUPPORTED_NOT_UNIFORM_HOLD_BENEFIT",
+      "result_and_counterevidence": "A9均值-0.3703pp、删最大5项转+0.5446pp；29严格反号说明后续参与重要但非持有普遍胜。",
+      "rule_locator": null,
+      "report_locator": {
+        "path": "research/S014/experiments/EX035_20261018/protocols/report.md",
+        "line": 3,
+        "match": "卖出后还能参加哪些交易"
+      }
+    }
+  ],
+  "verified_source_records": {
+    "research/S014/experiments/EX017_20261017/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX017_20261017/protocols/account_report.md",
+      "sha256": "8d0ad4a6cc9c0d1736b6b4f2828d2c1553660d55c9596e36e73f9e45d0cc1351",
+      "bytes": 8294,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "evidence_id": "8d0ad4a6cc9c0d1736b6b4f2828d2c1553660d55c9596e36e73f9e45d0cc1351.md",
+        "experiment": {
+          "experiment_id": "EX017_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/markdown",
+        "name": "ex017-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "8d0ad4a6cc9c0d1736b6b4f2828d2c1553660d55c9596e36e73f9e45d0cc1351",
+        "type": "EvidenceRef"
+      },
+      "evidence_key": "ex017-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX017_20261017/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX017_20261017/src/strategy_runtime/strategies/repair.py",
+      "sha256": "a2c8a2d5e08d842336cf47f0c692a121cff6fe5e08d77237da851c0abf84c739",
+      "bytes": 7406,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "evidence_id": "a2c8a2d5e08d842336cf47f0c692a121cff6fe5e08d77237da851c0abf84c739.py",
+        "experiment": {
+          "experiment_id": "EX017_20261017",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "text/x-python",
+        "name": "ex017-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "a2c8a2d5e08d842336cf47f0c692a121cff6fe5e08d77237da851c0abf84c739",
+        "type": "EvidenceRef"
+      },
+      "evidence_key": "ex017-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX018_20261017/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX018_20261017/protocols/account_report.md",
+      "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+      "bytes": 11071,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX018_20261017"
+        },
+        "evidence_id": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440.md",
+        "sha256": "1d7bdd627bed51a3c9092012cebb5d05c3d0ebbf09c81a295d059cc0dd382440",
+        "media_type": "text/markdown",
+        "name": "ex018-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex018-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX018_20261017/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX018_20261017/src/strategy_runtime/strategies/repair.py",
+      "sha256": "9007bb3d57910c8bc49700e764e26b2d3ebb9fa69d71acacfe6d03a8cd670c85",
+      "bytes": 8204,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX018_20261017"
+        },
+        "evidence_id": "9007bb3d57910c8bc49700e764e26b2d3ebb9fa69d71acacfe6d03a8cd670c85.py",
+        "sha256": "9007bb3d57910c8bc49700e764e26b2d3ebb9fa69d71acacfe6d03a8cd670c85",
+        "media_type": "text/x-python",
+        "name": "ex018-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex018-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX019_20261017/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX019_20261017/protocols/account_report.md",
+      "sha256": "98a410faa4ecc2f36c03b6e8dcbd58253964b8b56af1d57249bacc6a9cb2b237",
+      "bytes": 10574,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX019_20261017"
+        },
+        "evidence_id": "98a410faa4ecc2f36c03b6e8dcbd58253964b8b56af1d57249bacc6a9cb2b237.md",
+        "sha256": "98a410faa4ecc2f36c03b6e8dcbd58253964b8b56af1d57249bacc6a9cb2b237",
+        "media_type": "text/markdown",
+        "name": "ex019-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex019-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX019_20261017/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX019_20261017/src/strategy_runtime/strategies/repair.py",
+      "sha256": "e85b3a2c58bcc2bb16f98ae4f7bfa9043d522f46fa751cb98adbd42add403eaf",
+      "bytes": 9488,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX019_20261017"
+        },
+        "evidence_id": "e85b3a2c58bcc2bb16f98ae4f7bfa9043d522f46fa751cb98adbd42add403eaf.py",
+        "sha256": "e85b3a2c58bcc2bb16f98ae4f7bfa9043d522f46fa751cb98adbd42add403eaf",
+        "media_type": "text/x-python",
+        "name": "ex019-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex019-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX020_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX020_20261018/protocols/account_report.md",
+      "sha256": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1",
+      "bytes": 9530,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX020_20261018"
+        },
+        "evidence_id": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1.md",
+        "sha256": "a5d0a68c002fa817090062979697f26e2350ad9001c164aab5bed50fa8a7a2b1",
+        "media_type": "text/markdown",
+        "name": "ex020-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex020-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX020_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX020_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "a4471703da5cdd896eabff0700c33acfbd111a05115cc72707acbd004b76245c",
+      "bytes": 9522,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX020_20261018"
+        },
+        "evidence_id": "a4471703da5cdd896eabff0700c33acfbd111a05115cc72707acbd004b76245c.py",
+        "sha256": "a4471703da5cdd896eabff0700c33acfbd111a05115cc72707acbd004b76245c",
+        "media_type": "text/x-python",
+        "name": "ex020-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex020-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX021_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX021_20261018/protocols/account_report.md",
+      "sha256": "225f4cac5e5c6b46e195bb4c54bafe7eab73227e3f2b2643cd84e74d54376c41",
+      "bytes": 10122,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "225f4cac5e5c6b46e195bb4c54bafe7eab73227e3f2b2643cd84e74d54376c41.md",
+        "sha256": "225f4cac5e5c6b46e195bb4c54bafe7eab73227e3f2b2643cd84e74d54376c41",
+        "media_type": "text/markdown",
+        "name": "ex021-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex021-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX021_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX021_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "461889c7c668bf7de68bfb47a2d40d94feac916a06f3f16561af2cf8e8dad19f",
+      "bytes": 8114,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "461889c7c668bf7de68bfb47a2d40d94feac916a06f3f16561af2cf8e8dad19f.py",
+        "sha256": "461889c7c668bf7de68bfb47a2d40d94feac916a06f3f16561af2cf8e8dad19f",
+        "media_type": "text/x-python",
+        "name": "ex021-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex021-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX022_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX022_20261018/protocols/account_report.md",
+      "sha256": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1",
+      "bytes": 10578,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX022_20261018"
+        },
+        "evidence_id": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1.md",
+        "sha256": "6071acfb0f8a8f82ff39504e1ac7ffebef93016f71e7b2c7df5e44d409019af1",
+        "media_type": "text/markdown",
+        "name": "ex022-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex022-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX022_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX022_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "4026445fa62306e48bc9bdaf898a343498433a5a9c7a5f649769ba12ef4c13e9",
+      "bytes": 8383,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX022_20261018"
+        },
+        "evidence_id": "4026445fa62306e48bc9bdaf898a343498433a5a9c7a5f649769ba12ef4c13e9.py",
+        "sha256": "4026445fa62306e48bc9bdaf898a343498433a5a9c7a5f649769ba12ef4c13e9",
+        "media_type": "text/x-python",
+        "name": "ex022-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex022-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX023_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX023_20261018/protocols/account_report.md",
+      "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+      "bytes": 12179,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116.md",
+        "sha256": "cbd9157cb797e679d17c003754532a6edc2b0bee8a8724673831d54fb20e1116",
+        "media_type": "text/markdown",
+        "name": "ex023-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex023-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+      "bytes": 8512,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e.py",
+        "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+        "media_type": "text/x-python",
+        "name": "ex023-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex023-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX024_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX024_20261018/protocols/account_report.md",
+      "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+      "bytes": 11676,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX024_20261018"
+        },
+        "evidence_id": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9.md",
+        "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+        "media_type": "text/markdown",
+        "name": "ex024-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex024-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX024_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX024_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de",
+      "bytes": 9756,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX024_20261018"
+        },
+        "evidence_id": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de.py",
+        "sha256": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de",
+        "media_type": "text/x-python",
+        "name": "ex024-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex024-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX025_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+      "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+      "bytes": 12342,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX025_20261018"
+        },
+        "evidence_id": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0.md",
+        "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+        "media_type": "text/markdown",
+        "name": "ex025-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex025-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX025_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX025_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "3c9e003efb1ce5c4f76b95ac1bf32e910147d62086b59f4bb3cb48fbae2b8d4e",
+      "bytes": 10305,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX025_20261018"
+        },
+        "evidence_id": "3c9e003efb1ce5c4f76b95ac1bf32e910147d62086b59f4bb3cb48fbae2b8d4e.py",
+        "sha256": "3c9e003efb1ce5c4f76b95ac1bf32e910147d62086b59f4bb3cb48fbae2b8d4e",
+        "media_type": "text/x-python",
+        "name": "ex025-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex025-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX026_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX026_20261018/protocols/account_report.md",
+      "sha256": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+      "bytes": 11785,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX026_20261018"
+        },
+        "evidence_id": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f.md",
+        "sha256": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+        "media_type": "text/markdown",
+        "name": "ex026-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex026-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX026_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX026_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "17c21f3086fa2222a44b5a773f32f310549871da1470053f1c389ed7ea3fb491",
+      "bytes": 10051,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX026_20261018"
+        },
+        "evidence_id": "17c21f3086fa2222a44b5a773f32f310549871da1470053f1c389ed7ea3fb491.py",
+        "sha256": "17c21f3086fa2222a44b5a773f32f310549871da1470053f1c389ed7ea3fb491",
+        "media_type": "text/x-python",
+        "name": "ex026-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex026-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX027_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX027_20261018/protocols/account_report.md",
+      "sha256": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9",
+      "bytes": 12533,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX027_20261018"
+        },
+        "evidence_id": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9.md",
+        "sha256": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9",
+        "media_type": "text/markdown",
+        "name": "ex027-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex027-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX027_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX027_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "54aca40976d5427f6f2e5c90a808cb55c25dc570ba7054ddf106e23308ab9d1d",
+      "bytes": 10051,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX027_20261018"
+        },
+        "evidence_id": "54aca40976d5427f6f2e5c90a808cb55c25dc570ba7054ddf106e23308ab9d1d.py",
+        "sha256": "54aca40976d5427f6f2e5c90a808cb55c25dc570ba7054ddf106e23308ab9d1d",
+        "media_type": "text/x-python",
+        "name": "ex027-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex027-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX028_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX028_20261018/protocols/account_report.md",
+      "sha256": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+      "bytes": 8555,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX028_20261018"
+        },
+        "evidence_id": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b.md",
+        "sha256": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+        "media_type": "text/markdown",
+        "name": "ex028-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex028-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX028_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX028_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "8b2fdf7e73718315fc416f43cc08ab0c8d775b1060eca30a9614062903b7c329",
+      "bytes": 10058,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX028_20261018"
+        },
+        "evidence_id": "8b2fdf7e73718315fc416f43cc08ab0c8d775b1060eca30a9614062903b7c329.py",
+        "sha256": "8b2fdf7e73718315fc416f43cc08ab0c8d775b1060eca30a9614062903b7c329",
+        "media_type": "text/x-python",
+        "name": "ex028-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex028-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX029_20261018/protocols/account_report.md": {
+      "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+      "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+      "bytes": 12040,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX029_20261018"
+        },
+        "evidence_id": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae.md",
+        "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+        "media_type": "text/markdown",
+        "name": "ex029-protocols-account_report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex029-protocols-account_report-md"
+    },
+    "research/S014/experiments/EX029_20261018/src/strategy_runtime/strategies/repair.py": {
+      "path": "research/S014/experiments/EX029_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "eec40a5ce0cd85af82421633d79870868ea01d692b28676c36f02004f8983ec3",
+      "bytes": 10022,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX029_20261018"
+        },
+        "evidence_id": "eec40a5ce0cd85af82421633d79870868ea01d692b28676c36f02004f8983ec3.py",
+        "sha256": "eec40a5ce0cd85af82421633d79870868ea01d692b28676c36f02004f8983ec3",
+        "media_type": "text/x-python",
+        "name": "ex029-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "ex029-src-strategy_runtime-strategies-repair-py"
+    },
+    "research/S014/experiments/EX030_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+      "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+      "bytes": 13442,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX030_20261018"
+        },
+        "evidence_id": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9.md",
+        "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+        "media_type": "text/markdown",
+        "name": "ex030-research-S014-experiments-EX030_20261018-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "research/S014/experiments/EX030_20261018/protocols/report.md"
+    },
+    "research/S014/experiments/EX031_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX031_20261018/protocols/report.md",
+      "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+      "bytes": 8371,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX031_20261018"
+        },
+        "evidence_id": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3.md",
+        "sha256": "238827b54158b627a823e4785cbf4f77af457de02a294eae10bcd317bbcb39b3",
+        "media_type": "text/markdown",
+        "name": "ex031-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "protocols/report.md"
+    },
+    "research/S014/experiments/EX032_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX032_20261018/protocols/report.md",
+      "sha256": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9",
+      "bytes": 12180,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9.md",
+        "sha256": "ed9afcc58b1acc30e97035661fded52887ae5fa5f3c72907e6f5553452b632b9",
+        "media_type": "text/markdown",
+        "name": "ex032-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "protocols/report.md"
+    },
+    "research/S014/experiments/EX033_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX033_20261018/protocols/report.md",
+      "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+      "bytes": 10432,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX033_20261018"
+        },
+        "evidence_id": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df.md",
+        "sha256": "435969f854c4de1623e232e1ff79bae930b7fee29033a3b4f91fe733dc0343df",
+        "media_type": "text/markdown",
+        "name": "ex033-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "protocols/report.md"
+    },
+    "research/S014/experiments/EX034_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX034_20261018/protocols/report.md",
+      "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+      "bytes": 9622,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX034_20261018"
+        },
+        "evidence_id": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b.md",
+        "sha256": "acd82beb7777808b60fdc679b542269168ee71095b0aa05a5f625e4a6e8efd1b",
+        "media_type": "text/markdown",
+        "name": "ex034-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "protocols/report.md"
+    },
+    "research/S014/experiments/EX035_20261018/protocols/report.md": {
+      "path": "research/S014/experiments/EX035_20261018/protocols/report.md",
+      "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+      "bytes": 11631,
+      "public_reference_status": "VERIFIED",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX035_20261018"
+        },
+        "evidence_id": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e.md",
+        "sha256": "e116098a15d460708b0865fef76288036aaa232470ad0c20dd3e106426e61f9e",
+        "media_type": "text/markdown",
+        "name": "ex035-protocols-report-md",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence_key": "protocols/report.md"
+    }
+  },
+  "exact_P_distinction": "P=C0057不是常见无条件止盈或任何时点盈利就卖；它是首次破前5最低close时P>0才选择原提前退出、拒绝后不重判。有限正证据与年度缺口必须一起保留。",
+  "tested_vs_unanswered": "固定期限/当前浮盈条件延长/续持/支撑与条件预约已测，不可改名；真实买入日立即早退的窄职责与以严格过去持仓盈利记忆触发原HOLD额外退出，在指定后期账户源码范围未发现直接实施。",
+  "new_state_condition_count": 2,
+  "proposed_distinct_conditions": [
+    {
+      "id": "ENTRY_DAY_ONE_CLOSE_GRACE",
+      "status": "PROPOSED_NOT_LOCKED_NOT_IMPLEMENTED",
+      "known_state": "held & buy_filled_today & support_break & D_index<original_deadline & not prior_exit_pending",
+      "minimal_action": "仅该真实买入日不因support_break建立早退pending；次一收盘起恢复R原破位即退。到期和已有pending始终优先；原entry/deadline/reservation不改，不使用任何日期/年度开关。",
+      "plain_chinese": "昨天收盘允许买，今天真实成交后却被同一条滚动支撑立即赶走；只给这一天一次重新观察机会，明天仍破位就照原规则退出。",
+      "not_P_or_H10": "不读取P正负；不作首次P<=0后全周期忽略破位，也不统一持有H10；与EX022首个启动延后和EX025前晚阳线入场均不同。",
+      "counterevidence_to_report": "坏消息从买入日开始真实下跌时，宽限可能加重损失；不能由May30单例预先认定其他年有效。",
+      "inventory_novelty_boundary": "在EX017..035完整规则源码中未见buy_filled_today作为抑制当日support早退的条件；这只是新动作表达，不声称实际买入年龄是新数据或原诊断从未分年龄。"
+    },
+    {
+      "id": "PRIOR_PROFIT_THEN_BREAKEVEN_LOSS",
+      "status": "PROPOSED_NOT_LOCKED_NOT_IMPLEMENTED",
+      "definitions": "P_D=当晚同尺度close/(实际entry fill price*1.001)-1；M_prev=max_{实际买入E<=s<D}(P_s)。峰值只用严格早于D的持仓收盘，至少已有一次持仓收盘；无真实entry不建峰值。",
+      "known_state": "原R当前应HOLD且无pending，M_prev>0且P_D<=0，D_index<original_deadline",
+      "minimal_action": "在此前确有扣买费盈利、如今盈利已全部回吐而R仍应持有时增加一次次日SELL；待卖不可撤销，保留原预约。其余原R不变。",
+      "plain_chinese": "区分一直没赚过与曾赚到后来又亏回成本，两者眼下可能都亏一点；这里只检验“已经赚过却回到亏损”是否值得额外退出。",
+      "not_P_or_static_profit": "EX024 P在首次support破位时仅看眼下P>0；本状态要求过去盈利记忆且眼下P<=0，只在原R仍HOLD处加退出，即使滚动support尚未破也可能触发；不同于EX019到H3期末浮盈/当天涨则延长。",
+      "counterevidence_to_report": "窄幅往返可频繁抹去极小浮盈，次日卖出也可能已经修复；若既有R已在所有这些时点退出，则新增覆盖为空，应记不适用并停止，不能改为50%回吐或调峰值阈值找非空。",
+      "inventory_novelty_boundary": "EX017..035实际账户源码未见持仓内strict-prior peak P memory驱动HOLD处新增退出。更早EX007已有mark/giveback_atr等诊断由另一审查员提示，本盘点未越界读取其原件；因此不宣称峰值/回吐是新信息，后续须对旧信息表达做显式反证。"
+    }
+  ],
+  "reusable_public_execution_route": {
+    "reference_runner": "research/S014/experiments/EX042_20261019/src/run_accounts.py",
+    "reference_account_audit": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "original_runtime": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+    "original_source_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+      "media_type": "text/x-python",
+      "name": "ex023-src-strategy_runtime-strategies-repair-py",
+      "schema": null,
+      "schema_version": null
+    },
+    "public_api_route": [
+      "public create_experiment新EX身份；不动平台/原候选/旧实验",
+      "source closure+严格有限参数域+真实SRT materialize_observation合成边界，所有声明series输出有限float",
+      "先独审固定定义/source/input/时钟，发布design/source/payload/锁",
+      "用既有EX017 pinned get_context，公共evaluation.prepare；核原五输入内容identity/fingerprint及原strategy clock plan除新runtime身份外精确一致",
+      "先该新source自己的NOOP与原EX023全经济/原observed/target逐值exact；IDs一一映射不要求字符串同一；独审通过后处理",
+      "拟首批NOOP+两个独立单机制账户，仅作为可审核最小方案不是用户账户上限；暂不联合、参数搜索或按年份切换",
+      "三分支同原2020-01-02..2026-10-15全历史资金，费用/100股整手/原价表示锚/实际受阻/pending/原H10预约不变，全部后续参与必须计入",
+      "独立复算逐年自然年收益/最大回撤/频率、D事前资格、真实entry/fill/fees/clock；新已知状态不足报无支持，不补零/换条件"
+    ],
+    "no_blind_retries": "技术失败保留并审明具体source correction与新不可变内容身份后才新revision；EX040诊断bool失败及别名勘误可作技术警示。",
+    "cross_year_evaluation": "同一冻结条件作用所有年份，不在逻辑用year/date；2025解释来源已见，其他年2020-24及部分2026用于同规则转移核验，不冒称全新盲样本。逐年报告改善/损害、eligible/changed次数、单事件/最大簇集中、费用与后续参与；不能新增每年同号或CI跨零为硬门。",
+    "no_account_executed_in_inventory": true
+  },
+  "immutable_historical_results_preserved": true,
+  "original_economic_objectives_unchanged": true,
+  "new_fits": 0,
+  "new_accounts": 0,
+  "new_state_or_profit_computation": 0,
+  "new_platform_changes": 0,
+  "execution_authorized_here": false,
+  "next_step": "主会话对照其他审查员建议锁定一个最小事前状态定义与反证，再决定EX043实现；本文件不是新规则效果或执行ready声明。"
+}

@@ -1,0 +1,281 @@
+{
+  "status": "METHOD_REVIEW_PASS_FOR_FIXED_3X3_DESIGN_LOCK_NO_IMPLEMENTATION_OR_EXECUTION",
+  "created_at_utc": "2026-10-19T14:20:07.005851+00:00",
+  "role": "RSCH independent adversarial method reviewer",
+  "scope": "仅用S014原行情/原账户状态和已有公告库存，读旧机制后提出两条可反驳的固定状态；本文件不是根设计锁或执行授权。",
+  "source_bindings": [
+    {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+      "purpose": "原C0056 supportbreak、H10与reservation状态机"
+    },
+    {
+      "path": "research/S014/experiments/EX024_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "925708ed869a2f9277457ee39798a82aab3c1ab3b21d2511d46f3b61f953b2de",
+      "purpose": "P/D首次supportbreak按浮盈正负选择退出，避免重复"
+    },
+    {
+      "path": "research/S014/experiments/EX025_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "3c9e003efb1ce5c4f76b95ac1bf32e910147d62086b59f4bb3cb48fbae2b8d4e",
+      "purpose": "阳线入场与旧三退出机制交叉，避免把新状态变旧入场过滤"
+    },
+    {
+      "path": "research/S014/experiments/EX028_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "8b2fdf7e73718315fc416f43cc08ab0c8d775b1060eca30a9614062903b7c329",
+      "purpose": "H1/2/3/5/10/15期限已研究，非新期限优化"
+    },
+    {
+      "path": "research/S014/experiments/EX029_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "eec40a5ce0cd85af82421633d79870868ea01d692b28676c36f02004f8983ec3",
+      "purpose": "按首次break盈利选择是否保留预约的旧分支"
+    },
+    {
+      "path": "research/S014/experiments/EX030_20261018/protocols/report.md",
+      "sha256": "426a16d5547920cef5727edff70fb54d9830818076124f78b90e1c45542ea7f9",
+      "purpose": "旧支撑真实/表面恢复的入场诊断、跨年反号和集中性"
+    },
+    {
+      "path": "research/S014/experiments/EX033_20261018/protocols/design.json",
+      "sha256": "7da9d4086eaef57cfcdd00d1ef4e7e94c619ff26065988dd3563e4277d932d5f",
+      "purpose": "首次break的P<=0且市场行业共同跌/相对抗跌规则，避免重复"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/src/components.py",
+      "sha256": "ac5bafe27dbfe61bd2f13b471fc2803ab147e9c131bd840b3af6d7768c3bd276",
+      "purpose": "已存在MA/斜率/ATR支撑距离/参与量价/已观察浮盈路径"
+    },
+    {
+      "path": "research/S014/experiments/EX007_20261017/protocols/report.md",
+      "sha256": "07c8530228d78015b23f7b5616c391feb4c26cfa0f8b81bcf5a3946558a64118",
+      "purpose": "旧5/10/20持仓中点结构/成交参与/路径信息和朴素结构对照未支持稳定用途"
+    },
+    {
+      "path": "research/S014/experiments/EX005_20261016/src/role_study.py",
+      "sha256": "c7d5d7e4dc3b78a1eeaaff846dd2ccd7627aa4e655ba91c21a2387851492dbc7",
+      "purpose": "ATR20幅度输入已存在，不能称全新变量"
+    },
+    {
+      "path": "research/S014/experiments/EX013_20261017/src/features.py",
+      "sha256": "04072cd720047fb22947780778a031cf87fbfda7c639b5f783af505cb0cdeea8",
+      "purpose": "MA斜率/支撑ATR距离/vol20等强基线旧输入及旧机制"
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/report.md",
+      "sha256": "341c3e6eb93def53624de8da52ddc8e1b459ba5581e6804a17e17165c8284672",
+      "purpose": "6状态跨年反转及W10公告持有线索反例/episode集中性"
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/design.json",
+      "sha256": "17c254369b87ea1fff802a9fa17e7ebf65004e87be9ed5fef938992c2ebbc4c8",
+      "purpose": "固定6状态与原账户D/E定义"
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/official/catalogue_coverage.json",
+      "sha256": "3640472a82e6eee59b747b3bdfa115c59539885dd028177751a144b4d3d1ff15",
+      "purpose": "公告2020-25完整，2026不完整"
+    },
+    {
+      "path": "research/S014/materials/20261019_2025_action_execution/report.md",
+      "sha256": "4b1e5b8ceb77b66055975d570fbf45c35c77f97df50e08f3c48778c7ed4f41cf",
+      "purpose": "May30/Jun19已见诊断、H10与早卖相反职责及局限"
+    },
+    {
+      "path": "research/S014/materials/20261019_2025_action_execution/judgment.json",
+      "sha256": "5511f1a420473187b477f03dc88c180379a3efe776b365649481acdd470dc19c",
+      "purpose": "三波实证、已见选择和不追加日期例外的停止判断"
+    }
+  ],
+  "historical_repetition_findings": [
+    {
+      "finding": "P不是一般浮盈止盈规则，而是在该持仓首次supportbreak时按Close/(entry_price*1.001)-1>0早退，否则继续至原H10；D按相反符号。",
+      "source": "EX024 repair.py",
+      "implication": "不能只把浮盈改名为利润保护；新退出必须提供超出P的决策域或信息作用。"
+    },
+    {
+      "finding": "EX007已有Close/MA20、MA5/MA20、MA20五日斜率、距此前5日最低收盘价的ATR20距离，以及成交参与和已观察峰值回吐；EX013/EX005也含对应输入。",
+      "source": "EX007 components.py/report.md; EX013 features.py; EX005 role_study.py",
+      "implication": "本提议不是新数据或新输入发现。EX007结构组和朴素结构探针已有负面证据，不可忽略；其固定持有期中点独立决策与C0056真实入场当日break/全过程不同，但改变职责不自动带来正结果。"
+    },
+    {
+      "finding": "EX030收复旧支撑的入场确认未获支持；EX033已有P<=0共同下跌且相对抗跌的首次破位续持。",
+      "source": "EX030 report.md; EX033 design.json",
+      "implication": "不再把价格重新站回支撑、共同下跌/抗跌作为新规则；不缩成已配对的100次旧首次break标签总体。"
+    },
+    {
+      "finding": "6种20日方向状态在年份间反号；W10公告后持有在2022有正向反例，删除2021公告episode会反号。",
+      "source": "year_driver_research/report.md sections4-5",
+      "implication": "六状态与W10仅作固定上下文，不能当现成动作信号；不能把多个连续日/文件当独立事件。"
+    }
+  ],
+  "shared_notation": {
+    "D": "策略真正作决策的股票session收盘；E为其下一股票session，实际成交沿原TXE约束。不得偷看E行情、未来峰值或退出收益。",
+    "C_t/H_t/L_t": "同原认证市场数据及HFQ_RESEARCH一致尺度；所有窗口严格为股票session，缺失/零波动记unknown，不填0、不加任意epsilon。",
+    "S5_D": "min(C[D-5],...,C[D-1])，与原support_floor完全相同。",
+    "MA20_t": "mean(C[t-19],...,C[t])；本保护条件仅使用lagged MA20[D-1]和MA20[D-6]。",
+    "TR_t": "max(H_t-L_t, abs(H_t-C[t-1]), abs(L_t-C[t-1]))；ATR20[D-1]=mean(TR[D-20],...,TR[D-1])，必须>0且有限。",
+    "r_t": "log(C_t/C[t-1])，仅正价格。",
+    "sigma_base_D": "sample_std(ddof=1, r[D-24],...,r[D-5])，恰20个完成日收益，所需最早价格C[D-25]；结束在这次5日涨幅之前。必须>0且有限。",
+    "Z5_D": "sum(r[D-4],...,r[D])/(sqrt(5)*sigma_base_D)。固定尺度阈值，不作正态概率或统计显著性解释。",
+    "Pmark_D": "(q*C_D*(1-0.001))/(actual_entry_cost_including_actual_buy_fees)-1；q为真实仍持有的该仓数量。是按D收盘假定扣卖费后的净账面盈利，不是保证E可兑现收益。",
+    "peak_net_gain_price": "自该实际entry至D已观察最高Close扣假定双边原费后的每研究单位收益；当前或未来实际可兑现现金不由此保证。"
+  },
+  "rules": [
+    {
+      "rule_id": "ENTRY_GRACE",
+      "role": "继续持有：实际买入D的supportbreak一次宽限竞争对照",
+      "mechanism": "检验买入当日立刻触发收盘早退是否过敏，单独隔离年龄0宽限的作用；它不声称识别中期趋势。",
+      "eligibility": "真实当日BUY fill且held_at_close=1、entry_index=当前D、D<deadline、无此前承接pending。",
+      "condition_all": [
+        "原support_break真实成立"
+      ],
+      "action": "仅抑制本D的support早退新pending生成；下一股票D恢复原support规则，不把被抑制触发偷偷保留成pending，也不把保护延长到原H10全周期。原期限/预约不变。",
+      "priority": "既存pending、到期及选中的新风险exit高于宽限，因而同日SHOCK_PROFIT可覆盖ENTRY_GRACE。",
+      "novelty_boundary": "是TREND_CYCLE必要的更简单竞争解释：若趋势保护没超过一次宽限，不能声称复杂MA/ATR条件有增量。不同于EX022全样本初始账户delay或延迟买入。",
+      "crossyear_refutation": [
+        "宽限若跨年损伤多于保护，说明入场日误杀不是普遍机制。",
+        "与TREND_CYCLE逐行target/真实成交差别及完整资金后果必须全部披露，不能只报2025命中。"
+      ]
+    },
+    {
+      "rule_id": "TREND_CYCLE",
+      "role": "继续持有：容忍真实买入当天的浅破位",
+      "mechanism": "买入成交与当日收盘破位在同一天，5日滚动最低收盘价可能过敏；若更慢趋势仍向上、破坏不超过此前正常波幅，先保留原H10期限。只是可反驳假设。",
+      "eligibility": "真实held_at_close=1、buy_filled_today=1、entry_index=当前D索引（持有年龄0）、该cycle第一次supportbreak、原D<deadline、无已存在exit_pending；不是按日期或年份挑周期。",
+      "condition_all": [
+        "C_D<S5_D（原support_break真实成立）",
+        "C_D>=MA20[D-1]",
+        "MA20[D-1]>MA20[D-6]",
+        "0<(S5_D-C_D)/ATR20[D-1]<=1"
+      ],
+      "action": "在该eligible break满足所有条件时把该实际cycle标为protected，直到其原H10 deadline前屏蔽support触发；原support观测不改。原到期或既有pending优先，卖出受阻续卖，reservation仍为原entry+10，实际卖后恢复原policy。不是仅改一个D观测列。",
+      "boundary": "等于MA20允许；均线斜率等于0不保护；深度等于1ATR允许；ATR为0/缺失或窗口不足不保护并单列unknown；不对之后别的cycle继承标记。",
+      "novelty_boundary": "新的是C0056真实买入当日误杀的动作对象和固定容忍区间/原完整资金路径。MA/ATR输入和趋势保持思想已在EX007失败过，不称新信息；也不等于六状态stock20日方向或P浮盈符号。",
+      "competitors": [
+        "浅破位只是低波动/低持有年龄代理，不能证明短暂噪声。",
+        "慢趋势有滞后，真正转折初期也可能满足，保护可能扩大2022或2024亏损。",
+        "H10整体暴露本来较多，改善可能只是更长持有而非新条件识别；必须与原R和无条件H10旧证据作边界比较。"
+      ],
+      "crossyear_refutation": [
+        "按全部授权年份列满足/不满足/unknown的独立cycle数、早退次数与完整账户结果，不只挑2025。",
+        "固定阈值在其他年份若多保护真正下跌、主要改善全部由May30一个周期贡献，应说明机制未获跨年支持，不更换符号/窗口去追。",
+        "2024的已见较晚首次破位可能不在age0域；缺覆盖须明说，不以未覆盖证明规则错误，也不承诺修复2024。"
+      ]
+    },
+    {
+      "rule_id": "SHOCK_PROFIT",
+      "role": "及时退出：正常持仓已有账面净利润且上涨远超过先前波动尺度",
+      "mechanism": "短期涨速相对之前常态很大时，边际继续暴露可能有较大回吐风险；正净浮盈限定是在保护已观察的资金增量。也可能正处趋势延续，方向有明确反例。",
+      "eligibility": "真实held_at_close=1、D<原deadline、无从此前承接且尚未成交的exit_pending；在support早退新pending生成前计算本条件，不要求原BASE姿态为HOLD。若BASE本来已经因support卖出，记录为触发重合而非新增动作。",
+      "condition_all": [
+        "Pmark_D>0",
+        "Z5_D>2"
+      ],
+      "action": "该cycle首次满足时发出下一session卖实际当前整仓的market意图、exit_pending置真；不改变原entry/deadline/reservation。停牌/跌停未卖出继续pending；实际卖后恢复原policy，不持续禁买。",
+      "boundary": "Pmark或Z恰等于阈值不触发；sigma<=0/缺失/不够历史单列unknown并保持原规则。不使用E卖价判定净浮盈，不使用未来高点回吐、该周期最终收益或原已实现卖价选触发。",
+      "novelty_boundary": "P原规则只在首次supportbreak盈利时早退；X1在正常HOLD尚未break时按波动尺度过热触发，不能只靠P>0来声称增量。ret5/vol20本身亦是旧基线输入，新增空间是固定动作表达与完整现金/后续再入场路径。 与原P的差别主要在未破位HOLD时提前识别；为使组合优先级一致，风险条件也可在被保护的break日触发，但在BASE已卖出日无新增效果。",
+      "competitors": [
+        "强动量持续时卖得过早，可能损伤2021上涨；不能由2025June19正例就认定过热普遍反转。",
+        "低vol基期会放大Z；若优势只来自极低波动/个别跳升，应披露，不新增事后绝对涨幅阈值修饰。",
+        "净浮盈本身、持有年龄、剩余H10和原入场选择可能解释组差；Z需在P>0的正常HOLD中确有额外区分。",
+        "Dclose净浮盈在E跳空或受阻卖出后可能变亏；所有收益必须用实际E成交和后续路径。"
+      ],
+      "crossyear_refutation": [
+        "按年列P>0/HOLD内Z>2与其余的触发覆盖、持有年龄和剩余期限；零触发年度单列，不把无变化算支持。",
+        "固定规则在2021或其他已授权年份若系统削掉更大上涨，抵消2025回吐改善，应保留这一反证。",
+        "区分同一cycle重复连续日与独立cycle；在其他高涨阶段和亏损阶段保留全部同条件反例，不选择最大未来回吐日。"
+      ]
+    },
+    {
+      "rule_id": "PROFIT_GIVEBACK",
+      "role": "及时退出：已有足够已观察收盘利润后，回吐超过正常波幅；当前净浮盈可以为负",
+      "eligibility": "真实当前cycle持仓、D<原deadline、无此前承接pending；按该cycle实际entry以来截至D的完整收盘价更新，窗口不跨其他cycle。",
+      "condition_all": [
+        "peak_close_D=max(C_s for actual_entry_index<=s<=D)",
+        "peak_net_gain_price_D=peak_close_D*(1-0.001)-actual_entry_price*(1+0.001)>=2*ATR20[D-1]",
+        "peak_close_D-C_D>=1*ATR20[D-1]"
+      ],
+      "action": "该cycle首次满足时发次E真实整仓卖单，原reservation及deadline不改；卖出受阻pending持续，真实卖出后清除该cycle peak与退出状态。",
+      "boundary": "两个>=边界均包括相等；仅用已观察收盘peak，不含未来高点、不含当日High、不把entry成交价虚构为已观察收盘；实际entry当日peak_close=C_D所以giveback为0。ATR<=0/未知单列unknown，不用epsilon。单价差与ATR使用原同一价格尺度，不能把账户现金利润或不同股数金额直接比单价ATR。",
+      "clock": "实际入场后才开始记录该cycle已完成收盘；截至D更新可知peak。当前Dclose不是未来peak，即使当前收益已负也可能触发。Dclose净利不是E成交保证。",
+      "novelty_boundary": "与SHOCK_PROFIT的瞬时5日过热不同：此规则有该真实cycle的历史记忆且允许当前Pmark<=0。EX007已含mark_drawdown/giveback_atr、holding_path模型且证据不足，不能称新信息；新增只是固定动作阈值表达和C0056全路径职责。",
+      "competitors": [
+        "历史账面峰值回吐可能只是正常波动中的盈利趋势回调，卖出也可能错过恢复。",
+        "分母使用当前lag ATR，ATR下降本身可使旧峰值满足2ATR/1ATR；不能直接把触发全解释为新一轮抛压。",
+        "已观察peak不等于此前能兑现的cash，实际E跳空/跌停仍可能更差。",
+        "相对原账户浮盈峰值，单价尺度消除了股数变化但仍受持有年龄和入场位置选择影响。"
+      ],
+      "crossyear_refutation": [
+        "保留有记忆状态在各年的触发cycle数、历史峰值年龄、当前Pmark正负以及受阻退出，不只选择后续高点。",
+        "比较其BASE/ENTRY_GRACE/TREND_CYCLE三个hold背景下的真实效果，报告与SHOCK重复触发及独有触发；同一次卖单不是两次独立成功。",
+        "如果结果只来源2025June已见回吐或旧EX007失败机制的改名，仍不足以支持一般规则。"
+      ]
+    }
+  ],
+  "minimal_evaluation_advice": {
+    "lock_before_values": "先由根锁公式、lag、边界和动作状态机，再查全时段覆盖/目标日是否命中；本review未读取May30或June19的这些候选特征数值，更未按它们调阈值。若未命中，只能报告未解释动机个案，不能为命中改阈值。",
+    "accounts_if_root_locks": "根拟定固定hold3×exit3=9路径，均新source NOOP先证原R全经济等价。所列4规则是根本次扩展设计的全部，无日期/年份例外；本review不执行。",
+    "original_population": "全可决策状态沿实际策略重算，受干预后后续入场与仓位可自然改变；不把原R固定持仓日收益删掉，不锁住2025原日期，不缩回A低开收阳/H3局部标签。",
+    "combined_priority": "按fixed_factorial_adversarial_review.conflict_to_lock_before_source明确既存pending/期限>新风险exit>hold保护>普通support的次序。",
+    "scope_years": "维持根最终锁定的原全窗/全部原年度目标和费用基准，逐年披露而不优化逐年阈值。原窗口2020-2026-10-15、2026部分年不能称独立验证；本轮如报告各年经济结果须在根新设计里明确，不能沿用上轮唯一2025终点的含混口径。W上下文只能用完整2020-25目录。",
+    "counterevidence": "除总体结果，报告各年真实触发cycle数/执行受阻/资金与再参与；保留全部年份和零触发情况、所有原收益回撤频率目标、原B/P/旧结构负证据。跨年反号和CI跨0是证据边界，不另设每年动作增益同号或CI不过0的经济硬门。",
+    "concentration": "以实际周期为单位的全部删一周期/逐年缺项归因仅作集中性诊断，不制造可兑现删交易账户、不重新选择条件；状态未知/缺共同覆盖时留null。",
+    "novelty_claim": "至多是对旧输入提出新的、职责对齐的固定行动机制。若同已执行策略全样本target完全相同，合并为重复而不派新账户；若不相同也不自动叫有效组件。",
+    "separate_2022": "本轮两条件主要解决持有/退出取舍，不预设能修复2022盈利余量不足；若无法覆盖，保留为独立未回答问题。"
+  },
+  "no_external_literature_claim": "本review未引用技术/学术效应数值或论文结论；只使用已读S014源码与保存证据，未为此进行外部浏览。主会话论文摘要若使用，须其自行按实际访问范围引用，不能冒称全文。",
+  "resources": {
+    "new_accounts": 0,
+    "new_market_or_announcement_calls": 0,
+    "new_fits": 0,
+    "new_return_labels": 0,
+    "candidate_feature_values_on_real_data_computed": 0,
+    "old_files_modified": 0
+  },
+  "recommendation": "对根固定3x3设计评审无阻断前提：在源码/公开锁前采纳上述状态时序和资格定义，保留全部旧负证据/全表结果，不按2025已见值调参。此PASS仅方法可检验，不是经济有效或新signal证明。",
+  "updated_at_utc": "2026-10-19T14:22:01.075697+00:00",
+  "prior_two_rule_review": {
+    "path": "research/S014/materials/20261019_exante_hold_exit/official/method_adversarial_review_v1_two_rules.json",
+    "sha256": "d298d6325e3e1a0adef4367b0edd5bd2aaacdaa7f903d4237c655c519f94a479",
+    "reason": "保留先前2规则初稿。根现明确要求新增ENTRY_GRACE竞争对照与PROFIT_GIVEBACK记忆条件，并评审固定3x3，而非因实证结果调优。"
+  },
+  "rule_counts": {
+    "initial_proposals": 2,
+    "fixed_hold_modes_including_BASE": 3,
+    "fixed_exit_modes_including_BASE": 3,
+    "fixed_action_rules_excluding_BASE": 4,
+    "complete_factorial_paths_including_NOOP": 9
+  },
+  "deferred_extra_variants": [
+    "量比/上行成交量不是买方需求的直接识别，EX007成交参与已有负面/不稳定结果；不把“放量=需求仍强”直接加作保护条件。若根另选量价应先声明可证伪的独立作用与旧表达差别。",
+    "W10公告flag有跨年反转和episode集中，首批SKIP还恶化；此轮不再直接把W=1变为卖出/禁买。已有公告库存可在相同价格条件下作上下文，2026目录不全记unknown、不冒充W0。"
+  ],
+  "fixed_factorial_adversarial_review": {
+    "recommendation": "保留固定3x3有合理信息价值，ENTRY_GRACE不是冗余：它分离入场当日宽限与较复杂趋势保护。两类exit也并非代数等价；目前不需按账户数量机械精简，但禁止根据结果增减阈值。",
+    "hold_modes": [
+      "BASE",
+      "ENTRY_GRACE",
+      "TREND_CYCLE"
+    ],
+    "exit_modes": [
+      "BASE",
+      "SHOCK_PROFIT",
+      "PROFIT_GIVEBACK"
+    ],
+    "not_nine_independent_confirmations": "同一历史/同一资金源的9条重叠路径，只是一张固定析因表。须报全9，不只选择最优组合，不能称9个独立信号验证。",
+    "conflict_to_lock_before_source": [
+      "D处理次序：先处理真实成交并承接既存pending；已存在pending或到期先确定必须卖。再独立计算新风险触发/hold保护，风险exit优先于support保护；否则按holdmode决定是否抑制本日support新pending。",
+      "existing_pending只能指此前已有尚未成交卖单，不能先因当前supportbreak设置它再阻止所有保护。",
+      "SHOCK/GIVEBACK资格不能硬限定原BASE HOLD，否则在受保护break日无法实现风险exit优先。原BASE本已support卖出的重合触发须单列为无增量。",
+      "TREND_CYCLE只在entry日eligibility成立时锁存，全周期support保护；ENTRY_GRACE仅本D。两者均不清除风险退出pending、到期pending，也不延长原reservation。",
+      "PROFIT_GIVEBACK已观察Close peak不能取未来峰值、当日High或原完整交易最终利润；真实卖出后重置到新cycle。"
+    ],
+    "duplication_precheck": "在锁定后的原全时段信号核查中，若某模式与另一个对照全target及原economic意图相同，可只保留一次执行并明确映射，不派重复账户制造证据数。不得看收益后删除负臂或补其他阈值。该纯信号核查不是本review已执行的事实。",
+    "required_contrasts": [
+      "TREND_CYCLE/BASE vs ENTRY_GRACE/BASE，识别更复杂保护是否超过一次宽限。",
+      "各exitmode在同一holdmode下相对BASE exit的真实全部资金差。",
+      "同一exitmode与不同holdmode的交互，以实际组合减独立改动差额仅作账目描述，不相加代替实跑。",
+      "全部原年度收益/回撤/频率要求和反例不变；同号率或CI不跨0不另设硬门。"
+    ],
+    "parameter_history": "1ATR保护、Z5>2、历史peak净利>=2ATR且回吐>=1ATR为当前固定候选尺度，全部已有窗口/单价/fee/lag要在根设计锁定。本review未查2025对应特征数值，不按命中May30/Jun19调整。"
+  }
+}

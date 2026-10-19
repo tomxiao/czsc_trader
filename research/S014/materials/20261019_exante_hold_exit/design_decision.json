@@ -1,0 +1,40 @@
+{
+  "status": "ROOT_FIXED_MECHANISM_DECISION_BEFORE_NEW_TARGET_STATE_OR_ACCOUNT_OUTCOMES",
+  "question": "Can current decision states distinguish worthwhile continuation from worthwhile early exit across previously authorized years?",
+  "design_type": "No-fit fixed3x3 mechanism comparison; all nine full public accounts including one source-specific NOOP",
+  "selection_disclosure": "2025 examples and historical years already seen; candidate formulas selected for competing mechanisms and action responsibilities, not by querying their values on May30 or June19",
+  "hold_rules": {
+    "BASE": "Original support early exit",
+    "ENTRY_GRACE": "Only on the actual BUY-filled decision day suppress generic support early exit; next decision resumes original rule",
+    "TREND_CYCLE": "Only if the actual BUY-filled day breaks original S5, current close>=prior MA20, prior MA20>its five-session lag and positive breach<=prior ATR20, suppress generic support early exits for that original cycle until original deadline"
+  },
+  "exit_rules": {
+    "BASE": "No extra exit",
+    "SHOCK_PROFIT": "Held/discretionary state, D net floating return>0 and five-session log-return sum / (sqrt5 * sample std of the20 log returns endingD-5)>2",
+    "PROFIT_GIVEBACK": "Held/discretionary state, observed peak_close*(1-.001)-actual_entry_fill*(1+.001)>=2*ATR20_prior and peak_close-currentclose>=ATR20_prior; current net return may be negative"
+  },
+  "priority": "Existing pending sale inherited at start of D and mandatory original deadline first; then extra risk exit; generic support exit may be suppressed only by chosen hold rule",
+  "feature_clock_and_units": {
+    "MA20_prior": "Arithmetic mean of20 in-window closes endingD-1; compare with same value laggedfive sessions endingD-6",
+    "ATR20_prior": "Arithmetic mean20 true ranges endingD-1; TR=max(H-L,abs(H-prevC),abs(L-prevC)) in original runtime market HFQ price units",
+    "volatility": "Sample standard deviation ddof1 endingD-5, non-overlapping with numerator D-4..D; unavailable or zero scale explicitly not eligible, never infinite signal",
+    "peak_close": "Maximum real observed Close from actual entry execution session through D; entryfill is only cost basis and never a Close candidate. EntryD giveback=0; reset on each real entry",
+    "net_floating_return": "currentClose*(1-.001)/(actual_entry_fill*(1+.001))-1; known D mark, not a guaranteed next-session realized profit",
+    "unit_boundary": "All MA/ATR/breach/peak/entry comparisons use runtime market price units; do not combine raw-execution or anchored ledger price/quantity scales"
+  },
+  "peak_definition_clarification": "Before any new account/state outcome, root clarified close-only peak after an initial fill-initialization wording conflict; original method/protocol drafts retained and final revision binds this definition",
+  "economic_population": "Original full funding/window and native execution constraints; strategy decisions generalize uniformly across dates, no hardcoded year or event-date exception",
+  "primary_evidence": "Real continuous account paths, each year's own opening equity, original return/drawdown/frequency constraints, and counterexamples in2020-2024 as well as2025",
+  "feature_population": "Original position/clock opportunity population and each policy's actual state triggers, each carrying D and E separately; no repeated-day-as-independent-event claim",
+  "2025_exclusion": "Reaggregate2020-2024 historical development results without resetting history; not a pristine holdout or retraining experiment",
+  "2026_role": "Full contract/source-control tail only; no rule selection or new economic validation from2026",
+  "local_counterfactual_wealth_labels": 0,
+  "new_model_fits_or_threshold_search": 0,
+  "new_quantitative_sources": 0,
+  "initial_planned_dispatches": 9,
+  "user_numeric_account_limit": null,
+  "same_economic_paths": "Still run the simple fixed protocol; disclose equality and do not treat them as independent evidence",
+  "technical_failures": "Stop dependent dispatch, preserve failure, review an explicit correction before a new immutable revision; no blind retry",
+  "economic_results": "Run all technically valid predeclared arms regardless of whether early arms make money. No new economic hard gate or target relaxation",
+  "phase_or_registration_change": false
+}
