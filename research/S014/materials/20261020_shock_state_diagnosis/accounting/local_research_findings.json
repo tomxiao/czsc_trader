@@ -1,0 +1,486 @@
+{
+  "status": "INDEPENDENT_COMPONENT_RESEARCH_COMPLETE",
+  "meaning": "All pp are equally weighted original-cycle normalized liquidation differences, not funded policy or annual returns.",
+  "inputs": [
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_event_labels.csv",
+      "sha256": "6fcf5ba172dfb276c280556b7b62d020d60605d210b90bb5cbb0b25869f6991b"
+    },
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_state_summary.csv",
+      "sha256": "4af74b822fe5f6589c314622fefdc9b42ed855099d3bb31a303bdf02f99c349a"
+    },
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_review.json",
+      "sha256": "1c0eb3cbd57f73b7be95d970c8fb96490355bf677be5d49675caaecd64b97d40"
+    },
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_off_independent_review.json",
+      "sha256": "accbf0cfdb3f281430820274a1dd7ec9b502b84a4f93e9425b34fa6eaf49249c"
+    }
+  ],
+  "population": {
+    "N": 21,
+    "positive": 12,
+    "negative": 9,
+    "mean_pp": 3.3470849676713317
+  },
+  "always_hold_mean_pp": 3.3470849676713317,
+  "always_exit_mean_pp": 0.0,
+  "states": {
+    "PRIOR_TREND_ESTABLISHED": {
+      "true": {
+        "N": 12,
+        "positive": 6,
+        "negative": 6,
+        "mean_pp": 2.843277365680587
+      },
+      "false": {
+        "N": 9,
+        "positive": 6,
+        "negative": 3,
+        "mean_pp": 4.018828436992323
+      },
+      "frozen_all21_mean_pp": 1.62472992324605,
+      "frozen_minus_always_hold_pp": -1.7223550444252818,
+      "common_remaining_cells": [
+        {
+          "remaining": 2,
+          "true": {
+            "N": 1,
+            "positive": 0,
+            "negative": 1,
+            "mean_pp": -2.028459345532506
+          },
+          "false": {
+            "N": 1,
+            "positive": 1,
+            "negative": 0,
+            "mean_pp": 0.3348999993295247
+          },
+          "weight": 1,
+          "true_minus_false_pp": -2.3633593448620305
+        },
+        {
+          "remaining": 5,
+          "true": {
+            "N": 1,
+            "positive": 0,
+            "negative": 1,
+            "mean_pp": -6.477903435307053
+          },
+          "false": {
+            "N": 2,
+            "positive": 1,
+            "negative": 1,
+            "mean_pp": -6.062269146746095
+          },
+          "weight": 1,
+          "true_minus_false_pp": -0.4156342885609581
+        },
+        {
+          "remaining": 6,
+          "true": {
+            "N": 2,
+            "positive": 2,
+            "negative": 0,
+            "mean_pp": 13.25640269805564
+          },
+          "false": {
+            "N": 3,
+            "positive": 2,
+            "negative": 1,
+            "mean_pp": 12.38162777578579
+          },
+          "weight": 2,
+          "true_minus_false_pp": 0.8747749222698502
+        },
+        {
+          "remaining": 8,
+          "true": {
+            "N": 2,
+            "positive": 2,
+            "negative": 0,
+            "mean_pp": 24.86265582358508
+          },
+          "false": {
+            "N": 1,
+            "positive": 1,
+            "negative": 0,
+            "mean_pp": 1.0967054923098785
+          },
+          "weight": 1,
+          "true_minus_false_pp": 23.7659503312752
+        }
+      ],
+      "common_remaining_min_count_weighted_true_minus_false_pp": 4.547301308478382,
+      "yearly": [
+        {
+          "year": 2020,
+          "N": 2,
+          "positive": 1,
+          "negative": 1,
+          "mean_pp": 4.804797139385622,
+          "frozen_all_events_mean_pp": -1.395806990212586
+        },
+        {
+          "year": 2021,
+          "N": 5,
+          "positive": 3,
+          "negative": 2,
+          "mean_pp": 6.871682935411227,
+          "frozen_all_events_mean_pp": -0.3627884902749733
+        },
+        {
+          "year": 2022,
+          "N": 0,
+          "positive": 0,
+          "negative": 0,
+          "mean_pp": null,
+          "frozen_all_events_mean_pp": null
+        },
+        {
+          "year": 2023,
+          "N": 3,
+          "positive": 2,
+          "negative": 1,
+          "mean_pp": -0.10456179766335962,
+          "frozen_all_events_mean_pp": -0.5403705304153238
+        },
+        {
+          "year": 2024,
+          "N": 3,
+          "positive": 2,
+          "negative": 1,
+          "mean_pp": -1.1920087901279135,
+          "frozen_all_events_mean_pp": -2.159301145102351
+        },
+        {
+          "year": 2025,
+          "N": 2,
+          "positive": 0,
+          "negative": 2,
+          "mean_pp": -17.68308407233458,
+          "frozen_all_events_mean_pp": -10.718229139281767
+        },
+        {
+          "year": 2026,
+          "N": 6,
+          "positive": 4,
+          "negative": 2,
+          "mean_pp": 10.929442545552257,
+          "frozen_all_events_mean_pp": 11.376726354180606
+        }
+      ]
+    },
+    "NON_FINAL_DAY_DOMINATED": {
+      "true": {
+        "N": 18,
+        "positive": 11,
+        "negative": 7,
+        "mean_pp": 4.395305033824754
+      },
+      "false": {
+        "N": 3,
+        "positive": 1,
+        "negative": 2,
+        "mean_pp": -2.9422354292492052
+      },
+      "frozen_all21_mean_pp": 3.767404314706932,
+      "frozen_minus_always_hold_pp": 0.42031934703560037,
+      "common_remaining_cells": [
+        {
+          "remaining": 2,
+          "true": {
+            "N": 1,
+            "positive": 0,
+            "negative": 1,
+            "mean_pp": -2.028459345532506
+          },
+          "false": {
+            "N": 1,
+            "positive": 1,
+            "negative": 0,
+            "mean_pp": 0.3348999993295247
+          },
+          "weight": 1,
+          "true_minus_false_pp": -2.3633593448620305
+        },
+        {
+          "remaining": 5,
+          "true": {
+            "N": 2,
+            "positive": 1,
+            "negative": 1,
+            "mean_pp": -6.062269146746095
+          },
+          "false": {
+            "N": 1,
+            "positive": 0,
+            "negative": 1,
+            "mean_pp": -6.477903435307053
+          },
+          "weight": 1,
+          "true_minus_false_pp": 0.4156342885609581
+        }
+      ],
+      "common_remaining_min_count_weighted_true_minus_false_pp": -0.9738625281505362,
+      "yearly": [
+        {
+          "year": 2020,
+          "N": 2,
+          "positive": 1,
+          "negative": 1,
+          "mean_pp": 4.804797139385622,
+          "frozen_all_events_mean_pp": 4.804797139385622
+        },
+        {
+          "year": 2021,
+          "N": 5,
+          "positive": 3,
+          "negative": 2,
+          "mean_pp": 6.871682935411227,
+          "frozen_all_events_mean_pp": 6.804702935545322
+        },
+        {
+          "year": 2022,
+          "N": 0,
+          "positive": 0,
+          "negative": 0,
+          "mean_pp": null,
+          "frozen_all_events_mean_pp": null
+        },
+        {
+          "year": 2023,
+          "N": 3,
+          "positive": 2,
+          "negative": 1,
+          "mean_pp": -0.10456179766335962,
+          "frozen_all_events_mean_pp": -0.10456179766335962
+        },
+        {
+          "year": 2024,
+          "N": 3,
+          "positive": 2,
+          "negative": 1,
+          "mean_pp": -1.1920087901279135,
+          "frozen_all_events_mean_pp": 0.9672923549744374
+        },
+        {
+          "year": 2025,
+          "N": 2,
+          "positive": 0,
+          "negative": 2,
+          "mean_pp": -17.68308407233458,
+          "frozen_all_events_mean_pp": -17.68308407233458
+        },
+        {
+          "year": 2026,
+          "N": 6,
+          "positive": 4,
+          "negative": 2,
+          "mean_pp": 10.929442545552257,
+          "frozen_all_events_mean_pp": 11.376726354180606
+        }
+      ]
+    }
+  },
+  "age0": {
+    "N": 5,
+    "positive": 1,
+    "negative": 4,
+    "mean_pp": -6.803954725712272
+  },
+  "age_ge1": {
+    "N": 16,
+    "positive": 11,
+    "negative": 5,
+    "mean_pp": 6.519284871853707
+  },
+  "all_age0_both_states_true": true,
+  "counterexample_and_excluded_cases": [
+    {
+      "event_id": "C9461-SHOCK-2020-11-18",
+      "D": "2020-11-18",
+      "year_of_D": "2020",
+      "age": 0,
+      "remaining": 9,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2020-11-19",
+      "actual_exit_price_ledger": "4.38",
+      "modeled_OFF_exit_E": "2020-11-27",
+      "modeled_OFF_price_ledger": "4.26",
+      "advantage": -0.02791613980425172
+    },
+    {
+      "event_id": "C9461-SHOCK-2021-05-12",
+      "D": "2021-05-12",
+      "year_of_D": "2021",
+      "age": 3,
+      "remaining": 6,
+      "PRIOR_TREND_ESTABLISHED": false,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2021-05-13",
+      "actual_exit_price_ledger": "7.16",
+      "modeled_OFF_exit_E": "2021-05-21",
+      "modeled_OFF_price_ledger": "6.25",
+      "advantage": -0.15961016136763065
+    },
+    {
+      "event_id": "C9461-SHOCK-2021-09-07",
+      "D": "2021-09-07",
+      "year_of_D": "2021",
+      "age": 7,
+      "remaining": 2,
+      "PRIOR_TREND_ESTABLISHED": false,
+      "NON_FINAL_DAY_DOMINATED": false,
+      "actual_exit_fill_E": "2021-09-08",
+      "actual_exit_price_ledger": "6.91",
+      "modeled_OFF_exit_E": "2021-09-10",
+      "modeled_OFF_price_ledger": "6.93",
+      "advantage": 0.003348999993295247
+    },
+    {
+      "event_id": "C9461-SHOCK-2021-09-13",
+      "D": "2021-09-13",
+      "year_of_D": "2021",
+      "age": 0,
+      "remaining": 9,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2021-09-14",
+      "actual_exit_price_ledger": "7.1",
+      "modeled_OFF_exit_E": "2021-09-28",
+      "modeled_OFF_price_ledger": "6.85",
+      "advantage": -0.03642343058401443
+    },
+    {
+      "event_id": "C9461-SHOCK-2021-12-24",
+      "D": "2021-12-24",
+      "year_of_D": "2021",
+      "age": 0,
+      "remaining": 9,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2021-12-27",
+      "actual_exit_price_ledger": "6.61",
+      "modeled_OFF_exit_E": "2022-01-05",
+      "modeled_OFF_price_ledger": "6.73",
+      "advantage": 0.01828400607026576
+    },
+    {
+      "event_id": "C9461-SHOCK-2023-02-01",
+      "D": "2023-02-01",
+      "year_of_D": "2023",
+      "age": 7,
+      "remaining": 2,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2023-02-02",
+      "actual_exit_price_ledger": "5.25",
+      "modeled_OFF_exit_E": "2023-02-06",
+      "modeled_OFF_price_ledger": "5.15",
+      "advantage": -0.02028459345532506
+    },
+    {
+      "event_id": "C9461-SHOCK-2024-01-03",
+      "D": "2024-01-03",
+      "year_of_D": "2024",
+      "age": 4,
+      "remaining": 5,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": false,
+      "actual_exit_fill_E": "2024-01-04",
+      "actual_exit_price_ledger": "5.389999999999999",
+      "modeled_OFF_exit_E": "2024-01-11",
+      "modeled_OFF_price_ledger": "5.07",
+      "advantage": -0.06477903435307053
+    },
+    {
+      "event_id": "C9461-SHOCK-2025-03-27",
+      "D": "2025-03-27",
+      "year_of_D": "2025",
+      "age": 4,
+      "remaining": 5,
+      "PRIOR_TREND_ESTABLISHED": false,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2025-03-28",
+      "actual_exit_price_ledger": "5.97",
+      "modeled_OFF_exit_E": "2025-04-01",
+      "modeled_OFF_price_ledger": "5.18",
+      "advantage": -0.13929709866105625
+    },
+    {
+      "event_id": "C9461-SHOCK-2025-06-19",
+      "D": "2025-06-19",
+      "year_of_D": "2025",
+      "age": 0,
+      "remaining": 9,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2025-06-20",
+      "actual_exit_price_ledger": "7.81",
+      "modeled_OFF_exit_E": "2025-06-26",
+      "modeled_OFF_price_ledger": "6.3",
+      "advantage": -0.21436458278563533
+    },
+    {
+      "event_id": "C9461-SHOCK-2026-01-06",
+      "D": "2026-01-06",
+      "year_of_D": "2026",
+      "age": 8,
+      "remaining": 1,
+      "PRIOR_TREND_ESTABLISHED": false,
+      "NON_FINAL_DAY_DOMINATED": false,
+      "actual_exit_fill_E": "2026-01-07",
+      "actual_exit_price_ledger": "6.46",
+      "modeled_OFF_exit_E": "2026-01-08",
+      "modeled_OFF_price_ledger": "6.3",
+      "advantage": -0.026837028517700867
+    },
+    {
+      "event_id": "C9461-SHOCK-2026-01-09",
+      "D": "2026-01-09",
+      "year_of_D": "2026",
+      "age": 0,
+      "remaining": 9,
+      "PRIOR_TREND_ESTABLISHED": true,
+      "NON_FINAL_DAY_DOMINATED": true,
+      "actual_exit_fill_E": "2026-01-12",
+      "actual_exit_price_ledger": "6.8",
+      "modeled_OFF_exit_E": "2026-01-19",
+      "modeled_OFF_price_ledger": "6.29",
+      "advantage": -0.0797775891819779
+    }
+  ],
+  "judgment": [
+    "S1 fixed TRUE-hold direction is not supported; do not reverse it or optimize its window.",
+    "S2 retains18/excludes3 and gains only0.420319pp against always-hold on already-seen local history. Shared remaining2/5 contrast is negative; no claim of independent predictive information.",
+    "Age0 versus age>=1 is the existing GRACE boundary; remaining=9-age is the same clock. Age0 contains a positive2021Dec24 counterexample, and age>=1 still has five losing extensions.",
+    "2025Jun19 and2026Jan9 are BOTH stateTRUE and BOTH negative local extensions. Full-policy January reentry/pause benefits do not establish the sign of the original single-cycle label.",
+    "A separately locked freshcontrol/S2/age>=1-latched-hold full-policy test is feasible as action translation and clock competition. The age direction is selected after these labels and must be disclosed; it is not held-out validation.",
+    "Future policy must recompute its own actual funded entry, first SHOCK, completed-net feedback, pending and clocks; never transplant original21 dates/states. Original7 annual return/DD and frequency gates remain unchanged."
+  ],
+  "resources": {
+    "original_actual_population": 21,
+    "C_modelled_ON": 21,
+    "C_modelled_OFF": 21,
+    "independent_ON_checks": 1773,
+    "independent_OFF_checks": 4304,
+    "new_funded_dispatched": 0,
+    "funded_success": 0,
+    "funded_failed": 0,
+    "funded_unknown": 0,
+    "funded_retries": 0,
+    "new_fits": 0,
+    "new_supplier_calls": 0,
+    "audit_expression_corrections": 1,
+    "component_unknown": 0,
+    "component_censored": 0
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_write_findings.py",
+    "sha256": "ebe54ffdad1f8d389f5576f4901471e525b4c2c97a1fb1349be164b7442402d1"
+  }
+}

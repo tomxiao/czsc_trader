@@ -1,0 +1,78 @@
+{
+  "status": "PASS_FINAL_SOURCE_READER_RUNNER",
+  "reviewer": "A",
+  "reviewed_hashes": {
+    "research/S014/experiments/EX049_20261020/src/run_component.py": "2768fcd4d12f2e7e2a453cc1dc089c66f9f4e3ab24a644483fce07669aa87cf6",
+    "research/S014/experiments/EX049_20261020/protocols/design.json": "473778576626672f9d01ff112d77b11f76f1aac155bbafb49ce00a5bbb89e4a1",
+    "research/S014/experiments/EX049_20261020/src/local_cycle.py": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b",
+    "research/S014/experiments/EX049_20261020/src/prepared_reader.py": "078c5d78033f40e2c73767b6ac92f1f36dbc296282ff0b00e8159bf68d2952a7",
+    "research/S014/experiments/EX049_20261020/src/precheck.py": "74277aacf810152efc390d7e469e62b79395968070ed66e4b26bdd6b14ea3eda"
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_runner_review.py",
+    "sha256": "52895afeece794dd394fc8576d0db971ad03df38a04ee6e1f8ad5aca1615ace6"
+  },
+  "kernel_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.json",
+    "sha256": "32ca427dadf03d30df614b01d021c76397b65d3ad99381746c270e02c9db40dd"
+  },
+  "check_count": 42,
+  "checks": {
+    "final exact bytes src/run_component.py": 1,
+    "final exact bytes protocols/design.json": 1,
+    "final exact bytes src/local_cycle.py": 1,
+    "final exact bytes src/prepared_reader.py": 1,
+    "final exact bytes src/precheck.py": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/authorization.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/questions.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/method_proposal.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/method/method_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_alignment.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/review/method_adversarial_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/method_decision.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/method_state_boundary_clarification.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/execution_precision_clarification.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/method/local_state_boundary_addendum.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_semantics_addendum.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_review_v2.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population.csv": 1,
+    "root and prior immutable bindings research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_yearly.csv": 1,
+    "root and prior immutable bindings research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py": 1,
+    "root and prior immutable bindings research/S014/experiments/EX046_20261020/others/accounts/run-001.json": 1,
+    "root and prior immutable bindings research/S014/experiments/EX046_20261020/others/bindings/001.json": 1,
+    "root and prior immutable bindings research/S014/materials/20261019_exante_hold_exit/accounting/audit_policy_accounts.py": 1,
+    "root and prior immutable bindings research/S014/materials/20261019_2024_diagnosis/accounting/clock_execution_oracle.py": 1,
+    "root and prior immutable bindings packages/trading_execution_engine/src/trading_execution_engine/fills.py": 1,
+    "root and prior immutable bindings packages/trading_execution_engine/src/trading_execution_engine/market.py": 1,
+    "zero funded budget and exact population": 1,
+    "two fixed truehold states root binding": 1,
+    "no account evaluation preparation or data export in runner": 1,
+    "source and ON gates require two independent reviewers": 1,
+    "ON gate exact currentlock and formal ON identity": 1,
+    "OFF uses public ON and exact local counterpart": 1,
+    "OFF verifies original prepared content same as ON": 1,
+    "synthetic no unknown or censor imputation": 1,
+    "same known closed cohort for local choices": 1,
+    "empty year null rather than invented success": 1,
+    "originalGRACE age0 split not optimized bin": 1
+  },
+  "manual_review": [
+    "Final source/reader/runner and root boundaries match declared21 event component; zero account interface/budget and no registrations.",
+    "Only originalON controls and D-known states allowed after local public lock; actualON A/B strict sameONref/currentlock gates before any OFF.",
+    "Own-cycle state, original absolute deadline and pending survive; public modeled SELL plus original fees conclude at fillEopen.",
+    "Total liquidation proceeds divided by original total entry cost; strict sign and null/censor behavior. Frozen state choices retain downD and no direction reversal.",
+    "Original actual population and empty2022 retained, common closedknown cohorts and exact age/remaining descriptions; no economic gates or account-return sum."
+  ],
+  "resources": {
+    "actual_data_fetches": 0,
+    "real_ON_controls": 0,
+    "real_OFF_labels": 0,
+    "funded_accounts": 0,
+    "fits": 0
+  }
+}

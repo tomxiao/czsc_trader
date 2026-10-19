@@ -1,0 +1,130 @@
+{
+  "index": 2,
+  "mode": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD",
+  "parameters": {
+    "policy_profile": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD"
+  },
+  "candidate": "S014-C9502",
+  "payload_sha256": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320",
+  "published_payload_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320.json",
+    "sha256": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320",
+    "media_type": "application/json",
+    "name": "ex050-payload-002",
+    "schema": null,
+    "schema_version": null
+  },
+  "runtime_implementation_sha256": "95cfe74d1f2e0aff08223cb78c06aacf5d946687695640ccc241b983278469cd",
+  "execution_source_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4.json",
+    "sha256": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4",
+    "media_type": "application/json",
+    "name": "ex050-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "execution_source_lock_sha256": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4",
+  "runtime_sha256": "6caa666ee13043001cca78987068da017604d7de30605b27c510f4771ce01984",
+  "published_source_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3.py",
+    "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3",
+    "media_type": "text/x-python",
+    "name": "ex050-locked-src-strategy_runtime-strategies-shock_state_policy.py",
+    "schema": null,
+    "schema_version": null
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "43ec16e678a2fac8b95af06212a226f4bae528bada3222cfd1c2eae1f525a0a2.json",
+    "sha256": "43ec16e678a2fac8b95af06212a226f4bae528bada3222cfd1c2eae1f525a0a2",
+    "media_type": "application/json",
+    "name": "ex050-binding-002",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "c77d38b11ffd9be4446fa3b61fe182239d1f4e5e297272e992569480bf6a7b96.json",
+    "sha256": "c77d38b11ffd9be4446fa3b61fe182239d1f4e5e297272e992569480bf6a7b96",
+    "media_type": "application/json",
+    "name": "ex050-preflight-002",
+    "schema": null,
+    "schema_version": null
+  },
+  "status": "SUCCEEDED",
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+    "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+    "media_type": "application/json",
+    "name": "shock-state-policy-002-first_shock_after_entry_day_hold",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "63b4ce767292ebdfaa71e23f56981eda61e08f5bbf2e6de6c8814bd6da5a2757",
+  "audit": {
+    "status": "PASS",
+    "kind": "EX050_FIRST_OWN_SHOCK_STATE_ACTIONS",
+    "checks": 131437,
+    "errors": [],
+    "original_projection_numeric_tolerance": 0,
+    "identity_link_fields_mapped_separately": [
+      "cycle_id",
+      "decision_id",
+      "fill_id",
+      "order_id"
+    ],
+    "arithmetic_only_currency_epsilon": 1e-07,
+    "parameters": {
+      "policy_profile": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD"
+    },
+    "strict_control_against_EX046001": false,
+    "baseline_result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+    "first_policy_assessment_D": "2020-07-06",
+    "first_policy_latch_D": "2020-07-06",
+    "first_feedback_state_D": "2020-04-16",
+    "first_armed_D": "2020-04-16",
+    "first_original_state_divergence_D": "2020-07-06",
+    "first_target_divergence_D": "2020-07-06",
+    "first_funded_state_E": "2020-07-07",
+    "target_path_equals_frozen": false,
+    "funded_wealth_path_equals_frozen": false,
+    "actual_funded_state_and_feature_math": "independent A/B reviews required"
+  },
+  "error": null,
+  "request_content_sha256": "91f4e70cb6b584ab7b78a91ef0105249f4657b9385ce336c66c8f1f0ef893934",
+  "runtime_binding_hash": "8f2493b4c39fdd63720dd6453bb22414dcd6769309908b63852521c89e44b412"
+}

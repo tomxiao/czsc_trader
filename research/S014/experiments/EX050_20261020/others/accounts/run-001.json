@@ -1,0 +1,130 @@
+{
+  "index": 1,
+  "mode": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD",
+  "parameters": {
+    "policy_profile": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD"
+  },
+  "candidate": "S014-C9501",
+  "payload_sha256": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500",
+  "published_payload_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500.json",
+    "sha256": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500",
+    "media_type": "application/json",
+    "name": "ex050-payload-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "runtime_implementation_sha256": "95cfe74d1f2e0aff08223cb78c06aacf5d946687695640ccc241b983278469cd",
+  "execution_source_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4.json",
+    "sha256": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4",
+    "media_type": "application/json",
+    "name": "ex050-execution-lock-v1",
+    "schema": null,
+    "schema_version": null
+  },
+  "execution_source_lock_sha256": "3eac91486ea2f0150aad50db471840cb9ec4fa71ede69feb7bb4e6d5c210d0a4",
+  "runtime_sha256": "bc4f9f5cbe646bab7513a9fe6ff90e99070f741a8a2b95740d589c73f54ef8d7",
+  "published_source_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3.py",
+    "sha256": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3",
+    "media_type": "text/x-python",
+    "name": "ex050-locked-src-strategy_runtime-strategies-shock_state_policy.py",
+    "schema": null,
+    "schema_version": null
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "47ce553d022b266960c3a7c59adad828513fa05f23ce46d7a0d34fe7fc3f8ec4.json",
+    "sha256": "47ce553d022b266960c3a7c59adad828513fa05f23ce46d7a0d34fe7fc3f8ec4",
+    "media_type": "application/json",
+    "name": "ex050-binding-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "preflight_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "b4d7185d9a5dc08fb968945548c9158f2ee9c050fdb09794c479fda218f217d4.json",
+    "sha256": "b4d7185d9a5dc08fb968945548c9158f2ee9c050fdb09794c479fda218f217d4",
+    "media_type": "application/json",
+    "name": "ex050-preflight-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "status": "SUCCEEDED",
+  "evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX050_20261020"
+    },
+    "evidence_id": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0.json",
+    "sha256": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0",
+    "media_type": "application/json",
+    "name": "shock-state-policy-001-first_shock_non_final_day_dominated_hold",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "17f094b09611ddcd72058c448bff4d6ab0473db1fe3b7546823fd384520d4739",
+  "audit": {
+    "status": "PASS",
+    "kind": "EX050_FIRST_OWN_SHOCK_STATE_ACTIONS",
+    "checks": 131370,
+    "errors": [],
+    "original_projection_numeric_tolerance": 0,
+    "identity_link_fields_mapped_separately": [
+      "cycle_id",
+      "decision_id",
+      "fill_id",
+      "order_id"
+    ],
+    "arithmetic_only_currency_epsilon": 1e-07,
+    "parameters": {
+      "policy_profile": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD"
+    },
+    "strict_control_against_EX046001": false,
+    "baseline_result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+    "first_policy_assessment_D": "2020-07-06",
+    "first_policy_latch_D": "2020-07-06",
+    "first_feedback_state_D": "2020-04-16",
+    "first_armed_D": "2020-04-16",
+    "first_original_state_divergence_D": "2020-07-06",
+    "first_target_divergence_D": "2020-07-06",
+    "first_funded_state_E": "2020-07-07",
+    "target_path_equals_frozen": false,
+    "funded_wealth_path_equals_frozen": false,
+    "actual_funded_state_and_feature_math": "independent A/B reviews required"
+  },
+  "error": null,
+  "request_content_sha256": "ecbe0b33947773510f85c9f54538f8885f6f9b4508cc7351a22a8946bbdbe770",
+  "runtime_binding_hash": "01fab127d1b344d72ab8a57e4088ad29d58ad33a59c8f3bdfdaa8d23f8051f3b"
+}

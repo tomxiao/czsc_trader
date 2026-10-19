@@ -1,0 +1,1027 @@
+{
+  "status": "PASS_ARITHMETIC_AND_FIXED_CONTRAST_REVIEW",
+  "reviewer": "B",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/experiments/EX049_20261020/others/off_labels.json": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+    "research/S014/assets/evidence/EX049_20261020/86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5.json": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+    "research/S014/assets/evidence/EX049_20261020/b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141.json": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141",
+    "research/S014/experiments/EX049_20261020/protocols/execution_lock.json": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/on_control_review.json": "379d402c7e066b6ff7f1791281cc8d73fe6abf738dfbe257392b50524a6a9708",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/off_label_arithmetic_audit.py": "8e514e4ff5b13e7b59a2a67aa47a3851c4147d256b30564a52f64d51107bb0d6"
+  },
+  "OFF_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5.json",
+    "sha256": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+    "media_type": "application/json",
+    "name": "ex049-off-modelled-local-cycle-labels",
+    "schema": null,
+    "schema_version": null
+  },
+  "ON_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141.json",
+    "sha256": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141",
+    "media_type": "application/json",
+    "name": "ex049-on-component-control-and-D-known-states",
+    "schema": null,
+    "schema_version": null
+  },
+  "checks_count": 2244,
+  "N": 21,
+  "modeled_closed": 21,
+  "censored": 0,
+  "unknown_states": 0,
+  "always_hold_mean_advantage": 0.033470849676713314,
+  "frozen_choices_mean": {
+    "S1": 0.0162472992324605,
+    "S2": 0.03767404314706932
+  },
+  "choice_minus_always_hold": {
+    "S1": -0.017223550444252816,
+    "S2": 0.004203193470356005
+  },
+  "age0": {
+    "n": 5,
+    "mean": -0.06803954725712272,
+    "median": -0.03642343058401443,
+    "positive": 1,
+    "negative": 4
+  },
+  "age_ge1": {
+    "n": 16,
+    "mean": 0.06519284871853707,
+    "median": 0.012020658452828854,
+    "positive": 11,
+    "negative": 5
+  },
+  "events": [
+    {
+      "D": "2020-07-06",
+      "year": 2020,
+      "age": 2,
+      "remaining": 7,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.05747135391447864,
+      "r4_log": 0.07606003871004366,
+      "original_actual_SELL_E": "2020-07-07",
+      "original_actual_SELL_price": 3.82,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2020-07-16",
+      "alternative_MODELLED_POSTHOC_SELL_price": 4.24,
+      "advantage_POSTHOC": 0.12401208259196417
+    },
+    {
+      "D": "2020-11-18",
+      "year": 2020,
+      "age": 0,
+      "remaining": 9,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.006779686985378769,
+      "r4_log": 0.11778303565638346,
+      "original_actual_SELL_E": "2020-11-19",
+      "original_actual_SELL_price": 4.38,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2020-11-27",
+      "alternative_MODELLED_POSTHOC_SELL_price": 4.26,
+      "advantage_POSTHOC": -0.02791613980425172
+    },
+    {
+      "D": "2021-02-09",
+      "year": 2021,
+      "age": 3,
+      "remaining": 6,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.09616342217690896,
+      "r4_log": 0.14907749821480018,
+      "original_actual_SELL_E": "2021-02-10",
+      "original_actual_SELL_price": 5.16,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2021-02-25",
+      "alternative_MODELLED_POSTHOC_SELL_price": 7.07,
+      "advantage_POSTHOC": 0.5179847326586454
+    },
+    {
+      "D": "2021-05-12",
+      "year": 2021,
+      "age": 3,
+      "remaining": 6,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.09545703346491603,
+      "r4_log": 0.11274727116226156,
+      "original_actual_SELL_E": "2021-05-13",
+      "original_actual_SELL_price": 7.16,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2021-05-21",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.25,
+      "advantage_POSTHOC": -0.15961016136763065
+    },
+    {
+      "D": "2021-09-07",
+      "year": 2021,
+      "age": 7,
+      "remaining": 2,
+      "S1": false,
+      "S2": false,
+      "r1_log": 0.09545944467511491,
+      "r4_log": 0.009901070982711537,
+      "original_actual_SELL_E": "2021-09-08",
+      "original_actual_SELL_price": 6.91,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2021-09-10",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.93,
+      "advantage_POSTHOC": 0.003348999993295247
+    },
+    {
+      "D": "2021-09-13",
+      "year": 2021,
+      "age": 0,
+      "remaining": 9,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.05422155416663885,
+      "r4_log": 0.11321139013356524,
+      "original_actual_SELL_E": "2021-09-14",
+      "original_actual_SELL_price": 7.1,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2021-09-28",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.85,
+      "advantage_POSTHOC": -0.03642343058401443
+    },
+    {
+      "D": "2021-12-24",
+      "year": 2021,
+      "age": 0,
+      "remaining": 9,
+      "S1": true,
+      "S2": true,
+      "r1_log": -0.011851990587014404,
+      "r4_log": 0.09737416402517637,
+      "original_actual_SELL_E": "2021-12-27",
+      "original_actual_SELL_price": 6.61,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2022-01-05",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.73,
+      "advantage_POSTHOC": 0.01828400607026576
+    },
+    {
+      "D": "2023-02-01",
+      "year": 2023,
+      "age": 7,
+      "remaining": 2,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.015534292962184204,
+      "r4_log": 0.027779564107075886,
+      "original_actual_SELL_E": "2023-02-02",
+      "original_actual_SELL_price": 5.25,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2023-02-06",
+      "alternative_MODELLED_POSTHOC_SELL_price": 5.15,
+      "advantage_POSTHOC": -0.02028459345532506
+    },
+    {
+      "D": "2023-07-28",
+      "year": 2023,
+      "age": 5,
+      "remaining": 4,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.003921573653181644,
+      "r4_log": 0.03804262544585047,
+      "original_actual_SELL_E": "2023-07-31",
+      "original_actual_SELL_price": 5.11,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2023-08-04",
+      "alternative_MODELLED_POSTHOC_SELL_price": 5.13,
+      "advantage_POSTHOC": 0.004073477542865345
+    },
+    {
+      "D": "2023-10-30",
+      "year": 2023,
+      "age": 3,
+      "remaining": 6,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.012739025777429932,
+      "r4_log": 0.07312226482896259,
+      "original_actual_SELL_E": "2023-10-31",
+      "original_actual_SELL_price": 4.76,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2023-11-08",
+      "alternative_MODELLED_POSTHOC_SELL_price": 4.82,
+      "advantage_POSTHOC": 0.013074261982558925
+    },
+    {
+      "D": "2024-01-03",
+      "year": 2024,
+      "age": 4,
+      "remaining": 5,
+      "S1": true,
+      "S2": false,
+      "r1_log": 0.07030434708476227,
+      "r4_log": 0.03403731978396131,
+      "original_actual_SELL_E": "2024-01-04",
+      "original_actual_SELL_price": 5.389999999999999,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2024-01-11",
+      "alternative_MODELLED_POSTHOC_SELL_price": 5.07,
+      "advantage_POSTHOC": -0.06477903435307053
+    },
+    {
+      "D": "2024-02-22",
+      "year": 2024,
+      "age": 1,
+      "remaining": 8,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.018592833076615925,
+      "r4_log": 0.16267664576653493,
+      "original_actual_SELL_E": "2024-02-23",
+      "original_actual_SELL_price": 3.8,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2024-03-06",
+      "alternative_MODELLED_POSTHOC_SELL_price": 3.84,
+      "advantage_POSTHOC": 0.010967054923098785
+    },
+    {
+      "D": "2024-05-06",
+      "year": 2024,
+      "age": 4,
+      "remaining": 5,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.09509923159132869,
+      "r4_log": 0.1102707206389169,
+      "original_actual_SELL_E": "2024-05-07",
+      "original_actual_SELL_price": 4.76,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2024-05-14",
+      "alternative_MODELLED_POSTHOC_SELL_price": 4.83,
+      "advantage_POSTHOC": 0.018051715726134336
+    },
+    {
+      "D": "2025-03-27",
+      "year": 2025,
+      "age": 4,
+      "remaining": 5,
+      "S1": false,
+      "S2": true,
+      "r1_log": 0.029656209582888022,
+      "r4_log": 0.05499667574744897,
+      "original_actual_SELL_E": "2025-03-28",
+      "original_actual_SELL_price": 5.97,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2025-04-01",
+      "alternative_MODELLED_POSTHOC_SELL_price": 5.18,
+      "advantage_POSTHOC": -0.13929709866105625
+    },
+    {
+      "D": "2025-06-19",
+      "year": 2025,
+      "age": 0,
+      "remaining": 9,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.06070131187360667,
+      "r4_log": 0.38099511704621397,
+      "original_actual_SELL_E": "2025-06-20",
+      "original_actual_SELL_price": 7.81,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2025-06-26",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.3,
+      "advantage_POSTHOC": -0.21436458278563533
+    },
+    {
+      "D": "2026-01-06",
+      "year": 2026,
+      "age": 8,
+      "remaining": 1,
+      "S1": false,
+      "S2": false,
+      "r1_log": 0.07185851876927514,
+      "r4_log": 0.008312599819365565,
+      "original_actual_SELL_E": "2026-01-07",
+      "original_actual_SELL_price": 6.46,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-01-08",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.3,
+      "advantage_POSTHOC": -0.026837028517700867
+    },
+    {
+      "D": "2026-01-09",
+      "year": 2026,
+      "age": 0,
+      "remaining": 9,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.058388318238154206,
+      "r4_log": 0.062010074784212534,
+      "original_actual_SELL_E": "2026-01-12",
+      "original_actual_SELL_price": 6.8,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-01-19",
+      "alternative_MODELLED_POSTHOC_SELL_price": 6.29,
+      "advantage_POSTHOC": -0.0797775891819779
+    },
+    {
+      "D": "2026-01-29",
+      "year": 2026,
+      "age": 3,
+      "remaining": 6,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.09496180843692766,
+      "r4_log": 0.12354674037313347,
+      "original_actual_SELL_E": "2026-01-30",
+      "original_actual_SELL_price": 8.17,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-02-09",
+      "alternative_MODELLED_POSTHOC_SELL_price": 9.01,
+      "advantage_POSTHOC": 0.11741199976494086
+    },
+    {
+      "D": "2026-02-11",
+      "year": 2026,
+      "age": 1,
+      "remaining": 8,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.09531017980432493,
+      "r4_log": 0.15008095820555795,
+      "original_actual_SELL_E": "2026-02-12",
+      "original_actual_SELL_price": 9.87,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-03-04",
+      "alternative_MODELLED_POSTHOC_SELL_price": 11.5,
+      "advantage_POSTHOC": 0.17177859099717602
+    },
+    {
+      "D": "2026-03-06",
+      "year": 2026,
+      "age": 1,
+      "remaining": 8,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.09531017980432474,
+      "r4_log": 0.27101949936023856,
+      "original_actual_SELL_E": "2026-03-09",
+      "original_actual_SELL_price": 14.88,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-03-19",
+      "alternative_MODELLED_POSTHOC_SELL_price": 18.5,
+      "advantage_POSTHOC": 0.32547452547452554
+    },
+    {
+      "D": "2026-09-01",
+      "year": 2026,
+      "age": 3,
+      "remaining": 6,
+      "S1": true,
+      "S2": true,
+      "r1_log": 0.07232066157962608,
+      "r4_log": 0.1808940048027693,
+      "original_actual_SELL_E": "2026-09-02",
+      "original_actual_SELL_price": 18.57,
+      "alternative_MODELLED_POSTHOC_SELL_E": "2026-09-10",
+      "alternative_MODELLED_POSTHOC_SELL_price": 20.58,
+      "advantage_POSTHOC": 0.14771605419617193
+    }
+  ],
+  "strata": {
+    "S1": {
+      "exact_remaining_layers": [
+        {
+          "remaining": 0,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 1,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.026837028517700867,
+            "median": -0.026837028517700867,
+            "positive": 0,
+            "negative": 1
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 2,
+          "true": {
+            "n": 1,
+            "mean": -0.02028459345532506,
+            "median": -0.02028459345532506,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.003348999993295247,
+            "median": 0.003348999993295247,
+            "positive": 1,
+            "negative": 0
+          },
+          "common_weight_min_n": 1,
+          "true_minus_false": -0.023633593448620305
+        },
+        {
+          "remaining": 3,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 4,
+          "true": {
+            "n": 1,
+            "mean": 0.004073477542865345,
+            "median": 0.004073477542865345,
+            "positive": 1,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 5,
+          "true": {
+            "n": 1,
+            "mean": -0.06477903435307053,
+            "median": -0.06477903435307053,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 2,
+            "mean": -0.06062269146746095,
+            "median": -0.06062269146746095,
+            "positive": 1,
+            "negative": 1
+          },
+          "common_weight_min_n": 1,
+          "true_minus_false": -0.004156342885609579
+        },
+        {
+          "remaining": 6,
+          "true": {
+            "n": 2,
+            "mean": 0.1325640269805564,
+            "median": 0.1325640269805564,
+            "positive": 2,
+            "negative": 0
+          },
+          "false": {
+            "n": 3,
+            "mean": 0.1238162777578579,
+            "median": 0.013074261982558925,
+            "positive": 2,
+            "negative": 1
+          },
+          "common_weight_min_n": 2,
+          "true_minus_false": 0.008747749222698484
+        },
+        {
+          "remaining": 7,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.12401208259196417,
+            "median": 0.12401208259196417,
+            "positive": 1,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 8,
+          "true": {
+            "n": 2,
+            "mean": 0.24862655823585078,
+            "median": 0.24862655823585078,
+            "positive": 2,
+            "negative": 0
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.010967054923098785,
+            "median": 0.010967054923098785,
+            "positive": 1,
+            "negative": 0
+          },
+          "common_weight_min_n": 1,
+          "true_minus_false": 0.23765950331275199
+        },
+        {
+          "remaining": 9,
+          "true": {
+            "n": 5,
+            "mean": -0.06803954725712272,
+            "median": -0.03642343058401443,
+            "positive": 1,
+            "negative": 4
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        }
+      ],
+      "common_layer_true_minus_false_min_n_weighted": 0.04547301308478381,
+      "common_weight_total": 5,
+      "by_year": [
+        {
+          "year": 2020,
+          "true": {
+            "n": 1,
+            "mean": -0.02791613980425172,
+            "median": -0.02791613980425172,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.12401208259196417,
+            "median": 0.12401208259196417,
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2021,
+          "true": {
+            "n": 2,
+            "mean": -0.009069712256874333,
+            "median": -0.009069712256874333,
+            "positive": 1,
+            "negative": 1
+          },
+          "false": {
+            "n": 3,
+            "mean": 0.12057452376143668,
+            "median": 0.003348999993295247,
+            "positive": 2,
+            "negative": 1
+          }
+        },
+        {
+          "year": 2022,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2023,
+          "true": {
+            "n": 2,
+            "mean": -0.008105557956229857,
+            "median": -0.008105557956229857,
+            "positive": 1,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.013074261982558925,
+            "median": 0.013074261982558925,
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2024,
+          "true": {
+            "n": 1,
+            "mean": -0.06477903435307053,
+            "median": -0.06477903435307053,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 2,
+            "mean": 0.01450938532461656,
+            "median": 0.01450938532461656,
+            "positive": 2,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2025,
+          "true": {
+            "n": 1,
+            "mean": -0.21436458278563533,
+            "median": -0.21436458278563533,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.13929709866105625,
+            "median": -0.13929709866105625,
+            "positive": 0,
+            "negative": 1
+          }
+        },
+        {
+          "year": 2026,
+          "true": {
+            "n": 5,
+            "mean": 0.1365207162501673,
+            "median": 0.14771605419617193,
+            "positive": 4,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.026837028517700867,
+            "median": -0.026837028517700867,
+            "positive": 0,
+            "negative": 1
+          }
+        }
+      ]
+    },
+    "S2": {
+      "exact_remaining_layers": [
+        {
+          "remaining": 0,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 1,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.026837028517700867,
+            "median": -0.026837028517700867,
+            "positive": 0,
+            "negative": 1
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 2,
+          "true": {
+            "n": 1,
+            "mean": -0.02028459345532506,
+            "median": -0.02028459345532506,
+            "positive": 0,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.003348999993295247,
+            "median": 0.003348999993295247,
+            "positive": 1,
+            "negative": 0
+          },
+          "common_weight_min_n": 1,
+          "true_minus_false": -0.023633593448620305
+        },
+        {
+          "remaining": 3,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 4,
+          "true": {
+            "n": 1,
+            "mean": 0.004073477542865345,
+            "median": 0.004073477542865345,
+            "positive": 1,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 5,
+          "true": {
+            "n": 2,
+            "mean": -0.06062269146746095,
+            "median": -0.06062269146746095,
+            "positive": 1,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.06477903435307053,
+            "median": -0.06477903435307053,
+            "positive": 0,
+            "negative": 1
+          },
+          "common_weight_min_n": 1,
+          "true_minus_false": 0.004156342885609579
+        },
+        {
+          "remaining": 6,
+          "true": {
+            "n": 5,
+            "mean": 0.1273153774469373,
+            "median": 0.11741199976494086,
+            "positive": 4,
+            "negative": 1
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 7,
+          "true": {
+            "n": 1,
+            "mean": 0.12401208259196417,
+            "median": 0.12401208259196417,
+            "positive": 1,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 8,
+          "true": {
+            "n": 3,
+            "mean": 0.1694067237982668,
+            "median": 0.17177859099717602,
+            "positive": 3,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        },
+        {
+          "remaining": 9,
+          "true": {
+            "n": 5,
+            "mean": -0.06803954725712272,
+            "median": -0.03642343058401443,
+            "positive": 1,
+            "negative": 4
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "common_weight_min_n": 0,
+          "true_minus_false": null
+        }
+      ],
+      "common_layer_true_minus_false_min_n_weighted": -0.009738625281505363,
+      "common_weight_total": 2,
+      "by_year": [
+        {
+          "year": 2020,
+          "true": {
+            "n": 2,
+            "mean": 0.04804797139385622,
+            "median": 0.04804797139385622,
+            "positive": 1,
+            "negative": 1
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2021,
+          "true": {
+            "n": 4,
+            "mean": 0.08505878669431653,
+            "median": -0.009069712256874333,
+            "positive": 2,
+            "negative": 2
+          },
+          "false": {
+            "n": 1,
+            "mean": 0.003348999993295247,
+            "median": 0.003348999993295247,
+            "positive": 1,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2022,
+          "true": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2023,
+          "true": {
+            "n": 3,
+            "mean": -0.0010456179766335962,
+            "median": 0.004073477542865345,
+            "positive": 2,
+            "negative": 1
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2024,
+          "true": {
+            "n": 2,
+            "mean": 0.01450938532461656,
+            "median": 0.01450938532461656,
+            "positive": 2,
+            "negative": 0
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.06477903435307053,
+            "median": -0.06477903435307053,
+            "positive": 0,
+            "negative": 1
+          }
+        },
+        {
+          "year": 2025,
+          "true": {
+            "n": 2,
+            "mean": -0.1768308407233458,
+            "median": -0.1768308407233458,
+            "positive": 0,
+            "negative": 2
+          },
+          "false": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "positive": 0,
+            "negative": 0
+          }
+        },
+        {
+          "year": 2026,
+          "true": {
+            "n": 5,
+            "mean": 0.1365207162501673,
+            "median": 0.14771605419617193,
+            "positive": 4,
+            "negative": 1
+          },
+          "false": {
+            "n": 1,
+            "mean": -0.026837028517700867,
+            "median": -0.026837028517700867,
+            "positive": 0,
+            "negative": 1
+          }
+        }
+      ]
+    }
+  },
+  "scope": "Independent strict cash/fee/label arithmetic, frozen summaries and local trace anchors/latch/other-exit logical consistency. A supplies independent full market-price execution oracle; no new OFF simulator or funded account executed here.",
+  "new_prepared_fetches": 0,
+  "new_funded_accounts": 0,
+  "new_market_calls": 0,
+  "new_fits": 0
+}

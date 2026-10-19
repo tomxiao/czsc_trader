@@ -1,0 +1,124 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 1,
+  "planned_account_count": 3,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "95cfe74d1f2e0aff08223cb78c06aacf5d946687695640ccc241b983278469cd",
+  "source_hashes": {
+    "protocols/design.json": "1845fea88102c01b84890b8571842731ad2b1722977e03bd7a2be113d76532b3",
+    "others/synthetic_precheck.json": "8d48e4ba96de03020bce1cd4e3965b0aa9d7fd1cc6b57c0c8f539f98af0e71c1",
+    "others/audit_prefix_precheck.json": "4b115175d406483cac489f3e8f4e1b26f6cbff1efcdfc56f619fa941e8abf47b",
+    "src/audit_accounts.py": "07a23131db5a81e726b3b53ac8e44bf4e9e6cfea190541a8e5534e84f72e4b78",
+    "src/offline_inputs.py": "731e8fd0cb14859789f54083298b9140e12d1e50be5d71bb1093ab7f5313b380",
+    "src/precheck.py": "c77b3be8a05b2ddce266fdd1cf50590465e3d6ef70d60a5632712a6e323ffc5f",
+    "src/prefix_precheck.py": "a3daafbbc356ca7f5154e697cecbfa97c84a053e59278480c7a53893310da76b",
+    "src/run_accounts.py": "3eea3fcd79b0bb80f4360de64b666b1745da52179a28a034d37d68e566180bcb",
+    "src/strategy_runtime/strategies/shock_state_policy.py": "ac4fcdbdc5c46b1d43f31f53dda2de0635fea8f4f0cff8889a083a86f87e76f3"
+  },
+  "external_source_hashes": {
+    "research/S014/materials/20261020_shock_state_diagnosis/authorization.json": "b43c4677ec2b7b87574cfbc64cc5fce432442c17f7bdb25e2c9ea06540bc8e98",
+    "research/S014/materials/20261020_shock_state_diagnosis/policy_decision.json": "a49e4aa7187cc4bfd172e718f2ba4d67d624544b9a141d40e1f747ff8cc6dac1",
+    "research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json": "bfbc70b917bdad2dc711dbc9cbd6c4e17ad6beabbb924822c3d1364e5f730971",
+    "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_locked_method_review.json": "8f4ab32b7f56f7489a37336ce52b9d431da5844e876688566dd6282fec899ff8",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_evaluation_protocol.json": "49b6d52c8769784dcb7fc2ce775f7a12f92023a738b76b31722570f563e3ff9f",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_source_focused_review.json": "50676cc61f7052ebbfbc73d74e529e5ccfd54cadb753ecd3b812d8d1456980c7",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_source_review.json": "49406d72ea7cb0cfb49a9f123f11ab25a50fb39b5dc2d812826326ffc349807a",
+    "research/S014/experiments/EX049_20261020/others/final_verification.json": "8596c8fe516be2673ebea5a6e173e844f0b9bc4265462d59db147bccdee61327",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_off_independent_review.json": "accbf0cfdb3f281430820274a1dd7ec9b502b84a4f93e9425b34fa6eaf49249c",
+    "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+    "research/S014/experiments/EX046_20261020/others/accounts/run-001.json": "4d909358304bad93e994ee5a796c02d7c61f4540f7ac6e9a392cd9821dc20caa",
+    "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3",
+    "research/S014/experiments/EX047_20261020/src/audit_accounts.py": "2cdc8704da12ebbed757cc2d82d92f2284b48e9196fc9234f1c6490ae657e471",
+    "research/S014/experiments/EX043_20261019/src/precheck.py": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46",
+    "research/S014/experiments/EX041_20261019/src/precheck.py": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a",
+    "research/S014/experiments/EX040_20261019/src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3",
+    "research/S014/experiments/EX050_20261020/src/offline_inputs.py": "731e8fd0cb14859789f54083298b9140e12d1e50be5d71bb1093ab7f5313b380",
+    "research/S014/experiments/EX017_20261017/src/pinned_inputs.py": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "mode": "ORIGINAL_C9461_CONTROL",
+      "parameters": {
+        "policy_profile": "ORIGINAL_C9461_CONTROL"
+      },
+      "candidate": "S014-C9500",
+      "runtime_sha256": "e4ad5412836fc4ef0f9779eb8b45b260db92e6feb51cfcff8d192292d37e28b1",
+      "payload_sha256": "aeac9f78a384cf475bb7628da8854a8fb83849790d75cdbc9de03a53bcf67a70",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX050_20261020"
+        },
+        "evidence_id": "aeac9f78a384cf475bb7628da8854a8fb83849790d75cdbc9de03a53bcf67a70.json",
+        "sha256": "aeac9f78a384cf475bb7628da8854a8fb83849790d75cdbc9de03a53bcf67a70",
+        "media_type": "application/json",
+        "name": "ex050-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD",
+      "parameters": {
+        "policy_profile": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD"
+      },
+      "candidate": "S014-C9501",
+      "runtime_sha256": "bc4f9f5cbe646bab7513a9fe6ff90e99070f741a8a2b95740d589c73f54ef8d7",
+      "payload_sha256": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX050_20261020"
+        },
+        "evidence_id": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500.json",
+        "sha256": "b767926b44701252a5d11e018e9b13ba987e91aa75c23985249047f4a3174500",
+        "media_type": "application/json",
+        "name": "ex050-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 2,
+      "mode": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD",
+      "parameters": {
+        "policy_profile": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD"
+      },
+      "candidate": "S014-C9502",
+      "runtime_sha256": "6caa666ee13043001cca78987068da017604d7de30605b27c510f4771ce01984",
+      "payload_sha256": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX050_20261020"
+        },
+        "evidence_id": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320.json",
+        "sha256": "5d8b2bf39126e4ddc0ccb600d5645cb9300072a3a96a0a9bb4fd81313e19d320",
+        "media_type": "application/json",
+        "name": "ex050-payload-002",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "7e96ec1fddd543bd97adbd4aa83b7445ad5db272c1127836a4ff2f8b3597394b",
+  "economic_complete_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "2026_role": "Original partial-year economic acceptance through 2026-10-15, not annualized; all seven original annual goals retained"
+}

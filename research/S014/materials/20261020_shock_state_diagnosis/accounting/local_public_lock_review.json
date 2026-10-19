@@ -1,0 +1,129 @@
+{
+  "status": "PASS_PUBLIC_COMPONENT_SOURCE_LOCK",
+  "reviewer": "A",
+  "source_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90.json",
+    "sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+    "media_type": "application/json",
+    "name": "ex049-component-source-lock",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_lock_sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+  "source_gate": {
+    "status": "PASS",
+    "source_lock_sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+    "reviews": [
+      {
+        "reviewer": "A",
+        "sha256": "b5af76d429216f6d5fcb47dee8447e7492e40148ed5b868258171bca948d97b6",
+        "ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX049_20261020"
+          },
+          "evidence_id": "b5af76d429216f6d5fcb47dee8447e7492e40148ed5b868258171bca948d97b6.json",
+          "sha256": "b5af76d429216f6d5fcb47dee8447e7492e40148ed5b868258171bca948d97b6",
+          "media_type": "application/json",
+          "name": "ex049-source-A-review",
+          "schema": null,
+          "schema_version": null
+        }
+      },
+      {
+        "reviewer": "B",
+        "sha256": "3e7e12fce1437265509398516cf86c5f1f9c21e1ca05db1ec79367b1707fa2b8",
+        "ref": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S014",
+            "experiment_id": "EX049_20261020"
+          },
+          "evidence_id": "3e7e12fce1437265509398516cf86c5f1f9c21e1ca05db1ec79367b1707fa2b8.json",
+          "sha256": "3e7e12fce1437265509398516cf86c5f1f9c21e1ca05db1ec79367b1707fa2b8",
+          "media_type": "application/json",
+          "name": "ex049-source-B-review",
+          "schema": null,
+          "schema_version": null
+        }
+      }
+    ]
+  },
+  "funded_index_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "3c4a0caf1b27bcdccfe90e6f88d36867b3f5ac4f51d905e243fd890521ccdfb9.json",
+    "sha256": "3c4a0caf1b27bcdccfe90e6f88d36867b3f5ac4f51d905e243fd890521ccdfb9",
+    "media_type": "application/json",
+    "name": "ex049-explicit-empty-funded-index",
+    "schema": null,
+    "schema_version": null
+  },
+  "checks": {
+    "formal S014 exact immutable evidence": 4,
+    "current public source lock local bytes exact": 1,
+    "all source bytes exact protocols/design.json": 1,
+    "all source bytes exact others/synthetic_precheck.json": 1,
+    "all source bytes exact src/local_cycle.py": 1,
+    "all source bytes exact src/precheck.py": 1,
+    "all source bytes exact src/prepared_reader.py": 1,
+    "all source bytes exact src/run_component.py": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/authorization.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/questions.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/method_proposal.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/method/method_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_alignment.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/review/method_adversarial_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/method_decision.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/method_state_boundary_clarification.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/execution_precision_clarification.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/method/local_state_boundary_addendum.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_semantics_addendum.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_review_v2.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population.csv": 1,
+    "all original upstream bytes exact research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_yearly.csv": 1,
+    "all original upstream bytes exact research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py": 1,
+    "all original upstream bytes exact research/S014/experiments/EX046_20261020/others/accounts/run-001.json": 1,
+    "all original upstream bytes exact research/S014/experiments/EX046_20261020/others/bindings/001.json": 1,
+    "all original upstream bytes exact research/S014/materials/20261019_exante_hold_exit/accounting/audit_policy_accounts.py": 1,
+    "all original upstream bytes exact research/S014/materials/20261019_2024_diagnosis/accounting/clock_execution_oracle.py": 1,
+    "all original upstream bytes exact packages/trading_execution_engine/src/trading_execution_engine/fills.py": 1,
+    "all original upstream bytes exact packages/trading_execution_engine/src/trading_execution_engine/market.py": 1,
+    "current formal source map exact": 1,
+    "source formal byte ref exact": 32,
+    "component only no funded identity dispatch": 1,
+    "empty funded resource index explicit and public": 1,
+    "sourcegate current source lock": 1,
+    "two distinct independent source reviewer proofs": 1,
+    "public reviewer exact current runner": 2,
+    "A final runner review actual exact": 1,
+    "final originalON before any OFF labels": 1
+  },
+  "check_count": 78,
+  "implementation": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_public_lock_review.py",
+    "sha256": "171168a7da938a965d2334e193c0f50e07b0bc202edced9acbd5cd6005701046"
+  },
+  "allowed_next": "Only original21 ON controls and D-known states; OFF still requires A+B actualON exact currentlock/ONref gates.",
+  "new_funded_accounts": 0,
+  "actual_prepared_fetches": 0,
+  "new_real_OFF_labels": 0
+}

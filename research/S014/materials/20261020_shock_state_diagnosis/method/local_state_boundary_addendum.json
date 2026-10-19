@@ -1,0 +1,29 @@
+{
+  "status": "METHOD_BOUNDARY_CLARIFICATION_BEFORE_ANY_NEW_LABEL",
+  "parent_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/method/method_review.json",
+    "sha256": "19320130b739d3ee0d5856b87c24ee582447ef1cbee790b7e03f7772a77ebd90"
+  },
+  "A_alignment": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_alignment.json",
+    "sha256": "b473f80af3984574dba2a4a4502201adc02b6f7a27b76572d59cfafd76b77b46"
+  },
+  "baseline_fields_permitted_after_original_exit": [
+    "Original authenticated market OHLC/status/limits/calendar and projected execution quotes",
+    "Market-only causal features: support_floor, ATR/MA/returns/known flags computed from unchanged original input clock"
+  ],
+  "baseline_state_not_permitted_after_branch_divergence": [
+    "Original subsequent held/entry/entryfill/age/peak/net_profit/cost_loss state",
+    "Original subsequent selected_cost_exit/ordinary_support_exit/deadline/inheritedpending/target/intent fields",
+    "Later baseline fills/new BUY/quantity or completion/pause used to seed a branch"
+  ],
+  "local_owned_state": "Each ON/OFF simulation must own actual original entryfill cost, fixed Q, original entry index/deadline/reservation, D-open fill processing, held, entry-dayGRACE and inherited pending until its first actual sale. Recompute netP/costloss and exit selection each D from this state plus market-only data. No resetting original entry age/deadline at SHOCK D.",
+  "control_start": "Original actual BUY E is authenticated as seed. At E open inject only this original filled BUY/Q/price/fee, then evaluate E close if it is an original source decision day. Original prospective BUY price contract is authenticated from its order and public resolver; no alternative BUY is generated.",
+  "control_end": "Stop at the first actual SELL execution event at E open. Compare ON all source D decisions, targets, exit predicates and SELL intents from entry through the last still-held D and each blocked/pending D, then compare the final SELL E order linkage/fill availability/trigger/price/Q/fee and zero held quantity. The original full account's later close on that same E date may already plan a new BUY or consume a pause slot. That after-sale flat decision belongs to a later opportunity and is outside this one-cycle target equivalence contract; record it only as provenance, never simulate it or demand its target as a local control value.",
+  "cash_common_terminal": "Original ON after-fee proceeds stay cash without interest/re-entry until both branches have liquidated. On the actual population the later branch normally defines the common point; no annual or later policy path enters the label.",
+  "cutoff_clock": "Use original absolute calculation/entry indices and valid D-to-E pairs, not a freshly zero-based local age to set deadlines. Source decisions end2026-10-14; only pre-existing pending instructions may execute2026-10-15. If not liquidated then preserve CENSORED and null label, do not invent D10/15 decisions.",
+  "no_new_labels_or_state_values": true,
+  "new_accounts": 0,
+  "new_market_fetches": 0,
+  "new_fits": 0
+}

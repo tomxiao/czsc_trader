@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "reviewed_files": [
+    {
+      "path": "research/S014/experiments/EX049_20261020/src/local_cycle.py",
+      "sha256": "58827ad8d59e4b3ebd99f250a25a05f8a1f552a9ebf8626ed1fef027f9134f6b"
+    },
+    {
+      "path": "research/S014/experiments/EX049_20261020/src/prepared_reader.py",
+      "sha256": "078c5d78033f40e2c73767b6ac92f1f36dbc296282ff0b00e8159bf68d2952a7"
+    },
+    {
+      "path": "research/S014/experiments/EX049_20261020/src/precheck.py",
+      "sha256": "74277aacf810152efc390d7e469e62b79395968070ed66e4b26bdd6b14ea3eda"
+    }
+  ],
+  "check_count": 268,
+  "checks": {
+    "exact final source local_cycle.py": 1,
+    "exact final source prepared_reader.py": 1,
+    "exact final source precheck.py": 1,
+    "root final locked method method_decision.json": 1,
+    "root final locked method method_state_boundary_clarification.json": 1,
+    "independent toy cycle exact liquidation ON": 1,
+    "independent toy complete trace coverage ON": 1,
+    "independent toy original-entry state D": 12,
+    "independent toy original-entry state valid_E": 12,
+    "independent toy original-entry state entry_index": 12,
+    "independent toy original-entry state deadline_index": 12,
+    "independent toy original-entry state reservation_index": 12,
+    "independent toy original-entry state holding_age": 12,
+    "independent toy original-entry state target_position": 12,
+    "independent toy original-entry state exit_pending": 12,
+    "independent toy original-entry state pending_inherited": 12,
+    "independent toy original-entry state deadline_exit": 12,
+    "independent toy original-entry state profit_exit_eligible": 12,
+    "independent toy original-entry state shock_condition": 12,
+    "independent toy original-entry state selected_shock_exit": 12,
+    "independent toy original-entry state selected_cost_exit": 12,
+    "independent toy original-entry state selected_risk_exit": 12,
+    "independent toy original-entry state ordinary_support_exit": 12,
+    "independent toy original-entry state entry_grace_eligible": 12,
+    "independent toy original-entry state entry_grace_applied": 12,
+    "independent toy original-entry state net_profit": 12,
+    "independent toy original-entry state cost_loss_price": 12,
+    "independent toy cycle exact liquidation OFF_LOCAL_CYCLE": 1,
+    "independent toy complete trace coverage OFF_LOCAL_CYCLE": 1,
+    "independent fixed state expression PRIOR_TREND_ESTABLISHED": 3,
+    "independent fixed state expression NON_FINAL_DAY_DOMINATED": 3,
+    "independent fixed state expression r1_log": 3,
+    "independent fixed state expression r4_log": 3,
+    "S2 nonfinite or nonpositive explicit UNKNOWN": 4,
+    "reader no preparation evaluation or market export": 1,
+    "reader only existing prepared fetch": 1,
+    "32 current pure receipt source bound": 1
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.py",
+    "sha256": "66a3a2aefb926db3e865854485e17ddfcf0db2c4af74216ec46b385399183e32"
+  },
+  "independent_oracle": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_oracle.py",
+    "sha256": "2f71f7b3bbc481b16a0ade17a2abc539a21d719d1a7394cafda85890391b0174"
+  },
+  "synthetic_receipt": {
+    "path": "research/S014/experiments/EX049_20261020/others/synthetic_precheck.json",
+    "sha256": "b76a0f7f2763822a7c06de8d5ff2c1cbf389590625aec6b0a310efc082c69acc"
+  },
+  "manual_review": [
+    "Typed original actual seed and unchanged absolute entry+9/+10; own-entry state retained after originalSELL, no later originalcycle holding flags reused.",
+    "Mandatory pending/deadline, cost/support/GRACE retained, blockedSELL persists, fillE-open ends event without newBUY or laterDclose.",
+    "Runtime originalBUY reconstruction in source4 units and actual liquidation in execution4 anchoredunits are distinct and authenticated; actual fundedQ fixed.",
+    "Original prepared-only reader and emptyproviders plus socket/requests deny, no newdata/market export/account computation.",
+    "S2 original draft finite guard omission corrected before any actual fetch/state/ON/OFF; originaldraft30receipt and source bytes preserved.",
+    "No real state or alternative label read in this source review. All21 ON exact controls and publicsource lock still required before OFF."
+  ],
+  "resources": {
+    "actual_input_fetches": 0,
+    "real_ON_controls": 0,
+    "real_OFF_labels": 0,
+    "new_funded_accounts": 0,
+    "fits": 0
+  }
+}

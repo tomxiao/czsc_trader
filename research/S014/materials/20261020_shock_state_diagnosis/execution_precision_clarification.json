@@ -1,0 +1,15 @@
+{
+  "status": "ORIGINAL_PUBLIC_FILL_PRECISION_RETAINED_NO_CONTRACT_CHANGE",
+  "parent_method_sha256": "e37d22bab5e8ae0806d8a63b1d57625eefeed79d485f310047f04beeb3ba7ec8",
+  "source": {
+    "path": "packages/trading_execution_engine/src/trading_execution_engine/fills.py",
+    "sha256": "8e543cf6ec21b5653b827195a5cee48b912004f0944a6179098597cf1d2db992",
+    "lines": [121, 128]
+  },
+  "definition": "Terminate at the modeled filled SELL event in E before any later local decision or reentry. Original21 ON fills are OPEN_MARKET; alternative modeled fills must retain the exact unchanged public resolve_fill trigger, filled_at and time_precision, including DAILY_OPEN_PLUS_TICK with SESSION precision when applicable. Do not force an alternative to OPEN_MARKET because earlier prose abbreviated the E execution event as E-open.",
+  "causal_boundary": "E high/low may resolve a modeled E order under the original execution contract; they never become an earlier D-known state input. SESSION precision does not establish an observed intraday timestamp.",
+  "blocked_sell": "Unfilled attempts remain pending under the original rules; no made-up open fill, new epsilon, cash or cutoff liquidation.",
+  "alternative_status": "Counterfactual model-filled only, not a new actual-funded trade",
+  "new_funded_accounts": 0,
+  "platform_changes": 0
+}

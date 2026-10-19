@@ -1,0 +1,101 @@
+{
+  "status": "PASS_COMPLETE_THREE_POLICY_INTERPRETATION",
+  "reviewer": "B",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/independent_policy_audit_summary.json": "352ff4e024249046c35ede29960d10021451408cbe67cf9be6a4507a5f6c02ed",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/full_policy_yearly_summary.csv": "9cd2fa7483f68283645cf1cb31660c7a99aec74c74c36c7798aed4352db46f99",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/full_policy_summary.csv": "90810349eb301c81684fe2b238cfcded1b090da8ec1b645aae999cb079b85dc4",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/full_policy_first_SHOCK_actual_cycles.csv": "d9b20d18d492d8e139e143958a2172a2f7b19d9e6cc485969f41a9ded419d080",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_actual_path_bridge_review.json": "b56ad79236b57cf49b02bf3d44ae1f983038f5a6b36c2950306ac5bdf972d0f7",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_actual_2025_2026_cycle_bridge.csv": "1e027a567607a2dd574c2ed645bd2a7449a80be80a5eb717fcdfebef35592fec",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_runner_review.json": "3b8e89ed1fc78fc60d1257689aabd325e8170f98549c5b4fd714b8a46439bf90",
+    "research/S014/materials/20261020_shock_state_diagnosis/policy_decision.json": "a49e4aa7187cc4bfd172e718f2ba4d67d624544b9a141d40e1f747ff8cc6dac1",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_account_000_independent_review.json": "d7f5ad4a2448b3700ab3c4e1fc31102ce340b8998d36b5b50cd303bb355b24c5",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_account_001_independent_review.json": "f3fa3b2018d34aa87e6573943f837215171430c428d035328439abfba2ef06e7",
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_account_002_independent_review.json": "a45adbdf991b0d6b1343ed06aa217a0c77b729cab525d86bad87068bfb217f35"
+  },
+  "plain_conclusion": "AGE是有价值的新诊断方向：2026上涨捕获修复并过原门，但2025仍少赚且未达标。S2既未保住2025，也未修复2026。三臂都未通过全部原7年目标，不能登记为合格候选、按年份拼接或把期末财富最高替代年度验收。",
+  "original_goals": {
+    "C9500_control": {
+      "return_pass_years": 6,
+      "drawdown_pass_years": 7,
+      "frequency": 3.361753958587089,
+      "all_original_goals": false,
+      "return_failed_years": [
+        2026
+      ]
+    },
+    "C9501_S2": {
+      "return_pass_years": 5,
+      "drawdown_pass_years": 7,
+      "frequency": 3.215590742996346,
+      "all_original_goals": false,
+      "return_failed_years": [
+        2025,
+        2026
+      ]
+    },
+    "C9502_AGE": {
+      "return_pass_years": 6,
+      "drawdown_pass_years": 7,
+      "frequency": 3.3252131546894033,
+      "all_original_goals": false,
+      "return_failed_years": [
+        2025
+      ]
+    }
+  },
+  "annual_key_facts_percent": {
+    "control2025": 47.0319806466204,
+    "S2_2025": -4.713888345800121,
+    "AGE2025": 17.96029869416851,
+    "required2025": 40.18786395205854,
+    "AGE2025_shortfall_pp": 22.227565257890035,
+    "control2026": 79.19807885357002,
+    "S2_2026": 128.8663656281938,
+    "AGE2026": 203.9393405416583,
+    "required2026": 196.4644018810632,
+    "AGE2026_margin_pp": 7.4749386605951,
+    "AGE2026_drawdown": 25.61794093421327,
+    "BH2026_drawdown": 59.77359838973151
+  },
+  "AGE2025_actual_chain": {
+    "entry": "2025-03-21 actualBUY5.66 in both accounts with different own quantities: control66400, AGE84700.",
+    "first_SHOCK": "D2025-03-27 age4: control exits E3/28 at5.97, net closed-cycle+5.26629%; AGE holds and exits E4/1 at5.18, net closed-cycle-8.66342%.",
+    "protective_exit": "D3/31 both NET1ATR cost and ordinary support are TRUE. Do not call the April1 sale support-only or a new unexplained failure.",
+    "feedback": "AGE realized loss arms its own one-shot pause. First eligible D4/9 consumes planned E4/10 slot until D4/24; it does not place a BUY. Control actually buys4/10 at4.69 and sells4/24 at5.09. AGE next actualBUY4/25 restores ordinary policy.",
+    "retained_good_actions": "AGE still actually buys5/30 at5.12 and sells6/16 at6.34; actual6/19 age0 SHOCK exits6/20 at7.81. Keeping these two good actions is insufficient for the annual target.",
+    "descriptive_own_year_denominator_bridge": {
+      "control_opening": 358623.04900000006,
+      "AGE_opening": 456974.0369999995,
+      "March21_cycle_control_contribution_pp": 5.524398962990236,
+      "March21_cycle_AGE_contribution_pp": -9.097704603292385,
+      "March_cycle_difference_pp": -14.622103566282622,
+      "April10_cycle_missing_AGE_difference_pp": -9.238022512044374,
+      "combined_March_April_difference_pp": -23.860126078326992,
+      "all_other_actual_path_contribution_difference_pp": -5.211555874124894,
+      "total_annual_return_difference_pp": -29.07168195245189,
+      "limit": "Descriptive accounting identity on different own funding/quantities, not additive causal effects of hold and pause. Missing April10 actual participation is not an executable hypothetical profit credited to AGE."
+    },
+    "denominator_warning": "AGE2025 ending539047.939 exceeds control527290.572 because it began2025 with more accumulated capital; that does not mean AGE2025 return beat control. Annual returns remain17.96% versus47.03%."
+  },
+  "AGE2026_actual_mechanism_and_counterexamples": [
+    "AGE retains entry-day Jan9 original SHOCK exit EJan12 at6.80 and later Jan26 actualBUY; unlike S2 it does not extend Jan9 into a realized loss and a changed January pause/entry chain.",
+    "It extends held Jan29 toFeb9 sale9.01, Feb11 toMar4 sale11.50, Mar6 toMar19 sale18.50 and Sep1 toSep10 sale20.58. These capture more continuation with all independent cost/support/deadline exits still active.",
+    "It also holds Jan6 age8 and exitsJan8 at6.30 instead of controlJan7 at6.46, a real negative continuation case. Known holding age is not a universal continuation signal.",
+    "Observed2026 actualBUY entry dates match control; quantities and cash become different through prior returns. Later losing cycles therefore also lose larger amounts relative to own year opening, especially September11 entry. Do not present the four extensions as isolated causal or net-free gains."
+  ],
+  "S2_translation_counterevidence": [
+    "Its local+0.4203pp increment over alwayshold did not deliver the original annual goals. This supports the pre-run caution about clock composition and action-to-account feedback, without proving the entire return-shape family useless.",
+    "It still holds March27 and entry-day June19/2025 and Jan9/2026; the actual June19 cycle closesJune26 at6.30 with-10.5631% versus controlJune20 at7.81 with+10.8733%.",
+    "Its own population adds an August22/2025 firstSHOCK cycle not in original21. Full policy changes opportunity population, actual quantity and pause feedback; original component label rows cannot be transplanted as the policy result."
+  ],
+  "recommendation": "Retain C9461 as the exact control and retain C9502 as a valuable further diagnostic direction. C9502 resolves the2026 return failure but trades it for a2025 failure; neither supersedes the other as a fully qualified strategy. Stop adding accounts this round.",
+  "next_most_discriminating_question": "After AGE has chosen continuation, can a fixed D-known deterioration rule reopen exit responsibility before a profitable holding turns into a realized loss and then a missed planned opportunity, while retaining the2026 extensions? Compare with frozen AGE on its own actual history; select no calendar dates, nearby thresholds or retrospective per-year switches. Old MA/return/giveback negative routes must be checked before proposing new information.",
+  "observable_boundary_example_not_a_new_rule": "AGE D3/28/2025 still had own net mark+0.5055%, with support/cost exits bothFALSE, after D3/27+8.6165%; D3/31 was already-8.3108% with both exitsTRUE. This shows an unaddressed D-known deterioration interval, not proof that a particular earlier rule would have earned the next sale or preserved all good continuations.",
+  "selection_and_limits": "All2020-26 already seen. S2 fullpolicy selection and AGE direction are development choices; no unseen validation. Current3 actual accounts and21 local component labels are distinct resources. No new sample/CI/noharm/buffer economic gate, registration or phase advancement.",
+  "new_funded_accounts_by_reviewer": 0,
+  "new_market_calls": 0,
+  "new_fits": 0
+}

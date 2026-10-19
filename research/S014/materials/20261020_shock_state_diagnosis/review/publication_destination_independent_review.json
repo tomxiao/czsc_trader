@@ -1,0 +1,26 @@
+{
+  "status": "PASS_DESTINATION_AND_RESOURCE_SEMANTICS_ONLY_NOT_EXECUTION_AUTHORITY",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    ".tmp/s014_publish_shock_state_v2.py": "48bbdf46b31b7ee6206abc83fd1f3ec8489a88d3cd847ca9a26bc5aecc99e06d",
+    ".tmp/s014_publish_shock_state.py": "5a0a56e66880dcde5fe82eeed0a5f2ceeb025f599c29eb720a8b8d81fd6a65d8",
+    "src/czsc_trader/application/evidence_service.py": "28c3c29026063163be22dc445fbb096d0b907dfac10d33ed9f88d4964f0ff218",
+    "src/czsc_trader/research_tools/evidence.py": "6374c4b1584f1e0123329edb3c9e5b9daeead5eeb00c5328b33ed6a992623c2f",
+    "research/S014/materials/20261020_shock_state_diagnosis/publication_destination_review.json": "b3eab2811cda8812222020a3fbd30a22af247305a63b7fa33bba4a74586d135f",
+    "research/S014/materials/20261020_shock_state_diagnosis/publication_destination_review_v2.json": "a578708c7b54a0606a4652be0d85f8ba4d966c07de01e6dd3317abd2c6b883b4",
+    "research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json": "bfbc70b917bdad2dc711dbc9cbd6c4e17ad6beabbb924822c3d1364e5f730971"
+  },
+  "review": [
+    "v2 only splits records assignment and adds explicit EX049 zero-funded/21-original-event guards. v1 retained; no hidden missing-index fallback.",
+    "EX049 requires an existing empty accounts_index.records. Only an independently authorized and locked EX050 may contain funded records.",
+    "Public evidence writes local S014 evidence plus local publication manifest/receipt; research intent gets one new key with exact old canonical intent and1062 protected-file checks before/after.",
+    "Empty ProviderConfig and blocked socket connect/create_connection; no data prepare, account evaluation, candidate registration, upload, production or remote git action.",
+    "Final report/judgment/review and declared EvidenceRefs are exact-hash verified before writes. This draft does not authorize future unselected EX050."
+  ],
+  "not_run": true,
+  "remaining_prerequisites": [
+    "Freeze final report/judgment and all actual component/funded resources before final report review.",
+    "Verify final experiment refs and final publisher SHA again in final report gate.",
+    "Only separately locked authorized EX050 may be included; component labels never count as funded execution."
+  ]
+}

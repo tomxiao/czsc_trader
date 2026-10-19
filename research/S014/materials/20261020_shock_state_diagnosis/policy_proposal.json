@@ -1,0 +1,58 @@
+{
+  "status": "PROPOSED_AFTER_EX049_LABELS_PENDING_INDEPENDENT_COMPONENT_REVIEW_AND_ROOT_LOCK",
+  "role": "RSCH",
+  "experiment_if_selected": "EX050_20261020",
+  "decision_question": "Does the small local gain of NON_FINAL_DAY_DOMINATED conditional holding survive own-cycle entry, completion, pause and cash feedback in a full continuous policy, and meet the original annual goals?",
+  "selection_after_seen_labels": true,
+  "component_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5.json",
+    "sha256": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+    "media_type": "application/json",
+    "name": "ex049-off-modelled-local-cycle-labels",
+    "schema": null,
+    "schema_version": null
+  },
+  "why_selected": "Fixed S2 local choice mean +3.767404pp versus always-hold +3.347085pp over the same21 original cycles; excludes three events with two negative and one positive continuation labels. This is a small, already-seen action-use lead requiring actual-account translation, not proof of predictive superiority.",
+  "why_not_S1": "The predeclared trend-TRUE hold group mean is below the FALSE group and its frozen choice below always-hold. Do not reverse its direction after seeing outcomes.",
+  "strongest_counterevidence": "Both2025March27 andJune19 and2026January9 remain S2TRUE and have negative local continuation labels. Pooled improvement does not establish a repair of2025 or2026 original annual targets; full results are not inferred from these labels.",
+  "proposed_runs": [
+    {
+      "index": 0,
+      "diagnostic_id": "S014-C9500",
+      "policy": "ORIGINAL_C9461_CONTROL"
+    },
+    {
+      "index": 1,
+      "diagnostic_id": "S014-C9501",
+      "policy": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD"
+    }
+  ],
+  "causal_policy": [
+    "Use each policy own actually filled entry cycle. On its first raw eligible positive-net-profit SHOCK decisionD, evaluate exact frozen S2 formula once, with currentD and earlier source closes.",
+    "TRUE disables SHOCK exits for the remainder of this actual cycle via a new independent latch; FALSE follows original SHOCK. Preserve rawSHOCK diagnostics. No reclassification each day, yearly switch, calendar oracle or transplant of original21 dates.",
+    "Cost1ATR/support/entrydayGRACE/H10 absolute deadline/pending/reservation and own realized-loss skip-one remain as originalC9461. Pending is not cancelled and the SHOCK latch must not protect from other exits.",
+    "Unknown state is a declared technical failure with preserved evidence, not FALSE or a fallback. No parameter/period/threshold fit or scan."
+  ],
+  "accounts": "Two fresh full continuous original100000 accounts, original2020-01-02..2026-10-15 prepared source/execution bindings,1%LimitBuyHold,fee0.001 each side,T+1,lots/cash/limits/status unchanged. First source control must reproduce C9461 signal and complete economic ledgers before treatment dispatch.",
+  "evaluation": "All seven original annual return and strict drawdown goals, original partial2026 not annualized, actual closed trades/1642*60>=3. Show all years and terminal wealth; no new no-harm, safety-buffer, minimum-N, significance or robustness veto.",
+  "resource_boundary": {
+    "new_funded_accounts": 2,
+    "new_fits": 0,
+    "new_external_calls": 0,
+    "new_dependencies": 0,
+    "formal_registrations": 0,
+    "phase_advance": false
+  },
+  "sequence": "Independent component label review -> method review -> root final lock -> frozen source/reader/toy and independent source review -> public source lock -> fresh source control exact audit -> one treatment account -> original goal/actual path audit -> conclusions. Preserve failures and stop dependent steps; no automatic retry.",
+  "limits": "Selected after EX049 on fully shared-seen2020-26. One fixed mechanism, no untouched validation or future performance claim. Local means cannot be added to account returns.",
+  "bindings": {
+    "research/S014/materials/20261020_shock_state_diagnosis/method_decision.json": "e37d22bab5e8ae0806d8a63b1d57625eefeed79d485f310047f04beeb3ba7ec8",
+    "research/S014/experiments/EX049_20261020/others/off_labels.json": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5"
+  }
+}

@@ -1,0 +1,968 @@
+{
+  "status": "PASS_COMPONENT_EXECUTION_AND_INDEPENDENT_LABEL_AUDIT_SCOPE",
+  "source_lock_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90.json",
+    "sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+    "media_type": "application/json",
+    "name": "ex049-component-source-lock",
+    "schema": null,
+    "schema_version": null
+  },
+  "source_lock_sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+  "all_locked_sources_byte_unchanged": true,
+  "source_review_gate_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "68b2086954ea135552f9d47453b938b67d80c20c995f0ec4817ab297de7f43e5.json",
+    "sha256": "68b2086954ea135552f9d47453b938b67d80c20c995f0ec4817ab297de7f43e5",
+    "media_type": "application/json",
+    "name": "ex049-gate_source_review",
+    "schema": null,
+    "schema_version": null
+  },
+  "independent_ON_gate_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "5ecae496c9da403590fe9bae37f6b221b48632b4ae224c10f9e88dbeb79ae841.json",
+    "sha256": "5ecae496c9da403590fe9bae37f6b221b48632b4ae224c10f9e88dbeb79ae841",
+    "media_type": "application/json",
+    "name": "ex049-gate_ON_independent",
+    "schema": null,
+    "schema_version": null
+  },
+  "original_actual_account": "Original C9461 EX046001 only",
+  "original_ON_component_control_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141.json",
+    "sha256": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141",
+    "media_type": "application/json",
+    "name": "ex049-on-component-control-and-D-known-states",
+    "schema": null,
+    "schema_version": null
+  },
+  "alternative_MODELLED_POSTHOC_labels_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5.json",
+    "sha256": "86909ac231df0f34eb67401586c910ac09ad87a0913e14a21ad610ed99e55dd5",
+    "media_type": "application/json",
+    "name": "ex049-off-modelled-local-cycle-labels",
+    "schema": null,
+    "schema_version": null
+  },
+  "N_original_actual_cycles": 21,
+  "N_ON_controls": 21,
+  "N_OFF_modelled_labels": 21,
+  "N_OFF_closed": 21,
+  "N_OFF_censored": 0,
+  "accounts": [],
+  "account_dispatches_including_failed_unknown": 0,
+  "succeeded_funded_accounts": 0,
+  "failed_funded_accounts": 0,
+  "unknown_funded_accounts": 0,
+  "funded_accounts_index_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "3c4a0caf1b27bcdccfe90e6f88d36867b3f5ac4f51d905e243fd890521ccdfb9.json",
+    "sha256": "3c4a0caf1b27bcdccfe90e6f88d36867b3f5ac4f51d905e243fd890521ccdfb9",
+    "media_type": "application/json",
+    "name": "ex049-explicit-empty-funded-index",
+    "schema": null,
+    "schema_version": null
+  },
+  "component_stages_completed": 2,
+  "component_stage_failures": 0,
+  "component_retries": 0,
+  "new_fits": 0,
+  "new_supplier_calls": 0,
+  "new_preparations": 0,
+  "original_market_exports": 0,
+  "formal_candidate_registrations": 0,
+  "reader_prepared_only_fetches": 16,
+  "prelock_synthetic_checks": 32,
+  "internal_ON_exact_checks": 1848,
+  "A_ON_independent_checks": 1773,
+  "B_ON_independent_checks": 2453,
+  "A_OFF_independent_checks": 4304,
+  "B_OFF_arithmetic_checks": 2244,
+  "independent_ON_audit_expression_corrections": 1,
+  "audit_correction": "A original failure and assistant retained; successor normalizes ISO T versus space timestamp expressions by exact pd.Timestamp instant and independently compares time_precision. No source/ON/control rerun, epsilon or execution change.",
+  "prelock_technical_changes": "Finite/ratio-overflow guards for UNKNOWN plus moving reader authentication/fetch into existing failure-retention try scopes. Normal formula/direction and cycle logic unchanged; prior sources/tests/review evidence preserved.",
+  "protected_previous_files_byte_unchanged": 1062,
+  "published_material_refs": {
+    "research/S014/materials/20261020_shock_state_diagnosis/method/component_accounting_exact_refs.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "f9a9215a2c199e729e9547670ee5f3627d9cb2b692c66a6b75fd1693dec69fee.json",
+      "sha256": "f9a9215a2c199e729e9547670ee5f3627d9cb2b692c66a6b75fd1693dec69fee",
+      "media_type": "application/json",
+      "name": "ex049-final-method-component_accounting_exact_refs",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/authenticate_shock_population.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "03665b12bb5434161841fd57eb8b053169a09766801d002c281807694e10e9f7.py",
+      "sha256": "03665b12bb5434161841fd57eb8b053169a09766801d002c281807694e10e9f7",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-authenticate_shock_population",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "5ba29d8c5ca37324926c25d4c4b1eb7fbf6325219298719f4e3e84ab564a716a.json",
+      "sha256": "5ba29d8c5ca37324926c25d4c4b1eb7fbf6325219298719f4e3e84ab564a716a",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-original_shock_population_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "217233eb58e35a032748e7a654b64c64d8789ffd67a166c477b104469c223f5f.csv",
+      "sha256": "217233eb58e35a032748e7a654b64c64d8789ffd67a166c477b104469c223f5f",
+      "media_type": "text/csv",
+      "name": "ex049-final-accounting-original_shock_population",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_yearly.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "353407fc316f941895ef759dc77e3973966c4a2882851cafc595202d83a6f0f7.csv",
+      "sha256": "353407fc316f941895ef759dc77e3973966c4a2882851cafc595202d83a6f0f7",
+      "media_type": "text/csv",
+      "name": "ex049-final-accounting-original_shock_population_yearly",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "b7f03ccb61bb1d9c313d9d54cf3399d6c80d65ab02c943548f442399de189f25.json",
+      "sha256": "b7f03ccb61bb1d9c313d9d54cf3399d6c80d65ab02c943548f442399de189f25",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_cycle_method_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_method_alignment.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "b473f80af3984574dba2a4a4502201adc02b6f7a27b76572d59cfafd76b77b46.json",
+      "sha256": "b473f80af3984574dba2a4a4502201adc02b6f7a27b76572d59cfafd76b77b46",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_cycle_method_alignment",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_cycle_oracle.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "2f71f7b3bbc481b16a0ade17a2abc539a21d719d1a7394cafda85890391b0174.py",
+      "sha256": "2f71f7b3bbc481b16a0ade17a2abc539a21d719d1a7394cafda85890391b0174",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_cycle_oracle",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_input_reader.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "efa785abaf7d2496c504176eac9364964d1dd365c258b6f286f66c44d31fe199.py",
+      "sha256": "efa785abaf7d2496c504176eac9364964d1dd365c258b6f286f66c44d31fe199",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_input_reader",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "32ca427dadf03d30df614b01d021c76397b65d3ad99381746c270e02c9db40dd.json",
+      "sha256": "32ca427dadf03d30df614b01d021c76397b65d3ad99381746c270e02c9db40dd",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_source_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_source_review.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "66a3a2aefb926db3e865854485e17ddfcf0db2c4af74216ec46b385399183e32.py",
+      "sha256": "66a3a2aefb926db3e865854485e17ddfcf0db2c4af74216ec46b385399183e32",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_source_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_runner_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "b5af76d429216f6d5fcb47dee8447e7492e40148ed5b868258171bca948d97b6.json",
+      "sha256": "b5af76d429216f6d5fcb47dee8447e7492e40148ed5b868258171bca948d97b6",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_runner_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_runner_review.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "52895afeece794dd394fc8576d0db971ad03df38a04ee6e1f8ad5aca1615ace6.py",
+      "sha256": "52895afeece794dd394fc8576d0db971ad03df38a04ee6e1f8ad5aca1615ace6",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_runner_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_public_lock_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "0433da6dae5004b652574b69bc06ac53b09c97da5d7928da48c3f493018c6ee5.json",
+      "sha256": "0433da6dae5004b652574b69bc06ac53b09c97da5d7928da48c3f493018c6ee5",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_public_lock_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_public_lock_review.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "171168a7da938a965d2334e193c0f50e07b0bc202edced9acbd5cd6005701046.py",
+      "sha256": "171168a7da938a965d2334e193c0f50e07b0bc202edced9acbd5cd6005701046",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_public_lock_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "2f1da418da0f288ae62b94afd6eac5d0246e6cacbf18d7f80b2fc66154f43c9a.py",
+      "sha256": "2f1da418da0f288ae62b94afd6eac5d0246e6cacbf18d7f80b2fc66154f43c9a",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_on_independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_failure.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "1447c103c110ed9ef316d5be8d8d5a2134cf9468952bac5ad5465afdcfd392ea.json",
+      "sha256": "1447c103c110ed9ef316d5be8d8d5a2134cf9468952bac5ad5465afdcfd392ea",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_on_independent_failure",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_audit_v2.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "5b855c04b8945df346564bad006dadeae264fccdd517081d3e570a248f308e21.py",
+      "sha256": "5b855c04b8945df346564bad006dadeae264fccdd517081d3e570a248f308e21",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_on_independent_audit_v2",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "1c0eb3cbd57f73b7be95d970c8fb96490355bf677be5d49675caaecd64b97d40.json",
+      "sha256": "1c0eb3cbd57f73b7be95d970c8fb96490355bf677be5d49675caaecd64b97d40",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_on_independent_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_timestamp_correction.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "903b15c846a8b147104d47d4ca4105fce0d3b68bc73af9329ca58c7ce633535d.json",
+      "sha256": "903b15c846a8b147104d47d4ca4105fce0d3b68bc73af9329ca58c7ce633535d",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_on_timestamp_correction",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_off_independent_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "dba0b07968d3ad66e39ccac3b2f820548d37fceb5fc67cd167700a2e7e396fb7.py",
+      "sha256": "dba0b07968d3ad66e39ccac3b2f820548d37fceb5fc67cd167700a2e7e396fb7",
+      "media_type": "text/x-python",
+      "name": "ex049-final-accounting-local_off_independent_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_off_independent_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "accbf0cfdb3f281430820274a1dd7ec9b502b84a4f93e9425b34fa6eaf49249c.json",
+      "sha256": "accbf0cfdb3f281430820274a1dd7ec9b502b84a4f93e9425b34fa6eaf49249c",
+      "media_type": "application/json",
+      "name": "ex049-final-accounting-local_off_independent_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_event_labels.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "6fcf5ba172dfb276c280556b7b62d020d60605d210b90bb5cbb0b25869f6991b.csv",
+      "sha256": "6fcf5ba172dfb276c280556b7b62d020d60605d210b90bb5cbb0b25869f6991b",
+      "media_type": "text/csv",
+      "name": "ex049-final-accounting-local_event_labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_state_summary.csv": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "4af74b822fe5f6589c314622fefdc9b42ed855099d3bb31a303bdf02f99c349a.csv",
+      "sha256": "4af74b822fe5f6589c314622fefdc9b42ed855099d3bb31a303bdf02f99c349a",
+      "media_type": "text/csv",
+      "name": "ex049-final-accounting-local_state_summary",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/component_review_delivery.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "5c3f1d7b20d283bf0f2e1c8e0a3bc10d646388743d0da1f7c0b3a2f0c4c89d1c.json",
+      "sha256": "5c3f1d7b20d283bf0f2e1c8e0a3bc10d646388743d0da1f7c0b3a2f0c4c89d1c",
+      "media_type": "application/json",
+      "name": "ex049-final-review-component_review_delivery",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/method_adversarial_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "94685ac5b8c9bad7bb1c224ab17970f651a3bac7d245a8a982cfc87a55f8c943.json",
+      "sha256": "94685ac5b8c9bad7bb1c224ab17970f651a3bac7d245a8a982cfc87a55f8c943",
+      "media_type": "application/json",
+      "name": "ex049-final-review-method_adversarial_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/method_adversarial_review_sources.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "fae108563611ff62a362d2be9010d8d46598bc4ced0ebe1988b905258cd84b56.json",
+      "sha256": "fae108563611ff62a362d2be9010d8d46598bc4ced0ebe1988b905258cd84b56",
+      "media_type": "application/json",
+      "name": "ex049-final-review-method_adversarial_review_sources",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "381ce11df1a956c880f01dff085f2b185d876bf87cb66c4dbf97e62bb6dbd19d.json",
+      "sha256": "381ce11df1a956c880f01dff085f2b185d876bf87cb66c4dbf97e62bb6dbd19d",
+      "media_type": "application/json",
+      "name": "ex049-final-review-locked_method_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_semantics_addendum.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "000b39161d3206fd2c8be0d24375d54ed2695738f16d8895cc2aad4540a46b74.json",
+      "sha256": "000b39161d3206fd2c8be0d24375d54ed2695738f16d8895cc2aad4540a46b74",
+      "media_type": "application/json",
+      "name": "ex049-final-review-locked_method_semantics_addendum",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "99a042c5d6a8bca6edbeb54cf6836b68b73e8442bc777482f74cf5750ea9292e.py",
+      "sha256": "99a042c5d6a8bca6edbeb54cf6836b68b73e8442bc777482f74cf5750ea9292e",
+      "media_type": "text/x-python",
+      "name": "ex049-final-review-source_kernel_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "24cf4dd2de4b985ad1ea05e7a325b4cc0ab9b6af4cad51140ae8f2f104404cc6.json",
+      "sha256": "24cf4dd2de4b985ad1ea05e7a325b4cc0ab9b6af4cad51140ae8f2f104404cc6",
+      "media_type": "application/json",
+      "name": "ex049-final-review-source_kernel_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_finite_boundary_notice.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "498ffcbb9c95502d1f4f785ebeb6e375c342813fe9a138316710e8cfb9a113ad.json",
+      "sha256": "498ffcbb9c95502d1f4f785ebeb6e375c342813fe9a138316710e8cfb9a113ad",
+      "media_type": "application/json",
+      "name": "ex049-final-review-source_kernel_finite_boundary_notice",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_audit_v2.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "e6fb84ec54968f39a92fda06fd2331908a5c540780180fbfb5ceb8e34eed8caf.py",
+      "sha256": "e6fb84ec54968f39a92fda06fd2331908a5c540780180fbfb5ceb8e34eed8caf",
+      "media_type": "text/x-python",
+      "name": "ex049-final-review-source_kernel_audit_v2",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_kernel_review_v2.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "060598ab8dac8b12c52301fc895ff470538309df2473161fe53ecc1d9bcc743a.json",
+      "sha256": "060598ab8dac8b12c52301fc895ff470538309df2473161fe53ecc1d9bcc743a",
+      "media_type": "application/json",
+      "name": "ex049-final-review-source_kernel_review_v2",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_runner_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "27759942985fcf8ce759ac8c4cce5faae80cfc4bd2896a4b5f394ce05446f84a.py",
+      "sha256": "27759942985fcf8ce759ac8c4cce5faae80cfc4bd2896a4b5f394ce05446f84a",
+      "media_type": "text/x-python",
+      "name": "ex049-final-review-source_runner_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_runner_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "a0503deabed749397610fc76bd30087e5aa05d26afc545af459d25d363732fea.json",
+      "sha256": "a0503deabed749397610fc76bd30087e5aa05d26afc545af459d25d363732fea",
+      "media_type": "application/json",
+      "name": "ex049-final-review-source_runner_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/source_runner_review_v2.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "3e7e12fce1437265509398516cf86c5f1f9c21e1ca05db1ec79367b1707fa2b8.json",
+      "sha256": "3e7e12fce1437265509398516cf86c5f1f9c21e1ca05db1ec79367b1707fa2b8",
+      "media_type": "application/json",
+      "name": "ex049-final-review-source_runner_review_v2",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/on_control_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "dc9acb44cf056731cccd69e3ddba1d829b23c6d33a94895089b3cba56dec85f8.py",
+      "sha256": "dc9acb44cf056731cccd69e3ddba1d829b23c6d33a94895089b3cba56dec85f8",
+      "media_type": "text/x-python",
+      "name": "ex049-final-review-on_control_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/on_control_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "379d402c7e066b6ff7f1791281cc8d73fe6abf738dfbe257392b50524a6a9708.json",
+      "sha256": "379d402c7e066b6ff7f1791281cc8d73fe6abf738dfbe257392b50524a6a9708",
+      "media_type": "application/json",
+      "name": "ex049-final-review-on_control_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/off_label_arithmetic_audit.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "8e514e4ff5b13e7b59a2a67aa47a3851c4147d256b30564a52f64d51107bb0d6.py",
+      "sha256": "8e514e4ff5b13e7b59a2a67aa47a3851c4147d256b30564a52f64d51107bb0d6",
+      "media_type": "text/x-python",
+      "name": "ex049-final-review-off_label_arithmetic_audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/off_label_arithmetic_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "147c28ea2b2e054c39992773f685a1e1ce0d2d34a9b10bc2750f44c63ab2ceb7.json",
+      "sha256": "147c28ea2b2e054c39992773f685a1e1ce0d2d34a9b10bc2750f44c63ab2ceb7",
+      "media_type": "application/json",
+      "name": "ex049-final-review-off_label_arithmetic_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/interpretation_results.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "7178540e304c694a4e021f2aac05be32c6aee2174ce6ef4fa28a1a01f7036f2c.json",
+      "sha256": "7178540e304c694a4e021f2aac05be32c6aee2174ce6ef4fa28a1a01f7036f2c",
+      "media_type": "application/json",
+      "name": "ex049-final-review-interpretation_results",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/review/component_final_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "e54417ff15a70c41ebcdb372b925e4e96f4fc278ac0fd11fe6f261f0d8ca6457.json",
+      "sha256": "e54417ff15a70c41ebcdb372b925e4e96f4fc278ac0fd11fe6f261f0d8ca6457",
+      "media_type": "application/json",
+      "name": "ex049-final-review-component_final_review",
+      "schema": null,
+      "schema_version": null
+    },
+    ".tmp/s014_shock_runner_failure_scope_review.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "a249180f89750c31b5c3c9227a4bf78832dd1ec86d278c6ba5bf2d7e898e0ab4.py",
+      "sha256": "a249180f89750c31b5c3c9227a4bf78832dd1ec86d278c6ba5bf2d7e898e0ab4",
+      "media_type": "text/x-python",
+      "name": "ex049-final-.tmp-s014_shock_runner_failure_scope_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method/method_review.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "19320130b739d3ee0d5856b87c24ee582447ef1cbee790b7e03f7772a77ebd90.json",
+      "sha256": "19320130b739d3ee0d5856b87c24ee582447ef1cbee790b7e03f7772a77ebd90",
+      "media_type": "application/json",
+      "name": "ex049-final-method-method_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method/method_review.md": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "f5181b728cd5afe089616b4058eafbb752c2665a239d5dd672db207b72393064.md",
+      "sha256": "f5181b728cd5afe089616b4058eafbb752c2665a239d5dd672db207b72393064",
+      "media_type": "text/markdown",
+      "name": "ex049-final-method-method_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method/build_method_review.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "216f0394cc9b83c5f55399c8800f16349efc9b343253d866e240307a04f94ee0.py",
+      "sha256": "216f0394cc9b83c5f55399c8800f16349efc9b343253d866e240307a04f94ee0",
+      "media_type": "text/x-python",
+      "name": "ex049-final-method-build_method_review",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method/local_state_boundary_addendum.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "4dd5ca5c72bdea5b6a0a283240be77f388090a3bcf22496057b252e3ceea7eb0.json",
+      "sha256": "4dd5ca5c72bdea5b6a0a283240be77f388090a3bcf22496057b252e3ceea7eb0",
+      "media_type": "application/json",
+      "name": "ex049-final-method-local_state_boundary_addendum",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/authorization.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "b43c4677ec2b7b87574cfbc64cc5fce432442c17f7bdb25e2c9ea06540bc8e98.json",
+      "sha256": "b43c4677ec2b7b87574cfbc64cc5fce432442c17f7bdb25e2c9ea06540bc8e98",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-authorization",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "bfbc70b917bdad2dc711dbc9cbd6c4e17ad6beabbb924822c3d1364e5f730971.json",
+      "sha256": "bfbc70b917bdad2dc711dbc9cbd6c4e17ad6beabbb924822c3d1364e5f730971",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-baseline_integrity",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/questions.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "82a7c1fb3a39ecfadcdb95835cfe3f7e65514e4ee7d2d1adc222d1cefe27f65f.json",
+      "sha256": "82a7c1fb3a39ecfadcdb95835cfe3f7e65514e4ee7d2d1adc222d1cefe27f65f",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-questions",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method_proposal.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "5614ceb425a81031eed289ddc0fad6fa33dc7d60276a450104dc86467d0a8e42.json",
+      "sha256": "5614ceb425a81031eed289ddc0fad6fa33dc7d60276a450104dc86467d0a8e42",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-method_proposal",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method_decision.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "e37d22bab5e8ae0806d8a63b1d57625eefeed79d485f310047f04beeb3ba7ec8.json",
+      "sha256": "e37d22bab5e8ae0806d8a63b1d57625eefeed79d485f310047f04beeb3ba7ec8",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-method_decision",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/method_state_boundary_clarification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "6b59dfcf896f95735a2979ed8e60bd25534427a2f7db2bbd6ccfacd277103342.json",
+      "sha256": "6b59dfcf896f95735a2979ed8e60bd25534427a2f7db2bbd6ccfacd277103342",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-method_state_boundary_clarification",
+      "schema": null,
+      "schema_version": null
+    },
+    "research/S014/materials/20261020_shock_state_diagnosis/execution_precision_clarification.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "c25294a3fcedf8c4888e86e31033db95b72a8f012562a6f40c73b226e3c00f55.json",
+      "sha256": "c25294a3fcedf8c4888e86e31033db95b72a8f012562a6f40c73b226e3c00f55",
+      "media_type": "application/json",
+      "name": "ex049-final-20261020_shock_state_diagnosis-execution_precision_clarification",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "retained_prelock_draft_refs": {
+    "local_cycle_before_finite_guard.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "c8be02105db30149d7d0246c881c2041b47b18b40dc825196ee76b8b1d2f6090.py",
+      "sha256": "c8be02105db30149d7d0246c881c2041b47b18b40dc825196ee76b8b1d2f6090",
+      "media_type": "text/x-python",
+      "name": "ex049-retained-local_cycle_before_finite_guard-py",
+      "schema": null,
+      "schema_version": null
+    },
+    "precheck_before_finite_guard.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "fca107b11ee3de90287392bfd66c7c1ad905580d2332f10e2a32d8a33a36423f.py",
+      "sha256": "fca107b11ee3de90287392bfd66c7c1ad905580d2332f10e2a32d8a33a36423f",
+      "media_type": "text/x-python",
+      "name": "ex049-retained-precheck_before_finite_guard-py",
+      "schema": null,
+      "schema_version": null
+    },
+    "synthetic_before_finite_guard.json": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "918edf578a460a821d5cbeaf6150bce170fea4d8945d12e0006d626f210dd2ee.json",
+      "sha256": "918edf578a460a821d5cbeaf6150bce170fea4d8945d12e0006d626f210dd2ee",
+      "media_type": "application/json",
+      "name": "ex049-retained-synthetic_before_finite_guard-json",
+      "schema": null,
+      "schema_version": null
+    },
+    "run_component_before_failure_scope.py": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX049_20261020"
+      },
+      "evidence_id": "f6f851d242dda48c56ca1fe4d4b5d919676cbfbd9663025cf6e5891561d6529f.py",
+      "sha256": "f6f851d242dda48c56ca1fe4d4b5d919676cbfbd9663025cf6e5891561d6529f",
+      "media_type": "text/x-python",
+      "name": "ex049-retained-run_component_before_failure_scope-py",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "verification_builder_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX049_20261020"
+    },
+    "evidence_id": "01183bdd73eed0d2ede29d23e73e6671eb164ffe89c584262b3854313b8dc40a.py",
+    "sha256": "01183bdd73eed0d2ede29d23e73e6671eb164ffe89c584262b3854313b8dc40a",
+    "media_type": "text/x-python",
+    "name": "ex049-final-verification-builder",
+    "schema": null,
+    "schema_version": null
+  },
+  "scope": "Fixed original actual quantities and entries, model-filled local liquidation differences only. No reentry/interest/accountwealth sum/annualization, prospective return proof, fullpolicy selection or original-goal qualification.",
+  "candidate_eligibility_changed": false,
+  "no_further_funded_policy_executed_by_component": true,
+  "prospective_policy_method_proposals_excluded_from_this_closure": true,
+  "local_evidence_only": "Repository assets/evidence/EX049_20261020 plus .tmp/evidence-publication; explicit empty ProviderConfig and socket/requests denied, no external upload"
+}

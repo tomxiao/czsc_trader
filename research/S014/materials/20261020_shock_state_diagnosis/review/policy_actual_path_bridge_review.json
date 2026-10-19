@@ -1,0 +1,530 @@
+{
+  "status": "PASS_ACTUAL_YEAR_MARK_ATTRIBUTION",
+  "blocking_findings": [],
+  "reviewer": "B",
+  "reviewed_hashes": {
+    "research/S014/materials/20261020_shock_state_diagnosis/accounting/full_policy_yearly_summary.csv": "9cd2fa7483f68283645cf1cb31660c7a99aec74c74c36c7798aed4352db46f99",
+    "research/S014/experiments/EX050_20261020/others/accounts/run-000.json": "30862f05e8b889c10bd7909101ce93175e8f14bb8640646137348a9f0223429f",
+    "research/S014/assets/evidence/EX050_20261020/456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1.json": "456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1",
+    "research/S014/experiments/EX050_20261020/others/accounts/run-001.json": "5b059ecbfc7be698c00cfa2dc423048a260da4f2f29db58e10d6f2e2e86b8834",
+    "research/S014/assets/evidence/EX050_20261020/b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0.json": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0",
+    "research/S014/experiments/EX050_20261020/others/accounts/run-002.json": "7e05e9f99e11562df9e355340cc2e2905c7d5ff21c98497174c03e4e6ef99019",
+    "research/S014/assets/evidence/EX050_20261020/83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_actual_2025_2026_cycle_bridge.csv": "1e027a567607a2dd574c2ed645bd2a7449a80be80a5eb717fcdfebef35592fec",
+    "research/S014/materials/20261020_shock_state_diagnosis/review/policy_annual_path_bridge.py": "39dd341c34a39ac2c3cdb3a9a03ac7962b0ed186c156e9158646b555913cddd7"
+  },
+  "account_refs": {
+    "0": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX050_20261020"
+      },
+      "evidence_id": "456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1.json",
+      "sha256": "456e4893a8133713fb5460e8f67e4f1fd4dfb82d56747b23b4655324ee8f6bc1",
+      "media_type": "application/json",
+      "name": "shock-state-policy-000-original_c9461_control",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "1": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX050_20261020"
+      },
+      "evidence_id": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0.json",
+      "sha256": "b3db4c264d202e59e64acec85248ef3eb887e2b24104026cc5e8df28bd36d4d0",
+      "media_type": "application/json",
+      "name": "shock-state-policy-001-first_shock_non_final_day_dominated_hold",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "2": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX050_20261020"
+      },
+      "evidence_id": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9.json",
+      "sha256": "83327564961b13c1bc8e36cdf4e5c78ad35896a7e26f8595b6c3215889533ac9",
+      "media_type": "application/json",
+      "name": "shock-state-policy-002-first_shock_after_entry_day_hold",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  },
+  "annual_exact_decimal_bridges": [
+    {
+      "diagID": "S014-C9500",
+      "year": 2025,
+      "own_year_opening": 358623.04900000006,
+      "closing": 527290.572,
+      "marked_pnl": 168667.52299999993,
+      "sum_contribution": 0.47031980646620375,
+      "official_return": 0.47031980646620397,
+      "float_representation_residual": 2.220446049250313e-16,
+      "decimal_telescoping_exact": true
+    },
+    {
+      "diagID": "S014-C9500",
+      "year": 2026,
+      "own_year_opening": 527290.572,
+      "closing": 944894.5750000005,
+      "marked_pnl": 417604.0030000005,
+      "sum_contribution": 0.7919807885357004,
+      "official_return": 0.7919807885357002,
+      "float_representation_residual": -2.220446049250313e-16,
+      "decimal_telescoping_exact": true
+    },
+    {
+      "diagID": "S014-C9501",
+      "year": 2025,
+      "own_year_opening": 448074.9319999996,
+      "closing": 426953.1799999998,
+      "marked_pnl": -21121.7519999998,
+      "sum_contribution": -0.04713888345800121,
+      "official_return": -0.04713888345800121,
+      "float_representation_residual": 0.0,
+      "decimal_telescoping_exact": true
+    },
+    {
+      "diagID": "S014-C9501",
+      "year": 2026,
+      "own_year_opening": 426953.1799999998,
+      "closing": 977152.2259999999,
+      "marked_pnl": 550199.0460000001,
+      "sum_contribution": 1.2886636562819378,
+      "official_return": 1.2886636562819378,
+      "float_representation_residual": 0.0,
+      "decimal_telescoping_exact": true
+    },
+    {
+      "diagID": "S014-C9502",
+      "year": 2025,
+      "own_year_opening": 456974.0369999995,
+      "closing": 539047.9389999995,
+      "marked_pnl": 82073.902,
+      "sum_contribution": 0.17960298694168503,
+      "official_return": 0.17960298694168508,
+      "float_representation_residual": 5.551115123125783e-17,
+      "decimal_telescoping_exact": true
+    },
+    {
+      "diagID": "S014-C9502",
+      "year": 2026,
+      "own_year_opening": 539047.9389999995,
+      "closing": 1638378.7509999992,
+      "marked_pnl": 1099330.8119999997,
+      "sum_contribution": 2.0393934054165834,
+      "official_return": 2.039393405416583,
+      "float_representation_residual": -4.440892098500626e-16,
+      "decimal_telescoping_exact": true
+    }
+  ],
+  "AGE_vs_control_by_original_entry_date_description": [
+    {
+      "year": 2025,
+      "entry_E": null,
+      "control_contribution": 0.0,
+      "AGE_contribution": 0.0,
+      "AGE_minus_control_contribution": 0.0
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-01-10",
+      "control_contribution": 0.04126345208782171,
+      "AGE_contribution": 0.041305854319246854,
+      "AGE_minus_control_contribution": 4.240223142514682e-05
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-01-27",
+      "control_contribution": 0.05518613501052437,
+      "AGE_contribution": 0.05519507446327846,
+      "AGE_minus_control_contribution": 8.939452754090638e-06
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-02-19",
+      "control_contribution": -0.0367664433079983,
+      "AGE_contribution": -0.03679481248078008,
+      "AGE_minus_control_contribution": -2.836917278177531e-05
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-03-21",
+      "control_contribution": 0.05524398962990236,
+      "AGE_contribution": -0.09097704603292385,
+      "AGE_minus_control_contribution": -0.1462210356628262
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-04-10",
+      "control_contribution": 0.09238022512044373,
+      "AGE_contribution": 0.0,
+      "AGE_minus_control_contribution": -0.09238022512044373
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-04-25",
+      "control_contribution": -0.03273037255338236,
+      "AGE_contribution": -0.026268448594596948,
+      "AGE_minus_control_contribution": 0.0064619239587854135
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-05-30",
+      "control_contribution": 0.2736395451258348,
+      "AGE_contribution": 0.2195066062363627,
+      "AGE_minus_control_contribution": -0.054132938889472126
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-06-19",
+      "control_contribution": 0.1429515479915514,
+      "AGE_contribution": 0.11469680059744851,
+      "AGE_minus_control_contribution": -0.0282547473941029
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-07-08",
+      "control_contribution": -0.015763992347296113,
+      "AGE_contribution": -0.012657664400308384,
+      "AGE_minus_control_contribution": 0.0031063279469877286
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-08-07",
+      "control_contribution": -0.031126504643598906,
+      "AGE_contribution": -0.02498862971508382,
+      "AGE_minus_control_contribution": 0.006137874928515086
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-09-08",
+      "control_contribution": 0.012844461650873978,
+      "AGE_contribution": 0.0103024014906998,
+      "AGE_minus_control_contribution": -0.0025420601601741782
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-09-25",
+      "control_contribution": -0.01989874052964175,
+      "AGE_contribution": -0.015959895769745904,
+      "AGE_minus_control_contribution": 0.0039388447598958445
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-11-05",
+      "control_contribution": 0.07256483952318413,
+      "AGE_contribution": 0.05822321148630186,
+      "AGE_minus_control_contribution": -0.01434162803688227
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-11-20",
+      "control_contribution": -0.13555447742568266,
+      "AGE_contribution": -0.10884263869021503,
+      "AGE_minus_control_contribution": 0.026711838735467633
+    },
+    {
+      "year": 2025,
+      "entry_E": "2025-12-23",
+      "control_contribution": -0.003913858866332654,
+      "AGE_contribution": -0.003137825967999144,
+      "AGE_minus_control_contribution": 0.0007760328983335103
+    },
+    {
+      "year": 2026,
+      "entry_E": "2025-12-23",
+      "control_contribution": 0.08570515461444662,
+      "AGE_contribution": 0.0589885012063833,
+      "AGE_minus_control_contribution": -0.026716653408063326
+    },
+    {
+      "year": 2026,
+      "entry_E": null,
+      "control_contribution": 0.0,
+      "AGE_contribution": 0.0,
+      "AGE_minus_control_contribution": 0.0
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-01-09",
+      "control_contribution": 0.06912900388440835,
+      "AGE_contribution": 0.0673947962168167,
+      "AGE_minus_control_contribution": -0.0017342076675916501
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-01-26",
+      "control_contribution": 0.16376192480073395,
+      "AGE_contribution": 0.2919812016941969,
+      "AGE_minus_control_contribution": 0.12821927689346294
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-02-10",
+      "control_contribution": 0.05226678697376747,
+      "AGE_contribution": 0.29666895359375456,
+      "AGE_minus_control_contribution": 0.2444021666199871
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-03-05",
+      "control_contribution": 0.42503129375125637,
+      "AGE_contribution": 1.0432495503892474,
+      "AGE_minus_control_contribution": 0.618218256637991
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-03-20",
+      "control_contribution": -0.10704012739298495,
+      "AGE_contribution": -0.16447980519966293,
+      "AGE_minus_control_contribution": -0.05743967780667798
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-04-23",
+      "control_contribution": -0.08066533759302623,
+      "AGE_contribution": -0.12396022165293903,
+      "AGE_minus_control_contribution": -0.0432948840599128
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-06-02",
+      "control_contribution": -0.06210000090803804,
+      "AGE_contribution": -0.09542457410267595,
+      "AGE_minus_control_contribution": -0.033324573194637906
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-07-13",
+      "control_contribution": -0.04485042072779522,
+      "AGE_contribution": -0.06891696510131677,
+      "AGE_minus_control_contribution": -0.02406654437352155
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-08-12",
+      "control_contribution": 0.026353363283726606,
+      "AGE_contribution": 0.040486328619466105,
+      "AGE_minus_control_contribution": 0.0141329653357395
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-08-27",
+      "control_contribution": 0.5293607923640252,
+      "AGE_contribution": 1.1423478534067824,
+      "AGE_minus_control_contribution": 0.6129870610427571
+    },
+    {
+      "year": 2026,
+      "entry_E": "2026-09-11",
+      "control_contribution": -0.2649716445148198,
+      "AGE_contribution": -0.4489422136534692,
+      "AGE_minus_control_contribution": -0.1839705691386494
+    }
+  ],
+  "actual_2025_pause_slots": [
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-03-05",
+      "planned_E": "2025-03-06",
+      "source_index": 1251.0,
+      "reservation_until": 1262.0,
+      "eligible_again_D": "2025-03-20",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-05-14",
+      "planned_E": "2025-05-15",
+      "source_index": 1297.0,
+      "reservation_until": 1308.0,
+      "eligible_again_D": "2025-05-29",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-07-22",
+      "planned_E": "2025-07-23",
+      "source_index": 1345.0,
+      "reservation_until": 1356.0,
+      "eligible_again_D": "2025-08-06",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-08-21",
+      "planned_E": "2025-08-22",
+      "source_index": 1367.0,
+      "reservation_until": 1378.0,
+      "eligible_again_D": "2025-09-05",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-10-20",
+      "planned_E": "2025-10-21",
+      "source_index": 1403.0,
+      "reservation_until": 1414.0,
+      "eligible_again_D": "2025-11-04",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9500",
+      "D": "2025-12-05",
+      "planned_E": "2025-12-08",
+      "source_index": 1437.0,
+      "reservation_until": 1448.0,
+      "eligible_again_D": "2025-12-22",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-03-05",
+      "planned_E": "2025-03-06",
+      "source_index": 1251.0,
+      "reservation_until": 1262.0,
+      "eligible_again_D": "2025-03-20",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-04-09",
+      "planned_E": "2025-04-10",
+      "source_index": 1275.0,
+      "reservation_until": 1286.0,
+      "eligible_again_D": "2025-04-24",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-05-14",
+      "planned_E": "2025-05-15",
+      "source_index": 1297.0,
+      "reservation_until": 1308.0,
+      "eligible_again_D": "2025-05-29",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-07-07",
+      "planned_E": "2025-07-08",
+      "source_index": 1334.0,
+      "reservation_until": 1345.0,
+      "eligible_again_D": "2025-07-22",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-08-06",
+      "planned_E": "2025-08-07",
+      "source_index": 1356.0,
+      "reservation_until": 1367.0,
+      "eligible_again_D": "2025-08-21",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-09-05",
+      "planned_E": "2025-09-08",
+      "source_index": 1378.0,
+      "reservation_until": 1389.0,
+      "eligible_again_D": "2025-09-22",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-10-20",
+      "planned_E": "2025-10-21",
+      "source_index": 1403.0,
+      "reservation_until": 1414.0,
+      "eligible_again_D": "2025-11-04",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9501",
+      "D": "2025-12-05",
+      "planned_E": "2025-12-08",
+      "source_index": 1437.0,
+      "reservation_until": 1448.0,
+      "eligible_again_D": "2025-12-22",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-03-05",
+      "planned_E": "2025-03-06",
+      "source_index": 1251.0,
+      "reservation_until": 1262.0,
+      "eligible_again_D": "2025-03-20",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-04-09",
+      "planned_E": "2025-04-10",
+      "source_index": 1275.0,
+      "reservation_until": 1286.0,
+      "eligible_again_D": "2025-04-24",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-05-14",
+      "planned_E": "2025-05-15",
+      "source_index": 1297.0,
+      "reservation_until": 1308.0,
+      "eligible_again_D": "2025-05-29",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-07-22",
+      "planned_E": "2025-07-23",
+      "source_index": 1345.0,
+      "reservation_until": 1356.0,
+      "eligible_again_D": "2025-08-06",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-08-21",
+      "planned_E": "2025-08-22",
+      "source_index": 1367.0,
+      "reservation_until": 1378.0,
+      "eligible_again_D": "2025-09-05",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-10-20",
+      "planned_E": "2025-10-21",
+      "source_index": 1403.0,
+      "reservation_until": 1414.0,
+      "eligible_again_D": "2025-11-04",
+      "last_completed_sign": -1.0
+    },
+    {
+      "diagID": "S014-C9502",
+      "D": "2025-12-05",
+      "planned_E": "2025-12-08",
+      "source_index": 1437.0,
+      "reservation_until": 1448.0,
+      "eligible_again_D": "2025-12-22",
+      "last_completed_sign": -1.0
+    }
+  ],
+  "method": "Each original daily equity change is assigned to the actual funded cycle carried into or entered/sold on that E. Annual scope includes marks and fees on those dates, with own year-opening equity denominator. Decimal(str(saved-equity)) differences telescope exactly; float representation residual to published return is retained, not forced to zero or used as a new tolerance.",
+  "limits": "Matches by same entry date only for descriptive comparisons, not equal-Q or equal-funding causal experiments. Cross-year cycle annual marks differ from whole closed-trade net PnL. Missing cycle contribution is zero only for that actual account annual ledger; it is not an unfilled-order outcome or a counterfactual profitable trade.",
+  "new_funded_accounts": 0,
+  "new_market_calls": 0,
+  "new_prepared_fetches": 0,
+  "new_fits": 0
+}

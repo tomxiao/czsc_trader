@@ -1,0 +1,141 @@
+{
+  "status": "AUTHORIZED_THREE_FIXED_FIRST_OWN_SHOCK_ACTION_POLICIES_BEFORE_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "policy_profile": "ORIGINAL_C9461_CONTROL"
+    },
+    {
+      "policy_profile": "FIRST_SHOCK_NON_FINAL_DAY_DOMINATED_HOLD"
+    },
+    {
+      "policy_profile": "FIRST_SHOCK_AFTER_ENTRY_DAY_HOLD"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9500",
+    "S014-C9501",
+    "S014-C9502"
+  ],
+  "planned_account_count": 3,
+  "no_blind_retries": true,
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+    "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+    "media_type": "application/json",
+    "name": "completed-sign-pause-001-after_net_loss_skip1",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+  "baseline_control": "Fresh original control must exactly replicate every old C9461 signal/decision/economic field ignoring only independently linked IDs; new diagnostics do not count as economic differences.",
+  "canonical_parameter_schema": "Exactly policy_profile, one of the three root-locked values; original LOSS/cost/GRACE/support/H10 fixed. No date/year/threshold/period parameters.",
+  "lifecycle": "Only first eligible own actual-cycle positive-net-profit raw SHOCK is assessed. TRUE sets an independent SHOCK-disable latch, FALSE original exit. No reassessment/cancelling pending. RealBUY/realSELL reset; failedBUY no cycle. Preserve cost/support/GRACE/original deadline/reservation/pending and own strict completed-loss skip-one feedback.",
+  "s2": "Exactly scalar np.log(C_D/C_Dminus1)<=np.log(C_Dminus1/C_Dminus5), operands/ratios/logs finite and positive as applicable; UNKNOWN at required node raises explicit technical error no fallback.",
+  "age": "Absolute D index minus own actual filled entry index >=1; entryday age0 retains original SHOCK. Not future duration.",
+  "price_domains": "Source features/cost use original full HFQ; execution ledger anchoredHFQ_RESEARCH anchor5.892/RESEARCH_UNIT, original 1%LimitBuyHold/.001eachside/lots/status/publicresolve_fill unchanged.",
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "original_annual_acceptance_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "2026_role": "Original partial-year return/DD hard goals not annualized; original actual closedtrade>=3/60sessions frequency retained. No new economic gate.",
+  "audit_mapping": "Corrected v2D/E: actual Dheld maps daily[D], first2019-12-31 cash100000/qty0; valid_session mapsnextE and dailyE.signaldate=D. No Eqty used as Dheld.",
+  "first_differences": "New assessment/latch first occurrences separately; first old dynamic-column difference, first targetD and first fundedE separate. New constant profile diagnostics excluded from economic divergence. Old rawSHOCK observations remain truthful.",
+  "selection_disclosure": "Shared-seen full history; S2 unresolved from remaining-time composition and keeps strong bad cases. Age action selected after EX049 labels from originally descriptive age strata, not prospective validation. No year switches, S1 reversal, S2ageinteraction or scans.",
+  "prepared_only_offline_provider": "offline_inputs.py exact old pinned composition with only explicit empty _catalog fetch context and original EX017 source/prewindow/revision pinned; source data and providerrevision unchanged. No direct old default-config catalog wrapper.",
+  "local_publication": "Only assets/evidence/EX050_20261020 and .tmp/evidence-publication, socket/requests denied, empty publication ProviderConfig; no external upload.",
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "authorization": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/authorization.json",
+    "sha256": "b43c4677ec2b7b87574cfbc64cc5fce432442c17f7bdb25e2c9ea06540bc8e98"
+  },
+  "method": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/policy_decision.json",
+    "sha256": "a49e4aa7187cc4bfd172e718f2ba4d67d624544b9a141d40e1f747ff8cc6dac1"
+  },
+  "baseline_integrity": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/baseline_integrity.json",
+    "sha256": "bfbc70b917bdad2dc711dbc9cbd6c4e17ad6beabbb924822c3d1364e5f730971"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/review/policy_locked_method_review.json",
+    "sha256": "8f4ab32b7f56f7489a37336ce52b9d431da5844e876688566dd6282fec899ff8"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_evaluation_protocol.json",
+    "sha256": "49b6d52c8769784dcb7fc2ce775f7a12f92023a738b76b31722570f563e3ff9f"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/review/policy_source_focused_review.json",
+    "sha256": "50676cc61f7052ebbfbc73d74e529e5ccfd54cadb753ecd3b812d8d1456980c7"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/policy_source_review.json",
+    "sha256": "49406d72ea7cb0cfb49a9f123f11ab25a50fb39b5dc2d812826326ffc349807a"
+  },
+  "component_final": {
+    "path": "research/S014/experiments/EX049_20261020/others/final_verification.json",
+    "sha256": "8596c8fe516be2673ebea5a6e173e844f0b9bc4265462d59db147bccdee61327"
+  },
+  "component_off_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_off_independent_review.json",
+    "sha256": "accbf0cfdb3f281430820274a1dd7ec9b502b84a4f93e9425b34fa6eaf49249c"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX046_20261020/others/accounts/run-001.json",
+    "sha256": "4d909358304bad93e994ee5a796c02d7c61f4540f7ac6e9a392cd9821dc20caa"
+  },
+  "previous_control_review": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json",
+    "sha256": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3"
+  },
+  "corrected_audit_source": {
+    "path": "research/S014/experiments/EX047_20261020/src/audit_accounts.py",
+    "sha256": "2cdc8704da12ebbed757cc2d82d92f2284b48e9196fc9234f1c6490ae657e471"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX050_20261020/src/offline_inputs.py",
+    "sha256": "731e8fd0cb14859789f54083298b9140e12d1e50be5d71bb1093ab7f5313b380"
+  },
+  "original_input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}

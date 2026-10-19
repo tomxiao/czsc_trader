@@ -1,0 +1,12 @@
+{
+  "status": "LOCKED_IMPLEMENTATION_BOUNDARY_CLARIFICATION_NO_LABEL_OR_STATE_RULE_CHANGE",
+  "parent_method_sha256": "e37d22bab5e8ae0806d8a63b1d57625eefeed79d485f310047f04beeb3ba7ec8",
+  "independent_local_state": "After the original actual entry, original support/ATR/MA/price/calendar are market-only reusable quantities. Local netP, cost basis, entry index, age, deadline, pending and held quantity must be reconstructed from this event's own original entry and subsequent public fills. After the original sold date, never copy baseline held-state, selected exits or new-cycle GRACE; baseline may already be flat or in another actual cycle.",
+  "ON_control_interval": "Reconstruct relevant local holding/exit target and intent states from actual entryE close through each SELL instructionD, including any blocked pendingD. Exact original fillE price/quantity/fee and clearing position conclude the component at SELL_E open. Do not compare later SELL_E close full-account target/pause/new-entry decisions, which are outside this no-reentry cycle.",
+  "OFF_stop": "Same local fillE-open termination; no new decision, BUY or completed-loss slot after that fill. Existing independent protective/mandatory pendingSELL cannot be canceled by the component state.",
+  "state_hypothesis_direction": "PRIOR_TREND_ESTABLISHED true favors hold. NON_FINAL_DAY_DOMINATED true favors hold; it only means final day contributes no more logrise than prior four combined, not smooth or all-positive multi-day returns. No filtering downD or post-label direction reversal.",
+  "units": "Primary label uses total proceeds difference divided by original total entry cost including actual buy fee; equivalent per-unit presentation must first divide total proceeds/fees by the same Q. Actual sells/fees and original fill oracle exact, no epsilon changes ties.",
+  "implementation_independent_reviews_required": true,
+  "new_funded_accounts": 0,
+  "new_real_alternative_labels_computed": 0
+}

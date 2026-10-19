@@ -1,0 +1,231 @@
+{
+  "status": "PASS_ORIGINAL_ACTUAL_POPULATION_ONLY",
+  "source_candidate": "S014-C9461",
+  "source_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+    "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+    "media_type": "application/json",
+    "name": "completed-sign-pause-001-after_net_loss_skip1",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+  "source_receipt": {
+    "path": "research/S014/experiments/EX046_20261020/others/accounts/run-001.json",
+    "sha256": "4d909358304bad93e994ee5a796c02d7c61f4540f7ac6e9a392cd9821dc20caa"
+  },
+  "original_independent_audit": {
+    "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json",
+    "sha256": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3"
+  },
+  "original_source": {
+    "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+  },
+  "binding_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "635b1dbb4f050f68a9a59fe28f8bae227e3c22e318a76316f62aad1cfba4d751.json",
+    "sha256": "635b1dbb4f050f68a9a59fe28f8bae227e3c22e318a76316f62aad1cfba4d751",
+    "media_type": "application/json",
+    "name": "ex046-binding-001",
+    "schema": null,
+    "schema_version": null
+  },
+  "execution_prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "execution_requests": {
+    "price_limits": {
+      "dataset": "security.price_limits",
+      "symbol": "600722.SH",
+      "start": "2020-01-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "adjusted_daily": {
+      "dataset": "stock.ohlcv",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "execution_daily": {
+      "dataset": "stock.unadjusted_daily",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "trading_status": {
+      "dataset": "security.trading_status",
+      "symbol": "600722.SH",
+      "start": "2019-12-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "trading_calendar": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "start": "2020-01-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    }
+  },
+  "execution_identities": {
+    "trading_calendar": "1889d261dc734526df6e1f45523207352d6aad93b7aacff2e7b5d8a54efd54ca",
+    "adjusted_daily": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "execution_daily": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "price_limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "trading_status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "execution_fingerprint": "2ac71e151e5493e8314c9bd7179c26cd10a00b248483a4f5c45d70ea12abad3b",
+  "original_request_pricing": {
+    "anchor_date": "2019-12-31",
+    "anchor_factor": 5.892,
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT"
+  },
+  "outputs": [
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population.csv",
+      "sha256": "217233eb58e35a032748e7a654b64c64d8789ffd67a166c477b104469c223f5f",
+      "rows": 21
+    },
+    {
+      "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/original_shock_population_yearly.csv",
+      "sha256": "353407fc316f941895ef759dc77e3973966c4a2882851cafc595202d83a6f0f7",
+      "rows": 7
+    }
+  ],
+  "N_selected_D": 21,
+  "N_distinct_actual_cycles": 21,
+  "yearly": [
+    {
+      "year": 2020,
+      "actual_selected_SHOCK_D": 2,
+      "distinct_actual_funded_cycles": 2,
+      "zero_population_preserved": false
+    },
+    {
+      "year": 2021,
+      "actual_selected_SHOCK_D": 5,
+      "distinct_actual_funded_cycles": 5,
+      "zero_population_preserved": false
+    },
+    {
+      "year": 2022,
+      "actual_selected_SHOCK_D": 0,
+      "distinct_actual_funded_cycles": 0,
+      "zero_population_preserved": true
+    },
+    {
+      "year": 2023,
+      "actual_selected_SHOCK_D": 3,
+      "distinct_actual_funded_cycles": 3,
+      "zero_population_preserved": false
+    },
+    {
+      "year": 2024,
+      "actual_selected_SHOCK_D": 3,
+      "distinct_actual_funded_cycles": 3,
+      "zero_population_preserved": false
+    },
+    {
+      "year": 2025,
+      "actual_selected_SHOCK_D": 2,
+      "distinct_actual_funded_cycles": 2,
+      "zero_population_preserved": false
+    },
+    {
+      "year": 2026,
+      "actual_selected_SHOCK_D": 6,
+      "distinct_actual_funded_cycles": 6,
+      "zero_population_preserved": false
+    }
+  ],
+  "holding_age_distribution": {
+    "2.0": 1,
+    "0.0": 5,
+    "3.0": 5,
+    "7.0": 2,
+    "5.0": 1,
+    "4.0": 3,
+    "1.0": 3,
+    "8.0": 1
+  },
+  "actual_exit_fill_trigger_counts": {
+    "OPEN_MARKET": 21
+  },
+  "overlap_counts": {
+    "D_selected_cost_exit": 0,
+    "D_ordinary_support_exit": 0,
+    "D_pending_inherited": 0,
+    "D_deadline_exit": 0
+  },
+  "implementation": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/authenticate_shock_population.py",
+    "sha256": "03665b12bb5434161841fd57eb8b053169a09766801d002c281807694e10e9f7"
+  },
+  "checks": {
+    "original C9461 independent audit exact": 1,
+    "formal S014 exact immutable evidence": 2,
+    "original actual C9461 authenticated": 1,
+    "original actual result hash": 1,
+    "original exact account ref": 1,
+    "pinned prepared data fingerprint bound": 1,
+    "fixed C9461 original source exact": 1,
+    "original pricing anchor and cost": 1,
+    "selected actual positive funded held inventory": 21,
+    "original positive-P SHOCK eligible and sole variant": 21,
+    "D known actual age/deadline/reserve": 21,
+    "original live SELL target maps valid next session": 21,
+    "actual SELL order fill identity and funds": 21,
+    "original actual entry exit closed trade exact": 21,
+    "complete original population not chosen case subset": 1,
+    "one first SHOCK per actual cycle no repeated daily sample": 1,
+    "completeyear selected counts match preexisting original audit": 1
+  },
+  "check_count": 138,
+  "resources": {
+    "new_accounts": 0,
+    "new_fits": 0,
+    "supplier_calls": 0,
+    "prepared_fetches": 0,
+    "source_replays": 0,
+    "new_alternative_labels": 0
+  },
+  "limits": [
+    "All original2020-26 actual selectedSHOCK cycles included, even years with no events; no2025/26 or matched-OFF entry filter.",
+    "Actual order/fill and firstD are facts. No alternative holding outcome, state-by-outcome selection or label computed.",
+    "Runtime state price columns are fullHFQ while actual ledger/fill prices use anchor5.892; quantity is research unit. Do not mix monetary units.",
+    "A funded single-cycle alternative is only a component counterfactual; original future entry eligibility and cash paths are not fixed under a real changed policy."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "parent_review": {
+    "path": "research/S014/materials/20261020_shock_state_diagnosis/review/locked_method_review.json",
+    "sha256": "381ce11df1a956c880f01dff085f2b185d876bf87cb66c4dbf97e62bb6dbd19d"
+  },
+  "terminology": "OFF_LOCAL_CYCLE is a counterfactual component simulation. A model-filled alternative SELL E is a filled event under the original authenticated public execution model, as opposed to a censored simulation; it is not a new actual funded-account trade or published account execution.",
+  "output_contract": "Keep origin_actual_* provenance separate from alternative_*_POSTHOC or explicit SIM fields. ON compares with the original actual funded account. OFF outcomes and local labels remain simulated/posthoc even when their model execution status is FILLED.",
+  "meaning_of_exact_control": "ON exact reproduction verifies the local component's execution and state semantics on the original path; it does not convert OFF model fills into observed funded fills or prove a later state-conditioned whole policy.",
+  "reporting": "21 local component labels are not 21 new funded accounts. Do not call OFF returns realized account returns, sum them into account wealth, or present alternative model-filled trades as observed history.",
+  "new_labels": 0,
+  "new_funded_accounts": 0,
+  "new_market_calls": 0,
+  "method_or_action_change": false
+}

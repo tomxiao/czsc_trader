@@ -1,0 +1,97 @@
+{
+  "status": "METHOD_SUPPORTED_PENDING_ROOT_FINAL_LOCK_BINDING",
+  "blocking_findings": [],
+  "role": "RSCH_INDEPENDENT_ADVERSARIAL",
+  "scope": "Method and saved actual population only. No new states, continuation labels, market calls, fits, policy replays or funded accounts computed.",
+  "plain_judgment": "值得做一次聚焦的局部动作信息检验，但不应宣称发现新趋势或新信息。真正尚未回答的是：旧信息在C9461首次实际SHOCK职责上能否区分当前持有/退出，而不是重新搜索市场全体信号。",
+  "changes_that_matter": [
+    {
+      "issue": "Original proposal mixed whole-position proceeds and per-unit entry denominator",
+      "required_lock": "Delta = [Q*Poff - feeoff - (Q*Pon - feeon)] / [Q*Pentry + buyfee]. Equivalent proportional-fee unit formula .999*(Poff-Pon)/(Pentry*1.001), using one consistent price unit and actual original Q. Entry fee cancels only in numerator, remains in capital denominator.",
+      "decision_effect": "Avoids weighting high-capital later cycles more heavily while calling cycles equal-weight. Root accepted before labels."
+    },
+    {
+      "issue": "Per-cycle OFF label would not evaluate a state recomputed every following day",
+      "required_lock": "At the first eligible actual SHOCK D evaluate one state once. A hold decision latches an independent shock_disable flag until that actual cycle closes; raw SHOCK remains observed and all cost/support/grace/deadline/pending exits remain active. An exit decision follows original ON. Do not reuse old TREND_CYCLE support-protection latch.",
+      "decision_effect": "Aligns component outcome with any later proposed policy action. A future full policy still requires its own causal entry/completion history and actual account; this component is not that account."
+    },
+    {
+      "issue": "Remaining horizon can explain label magnitude without any state information",
+      "required_lock": "Show original actual entry age0 versus age>=1, plus every exact remaining_deadline = original_entry_index+9-D_index layer. They are the same clock (remaining=9-age), not independent controls. Retain all unsupported layers and compare states within common remaining layers before calling a pooled difference state discrimination.",
+      "decision_effect": "A pooled advantage with no within-clock overlap stays unresolved. Do not stratify by future realized alternative holding duration, change bins, or introduce a minimum-count/CI rejection gate."
+    },
+    {
+      "issue": "The final-day shape proposal initially had no directional prediction",
+      "required_lock": "Root pre-label directions: S1 prior-trend TRUE favors hold; S2 final-day dominance FALSE favors hold, dominance TRUE follows original SHOCK exit. Two separate candidates only, no AND/OR grid or choosing reverse direction after Delta is seen.",
+      "decision_effect": "Negative or contrary-direction results remain negative for these predeclared mechanisms; do not flip a sign and present the result as pre-specified confirmation."
+    }
+  ],
+  "old_route_overlap": [
+    {
+      "route": "EX007 completed-day holding decision",
+      "precise_sources": ["research/S014/experiments/EX007_20261017/src/components.py:6", "research/S014/experiments/EX007_20261017/src/components.py:32", "research/S014/experiments/EX007_20261017/others/report.md:31", "research/S014/experiments/EX007_20261017/others/report.md:33"],
+      "finding": "Already used ret1/ret5/ret20 and MA20 distance,5/20alignment,MA20five-session slope for continuation versus next-executable exit, including known holding-path variables. More complex models did not yield stable incremental use.",
+      "implication": "Both proposed states reuse old information; final-day dominance is a deterministic transformation of one/five-day returns. Newness is the selected first-SHOCK actual-cycle population and cost/support-preserving action label. Old broad negative results neither certify this new use nor mechanically disprove it."
+    },
+    {
+      "route": "EX043 TREND_CYCLE support-break protection",
+      "precise_sources": ["research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py:109", "research/S014/experiments/EX043_20261019/src/strategy_runtime/strategies/exante_hold_exit.py:291"],
+      "finding": "MA20prior and its five-session-lagged value already exist. Old protection activates only for eligible actual-entry support break, with current close and breachATR restrictions, then protects support exits.",
+      "implication": "New S1 instead reads D-1 close and gates the first profitable SHOCK across actual held days. It is an action-role change, not a renamed claim of a novel trend family. The latch must disable SHOCK only."
+    },
+    {
+      "route": "EX004/EX005 old return inputs and MA/breakout controls",
+      "precise_sources": ["research/S014/experiments/EX004_20261016/src/component_study.py:60", "research/S014/experiments/EX005_20261016/src/methods.py:34"],
+      "finding": "One/five/twenty-day returns, price-location and MA/breakout information are established inputs. Fixed formula reuse is reasonable but is not new external information or independent confirmation."
+    }
+  ],
+  "population_review": {
+    "actual_selected_SHOCK_D": 21,
+    "first_D_per_actual_entry_cycle": 21,
+    "annual_counts_2020_26": [2, 5, 0, 3, 3, 2, 6],
+    "basis": "Read saved authenticated original C9461 actual account, selected_shock_exit==1, deduplicate original actual entry_index; no continuation labels or candidate-state values read/computed.",
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {"type": "ExperimentRef", "strategy_id": "S014", "experiment_id": "EX046_20261020"},
+      "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+      "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+      "media_type": "application/json", "name": "completed-sign-pause-001-after_net_loss_skip1", "schema": "account_evaluation", "schema_version": 7
+    },
+    "requirements": ["Keep all21 including zero-event2022, losses, ties, unknown states and censored outcomes; no redefinition around known2025/26 examples.", "Do not select only cycles also entered by EX047/48 OFF. That would condition population on downstream policy participation.", "Each selected cycle gets one equal contribution after per-entry-capital normalization; repeated future raw SHOCK days are not new observations.", "All2020-26 are already seen and this question came from inspected contrasting cases; no pristine holdout claim."]
+  },
+  "state_clock_and_meaning": {
+    "S1": {
+      "formula": "MA20prior[D] > MA20prior[D-5] AND Close[D-1] >= MA20prior[D], finite/known only",
+      "clock": "Both MA values use only closes strictly before the original decisionD; keep original in-window rolling masks/warmup. MA20prior_lag5 is a20-session MA lagged5sessions, not a5-session MA.",
+      "direction": "TRUE supports holding the remaining original cycle without SHOCK;FALSE original exit.",
+      "competition": "Prior alignment may only proxy how long the position has existed, current known profit, or selection into an already positive five-day SHOCK. Show exact clock layers and full opposite-state examples."
+    },
+    "S2": {
+      "formula": "r1=log(C_D/C_D-1), r4=log(C_D-1/C_D-5), dominance=(r1>r4); positive originalret5=r1+r4 in the selectedSHOCK population",
+      "direction": "Known dominance FALSE (r1<=r4) supports hold; known dominanceTRUE follows original exit. Equality belongs to the predeclared hold side.",
+      "clock": "Uses the current D close and prior closes, all available at Dclose. Do not substitute next-E open, candle or exit return. Preserve original log-return definition rather than mixing arithmetic returns.",
+      "meaning_limit": "FALSE only means the final day did not dominate five-day net gain. It can include a falling final day or a single large jump among the prior four days; it does not prove a smooth or continuously rising path. Display as non-final-day-dominant, retaining DISTRIBUTED_RISE only as a code label.",
+      "competition": "Could proxy the old daily up/down condition or current impulse size already represented by ret1/ret5. Keep per-row r1/r4 and r1sign for interpretation; do not add a post-outcome positive-day filter or claim independent information."
+    },
+    "unknown": "Unknown remains explicitly unknown in full inventory. Do not silently imputeFALSE or make a fallback policy; all future treatment of unknowns must be explicit in a separate approved source design."
+  },
+  "local_label_contract": [
+    "Start both branches from the same original actual filled entry/quantity and firstSHOCK Dclose state, with original entry anchors/deadline and price-basis identity. Source HFQ and anchored account unit prices must not be mixed.",
+    "ON must exactly reproduce the original actual SELL date, price, quantity, both actual fees and pending/fill constraints before alternative labels are admitted. A failed control stops dependent labeling; do not choose a nearby matching trade.",
+    "OFF disables SHOCK only for the remainder of this one cycle. Preserve actual publicresolver, future cost/support/GRACE/H10/inherited pending and blockedSELL continuation. No reset of deadline or one-day fabricated rebuy.",
+    "Stop at that alternative actual liquidation; no reentry, cash compounding, further loss-pause account or annual funded simulation. Later actual source-account trades are not imported into the local branch.",
+    "If no alternative SELL by original2026-10-15, keep censored Delta null and include the row; do not use postcutoff data or force liquidation. Any cutoff mark must be separately named and cannot replace closed-cycle Delta.",
+    "Strict positive/zero/negative Delta from consistent arithmetic; identical proceeds produce true zero. No outcome-driven epsilon, clipping or maturity drop.",
+    "The local label excludes the reentry/opportunity/funding effects demonstrated in EX019/EX047/EX048. Means and label sums are not policy returns, candidate qualification or an annual target repair budget."
+  ],
+  "recommended_decision_use": [
+    "Proceed after root final method file binds the adopted unit/latch/direction/clock definitions; independent source and original-exit replay audits still precede any new label computation.",
+    "First show both separate predeclared state contrasts on all21 and within common exactremaining layers, with all contrary examples/censored/unknown cases. Do not combine the two states or flip direction to manufacture a winner.",
+    "If a pooled association disappears after known remaining-time comparison, or a state has no counterpart at shared clock positions, record that the state effect is not distinguished from time opportunity. This is identification interpretation, not a new economic or sample-count veto.",
+    "If results justify a future funded policy, match the same firstSHOCK once-per-cycle latch semantics on the policy's own actual cycles, then test all original7annualreturn/DD and fullwindowfrequency. Original-population component usefulness does not imply a useful fullpolicy.",
+    "If these reused inputs do not distinguish this specific action, stop this two-state route rather than sweep nearby20/5/half thresholds or silently add new features. Broader information-family uselessness would remain unproved."
+  ],
+  "no_added_economic_gate": true,
+  "resources": {"new_state_values": 0, "new_labels": 0, "new_accounts": 0, "new_market_calls": 0, "prepared_fetches": 0, "fits": 0},
+  "next_step": "Bind root final method SHA in a new review gate; then review the separate source/causal replay implementation before any component labels."
+}

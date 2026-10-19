@@ -1,0 +1,16 @@
+{
+  "status": "IMMUTABLE_AUDIT_EXPRESSION_SUCCESSOR_NO_COMPONENT_RERUN",
+  "old_helper": "local_on_independent_audit.py",
+  "old_failure": "local_on_independent_failure.json",
+  "successor_helper": "local_on_independent_audit_v2.py",
+  "successor_review": {"path": "research/S014/materials/20261020_shock_state_diagnosis/accounting/local_on_independent_review.json", "sha256": "1c0eb3cbd57f73b7be95d970c8fb96490355bf677be5d49675caaecd64b97d40"},
+  "source_lock_sha256": "3ce1292b28b7469a2332f268b573861f4f8364b97622d02bf6895c73b0317c90",
+  "ON_evidence_sha256": "b1e01f3d4dc936114d67d3c63282b3d5e42565a8c001336ed454dba3371b4141",
+  "first_affected_event": "C9461-SHOCK-2020-07-06",
+  "actual_original_fill_time_text": "2020-07-07T09:30:00.000000000",
+  "component_ON_fill_time_text": "2020-07-07T09:30:00",
+  "cause": "Different lossless serializations of the same timestamp were incorrectly compared as literal strings. The original public runner already used exact pd.Timestamp equality. No price, fee, state, clock or precision discrepancy was found.",
+  "correction": "Only replace that timestamp string equality with exact pd.Timestamp equality, preserving all nanosecond value information. time_precision remains separately compared to original TIMESTAMP. No floor, truncation, tolerance, epsilon or price relaxation.",
+  "immutable_preservation": "Original failed helper and failure JSON retained. No existing ON result, source, method lock, actual account or economic outcome modified. Successor independently rechecks all21 same original ON controls.",
+  "resource_distinction": {"independent_audit_expression_incidents": 1, "component_ON_reexecutions_by_C": 0, "new_funded_accounts": 0, "funded_account_failures": 0, "new_OFF_labels_in_this_record": 0}
+}
