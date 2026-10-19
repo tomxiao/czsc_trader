@@ -1,0 +1,158 @@
+{
+  "status": "PASS_FOR_SINGLE_LOCKED_FIXED_RUN",
+  "role": "RSCH independent option/source reviewer",
+  "observed_inputs": {
+    "src/run_fixed.py": {
+      "path": "research/S014/experiments/EX039_20261019/src/run_fixed.py",
+      "sha256": "fd7e1835f36d06f13afcb15f929c7d17401ca72a53d107505734be13925caa86"
+    },
+    "src/assemble_inputs.py": {
+      "path": "research/S014/experiments/EX039_20261019/src/assemble_inputs.py",
+      "sha256": "2dee23496526de33b3495b2d91de84741052f35cd986bd9f8b0c646d1498f7d1"
+    },
+    "src/build_option_features.py": {
+      "path": "research/S014/experiments/EX039_20261019/src/build_option_features.py",
+      "sha256": "5d31df1edb26778bf945a4aa8fc413bd6de617dad43a173f12db071544205b65"
+    },
+    "src/analyze_fixed.py": {
+      "path": "research/S014/experiments/EX039_20261019/src/analyze_fixed.py",
+      "sha256": "055be3b28528cada3941923d945f8b75ef43cd6533b24676c4eab3627f1991bd"
+    },
+    "protocols/design.json": {
+      "path": "research/S014/experiments/EX039_20261019/protocols/design.json",
+      "sha256": "d1ff8386bfd23b9a1ffe2489fe89a82db1cfa19a1ef692c072055cc0d3cbb47a"
+    },
+    "others/source_quality_audit.json": {
+      "path": "research/S014/experiments/EX039_20261019/others/source_quality_audit.json",
+      "sha256": "c23d244ce67d841428ebb150fc22604108d011d4b35d9012506b6af55d2c61fb"
+    },
+    "others/option_feature_audit.json": {
+      "path": "research/S014/experiments/EX039_20261019/others/option_feature_audit.json",
+      "sha256": "e2c5716d2191a6c03ad048f503dc9c0ad2747ca5530aa096e2b68543e62ebe04"
+    },
+    "others/model_input_preflight.json": {
+      "path": "research/S014/experiments/EX039_20261019/others/model_input_preflight.json",
+      "sha256": "70ba653dfe6ecd3602a29396ac47cf3b0eb0bf8e942e6a00e6fe261c6205c73e"
+    },
+    "others/model_inputs.csv": {
+      "path": "research/S014/experiments/EX039_20261019/others/model_inputs.csv",
+      "sha256": "672b7005dbe84667f0a1cb265eea76725310fca744b4cb0197c8c8cd3867a5dd"
+    },
+    "others/model_input_lineage.json": {
+      "path": "research/S014/experiments/EX039_20261019/others/model_input_lineage.json",
+      "sha256": "ff0661825b80a7aa63b2b63f7a53aa077edbc61548e5a4e6f5f3ace81951dd69"
+    }
+  },
+  "review_timing": "Main session published run inputs and started the authorized one run while this independent arithmetic review finished. This reviewer executed no fits; observed slot count is recorded, not reset.",
+  "observed_fit_slots": 28,
+  "published_run_lock_sha256": "55e0beda28d4de3a0bb503c3235d345a9fa259a0fe5e0b38ba91b61cab8ec1fb",
+  "run_lock_source_input_hashes_match": true,
+  "source_quality": "PASS_RAW_SOURCE_QUALITY_AUDIT",
+  "metadata_R1": {
+    "status": "CLOSED_OBSERVED_SINGLE_EXPIRY_FOR_ALL_22_K",
+    "all_22_single_expiry": true,
+    "native_identity_and_pair_checks_pass": true,
+    "meaning": "Every mapped K has exactly one returned maturity_date; earliest-expiry selection is inert for this observed dataset. This does not certify unseen historical listings or adjustment vintages."
+  },
+  "option_arithmetic": {
+    "status": "PASS_INDEPENDENT_OPTION_INPUT_RECALCULATION",
+    "structure_rows_recomputed_from_raw": 350,
+    "same_K_control_rows_recomputed_from_public_prepared": 259,
+    "model_ready": 250,
+    "non_ready_total": 149
+  },
+  "merge_checks": {
+    "rows": 1642,
+    "A_rows": 399,
+    "all_original_columns_exact_values_unchanged": true,
+    "option_A_values_missingness_exactly_preserved": true,
+    "non_A_option_all_NA": true,
+    "labels_and_calendar_byte_identical": true,
+    "one_to_one_dates": true
+  },
+  "independent_fold_counts": {
+    "ETF_2023": {
+      "train": 163,
+      "test": 34,
+      "max_training_maturity": "2022-12-14T00:00:00"
+    },
+    "ETF_2024": {
+      "train": 196,
+      "test": 45,
+      "max_training_maturity": "2023-12-15T00:00:00"
+    },
+    "ETF_2025": {
+      "train": 243,
+      "test": 73,
+      "max_training_maturity": "2024-12-30T00:00:00"
+    },
+    "ETF_2026": {
+      "train": 315,
+      "test": 58,
+      "max_training_maturity": "2025-12-30T00:00:00"
+    },
+    "OPTION_2023": {
+      "train": 101,
+      "test": 23,
+      "max_training_maturity": "2022-12-05T00:00:00"
+    },
+    "OPTION_2024": {
+      "train": 125,
+      "test": 31,
+      "max_training_maturity": "2023-12-07T00:00:00"
+    },
+    "OPTION_2025": {
+      "train": 156,
+      "test": 53,
+      "max_training_maturity": "2024-12-06T00:00:00"
+    },
+    "OPTION_2026": {
+      "train": 209,
+      "test": 41,
+      "max_training_maturity": "2025-12-04T00:00:00"
+    },
+    "JOINT_2023": {
+      "train": 98,
+      "test": 22,
+      "max_training_maturity": "2022-12-05T00:00:00"
+    },
+    "JOINT_2024": {
+      "train": 121,
+      "test": 30,
+      "max_training_maturity": "2023-12-07T00:00:00"
+    },
+    "JOINT_2025": {
+      "train": 151,
+      "test": 50,
+      "max_training_maturity": "2024-12-06T00:00:00"
+    },
+    "JOINT_2026": {
+      "train": 201,
+      "test": 40,
+      "max_training_maturity": "2025-12-04T00:00:00"
+    }
+  },
+  "runner_review": [
+    "Local strategy-feature prepare/fetch only with socket network block",
+    "Original and additive repair evidence maps separately verified",
+    "Source and evidence each checked against EvidenceRef SHA256",
+    "Own runner/analyzer bytes included in public run input map",
+    "Prepared identity/content and local source hash rechecked before subprocess",
+    "Any prior reserved fit slot blocks another run",
+    "Child analyzer independently disables network and uses exact28 counted slots"
+  ],
+  "assembler_review": [
+    "Rawrefs evidence wrapper correctly unwrapped only for raw graph",
+    "399 exact inherited A source dates left joined onto1642 original dates",
+    "All original columns retained; non-A new option fields remain missing",
+    "Public ETF reconstructed and option formally fetched with hash/reference identity",
+    "No feature imputation or signal/target readiness rewrite"
+  ],
+  "blocking_issues": [],
+  "new_source_calls": 0,
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "review_script": ".tmp/ex039_input_runner_review.py",
+  "review_script_sha256": "d7225a74bbf013979e00f3fa4a3952862162561063930e1091b92ad1b919a0b6",
+  "limits": "Review verifies source/feature/input identities and fixed sample protocol; does not certify historical publication/adjustment vintages, statistical support, economic target achievement or live readiness. Scope remains at most the already authorized one28-slot run."
+}

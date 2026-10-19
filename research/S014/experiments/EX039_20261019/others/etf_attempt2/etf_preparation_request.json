@@ -1,0 +1,79 @@
+{
+  "requests": [
+    {
+      "dataset": "etf.share_size",
+      "symbol": "510300.SH",
+      "start": "2020-01-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    {
+      "dataset": "etf.unadjusted_daily",
+      "symbol": "510300.SH",
+      "start": "2020-01-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    }
+  ],
+  "policy": "REUSE",
+  "reserved_utc": "2026-10-19T06:20:15.556574+00:00",
+  "source_evidence": {
+    "inputs": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722.csv",
+      "sha256": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722",
+      "media_type": "text/csv",
+      "name": "ex032-others-inputs-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "calendar": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4.csv",
+      "sha256": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4",
+      "media_type": "text/csv",
+      "name": "ex032-others-calendar-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd.csv",
+      "sha256": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd",
+      "media_type": "text/csv",
+      "name": "ex032-others-labels-csv",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "event_identity": {
+    "path": "research/S014/experiments/EX039_20261019/others/etf_attempt2/etf_events.json",
+    "present": true,
+    "sha256": "04439c81a86381c66abce731a9bc8e882ee87b5aa710ca5639fd5144cd65b5a1",
+    "status": "SOURCE_RETURNED_NOT_FULL_VINTAGE_CERTIFIED",
+    "dividend_coverage_certified": false,
+    "share_adjustment_coverage_certified": false
+  },
+  "automatic_retry": false
+}

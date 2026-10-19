@@ -1,0 +1,67 @@
+{
+  "status": "PASS_FOR_FIXED_CONDITIONAL_STAGE_TWO_STUDY_NOT_SIGNAL_VALIDATION",
+  "role": "RSCH method reviewer",
+  "experiment": "EX039_20261019",
+  "review_identity": "Independent of main-session accidentally exposed other-batch ETF summary: reviewer did not read memory or other research batch content. Reviewer authored analyze_fixed.py, so this is not an independent implementation audit of that module; a separate code audit remains appropriate.",
+  "scope": "Read S014 current guideline, family/mandate, EX038 census/method review, EX032 fixed H3 conventions, and EX039 design/pre-reviews and capture_sources.py. No acquisition, real-data fitting, label replay, account or registry operation.",
+  "source_hashes": {
+    "research/S014/experiments/EX039_20261019/protocols/design.json": "d1ff8386bfd23b9a1ffe2489fe89a82db1cfa19a1ef692c072055cc0d3cbb47a",
+    "research/S014/experiments/EX039_20261019/src/capture_sources.py": "07aaefe6e9395a69f7fdf55283a840a184d3e7461ecf8b71312e09b0fec5b52b",
+    "research/S014/experiments/EX039_20261019/src/analyze_fixed.py": "055be3b28528cada3941923d945f8b75ef43cd6533b24676c4eab3627f1991bd"
+  },
+  "authorization": {
+    "current_human_instruction": "ETF和期权的检验授权你一次性完成，我看结果",
+    "scope": "One fixed ETF lane, one fixed methanol-option lane and one predeclared joint incremental comparison, stage two only; target600722.SH and2020-01-01..2026-10-15 unchanged.",
+    "old_census_flags": "EX038 future_execution_authorized=false described the prior census endpoint. Current explicit authorization is new; no historical quota or finding is rewritten.",
+    "excluded": ["Other research batches", "new vendor or purchase", "platform/custom provider changes", "new continuous accounts or candidate registration", "phase advancement/freeze", "production/PTE", "master merge/tag/remote push"]
+  },
+  "budget_review": {
+    "fits": {"ETF": 12, "OPTION": 8, "JOINT": 8, "total_cap": 28, "formula": "(3+2+2) models x4 annual folds", "failures_count": true, "automatic_refit": false, "missing_data": "An inestimable slot remains unavailable; no substitute model or result-dependent reallocation."},
+    "http": {"option_and_event_cap": 1100, "etf_cap": 24, "total_cap": 1124, "inventory": "684 required P/Q dates,22 mapped K; collector asserts exact counts", "worst_case_planned": "For singles s and paired batches p: s+2p=684 and requests s+3p<=1026. Add22 metadata+1 independent event=1049. Design arithmetic correction is applied:342 paired parents+684 single leaves+22+1=1049, leaving51 under1100.", "count_semantics": "Actual guarded requests are pre-wire reserved; HTTP attempts, supplier failure and transport failure count. Raw sanitized JSON snapshots are not asserted to be exact transport bytes.", "retry_redirects": "Disabled; duplicate identical requests rejected. Splits are distinct declared range/leaf requests, not hidden retry.", "parallelism": "Two independent lanes, per-lane1s minimum HTTP spacing; numeric fits spawn2, one native thread each."}
+  },
+  "method_checks": [
+    {"id": "Frozen estimand", "status": "PASS", "detail": "Original low-open positive-close A only, all environments; existing immutable H3 net outcome and entry/maturity semantics. L=max(-Y3,0) is deterministic loss transform, no new execution labels."},
+    {"id": "Temporal folds and comparable rows", "status": "PASS", "detail": "2023..2026 annual models; both source decision and actual maturity strictly before fixed Jan1 for training. Train-only ddof0 standardization; scale<1e-12->1, unpenalized target intercept, ridge alpha10. All models in a family share union-feature finite/ready rows; joint separate intersection."},
+    {"id": "Fixed economic direction", "status": "PASS", "detail": "Negative lagged ETF share change and positive comparable put-share change hypothesized to increase H3 downside. No direction/lag/product/model selection after outcomes. E2 is delay counterevidence, never alternative winner."},
+    {"id": "Outcome versus policy use", "status": "PASS", "detail": "Paired MSE increment is forecast evidence. Strict score<train q75 retention is fixed diagnostic; report avoided loss, foregone positive outcomes, added/removed opportunities, participation and absolute retained outcomes. All-A scaling must disclose missing rows rather than treat missing external state as zero risk."},
+    {"id": "Necessary counterevidence", "status": "PASS", "detail": "Per-year/without2026, filled/all-attempt, paired holding-cluster bootstrap2000 seed13, equal-cluster/LOO/largest-cluster removal/chronological nonoverlap, option no-roll and active-pair views. Reuse fixed predictions; no new subgroup fitting. Matched participation and realized-exit nonoverlap are explicitly retrospective diagnostics."},
+    {"id": "Transport plan and lock", "status": "PASS_STATIC", "detail": "Allowlisted project-client HTTP tasks, account relation to MCP UNKNOWN, no credential values logged, capped immutable reservations/results, no automatic rerun. Nonempty published-design map must contain actual design path and exact EvidenceRefs before source collection."},
+    {"id": "Failure separation", "status": "PASS", "detail": "Option/meta access or transport failure stops option collection. Optional independent fund_div failure records unknown event coverage and may continue already authorized option tasks without retry. This precise failure_handling field governs the broader budget_reason sentence."}
+  ],
+  "changes_from_preliminary_reviews": [
+    "ETF preliminary all-daily training replaced prospectively by A-only to align training population and reduce collection scope; fixed Jan1 cutoff replaces first eligible signal cutoff.",
+    "Explicit ETF_UNADJUSTED_DAILY source supplies ETF price controls absent in share-size adapter; no NAV or size/share substitution.",
+    "Unknown historical event/adjustment/arrival chains permit only explicitly conditional raw proxy diagnostics; known conflicts still block rows. This is an ex-ante restricted estimand, not a post-result fallback.",
+    "Option matched same-K/same-expiry/native-strike codes measure raw contract-hand OI composition. Historical moneyness, notional-normalized exposure and IV are excluded; calendar-day DTE control and proven min5 exchange sessions are separately defined.",
+    "Direct project-account guarded transport replaces draft MCP counting; successful census interfaces only, not a route around an approval-denied minute/realtime request. Two-session batching and bounded split requests replace draft larger batches.",
+    "One joint model pair adds8 predeclared fits, making28 total; combined improvement cannot identify each input's marginal contribution."
+  ],
+  "conditional_evidence_limits": [
+    "ETF source AvailableDate and T-2 convention do not certify historical first arrival or unrevised data. Unverified complete conversion chain means raw share change cannot establish genuine net redemption; a conditional proxy forecast finding stays conditional.",
+    "Same-code/native-strike paired option OI is not certified historical moneyness or economic notional comparability. Unknown adjustment chain and universe completeness remain limitations; actual conflicts, missing required pairs and invalid denominators block rows.",
+    "Fund dividend catalogue is incomplete event evidence even when nonempty. Failure or empty result cannot prove absence of splits/dividends.",
+    "Shared-vendor agreement and multiple related contracts are not independent replication. Product and expiry selection rules are fixed without target-return selection.",
+    "All prior S014 development outcomes have been seen. Annual out-of-sample forecasts and nominal bootstrap intervals remain adaptively researched development evidence, not pristine independent confirmation.",
+    "Prediction gain, risk-use support and full annual strategy targets are distinct. Fees, fixed1% limit execution, BuyHold and original yearly targets remain unchanged; no new numeric economic hard gate."
+  ],
+  "exposure_review": {
+    "incident_source": "Main-session disclosure, not reviewer reading",
+    "priority_anchor": "EX038 formally recorded ETF share state first, comparable option OI second before incident.",
+    "assessment": "Protocol transparently records accidental other-batch summary exposure, stopped search, prohibited adjacent content reuse, after-exposure overrides, and no clean-room claim. Independent drafts and fixed before-outcome definitions reduce influence risk; they do not erase exposure or research selection history.",
+    "required_reporting": "Preserve this disclosure and exact pre-source design identity in final evidence; do not quote or reconstruct the other batch result and do not tune using it."
+  },
+  "classification": {
+    "supported": "Defined conditional proxy information/use survives relevant controls and strongest counterevidence with uncertainty disclosed; no certified redemption/PIT/causal or live-readiness claim beyond evidence.",
+    "negative_or_duplicate": "Valid fixed comparison does not support declared direction/use or is absorbed by controls; do not generalize to all ETF/options information.",
+    "not_applicable": "Structural lifecycle or instrument mismatch for specific requested dates/claims; distinguish from missing data.",
+    "insufficient_data": "Unresolved timing/adjustment/universe, missing controls, empty state, few distinct episodes or concentrated uncertain result prevent claimed inference. No numeric success required.",
+    "technical_failure": "Transport/permission/approval/parsing/identity/computation prevents intended valid test; retain reason and partial evidence without economic negative inference."
+  },
+  "nonblocking_notes": [
+    "Before publication, technical alignments applied: etf_columns.available matches prepare_etf.DEFAULT_COLUMNS; ETF capture calls actual prepare_etf.prepare() and plain-serializes its return; budget arithmetic corrected to1049/51. These do not change method choices or resource caps.",
+    "The review binds observed code hashes for traceability, not independent code-audit certification. Further code edits require a new observed hash and appropriate review before publication; algorithm/estimand edits require method re-review."
+  ],
+  "blocking_issues": [],
+  "review_activity": {"new_external_calls": 0, "new_real_data_fits": 0, "new_return_execution_labels": 0, "new_accounts": 0, "memory_read": false, "other_batch_content_read": false},
+  "next_step": "Complete separate code audit and public design/source lock, then perform authorized source collection, formal data preparation and input preflight before the28 reserved fits. Preserve failures and unavailable results; no automatic phase advancement."
+}

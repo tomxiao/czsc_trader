@@ -671,8 +671,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "d8db50020264c281184cfa82cfd2feebd351b96c1d233ed502a4880bd03a45e5",
-      "revision": 21,
+      "content_sha256": "eb1dd559a0417529ca50f6e53158acfb68d42d3056c138676e6d10d1cde457a5",
+      "revision": 22,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
@@ -5836,6 +5836,72 @@
       ],
       "status": "COMPLETE_BOUNDED_CENSUS_WITH_UNRESOLVED_ACCESS_AND_HISTORY"
     },
+    "option_etf_fixed_study": {
+      "actual_budget": {
+        "counted_fit_slots": 28,
+        "etf_http_including_repair": 11,
+        "http_reservations": 395,
+        "option_event_http": 384,
+        "result_status_counts": {
+          "SUCCESS": 395
+        },
+        "successful_fits": 28,
+        "technical_fit_failures": 0
+      },
+      "analysis": {
+        "evidence_id": "82cece529b4641570b005bd7e7779dade90aef9747b649feb997703fe6a08c8f.json",
+        "experiment": {
+          "experiment_id": "EX039_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex039-others-fixed_analysis-analysis-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "82cece529b4641570b005bd7e7779dade90aef9747b649feb997703fe6a08c8f",
+        "type": "EvidenceRef"
+      },
+      "conclusion": "本轮ETF和期权固定检验已完成：510300份额主信号未表现出稳定新增用途；甲醇期权同合约看跌持仓占比变化有预测线索，但预设风险方向相反、年度和聚类反证较强，尚不能确认可交易优势；联合输入也未形成可靠改进。未发现可直接采用的进出场信号，不进入阶段三或新增账户。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "eb1dd559a0417529ca50f6e53158acfb68d42d3056c138676e6d10d1cde457a5",
+        "revision": 22,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX039_20261019",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "future_execution_authorized": false,
+      "historical_eligibility_changed": false,
+      "historical_publication_and_adjustment_certified": false,
+      "judgment": {
+        "evidence_id": "9f76b619b0402348a465015f0f28dbfee7461c192b5015014e5ba6f781322d5c.json",
+        "experiment": {
+          "experiment_id": "EX039_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex039-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9f76b619b0402348a465015f0f28dbfee7461c192b5015014e5ba6f781322d5c",
+        "type": "EvidenceRef"
+      },
+      "new_accounts": 0,
+      "new_candidates": 0,
+      "new_component_definitions": 0,
+      "next_step": "停止继续打磨本轮ETF份额直接信号；甲醇期权仅保留为待验证线索。如继续，先明确其反向关系的经济解释并核实历史可得性与调整链，再预留未使用的新样本进行一次独立验证；不在当前结果上反转方向、改期限或搜索阈值。请用户决定暂缓或仅继续期权补证。",
+      "predictive_value_tested": true,
+      "status": "FIXED_TESTS_COMPLETE_NO_VALIDATED_DIRECT_SIGNAL"
+    },
     "original_announcement_study": {
       "analysis": {
         "evidence_id": "d82d75dd730eafebcf52b640e8c67b098512e7c0946dae2ca689f9c4ebc1854f.json",
@@ -6334,5 +6400,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-19T13:35:33+08:00"
+  "updated_at": "2026-10-19T14:51:45+08:00"
 }

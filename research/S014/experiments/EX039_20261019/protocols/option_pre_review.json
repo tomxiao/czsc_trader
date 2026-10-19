@@ -1,0 +1,115 @@
+{
+  "status": "PREFLIGHT_DESIGN_ONLY_NO_COLLECTION_OR_FIT",
+  "role": "RSCH",
+  "title": "甲醇同到期、同合约集合的认沽持仓占比变化与既有H3损失风险",
+  "authorization_context": "父会话已获用户一次性完成ETF和期权检验授权；本子任务只做方案和公开能力核验。",
+  "scope": {
+    "batch": "S014",
+    "target": "600722.SH",
+    "source_window": ["2020-01-01", "2026-10-15"],
+    "evaluation_years": [2023, 2024, 2025, 2026],
+    "parent": "EX032既有低开收阳A，所有环境",
+    "exposure": "既有开发结果已见；本假设为自适应研究，年度外推不能称全新独立验证。",
+    "no_new_accounts_candidates_platform_or_registry": true,
+    "no_adjacent_research_batches_read": true,
+    "no_memory_read": true
+  },
+  "question": "价格、已实现波动、成交活跃度相近时，较早完整甲醇交易日的可比认沽持仓占比上升，是否额外指向600722既有H3机会的更大损失风险？",
+  "direction": {
+    "fixed": "delta_put_share越大，随后H3损失严重度越高，风险方向为延续而非反转。",
+    "semantic_limit": "认沽持仓为双边存量，不能命名为看跌净流入、净多空或已证实保护需求；不反推IV。",
+    "no_post_result_flip": true
+  },
+  "timing": {
+    "decision": "股票T日收盘，沿用既有下一交易日执行规则。",
+    "P": "既有EX032中严格早于T的最新完整CZCE开市日。",
+    "Q": "P的上一个CZCE开市日。",
+    "contract_K": "EX032在P映射的明确甲醇原合约K；P和Q均使用同一K，不拼连续价格。",
+    "availability_convention": "源日期D的数据在下一CZCE开市日15:00才可用；须Availability(P)<=T收盘，日期缺失则不填。",
+    "verification_limit": "该保守滞后与既有甲醇研究一致，但opt_daily首次发布时间与历史修订链未认证。结果只能作为该滞后约定下的关联检验，不证明严格历史PIT或盘中可交易。",
+    "additional_delay_counterevidence": "同一已锁定预测与标签按另滞后一完整CZCE日的特征作无新拟合描述；不能替换主结果。若必须拟合敏感度，需占父方案预留slot，不能默增。"
+  },
+  "main_variable": {
+    "name": "delta_put_share_matched",
+    "formula": "x(T)=sum_j[OI_put(j,P)]/sum_j[OI_put(j,P)+OI_call(j,P)] - sum_j[OI_put(j,Q)]/sum_j[OI_put(j,Q)+OI_call(j,Q)]",
+    "unit": "合约手数占比变化，百分点展示；不按乘数换算名义敞口，不作期权市值或Delta敞口解释。同代码同到期合约结构，不声称同虚实度。",
+    "one_primary_variable_only": true,
+    "comparison_set": [
+      "j为K的同一到期日、同一行权价认购认沽成对合约；两日取完全相同的合约ID集合。不得P/Q分别选最活跃合约。",
+      "到期日若同K存在多个版本，选Q时已知、距P至少5个完整CZCE交易日且最早到期的一组；选择不使用股票标签或后续量价。",
+      "使用选定K/expiry的全部可配对行权价，不做虚实度筛选、不需要额外各月份期货报价。以Q已上市集合固定篮子，P不重新按价格/成交活跃度选行权价。",
+      "所有成对合约须在Q前至少5个CZCE开市日已上市，且P/Q均有效；本规则不随结果调整。",
+      "同一对C/P按原生合约代码行权价与目录核对；同一合约Q到P有已知乘数/行权价/代码调整则整行标调整不可比。不用当前乘数换算历史名义持仓。",
+      "若某对在P/Q缺记录或OI缺失，则该对不得参与；以Q候选对为基准披露缺失。主行只有在全部Q候选对P/Q记录完整且至少3对时有效，避免按缺失静默改篮子。",
+      "P和Q认购加认沽总OI必须均大于0，禁止分母0补0。主变量不以正收益、价格、成交量筛合约。"
+    ]
+  },
+  "historical_identity": {
+    "key": "(exchange, ts_code, opt_code, list_date, delist_date, maturity_date)",
+    "czce_short_year_codes": "MA005C2300.ZCE只有一位年份信息，不能靠数字猜2020/2030；以OPMA2005.ZCE及上市/到期区间核对，与K的四位年月一致。",
+    "metadata_input": "opt_basic至少保存ts_code/name/opt_code/call_put/exercise_type/exercise_price/opt_multiplier/list_date/delist_date/maturity_date；可得则另存per_unit/quote_unit。",
+    "adjustment_gate": "字段文档明确exercise_price和opt_multiplier为经过调整值。最新meta+代码含行权价只能核对一致性，不能证明没有历史调整。主统计严格限定同代码合约手数构成，不使用历史虚实度或名义持仓。因此缺调整链如实列为结构可比性残余限制，不能宣称完全排除调整解释；存在实际身份冲突/已知调整事件/代码无法一一映射的日期阻断，不假定甲醇永不调整。若主结论依赖这些未认证日期，结论只能证据不足。",
+    "no_implicit_m10": "已见2020和2026样本乘数10仅为两样本事实，不能推广到全部合约。"
+  },
+  "quality": {
+    "oi": "必须有限、非负；源明确OI=0保留，缺失不等于0。",
+    "zero_volume_or_zero_close": "OI主检验不需要期权成交价；零成交或零收盘价原样留证，不将零价用于收益/IV，也不因零成交自动抹掉真实存量。另作全对两日均有成交的活动子集反证，不替换主定义。",
+    "stale_prices": "不前填close、settle或OI；未成交非零close不冒充当天成交。",
+    "duplicates": "(ts_code,trade_date)重复但值不同则技术失败；同值重复显式记账去重。",
+    "expiry_roll_new_listing": "主行距到期至少5个CZCE开市日；同K同到期同集合比较；分别披露roll前后、近到期、上市不足及配对不足排除数量。",
+    "coverage": "按每个既有A机会逐项列有效/缺P/缺Q/缺历史meta/缺配对/零分母/近到期/发布时间不满足；不把被排除机会算成无风险。",
+    "missing_labels": "重用EX032固定Y3与成熟日期；不新增收益标签、补标或账户回放。未成交标签保持原语义。"
+  },
+  "baseline_and_evaluation": {
+    "B65": "EX032 protocols/design.json的65项股票/市场/行业当前及滞后控制，顺序与定义保持。",
+    "controls": ["甲醇K在P/Q的同合约日收益", "同K截至P的20完整CZCE日收益标准差", "同K期货成交量相对过去20日均量", "可比期权总OI的log1p", "可比期权两日总成交量的log1p", "Q日认沽持仓占比", "距到期CZCE交易日数"],
+    "control_gate": "新增控制须从已授权公开准备的同K原合约数据和本次原始期权数据计算；缺20日同K历史则该行缺失，不从连续合约、不同K或未来数据替换。不因取数困难删除波动/活跃度控制后仍宣称已排除竞争解释。",
+    "M0": "B65 + 上述7个固定控制。",
+    "M1": "M0 + 一个连续x；无交互、无阈值/虚实度搜索。",
+    "outcome": "L3=max(-Y3,0)，从不可变既有H3净损益作固定损失严重度变换，非新收益标签；附报1[Y3<0]和Y3分布，无额外拟合目标。",
+    "method": "沿用标准化ridge alpha=10，连续L3预测非概率；每年1月首次共同有效评价日之前已真实退出成熟的历史A机会训练。同年M0/M1使用完全相同训练/评价行，标准化仅训练拟合。",
+    "fit_cap": 8,
+    "fit_allocation": "2023..2026每年M0/M1各一次；失败计入，无自动重试。若有效样本不足则相应slot不可估计，不另换模型。",
+    "primary": "共同外推机会M1相对M0的L3均方误差变化，并报告x系数方向和年度MSE；不把改善MSE直接写成可交易收益。",
+    "diagnostic": "训练风险得分q75固定为高风险；报告M0/M1高风险覆盖、共同/新增/移除机会及真实L3、负收益比例、Y3。固定x>0 vs <=0为机制描述，无另选cut。",
+    "uncertainty": "按既有实际持有区间重叠形成连通簇，成簇重抽样固定2000次seed13给出主比较95%区间；披露簇数量，小样本不强行显著性。",
+    "necessary_counterevidence": ["逐年与去掉2026", "去掉期货roll转折日及其相邻CZCE日", "持有重叠簇leave-one-cluster-out与最大贡献簇删除", "主变量是否仅由总OI/量、甲醇跌幅或RV20解释", "成交活跃配对子集与缺失机制分层描述", "合约对OI集中度与最大单对贡献，不把同标的多行权价当独立市场复制"],
+    "decision": "方向相反、增量由波动/活跃度吸收、年度反转或少数簇主导，则本固定风险机制不获支持或证据不足；不换恐慌反转叙事、不邻近参数搜索。",
+    "economic_limit": "无新增经济硬门；本组件风险关联不等于入场获利、完整策略达标或阶段三账户授权。"
+  },
+  "bounded_collection_plan": {
+    "existing_inputs_only_inventory": {"A_rows_with_PQ": 399, "unique_required_PQ_dates": 684, "unique_mapped_K": 22, "first_PQ": "2020-01-03", "last_PQ": "2026-10-12", "inventory_source": "EX032 others/inputs.csv，本子任务只统计日期和合约，没有计算新数值信号或读取未来标签筛选。"},
+    "daily_endpoint": "opt_daily",
+    "daily_selection": "仅取既有A机会P/Q所需日期；训练与评价同规则。已有EX038完全相同请求可按hash重用，不重复调用。",
+    "daily_request": "exchange=CZCE + trade_date，或start_date/end_date明确日期段；fields固定ts_code,trade_date,exchange,close,settle,vol,amount,oi。响应中非MA行仅用于完整性核查后留原件，研究特征只用MA和22个获准K。",
+    "batching": "把需要的相邻日期先组成最多4个CZCE开市日的有限日期段。若返回>=15000行、源/工具截断或缺所需日期，二分日期区间并留父子请求；直到单日。没有offset参数，不设计offset分页。",
+    "single_day_failure": "单日仍达15000或截断，不能把首15000当全集。可按已取得的具体MA合约ID定向取该日，但占剩余预算；具体全集不完整则该日阻断。",
+    "metadata_endpoint": "对22个明确K分别opt_basic(exchange=CZCE,opt_code=OP+K)；OPMA2005.ZCE格式已有真实样本证实。不使用MA*、LIKE、未记录通配符。",
+    "metadata_dates": "文档list_date只有精确上市日，不支持声明开始/结束上市范围。若按上市日拆分只能枚举真实已知精确list_date；不得发未记录start_date/end_date到opt_basic。",
+    "metadata_fallback": "opt_code空结果或不完整，保留状态；可对daily中实际存在的具体ts_code定向查询，计费同预算。不是权限绕过，不自动改凭据/客户端。父会话另行按已授权项目Tushare配置采集时，项目账号与MCP账号关系记UNKNOWN，各自请求身份独立留证；不得借切SDK执行审批拒绝的操作。",
+    "budget": {"max_new_mcp_invocations": 760, "daily_and_split_cap": 700, "metadata_cap": 48, "diagnostic_reserved_cap": 12, "max_parallel": 2, "automatic_retry": false, "failures_count": true, "budget_reason": "684个必要日期单日查询作为有限上界，22个标的目录请求加有限诊断。日期批处理应减少实际请求；任何拆分/失败/重试均扣总数。超预算交付具体缺口，不扩大。"},
+    "transport_limit": "MCP调用数不等于HTTP数；必须保存工具原始返回，解析前核对工具返回字节是否完整。若工具层输出无法保留完整原件，先缩小到单日，不切SDK规避审批。",
+    "stop": "权限拒绝、审批失败、关键历史身份缺失或预算耗尽明确留证；未经授权不采购权限、不新增源、不自动扩展全市场。"
+  },
+  "public_platform_capability": {
+    "raw_options_dataset": "UNSUPPORTED: Dataset枚举无options日线/目录数据集；DataRequest会强制Dataset构造，ProviderConfig.bindings仅接受Dataset键，不能自创字符串dataset。",
+    "custom_provider_boundary": "README要求新增来源或来源语义由DEV给明确ProviderBinding及版本。本轮不新增平台代码，不把期权原始表塞进期货或ETF数据集。",
+    "supported_feature_route": "默认STRATEGY_FEATURE_EVIDENCE + EvidenceParameters(repository_root,source_path,source_sha256)可正式prepare/fetch研究层单日一行CSV；Date为唯一主键，原始多合约同日多行不直接使用此默认契约。",
+    "feature_table": "每股票T一行Date，另列P/Q/K/expiry/AvailableDate、有效性原因、比较集合hash、主变量与控制；原始回执/合约资料/映射/日历/实现hash另以公共EvidenceRef关联。",
+    "temporal_caveat": "local_strategy_data默认只回传repository/source_path/hash等metadata；facade会识别AvailableDate字段，但available_at默认SOURCE_PERIOD_CLOSE，因此正式报告与设计必须显式说明研究约定及其未认证限制。不得把READY或默认SOURCE_PERIOD_CLOSE当成option历史发布时刻认证。",
+    "public_sources_inspected": ["packages/dataflows/README.md", "packages/dataflows/src/dataflows/contract.py", "packages/dataflows/src/dataflows/local_strategy_data.py", "packages/dataflows/src/dataflows/facade.py"],
+    "formal_before_fit": "父会话正式建立实验后：公开发布方案与原始回执/特征证据、prepare并保留PreparedDataRef、fetch核hash、合成边界预检、公共preflight后才拟合。本临时方案本身不是正式证据。",
+    "exact_public_request_example": "source_rel='research/S014/experiments/<new-experiment>/others/option_features.csv'; digest=sha256((root/source_rel).read_bytes()).hexdigest(); ctx=create_research_context(RepositoryContext.discover(root),ResearchBatchRef('S014')); request=DataRequest(dataset=Dataset.STRATEGY_FEATURE_EVIDENCE,symbol='S014:<new-experiment>:MA_OI_MATCHED_V1',start='2020-01-01',end='2026-10-15',required_cutoff=None,frequency='daily',parameters=EvidenceParameters(repository_root=root,source_path=source_rel,source_sha256=digest)); prepared=ctx.data.prepare((request,),policy=PreparePolicy.REUSE); assert prepared.ready; fetched=ctx.data.fetch(request,prepared=prepared.reference); assert fetched.ready; 保留prepared.reference三个身份字段和fetched.identity。required_cutoff=None避免将特征非每日有A机会误称截止日强覆盖；逐机会覆盖另以固定输入清单核验。",
+    "default_binding_warning": "不要用ProviderConfig(bindings={})创建该prepare上下文，否则会替换默认local evidence绑定；如使用离线绑定只应显式保留已有fetch_strategy_feature_evidence，且无需本轮新增Provider。"
+  },
+  "etf_options_auxiliary": {
+    "decision": "本次甲醇主检验不新增ETF期权拟合。",
+    "possible_use": "EX038已有SSE锚点可用于说明零价/零量、欧式/乘数差异等数据质量；不是同样本机制复制。",
+    "why_not_now": "要对510300等ETF期权作历史辅助，仍需完整历史目录、调整链、当时标的价、同到期规则与额外数据预算；缺口未解决时不扩散为市场多模型。"
+  },
+  "preflight_conclusion": "已有公开feature-evidence路线可留证且无需平台改动；原始期权并无专用DFLS准备契约。固定同K同到期同代码合约手数结构可有限检验，不声称同虚实度或名义敞口；历史调整链与发布时间残余限制必须随结果呈现。实际身份冲突、已知调整、完整可比集合/控制不可得时交付明确不可估计边界，不绕过。",
+  "actual_new_numeric_calls": 0,
+  "actual_new_fits": 0,
+  "actual_new_labels": 0,
+  "actual_new_accounts": 0
+}

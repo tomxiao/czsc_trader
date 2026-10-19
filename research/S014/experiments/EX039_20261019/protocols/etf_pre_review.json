@@ -1,0 +1,452 @@
+{
+  "status": "DRAFT_FOR_PARENT_PROTOCOL_LOCK_NOT_EXECUTED",
+  "role": "RSCH",
+  "scope": "S014 only; 600722.SH; 2020-01-01 through 2026-10-15; stage-two ETF risk information test; no platform/registry/account writes",
+  "authorization": "ETF和期权的检验授权你一次性完成，我看结果",
+  "question": "Does previously observable broad-market ETF unit redemption contain H3 loss-risk information beyond stock, broad-market, industry prices and the ETF own price change?",
+  "fixed_product": {
+    "symbol": "510300.SH",
+    "name": "华泰柏瑞沪深300ETF",
+    "identity_evidence": "research/S014/experiments/EX038_20261019/others/calls/001.json",
+    "list_date": "2012-05-28",
+    "selection_reason": "Fixed in EX038 before this outcome test; long-listed domestic broad-market fund; not selected by 600722 subsequent returns. No cross-ETF product search. Not a claim that this ETF held 600722 historically."
+  },
+  "timing_and_variable": {
+    "decision": "T stock-session close",
+    "P": "second SSE open session strictly before T (T-2), obtained from pinned SSE calendar, never from preceding observed share row",
+    "Q": "SSE session immediately before P (T-3)",
+    "R": "SSE session immediately before Q (T-4)",
+    "main": "z=1[TotalShare(P)/TotalShare(Q)-1 < 0], strictly negative; exact zero is z=0; missing/nonpositive/unknown adjustment is missing, never zero",
+    "economic_direction": "z=1 is predeclared to increase subsequent H3 downside loss; do not reverse the story to contrarian bullish after results",
+    "units": "total_share native 万份; ratio is dimensionless. Do not use total_size growth as cash flow, or fund_adj price adjustment as share adjustment",
+    "availability": "Require both share records AvailableDate <= T under public temporal contract; preserve source/availability fields. EX038 documents previous-day data normally next morning and batched; T-2 lag adds one full session. Historical actual first-publish times and revisions remain unverified unless separately evidenced. Lag is an explicit research assumption, not PIT certification.",
+    "falsification_lag": "z_late=1[TotalShare(Q)/TotalShare(R)-1 < 0] is the sole additional lag; only conservative timing sensitivity, never a replacement winner",
+    "window_or_threshold_search": "none"
+  },
+  "price_controls": {
+    "base": "65 locked EX032 stock/market/sector current and lagged main controls",
+    "etf_own": [
+      "log(Close(P)/Close(Q))",
+      "log(Close(P)/Close(P-5 SSE sessions))"
+    ],
+    "source": "native close in ETF_SHARE_SIZE if publicly returned; fields verified before fitting; these are same-date ETF price controls, not extra signals",
+    "event_rule": "For price-control windows crossing a confirmed cash-dividend ex-date, mark event and exclude from common primary rows (raw close dividend drop is not price news); do not fit a price-adjusted proxy without verified source. Split/merge/conversion affecting any share interval makes that feature missing. Complete issuer/venue event evidence, not just a large-jump heuristic, is required to call the change net redemption.",
+    "if_native_close_absent": "Report source contract gap; do not silently replace with NAV or total_size/share, and do not use different rows per model. Parent may lock an explicit ETF_UNADJUSTED_DAILY request before outcomes."
+  },
+  "outcome": {
+    "existing_Y3": "EX032 inputs.Y3 equals inherited H3 net_return exactly, already includes 10bp per side, fixed 1% LimitBuyHold entry, third-session planned exit with actual constraints; verify immutable execution reference before reuse",
+    "risk_target": "L=max(-Y3,0). This is one predeclared deterministic loss transform of the existing return label, not a newly replayed entry/exit or new account.",
+    "parent": "A == true: original low-open positive-close opportunity, all environments",
+    "unfilled": "Keep inherited unfilled attempts in parent denominator and L=0 only when inherited net_return is certified zero. Separately report attempted, filled, CLOSED, pending/censored and excluded counts.",
+    "censored": "Missing Y3 or actual maturity < 0 excluded from measured outcomes, never filled with zero; report final-window censoring and exclude from training until actual exit matured"
+  },
+  "models": {
+    "M0": "standardized ridge alpha=10: B65 plus the two ETF price controls -> L",
+    "M1": "same estimator, training and evaluation rows as M0; add z only -> L",
+    "M1_late": "same estimator/rows and B65+ETF prices; add z_late instead of z; timing falsification only",
+    "standardization": "Train-only means/std ddof=0, constant scale<1e-12 -> 1, target unpenalized intercept. Formula reuse EX032 study.fit_one with y changed only to fixed L; no hyperparameter tuning and no prediction clipping.",
+    "training": "As EX032, all eligible daily H3 attempt rows, not A-only; report transport to A explicitly. In each year, only rows with actual exit maturity strictly before first common full-feature evaluation signal in that year.",
+    "folds": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "common_rows": "Require B65, both ETF price controls, z and z_late finite, exact source calendar mapping, confirmed event validity and Y3/maturity validity. Freeze exclusion manifest before fitting; same rows across all models. Empty/one-state evaluation cells are NOT_ESTIMABLE."
+  },
+  "primary_evaluation": {
+    "forecast_increment": "On A OOS rows: mean((L-pred_M0)^2-(L-pred_M1)^2); positive means added share state improves loss prediction. Give pooled, each year, and excluding 2026; paired cluster uncertainty.",
+    "mechanism": "E[L-pred_M0 | z=1,A] - E[L-pred_M0 | z=0,A]; positive is predeclared risk direction after price controls. Give raw L difference, counts and training-fold z coefficients. Residual contrast is association, not causal effect.",
+    "use_diagnostic": "Fixed upper training quartile of predicted loss defines reject for each model. Report mean_A((keep_M1-keep_M0)*Y3), downside avoided, positive-return opportunity cost, rejected fraction, kept mean and all-A outcome. No real account and no strategy eligibility claim.",
+    "participation_countercontrol": "Within each evaluation year match M0 retained count to M1 exactly by M0 risk ordering; signal index is deterministic tie-break. Diagnostic uses feature scores/count only, not Y3; compare net allocation and downside to rule out apparent benefit from keeping fewer opportunities."
+  },
+  "necessary_counterevidence": [
+    "M1 must be compared with M0 containing same-date own-ETF returns and B65. Raw z-loss association alone cannot establish independent information.",
+    "M1_late is fixed additional delay. Show primary and late results side by side, never replace primary or search lags.",
+    "Per-year, without 2026, filled-only and all-attempt views; do not reinterpret unfilled zero as no market risk.",
+    "Form connected holding-overlap clusters by actual entry..maturity inclusive; unfilled attempts singleton. Use EX032 holding_diagnostics, equal-cluster weighting, leave-one-cluster-out, chronological nonoverlap and largest-contribution removal.",
+    "Cluster bootstrap paired metrics with fixed seed 13 and 2000 replicates; keep identical sampled clusters for both models; interval is exploratory under repeated S014 exposure.",
+    "Cash dividend/ex-date flags and split/merge evidence checked before outcomes; cannot choose event exclusions after seeing improvement. Known event exclusions and any uncertified event coverage remain visible.",
+    "If z is constant or empty in a fold, show NOT_ESTIMABLE for mechanism contrast and do not invent additional products, windows or signs. Model-identical behavior is valid negative evidence.",
+    "All S014 development history is already exposed; annual held-out predictions are development OOS, not a pristine independent confirmation."
+  ],
+  "budget": {
+    "max_new_model_fits": 12,
+    "breakdown": "4 annual folds x (M0,M1,M1_late); 8 primary fits + 4 timing falsification fits",
+    "failures_count": true,
+    "automatic_refit_retry": false,
+    "max_new_return_execution_labels": 0,
+    "derived_loss_transform": 1,
+    "new_complete_accounts": 0,
+    "candidate_registration": 0,
+    "search_trials": 0,
+    "max_data_prepare_calls": 1,
+    "max_data_requests": 1,
+    "provider_request_limit": "ETF_SHARE_SIZE one 2020-2026 symbol range is <5000 expected sessions, but actual transport/ancillary calls must be counted from available receipt; never equate one prepare with one HTTP request. No automatic refresh/retry or channel switch.",
+    "numeric_data_extension": "Only fixed ETF_SHARE_SIZE 510300.SH within approved window; no constituents, real-time or alternative-product scans",
+    "parallelism": "At most 2 independent process workers, native BLAS threads=1; inherited deterministic ridge slots may be tiny, but resource choice must be explicit; no nested parallelism"
+  },
+  "formal_data_route": {
+    "public_docs": [
+      "packages/dataflows/README.md",
+      "packages/dataflows/src/dataflows/contract.py"
+    ],
+    "request": {
+      "dataset": "etf.share_size",
+      "symbol": "510300.SH",
+      "start": "2020-01-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {}
+    },
+    "route": "ctx=create_research_context(RepositoryContext.discover(ROOT), ResearchBatchRef('S014'), providers=approved_provider); prep=ctx.data.prepare((DataRequest(Dataset.ETF_SHARE_SIZE, '510300.SH', '2020-01-01', '2026-10-15', '2026-10-15'),), policy=PreparePolicy.REUSE); require prep.ready and persist prep.reference; fetched=ctx.data.fetch(request, prepared=prep.reference); require fetched.ready; retain identity/content hash/temporal metadata and raw dataframe as EvidenceRef via public API",
+    "prepared_reference_current": null,
+    "reference_note": "EX038 MCP receipts are capability snapshots, not a full-window PreparedDataRef. New formal prepare is required. Do not fabricate a prepared reference from MCP content.",
+    "coverage": "For the long-listed fixed product compare all expected SSE sessions and actual dates; unique symbol/date, no missing/unexpected dates, finite positive shares/close; explicitly list missing source dates. Non-OHLCV READY alone may not certify full daily universe or first-publish times. Do not forward-fill across gaps.",
+    "share_event_evidence": "Issuer/venue dated split, reverse split, conversion, share-class/unit-basis changes and cash-distribution ex-date history over full used window. Record effective dates and ratios/none-found coverage scope before fitting. Do not infer no split merely from stable NAV or absence of huge share jumps; fund_adj merges price adjustments and cannot isolate share conversion.",
+    "listing_survivorship": "EX038 fixed identity says listed 2012-05-28. This is a chosen long-lived product test; it cannot generalize to historical ETF universe or infer 600722 ownership from current PCF. No listing-date extrapolation from newly listed small-cap ETFs."
+  },
+  "decision_interpretation": {
+    "supported": "Consistent risk direction plus useful price-conditional OOS increment with uncertainty/concentration/execution opportunity cost transparently assessed may justify next component work; no new numeric hard acceptance gate.",
+    "duplicate_or_negative": "If price controls remove increment, direction reverses, matched-participation explains apparent gain or single episodes dominate, report no supported independent risk-use evidence for this fixed branch. Do not switch sign or ETF to salvage it.",
+    "data_insufficient": "If share-unit event basis or exact dates cannot be certified, describe raw share-change associations only if clearly marked noncausal/unverified; do not call net-redemption signal supported. If public prepare/fetch fails, report data/API failure rather than silently import a private raw cache.",
+    "account_boundary": "Component test completed does not establish annual economic targets, buyhold dominance, capacity or a continuous executable account. Any account construction must be its own explicit plan/count, not hidden in model budget."
+  },
+  "completed_in_this_subtask": {
+    "numeric_calls": 0,
+    "fits": 0,
+    "new_labels": 0,
+    "new_accounts": 0,
+    "platform_modifications": 0,
+    "registry_writes": 0
+  },
+  "next_step": "Parent incorporates this draft into one immutable ex-ante ETF+option protocol, resolves event/temporal evidence and public provider binding, then executes authorized fixed tests and archives outcomes through public APIs.",
+  "baseline_columns": [
+    "ret1",
+    "ret5",
+    "ret20",
+    "range",
+    "volume_ratio",
+    "upper_close",
+    "upper_failure",
+    "lower_recovery",
+    "lower_close",
+    "previous_upper_close",
+    "gap",
+    "gap5",
+    "gap_session_product",
+    "gap_down_repair",
+    "gap_up_fade",
+    "intraday",
+    "intraday5",
+    "stock_ret60",
+    "stock_range20",
+    "market_gap",
+    "market_intraday",
+    "market_ret1",
+    "market_ret5",
+    "market_ret20",
+    "market_range",
+    "market_repair",
+    "relative_gap",
+    "relative_intraday",
+    "relative_repair",
+    "repair_market_interaction",
+    "sector_gap",
+    "sector_intraday",
+    "sector_ret1",
+    "sector_ret5",
+    "sector_ret20",
+    "sector_range",
+    "sector_repair",
+    "twofactor_gap",
+    "twofactor_intraday",
+    "twofactor_repair",
+    "innovation_gap",
+    "innovation_intraday",
+    "innovation5",
+    "innovation20",
+    "prior_market_gap",
+    "prior_market_intraday",
+    "prior_market_ret1",
+    "prior_market_ret5",
+    "prior_market_ret20",
+    "prior_market_range",
+    "prior_market_repair",
+    "prior_stock_gap",
+    "prior_stock_intraday",
+    "prior_stock_ret1",
+    "prior_stock_ret5",
+    "prior_stock_ret20",
+    "prior_stock_range",
+    "prior_stock_repair",
+    "lag_sector_gap",
+    "lag_sector_intraday",
+    "lag_sector_ret1",
+    "lag_sector_ret5",
+    "lag_sector_ret20",
+    "lag_sector_range",
+    "lag_sector_repair"
+  ],
+  "reusable_inputs": {
+    "others/inputs.csv": {
+      "path": "research/S014/experiments/EX032_20261018/others/inputs.csv",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722.csv",
+        "sha256": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722",
+        "media_type": "text/csv",
+        "name": "ex032-others-inputs-csv",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722"
+    },
+    "others/labels.csv": {
+      "path": "research/S014/experiments/EX032_20261018/others/labels.csv",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd.csv",
+        "sha256": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd",
+        "media_type": "text/csv",
+        "name": "ex032-others-labels-csv",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd"
+    },
+    "others/calendar.csv": {
+      "path": "research/S014/experiments/EX032_20261018/others/calendar.csv",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4.csv",
+        "sha256": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4",
+        "media_type": "text/csv",
+        "name": "ex032-others-calendar-csv",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4"
+    },
+    "others/inputs.json": {
+      "path": "research/S014/experiments/EX032_20261018/others/inputs.json",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "963c5ffcc3d284b02a2d202f8002298afeab19f1aa889dce2a60f42da217b217.json",
+        "sha256": "963c5ffcc3d284b02a2d202f8002298afeab19f1aa889dce2a60f42da217b217",
+        "media_type": "application/json",
+        "name": "ex032-others-inputs-json",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "963c5ffcc3d284b02a2d202f8002298afeab19f1aa889dce2a60f42da217b217"
+    },
+    "protocols/design.json": {
+      "path": "research/S014/experiments/EX032_20261018/protocols/design.json",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "78b530df8ffa80ce2f7ee824d2c13bba7b5cd4e744a89b465d2b18b084a15338.json",
+        "sha256": "78b530df8ffa80ce2f7ee824d2c13bba7b5cd4e744a89b465d2b18b084a15338",
+        "media_type": "application/json",
+        "name": "ex032-protocols-design-json",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "78b530df8ffa80ce2f7ee824d2c13bba7b5cd4e744a89b465d2b18b084a15338"
+    },
+    "src/study.py": {
+      "path": "research/S014/experiments/EX032_20261018/src/study.py",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "bcd4fc800896a801bf3224152c5388ec3eca1daf8e0724cace3afcc899cc0878.py",
+        "sha256": "bcd4fc800896a801bf3224152c5388ec3eca1daf8e0724cace3afcc899cc0878",
+        "media_type": "text/x-python",
+        "name": "ex032-src-study-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "bcd4fc800896a801bf3224152c5388ec3eca1daf8e0724cace3afcc899cc0878"
+    },
+    "src/analyze.py": {
+      "path": "research/S014/experiments/EX032_20261018/src/analyze.py",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX032_20261018"
+        },
+        "evidence_id": "bc841bf6d67b029e2b391e34c490829c015f32c6e6e732b5c417cab6e507d1a7.py",
+        "sha256": "bc841bf6d67b029e2b391e34c490829c015f32c6e6e732b5c417cab6e507d1a7",
+        "media_type": "text/x-python",
+        "name": "ex032-src-analyze-py",
+        "schema": null,
+        "schema_version": null
+      },
+      "sha256_verified": "bc841bf6d67b029e2b391e34c490829c015f32c6e6e732b5c417cab6e507d1a7"
+    }
+  },
+  "inherited_feature_label_evidence": {
+    "features": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX010_20261017"
+      },
+      "evidence_id": "6509f2a1a9946d9ccfabd85e5df9ac7dd007bb2825984a531570dac3bff56aaf.csv",
+      "sha256": "6509f2a1a9946d9ccfabd85e5df9ac7dd007bb2825984a531570dac3bff56aaf",
+      "media_type": "text/csv",
+      "name": "run-stock-lag-features",
+      "schema": null,
+      "schema_version": null
+    },
+    "labels": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX008_20261017"
+      },
+      "evidence_id": "7adfed4d0b071da46d29f92de987921f2067fa078f16b1c3c4e1177168a93d08.csv",
+      "sha256": "7adfed4d0b071da46d29f92de987921f2067fa078f16b1c3c4e1177168a93d08",
+      "media_type": "text/csv",
+      "name": "run-labels",
+      "schema": null,
+      "schema_version": null
+    },
+    "entry_execution": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX008_20261017"
+      },
+      "evidence_id": "2ce4c904e6543d28102eb8a5074f16c356780e3f1fc9b319ec53e1f9a33ad9e8.csv",
+      "sha256": "2ce4c904e6543d28102eb8a5074f16c356780e3f1fc9b319ec53e1f9a33ad9e8",
+      "media_type": "text/csv",
+      "name": "run-entries",
+      "schema": null,
+      "schema_version": null
+    },
+    "execution_audit": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX008_20261017"
+      },
+      "evidence_id": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d.json",
+      "sha256": "9de743c30b3084308ca1e9bcbd2fe7b2d6b1d3bff7bdec3593f0b379ae30055d",
+      "media_type": "application/json",
+      "name": "audit",
+      "schema": null,
+      "schema_version": null
+    },
+    "annual_environment": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX016_20261017"
+      },
+      "evidence_id": "41a35ca0d465aade167e091e01273c6034b46e8af70144e1a9e23346fc5f5f6d.json",
+      "sha256": "41a35ca0d465aade167e091e01273c6034b46e8af70144e1a9e23346fc5f5f6d",
+      "media_type": "application/json",
+      "name": "ex016-others-annual_followup-json",
+      "schema": null,
+      "schema_version": null
+    }
+  },
+  "reusable_stock_prepared_binding": {
+    "request": {
+      "dataset": "stock.ohlcv",
+      "symbol": "600722.SH",
+      "start": "2020-01-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "status": "READY",
+    "items": [
+      {
+        "status": "READY",
+        "error": null
+      }
+    ],
+    "reference": {
+      "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+      "preparation_id": "f80a90f5-01e2-4002-a93f-9296dd211cea",
+      "manifest_sha256": "b85d756d62605404091d2a74fd176ddccb00041e8c6aa659f79e202b591423ec"
+    },
+    "rows": 1642,
+    "content_sha256": "d4d86b11b0c1fcff699d3a0b0376cd1d7db994d22dc23a1b209a234e8b17f4da",
+    "columns": [
+      "Date",
+      "Open",
+      "High",
+      "Low",
+      "Close",
+      "Volume",
+      "Amount",
+      "AvailableDate"
+    ]
+  },
+  "existing_commodity_prepared_reference_unused_by_this_test": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "4146c628-74a5-4404-ae3d-cb47cd2c124b",
+    "manifest_sha256": "c3e805362169a33be8756ae7606c1f60f5b392495772fe9877c679d9ce993c8f"
+  },
+  "pinned_sse_calendar": {
+    "name": "calendar",
+    "request": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "start": "2020-01-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15"
+    },
+    "prepared": {
+      "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+      "preparation_id": "c951062b-e7f2-4633-bba2-9834217ac8d2",
+      "manifest_sha256": "b6d7510045c946874f20b83c05f79086288266d5ac67629c773913a2a9cafba2"
+    },
+    "content_sha256": "aa048f9e44af79f4c71ff0be5d07b99e8f32ef1f9118d6251b5127a8f1087a41",
+    "rows": 2480,
+    "snapshot_path": "research/S014/experiments/EX036_20261019/others/calendar_market.csv",
+    "snapshot_sha256": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e"
+  }
+}

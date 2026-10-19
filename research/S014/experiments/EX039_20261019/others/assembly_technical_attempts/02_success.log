@@ -1,0 +1,9 @@
+D:\CodeBase\czsc_trader\research\S014\experiments\EX039_20261019\src\analyze_fixed.py:75: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  frame["maturity_date"] = pd.to_datetime(frame.maturity.map(dates))
+D:\CodeBase\czsc_trader\research\S014\experiments\EX039_20261019\src\analyze_fixed.py:76: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  frame["entry_index"] = pd.to_numeric(frame.entry, errors="coerce")
+D:\CodeBase\czsc_trader\research\S014\experiments\EX039_20261019\src\analyze_fixed.py:77: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  frame["maturity_index"] = pd.to_numeric(frame.maturity, errors="coerce")
+D:\CodeBase\czsc_trader\research\S014\experiments\EX039_20261019\src\analyze_fixed.py:78: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  frame["L"] = np.maximum(-pd.to_numeric(frame.Y3, errors="coerce"), 0)
+{"status": "PASS", "rows": 1642, "fixed_slots_planned_not_run": 28, "model_inputs_sha256": "672b7005dbe84667f0a1cb265eea76725310fca744b4cb0197c8c8cd3867a5dd", "new_fits": 0, "new_source_calls": 0}

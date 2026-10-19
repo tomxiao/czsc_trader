@@ -1,0 +1,131 @@
+{
+  "status": "PASS_WITH_EXPLICIT_NONBLOCKING_LIMITATIONS",
+  "review_type": "INDEPENDENT_IMPLEMENTATION_READ_ONLY_REVIEW",
+  "reviewer": "RSCH ETF subagent, implementer of prepare_etf.py only; did not implement either reviewed module",
+  "scope": "Current formal EX039 design and current analyze_fixed.py/build_option_features.py; no source edits, no memory or other batches, no real data/model/API execution",
+  "reviewed_sources": [
+    {
+      "sha256": "055be3b28528cada3941923d945f8b75ef43cd6533b24676c4eab3627f1991bd",
+      "path": "research/S014/experiments/EX039_20261019/src/analyze_fixed.py"
+    },
+    {
+      "sha256": "5d31df1edb26778bf945a4aa8fc413bd6de617dad43a173f12db071544205b65",
+      "path": "research/S014/experiments/EX039_20261019/src/build_option_features.py"
+    },
+    {
+      "sha256": "d1ff8386bfd23b9a1ffe2489fe89a82db1cfa19a1ef692c072055cc0d3cbb47a",
+      "path": "research/S014/experiments/EX039_20261019/protocols/design.json"
+    }
+  ],
+  "checks": [
+    {
+      "evidence": "analyze_fixed.prepare filters frame.A before constructing all family train/test rows; build_option_features.build keeps inherited A only",
+      "result": "MATCH",
+      "item": "A-only training"
+    },
+    {
+      "evidence": "For each fixed year, both decision<Jan1 and actual maturity_date<Jan1; same-year labels never train. Option maturity flags use same strict boundary.",
+      "result": "MATCH",
+      "item": "Jan1 maturity boundary"
+    },
+    {
+      "evidence": "Union feature columns and all required readiness flags produce one finite mask per family; test/train rows are reused for every model within that family. Joint uses a separately identified intersection.",
+      "result": "MATCH",
+      "item": "Common family sample"
+    },
+    {
+      "evidence": "ETF E0/E1/E2 plus OPTION O0/O1 plus JOINT J0/J1, four years=28; each slot written before submit, two spawn workers with BLAS threads=1; existing counted slot files reject rerun; technical failures/insufficient slots retained.",
+      "result": "MATCH",
+      "item": "28 counted slots and resource limits"
+    },
+    {
+      "evidence": "Train-only mean/std ddof0, constant scale->1, unpenalized intercept, alpha10, target L=max(-Y3,0); score<train_q75; no clipping or hyperparameter search.",
+      "result": "MATCH",
+      "item": "Ridge estimator and risk use"
+    },
+    {
+      "evidence": "Same-row MSE difference and paired keep differences; loss avoided, positive opportunity cost, added upside and added losses each divide by the same evaluable-A denominator. Identity: allocation delta = reduced_losses_removed - foregone_positive_removed + added_positive - added_losses.",
+      "result": "MATCH",
+      "item": "Paired forecast and return diagnostics"
+    },
+    {
+      "evidence": "Same-year baseline score ordering matched to new keep count with signal tie-break; expressly posthoc. Inclusive connected actual holding intervals, unfilled singletons, same cluster resampling weights for both models; equal-cluster/LOO/largest-cluster/chronological/filled-only views.",
+      "result": "MATCH",
+      "item": "Participation and overlapping holdings"
+    },
+    {
+      "evidence": "Filter metadata opt_code==OP+inherited K; code call-put/strike/month and current lifecycle cross-check; same expiry and exact native strike C/P pair; same fixed IDs at P and Q; complete nonnegative OI, minimum3 pairs, positive totals; no positive trade/price condition for primary OI.",
+      "result": "MATCH_SUBJECT_TO_LIMITATIONS",
+      "item": "Same-K paired option identity"
+    },
+    {
+      "evidence": "Strictly prior P/Q consecutive pinned CZCE dates, P available next session15:00<=T15:00; min5 observed sessions remaining and listing age>=5; same-K21 closes ->20 return std; volume ratio preceding20; matched OI/volume/Q put share/calendar DTE.",
+      "result": "MATCH",
+      "item": "Option timing and controls"
+    },
+    {
+      "evidence": "Historical publication and adjustments explicitly false/unverified; count proxy is not notional/moneyness/IV; analysis declares no independent validation and zero continuous accounts.",
+      "result": "MATCH",
+      "item": "History/causality boundary"
+    }
+  ],
+  "blocking_findings": [],
+  "nonblocking_limitations": [
+    {
+      "path": "research/S014/experiments/EX039_20261019/src/build_option_features.py",
+      "handling": "Before interpretation, inspect actual multi-expiry-K counts. If triggered, preserve frozen version/outcomes and ask parent to record a scoped technical correction; do not silently switch expiry or refit.",
+      "lines": [
+        306,
+        315,
+        318,
+        332
+      ],
+      "id": "R1",
+      "impact": "If a K has multiple expiry dates and earliest remaining-session-valid expiry lacks aged pairs while a later expiry meets all criteria, current code marks row insufficient instead of choosing earliest fully eligible expiry. Normal single-expiry K is unaffected; this can reduce sample rather than create forecast lookahead.",
+      "issue": "Earliest expiry is chosen after min5 remaining-session test but before listing-age and minimum3 complete-pair eligibility"
+    },
+    {
+      "path": "research/S014/experiments/EX039_20261019/src/analyze_fixed.py",
+      "handling": "If triggered, report omitted primary comparison and technical cause explicitly; any recovery can recompute summaries from immutable completed predictions without new fits.",
+      "lines": [
+        297,
+        301
+      ],
+      "id": "R2",
+      "impact": "An isolated E2 technical failure suppresses an otherwise completed E1-E0 annual comparison in assembled report. All slot files remain preserved.",
+      "issue": "ETF annual assembly requires E0/E1/E2 all successful, including lag counterevidence"
+    },
+    {
+      "path": "research/S014/experiments/EX039_20261019/src/analyze_fixed.py",
+      "handling": "Parent must validate published lock and formal input identities before --run-fits, bind the exact recorded hashes, and preserve the fit run once counted slots exist.",
+      "lines": [
+        340,
+        350,
+        354
+      ],
+      "id": "R3",
+      "impact": "Identity assurance depends on the outer locked orchestration step. This is not a mathematical forecast defect.",
+      "issue": "analyze_fixed.main does not itself resolve/check published_design or compare input hashes to public EvidenceRefs; it validates inherited labels and records actual hashes"
+    },
+    {
+      "impact": "Prior synthetic receipts support those exercised mechanics, but cannot certify complete runtime execution of the exact current hash.",
+      "handling": "This review is static review of the exact current hashes plus read-only examination of existing synthetic receipts; no runtime/current-hash QA overclaim.",
+      "path": ".tmp/ex039_analysis_synthetic_v3/final_validation.json",
+      "id": "R4",
+      "issue": "Saved final synthetic receipt references source hash b2b5c379ec7bd28550a561d8602185abc9bc762d38cac4971b5e6ffbd2a2051d, not current analyze_fixed.py hash"
+    }
+  ],
+  "existing_synthetic_evidence_read": [
+    ".tmp/ex039_analysis_synthetic_v3/check_result.json",
+    ".tmp/ex039_analysis_synthetic_v3/final_validation.json",
+    ".tmp/ex039_analysis_synthetic_v3/additional_diagnostics_validation.json",
+    ".tmp/ex039_analysis_synthetic_v3/others/fixed_analysis/fit_slots/01_ETF_E0_2023.json"
+  ],
+  "executed_this_review": {
+    "source_mutations": 0,
+    "account_runs": 0,
+    "source_calls": 0,
+    "model_fits": 0
+  },
+  "next_step": "Parent may continue locked source acquisition. Before real fits validate source/input/public locks. If listed edge conditions actually occur, report them and preserve source/version evidence; no automatic retry or model expansion."
+}

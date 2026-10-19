@@ -1,0 +1,14 @@
+{
+  "status": "TECHNICAL_FAILURE_PRESERVED",
+  "source": "Parent reported actual first formal assembly exception; this record preserves that report without inventing a traceback",
+  "error_type": "AttributeError",
+  "location": "src/assemble_inputs.py:174",
+  "cause": "Fetched identity.dataset is a str; initial assembler assumed enum and accessed .value",
+  "failed_source_sha256": "6ce1471a96d3d23f5915ebf528c6d37c2b44cd18b145cdb58fedb5faa5f323a8",
+  "failed_before_model_outputs": true,
+  "new_real_fits": 0,
+  "new_http_calls": 0,
+  "target_or_method_changed": false,
+  "correction": "Normalize identity dataset with getattr(dataset, value, dataset) solely for typed identity serialization/comparison; no locked code or protocol changes",
+  "next_step": "Run corrected offline input assembly using existing public prepared assets; no model fitting"
+}

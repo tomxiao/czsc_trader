@@ -1,0 +1,1887 @@
+{
+  "status": "PASS_INPUT_ONLY_NOT_FIT_AUTHORIZATION",
+  "analysis_expected_fields": [
+    "etf_z",
+    "etf_z_late",
+    "etf_price_ret1",
+    "etf_price_ret5",
+    "etf_ready",
+    "opt_ret1",
+    "opt_rv20",
+    "opt_vol_ratio",
+    "opt_log_oi",
+    "opt_log_volume",
+    "opt_share_Q",
+    "opt_dte",
+    "opt_delta_put",
+    "opt_ready",
+    "opt_roll",
+    "opt_active_pair"
+  ],
+  "fixed_model_slots": 28,
+  "model_input_sha256": "672b7005dbe84667f0a1cb265eea76725310fca744b4cb0197c8c8cd3867a5dd",
+  "lineage_sha256": "ff0661825b80a7aa63b2b63f7a53aa077edbc61548e5a4e6f5f3ace81951dd69",
+  "merge_sha256": "ce6f5ec45abe2b6f51e7afea76f94612837c24116f5944c0802a976d41c71610",
+  "coverage": {
+    "input_rows": 1642,
+    "parent_rows": 399,
+    "family_years": {
+      "ETF_2023": {
+        "missing_feature_columns": [],
+        "all_A": 35,
+        "A_finite_Y3": 35,
+        "common_evaluable_A": 34,
+        "train_common": 163,
+        "missing_or_unmatured_A": 1,
+        "train_max_maturity": "2022-12-14T00:00:00",
+        "train_max_decision": "2022-12-08T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "etf_z": 0,
+          "etf_z_late": 0
+        },
+        "quality_not_ready": {
+          "etf_ready": 1
+        },
+        "exclusions": [
+          {
+            "signal": 743,
+            "date": "2023-01-31T00:00:00",
+            "maturity": 747
+          }
+        ]
+      },
+      "ETF_2024": {
+        "missing_feature_columns": [],
+        "all_A": 46,
+        "A_finite_Y3": 46,
+        "common_evaluable_A": 45,
+        "train_common": 196,
+        "missing_or_unmatured_A": 1,
+        "train_max_maturity": "2023-12-15T00:00:00",
+        "train_max_decision": "2023-12-11T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "etf_z": 0,
+          "etf_z_late": 0
+        },
+        "quality_not_ready": {
+          "etf_ready": 1
+        },
+        "exclusions": [
+          {
+            "signal": 987,
+            "date": "2024-01-25T00:00:00",
+            "maturity": 991
+          }
+        ]
+      },
+      "ETF_2025": {
+        "missing_feature_columns": [],
+        "all_A": 76,
+        "A_finite_Y3": 76,
+        "common_evaluable_A": 73,
+        "train_common": 243,
+        "missing_or_unmatured_A": 3,
+        "train_max_maturity": "2024-12-30T00:00:00",
+        "train_max_decision": "2024-12-24T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 3,
+          "etf_z": 0,
+          "etf_z_late": 0
+        },
+        "quality_not_ready": {
+          "etf_ready": 3
+        },
+        "exclusions": [
+          {
+            "signal": 1323,
+            "date": "2025-06-23T00:00:00",
+            "maturity": 1327
+          },
+          {
+            "signal": 1325,
+            "date": "2025-06-25T00:00:00",
+            "maturity": 1329
+          },
+          {
+            "signal": 1326,
+            "date": "2025-06-26T00:00:00",
+            "maturity": 1330
+          }
+        ]
+      },
+      "ETF_2026": {
+        "missing_feature_columns": [],
+        "all_A": 60,
+        "A_finite_Y3": 59,
+        "common_evaluable_A": 58,
+        "train_common": 315,
+        "missing_or_unmatured_A": 2,
+        "train_max_maturity": "2025-12-30T00:00:00",
+        "train_max_decision": "2025-12-24T00:00:00",
+        "finite_label_missing": 1,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "etf_z": 0,
+          "etf_z_late": 0
+        },
+        "quality_not_ready": {
+          "etf_ready": 1
+        },
+        "exclusions": [
+          {
+            "signal": 1471,
+            "date": "2026-01-27T00:00:00",
+            "maturity": 1475
+          },
+          {
+            "signal": 1639,
+            "date": "2026-10-13T00:00:00",
+            "maturity": -1
+          }
+        ]
+      },
+      "OPTION_2023": {
+        "missing_feature_columns": [],
+        "all_A": 35,
+        "A_finite_Y3": 35,
+        "common_evaluable_A": 23,
+        "train_common": 101,
+        "missing_or_unmatured_A": 12,
+        "train_max_maturity": "2022-12-05T00:00:00",
+        "train_max_decision": "2022-11-29T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "opt_ret1": 12,
+          "opt_rv20": 12,
+          "opt_vol_ratio": 12,
+          "opt_log_oi": 4,
+          "opt_log_volume": 4,
+          "opt_share_Q": 4,
+          "opt_dte": 4,
+          "opt_delta_put": 4
+        },
+        "quality_not_ready": {
+          "opt_ready": 12
+        },
+        "exclusions": [
+          {
+            "signal": 786,
+            "date": "2023-03-31T00:00:00",
+            "maturity": 790
+          },
+          {
+            "signal": 789,
+            "date": "2023-04-06T00:00:00",
+            "maturity": 793
+          },
+          {
+            "signal": 793,
+            "date": "2023-04-12T00:00:00",
+            "maturity": 797
+          },
+          {
+            "signal": 803,
+            "date": "2023-04-26T00:00:00",
+            "maturity": 807
+          },
+          {
+            "signal": 805,
+            "date": "2023-04-28T00:00:00",
+            "maturity": 809
+          },
+          {
+            "signal": 806,
+            "date": "2023-05-04T00:00:00",
+            "maturity": 810
+          },
+          {
+            "signal": 878,
+            "date": "2023-08-16T00:00:00",
+            "maturity": 882
+          },
+          {
+            "signal": 884,
+            "date": "2023-08-24T00:00:00",
+            "maturity": 888
+          },
+          {
+            "signal": 893,
+            "date": "2023-09-06T00:00:00",
+            "maturity": 897
+          },
+          {
+            "signal": 955,
+            "date": "2023-12-11T00:00:00",
+            "maturity": 959
+          },
+          {
+            "signal": 966,
+            "date": "2023-12-26T00:00:00",
+            "maturity": 970
+          },
+          {
+            "signal": 969,
+            "date": "2023-12-29T00:00:00",
+            "maturity": 973
+          }
+        ]
+      },
+      "OPTION_2024": {
+        "missing_feature_columns": [],
+        "all_A": 46,
+        "A_finite_Y3": 46,
+        "common_evaluable_A": 31,
+        "train_common": 125,
+        "missing_or_unmatured_A": 15,
+        "train_max_maturity": "2023-12-07T00:00:00",
+        "train_max_decision": "2023-12-01T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "opt_ret1": 15,
+          "opt_rv20": 15,
+          "opt_vol_ratio": 15,
+          "opt_log_oi": 2,
+          "opt_log_volume": 2,
+          "opt_share_Q": 2,
+          "opt_dte": 2,
+          "opt_delta_put": 2
+        },
+        "quality_not_ready": {
+          "opt_ready": 15
+        },
+        "exclusions": [
+          {
+            "signal": 970,
+            "date": "2024-01-02T00:00:00",
+            "maturity": 974
+          },
+          {
+            "signal": 972,
+            "date": "2024-01-04T00:00:00",
+            "maturity": 976
+          },
+          {
+            "signal": 1032,
+            "date": "2024-04-09T00:00:00",
+            "maturity": 1036
+          },
+          {
+            "signal": 1038,
+            "date": "2024-04-17T00:00:00",
+            "maturity": 1042
+          },
+          {
+            "signal": 1043,
+            "date": "2024-04-24T00:00:00",
+            "maturity": 1047
+          },
+          {
+            "signal": 1045,
+            "date": "2024-04-26T00:00:00",
+            "maturity": 1049
+          },
+          {
+            "signal": 1046,
+            "date": "2024-04-29T00:00:00",
+            "maturity": 1050
+          },
+          {
+            "signal": 1047,
+            "date": "2024-04-30T00:00:00",
+            "maturity": 1051
+          },
+          {
+            "signal": 1048,
+            "date": "2024-05-06T00:00:00",
+            "maturity": 1052
+          },
+          {
+            "signal": 1053,
+            "date": "2024-05-13T00:00:00",
+            "maturity": 1057
+          },
+          {
+            "signal": 1127,
+            "date": "2024-08-26T00:00:00",
+            "maturity": 1131
+          },
+          {
+            "signal": 1137,
+            "date": "2024-09-09T00:00:00",
+            "maturity": 1141
+          },
+          {
+            "signal": 1197,
+            "date": "2024-12-11T00:00:00",
+            "maturity": 1201
+          },
+          {
+            "signal": 1200,
+            "date": "2024-12-16T00:00:00",
+            "maturity": 1204
+          },
+          {
+            "signal": 1206,
+            "date": "2024-12-24T00:00:00",
+            "maturity": 1210
+          }
+        ]
+      },
+      "OPTION_2025": {
+        "missing_feature_columns": [],
+        "all_A": 76,
+        "A_finite_Y3": 76,
+        "common_evaluable_A": 53,
+        "train_common": 156,
+        "missing_or_unmatured_A": 23,
+        "train_max_maturity": "2024-12-06T00:00:00",
+        "train_max_decision": "2024-12-02T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "opt_ret1": 23,
+          "opt_rv20": 23,
+          "opt_vol_ratio": 23,
+          "opt_log_oi": 3,
+          "opt_log_volume": 3,
+          "opt_share_Q": 3,
+          "opt_dte": 3,
+          "opt_delta_put": 3
+        },
+        "quality_not_ready": {
+          "opt_ready": 23
+        },
+        "exclusions": [
+          {
+            "signal": 1214,
+            "date": "2025-01-06T00:00:00",
+            "maturity": 1218
+          },
+          {
+            "signal": 1215,
+            "date": "2025-01-07T00:00:00",
+            "maturity": 1219
+          },
+          {
+            "signal": 1216,
+            "date": "2025-01-08T00:00:00",
+            "maturity": 1220
+          },
+          {
+            "signal": 1274,
+            "date": "2025-04-09T00:00:00",
+            "maturity": 1278
+          },
+          {
+            "signal": 1276,
+            "date": "2025-04-11T00:00:00",
+            "maturity": 1280
+          },
+          {
+            "signal": 1281,
+            "date": "2025-04-18T00:00:00",
+            "maturity": 1285
+          },
+          {
+            "signal": 1282,
+            "date": "2025-04-21T00:00:00",
+            "maturity": 1286
+          },
+          {
+            "signal": 1285,
+            "date": "2025-04-24T00:00:00",
+            "maturity": 1289
+          },
+          {
+            "signal": 1292,
+            "date": "2025-05-08T00:00:00",
+            "maturity": 1296
+          },
+          {
+            "signal": 1298,
+            "date": "2025-05-16T00:00:00",
+            "maturity": 1302
+          },
+          {
+            "signal": 1357,
+            "date": "2025-08-08T00:00:00",
+            "maturity": 1361
+          },
+          {
+            "signal": 1366,
+            "date": "2025-08-21T00:00:00",
+            "maturity": 1370
+          },
+          {
+            "signal": 1367,
+            "date": "2025-08-22T00:00:00",
+            "maturity": 1371
+          },
+          {
+            "signal": 1372,
+            "date": "2025-08-29T00:00:00",
+            "maturity": 1376
+          },
+          {
+            "signal": 1373,
+            "date": "2025-09-01T00:00:00",
+            "maturity": 1377
+          },
+          {
+            "signal": 1379,
+            "date": "2025-09-09T00:00:00",
+            "maturity": 1383
+          },
+          {
+            "signal": 1380,
+            "date": "2025-09-10T00:00:00",
+            "maturity": 1384
+          },
+          {
+            "signal": 1381,
+            "date": "2025-09-11T00:00:00",
+            "maturity": 1385
+          },
+          {
+            "signal": 1444,
+            "date": "2025-12-17T00:00:00",
+            "maturity": 1448
+          },
+          {
+            "signal": 1445,
+            "date": "2025-12-18T00:00:00",
+            "maturity": 1449
+          },
+          {
+            "signal": 1447,
+            "date": "2025-12-22T00:00:00",
+            "maturity": 1451
+          },
+          {
+            "signal": 1449,
+            "date": "2025-12-24T00:00:00",
+            "maturity": 1453
+          },
+          {
+            "signal": 1453,
+            "date": "2025-12-30T00:00:00",
+            "maturity": 1457
+          }
+        ]
+      },
+      "OPTION_2026": {
+        "missing_feature_columns": [],
+        "all_A": 60,
+        "A_finite_Y3": 59,
+        "common_evaluable_A": 41,
+        "train_common": 209,
+        "missing_or_unmatured_A": 19,
+        "train_max_maturity": "2025-12-04T00:00:00",
+        "train_max_decision": "2025-11-28T00:00:00",
+        "finite_label_missing": 1,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "opt_ret1": 19,
+          "opt_rv20": 19,
+          "opt_vol_ratio": 19,
+          "opt_log_oi": 9,
+          "opt_log_volume": 9,
+          "opt_share_Q": 9,
+          "opt_dte": 9,
+          "opt_delta_put": 9
+        },
+        "quality_not_ready": {
+          "opt_ready": 19
+        },
+        "exclusions": [
+          {
+            "signal": 1458,
+            "date": "2026-01-08T00:00:00",
+            "maturity": 1462
+          },
+          {
+            "signal": 1515,
+            "date": "2026-04-08T00:00:00",
+            "maturity": 1519
+          },
+          {
+            "signal": 1521,
+            "date": "2026-04-16T00:00:00",
+            "maturity": 1525
+          },
+          {
+            "signal": 1525,
+            "date": "2026-04-22T00:00:00",
+            "maturity": 1529
+          },
+          {
+            "signal": 1526,
+            "date": "2026-04-23T00:00:00",
+            "maturity": 1530
+          },
+          {
+            "signal": 1527,
+            "date": "2026-04-24T00:00:00",
+            "maturity": 1531
+          },
+          {
+            "signal": 1529,
+            "date": "2026-04-28T00:00:00",
+            "maturity": 1533
+          },
+          {
+            "signal": 1530,
+            "date": "2026-04-29T00:00:00",
+            "maturity": 1534
+          },
+          {
+            "signal": 1532,
+            "date": "2026-05-06T00:00:00",
+            "maturity": 1536
+          },
+          {
+            "signal": 1533,
+            "date": "2026-05-07T00:00:00",
+            "maturity": 1537
+          },
+          {
+            "signal": 1538,
+            "date": "2026-05-14T00:00:00",
+            "maturity": 1542
+          },
+          {
+            "signal": 1539,
+            "date": "2026-05-15T00:00:00",
+            "maturity": 1543
+          },
+          {
+            "signal": 1602,
+            "date": "2026-08-13T00:00:00",
+            "maturity": 1606
+          },
+          {
+            "signal": 1627,
+            "date": "2026-09-17T00:00:00",
+            "maturity": 1631
+          },
+          {
+            "signal": 1628,
+            "date": "2026-09-18T00:00:00",
+            "maturity": 1632
+          },
+          {
+            "signal": 1629,
+            "date": "2026-09-21T00:00:00",
+            "maturity": 1633
+          },
+          {
+            "signal": 1630,
+            "date": "2026-09-22T00:00:00",
+            "maturity": 1634
+          },
+          {
+            "signal": 1633,
+            "date": "2026-09-28T00:00:00",
+            "maturity": 1637
+          },
+          {
+            "signal": 1639,
+            "date": "2026-10-13T00:00:00",
+            "maturity": -1
+          }
+        ]
+      },
+      "JOINT_2023": {
+        "missing_feature_columns": [],
+        "all_A": 35,
+        "A_finite_Y3": 35,
+        "common_evaluable_A": 22,
+        "train_common": 98,
+        "missing_or_unmatured_A": 13,
+        "train_max_maturity": "2022-12-05T00:00:00",
+        "train_max_decision": "2022-11-29T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "opt_ret1": 12,
+          "opt_rv20": 12,
+          "opt_vol_ratio": 12,
+          "opt_log_oi": 4,
+          "opt_log_volume": 4,
+          "opt_share_Q": 4,
+          "opt_dte": 4,
+          "etf_z": 0,
+          "opt_delta_put": 4
+        },
+        "quality_not_ready": {
+          "etf_ready": 1,
+          "opt_ready": 12
+        },
+        "exclusions": [
+          {
+            "signal": 743,
+            "date": "2023-01-31T00:00:00",
+            "maturity": 747
+          },
+          {
+            "signal": 786,
+            "date": "2023-03-31T00:00:00",
+            "maturity": 790
+          },
+          {
+            "signal": 789,
+            "date": "2023-04-06T00:00:00",
+            "maturity": 793
+          },
+          {
+            "signal": 793,
+            "date": "2023-04-12T00:00:00",
+            "maturity": 797
+          },
+          {
+            "signal": 803,
+            "date": "2023-04-26T00:00:00",
+            "maturity": 807
+          },
+          {
+            "signal": 805,
+            "date": "2023-04-28T00:00:00",
+            "maturity": 809
+          },
+          {
+            "signal": 806,
+            "date": "2023-05-04T00:00:00",
+            "maturity": 810
+          },
+          {
+            "signal": 878,
+            "date": "2023-08-16T00:00:00",
+            "maturity": 882
+          },
+          {
+            "signal": 884,
+            "date": "2023-08-24T00:00:00",
+            "maturity": 888
+          },
+          {
+            "signal": 893,
+            "date": "2023-09-06T00:00:00",
+            "maturity": 897
+          },
+          {
+            "signal": 955,
+            "date": "2023-12-11T00:00:00",
+            "maturity": 959
+          },
+          {
+            "signal": 966,
+            "date": "2023-12-26T00:00:00",
+            "maturity": 970
+          },
+          {
+            "signal": 969,
+            "date": "2023-12-29T00:00:00",
+            "maturity": 973
+          }
+        ]
+      },
+      "JOINT_2024": {
+        "missing_feature_columns": [],
+        "all_A": 46,
+        "A_finite_Y3": 46,
+        "common_evaluable_A": 30,
+        "train_common": 121,
+        "missing_or_unmatured_A": 16,
+        "train_max_maturity": "2023-12-07T00:00:00",
+        "train_max_decision": "2023-12-01T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "opt_ret1": 15,
+          "opt_rv20": 15,
+          "opt_vol_ratio": 15,
+          "opt_log_oi": 2,
+          "opt_log_volume": 2,
+          "opt_share_Q": 2,
+          "opt_dte": 2,
+          "etf_z": 0,
+          "opt_delta_put": 2
+        },
+        "quality_not_ready": {
+          "etf_ready": 1,
+          "opt_ready": 15
+        },
+        "exclusions": [
+          {
+            "signal": 970,
+            "date": "2024-01-02T00:00:00",
+            "maturity": 974
+          },
+          {
+            "signal": 972,
+            "date": "2024-01-04T00:00:00",
+            "maturity": 976
+          },
+          {
+            "signal": 987,
+            "date": "2024-01-25T00:00:00",
+            "maturity": 991
+          },
+          {
+            "signal": 1032,
+            "date": "2024-04-09T00:00:00",
+            "maturity": 1036
+          },
+          {
+            "signal": 1038,
+            "date": "2024-04-17T00:00:00",
+            "maturity": 1042
+          },
+          {
+            "signal": 1043,
+            "date": "2024-04-24T00:00:00",
+            "maturity": 1047
+          },
+          {
+            "signal": 1045,
+            "date": "2024-04-26T00:00:00",
+            "maturity": 1049
+          },
+          {
+            "signal": 1046,
+            "date": "2024-04-29T00:00:00",
+            "maturity": 1050
+          },
+          {
+            "signal": 1047,
+            "date": "2024-04-30T00:00:00",
+            "maturity": 1051
+          },
+          {
+            "signal": 1048,
+            "date": "2024-05-06T00:00:00",
+            "maturity": 1052
+          },
+          {
+            "signal": 1053,
+            "date": "2024-05-13T00:00:00",
+            "maturity": 1057
+          },
+          {
+            "signal": 1127,
+            "date": "2024-08-26T00:00:00",
+            "maturity": 1131
+          },
+          {
+            "signal": 1137,
+            "date": "2024-09-09T00:00:00",
+            "maturity": 1141
+          },
+          {
+            "signal": 1197,
+            "date": "2024-12-11T00:00:00",
+            "maturity": 1201
+          },
+          {
+            "signal": 1200,
+            "date": "2024-12-16T00:00:00",
+            "maturity": 1204
+          },
+          {
+            "signal": 1206,
+            "date": "2024-12-24T00:00:00",
+            "maturity": 1210
+          }
+        ]
+      },
+      "JOINT_2025": {
+        "missing_feature_columns": [],
+        "all_A": 76,
+        "A_finite_Y3": 76,
+        "common_evaluable_A": 50,
+        "train_common": 151,
+        "missing_or_unmatured_A": 26,
+        "train_max_maturity": "2024-12-06T00:00:00",
+        "train_max_decision": "2024-12-02T00:00:00",
+        "finite_label_missing": 0,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 3,
+          "opt_ret1": 23,
+          "opt_rv20": 23,
+          "opt_vol_ratio": 23,
+          "opt_log_oi": 3,
+          "opt_log_volume": 3,
+          "opt_share_Q": 3,
+          "opt_dte": 3,
+          "etf_z": 0,
+          "opt_delta_put": 3
+        },
+        "quality_not_ready": {
+          "etf_ready": 3,
+          "opt_ready": 23
+        },
+        "exclusions": [
+          {
+            "signal": 1214,
+            "date": "2025-01-06T00:00:00",
+            "maturity": 1218
+          },
+          {
+            "signal": 1215,
+            "date": "2025-01-07T00:00:00",
+            "maturity": 1219
+          },
+          {
+            "signal": 1216,
+            "date": "2025-01-08T00:00:00",
+            "maturity": 1220
+          },
+          {
+            "signal": 1274,
+            "date": "2025-04-09T00:00:00",
+            "maturity": 1278
+          },
+          {
+            "signal": 1276,
+            "date": "2025-04-11T00:00:00",
+            "maturity": 1280
+          },
+          {
+            "signal": 1281,
+            "date": "2025-04-18T00:00:00",
+            "maturity": 1285
+          },
+          {
+            "signal": 1282,
+            "date": "2025-04-21T00:00:00",
+            "maturity": 1286
+          },
+          {
+            "signal": 1285,
+            "date": "2025-04-24T00:00:00",
+            "maturity": 1289
+          },
+          {
+            "signal": 1292,
+            "date": "2025-05-08T00:00:00",
+            "maturity": 1296
+          },
+          {
+            "signal": 1298,
+            "date": "2025-05-16T00:00:00",
+            "maturity": 1302
+          },
+          {
+            "signal": 1323,
+            "date": "2025-06-23T00:00:00",
+            "maturity": 1327
+          },
+          {
+            "signal": 1325,
+            "date": "2025-06-25T00:00:00",
+            "maturity": 1329
+          },
+          {
+            "signal": 1326,
+            "date": "2025-06-26T00:00:00",
+            "maturity": 1330
+          },
+          {
+            "signal": 1357,
+            "date": "2025-08-08T00:00:00",
+            "maturity": 1361
+          },
+          {
+            "signal": 1366,
+            "date": "2025-08-21T00:00:00",
+            "maturity": 1370
+          },
+          {
+            "signal": 1367,
+            "date": "2025-08-22T00:00:00",
+            "maturity": 1371
+          },
+          {
+            "signal": 1372,
+            "date": "2025-08-29T00:00:00",
+            "maturity": 1376
+          },
+          {
+            "signal": 1373,
+            "date": "2025-09-01T00:00:00",
+            "maturity": 1377
+          },
+          {
+            "signal": 1379,
+            "date": "2025-09-09T00:00:00",
+            "maturity": 1383
+          },
+          {
+            "signal": 1380,
+            "date": "2025-09-10T00:00:00",
+            "maturity": 1384
+          },
+          {
+            "signal": 1381,
+            "date": "2025-09-11T00:00:00",
+            "maturity": 1385
+          },
+          {
+            "signal": 1444,
+            "date": "2025-12-17T00:00:00",
+            "maturity": 1448
+          },
+          {
+            "signal": 1445,
+            "date": "2025-12-18T00:00:00",
+            "maturity": 1449
+          },
+          {
+            "signal": 1447,
+            "date": "2025-12-22T00:00:00",
+            "maturity": 1451
+          },
+          {
+            "signal": 1449,
+            "date": "2025-12-24T00:00:00",
+            "maturity": 1453
+          },
+          {
+            "signal": 1453,
+            "date": "2025-12-30T00:00:00",
+            "maturity": 1457
+          }
+        ]
+      },
+      "JOINT_2026": {
+        "missing_feature_columns": [],
+        "all_A": 60,
+        "A_finite_Y3": 59,
+        "common_evaluable_A": 40,
+        "train_common": 201,
+        "missing_or_unmatured_A": 20,
+        "train_max_maturity": "2025-12-04T00:00:00",
+        "train_max_decision": "2025-11-28T00:00:00",
+        "finite_label_missing": 1,
+        "feature_nonfinite_by_column": {
+          "ret1": 0,
+          "ret5": 0,
+          "ret20": 0,
+          "range": 0,
+          "volume_ratio": 0,
+          "upper_close": 0,
+          "upper_failure": 0,
+          "lower_recovery": 0,
+          "lower_close": 0,
+          "previous_upper_close": 0,
+          "gap": 0,
+          "gap5": 0,
+          "gap_session_product": 0,
+          "gap_down_repair": 0,
+          "gap_up_fade": 0,
+          "intraday": 0,
+          "intraday5": 0,
+          "stock_ret60": 0,
+          "stock_range20": 0,
+          "market_gap": 0,
+          "market_intraday": 0,
+          "market_ret1": 0,
+          "market_ret5": 0,
+          "market_ret20": 0,
+          "market_range": 0,
+          "market_repair": 0,
+          "relative_gap": 0,
+          "relative_intraday": 0,
+          "relative_repair": 0,
+          "repair_market_interaction": 0,
+          "sector_gap": 0,
+          "sector_intraday": 0,
+          "sector_ret1": 0,
+          "sector_ret5": 0,
+          "sector_ret20": 0,
+          "sector_range": 0,
+          "sector_repair": 0,
+          "twofactor_gap": 0,
+          "twofactor_intraday": 0,
+          "twofactor_repair": 0,
+          "innovation_gap": 0,
+          "innovation_intraday": 0,
+          "innovation5": 0,
+          "innovation20": 0,
+          "prior_market_gap": 0,
+          "prior_market_intraday": 0,
+          "prior_market_ret1": 0,
+          "prior_market_ret5": 0,
+          "prior_market_ret20": 0,
+          "prior_market_range": 0,
+          "prior_market_repair": 0,
+          "prior_stock_gap": 0,
+          "prior_stock_intraday": 0,
+          "prior_stock_ret1": 0,
+          "prior_stock_ret5": 0,
+          "prior_stock_ret20": 0,
+          "prior_stock_range": 0,
+          "prior_stock_repair": 0,
+          "lag_sector_gap": 0,
+          "lag_sector_intraday": 0,
+          "lag_sector_ret1": 0,
+          "lag_sector_ret5": 0,
+          "lag_sector_ret20": 0,
+          "lag_sector_range": 0,
+          "lag_sector_repair": 0,
+          "etf_price_ret1": 0,
+          "etf_price_ret5": 1,
+          "opt_ret1": 19,
+          "opt_rv20": 19,
+          "opt_vol_ratio": 19,
+          "opt_log_oi": 9,
+          "opt_log_volume": 9,
+          "opt_share_Q": 9,
+          "opt_dte": 9,
+          "etf_z": 0,
+          "opt_delta_put": 9
+        },
+        "quality_not_ready": {
+          "etf_ready": 1,
+          "opt_ready": 19
+        },
+        "exclusions": [
+          {
+            "signal": 1458,
+            "date": "2026-01-08T00:00:00",
+            "maturity": 1462
+          },
+          {
+            "signal": 1471,
+            "date": "2026-01-27T00:00:00",
+            "maturity": 1475
+          },
+          {
+            "signal": 1515,
+            "date": "2026-04-08T00:00:00",
+            "maturity": 1519
+          },
+          {
+            "signal": 1521,
+            "date": "2026-04-16T00:00:00",
+            "maturity": 1525
+          },
+          {
+            "signal": 1525,
+            "date": "2026-04-22T00:00:00",
+            "maturity": 1529
+          },
+          {
+            "signal": 1526,
+            "date": "2026-04-23T00:00:00",
+            "maturity": 1530
+          },
+          {
+            "signal": 1527,
+            "date": "2026-04-24T00:00:00",
+            "maturity": 1531
+          },
+          {
+            "signal": 1529,
+            "date": "2026-04-28T00:00:00",
+            "maturity": 1533
+          },
+          {
+            "signal": 1530,
+            "date": "2026-04-29T00:00:00",
+            "maturity": 1534
+          },
+          {
+            "signal": 1532,
+            "date": "2026-05-06T00:00:00",
+            "maturity": 1536
+          },
+          {
+            "signal": 1533,
+            "date": "2026-05-07T00:00:00",
+            "maturity": 1537
+          },
+          {
+            "signal": 1538,
+            "date": "2026-05-14T00:00:00",
+            "maturity": 1542
+          },
+          {
+            "signal": 1539,
+            "date": "2026-05-15T00:00:00",
+            "maturity": 1543
+          },
+          {
+            "signal": 1602,
+            "date": "2026-08-13T00:00:00",
+            "maturity": 1606
+          },
+          {
+            "signal": 1627,
+            "date": "2026-09-17T00:00:00",
+            "maturity": 1631
+          },
+          {
+            "signal": 1628,
+            "date": "2026-09-18T00:00:00",
+            "maturity": 1632
+          },
+          {
+            "signal": 1629,
+            "date": "2026-09-21T00:00:00",
+            "maturity": 1633
+          },
+          {
+            "signal": 1630,
+            "date": "2026-09-22T00:00:00",
+            "maturity": 1634
+          },
+          {
+            "signal": 1633,
+            "date": "2026-09-28T00:00:00",
+            "maturity": 1637
+          },
+          {
+            "signal": 1639,
+            "date": "2026-10-13T00:00:00",
+            "maturity": -1
+          }
+        ]
+      }
+    },
+    "source_sha256": "672b7005dbe84667f0a1cb265eea76725310fca744b4cb0197c8c8cd3867a5dd",
+    "input_hashes": {
+      "model_inputs.csv": "672b7005dbe84667f0a1cb265eea76725310fca744b4cb0197c8c8cd3867a5dd",
+      "calendar.csv": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4",
+      "labels.csv": "fbb90432747e985d77a12fcd5a9e96b3360457b266650daefe73bff50ae2ebbd"
+    }
+  },
+  "new_fits": 0,
+  "new_source_calls": 0,
+  "next_step": "Publicly publish merged inputs, prepare local feature evidence and establish run lock before model execution."
+}

@@ -1,0 +1,48 @@
+{
+  "status": "PASS_INDEPENDENT_OPTION_INPUT_RECALCULATION",
+  "rows": 399,
+  "structure_rows_recomputed_from_raw": 350,
+  "same_K_control_rows_recomputed_from_public_prepared": 259,
+  "model_ready": 250,
+  "all_inherited_columns_exactly_unchanged": true,
+  "quality_counts": {
+    "READY_CONTRACT_COUNT_PROXY": 259,
+    "FUTURES_20DAY_MISSING_OR_INVALID": 88,
+    "NO_SURVIVING_EXPIRY": 25,
+    "EXPIRY_UNDER_5_SESSIONS_OR_CALENDAR_UNVERIFIED": 22,
+    "FUTURES_WARMUP": 3,
+    "UNDER_3_COMPLETE_METADATA_PAIRS": 2
+  },
+  "non_ready_total": 149,
+  "ready_structure_but_B65_missing": 9,
+  "option_features_sha256": "e0b150eb68f54d66541fd167043228b4a797ebd28ff36a3d88df03b02ed29beb",
+  "option_quality_sha256": "23382421c4e16c177019904d49ac5c0c8ca5d0024d7259c96d1c78f3a9f6a2a2",
+  "option_prepared_sha256": "38875e55dbc12e5351d0781bdf15e67a126acb816b48f841e962946bba6b4ff2",
+  "prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "1008e923-e506-4b72-afa3-ec5f629108e7",
+    "manifest_sha256": "daa2c67f3a8b6e976e0a02b654eb9fea202f9933b4c5f0ae518905013cebec68"
+  },
+  "futures_prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "4146c628-74a5-4404-ae3d-cb47cd2c124b",
+    "manifest_sha256": "c3e805362169a33be8756ae7606c1f60f5b392495772fe9877c679d9ce993c8f"
+  },
+  "checks": [
+    "Original399A all columns exact preservation",
+    "Raw identical C/P paired-code OI share and volumes",
+    "Min3 pairs/listing age/min5 proven expiry sessions",
+    "Native metadata K/expiry/strike/CP identity",
+    "Pair concentration and comparison-set hash",
+    "Actual availability convention cutoff",
+    "SameK21close logRV20 and preceding20volume ratio",
+    "opt_ready equals option quality plus B65 completeness",
+    "Roll/activity alias identity"
+  ],
+  "review_script": ".tmp/ex039_option_feature_audit.py",
+  "review_script_sha256": "36fa16bbfcff4bd6ae21fcc6537c2b2db3af29e436187ddccd06e18d5d329ab7",
+  "new_source_calls": 0,
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "limitations": "Conditional same-code OI count proxy; unverified historical adjustment/publication chains retained. All calculations independently reproduced from saved raw responses/existing public futures PreparedRef; no builder helper imported."
+}
