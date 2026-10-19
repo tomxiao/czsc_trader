@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "events": 25,
+  "reports": 27,
+  "price_complete": 25,
+  "execution_counts": {
+    "CLOSED": 24,
+    "NO_TRADE": 1
+  },
+  "F1_positive": 8,
+  "F2_positive": 11,
+  "PARENT_positive": 13,
+  "source_sha256": {
+    "financial_features.csv": "dd055ebe37a3abfd47af7190c716bef8994b7ff2f21580648ed11e5835b23d68",
+    "financial_features_lineage.json": "483aa0b10abbc81c0e05cdcb3ae271b05bf57c32319bf1041e42231689f630cb",
+    "market_event_labels.csv": "36c9971c56e2d410a007f896ff1a460a4022a9da682afe6c6c57d1e785908c56",
+    "market_inputs.json": "b2157d58f12d26640176267887e7ba277505cd0a93bc8a78c318b9285e7131f7",
+    "market_label_checks.json": "2f04d1a3192b16aff950549084d344b3f97674bcdb81e1e58746f7c78dc7c57b"
+  },
+  "event_panel_sha256": "7d4423f75ef582eee57b91afd60949d7df6f277333e11efed16ade5a42508b9d",
+  "forecast_source_sha256": "1f7f52c78a5474148bbb0d3586a009755f7140ba90e71ab1b45cc3ea6b73b29b",
+  "known_prior_guidance_events": 3,
+  "prior_guidance_absence": "UNKNOWN_NOT_A_ZERO_FEATURE; vendor original guidance history not certified; no F3 model",
+  "implementation_clarifications": [
+    "Each comparison group needs at least2 contributing dependence blocks for a95% descriptive bootstrap interval; otherwise effect description retained and CI unavailable",
+    "event_id=market FIN_YYYYMMDD; feature_event_id preserves original FIN01..FIN25 mapping",
+    "price_end_date is market price_endpoint_date; return20 is market stock_return20; no values changed",
+    "NO_TRADE keeps null position return; all complete price labels remain in primary population",
+    "This panel has25 event rows, not25 independent nonoverlapping outcomes; block dependence is handled in statistics",
+    "Removed one unused local variable after audit; reran the same offline market program. All seven snapshots, all25 labels and market checks byte-identical; only source provenance hash changed."
+  ],
+  "new_api_calls": 0,
+  "new_continuous_accounts": 0
+}

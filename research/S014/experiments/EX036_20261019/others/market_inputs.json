@@ -1,0 +1,191 @@
+{
+  "status": "PASS",
+  "design_sha256": "a97a4ff4b81adbff0b064c9f55f42c791d2d5abf53b4c11f251f9e7f75a02570",
+  "published_design_sha256": "6ee983168cdf4d5fa853be863fb3523d3731e0b62af4c29ab812b79997c60478",
+  "accepted_financial_inputs_sha256": "d9974d33be25c87bccd725466038a7c188856adbfca239ce485ae21552f1a085",
+  "native_identities": [
+    {
+      "name": "stock_hfq",
+      "request": {
+        "dataset": "stock.ohlcv",
+        "symbol": "600722.SH",
+        "start": "2019-12-31",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "dfb12e42-f327-4e1b-bf25-d15201b4e69b",
+        "manifest_sha256": "b68cf906d81e19a16b131fe63ca1f4f901f9baa202bae75110481b5f209d8f57"
+      },
+      "content_sha256": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+      "rows": 1643,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/stock_hfq_market.csv",
+      "snapshot_sha256": "6ce13e368773a1a54f5cbeb8cc3c6cb9eab69ec37c7e0feb762e5d74921bbac6"
+    },
+    {
+      "name": "market",
+      "request": {
+        "dataset": "index.domestic_daily",
+        "symbol": "000001.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "2568ae37-8dd8-4352-b272-8d2520d51914",
+        "manifest_sha256": "4e20441c0722cd4c6f95c53ec0c51b08c823ff128a3881a93586f9e21100ecb8"
+      },
+      "content_sha256": "539458755edb64a50d38f5b5034aa25fea997e0406e8bda18cdc9caa5e284bce",
+      "rows": 1642,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/market_market.csv",
+      "snapshot_sha256": "92ac7efa4b782fcbc87ca73a69bb6b60b717575bf549523b2265c82f44accd17"
+    },
+    {
+      "name": "sector",
+      "request": {
+        "dataset": "index.domestic_daily",
+        "symbol": "000813.CSI",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "484770f0-41ee-4e7d-aa20-656703281e1e",
+        "manifest_sha256": "7298b5a5b8eeb8a7917dead1c7c1b5700ef3074707f8282618cde530948dd5d1"
+      },
+      "content_sha256": "c5bc6462bd5e2f43065324f1c9de99eedb6650d15b5a16e480b3e65b3ebc1cc7",
+      "rows": 1642,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/sector_market.csv",
+      "snapshot_sha256": "91118cf90828168fd3d3c8f911e9cb573f28c8cc96aa44df6c428efaca97b53b"
+    },
+    {
+      "name": "calendar",
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "c951062b-e7f2-4633-bba2-9834217ac8d2",
+        "manifest_sha256": "b6d7510045c946874f20b83c05f79086288266d5ac67629c773913a2a9cafba2"
+      },
+      "content_sha256": "aa048f9e44af79f4c71ff0be5d07b99e8f32ef1f9118d6251b5127a8f1087a41",
+      "rows": 2480,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/calendar_market.csv",
+      "snapshot_sha256": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e"
+    },
+    {
+      "name": "stock_raw",
+      "request": {
+        "dataset": "stock.unadjusted_daily",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "c683b86f-29a6-474d-bf5a-ac8efac45e3c",
+        "manifest_sha256": "afee64e931ff8e12fea94bea7da8377eef5ef553cff230db4c42e5c9ce0a2bd0"
+      },
+      "content_sha256": "17599042a40f3a6c6f9f56244ae482c1f41771dad883a8944227d7e66a6e2612",
+      "rows": 1642,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/stock_raw_market.csv",
+      "snapshot_sha256": "0e2951455c1450e198365ee0e9e9b0c0563cf1fd44c4d48a32565f1d0fc82c96"
+    },
+    {
+      "name": "limits",
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "1a904d3f-a519-4ef0-addd-ca4ed71faa3b",
+        "manifest_sha256": "750115facaab31f0d552d9986e0039a1039b560fb47017d87cc7b0dbeae1e088"
+      },
+      "content_sha256": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+      "rows": 1642,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/limits_market.csv",
+      "snapshot_sha256": "227962492646ef59eb6c3984b98806aba7e56745406ecaaa60c25a02fed58427"
+    },
+    {
+      "name": "status",
+      "request": {
+        "dataset": "security.trading_status",
+        "symbol": "600722.SH",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "50b03a3f-4488-4298-806d-4d623a477368",
+        "manifest_sha256": "1e288197c3c82760d5d959d2a20a8ceb113d1480092aa294adaf233670f4ba18"
+      },
+      "content_sha256": "2e69a0ee72636f3a850a72f97126b82c088207d4fa58fc96cfcef5c8404daa3b",
+      "rows": 1642,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/status_market.csv",
+      "snapshot_sha256": "c706d2198b483ec53fc3599f21e7a75b5b0482713238fa37680068c0c5fcec4f"
+    }
+  ],
+  "network": "socket connect/create_connection blocked; ProviderConfig empty bindings; public fetch only",
+  "new_upstream_calls": 0,
+  "new_accounts": 0,
+  "new_candidates": 0,
+  "events": 25,
+  "evaluation_reports": 27,
+  "settings": {
+    "instrument": {
+      "lot_size": 100,
+      "price_tick": 0.01,
+      "price_limit_ratio": 0.1,
+      "maximum_order_quantity": 100000
+    },
+    "capital": {
+      "mode": "ALL_AVAILABLE",
+      "target_scope": "SINGLE_SYMBOL",
+      "fee_rate": 0.001
+    },
+    "entry": {
+      "order_type": "LIMIT",
+      "limit_parameter": 0.01
+    },
+    "exit": {
+      "order_type": "MARKET",
+      "limit_ratio": 0.1
+    }
+  },
+  "labels_path": "research/S014/experiments/EX036_20261019/others/market_event_labels.csv",
+  "labels_sha256": "36c9971c56e2d410a007f896ff1a460a4022a9da682afe6c6c57d1e785908c56",
+  "price_scale": {
+    "HFQ_is_raw_times_factor_verified_all_OHLC": true,
+    "factor_unique_values_rounded12": [
+      5.892
+    ],
+    "factor_comparison_tolerance": "rtol1e-10_atol1e-12; raw floating-point ratio differences are not corporate actions",
+    "research_quantity": "raw entry quantity / entry factor; later cash-equity is synthetic HFQ position label; not a full raw-share corporate-action ledger"
+  },
+  "source_hashes": {
+    "research/S014/experiments/EX036_20261019/src/prepare_market_labels.py": "029ffda2cf9d06684285a4a85d666e1384e034a511816e10f9a6b00ff9038b45",
+    "packages/trading_execution_engine/src/trading_execution_engine/fills.py": "8e543cf6ec21b5653b827195a5cee48b912004f0944a6179098597cf1d2db992",
+    "packages/trading_execution_engine/src/trading_execution_engine/market.py": "61c5047750b268b7263657b35c8848a53bd46047001ea7ae88bb1cb999063d2e",
+    "packages/strategy_runtime/src/strategy_runtime/execution_rules.py": "6ede66f327fd92aa2ad8e3401d3280a30d28a2f3a466c6255ea724a00aa72bfe"
+  },
+  "limitations": [
+    "isolated fixed-event labels, no continuous strategy account or annual qualification",
+    "daily-range fills have session precision where applicable, not certified minute path or queue fills",
+    "full-session MAE can precede an intraday entry fill",
+    "no-trade net-position returns remain missing; isolated cash-equity return is zero",
+    "historical development data already seen; no independent untouched holdout"
+  ]
+}

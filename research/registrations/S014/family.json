@@ -665,18 +665,18 @@
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
-    "component_definitions": 26,
+    "component_definitions": 28,
     "components": {
       "batch": {
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "e4aa2f035bdb040d562db8a38bb403287753211b865d26e24a97b0eaa97685f4",
-      "revision": 18,
+      "content_sha256": "597a4c77810a4d19c0361aed47a2367ca37ee8215db807b847da2756fbed1762",
+      "revision": 19,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "固定E9检验完成69次诊断账户及145组比较。旧25个单笔/账户反向保留19个，全体L6/A9反向29个；剔除最大5个期限变化后仍有26个。后续参与的测量差异持续，但A均值由E6的+0.4095变为E9的-0.3703个百分点，删最大5组又变为+0.5446，平均方向对尾部敏感；未新增有效预测组件或合格策略。",
+    "conclusion": "财务原文与保守可用时点准备已完成，阶段二固定F1/F2检验已执行并独立复算。F1行业超额均值差+3.165个百分点，但相对归母利润改善对照为-0.061个百分点、8个正向事件中7个重合，前推误差未改善；F2在F1正向事件内的主风险效果-1.345个百分点，与预期方向相反，全事件+2.071个百分点但不稳定。四项描述性区间均跨零，本轮新增获支持组件0，不建议据此推进新的财务策略构造；该结论仅限固定表达与已见样本。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -1503,6 +1503,81 @@
       "route_update": "Prioritize firm financial information; old holding-period diagnosis remains evidence but its next price-derived branch is not current priority.",
       "status": "FEASIBILITY_COMPLETE_RESEARCH_INPUT_NOT_READY",
       "user_numeric_cap_specified": false
+    },
+    "financial_fixed_tests": {
+      "actual_budget": {
+        "alternate_horizons": 0,
+        "bootstrap_draws_per_contrast": 10000,
+        "dependency_blocks": 21,
+        "evaluation_reports": 27,
+        "events": 25,
+        "failed_model_fits": 0,
+        "new_candidates": 0,
+        "new_continuous_accounts": 0,
+        "new_financial_mechanisms": 2,
+        "new_upstream_calls": 0,
+        "primary_contrasts": 4,
+        "successful_model_fits": 70,
+        "threshold_searches": 0,
+        "unavailable_prediction_slots_min_training": 60
+      },
+      "authorization": "用户继续；承接先前固定F1/F2提案",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "597a4c77810a4d19c0361aed47a2367ca37ee8215db807b847da2756fbed1762",
+        "revision": 19,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX036_20261019",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "future_execution_authorized": false,
+      "historical_eligibility_changed": false,
+      "historical_phase_flags": {
+        "phase_three_approved": true,
+        "phase_three_ready": true,
+        "phase_two_complete": true
+      },
+      "judgment": {
+        "evidence_id": "9ba7b1928d47cfcd7fbec3c9699fc502e90aa5e8853cc184e087b8c6b0622c83.json",
+        "experiment": {
+          "experiment_id": "EX036_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex036-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "9ba7b1928d47cfcd7fbec3c9699fc502e90aa5e8853cc184e087b8c6b0622c83",
+        "type": "EvidenceRef"
+      },
+      "new_qualified_candidates": 0,
+      "new_supported_components": 0,
+      "next_step": "保持阶段二，停止对这两个固定表达追加邻近阈值或持有期搜索。如继续财务路线，优先审议‘报告相对更早业绩预告/快报的新信息’的完整披露链补证方案；新增数据范围和执行预算需另行确认。",
+      "phase_flag_scope": "保留早前研究轮次的全局阶段标记；不表示本轮财务机制支持或新的阶段三授权，当前财务结论以本对象为准",
+      "phase_three_recommended": false,
+      "statistics": {
+        "evidence_id": "f0e094cb124ed030155caa2efbe342dbaa76e3dab1495c3dddb96dc1d099d23a.json",
+        "experiment": {
+          "experiment_id": "EX036_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex036-others-statistics-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "f0e094cb124ed030155caa2efbe342dbaa76e3dab1495c3dddb96dc1d099d23a",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_FIXED_TWO_MECHANISM_ROUND"
     },
     "financial_input_readiness": {
       "authorization": "增补财务数据的目标是希望研究能重新进入阶段二，请你自主完成进入阶段二之前的工作",
@@ -5668,8 +5743,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "阶段二：先锁定F1/F2标签、对照及统计预算，再执行财务信息增量检验；本轮未生成收益标签、模型或账户。",
-      "遵守已验收九字段、逐字段可用时间、25个披露日期聚类；供应商历史入库和未观察修订链仍未知。"
+      "保持阶段二，停止对这两个固定表达追加邻近阈值或持有期搜索。如继续财务路线，优先审议‘报告相对更早业绩预告/快报的新信息’的完整披露链补证方案；新增数据范围和执行预算需另行确认。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -5863,7 +5937,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "财务前置准备完成：公开原文与保守时点约定下可重返阶段二，尚无新增财务机制结果",
+    "stage": "阶段二财务固定双机制检验完成：本轮无新增获支持组件，等待下一研究问题决定",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -6116,5 +6190,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-19T00:22:36+08:00"
+  "updated_at": "2026-10-19T10:38:42+08:00"
 }

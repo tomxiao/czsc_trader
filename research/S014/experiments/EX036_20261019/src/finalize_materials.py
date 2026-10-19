@@ -1,0 +1,159 @@
+"""Bind independently recomputed evidence and write the research judgment."""
+from hashlib import sha256
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[5]
+EX = Path(__file__).resolve().parents[1]
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def digest(path):
+    return sha256(path.read_bytes()).hexdigest()
+
+
+def write(path, value):
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+        stream.write("\n")
+
+
+def main():
+    assert not (EX / "others/judgment.json").exists()
+    previous = ROOT / ".tmp/ex036_market_before_lint"
+    same = []
+    for old in previous.iterdir():
+        if old.name == "market_inputs.json":
+            continue
+        new = EX / "others" / old.name
+        assert old.read_bytes() == new.read_bytes(), old.name
+        same.append(old.name)
+    old_manifest = read(previous / "market_inputs.json")
+    new_manifest = read(EX / "others/market_inputs.json")
+    assert {k: v for k, v in old_manifest.items() if k != "source_hashes"} == {
+        k: v for k, v in new_manifest.items() if k != "source_hashes"
+    }
+    precheck = read(EX / "others/panel_precheck.json")
+    precheck["source_sha256"]["market_inputs.json"] = digest(EX / "others/market_inputs.json")
+    precheck["implementation_clarifications"].append(
+        "Removed one unused local variable after audit; reran the same offline market program. "
+        "All seven snapshots, all25 labels and market checks byte-identical; only source provenance hash changed."
+    )
+    (EX / "others/panel_precheck.json").write_text(
+        json.dumps(precheck, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+    audits = {}
+    for name in ("audit_financial_market", "audit_statistics"):
+        done = subprocess.run([sys.executable, str(EX / "src" / (name + ".py"))],
+                              cwd=ROOT, check=True, capture_output=True, text=True)
+        audits[name] = json.loads(done.stdout)
+    bindings = {p.relative_to(ROOT).as_posix(): digest(p) for p in EX.rglob("*")
+                if p.is_file() and p.suffix in {".py", ".csv", ".json"}}
+    write(EX / "others/independent_review.json", {
+        "status": "PASS", "reviewer": "financial_review independent subagent; root reran preserved audit scripts",
+        "checks": audits, "source_hashes": bindings,
+        "market_lint_cleanup": {"byte_identical_outputs": same, "source_only_change": True},
+        "numerical_note": "F1/PARENT highly overlapping groups can yield about1e-17 roundoff around exact-zero bootstrap effects; positive_fraction differed .5009 vs .5012 under independent summation. Percentile intervals and conclusions identical; no inference uses this fraction.",
+        "new_upstream_calls": 0, "new_model_fits_in_audit": 0,
+    })
+    stats = read(EX / "others/statistics.json")
+    effects = [{"id": c["id"], "difference": c["point"]["event_weighted_difference"],
+                "percentile95": c["bootstrap"]["event_weighted"]["percentile95"]}
+               for c in stats["contrasts"]]
+    conclusion = (
+        "财务原文与保守可用时点准备已完成，阶段二固定F1/F2检验已执行并独立复算。"
+        "F1行业超额均值差+3.165个百分点，但相对归母利润改善对照为-0.061个百分点、8个正向事件中7个重合，前推误差未改善；"
+        "F2在F1正向事件内的主风险效果-1.345个百分点，与预期方向相反，全事件+2.071个百分点但不稳定。"
+        "四项描述性区间均跨零，本轮新增获支持组件0，不建议据此推进新的财务策略构造；该结论仅限固定表达与已见样本。"
+    )
+    next_step = (
+        "保持阶段二，停止对这两个固定表达追加邻近阈值或持有期搜索。"
+        "如继续财务路线，优先审议‘报告相对更早业绩预告/快报的新信息’的完整披露链补证方案；新增数据范围和执行预算需另行确认。"
+    )
+    judgment = {
+        "status": "COMPLETE_FIXED_TWO_MECHANISM_ROUND", "conclusion": conclusion,
+        "F1": "INSUFFICIENT_INCREMENTAL_SUPPORT_OVER_PARENT_AND_PRICE_CONTROLS",
+        "F2_primary": "OBSERVED_OPPOSITE_RISK_DIRECTION_NOT_SUPPORTED",
+        "F2_all_events": "DESCRIPTIVE_POSITIVE_BUT_UNSTABLE_AND_UNCERTAIN",
+        "effects": effects, "next_step": next_step,
+        "new_supported_components": 0, "new_qualified_candidates": 0,
+        "historical_component_definitions": 26, "component_definitions_after": 28,
+        "historical_strategy_accounts": 66, "historical_all_targets_pass_count": 0,
+        "phase_three_recommended_for_financial_mechanisms": False,
+        "historical_eligibility_changed": False, "future_execution_authorized": False,
+        "actual_budget": {"new_upstream_calls": 0, "new_financial_mechanisms": 2,
+                          "events": 25, "evaluation_reports": 27, "dependency_blocks": 21,
+                          "primary_contrasts": 4, "bootstrap_draws_per_contrast": 10000,
+                          "successful_model_fits": 70, "failed_model_fits": 0,
+                          "unavailable_prediction_slots_min_training": 60,
+                          "new_continuous_accounts": 0, "new_candidates": 0,
+                          "alternate_horizons": 0, "threshold_searches": 0},
+    }
+    write(EX / "others/judgment.json", judgment)
+    rows = []
+    labels = ["F1：行业超额收益，8对17", "F1相对归母利润改善，8对13（重合7）",
+              "F2：F1成立时的最差价格，4对4", "F2：全事件最差价格，11对14"]
+    for label, item in zip(labels, effects, strict=True):
+        lo, hi = item["percentile95"]
+        rows.append(f"| {label} | {item['difference']*100:+.3f} | [{lo*100:+.3f}, {hi*100:+.3f}] |")
+    report = f"""# S014 财务信息阶段二固定双机制检验
+
+{conclusion}
+
+## 目标、来源与可用时点
+
+用户已同意切换RSCH并继续，授权自主完成重新进入阶段二前工作，随后“继续”承接固定双机制执行。沿用原600722.SH、2020—2026-10-15开发窗口及经济目标。使用已核准的九项财务字段；原文核验材料见[财务准备报告](../../../materials/20261019_financial_readiness/report.md)。33期包含6期预热和27期评价报告，同日合并后25个事件。296项有值事实与冻结供应商RecordId逐项绑定；主机制五字段共165格有原文支持。应收账款不可拆分缺口保留为空，扣非利润的值/空并存保留原貌，均未补零。
+
+按供应商公告日、实际公告日及原文支持日的最晚者，取严格下一上交所交易日15:00决策，再下一交易日执行。该安排依据公开原文作保守事后重建；供应商当时入库时间、完整修订链未获证实，不能宣称严格历史时点数据库。市场七组输入全部沿用固定PreparedDataRef并通过公共DFLS fetch复核，网络被阻断；本轮外部请求0。
+
+## 预先固定的方法
+
+设计在生成新特征、价格标签前正式发布，SHA256为`a97a4ff4b81adbff0b064c9f55f42c791d2d5abf53b4c11f251f9e7f75a02570`。F1要求单季收入同比增加且单季毛利率同比上升，并要求两年同季收入为正；对照仅要求单季归母利润同比增加。F2将“单季合并经营现金流减单季合并净利润”除以季初季末平均总资产，比较同比是否改善。单季由同年累计数差分，Q1直接采用累计数；阈值均为0，未搜索其他阈值或持有期。存货、应收及扣非利润仅作既定描述，未扩展模型。
+
+固定20交易日：价格收益用入场日开盘到第20日收盘；行业超额减同期行业指数收益。最差价格标签为全窗口最低价相对入场开盘的跌幅，越接近零越好；它包含入场全天低点，不能解释为成交后的精确盘中风险。按入场至最晚标签/退出终点的重叠区间传递合并成21块，每项10,000次同种子区块重抽样，事件等权与块等权并报。区间用于描述不确定性，不新增经济验收硬门。
+
+## 固定结果
+
+下表单位为百分点；风险行正值才表示下行程度减轻。区间是事件等权的95%描述性区块重抽样区间。
+
+| 主比较 | 均值差 | 95%区间 |
+| --- | ---: | ---: |
+{chr(10).join(rows)}
+
+四项块等权差依次为+3.517、-0.192、-1.345、+1.123个百分点，均未改变当前判断。F1的8次正向事件有7次同时满足归母利润对照，唯一F1独有事件是2025H1，行业超额-13.859%，成交后含费位置收益-11.472%。F1去掉2026后均值差降至+1.441个百分点；F2全事件去掉2026降至+0.444个百分点，删除绝对最差价格最大的3个事件后变为-0.920个百分点；F2在F1组内删除1个或3个极端事件后转正，显示结果易受少数事件影响。逐年、逐块剔除与全部既定诊断均保留于[统计结果](../../../experiments/EX036_20261019/others/statistics.json)。
+
+量价基线使用决策日个股、行业过去20日收益。前推训练只使用其全部依赖终点严格早于决策日的成熟标签，每组比较训练行一致、测试行一致，至少12条训练行；连续变量只按训练集标准化，无降级拟合。5次全样本描述拟合加65次前推拟合，共70次成功、0失败，未超过130次上限；另60个预测位置因训练不足不可用。13个共同测试事件中，加入F1后平均绝对误差/均方根误差增加0.041/0.398个百分点；加入F2后增加0.180/0.171个百分点；归母利润对照则减少0.201/0.472个百分点。全样本系数与这13条前推诊断都来自已见开发历史，不能充当新的独立封存验证。
+
+## 与实际交易的联系
+
+公共TXE每日区间成交语义下，入场限价为前一交易日未复权收盘上浮1%，仅下一交易日有效；整手100股、预算10万元、双边各0.1%费用，20日后市价退出，阻断才顺延。25事件中24成交并按计划退出、1次未成交；未成交净位置收益保留为空。未成交是2026H1：限价15.42元、开盘16元、日低15.64元。
+
+F1成交组7次平均净位置收益+2.798%，其余17次-0.392%；归母利润改善成交组12次+5.629%。F2在F1组内成交3对4次的净位置均值为+3.197%对+2.498%，而全事件10对14次为-0.393%对+1.203%；这些是固定组的辅助描述，不能替换F2预先声明的主风险标签。独立事件位置以复权价格处理价值变化，本样本复权因子5.892不变；未构造逐日连续资金账户或完整公司行动持股账本，也未把事件重叠计为可同时兑现的账户收益。
+
+全窗口只有25次披露决策，若仅以这些事件各开一笔，即使全部成交也只有25×60/1642=0.914笔/60日，低于原目标3笔/60日。因此这些信息即便将来获支持，也需要作为可持续状态或其他入场的条件研究，不能直接以稀疏披露事件替代原频率目标；本轮未实施该后续策略构造。
+
+## 复核、边界与研究决定
+
+独立审计另写实现，全量重算25事件的单季差分、同比、平均资产分母、RecordId和可用时点；全量重算价格收益、最差价格、过去20日控制项、限价、手数、费用和剩余现金。四项各10,000次重抽样区间一致；70个OLS由全秩及正规方程残差证书认证唯一最小二乘解，审计未额外拟合；65条预测的成熟截止与共同训练行均通过。源文件、输出及审计实现哈希进入[独立复核](../../../experiments/EX036_20261019/others/independent_review.json)。清理一个未使用局部变量后复算市场程序，七个快照、标签和检查逐字节相同。
+
+原研究已见开发历史继续保持已见身份；查找市场固定输入时接触EX033输入元数据中的旧事件计数及3条未成交记录，已在锁定设计披露，未据此筛选新财务事件。既有5条业绩预告观察仅将3个事件标为“已观察到更早预告但未认证”，其他事件保持未知，不当作无预告；未构建F3。F1与归母利润高重合时，极少重抽的精确零差在不同求和顺序下出现约1e-17正负误差；不影响区间，不依据正值比例作判断。
+
+本轮固定问题已经回答：F1未展示超出简单利润改善和量价的稳定增量；F2预先指定的主风险用途未获得支持。四项区间跨零、小样本及影响诊断保留不确定性，不能扩大为“财务信息没有价值”。新定义2项、新获支持0、候选0、连续账户0；历史26项定义逐项保持，累计定义28项，历史66账户与0项全目标达标事实及资格保持。正式COMPONENTS/19的COMPLETE表示本轮固定检验与交付完成，并不代表财务机制获支持、整个研究目标达成或获准进入阶段三。
+
+{next_step}
+
+本轮材料、代码与输入引用均作为正式EvidenceRef发布；正式报告在交付后复制回实验，另存逐字节一致验证。数据资产仍需随研究资产保存，仅复制Git不能恢复其全部内容。
+"""
+    with (EX / "protocols/report.md").open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(report)
+    print(json.dumps({"status": "PASS", "independent_checks": list(audits),
+                      "judgment": judgment["status"]}))
+
+
+if __name__ == "__main__":
+    main()

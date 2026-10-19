@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "reviewer": "financial_review independent subagent; root reran preserved audit scripts",
+  "checks": {
+    "audit_financial_market": {
+      "financial_events": 25,
+      "report_periods": 27,
+      "flag_counts": {
+        "F1": 8,
+        "F2": 11,
+        "PARENT": 13
+      },
+      "financial_values_and_lineage": "ALL_RECOMPUTED",
+      "price_labels": 25,
+      "execution_status": {
+        "CLOSED": 24,
+        "NO_TRADE": 1
+      },
+      "delayed_exits": 0,
+      "factor_changes": 0,
+      "market_price_MAE_controls_and_fees": "ALL_RECOMPUTED",
+      "new_API_calls": 0
+    },
+    "audit_statistics": {
+      "contrasts": [
+        {
+          "id": "F1_RETURN",
+          "first_n": 8,
+          "second_n": 17,
+          "difference": 0.031653690064539386
+        },
+        {
+          "id": "F1_VS_PARENT",
+          "first_n": 8,
+          "second_n": 13,
+          "difference": -0.0006143267200488106
+        },
+        {
+          "id": "F2_RISK_WITHIN_F1",
+          "first_n": 4,
+          "second_n": 4,
+          "difference": -0.013452381477222927
+        },
+        {
+          "id": "F2_RISK_ALL",
+          "first_n": 11,
+          "second_n": 14,
+          "difference": 0.02070935703673231
+        }
+      ],
+      "dependency_blocks": 21,
+      "bootstrap_recomputed_per_contrast": 10000,
+      "OLS_optimality_certificates": 70,
+      "new_model_fits_in_audit": 0,
+      "forward_predictions": 65,
+      "immature_unavailable_predictions": 60,
+      "paired_test_events": 13,
+      "all_numeric_and_causal_checks": "PASS",
+      "new_API_calls": 0
+    }
+  },
+  "source_hashes": {
+    "research/S014/experiments/EX036_20261019/experiment.json": "0c1ab9cc48eaaa5daf70d40df8f44afbee54ca91703b9a99edbd260eefd500fd",
+    "research/S014/experiments/EX036_20261019/others/calendar_market.csv": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e",
+    "research/S014/experiments/EX036_20261019/others/event_panel.csv": "7d4423f75ef582eee57b91afd60949d7df6f277333e11efed16ade5a42508b9d",
+    "research/S014/experiments/EX036_20261019/others/financial_features.csv": "dd055ebe37a3abfd47af7190c716bef8994b7ff2f21580648ed11e5835b23d68",
+    "research/S014/experiments/EX036_20261019/others/financial_features_lineage.json": "483aa0b10abbc81c0e05cdcb3ae271b05bf57c32319bf1041e42231689f630cb",
+    "research/S014/experiments/EX036_20261019/others/limits_market.csv": "227962492646ef59eb6c3984b98806aba7e56745406ecaaa60c25a02fed58427",
+    "research/S014/experiments/EX036_20261019/others/market_event_labels.csv": "36c9971c56e2d410a007f896ff1a460a4022a9da682afe6c6c57d1e785908c56",
+    "research/S014/experiments/EX036_20261019/others/market_inputs.json": "b2157d58f12d26640176267887e7ba277505cd0a93bc8a78c318b9285e7131f7",
+    "research/S014/experiments/EX036_20261019/others/market_label_checks.json": "2f04d1a3192b16aff950549084d344b3f97674bcdb81e1e58746f7c78dc7c57b",
+    "research/S014/experiments/EX036_20261019/others/market_market.csv": "92ac7efa4b782fcbc87ca73a69bb6b60b717575bf549523b2265c82f44accd17",
+    "research/S014/experiments/EX036_20261019/others/model_predictions.csv": "576d31d961adac1fcdb6979a64e14b02150f34e0bfad86232e2a33bf7ae69eff",
+    "research/S014/experiments/EX036_20261019/others/panel_precheck.json": "e0da2ad55efe532d39da7a49614941c8878fbc3f00834832896a671caf8709e5",
+    "research/S014/experiments/EX036_20261019/others/sector_market.csv": "91118cf90828168fd3d3c8f911e9cb573f28c8cc96aa44df6c428efaca97b53b",
+    "research/S014/experiments/EX036_20261019/others/statistics.json": "f0e094cb124ed030155caa2efbe342dbaa76e3dab1495c3dddb96dc1d099d23a",
+    "research/S014/experiments/EX036_20261019/others/status_market.csv": "c706d2198b483ec53fc3599f21e7a75b5b0482713238fa37680068c0c5fcec4f",
+    "research/S014/experiments/EX036_20261019/others/stock_hfq_market.csv": "6ce13e368773a1a54f5cbeb8cc3c6cb9eab69ec37c7e0feb762e5d74921bbac6",
+    "research/S014/experiments/EX036_20261019/others/stock_raw_market.csv": "0e2951455c1450e198365ee0e9e9b0c0563cf1fd44c4d48a32565f1d0fc82c96",
+    "research/S014/experiments/EX036_20261019/protocols/design.json": "a97a4ff4b81adbff0b064c9f55f42c791d2d5abf53b4c11f251f9e7f75a02570",
+    "research/S014/experiments/EX036_20261019/protocols/method_review.json": "a4c2858976e3ac9e0c7d396c9d9985fc25e0e002676bde89f6074f3048227b92",
+    "research/S014/experiments/EX036_20261019/protocols/published_design.json": "6ee983168cdf4d5fa853be863fb3523d3731e0b62af4c29ab812b79997c60478",
+    "research/S014/experiments/EX036_20261019/src/analyze_statistics.py": "b83c688fad7c4e2fb50bf7e063a20ad2c46cac627a6517677c39d1149fe5c363",
+    "research/S014/experiments/EX036_20261019/src/assemble_panel.py": "b8dbea852000b6ab4f383f06fddd4eb881b0dd221f06f36f21809c6fe0b5bbc3",
+    "research/S014/experiments/EX036_20261019/src/audit_financial_market.py": "19fd4f4835d2895e18798a569960aa612a30bd365078008a66dfd97016527f1b",
+    "research/S014/experiments/EX036_20261019/src/audit_statistics.py": "3dd80b66939562b3a928d56c14036b3a3580402431cd88495ffdc616f5567991",
+    "research/S014/experiments/EX036_20261019/src/finalize_materials.py": "455d413557f225c5e6aa809abdfe596dc080bc4e6fcb17067a62d275db20fe3d",
+    "research/S014/experiments/EX036_20261019/src/financial_features.py": "881cf23e8021f3d3fa18cade54fddc403649ff403412c059152de214e869679d",
+    "research/S014/experiments/EX036_20261019/src/prepare_market_labels.py": "029ffda2cf9d06684285a4a85d666e1384e034a511816e10f9a6b00ff9038b45"
+  },
+  "market_lint_cleanup": {
+    "byte_identical_outputs": [
+      "calendar_market.csv",
+      "limits_market.csv",
+      "market_event_labels.csv",
+      "market_label_checks.json",
+      "market_market.csv",
+      "sector_market.csv",
+      "status_market.csv",
+      "stock_hfq_market.csv",
+      "stock_raw_market.csv"
+    ],
+    "source_only_change": true
+  },
+  "numerical_note": "F1/PARENT highly overlapping groups can yield about1e-17 roundoff around exact-zero bootstrap effects; positive_fraction differed .5009 vs .5012 under independent summation. Percentile intervals and conclusions identical; no inference uses this fraction.",
+  "new_upstream_calls": 0,
+  "new_model_fits_in_audit": 0,
+  "post_review_editorial_correction": "Corrected relative material-report link by one parent level; no method or outcome changes"
+}

@@ -1,0 +1,132 @@
+{
+  "status": "PASS",
+  "synthetic": [
+    {
+      "name": "equal_daily_limit_touch_fills",
+      "PASS": true,
+      "fill": {
+        "filled": true,
+        "price": 10.0,
+        "filled_at": "2024-01-02 00:00:00",
+        "trigger": "DAILY_LIMIT",
+        "reason": "FILLED",
+        "time_precision": "SESSION"
+      }
+    },
+    {
+      "name": "missed_entry_no_trade",
+      "PASS": true,
+      "fill": {
+        "filled": false,
+        "price": null,
+        "filled_at": null,
+        "trigger": null,
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "time_precision": "TIMESTAMP"
+      }
+    },
+    {
+      "name": "locked_down_sell_pending",
+      "PASS": true,
+      "fill": {
+        "filled": false,
+        "price": null,
+        "filled_at": null,
+        "trigger": null,
+        "reason": "DAILY_RANGE_NOT_REACHED",
+        "time_precision": "TIMESTAMP"
+      }
+    },
+    {
+      "name": "down_limit_reopened_sell_plus_tick",
+      "PASS": true,
+      "fill": {
+        "filled": true,
+        "price": 9.01,
+        "filled_at": "2024-01-02 00:00:00",
+        "trigger": "DAILY_OPEN_PLUS_TICK",
+        "reason": "FILLED",
+        "time_precision": "SESSION"
+      }
+    },
+    {
+      "name": "outside_limit_price_rejected",
+      "PASS": true,
+      "fill": {
+        "filled": false,
+        "price": null,
+        "filled_at": null,
+        "trigger": null,
+        "reason": "ORDER_PRICE_OUTSIDE_LIMITS",
+        "time_precision": "TIMESTAMP"
+      }
+    },
+    {
+      "name": "one_percent_tick_lot_fee_budget",
+      "PASS": true,
+      "order": {
+        "side": "BUY",
+        "quantity": 9800,
+        "order_type": "LIMIT",
+        "limit_price": 10.1,
+        "time_in_force": "DAY"
+      }
+    }
+  ],
+  "independent_actual_samples": [
+    {
+      "event_id": "FIN_20200306",
+      "stock_return20_independent_decimal": -0.11415525114155244,
+      "buy_limit_independent_decimal": 4.5,
+      "status": "CLOSED",
+      "PASS": true,
+      "net_position_return_independent_decimal": -0.10453245384752234
+    },
+    {
+      "event_id": "FIN_20210809",
+      "stock_return20_independent_decimal": -0.02090032154340836,
+      "buy_limit_independent_decimal": 6.3,
+      "status": "CLOSED",
+      "PASS": true,
+      "net_position_return_independent_decimal": -0.022856564657207583
+    },
+    {
+      "event_id": "FIN_20230417",
+      "stock_return20_independent_decimal": -0.031936127744510975,
+      "buy_limit_independent_decimal": 5.07,
+      "status": "CLOSED",
+      "PASS": true,
+      "net_position_return_independent_decimal": -0.03187830133937905
+    },
+    {
+      "event_id": "FIN_20240429",
+      "stock_return20_independent_decimal": 0.04295942720763719,
+      "buy_limit_independent_decimal": 4.27,
+      "status": "CLOSED",
+      "PASS": true,
+      "net_position_return_independent_decimal": 0.03611185950088081
+    },
+    {
+      "event_id": "FIN_20260828",
+      "stock_return20_independent_decimal": -0.05812499999999989,
+      "buy_limit_independent_decimal": 15.42,
+      "status": "NO_TRADE",
+      "PASS": true
+    }
+  ],
+  "rows": 25,
+  "price_status_counts": {
+    "COMPLETE": 25
+  },
+  "execution_status_counts": {
+    "CLOSED": 24,
+    "NO_TRADE": 1
+  },
+  "no_missing_event_rows": true,
+  "delay_sessions_counts": {
+    "0.0": 24,
+    "nan": 1
+  },
+  "factor_change_count": 0,
+  "labels_sha256": "36c9971c56e2d410a007f896ff1a460a4022a9da682afe6c6c57d1e785908c56"
+}

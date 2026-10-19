@@ -1,0 +1,176 @@
+{
+  "status": "AUTHORIZED_FIXED_STAGE_TWO_PROTOCOL_BEFORE_OUTCOME_COMPUTATION",
+  "authorization": "继续；承接进入阶段二检验经营盈利改善与现金支持盈利两个机制",
+  "identity": "EX036_20261019",
+  "window": [
+    "2020-01-01",
+    "2026-10-15"
+  ],
+  "source_scope": "existing pinned S014 financial inputs plus existing stock, market, sector and execution daily inputs only",
+  "new_upstream_calls": 0,
+  "new_continuous_strategy_accounts": 0,
+  "new_candidates": 0,
+  "signal_search": 0,
+  "resources": {
+    "max_workers": 2,
+    "native_threads_per_worker": 1,
+    "seed": 13
+  },
+  "financial_binding": "research/S014/materials/20261019_financial_readiness/others/accepted_financial_inputs.json",
+  "financial_rules": [
+    "Use only admitted observation IDs and per-field availability",
+    "Quarter=YTD-current minus prior YTD within same year; Q1 directly; all dependencies known by decision",
+    "Income.n_income is consolidated profit; never cashflow/net-profit substitution",
+    "At same decision timestamp combine all reports and use latest report period for state; preserve older report lineage",
+    "No dividend/quarter adjustment using later restated reports",
+    "2018Q3 receivables-only diagnostic unavailable; no zero filling"
+  ],
+  "F1": {
+    "revenue_yoy": "quarter_revenue - same_quarter_previous_year_revenue",
+    "gross_margin_yoy": "(quarter_revenue-quarter_cost)/quarter_revenue minus same quarter previous year gross margin; require positive current and reference revenue",
+    "flag": "revenue_yoy>0 AND gross_margin_yoy>0; strict fixed zero boundaries",
+    "control": "quarter parent-attributable profit YoY difference>0; no threshold tuning"
+  },
+  "F2": {
+    "quality": "(quarter_consolidated_OCF-quarter_consolidated_net_profit)/mean(previous_quarter_end_assets,current_quarter_end_assets)",
+    "delta": "quality minus same quarter previous year quality",
+    "flag": "delta>0; fixed zero",
+    "primary_role": "downside-risk information within F1-positive events",
+    "secondary": "all eligible events",
+    "competition": "YoY change in accounts_receivable/assets and inventories/assets, descriptive only; do not equate combined receivables and notes"
+  },
+  "event_universe": {
+    "evaluation_report_periods": 27,
+    "expected_unique_disclosure_dates": 25,
+    "entry_population": "all financial disclosure clusters, never only former H3 entries or price-selected cohort",
+    "initial_state": "2019Q3 only for starting state; not another evaluation event"
+  },
+  "horizon": {
+    "sessions": 20,
+    "alternatives": 0,
+    "price_label": "E is first SSE session after decision; close at E+19 divided by HFQ open at E minus1",
+    "risk_label": "minimum HFQ Low over E..E+19 divided by HFQ Open(E) minus1; negative is worse",
+    "intraday_entry_risk_limit": "full-session lows measure forward price excursion, not a post-intraday-fill path certificate",
+    "incremental_return": "stock 20-session price label minus sector 20-session label; market counterpart reported",
+    "decision_controls": [
+      "stock trailing20 return at D close",
+      "sector trailing20 return at D close"
+    ],
+    "censoring": "Insufficient future sessions unavailable, never dropped silently",
+    "calendar_index": "Use actual SSE session index, never20 next nonmissing stock rows. E fixed by SSE, no move to first tradable bar; missing required prices => explicit unavailable.",
+    "dependency_endpoint": "max(price_end_date, planned_exit_date, actual_exit_date); no-trade uses planned endpoint; filled but not exited by cutoff uses cutoff and execution unresolved status. Remove2026 sensitivity includes no-trade with complete price path and endpoint<=2025-12-31, excludes unresolved filled positions."
+  },
+  "execution_labels": {
+    "purpose": "isolated event execution-feasibility/net-position labels, not continuous strategy accounts or qualification",
+    "buy": "one DAY limit order at E, SRT frozen rule, previous D raw close +1%, lot100, tick0.01, starting cash100000, fee0.001; no retry of a missed entry",
+    "matching": "public TXE.resolve_fill and actual SessionPriceLimits with DailyQuote, existing DAILY_RANGE_V3 contract, not a custom matcher or a 30m claim",
+    "exit": "market after 20 holding sessions, first planned E+20; if suspended/unfilled retain pending and retry subsequent sessions through cutoff",
+    "scale": "raw prices for order planning, raw-to-HFQ relative factors for post-entry return incl corporate adjustment; disclose HFQ research quantity units vs literal raw-share cash account",
+    "cost": "buy and sell0.001; lot/cash leftover observed per-event only; no compounding or annual strategy claims",
+    "not_filled": "preserve no-trade status; do not silently impute a successful trade return"
+  },
+  "primary_contrasts": [
+    {
+      "id": "F1_RETURN",
+      "flag": "F1",
+      "population": "all",
+      "target": "sector_excess_return20",
+      "direction": "positive"
+    },
+    {
+      "id": "F1_VS_PARENT",
+      "definition": "F1-positive versus parent-profit-positive control as two declared event selection sets; paired overlap retained and counts disclosed",
+      "target": "sector_excess_return20",
+      "direction": "positive"
+    },
+    {
+      "id": "F2_RISK_WITHIN_F1",
+      "flag": "F2",
+      "population": "F1-positive",
+      "target": "mae20",
+      "direction": "positive means smaller downside"
+    },
+    {
+      "id": "F2_RISK_ALL",
+      "flag": "F2",
+      "population": "all",
+      "target": "mae20",
+      "direction": "positive means smaller downside"
+    }
+  ],
+  "inference": {
+    "sampling_unit": "disclosure-date event; additionally merge transitively overlapping E..actual/planned E+20 label intervals into dependency blocks",
+    "bootstrap_resamples": 10000,
+    "bootstrap_unit": "dependency blocks; compare event-weighted and block-equal summaries; missing-group resamples invalid and counted",
+    "confidence_intervals": "percentile95%, exploratory descriptive; no unregistered economic hard gate or p-value selection",
+    "influence": [
+      "leave-one-dependency-block-out",
+      "remove top absolute target1 and3 events with deterministic date tie-break",
+      "exclude2026 only if both decision and label/actual-exit endpoints <=2025-12-31",
+      "by decision year"
+    ],
+    "no_cherry_pick": "all four primary contrasts and controls reported regardless of sign; no alternate windows or threshold grids",
+    "estimand": "Within common valid price-label and feature population: selected-group arithmetic mean minus complement arithmetic mean for F1_RETURN and both F2 contrasts; F1_VS_PARENT is mean(F1-positive) minus mean(PARENT-positive), overlapping events retained in the same resample. Net filled-position subsets are secondary and never replace the primary sample.",
+    "block_equal": "For each selection group take its within-block mean, then average across blocks containing that group with equal block weights; group mean difference. Missing group in a block is not zero; both groups entirely absent in a resample => invalid.",
+    "unavailable": "n=0 or fewer than2 contributing dependence blocks => effect/CI unavailable as applicable; report group events, contributing blocks, total resamples, valid and invalid counts; no fabricated intervals."
+  },
+  "fixed_models": {
+    "purpose": "small-sample incremental check, no model/parameter search",
+    "models": [
+      {
+        "id": "RETURN_BASE",
+        "target": "sector_excess_return20",
+        "x": [
+          "stock_trailing20",
+          "sector_trailing20"
+        ]
+      },
+      {
+        "id": "RETURN_F1",
+        "target": "sector_excess_return20",
+        "x": [
+          "stock_trailing20",
+          "sector_trailing20",
+          "F1"
+        ]
+      },
+      {
+        "id": "RETURN_PARENT",
+        "target": "sector_excess_return20",
+        "x": [
+          "stock_trailing20",
+          "sector_trailing20",
+          "PARENT"
+        ]
+      },
+      {
+        "id": "RISK_BASE",
+        "target": "mae20",
+        "x": [
+          "stock_trailing20",
+          "sector_trailing20"
+        ]
+      },
+      {
+        "id": "RISK_F2",
+        "target": "mae20",
+        "x": [
+          "stock_trailing20",
+          "sector_trailing20",
+          "F2"
+        ]
+      }
+    ],
+    "fitting": "OLS intercept, training-only mean/std scaling of continuous predictors, no regularization tuning",
+    "walk_forward": "at each event train only events with complete label endpoints strictly before current decision, minimum12 events; rank deficiency or nonfinite data => model unavailable",
+    "max_fits": 130,
+    "reporting": "all in-sample descriptive coefficients plus paired walk-forward MAE/RMSE; no claiming independent unseen holdout",
+    "paired_samples": "Each base-versus-augmented pair uses identical complete training rows, identical maturation cutoff and same OOS events; continuous-control scaling on training rows only. Rank-deficient/constant added flag is unavailable; no intercept-only or ridge fallback. Report unavailable-fit counts and not just successful prediction scores."
+  },
+  "prior_information": "previous feasibility forecast rows may only flag observed prior guidance for same period; absence unknown and not a zero feature, no F3 fit",
+  "component_judgment": "RSCH classify supported/ineffective/insufficient from direction, increments, concentration and trade-label evidence; diagnostics not new economic acceptance gates",
+  "fees_execution_annual_targets": "UNCHANGED",
+  "all_history_seen": true,
+  "no_platform_changes": true,
+  "prior_selection_exposure": "All S014 history is already seen development data. Source-identity lookup in EX033 inputs exposed old event counts and3 old unmatched entries; not used for financial feature, cohort, threshold or endpoint selection; no new holdout claim."
+}
