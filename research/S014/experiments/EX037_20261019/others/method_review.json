@@ -1,0 +1,52 @@
+{
+  "status": "PASS_WITH_DECLARED_CLASSIFICATION_BOUNDARY_NOTES",
+  "reviewer": "financial_review independent RSCH subagent",
+  "experiment": "EX037_20261019",
+  "review_scope": "Static pre-analysis review of the published fixed protocol only; no new disclosure values, new classifications or EX037 outcome calculations inspected.",
+  "protocol_path": "research/S014/experiments/EX037_20261019/protocols/design.json",
+  "protocol_sha256": "6f9ac4596b9650ec9d42cfaa7ec25106a7e858904d78ecd2ae5efe5fb21608a1",
+  "published_binding_path": "research/S014/experiments/EX037_20261019/protocols/published_design.json",
+  "published_digest_matches_current_protocol": true,
+  "blocking_method_findings": [],
+  "approved_method_properties": [
+    "All 27 report-level records remain visible; the latest period in each existing formal disclosure cluster determines the primary event classification, yielding the fixed 25-event universe without return-based selection.",
+    "Compare identical-period YTD parent-attributable profit; do not invent quarterly forecasts by differencing guidance bounds or extend headline coverage to revenue, margin, cash flow or all report information.",
+    "Earlier guidance requires both a strictly earlier official source day and a strictly earlier conservative tradable decision cluster. Same-cluster guidance remains separate.",
+    "The latest admitted earlier version controls classification. Preserve revisions and their replacement evidence; unresolved same-day ordering remains unavailable.",
+    "Decimal rounding boundaries are fixed before new-value/outcome analysis. Positive and negative breakouts require the entire actual cents interval to exceed the conservative prior bound; boundary overlap remains separate.",
+    "Covered means no certified numeric boundary breakout and does not mean no new information, no reduction in uncertainty or no market surprise.",
+    "Two predeclared directional contrasts reuse the fixed EX036 labels and 21 dependence blocks. Empty groups remain unavailable; each arm requires at least two contributing blocks for a descriptive interval.",
+    "First-news reactions and source-type strata are descriptive only. Existing market coverage limits availability; no alternate horizon, fitted model, continuous account or new candidate is authorized by this protocol."
+  ],
+  "implementation_and_reporting_notes": [
+    {
+      "id": "POINT_VALUE_COVERAGE_EMPTY_BY_DESIGN",
+      "severity": "DECLARED_METHOD_LIMITATION",
+      "condition": "For a point express value represented as L=U with a positive printed quantum, the definite-covered interval [L+qL/2,U-qU/2] is empty.",
+      "required_interpretation": "Under the published rule, even an identical formal and express printed value is rounding_boundary_overlap rather than covered. Retain and report this structural exclusion of point-valued reports; do not silently relax it after observing classifications or returns.",
+      "revision_boundary": "If point-consistent express values are intended to enter the covered arm, publish an explicit pre-analysis protocol revision before inspecting new value/outcome results. This review does not authorize changing the published classifier."
+    },
+    {
+      "id": "LATEST_APPROXIMATE_OR_UNRESOLVED_VERSION",
+      "severity": "IMPLEMENTATION_CHECK",
+      "required_interpretation": "If the latest relevant source is an approximate single-point estimate or has unresolved basis/order, retain its declared non-primary classification. Do not select an older convenient interval merely to obtain a primary classification."
+    },
+    {
+      "id": "PRINTED_PRECISION_AND_SIGN",
+      "severity": "IMPLEMENTATION_CHECK",
+      "required_interpretation": "Determine each quantum from the stated monetary unit and printed decimal places, including printed decimal zeros; retain signed losses and normalize interval order. Do not infer a monetary baseline from uncertified percentage guidance or optimize a surprise tolerance."
+    },
+    {
+      "id": "INFORMATION_VERSUS_PRICE_CAUSALITY",
+      "severity": "REPORTING_LIMITATION",
+      "required_interpretation": "A boundary breakout is an increment relative to the scoped issuer headline chain, not proof of an unexpected event to the market. Earlier-guidance price paths and later event returns do not establish causal price absorption or executable continuous-strategy performance."
+    }
+  ],
+  "next_review": "After source collection, independently verify issuer/period/scope, signed units and printed quantum, first/latest/replacement chronology, complete scoped-query receipts, all 27 report classifications and 25 event joins, then recompute the two fixed effects without expanding research scope.",
+  "new_upstream_calls": 0,
+  "new_model_fits": 0,
+  "new_outcome_calculations": 0,
+  "files_written": [
+    "research/S014/experiments/EX037_20261019/others/method_review.json"
+  ]
+}

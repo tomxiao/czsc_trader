@@ -1,0 +1,177 @@
+"""Write the bounded diagnosis, negative evidence and plain-Chinese report."""
+from decimal import Decimal
+from hashlib import sha256
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[5]
+EX = Path(__file__).resolve().parents[1]
+
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+
+def write(path, value):
+    with path.open("x", encoding="utf-8", newline="\n") as stream:
+        json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+        stream.write("\n")
+
+
+def main():
+    assert not (EX / "others/judgment.json").exists()
+    review = read(EX / "others/independent_review.json")
+    assert review["status"] == "PASS"
+    trade_review = read(EX / "others/first_news_audit.json")
+    assert trade_review["status"] == "PASS" and trade_review["checks"] == 148
+    result = read(EX / "others/information_results.json")
+    ledger = read(EX / "others/report_information_ledger.json")
+    source = read(EX / "others/guidance_facts.json")
+    assert result["report_class_counts"] == {"no_prior_in_scoped_catalogue": 19,
+                                            "approximate_point_estimate": 5, "unknown": 3}
+    assert result["actual_budget"]["actual_bootstrap_draws"] == 0
+    assert all(x["event_difference"] is None and x["percentile95"] is None for x in result["primary_comparisons"])
+    vendor = read(ROOT / "research/S014/materials/20261018_financial_feasibility/responses/call_05.json")
+    records = [dict(zip(vendor["fields"], row, strict=True)) for row in vendor["items"]]
+    comparisons = []
+    for row in records:
+        facts = [f for f in source["facts"] if f["period"] == row["end_date"] and f["source_day"].replace("-", "") == row["ann_date"]]
+        assert len(facts) == 1
+        fact = facts[0]
+        vendor_cny = Decimal(str(row["net_profit_min"])) * 10000
+        original_cny = Decimal(fact["parent_profit_low_cny"])
+        assert row["net_profit_min"] == row["net_profit_max"] and fact["approximate_point"]
+        assert abs(vendor_cny-original_cny) <= Decimal("5000")
+        comparisons.append({"period": row["end_date"], "doc_id": fact["doc_id"],
+                            "original_approximate_point_cny": str(original_cny),
+                            "vendor_point_cny": str(vendor_cny), "vendor_minus_original_cny": str(vendor_cny-original_cny),
+                            "meaning": "Vendor points are rounded to whole10,000CNY here; original precision/approximate wording controls research. This is a representation cross-check, not an economic surprise tolerance."})
+    write(EX / "others/vendor_crosscheck.json", {"status": "PASS", "rows": comparisons,
+                                                "new_vendor_calls": 0, "original_units_cny_per_wan": 10000})
+    conclusion = (
+        "本轮没有找到足以继续开发直接财务买卖信号的新证据。已能核实披露链的24期中，5期有更早的利润预告、19期未找到更早同期间预告；"
+        "本轮已核实的公司预告/快报链没有确认多数事件的归母利润已被提前披露；其他公告正文、分析师信息和市场预期渠道仍未排除，不能确认或充分排除“早已知道”这一解释。另3期受2026目录缺口影响，保持未知。"
+        "5期更早预告均为左右近似单点，不是明确区间，无法按事前定义形成正负边界突破与区间覆盖的可比组；"
+        "两项主效果不可估计，不得写成超预期机制已被证伪。5个最早预告事件的涨跌方向与公告预增预减并不一一对应，且样本极少、已见并受其他信息影响。"
+    )
+    next_step = (
+        "当前标的与窗口下，停止追加财务直接入场路线的阈值、持有期或模型搜索；不把财务默认为有效风险过滤器。"
+        "保留财务原文资产与未知项，未来只有取得新的、可核时点的预期对照及足够可比较的事件，并提出能改变判断的固定问题时再审议重启。"
+        "本次不推进新的阶段三策略，不暂停或改写其他历史研究路线及候选资格。"
+    )
+    judgment = {"status": "COMPLETE_BOUNDED_DIAGNOSIS_WITH_SOURCE_AND_IDENTIFICATION_LIMITS",
+                "conclusion": conclusion, "recommendation": "STOP_DIRECT_FINANCIAL_ENTRY_ROUTE_FOR_CURRENT_DATA",
+                "next_step": next_step, "catalogue_complete": False,
+                "certified_earlier_chain_reports": 24, "prior_approximate_guidance_reports": 5,
+                "no_prior_in_certified_scoped_chain_reports": 19, "unknown_reports": 3,
+                "unknown_periods": ["20251231", "20260331", "20260630"],
+                "primary_estimands": "UNAVAILABLE_NO_NUMERIC_INTERVAL_COMPARISON_ARMS_NOT_ZERO_EFFECT",
+                "already_public_explanation": "Not confirmed within the certified issuer forecast/express chain; other announcement bodies, analyst information and market-expectation channels remain unobserved, so prior market knowledge is neither established nor ruled out.",
+                "financial_information_general_value": "NOT_ESTABLISHED_OR_DISPROVED_BY_THIS_STUDY",
+                "new_supported_components": 0, "new_qualified_candidates": 0,
+                "historical_component_definitions": 28, "historical_continuous_accounts": 66,
+                "historical_all_targets_pass_count": 0, "historical_eligibility_changed": False,
+                "future_execution_authorized": False,
+                "actual_budget": dict(result["actual_budget"], catalogue_requests=64, pdf_requests=6,
+                                      new_tushare_calls=0, documentation_search_queries=2,
+                                      unique_primary_documentation_pages=2)}
+    write(EX / "others/judgment.json", judgment)
+    rows = []
+    descriptors = {"20201231": "年利润预减约68%", "20211231": "年利润预增约387%",
+                   "20220331": "一季度利润预增约54%", "20220930": "前三季利润预增约26%",
+                   "20241231": "年利润预增约70%"}
+    for event in result["first_news"]:
+        period, label = event["period"], event["label"]
+        rows.append(f"| {period} | {event['source_day']} | {descriptors[period]} | {label['stock_return20']*100:+.2f}% | {label['sector_excess_return20']*100:+.2f}% | {label['net_position_return']*100:+.2f}% |")
+    estimates = []
+    for row in ledger["reports"]:
+        if row["classification"] == "approximate_point_estimate":
+            change = row["actual_relative_to_estimate_midpoint"] * 100
+            change_label = f"{change:+.4f}%" if abs(change) >= .0001 else "绝对差异小于0.0001%"
+            estimates.append(f"| {row['period']} | {Decimal(row['estimate_midpoint_cny'])/10000:,.2f} | {Decimal(row['formal_parent_ytd_cny'])/10000:,.4f} | {change_label} |")
+    report = f"""# S014 财报相对更早预告、快报的信息增量诊断
+
+## 人话结论
+
+财务数据已经能用，但这次仍没找到值得继续加工成直接买卖指令的办法。建议当前先停这条入场路线，而不是继续换阈值、换持有天数，直到历史结果好看。
+
+这里的业绩预告是公司提前给出的业绩估计，业绩快报是正式财报之前公布的初步数据。我们先检查这些较早消息，再看正式财报增加了什么。
+
+第一，本轮没有确认“多数财报只是重复更早公司预告或快报”这一解释。在能够核实较早披露链的24期里，5期有更早利润预告，19期没有查到同期间更早的公司预告。另3期还不能完整确认，不能混作“没有预告”。这只能说明本轮查到的公司预告/快报覆盖了少数期间；其他公告正文、分析师信息和市场预期渠道尚未排除，不能把19期当成市场首次知道，也不能彻底排除提前预知的解释。
+
+第二，找得到预告，也没有自动得到清楚的买卖方向。例如，2020年年报预告利润下降约68%，按同一规则观察之后的独立含费位置却上涨约110.9%；2022年一季度预告利润增长约54%，相同口径的位置却亏损约14.1%。这两个例子不证明公告导致涨跌，只说明仅看“预增就买、预减就卖”没有得到清楚对应。全部5次结果均列在下表，没有挑有利日期。
+
+第三，本轮不能宣称“超预期也无效”。这些预告写的是“多少万元左右”，没有明确上下限；正式结果与大约数有差异，不等于突破一个明确范围。按事前约定，我们没有为它们生造范围，也没有改规则凑出对照组，所以两项主要比较无法估计。没有可比较样本，不等于效果为零。
+
+{next_step}
+
+## 研究问题、协议与边界
+
+用户明确同意研究正式报告相对更早业绩预告、快报新增什么信息，并要求用人话解释。本轮为RSCH阶段二诊断，沿用600722.SH、2020-01-01至2026-10-15已见开发历史及既有成交与经济目标。比较的是同期间累计归属于上市公司股东的净利润，即上市公司股东对应的利润；不把季度差分当成预告，不声称收入、毛利、现金流和附注也都提前公开。
+
+初始设计在新披露链及收益分析前公共发布，SHA256为`6f9ac4596b9650ec9d42cfaa7ec25106a7e858904d78ecd2ae5efe5fb21608a1`。原目录分类过滤未能限定预告、快报，产生截断；保留失败记录后，先发布有界目录修正`25c8328d9d7b3c51359114f63342b8802ab123f976c2f5d87f6ade912b51ab64`，再按季度及必要日期叶片核对全公司目录。最终残留缺口后，又在新分类/收益生成前发布逐期前缀依赖解释`604226dc449b4a9d1e54d3ade4d7d6b155996dd0a370e11b42d27eccee0d2fc7`：缺口只让依赖该日期范围的记录保持未知，不能让未来2026缺口倒过来污染2020信息。未改变分类、窗口或主比较。
+
+金额及版本均从官方原文认证。公开日取官方目录和正文签名日较晚者，严格下一上交所交易日收盘才决策，再下一交易日执行；更早信息要求公开日和可交易决策簇均严格更早。同一决策簇合并，保留27报告期而只使用25个最新报告期事件作为主状态。该日期政策不证明供应商历史入库时间或即时公告交易能力，整个历史也不是新封存样本。
+
+## 披露覆盖和未知项
+
+取得6份原始预告、12页原文，其中1份为2018年报预告，保留作范围内背景，不冒充27期评价事件。5份对应评价期间；均为带“左右”措辞的近似单点，明确上下区间0，检出快报0。旧供应商5条预告仅用于单位和舍入对照，快报空表从来不当作没有快报的证据。四个更正/补充标题逐一审查，三项为股权或法律事项，另一项2018年报更正复用既有原文，未见本轮已检索预告金额替换。
+
+目录共64次请求，原文下载6次，均无重试或重定向，新Tushare请求0；另有2次文档检索及2个官方文档页面。最终40个日期叶片应有605条，实际取得去重600条，尚缺5条；唯一截断叶片为2026-04-01至2026-04-23。不能因为已返回30条都在4月15日，就假定未返回的5条也在那天。
+
+按每期正式公开日之前的完整目录依赖认证：24期可核实，19期未检出同期间较早公司预告、5期有近似点预告；2025年报、2026Q1、2026H1共3期未知。25个最新报告期事件分别为19个无检出、3个近似点、3个未知，因为两组同日年报与Q1均保留年报记录但不增加独立事件。2026的未知事件照样保留价格和亏损标签，不能删掉以后宣称效果改善。
+
+上述“未检出”仅指本轮官方公司预告/快报披露链，不证明市场首次得知业绩，也不排除分析师估计、行业信息、经营公告或股价自身已经反映预期。目录与更正原文的具体引用见实验`others/catalogue_audit_v3.json`、`others/guidance_facts.json`及`others/report_information_ledger.json`。
+
+## 预告估计与正式利润
+
+以下均为同期间累计归母利润，单位万元。差异仅说明估计误差，不能把“左右”点值的误差改叫明确区间突破。
+
+| 报告期 | 原文近似预告 | 正式原始利润 | 正式相对估计差异 |
+| --- | ---: | ---: | ---: |
+{chr(10).join(estimates)}
+
+其中2022Q3正式值与预告估计仅相差4.09元。供应商还会将原文带小数的万元数舍入为整数万元；5条旧记录与原文差值均在0.5万元内，这只是数据表示核对，不是新增交易阈值。原文金额、单位、精度和“左右”措辞优先。
+
+## 提前预告之后的固定观察
+
+固定20个上交所交易日，不搜索其他期限。价格收益为执行日开盘至第20日收盘，行业超额减同期行业指数；含费位置采用前收盘上浮1%的次日限价、100股整手、10万元单次预算、每侧0.1%费用及公共TXE每日区间成交规则，持有20个交易日后在其后交易日市价退出，受限时顺延。它们是各自独立事件位置，不是复利账户或可验收年度收益。
+
+| 期间 | 预告公开日 | 原文方向（约数） | 个股20日价格收益 | 行业超额 | 含费位置收益 |
+| --- | --- | --- | ---: | ---: | ---: |
+{chr(10).join(rows)}
+
+5次均按固定限价成交、计划日退出，5个位置也不能称为5个独立封存验证。2020年报预告后涨幅极大，不能用5次平均数包装稳定规律；没有为“利好、利空”另拟模型或挑选交易日。预告的20日窗口可能包含后续正式财报等新信息，尤其2022Q3的预告和正式公告仅隔2天，不能把全部窗口涨跌归因于预告。预告决策收盘到正式公告日严格之前最后交易日收盘的路径也一并保存，但其终点事后才知道，不能当作预先知道财报日期的持有规则。
+
+## 主要比较为何不可估计
+
+事前的两项比较为：明确正向突破先前数值范围的事件减明确落在范围内事件，以及明确负向突破事件减范围内事件，目标均为原EX036固定20日行业超额。近似点预告与来源未知项单独保留，不填零；边界重叠也不当作范围内。实际两项都没有必要的比较组，效果和区间为null，重抽次数0。不能写成“零收益”“没有统计显著性”或“超预期机制已被证伪”。
+
+原协议收缩舍入区间还会使点值快报不能进入covered组，即使打印值相同也归为边界重叠。本轮未取得快报、全部预告又都是近似点，因此此限制没有被事后改宽来凑样本。将来若有新的可比较证据，应另作事前设计。
+
+25事件的完整描述组仍全部保留：较早近似点组3事件含费位置均值+5.833%，无检出组19事件+1.932%，来源未知组3事件中2次成交均值-20.648%、1次未成交。它们不是新增主比较，不可从这三组差异推断信息价值；未知组恰为2026，尤其不能在删去未知后声称通过了原年度目标。
+
+## 独立复核、交付与下一步
+
+正式27期原始累计利润、上年同期利润及总资产均已复核原文/RecordId，公共DFLS离线读取两类财务和七组市场固定引用。新first-news辅助计算先复算原有25日期，价格、成交、费用和未成交现金语义一致。另一个独立实现对5条first-news完成148项检查，价格、行业差、低点、限价数量、费用余额、公共TXE成交和正式公告前路径一致；独立原文/覆盖/分类审查通过。审计不新增拟合或账户。
+
+本轮新增5条固定事件描述，新模型0、连续策略账户0、候选0、获支持组件0；原28项定义、66连续研究账户及0全目标达标事实、候选资格保持。正式COMPONENTS/20以PARTIAL明确来源及可识别性局限：已执行问题诊断，不是完整披露链认证、可用组件认证、年度目标达成或新阶段三授权。原财务F1/F2负面证据仍由COMPONENTS/19保留。
+
+{conclusion}
+
+建议当前停下的是“把财务做成直接进出场按钮”这条路线；财务能否作为其他交易机制的背景条件尚未验证，不能默认有效。若继续研究，应先提出有独立信息依据、能改变判断的新问题，再审议其具体数据和执行范围。
+"""
+    with (EX / "protocols/report.md").open("x", encoding="utf-8", newline="\n") as stream:
+        stream.write(report)
+    write(EX / "others/materials_manifest.json", {
+        "status": "PASS", "report_sha256": sha256((EX / "protocols/report.md").read_bytes()).hexdigest(),
+        "judgment_sha256": sha256((EX / "others/judgment.json").read_bytes()).hexdigest(),
+        "independent_review_sha256": sha256((EX / "others/independent_review.json").read_bytes()).hexdigest(),
+        "first_news_audit_sha256": sha256((EX / "others/first_news_audit.json").read_bytes()).hexdigest(),
+    })
+    print(json.dumps({"status": "PASS", "reports_certified": 24, "unknown": 3,
+                      "new_supported": 0, "recommendation": judgment["recommendation"]}))
+
+
+if __name__ == "__main__":
+    main()

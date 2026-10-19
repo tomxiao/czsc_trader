@@ -1,0 +1,762 @@
+{
+  "status": "FIXED_INFORMATION_CHAIN_ANALYSIS_COMPLETE",
+  "reports": 27,
+  "events": 25,
+  "catalogue_complete": false,
+  "report_class_counts": {
+    "no_prior_in_scoped_catalogue": 19,
+    "approximate_point_estimate": 5,
+    "unknown": 3
+  },
+  "reports_with_complete_required_prefix": 24,
+  "reports_with_incomplete_required_prefix": 3,
+  "event_class_counts": {
+    "no_prior_in_scoped_catalogue": 19,
+    "approximate_point_estimate": 3,
+    "unknown": 3
+  },
+  "primary_comparisons": [
+    {
+      "target": "sector_excess_return20",
+      "first": {
+        "class": "positive_new",
+        "events": 0,
+        "event_ids": [],
+        "blocks": [],
+        "event_mean": null,
+        "block_mean": null
+      },
+      "second": {
+        "class": "covered",
+        "events": 0,
+        "event_ids": [],
+        "blocks": [],
+        "event_mean": null,
+        "block_mean": null
+      },
+      "event_difference": null,
+      "block_difference": null,
+      "requested_bootstrap_draws": 10000,
+      "seed": 13,
+      "actual_bootstrap_draws": 0,
+      "status": "INSUFFICIENT_GROUPS_FOR_DESCRIPTIVE_CI",
+      "percentile95": null,
+      "bootstrap_valid": null,
+      "bootstrap_invalid": null,
+      "reason": "Each comparison arm requires at least2 distinct contributing blocks; no fabricated interval.",
+      "id": "NEW_POSITIVE_VS_COVERED",
+      "declared_direction": "positive"
+    },
+    {
+      "target": "sector_excess_return20",
+      "first": {
+        "class": "negative_new",
+        "events": 0,
+        "event_ids": [],
+        "blocks": [],
+        "event_mean": null,
+        "block_mean": null
+      },
+      "second": {
+        "class": "covered",
+        "events": 0,
+        "event_ids": [],
+        "blocks": [],
+        "event_mean": null,
+        "block_mean": null
+      },
+      "event_difference": null,
+      "block_difference": null,
+      "requested_bootstrap_draws": 10000,
+      "seed": 13,
+      "actual_bootstrap_draws": 0,
+      "status": "INSUFFICIENT_GROUPS_FOR_DESCRIPTIVE_CI",
+      "percentile95": null,
+      "bootstrap_valid": null,
+      "bootstrap_invalid": null,
+      "reason": "Each comparison arm requires at least2 distinct contributing blocks; no fabricated interval.",
+      "id": "NEW_NEGATIVE_VS_COVERED",
+      "declared_direction": "negative"
+    }
+  ],
+  "influence": {
+    "NEW_POSITIVE_VS_COVERED": {
+      "leave_one_block_out": [
+        {
+          "removed_block": "B01",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B02",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B03",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B04",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B05",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B06",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B07",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B08",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B09",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B10",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B11",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B12",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B13",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B14",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B15",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B16",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B17",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B18",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B19",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B20",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B21",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        }
+      ],
+      "fixed_subsets": [
+        {
+          "subset": "remove_top_abs_target_1",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "remove_top_abs_target_3",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "exclude2026_complete_endpoints",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2020",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2021",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2022",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2023",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2024",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2025",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2026",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        }
+      ]
+    },
+    "NEW_NEGATIVE_VS_COVERED": {
+      "leave_one_block_out": [
+        {
+          "removed_block": "B01",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B02",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B03",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B04",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B05",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B06",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B07",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B08",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B09",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B10",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B11",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B12",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B13",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B14",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B15",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B16",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B17",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B18",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B19",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B20",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "removed_block": "B21",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        }
+      ],
+      "fixed_subsets": [
+        {
+          "subset": "remove_top_abs_target_1",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "remove_top_abs_target_3",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "exclude2026_complete_endpoints",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2020",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2021",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2022",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2023",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2024",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2025",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        },
+        {
+          "subset": "2026",
+          "first_n": 0,
+          "covered_n": 0,
+          "effect": null
+        }
+      ]
+    }
+  },
+  "fixed_group_descriptive": [
+    {
+      "class": "approximate_point_estimate",
+      "events": 3,
+      "event_ids": [
+        "FIN_20220429",
+        "FIN_20221024",
+        "FIN_20250414"
+      ],
+      "stock_return20_mean": 0.0670794949877072,
+      "sector_excess_return20_mean": 0.012831287260635165,
+      "net_position_return_mean_filled_only": 0.05833168533825169,
+      "filled_positions": 3,
+      "no_trade": 0
+    },
+    {
+      "class": "no_prior_in_scoped_catalogue",
+      "events": 19,
+      "event_ids": [
+        "FIN_20200306",
+        "FIN_20200420",
+        "FIN_20200810",
+        "FIN_20201028",
+        "FIN_20210429",
+        "FIN_20210809",
+        "FIN_20211025",
+        "FIN_20220815",
+        "FIN_20230417",
+        "FIN_20230504",
+        "FIN_20230817",
+        "FIN_20231030",
+        "FIN_20240415",
+        "FIN_20240429",
+        "FIN_20240829",
+        "FIN_20241028",
+        "FIN_20250506",
+        "FIN_20250901",
+        "FIN_20251030"
+      ],
+      "stock_return20_mean": 0.01683739480136331,
+      "sector_excess_return20_mean": 0.0199255382253405,
+      "net_position_return_mean_filled_only": 0.01932354110748862,
+      "filled_positions": 19,
+      "no_trade": 0
+    },
+    {
+      "class": "unknown",
+      "events": 3,
+      "event_ids": [
+        "FIN_20260416",
+        "FIN_20260506",
+        "FIN_20260828"
+      ],
+      "stock_return20_mean": -0.1510097414733384,
+      "sector_excess_return20_mean": -0.05276091907344634,
+      "net_position_return_mean_filled_only": -0.20647923108456817,
+      "filled_positions": 2,
+      "no_trade": 1
+    }
+  ],
+  "first_news": [
+    {
+      "period": "20201231",
+      "first_doc_ids": [
+        "1209202480"
+      ],
+      "source_day": "2021-01-28",
+      "formal_source_day": "2021-04-28",
+      "first_source_urls": [
+        "https://static.cninfo.com.cn/finalpage/2021-01-28/1209202480.PDF"
+      ],
+      "formal_event_id": "FIN_20210429",
+      "label": {
+        "decision_date": "2021-01-29",
+        "entry_date": "2021-02-01",
+        "price_end_date": "2021-03-05",
+        "planned_exit_date": "2021-03-08",
+        "net_position_return": 1.1093504833117023,
+        "event_cash_equity_return": 1.1024089999999998,
+        "status": "COMPLETE",
+        "stock_return20": 1.1634349030470914,
+        "sector_return20": -0.018753250862351467,
+        "sector_excess_return20": 1.182188153909443,
+        "mae20": -0.0027700831024929373,
+        "buy_limit_raw": 3.63,
+        "order_quantity": 27500,
+        "entry_factor": 5.892,
+        "buy_fill_reason": "FILLED",
+        "execution_status": "CLOSED",
+        "entry_price_raw": 3.61,
+        "buy_cost_including_fee": 99374.275,
+        "filled_quantity": 27500,
+        "cash_leftover": 625.7250000000058,
+        "actual_exit_date": "2021-03-08",
+        "exit_delay_sessions": 0,
+        "exit_price_raw": 7.63
+      },
+      "source_accounting_admitted": true,
+      "required_chain_prefix_complete": true,
+      "guidance_decision_close_to_preformal_close_stock_return": 0.6611111111111112,
+      "guidance_decision_close_to_preformal_close_sector_excess": 0.7273182433538017,
+      "preformal_date": "2021-04-27"
+    },
+    {
+      "period": "20211231",
+      "first_doc_ids": [
+        "1212276492"
+      ],
+      "source_day": "2022-01-26",
+      "formal_source_day": "2022-04-28",
+      "first_source_urls": [
+        "https://static.cninfo.com.cn/finalpage/2022-01-26/1212276492.PDF"
+      ],
+      "formal_event_id": "FIN_20220429",
+      "label": {
+        "decision_date": "2022-01-27",
+        "entry_date": "2022-01-28",
+        "price_end_date": "2022-03-03",
+        "planned_exit_date": "2022-03-04",
+        "net_position_return": 0.17881230669863002,
+        "event_cash_equity_return": 0.17635100000000015,
+        "status": "COMPLETE",
+        "stock_return20": 0.18472468916518636,
+        "sector_return20": 0.0214882717417193,
+        "sector_excess_return20": 0.16323641742346706,
+        "mae20": 0.0,
+        "buy_limit_raw": 5.68,
+        "order_quantity": 17500,
+        "entry_factor": 5.892000000000001,
+        "buy_fill_reason": "FILLED",
+        "execution_status": "CLOSED",
+        "entry_price_raw": 5.63,
+        "buy_cost_including_fee": 98623.525,
+        "filled_quantity": 17500,
+        "cash_leftover": 1376.4750000000058,
+        "actual_exit_date": "2022-03-04",
+        "exit_delay_sessions": 0,
+        "exit_price_raw": 6.65
+      },
+      "source_accounting_admitted": true,
+      "required_chain_prefix_complete": true,
+      "guidance_decision_close_to_preformal_close_stock_return": -0.11722912966252219,
+      "guidance_decision_close_to_preformal_close_sector_excess": 0.08651606764096731,
+      "preformal_date": "2022-04-27"
+    },
+    {
+      "period": "20220331",
+      "first_doc_ids": [
+        "1212897267"
+      ],
+      "source_day": "2022-04-13",
+      "formal_source_day": "2022-04-28",
+      "first_source_urls": [
+        "https://static.cninfo.com.cn/finalpage/2022-04-13/1212897267.PDF"
+      ],
+      "formal_event_id": "FIN_20220429",
+      "label": {
+        "decision_date": "2022-04-14",
+        "entry_date": "2022-04-15",
+        "price_end_date": "2022-05-17",
+        "planned_exit_date": "2022-05-18",
+        "net_position_return": -0.14132944977100814,
+        "event_cash_equity_return": -0.1385621399999999,
+        "status": "COMPLETE",
+        "stock_return20": -0.1379870129870131,
+        "sector_return20": -0.030361611628165974,
+        "sector_excess_return20": -0.10762540135884713,
+        "mae20": -0.2500000000000001,
+        "buy_limit_raw": 6.26,
+        "order_quantity": 15900,
+        "entry_factor": 5.8919999999999995,
+        "buy_fill_reason": "FILLED",
+        "execution_status": "CLOSED",
+        "entry_price_raw": 6.16,
+        "buy_cost_including_fee": 98041.94399999999,
+        "filled_quantity": 15900,
+        "cash_leftover": 1958.0560000000114,
+        "actual_exit_date": "2022-05-18",
+        "exit_delay_sessions": 0,
+        "exit_price_raw": 5.3
+      },
+      "source_accounting_admitted": true,
+      "required_chain_prefix_complete": true,
+      "guidance_decision_close_to_preformal_close_stock_return": -0.19838709677419353,
+      "guidance_decision_close_to_preformal_close_sector_excess": -0.07110925682259472,
+      "preformal_date": "2022-04-27"
+    },
+    {
+      "period": "20220930",
+      "first_doc_ids": [
+        "1214822760"
+      ],
+      "source_day": "2022-10-19",
+      "formal_source_day": "2022-10-21",
+      "first_source_urls": [
+        "https://static.cninfo.com.cn/finalpage/2022-10-19/1214822760.PDF"
+      ],
+      "formal_event_id": "FIN_20221024",
+      "label": {
+        "decision_date": "2022-10-20",
+        "entry_date": "2022-10-21",
+        "price_end_date": "2022-11-17",
+        "planned_exit_date": "2022-11-18",
+        "net_position_return": 0.001931139726415232,
+        "event_cash_equity_return": 0.0019050800000000034,
+        "status": "COMPLETE",
+        "stock_return20": 0.003937007874015741,
+        "sector_return20": 0.006285335360646904,
+        "sector_excess_return20": -0.002348327486631163,
+        "mae20": -0.053149606299212615,
+        "buy_limit_raw": 5.13,
+        "order_quantity": 19400,
+        "entry_factor": 5.892,
+        "buy_fill_reason": "FILLED",
+        "execution_status": "CLOSED",
+        "entry_price_raw": 5.08,
+        "buy_cost_including_fee": 98650.552,
+        "filled_quantity": 19400,
+        "cash_leftover": 1349.448000000004,
+        "actual_exit_date": "2022-11-18",
+        "exit_delay_sessions": 0,
+        "exit_price_raw": 5.1
+      },
+      "source_accounting_admitted": true,
+      "required_chain_prefix_complete": true,
+      "guidance_decision_close_to_preformal_close_stock_return": 0.0,
+      "guidance_decision_close_to_preformal_close_sector_excess": 0.0,
+      "preformal_date": "2022-10-20"
+    },
+    {
+      "period": "20241231",
+      "first_doc_ids": [
+        "1222379567"
+      ],
+      "source_day": "2025-01-21",
+      "formal_source_day": "2025-04-12",
+      "first_source_urls": [
+        "https://static.cninfo.com.cn/finalpage/2025-01-21/1222379567.PDF"
+      ],
+      "formal_event_id": "FIN_20250414",
+      "label": {
+        "decision_date": "2025-01-22",
+        "entry_date": "2025-01-23",
+        "price_end_date": "2025-02-27",
+        "planned_exit_date": "2025-02-28",
+        "net_position_return": 0.09532150449932475,
+        "event_cash_equity_return": 0.09481569999999984,
+        "status": "COMPLETE",
+        "stock_return20": 0.09751434034416806,
+        "sector_return20": 0.048984198628637454,
+        "sector_excess_return20": 0.048530141715530606,
+        "mae20": -0.009560229445507051,
+        "buy_limit_raw": 5.24,
+        "order_quantity": 19000,
+        "entry_factor": 5.892,
+        "buy_fill_reason": "FILLED",
+        "execution_status": "CLOSED",
+        "entry_price_raw": 5.23,
+        "buy_cost_including_fee": 99469.37000000001,
+        "filled_quantity": 19000,
+        "cash_leftover": 530.6299999999901,
+        "actual_exit_date": "2025-02-28",
+        "exit_delay_sessions": 0,
+        "exit_price_raw": 5.74
+      },
+      "source_accounting_admitted": true,
+      "required_chain_prefix_complete": true,
+      "guidance_decision_close_to_preformal_close_stock_return": -0.06358381502890176,
+      "guidance_decision_close_to_preformal_close_sector_excess": -0.03593765191001741,
+      "preformal_date": "2025-04-11"
+    }
+  ],
+  "main_claim_limit": "Covered is a prior-headline numerical-boundary statement, not no new financial information; no observed issuer preview is not absence of market expectations.",
+  "point_express_limitation": "The preregistered inner interval is empty for any point-valued express with positive printed quantum; exact point consistency remains boundary overlap. No post-result relaxation.",
+  "actual_budget": {
+    "new_model_fits": 0,
+    "new_continuous_accounts": 0,
+    "new_candidates": 0,
+    "threshold_searches": 0,
+    "alternate_horizons": 0,
+    "primary_contrasts": 2,
+    "actual_bootstrap_draws": 0,
+    "first_news_labels": 5
+  },
+  "source_hashes": {
+    "research/S014/experiments/EX037_20261019/src/analyze_information.py": "15288deea7c332e62f6b4c1b34a9e403bc8c70376bc230ff38f5df9391a7a38e",
+    "research/S014/experiments/EX037_20261019/src/information_math.py": "4abeaf1291a5264570dcc5f337e339fd01b4f9838b85e5554220b0ff0f626b5e",
+    "research/S014/experiments/EX037_20261019/others/formal_report_ledger.json": "1e9ffc2b4d1c8f4506a23a82916ccf10a4c5e6a6f0f0f44ff555351ff477e7b9",
+    "research/S014/experiments/EX037_20261019/others/guidance_facts.json": "73e5bde5da70bd619c39bcf753bbab101a25835db7eda2b72196f301a87554c9",
+    "research/S014/experiments/EX037_20261019/others/catalogue_audit_v3.json": "b26d82094d71d078707d4ea6fa5f18f2e502bb45595c2991cf7fb7fb07e261ed",
+    "research/S014/experiments/EX036_20261019/others/event_panel.csv": "7d4423f75ef582eee57b91afd60949d7df6f277333e11efed16ade5a42508b9d",
+    "research/S014/experiments/EX036_20261019/others/statistics.json": "f0e094cb124ed030155caa2efbe342dbaa76e3dab1495c3dddb96dc1d099d23a",
+    "research/S014/experiments/EX036_20261019/others/market_inputs.json": "b2157d58f12d26640176267887e7ba277505cd0a93bc8a78c318b9285e7131f7"
+  }
+}

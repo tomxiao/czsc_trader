@@ -671,12 +671,12 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "597a4c77810a4d19c0361aed47a2367ca37ee8215db807b847da2756fbed1762",
-      "revision": 19,
+      "content_sha256": "25f65c53b131119277edaee807acb150ef2ddc152cd347cf24a6b03181a0f9c2",
+      "revision": 20,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
-    "conclusion": "财务原文与保守可用时点准备已完成，阶段二固定F1/F2检验已执行并独立复算。F1行业超额均值差+3.165个百分点，但相对归母利润改善对照为-0.061个百分点、8个正向事件中7个重合，前推误差未改善；F2在F1正向事件内的主风险效果-1.345个百分点，与预期方向相反，全事件+2.071个百分点但不稳定。四项描述性区间均跨零，本轮新增获支持组件0，不建议据此推进新的财务策略构造；该结论仅限固定表达与已见样本。",
+    "conclusion": "本轮没有找到足以继续开发直接财务买卖信号的新证据。已能核实披露链的24期中，5期有更早的利润预告、19期未找到更早同期间预告；本轮已核实的公司预告/快报链没有确认多数事件的归母利润已被提前披露；其他公告正文、分析师信息和市场预期渠道仍未排除，不能确认或充分排除“早已知道”这一解释。另3期受2026目录缺口影响，保持未知。5期更早预告均为左右近似单点，不是明确区间，无法按事前定义形成正负边界突破与区间覆盖的可比组；两项主效果不可估计，不得写成超预期机制已被证伪。5个最早预告事件的涨跌方向与公告预增预减并不一一对应，且样本极少、已见并受其他信息影响。",
     "confirmed_contract": "research/S014/experiments/EX003_20261016/protocols/confirmed_contract.json",
     "current_data_authorization": {
       "actual_source_calls": 0,
@@ -1578,6 +1578,80 @@
         "type": "EvidenceRef"
       },
       "status": "COMPLETE_FIXED_TWO_MECHANISM_ROUND"
+    },
+    "financial_information_increment_diagnosis": {
+      "actual_budget": {
+        "actual_bootstrap_draws": 0,
+        "alternate_horizons": 0,
+        "catalogue_requests": 64,
+        "documentation_search_queries": 2,
+        "first_news_labels": 5,
+        "new_candidates": 0,
+        "new_continuous_accounts": 0,
+        "new_model_fits": 0,
+        "new_tushare_calls": 0,
+        "pdf_requests": 6,
+        "primary_contrasts": 2,
+        "threshold_searches": 0,
+        "unique_primary_documentation_pages": 2
+      },
+      "authorization": "同意，研究后用人话解释结论",
+      "batch_pause_or_retirement": "NOT_REQUESTED_OR_CHANGED",
+      "catalogue_complete": false,
+      "certified_prefix_reports": 24,
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "25f65c53b131119277edaee807acb150ef2ddc152cd347cf24a6b03181a0f9c2",
+        "revision": 20,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX037_20261019",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "future_execution_authorized": false,
+      "historical_eligibility_changed": false,
+      "historical_phase_flags_scope": "旧轮次全局阶段字段保留；不得当作本轮财务路线支持或新阶段三授权",
+      "judgment": {
+        "evidence_id": "448743a1d3deb7141f69460f74a4c1945888c20e553e82961b2b42d094b70178.json",
+        "experiment": {
+          "experiment_id": "EX037_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex037-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "448743a1d3deb7141f69460f74a4c1945888c20e553e82961b2b42d094b70178",
+        "type": "EvidenceRef"
+      },
+      "new_supported_components": 0,
+      "next_step": "当前标的与窗口下，停止追加财务直接入场路线的阈值、持有期或模型搜索；不把财务默认为有效风险过滤器。保留财务原文资产与未知项，未来只有取得新的、可核时点的预期对照及足够可比较的事件，并提出能改变判断的固定问题时再审议重启。本次不推进新的阶段三策略，不暂停或改写其他历史研究路线及候选资格。",
+      "phase_three_recommended": false,
+      "primary_effects": "UNAVAILABLE_NOT_ZERO_OR_FALSIFIED",
+      "recommendation": "STOP_DIRECT_FINANCIAL_ENTRY_ROUTE_FOR_CURRENT_DATA",
+      "results": {
+        "evidence_id": "5c9308c818625a929984ae551d5a5534f4e10a2163341f0bf1070a3830978f4d.json",
+        "experiment": {
+          "experiment_id": "EX037_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex037-others-information_results-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "5c9308c818625a929984ae551d5a5534f4e10a2163341f0bf1070a3830978f4d",
+        "type": "EvidenceRef"
+      },
+      "status": "COMPLETE_BOUNDED_DIAGNOSIS_WITH_SOURCE_AND_IDENTIFICATION_LIMITS",
+      "unknown_reports": 3
     },
     "financial_input_readiness": {
       "authorization": "增补财务数据的目标是希望研究能重新进入阶段二，请你自主完成进入阶段二之前的工作",
@@ -5743,7 +5817,7 @@
       "original_pdfs": 32
     },
     "pending": [
-      "保持阶段二，停止对这两个固定表达追加邻近阈值或持有期搜索。如继续财务路线，优先审议‘报告相对更早业绩预告/快报的新信息’的完整披露链补证方案；新增数据范围和执行预算需另行确认。"
+      "当前标的与窗口下，停止追加财务直接入场路线的阈值、持有期或模型搜索；不把财务默认为有效风险过滤器。保留财务原文资产与未知项，未来只有取得新的、可核时点的预期对照及足够可比较的事件，并提出能改变判断的固定问题时再审议重启。本次不推进新的阶段三策略，不暂停或改写其他历史研究路线及候选资格。"
     ],
     "phase_four_approved": false,
     "phase_three_approved": true,
@@ -5937,7 +6011,7 @@
       "native_threads_per_worker": 1,
       "remaining_source_calls": 0
     },
-    "stage": "阶段二财务固定双机制检验完成：本轮无新增获支持组件，等待下一研究问题决定",
+    "stage": "阶段二财务披露增量诊断完成：直接财务入场路线建议停止追加，三期来源未知保留",
     "stage_three_authorization": {
       "experiment": {
         "experiment_id": "EX017_20261017",
@@ -6190,5 +6264,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-19T10:38:42+08:00"
+  "updated_at": "2026-10-19T11:39:49+08:00"
 }

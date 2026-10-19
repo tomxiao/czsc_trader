@@ -1,0 +1,109 @@
+{
+  "status": "AUTHORIZED_DESIGN_BEFORE_NEW_CHAIN_OR_OUTCOME_ANALYSIS",
+  "experiment": "EX037_20261019",
+  "authorization": "用户对正式报告相对预告/快报新增信息研究回复：同意，研究后用人话解释结论。",
+  "branch": "codex/s014-jinniu-research; continue existing approved research branch",
+  "baseline_commit": "0d0d6c07b34d4946952b62b350c1d79f409529aa",
+  "research_question": "Same-period parent-attributable YTD profit: what was already publicly disclosed before the formal report, what is genuinely additional at that report, and is the fixed additional information associated with executable forward returns?",
+  "scope": {
+    "symbol": "600722.SH",
+    "market_window": [
+      "2020-01-01",
+      "2026-10-15"
+    ],
+    "catalogue_window": [
+      "2019-01-01",
+      "2026-10-15"
+    ],
+    "formal_reports": "27 original-certified financial periods, 2019 annual through 2026H1, all preserved; same decision date clusters combine to25 existing events",
+    "headline_only": "Certified consolidated parent-attributable YTD profit; not proof that revenue, margin, cashflow, notes or all financial information was already known",
+    "no_platform_changes": true,
+    "new_continuous_strategy_accounts": 0,
+    "new_candidates": 0,
+    "model_fits": 0,
+    "threshold_grids": 0,
+    "alternate_return_horizons": 0
+  },
+  "fixed_resources": {
+    "official_catalogue_http_cap": 16,
+    "official_pdf_http_cap": 48,
+    "new_tushare_calls": 0,
+    "documentation_search_queries_and_opened_pages": 4,
+    "max_workers": 2,
+    "pdf_download_workers": 4,
+    "native_threads_per_worker": 1,
+    "seed": 13,
+    "bootstrap_draws_per_primary_contrast": 10000,
+    "retry": false,
+    "redirect": false,
+    "failures": "Reserve before wire call; failed attempts counted; no implicit restart or replay. Uncertified coverage or unreadable accounting scope remains UNKNOWN, not no prior guidance."
+  },
+  "source_collection": {
+    "reuse": [
+      "EX036 pinned market inputs and complete 25 event labels",
+      "20261019_financial_readiness accepted_financial_inputs and official financial originals",
+      "20261018_financial_feasibility forecast5 and express0 raw responses as nonexhaustive cross-check only"
+    ],
+    "official": "CNInfo same issuer official catalogue and original PDFs; initial8 annual keyword业绩 queries plus4 two-year forecast/express category queries; remaining4 only to resolve truncation/date partitions, never page replay",
+    "union": "Retain all guidance/express/revisions/supplements within scope. Complete means each actual scoped query has full unique IDs equal to provider total, no hasMore/truncation and valid issuer/date boundaries; does not certify unavailable vendor vintages or unrelated titles outside this scoped catalogue.",
+    "document_admission": "Original text must identify report period, parent-attributable profit, amount or numeric interval, RMB unit and document date. Cross-check catalogue publication day against text signature; conflicting clock or basis => explicitly unavailable pending original review. Preserve old and corrected guidance as separate facts."
+  },
+  "timing": {
+    "source_day": "max(official catalogue publication day, document signature day when later); catalog epoch decoded Asia/Shanghai",
+    "decision": "first strictly later SSE session at15:00; following session execution, same conservative policy asEX036",
+    "prior_information": "guidance source_day strictly earlier than financial original source_day AND guidance decision session strictly earlier than formal decision; same decision cluster not called independently earlier tradable information",
+    "same_period": "Compare YTD parent-attributable profit for identical report period, never subtract forecast endpoints to invent quarter forecasts",
+    "latest": "Use latest admitted earlier guidance or express by source day; same-day contradictory versions unresolved unless explicit replacement order is documented. Preserve first/latest chain and every intervening revision.",
+    "strict_vendor_PIT": false,
+    "history": "All S014 market history already seen; reusedEX036 outcomes known before this design. This is a new fixed explanatory question on seen development data, not an independent holdout."
+  },
+  "fixed_information_classes": {
+    "positive_new": "Formal actual parent profit exceeds latest admitted prior high bound after rounding allowance",
+    "negative_new": "Formal actual below latest admitted prior low bound after rounding allowance",
+    "covered": "Actual cents interval lies securely inside every rounding-consistent prior numeric interval (lower bound plus half its printed quantum through upper bound minus half its printed quantum). This means no boundary breakout; exact final value can still narrow uncertainty. It does not mean no new information or no market surprise.",
+    "no_prior_in_scoped_catalogue": "No earlier matching guidance after complete scoped catalogue; distinct from genuine surprise. No numeric baseline/zero imputation; all other channels remain unobserved",
+    "same_cluster_only": "Guidance and formal report share conservative decision cluster, no independent earlier trade opportunity",
+    "unknown": "Catalogue incomplete, amount/basis/clock conflicting or latest version unresolved; no zero filling",
+    "rounding": "Use Decimal half the least printed significant amount unit for every bound; actual financial cents use0.005yuan. Positive breakout requires actual lower interval>prior high+half-quantum; negative requires actual upper interval<prior low-half-quantum. Definite inside uses prior low+half-quantum and high-half-quantum; remaining boundary overlaps unavailable for primary classification. Explicit legally exact bounds, if any, keep stated precision. No optimized economic minimum surprise threshold.",
+    "magnitude": "signed distance outside latest interval after allowance, divided by same-period prior-year original parent profit absolute value if known and nonzero; assets-scaled distance also descriptive. Neither scale sets acceptance threshold.",
+    "rounding_boundary_overlap": "Rounding intervals overlap the earlier boundary or prior interval is too narrow to certify coverage; retain separate from covered, unknown and positive/negative breakout",
+    "approximate_point_estimate": "A forecast only says about/around/approximately a single number: retain its value and estimation error descriptively, but do not invent a hard guidance interval or admit it to either primary contrast. Ordinary forecast language with an explicit numeric lower-upper interval remains an interval."
+  },
+  "primary_tests": [
+    {
+      "id": "NEW_POSITIVE_VS_COVERED",
+      "population": "existing formal disclosure clusters with latest report-period classification, retaining all27 report-level classifications and earlier simultaneous report lineage",
+      "target": "EX036 sector_excess_return20",
+      "estimand": "event mean for positive_new minus event mean for covered; report empty groups as unavailable",
+      "expected_direction": "positive"
+    },
+    {
+      "id": "NEW_NEGATIVE_VS_COVERED",
+      "population": "same common classified formal event population",
+      "target": "EX036 sector_excess_return20",
+      "estimand": "event mean for negative_new minus event mean for covered",
+      "expected_direction": "negative"
+    }
+  ],
+  "dependence_and_diagnostics": {
+    "blocks": "Reuse fixed21 EX036 transitive overlapping event label interval blocks; sample whole blocks with common draws, report event-weight and block-equal means",
+    "CI": "95% descriptive percentile interval only when each arm contains at least2 distinct contributing blocks; invalid empty-arm resamples counted, neverzero",
+    "influence": [
+      "leave-one-block-out",
+      "exclude2026 with full endpoints<=2025-12-31",
+      "remove largest absolute target1and3 events",
+      "decision year"
+    ],
+    "no_unregistered_gate": true,
+    "rounding_sensitivity": "Also show literal printed-bound class counts so the importance of rounding is visible; do not choose the better-performing classifier"
+  },
+  "secondary_descriptive_only": {
+    "early_first_news": "For admitted first same-period forecasts/express within market window, compute same fixed20-session stock/sector price label and publicTXE isolated position label if market inputs ready; all first-news dates included, no profitable-date selection, no extra models/contrasts/CI",
+    "no_previous_guidance": "Report first-formal-without-observed-earlier-guidance population separately, without assigning surprise=0 or assuming analyst/news expectations absent",
+    "price_absorption": "For prior-guided periods show earliest-guidance-to-pre-formal price movement and formal-forward fixed20-session movement as descriptive paths; never infer causal market digestion merely from an average",
+    "unfilled": "Existing1%next-session limit, lot100, fee0.001 each side, daily-range TXE; missed orders remainNO_TRADE and missing net position return; no retry of entry",
+    "economic_boundary": "Event labels are not continuous account returns or annual/frequency acceptance. Sparse disclosures cannot by themselves meet original3trades/60sessions goal."
+  },
+  "decision_policy": "Distinguish whether disclosure chain can be reconstructed, how much headline amount was previously covered, whether fixed incremental information has forward/execution support, and whether sample can answer. No evidence or insufficient arm counts does not prove finance has no value. Stop direct financial-entry route if no supported usable incremental mechanism, retaining limits and a concrete restart condition; do not scan neighboring windows or thresholds to force a signal. An in-range final value can narrow uncertainty: never call it no financial news. Approximate point deviations are not hard interval breakouts. Prior-source type strata are descriptive and not extra searched tests.",
+  "historical_eligibility": "Preserve28 existing definitions,66 continuous research accounts,0 all-target-qualified and all historical candidate eligibility; two predeclared information comparisons do not automatically create supported components or candidate identities."
+}
