@@ -1,0 +1,127 @@
+{
+  "status": "REVIEWABLE_NEW_EX042_SOURCE_HANDOFF_NO_ACCOUNT_EXECUTED_HERE",
+  "created_at_utc": "2026-10-19T13:29:50.460321+00:00",
+  "authorization": "root directs new NOOP plus JOINT two accounts after A confirms; C owns public API execution, A independent audit. Third retained H10 mode for synthetic/source equivalence only.",
+  "question": "两处已见固定动作组合在同一原完整资金历史下的2025末结果及交互如何，是否达到原2025收益和回撤要求？",
+  "selection": "May30早退及June19退出均为已见事后诊断。联合条件设计在EX041结果前记录，执行决定在两独立臂结果后作出；不称新预测signal或独立样本。",
+  "bindings": {
+    "source": {
+      "path": "research/S014/materials/20261019_2025_action_execution/joint_method/prototype_runtime/strategies/joint_action_review.py",
+      "sha256": "8c5ec5b36149fa1bb3b5f52a468cf7b9c3dd23f16851ce44146dc95ad77bf376"
+    },
+    "precheck": {
+      "path": "research/S014/materials/20261019_2025_action_execution/joint_method/precheck.py",
+      "sha256": "f19b4ec7917bc3ab0e9dff42afd8ff9890cf974540207856addf281c8a70c03d"
+    },
+    "synthetic_receipt": {
+      "path": "research/S014/materials/20261019_2025_action_execution/joint_method/synthetic_precheck.json",
+      "sha256": "9f3ab2820ee63c15364d69b10d5aafe66f48e226c5c765280fc44bacf2495fb6"
+    },
+    "predecessor_H10_source": {
+      "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/prototype_runtime/strategies/early_cycle_review.py",
+      "sha256": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c"
+    },
+    "original_EX023_source": {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e"
+    },
+    "conditional_joint_design": {
+      "path": "research/S014/materials/20261019_2025_action_execution/conditional_joint_diagnostic_plan.json",
+      "sha256": "93daa313fc597d001ccec3068cdb03b7a33705f171ba6fb5e84de4dd8d711fe6"
+    },
+    "original_cycle_method": {
+      "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/method_plan.json",
+      "sha256": "2f0116b871058307c0829a9464fc1bf7d74b1db80a78d4c56b52bf53a730d22b"
+    },
+    "actual_observation_contract": {
+      "path": "packages/strategy_runtime/src/strategy_runtime/observation.py",
+      "sha256": "eb3ad319bbf5987b89b590bdee629a5cffcbb8f31e19040299399eb33793d625"
+    },
+    "actual_scalar_normalization": {
+      "path": "packages/strategy_runtime/src/strategy_runtime/strategy.py",
+      "sha256": "8870ed65aa4e10405fb192cff7763693996bcb7f81ab4e19045d48c384dfdcbe"
+    }
+  },
+  "factory": "JointActionStrategy",
+  "parameters": {
+    "mode": [
+      "NOOP",
+      "HOLD_ORIGINAL_CYCLE_H10",
+      "JOINT"
+    ],
+    "entry_execution_date": "2025-05-30",
+    "force_decision_date": "2025-06-19"
+  },
+  "actual_dispatch_domain": [
+    {
+      "candidate": "S014-C9900",
+      "mode": "NOOP",
+      "entry_execution_date": "2025-05-30",
+      "force_decision_date": "2025-06-19"
+    },
+    {
+      "candidate": "S014-C9901",
+      "mode": "JOINT",
+      "entry_execution_date": "2025-05-30",
+      "force_decision_date": "2025-06-19"
+    }
+  ],
+  "semantic_contract": [
+    "May30周期按该日实际BUY fill动态定位，沿用原entry i/deadline i+9/reservation i+10。仅屏蔽该周期support_break早退，原support_break保持真实；到期和既有pending优先，实际受阻续卖、卖后恢复。",
+    "联合DJune19前完整原history/target/观测与H10模式一致；相对原R的差异已经自DMay30发生，绝不谎称联合直至June19仍与R相同。",
+    "固定DJune19必须是同路径真实当日BUY成交后held、entry_index=当日i、May30cycle已真实卖出且普通原policy目标为HOLD=1/no exit_pending，entry/deadline/reservation正确，才允许固定干预。",
+    "当日只新增下一session真实整仓SELL意图，把target=0/exit_pending=true；保留实际新仓原entry/deadline/reservation。真实持仓数量由原资金和订单引擎决定，不能硬编码原37900或预设48200。",
+    "停牌/跌停卖出不成交时pending继续，跨原到期和预约日也不能清单或另买；实际卖出后原policy与绝对预约恢复。",
+    "固定June19节点缺失、买单未成交、旧仓并非当日新BUY、已原support退出或其他资格不满足时抛UnsupportedJointNodeError并标UNSUPPORTED_FIXED_JUNE19_NODE，不重选日期或凭空补仓。",
+    "所有旧/新增观测列在calculate_history显式astype(float)，史实support列不修改；actual materialize_observation使用SRT同款numpy item() scalar规范化，并保留bool负例。"
+  ],
+  "diagnostics": {
+    "previous_H10": "原10诊断列全部保留且H10模式与旧source精确相等",
+    "added": [
+      "joint_mode_active",
+      "joint_node_eligible",
+      "joint_trigger_today",
+      "joint_done",
+      "joint_target_cycle_entry_index",
+      "joint_target_deadline_index",
+      "joint_target_reservation_index",
+      "joint_sale_blocked",
+      "joint_actual_sale_today",
+      "joint_target_cycle_completed"
+    ],
+    "lifecycle": "按真实D保存joint触发、待卖受阻、实际卖出、周期完成以及原H10全部suppressed D；一个周期例外会自然改变后续多个D状态。"
+  },
+  "pure_validation": {
+    "checks": 73,
+    "actual_SRT_materializations": 264,
+    "ruff": "PASS --no-cache",
+    "NOOP": "全部原history/targets精确；普通和受阻输入两套",
+    "H10": "全部前源history/targets/诊断精确；普通和受阻输入两套",
+    "JOINT_prefix": "DJune19之前全部前H10列精确；DJune19除target_position/exit_pending外旧列精确",
+    "AST": "原5经济契约及2数据请求方法exact",
+    "boundaries": "May30入场即supportbreak、deadline优先及停牌跌停续卖；June19新买/HOLD资格及无资格拒绝；June20受阻到跨deadline/reservation仍pending；恢复原policy；前缀因果；全部数值及bool负例；严格固定参数",
+    "new_accounts_here": 0,
+    "network_attempts": 0,
+    "real_source_specific_NOOP": "NOT_EXECUTED"
+  },
+  "C_A_checks": [
+    "新source原字节复制和独立runtime closure，NOOP public预检/执行后A与原R完整经济字段、源信号审计；不能沿用EX040或EX041不同source绿灯。",
+    "真实联合至DJune19之前与已审EX041 H10经济账本和源history/targets/旧诊断exact（排除新identity字串）；DJune19实际BUY成交数量、费用、现金也same。",
+    "真实DJune19观察普通HOLD/no pending且当日BUY、May30cycle完成；下一EJune20真实当前整仓卖出，保留原六月entry/deadline/reservation及后续恢复。",
+    "原完整2020起始资金、全技术窗、原requests/PreparedData/费用/基准不变；source-specific NOOP先审通过再派joint；不新增源、账户域不含H10-only。"
+  ],
+  "terminal": {
+    "T": "2025-12-31 original close; no endpoint scan or forced liquidation",
+    "denominator": "same original2025 opening equity",
+    "interaction": "Delta_joint - Delta_EX041_H10 - Delta_EX040_FORCE, same T and same original-year opening equity; accounting description only",
+    "caution": "不能把两个独立臂差额相加代替真实联合结果；即使联合2025达标也不证明普遍rule，也未修复2022/24。"
+  },
+  "source_revision_note": "生产source只一版且SHA不变。初次67项receipt和当时测试字节保留draft_prechecks，最终测试增加6项原May30受阻/时钟边界并移动import通过lint，最终73项receipt以当前precheck SHA绑定。",
+  "prohibitions": [
+    "no real accounts dispatched by author",
+    "no platform/EX023/EX040/EX041/earlier-material writes",
+    "no new vendor/market API",
+    "no new date/model/window search",
+    "no candidate registration or deployable signal claim"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 1,
+  "first_wave_account_count": 3,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "77a3de2be622535434708120d6ae16917885a0e5ebb87d550fcba56571ff170c",
+  "source_hashes": {
+    "protocols/design.json": "e99c55c387e4f8a9929c5f0ea57d1b847468ab2782c6bd187debe19aff35073e",
+    "others/synthetic_precheck.json": "2e1275215ebfc7cc622f5c4f250238aa39d503b4ca01b9f056a9e3bcc7db4472",
+    "src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3",
+    "src/precheck.py": "324af79525a15c629620c3d3b099308a99814a00689c5f08671004ad66bfd1cb",
+    "src/run_accounts.py": "476fb0e7f1122546d9f2bfeed5672013add6c8cc5b46f0ab9153fb6d577bf6b3",
+    "src/strategy_runtime/strategies/repair_action_review.py": "264057876152bb67a49268da71e0ad1663b66a3f7a1d738e14c2d62d95fcc7a4"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "mode": "NOOP",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "NOOP",
+        "intervention_decision_date": ""
+      },
+      "candidate": "S014-C9700",
+      "runtime_sha256": "ced6e5b468abb2c5253f413f6ffd6505fa2ed1e326a1d25440803ccd959dc427",
+      "payload_sha256": "b1f5a33c8d1c81ea4c5c31dd8cbc0f36b3f62c9d23358309be2d6751a067934b",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "b1f5a33c8d1c81ea4c5c31dd8cbc0f36b3f62c9d23358309be2d6751a067934b.json",
+        "sha256": "b1f5a33c8d1c81ea4c5c31dd8cbc0f36b3f62c9d23358309be2d6751a067934b",
+        "media_type": "application/json",
+        "name": "ex040-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "SKIP_BUY_ONCE",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "SKIP_BUY_ONCE",
+        "intervention_decision_date": "2025-06-18"
+      },
+      "candidate": "S014-C9701",
+      "runtime_sha256": "7e90e0f4e4d6523ffd26a52a8a82ecdc12e5fc8ce967596cec73af64203033b0",
+      "payload_sha256": "4a09b476645dc5211c8dad26090698eda26f604912f14601cb68a14b89655776",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "4a09b476645dc5211c8dad26090698eda26f604912f14601cb68a14b89655776.json",
+        "sha256": "4a09b476645dc5211c8dad26090698eda26f604912f14601cb68a14b89655776",
+        "media_type": "application/json",
+        "name": "ex040-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 2,
+      "mode": "FORCE_SELL_ONCE",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "FORCE_SELL_ONCE",
+        "intervention_decision_date": "2025-06-19"
+      },
+      "candidate": "S014-C9702",
+      "runtime_sha256": "9e4e6dbd5282753952a4af459b9cbf3264005c9c760da61427178b00d6111f9b",
+      "payload_sha256": "a49f9518ce2315ada913bd6d56ec1a0b564ef3d80ba2f0e1898e5817cea5c843",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "a49f9518ce2315ada913bd6d56ec1a0b564ef3d80ba2f0e1898e5817cea5c843.json",
+        "sha256": "a49f9518ce2315ada913bd6d56ec1a0b564ef3d80ba2f0e1898e5817cea5c843",
+        "media_type": "application/json",
+        "name": "ex040-payload-002",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "ca5fbe52f4b940d9c634c9fcb6295ca186aec9df18abd4b87c9038a9ceb4c6cf",
+  "unique_economic_endpoint": "2025-12-31 SESSION_CLOSE"
+}

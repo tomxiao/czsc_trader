@@ -1,0 +1,59 @@
+{
+  "status": "AUTHORIZED_FIXED_SECOND_WAVE",
+  "execution_authorized": true,
+  "authorization": {
+    "path": "research/S014/materials/20261019_2025_action_execution/authorization.json",
+    "sha256": "13f2d8d09e7172321b0012ed13e5e9a290b6f30524dfa824a076fc52e794f06f"
+  },
+  "method": {
+    "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/method_plan.json",
+    "sha256": "2f0116b871058307c0829a9464fc1bf7d74b1db80a78d4c56b52bf53a730d22b"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "fixed_parameters": [
+    {
+      "mode": "NOOP",
+      "entry_execution_date": "2025-05-30"
+    },
+    {
+      "mode": "HOLD_ORIGINAL_CYCLE_H10",
+      "entry_execution_date": "2025-05-30"
+    }
+  ],
+  "unique_economic_endpoint": "2025-12-31 SESSION_CLOSE",
+  "original_full_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "planned_accounts": 2,
+  "user_numeric_account_cap": null,
+  "no_blind_retries": true,
+  "new_external_calls": 0,
+  "new_formal_registered_candidates": 0,
+  "candidate_ids": [
+    "S014-C9800",
+    "S014-C9801"
+  ],
+  "source_byte_sha256": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c",
+  "execution_contract": "unchanged EX023 C0056 capital100000 fee.001 eachside HFQ_RESEARCH/RESEARCH_UNIT LimitBuyHold complete original window/prewindow",
+  "comparison": "only actual original 2025-05-30 BUY cycle suppress support-break early exit until original entry-fixed H10 deadline; reservation unchanged, later original policy resumes",
+  "selection_history": "predeclared May30/June3 opportunity gap from observed2025; retrospective single-cycle diagnostic, no fresh signal or independent validation",
+  "no_joint_June19_arm": true,
+  "no_other_date_or_endpoint_scan": true,
+  "new_NOOP_against_original_required": true,
+  "target_entry_prefix": "same original buys/fees/cash/quantity through actual May30 filled entry; earliest decision difference May30 closing exit intent; no June3 rebuy",
+  "decomposition": "DeltaW=(F_H10-F_NOOP)+((W_H10-F_H10)-(W_NOOP-F_NOOP)); fixed original May30 inventory first true sale cash freeze, otherwise same-price end mark explicitly not cash",
+  "annual_denominator": "same original2025 opening NAV; do not combine with EX040 effects",
+  "source_review_status": "PASS_METHOD_AND_INDEPENDENT_SYNTHETIC_ONLY",
+  "independent_method_review": {
+    "path": "research/S014/materials/20261019_2025_action_execution/accounting/early_cycle_independent_method_review.json",
+    "sha256": "6ca2aa667f67a9660c273ae8cf18b6a6b4cd80d15816ba0727459b2c3cd218c7"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "status": "DEFERRED_SECOND_WAVE_METHOD_PROPOSAL_NO_IMPLEMENTATION_OR_EXECUTION",
+  "created_at_utc": "2026-10-19T13:09:17.834672+00:00",
+  "question": "在原C0056同一完整资金前史及同一May30真实持仓周期上，仅屏蔽该周期support_break早退、保留原H10到期及reservation，至2025末的原仓处置差和后续参与差是什么？",
+  "selection_history": "因已披露但本轮公告动作未覆盖的6月3日提前退出而选此已见周期；已知道B/P该周期表现，属于事后诊断，不是新信号发现或独立验证。",
+  "information_value": [
+    "原全年B/P资金、历史和其他动作不同，不能将其全年收益优势直接归给May30周期；单周期干预可控制此前路径这一关键竞争解释。",
+    "可核算原仓提前处置相对原H10处置的差，以及这笔资本差如何传到后续重新参与；不预设其足以修复2025收益缺口。",
+    "与早期C0011局部期限测量不同，待问对象是当前代表C0056、原reservation及同一资金历史；仍非新的预测信息。"
+  ],
+  "verified_original_preconditions": {
+    "published_panel": {
+      "path": "research/S014/materials/20261019_year_driver_research/state_driver_daily_panel.csv",
+      "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6.csv",
+        "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+        "media_type": "text/csv",
+        "name": "year-driver-state_driver_daily_panel-csv",
+        "schema": null,
+        "schema_version": null
+      },
+      "accessed_columns": [
+        "date",
+        "D_signal_date",
+        "D_posture",
+        "D_entry_signal",
+        "D_held_at_close",
+        "D_exit_pending",
+        "D_support_break",
+        "D_entry_index",
+        "D_deadline_index",
+        "D_reservation_index",
+        "D_holding_horizon",
+        "D_buy_filled_today",
+        "D_sell_filled_today",
+        "D_decision_id"
+      ],
+      "returns_and_wealth_outcome_columns_used": false
+    },
+    "original_entry_execution_E": "2025-05-30",
+    "original_entry_signal_D": "2025-05-29",
+    "original_support_exit_decision_D": "2025-05-30",
+    "original_support_exit_execution_E": "2025-06-03",
+    "original_exit_decision_id": "DEC-9AA555F25D9B8FD2A45F",
+    "original_exit_D_state_fields": {
+      "date": "2025-06-03",
+      "D_signal_date": "2025-05-30",
+      "D_posture": "PLAN_SELL",
+      "D_entry_signal": "0.0",
+      "D_held_at_close": "1.0",
+      "D_exit_pending": "1.0",
+      "D_support_break": "1.0",
+      "D_entry_index": "1309.0",
+      "D_deadline_index": "1318.0",
+      "D_reservation_index": "1319.0",
+      "D_holding_horizon": "10.0",
+      "D_buy_filled_today": "1.0",
+      "D_sell_filled_today": "0.0",
+      "D_decision_id": "DEC-9AA555F25D9B8FD2A45F"
+    },
+    "pinned_entry_index": 1309,
+    "original_H10_deadline_D_index": 1318,
+    "original_H10_deadline_D": "2025-06-13",
+    "earliest_original_H10_exit_E": "2025-06-16",
+    "original_reservation_index": 1319,
+    "original_reservation_calendar_date": "2025-06-16",
+    "runtime_index_warning": "原运行包含执行prewindow，记录的runtime index比1642行账本的零起点位置多1；已按原May30锚映射，不能直接拿index1318去索引账本数组。",
+    "important_clock_correction": "原6月3日卖单来自D5月30日，不把6月3日当新决策日。日历端点仅由原时钟映射；实际H10退出仍受原成交限制。",
+    "not_recomputed_here": "未读取该周期收益、未构造新账户或新退出成交。"
+  },
+  "proposed_intervention_contract": [
+    "从原2020起始资金和完整行情合同独立运行，与原May30真实入场股数、现金及所有此前经济前缀一致，不从该日重置资金。",
+    "仅对entry_index=1309对应的这一真实持仓周期关闭support_break提前退出权限；原始support_break观测列仍保留，不篡改为未破位。",
+    "保留原H10 deadline_index=1318和reservation_index=1319，不延长H10，不清空预约，不改后续June19动作。",
+    "到原期限仍发出原到期退出；若卖出受阻保持原pending与约束成交，不能因为屏蔽support而清掉期限卖单。",
+    "该周期实际退出后立即恢复原support退出规则；不得把这一例外扩展到以后持仓。",
+    "这是一次持仓周期例外，可能影响多个D的support退出机会，不能伪称只有一个意图列改变；须记录该周期所有受影响D及恢复时点。"
+  ],
+  "state_conflicts_to_resolve_before_dispatch": [
+    "最初support_break与入场成交在同一D5月30日。必须在生成早退pending/卖单的正确状态机层屏蔽，不能等6月3日已卖出再补回仓位。",
+    "屏蔽support早退不得覆盖强制到期卖出或其他原必需退出；需列清每个退出原因的优先级。",
+    "reservation是原绝对session1319，而非实际新卖出日重新加H10；受阻退出时应保留原规则对持有状态和预约的优先级。",
+    "原D6月16日已可再次发出买单，E6月17日有原买入计划；新资金及股数可能改变后续状态，不能假设June19的仓位或金额仍与原路径相同。",
+    "不把本臂连接到首批SKIP/FORCESELL；那会新增联合干预并改变所问问题。"
+  ],
+  "NOOP_control_requirement": {
+    "reuse_if_valid": "首批EX040已获独审且身份完全一致的NOOP可作为原路径控制；复用前须核对实现、输入、参数、原信号与经济账本。",
+    "new_NOOP_if_source_changes": "若第二波改动了执行源码或生命周期路径，须先证明新增模式无干预时仍与原经济账本一致；必要时再运行新的NOOP，不能用纯合成或首批不同源码的绿色结果代替。",
+    "failure_policy": "身份、原节点或原时钟不符时停止该诊断，不换另一个有利周期。"
+  },
+  "unique_terminal_and_attribution": {
+    "T": "2025-12-31 close; no forced sale or endpoint scan",
+    "baseline": "原未修改R/同身份NOOP，不用全年B/P作为同资金控制。",
+    "per_arm_disposition_base": "各自原May30库存首次实际退出后的真实现金冻结到T；若到T未卖出，用原同价估值并注明未兑现。",
+    "identity": "W_arm(T)=B_arm(T)+R_arm(T); DeltaW=(B_H10-B_original)+(R_H10-R_original)",
+    "meaning": "第一项为该原仓实际处置/末估值差；第二项为之后原政策下的参与残差，包含资金规模、费用、后续价格及持仓。",
+    "June19_separation_limit": "此臂可能通过资本规模改变June19及后来交易损益。首批June19干预效果来自原资金路径，不能与本臂局部差相加或称全年损益两个独立因果分量。联合效应需另一个明确设计，不由本预案自动执行。",
+    "annual_context": "同时列相同2025年初权益下的年度百分点差及剩余52.4625pp缺口；不以不同D分母局部比例直接抵扣。"
+  },
+  "diagnostic_limit": "正结果至多表明这笔已见周期的提前退出机会损失和后续资本路径值得解释；负结果则反驳把旧B/P单周期优势直接搬到原资金历史。两者均不产生普遍持有H10信号。",
+  "execution_decision": "主会话在首批三账户结果后按现有自主授权决定是否启动；当前只写方法，不实现、不派发、不读取新反事实结果。",
+  "resources_now": {
+    "new_accounts": 0,
+    "new_counterfactual_labels_or_returns": 0,
+    "new_market_API_calls": 0,
+    "implementation_changes": 0
+  }
+}

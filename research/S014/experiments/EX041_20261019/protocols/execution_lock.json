@@ -1,0 +1,74 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 1,
+  "planned_account_count": 2,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "02a1c47fbf497b682b090b8db4e7c230ed709aaf58777bd0aff021c16b4e9414",
+  "source_hashes": {
+    "protocols/design.json": "71cddb782a5ffc0ecacebb3e9dfd626d85f0bb916cc015561d4bed3adbe6ac4f",
+    "others/synthetic_precheck.json": "87d71b1f12d98ef3823ac51a60b1ea7c0c31ebd31d4c0cbda0d596d4498367cc",
+    "src/audit_accounts.py": "60f00e2382c66d03a28c9a9cc4b447b6d6ceb61c1f6bd887911a733b0cbdd33a",
+    "src/precheck.py": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a",
+    "src/run_accounts.py": "5667040b7fb2adad47ea45d478d2c015d134b5086c649cf9e1f7f0450304db30",
+    "src/strategy_runtime/strategies/early_cycle_review.py": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c"
+  },
+  "external_source_hashes": {
+    "research/S014/materials/20261019_2025_action_execution/accounting/early_cycle_independent_method_review.json": "6ca2aa667f67a9660c273ae8cf18b6a6b4cd80d15816ba0727459b2c3cd218c7",
+    "research/S014/experiments/EX040_20261019/src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "runs": [
+    {
+      "index": 0,
+      "mode": "NOOP",
+      "parameters": {
+        "mode": "NOOP",
+        "entry_execution_date": "2025-05-30"
+      },
+      "candidate": "S014-C9800",
+      "runtime_sha256": "0a0942f96e9c959399fc62821206633fbea245d3c8774eba611a9377d96fe522",
+      "payload_sha256": "bf26da33d7668d7c9e4c0e0a13fd7db1802accaa31010d6fa9d857e30940b2ff",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX041_20261019"
+        },
+        "evidence_id": "bf26da33d7668d7c9e4c0e0a13fd7db1802accaa31010d6fa9d857e30940b2ff.json",
+        "sha256": "bf26da33d7668d7c9e4c0e0a13fd7db1802accaa31010d6fa9d857e30940b2ff",
+        "media_type": "application/json",
+        "name": "ex041-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 1,
+      "mode": "HOLD_ORIGINAL_CYCLE_H10",
+      "parameters": {
+        "mode": "HOLD_ORIGINAL_CYCLE_H10",
+        "entry_execution_date": "2025-05-30"
+      },
+      "candidate": "S014-C9801",
+      "runtime_sha256": "2e75638f3dd828f28e7882c52e9cec088f49773305851025e3a79606c3c02f92",
+      "payload_sha256": "9ac5be181865038dfde0dfaa26407eae5a6fd0822c0c987cdbdf78f2b6d25df6",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX041_20261019"
+        },
+        "evidence_id": "9ac5be181865038dfde0dfaa26407eae5a6fd0822c0c987cdbdf78f2b6d25df6.json",
+        "sha256": "9ac5be181865038dfde0dfaa26407eae5a6fd0822c0c987cdbdf78f2b6d25df6",
+        "media_type": "application/json",
+        "name": "ex041-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "55db829c287f54fdee8f9baabeba2e01b4fea544f76c1e6b4f8981750adcee64",
+  "unique_economic_endpoint": "2025-12-31 SESSION_CLOSE"
+}

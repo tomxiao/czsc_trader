@@ -1,0 +1,79 @@
+{
+  "status": "AUTHORIZED_FIXED_JOINT_WAVE",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "mode": "NOOP",
+      "entry_execution_date": "2025-05-30",
+      "force_decision_date": "2025-06-19"
+    },
+    {
+      "mode": "JOINT",
+      "entry_execution_date": "2025-05-30",
+      "force_decision_date": "2025-06-19"
+    }
+  ],
+  "unique_economic_endpoint": "2025-12-31 SESSION_CLOSE",
+  "original_full_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "planned_accounts": 2,
+  "user_numeric_account_cap": null,
+  "no_blind_retries": true,
+  "new_external_calls": 0,
+  "new_formal_registered_candidates": 0,
+  "candidate_ids": [
+    "S014-C9900",
+    "S014-C9901"
+  ],
+  "source_byte_sha256": "8c5ec5b36149fa1bb3b5f52a468cf7b9c3dd23f16851ce44146dc95ad77bf376",
+  "execution_contract": "unchanged original C0056 full prior cash/stock history, capital100000/fee.001 eachside/HFQ_RESEARCH RESEARCH_UNIT/LimitBuyHold wholelot/limits/pending",
+  "treatment": "only original May30 actual cycle H10 support-exit protection plus force actual current June19 new inventory next session; both original entry/deadline/reservation retained; all future original policy",
+  "preconditions": [
+    "EX041 independent full audit PASS before treatment",
+    "new-source NOOP exact originalR independently PASS",
+    "joint June19 before forced sell intent exact to authenticated actual EX041 H10 ledger through actual same-day BUY, including dynamic quantity/cash/fees",
+    "strict actual June19 new-cycle HOLD/no pending and May30 cycle completed, otherwise UNSUPPORTED and stop without changing node"
+  ],
+  "only_NOOP_and_JOINT_dispatched": true,
+  "retained_H10_mode": "synthetic/source equivalence only, no new H10 account",
+  "new_NOOP_against_original_required": true,
+  "selection_history": "conditional joint diagnostic declared before EX041 result; executed after two favorable independent known-node diagnostics; retrospective composition, not a fresh signal or general validation",
+  "reported_interaction": "Delta_joint-Delta_H10-Delta_June_exit, all same original year opening equity and same yearend; observed composition only, no assumed additivity",
+  "no_new_date_threshold_endpoint_search": true,
+  "no_deployable_or_qualified_candidate_claim": true,
+  "source_review_status": "PASS_METHOD_AND_INDEPENDENT_SYNTHETIC_ONLY",
+  "authorization": {
+    "path": "research/S014/materials/20261019_2025_action_execution/authorization.json",
+    "sha256": "13f2d8d09e7172321b0012ed13e5e9a290b6f30524dfa824a076fc52e794f06f"
+  },
+  "method": {
+    "path": "research/S014/materials/20261019_2025_action_execution/joint_method/method_plan.json",
+    "sha256": "99fb46dadd49d164ab89b11f94cb60a6a607f080984fa5267e8890200253ecca"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "H10_reference_receipt": {
+    "path": "research/S014/experiments/EX041_20261019/others/accounts/run-001.json",
+    "sha256": "b91a57aa140094462e5a6b3d95d1a595e68ab4befd8bcdfd2d233e18334216ac"
+  },
+  "EX041_independent_account_audit": {
+    "path": "research/S014/materials/20261019_2025_action_execution/accounting/independent_early_cycle_audit.json",
+    "sha256": "d09e48e8b115938d0ebdfe89fab4d3c8694885cb469cdc45106b607cac7a7585"
+  },
+  "conditional_joint_plan": {
+    "path": "research/S014/materials/20261019_2025_action_execution/conditional_joint_diagnostic_plan.json",
+    "sha256": "93daa313fc597d001ccec3068cdb03b7a33705f171ba6fb5e84de4dd8d711fe6"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261019_2025_action_execution/accounting/joint_independent_method_review.json",
+    "sha256": "775f568d2578f58d1c3d41a0aec4ee0d8c255b41b70e64282f2e10f97c1549e8"
+  }
+}

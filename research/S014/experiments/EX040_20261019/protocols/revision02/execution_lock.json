@@ -1,0 +1,103 @@
+{
+  "status": "LOCKED_BEFORE_ACCOUNTS",
+  "revision": 2,
+  "first_wave_account_count": 3,
+  "user_account_numeric_cap": null,
+  "no_automatic_blind_retries": true,
+  "runtime_implementation_sha256": "279f623ba691360fd1e3c76b23a6a18a3729a42ec941513cd2a7ecd0fda95957",
+  "source_hashes": {
+    "protocols/revision02/design.json": "0206ec71b6e2161b246aafea16292ff587ef02fc700f8ed95e4cd687e7e8202f",
+    "others/synthetic_precheck_v2_package.json": "4430fd51e22f6c813f8859fdb38df9f0e07d750f3e0f72e80b46c0d1d26e4546",
+    "src/audit_accounts.py": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3",
+    "src/precheck.py": "324af79525a15c629620c3d3b099308a99814a00689c5f08671004ad66bfd1cb",
+    "src/revision02/precheck.py": "ceb2d414eed97cbe57401f9f30d7db9fbbc33be185b90369610b74eeecdeb122",
+    "src/revision02/precheck_package.py": "874e3748e849f1aa9951aea3ef31344195b447ce7e5a7e6ccbc874f6ef129332",
+    "src/revision02/run_accounts.py": "7482de216065ba109008d6eb7bf7a4bd106eeaf8283c081daa89a13707f43d2b",
+    "src/revision02/strategy_runtime/strategies/repair_action_review.py": "f1a96bfadab319d8963b7de56e675182f36a8dff3f2785a69dc591a1b16b0bb2",
+    "src/run_accounts.py": "476fb0e7f1122546d9f2bfeed5672013add6c8cc5b46f0ab9153fb6d577bf6b3",
+    "src/strategy_runtime/strategies/repair_action_review.py": "264057876152bb67a49268da71e0ad1663b66a3f7a1d738e14c2d62d95fcc7a4",
+    "src/strategy_runtime_v2/strategies/repair_action_review.py": "f1a96bfadab319d8963b7de56e675182f36a8dff3f2785a69dc591a1b16b0bb2"
+  },
+  "runs": [
+    {
+      "index": 3,
+      "mode": "NOOP",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "NOOP",
+        "intervention_decision_date": ""
+      },
+      "candidate": "S014-C9700",
+      "runtime_sha256": "65763fd824b0de10ea7c47eae083fa54e1880a1915f2f133f19cb146b56e59c6",
+      "payload_sha256": "93b3905c7c6dc37ef4ef185e8073a3dc6565570708d375b3b705e8d42aa7c5ae",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "93b3905c7c6dc37ef4ef185e8073a3dc6565570708d375b3b705e8d42aa7c5ae.json",
+        "sha256": "93b3905c7c6dc37ef4ef185e8073a3dc6565570708d375b3b705e8d42aa7c5ae",
+        "media_type": "application/json",
+        "name": "ex040-v2-payload-000",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 4,
+      "mode": "SKIP_BUY_ONCE",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "SKIP_BUY_ONCE",
+        "intervention_decision_date": "2025-06-18"
+      },
+      "candidate": "S014-C9701",
+      "runtime_sha256": "17ad45dfaf0806c13c3eb17004e3a7ee308d663b6f1885b893a97b7f7de0c38b",
+      "payload_sha256": "0d4386e3bc7c4e93b67f5b042757b4bb7cbd3efea5bdf886c8bb5c6386a58ee7",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "0d4386e3bc7c4e93b67f5b042757b4bb7cbd3efea5bdf886c8bb5c6386a58ee7.json",
+        "sha256": "0d4386e3bc7c4e93b67f5b042757b4bb7cbd3efea5bdf886c8bb5c6386a58ee7",
+        "media_type": "application/json",
+        "name": "ex040-v2-payload-001",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "index": 5,
+      "mode": "FORCE_SELL_ONCE",
+      "parameters": {
+        "variant": "support_exit_reserve_H10",
+        "intervention_mode": "FORCE_SELL_ONCE",
+        "intervention_decision_date": "2025-06-19"
+      },
+      "candidate": "S014-C9702",
+      "runtime_sha256": "b4ade3dab49b4a1f48e762a94a7c6d8a88293bfb2ab57e2f8358251649fcc693",
+      "payload_sha256": "102a55df00bdd73b049d6362dd12be9f7fbc16d09016cad622703dd16aeb8156",
+      "payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX040_20261019"
+        },
+        "evidence_id": "102a55df00bdd73b049d6362dd12be9f7fbc16d09016cad622703dd16aeb8156.json",
+        "sha256": "102a55df00bdd73b049d6362dd12be9f7fbc16d09016cad622703dd16aeb8156",
+        "media_type": "application/json",
+        "name": "ex040-v2-payload-002",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "published_sources_sha256": "b777d9150cc854dd1ad80752d9a7be1f862b191ea3bfda218abac37c2a6e2c50",
+  "unique_economic_endpoint": "2025-12-31 SESSION_CLOSE"
+}

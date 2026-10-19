@@ -1,0 +1,241 @@
+{
+  "status": "PASS",
+  "blocking_findings": [],
+  "review_role": "RSCH independent adversarial interpretation and report audit; source author of EX041/42 prototypes, account evidence independently produced/audited by A",
+  "created_at_utc": "2026-10-19T13:40:48.586931+00:00",
+  "reviewed_hashes": {
+    "research/S014/experiments/EX041_20261019/src/strategy_runtime/strategies/early_cycle_review.py": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c",
+    "research/S014/experiments/EX042_20261019/src/strategy_runtime/strategies/joint_action_review.py": "8c5ec5b36149fa1bb3b5f52a468cf7b9c3dd23f16851ce44146dc95ad77bf376",
+    "research/S014/materials/20261019_2025_action_execution/accounting/daily_2025_early_cycle_equity.csv": "c158421d6de788d80dc55dd47f511be2a0e2768bc543ac05a08374eea087c41c",
+    "research/S014/materials/20261019_2025_action_execution/accounting/daily_2025_equity.csv": "e4d7cc421df211220949a039d2b36c90b5c7ff30d15ba9522858a3aa2459bd82",
+    "research/S014/materials/20261019_2025_action_execution/accounting/daily_2025_joint_equity.csv": "e8a383c43544713a95708a766e0bfdd97a104d43ca1d39abd8a8c89c384ea5e5",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_account_audit.json": "f06b73b93cad6947e75b9888aecfdce089c330c94800033e411c252657c69842",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_early_cycle_audit.json": "d09e48e8b115938d0ebdfe89fab4d3c8694885cb469cdc45106b607cac7a7585",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_early_execution_constraints.json": "5c01f90e16a0530a5648c2f60fa49f54dc53dab11d6fc3928d4810709d3cb7c3",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_execution_constraints.json": "154614c2be993df03a4d5d2b5d0b854d1f197f0c0d60536056148b841e098bbb",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_joint_account_audit.json": "23347604e2e7a08d36bfd6b132774c40d9cbcd40a4ad79f12e353331e4a2db17",
+    "research/S014/materials/20261019_2025_action_execution/accounting/independent_joint_execution_constraints.json": "35c334623b621c9bdad7524135b908d4fb5693d917f6c57045fa26306beffbea",
+    "research/S014/materials/20261019_2025_action_execution/accounting/resource_and_path_review.json": "c1b43b606220ea7718410a9bad68101c06b87541d8189c7255cc04dcc9c080b9",
+    "research/S014/materials/20261019_2025_action_execution/authorization.json": "13f2d8d09e7172321b0012ed13e5e9a290b6f30524dfa824a076fc52e794f06f",
+    "research/S014/materials/20261019_2025_action_execution/baseline_integrity.json": "b6a722bf1d8013cfe54e729010e8450d4fbe4bdb023c50e824e27673619e7f85",
+    "research/S014/materials/20261019_2025_action_execution/conditional_joint_diagnostic_plan.json": "93daa313fc597d001ccec3068cdb03b7a33705f171ba6fb5e84de4dd8d711fe6",
+    "research/S014/materials/20261019_2025_action_execution/daily_2025_all_audited_paths.csv": "5d2cfaa4429c2b298bbb723a6475f1b581b786d68ee706c2f286ee8cc44d3890",
+    "research/S014/materials/20261019_2025_action_execution/early_cycle_method/method_plan.json": "2f0116b871058307c0829a9464fc1bf7d74b1db80a78d4c56b52bf53a730d22b",
+    "research/S014/materials/20261019_2025_action_execution/equity_2025.png": "3c2df39c1b80d77dc39a0290edb9736cf151b9f5fec0b8e4fa3a3d21b25ebb88",
+    "research/S014/materials/20261019_2025_action_execution/judgment.json": "5511f1a420473187b477f03dc88c180379a3efe776b365649481acdd470dc19c",
+    "research/S014/materials/20261019_2025_action_execution/plot_equity.py": "f8253f1095730049ed855b8d05c0e9017aae1071dee17697ef84b3817c13ef43",
+    "research/S014/materials/20261019_2025_action_execution/plot_input_integrity.json": "97c3a593e48700aa1125f60ac434301b43483aa7001656f1244a76fc93cc4dc6",
+    "research/S014/materials/20261019_2025_action_execution/report.md": "4b1e5b8ceb77b66055975d570fbf45c35c77f97df50e08f3c48778c7ed4f41cf",
+    "research/S014/materials/20261019_2025_action_execution/research_decisions_before_results.json": "121383cb8c24acca87e2dfd3dd1ad9f63657c7fc00cdd783c57e25ad8f9073e3",
+    "research/S014/materials/20261019_2025_action_method_review/official/known_information_review.json": "b12a446202652e307e58e3978e135e2ef1691fab1af79f2a2c4cc167e0b63593"
+  },
+  "checks_count": 69,
+  "checks": [
+    "EX040 independent status PASS",
+    "EX041 independent status PASS",
+    "EX042 independent status PASS",
+    "resources independent status PASS",
+    "plot_inputs independent status PASS",
+    "all independent audit bytes equal judgment bindings",
+    "three exact ledger counts",
+    "all three source-backed execution audits PASS",
+    "three exact execution counts",
+    "resources eight dispatch seven successful one failed",
+    "actual dispatch bytes resource-bound",
+    "judgment dispatch records exactly source resource statuses and result hashes",
+    "build failure distinct and byte-bound",
+    "plot CSV and PNG bytes agree judgment/merge integrity",
+    "three plot source CSV hashes exact",
+    "merged fixed2025 unique sorted 243 dates",
+    "merged/source dates identical accounting/daily_2025_equity.csv",
+    "merged/source dates identical accounting/daily_2025_early_cycle_equity.csv",
+    "merged/source dates identical accounting/daily_2025_joint_equity.csv",
+    "all original/noop merged rows exactly shared",
+    "all graph series columns accounted",
+    "NOOP judgment/year metric identity",
+    "NOOP judgment terminal exact audit",
+    "NOOP immutable result/evidence exact",
+    "NOOP plotted close/return/drawdown exact audit",
+    "NOOP terminal includes actual positive inventory marked consistently",
+    "SKIP_BUY_ONCE judgment/year metric identity",
+    "SKIP_BUY_ONCE judgment terminal exact audit",
+    "SKIP_BUY_ONCE immutable result/evidence exact",
+    "SKIP_BUY_ONCE plotted close/return/drawdown exact audit",
+    "SKIP_BUY_ONCE terminal includes actual positive inventory marked consistently",
+    "FORCE_SELL_ONCE judgment/year metric identity",
+    "FORCE_SELL_ONCE judgment terminal exact audit",
+    "FORCE_SELL_ONCE immutable result/evidence exact",
+    "FORCE_SELL_ONCE plotted close/return/drawdown exact audit",
+    "FORCE_SELL_ONCE terminal includes actual positive inventory marked consistently",
+    "HOLD_ORIGINAL_CYCLE_H10 judgment/year metric identity",
+    "HOLD_ORIGINAL_CYCLE_H10 judgment terminal exact audit",
+    "HOLD_ORIGINAL_CYCLE_H10 immutable result/evidence exact",
+    "HOLD_ORIGINAL_CYCLE_H10 plotted close/return/drawdown exact audit",
+    "HOLD_ORIGINAL_CYCLE_H10 terminal includes actual positive inventory marked consistently",
+    "JOINT judgment/year metric identity",
+    "JOINT judgment terminal exact audit",
+    "JOINT immutable result/evidence exact",
+    "JOINT plotted close/return/drawdown exact audit",
+    "JOINT terminal includes actual positive inventory marked consistently",
+    "FORCE disposition plus residual is true terminal delta",
+    "May30 disposition plus residual is true terminal delta",
+    "conditional June19 disposition plus residual is true joint-vs-H10 delta",
+    "joint descriptive interaction arithmetic exact",
+    "joint result exact original unlowered return/drawdown requirements",
+    "original remaining failure years/goal unchanged",
+    "actual original-cycle suppressed D only May30",
+    "actual joint one strict June19 trigger and proper current inventory",
+    "report exact salient rounded values",
+    "report no unfinished result placeholder",
+    "report relative target exists accounting/independent_account_audit.json",
+    "report relative target exists accounting/independent_execution_constraints.json",
+    "report relative target exists early_cycle_method/method_plan.json",
+    "report relative target exists accounting/independent_early_cycle_audit.json",
+    "report relative target exists conditional_joint_diagnostic_plan.json",
+    "report relative target exists accounting/independent_joint_account_audit.json",
+    "report relative target exists equity_2025.png",
+    "report relative target exists plot_input_integrity.json",
+    "report relative target exists ../20261019_2025_action_method_review/official/known_information_review.json",
+    "report relative target exists accounting/resource_and_path_review.json",
+    "report relative target exists authorization.json",
+    "report relative target exists research_decisions_before_results.json",
+    "report relative target exists baseline_integrity.json"
+  ],
+  "source_csv_numeric_values_compared_exactly": 2430,
+  "relative_links": [
+    {
+      "target": "accounting/independent_account_audit.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/accounting/independent_account_audit.json",
+      "sha256": "f06b73b93cad6947e75b9888aecfdce089c330c94800033e411c252657c69842"
+    },
+    {
+      "target": "accounting/independent_execution_constraints.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/accounting/independent_execution_constraints.json",
+      "sha256": "154614c2be993df03a4d5d2b5d0b854d1f197f0c0d60536056148b841e098bbb"
+    },
+    {
+      "target": "early_cycle_method/method_plan.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/method_plan.json",
+      "sha256": "2f0116b871058307c0829a9464fc1bf7d74b1db80a78d4c56b52bf53a730d22b"
+    },
+    {
+      "target": "accounting/independent_early_cycle_audit.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/accounting/independent_early_cycle_audit.json",
+      "sha256": "d09e48e8b115938d0ebdfe89fab4d3c8694885cb469cdc45106b607cac7a7585"
+    },
+    {
+      "target": "conditional_joint_diagnostic_plan.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/conditional_joint_diagnostic_plan.json",
+      "sha256": "93daa313fc597d001ccec3068cdb03b7a33705f171ba6fb5e84de4dd8d711fe6"
+    },
+    {
+      "target": "accounting/independent_joint_account_audit.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/accounting/independent_joint_account_audit.json",
+      "sha256": "23347604e2e7a08d36bfd6b132774c40d9cbcd40a4ad79f12e353331e4a2db17"
+    },
+    {
+      "target": "equity_2025.png",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/equity_2025.png",
+      "sha256": "3c2df39c1b80d77dc39a0290edb9736cf151b9f5fec0b8e4fa3a3d21b25ebb88"
+    },
+    {
+      "target": "plot_input_integrity.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/plot_input_integrity.json",
+      "sha256": "97c3a593e48700aa1125f60ac434301b43483aa7001656f1244a76fc93cc4dc6"
+    },
+    {
+      "target": "../20261019_2025_action_method_review/official/known_information_review.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_method_review/official/known_information_review.json",
+      "sha256": "b12a446202652e307e58e3978e135e2ef1691fab1af79f2a2c4cc167e0b63593"
+    },
+    {
+      "target": "accounting/resource_and_path_review.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/accounting/resource_and_path_review.json",
+      "sha256": "c1b43b606220ea7718410a9bad68101c06b87541d8189c7255cc04dcc9c080b9"
+    },
+    {
+      "target": "authorization.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/authorization.json",
+      "sha256": "13f2d8d09e7172321b0012ed13e5e9a290b6f30524dfa824a076fc52e794f06f"
+    },
+    {
+      "target": "research_decisions_before_results.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/research_decisions_before_results.json",
+      "sha256": "121383cb8c24acca87e2dfd3dd1ad9f63657c7fc00cdd783c57e25ad8f9073e3"
+    },
+    {
+      "target": "baseline_integrity.json",
+      "resolved_path": "research/S014/materials/20261019_2025_action_execution/baseline_integrity.json",
+      "sha256": "b6a722bf1d8013cfe54e729010e8450d4fbe4bdb023c50e824e27673619e7f85"
+    }
+  ],
+  "all_report_relative_links_exist": true,
+  "verified_2025_metrics": {
+    "NOOP": {
+      "return_percent": -12.274645228557212,
+      "drawdown_percent": 27.431084076469936,
+      "remaining_return_gap_pp": 52.462509180615754,
+      "terminal_equity": 244542.2409999995
+    },
+    "SKIP_BUY_ONCE": {
+      "return_percent": -20.922936030442497,
+      "drawdown_percent": 31.273185377682545,
+      "remaining_return_gap_pp": 61.11079998250104,
+      "terminal_equity": 220434.35999999967
+    },
+    "FORCE_SELL_ONCE": {
+      "return_percent": 6.574312954332462,
+      "drawdown_percent": 13.786139439252231,
+      "remaining_return_gap_pp": 33.61355099772608,
+      "terminal_equity": 297085.39099999936
+    },
+    "HOLD_ORIGINAL_CYCLE_H10": {
+      "return_percent": 11.362651413457225,
+      "drawdown_percent": 27.45857129961642,
+      "remaining_return_gap_pp": 28.82521253860132,
+      "terminal_equity": 310433.3109999995
+    },
+    "JOINT": {
+      "return_percent": 35.3391913846929,
+      "drawdown_percent": 13.775645120813351,
+      "remaining_return_gap_pp": 4.848672567365641,
+      "terminal_equity": 377270.05199999956
+    }
+  },
+  "verified_decomposition_currency": {
+    "FORCE_original_disposition": 57171.77099999995,
+    "FORCE_later_participation": -4628.621000000101,
+    "H10_original_disposition": 79344.576,
+    "H10_later_participation": -13453.505999999994,
+    "JOINT_total_delta": 132727.81100000005,
+    "JOINT_descriptive_interaction": 14293.59100000019,
+    "JOINT_vs_H10_June_disposition": 72709.218,
+    "JOINT_vs_H10_later_participation": -5872.476999999955
+  },
+  "adversarial_interpretation_review": [
+    "SKIP的反证仅针对取消该次买单再恢复，正文明确不能推广持续禁买均无效。",
+    "FORCE单个已见公告episode和两节点不同事前信息集均披露；没有把公告文字当独立预测力或因果催化。",
+    "May30周期在公告之前，H10例外选择属于已见事后诊断；实际仅May30一次support触发被抑制，后续持仓决策自然改变并非只有一列变。",
+    "三波从同原完整资本历史独立运行，各新source先真NOOP；联合June19之前对照H10而不是对照R，真实当前仓位按资本改变。",
+    "联合实际计算替代独立改善相加；交互和处置/后参与残差仅为账目描述，不宣称独立因果来源。",
+    "年度百分点使用原年初权益，不与局部D分母混用；年末全部路径持仓估值和研究数量/价格合同明确。",
+    "收益差4.8487pp、2022/24仍失败、无新通用signal/登记候选/阶段推进均明确；不追加有利日期补缺口的停止决定合理。",
+    "建议分开识别破位后持有/退出与风险提示后退出的当时可得条件，并保留反例和完整资金路径；是后续研究方向，不冒充已获验证机制。"
+  ],
+  "figure_visual_review": {
+    "inspected": true,
+    "finding": "五条经济路径与一条收益要求线清晰，原NOOP重合不重复画线，中文轴/图例无明显截断，统一原年初分母及已见诊断/期末持仓说明可见。",
+    "numeric_input_validation": "逐值核三波CSV与合并CSV，逐臂核年末、全年收益/回撤与judgment/A摘要；不重跑绘图或账户。"
+  },
+  "nonblocking_wording_findings": [],
+  "limitations": [
+    "本轮审核基于已保存A全账本与原认证输入成交一致性审计，不新增行情真实性鉴证、不重跑账户/合成/拟合或调用新数据。",
+    "来源为已见2025单案例及日期固定的事后动作，PASS仅指报告/证据/解释一致，不能推断可部署策略、一般预警效力或原经济目标达标。",
+    "本文件写入时尚未代替主会话执行公共API本地发布或Git提交。"
+  ],
+  "publication_readiness": "CONTENT_AND_EVIDENCE_READY_FOR_LOCAL_PUBLICATION; final reviewed bytes must remain unchanged or be reviewed again",
+  "new_account_dispatches": 0,
+  "new_market_data_calls": 0,
+  "new_model_fits": 0,
+  "modified_root_report_or_judgment": false
+}

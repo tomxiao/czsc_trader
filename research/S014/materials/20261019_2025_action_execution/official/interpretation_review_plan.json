@@ -1,0 +1,228 @@
+{
+  "status": "INTERPRETATION_REVIEW_QUESTIONS_BEFORE_REVIEWER_OBSERVES_NEW_RESULTS",
+  "created_at_utc": "2026-10-19T13:09:17.833664+00:00",
+  "reviewer": "Independent RSCH diagnose_external",
+  "scope": "EX040 first-wave NOOP, SKIP_D2025-06-18 and FORCESELL_D2025-06-19 interpretation; no dispatch, source API, fitted model or new outcome calculation by this reviewer",
+  "current_authorization": "Latest human authorization permits autonomous diagnostic-account decisions without a numerical cap. Historical method proposal still describes its earlier pending3-account budget; do not present that old pending authorization/cap as current.",
+  "current_focus": "First answer the two predeclared local actions. Unlimited account authorization does not require extra variants, endpoint scans or general-rule search.",
+  "source_bindings": [
+    {
+      "path": "research/S014/materials/20261019_2025_action_method_review/proposal.json",
+      "sha256": "66da5d8008adb600a37052897be99d2ad839f814856a473bb0a66e47a137ae5c",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "66da5d8008adb600a37052897be99d2ad839f814856a473bb0a66e47a137ae5c.json",
+        "sha256": "66da5d8008adb600a37052897be99d2ad839f814856a473bb0a66e47a137ae5c",
+        "media_type": "application/json",
+        "name": "action-2025-method-proposal-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "path": "research/S014/materials/20261019_2025_action_method_review/report.md",
+      "sha256": "486651812e6bd5cd3142eb87e294f2773ce5d9c2760e2eba30c58a86bcebd481",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "486651812e6bd5cd3142eb87e294f2773ce5d9c2760e2eba30c58a86bcebd481.md",
+        "sha256": "486651812e6bd5cd3142eb87e294f2773ce5d9c2760e2eba30c58a86bcebd481",
+        "media_type": "text/markdown",
+        "name": "action-2025-method-report-md",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "path": "research/S014/materials/20261019_2025_action_method_review/official/node_selection_supplementary_review.json",
+      "sha256": "e3bd4cd41b694d5e981f0d9a5e27676bba44441c33078eec7250767d21a440ca",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "e3bd4cd41b694d5e981f0d9a5e27676bba44441c33078eec7250767d21a440ca.json",
+        "sha256": "e3bd4cd41b694d5e981f0d9a5e27676bba44441c33078eec7250767d21a440ca",
+        "media_type": "application/json",
+        "name": "action-2025-method-official-node_selection_supplementary_review-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/state_driver_daily_panel.csv",
+      "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+      "evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6.csv",
+        "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+        "media_type": "text/csv",
+        "name": "year-driver-state_driver_daily_panel-csv",
+        "schema": null,
+        "schema_version": null
+      },
+      "accessed_columns": [
+        "date",
+        "D_signal_date",
+        "D_posture",
+        "D_entry_signal",
+        "D_held_at_close",
+        "D_exit_pending",
+        "D_support_break",
+        "D_entry_index",
+        "D_deadline_index",
+        "D_reservation_index",
+        "D_holding_horizon",
+        "D_buy_filled_today",
+        "D_sell_filled_today",
+        "D_decision_id"
+      ],
+      "returns_and_wealth_outcome_columns_used": false
+    }
+  ],
+  "baseline_context_from_published_method": {
+    "C0056_original_return": -0.12274645228557213,
+    "required_return": 0.40187863952058545,
+    "gap_percentage_points": 52.462509180615754,
+    "year_open_equity": 278758.90799999965,
+    "original_year_end_equity": 244542.2409999995,
+    "not_solved_by_method": "June3 early exit predates the three June notices; other2025 dates and original annual drawdown/frequency still matter"
+  },
+  "review_questions": [
+    {
+      "id": "I01",
+      "topic": "账本身份与可比性",
+      "questions": [
+        "NOOP是否先与原C0056全窗经济账本及原信号等价，且独立审计明确覆盖成交、费用、股数、现金及预约？",
+        "SKIP和FORCESELL是否分别沿原资金历史走到自己的D，前缀未变、每条只发生获准的单次意图改变，未从D重置资金？",
+        "若任何技术/身份检查失败，报告是否写未回答而非把缺失或失败写成0收益？"
+      ],
+      "claim_boundary": "技术核验通过确认回放合同和核算，不自动确认经济目标、公告有效或未来表现。"
+    },
+    {
+      "id": "I02",
+      "topic": "信息与节点",
+      "questions": [
+        "是否明确SKIP在D6月18只可用6月17日一般异动公告，不能用详细售价未变说明为该次取消买单背书？",
+        "是否明确FORCESELL在D6月19还多知道6月18日详细经营说明；两节点的信息、仓位和D财富不同？",
+        "是否避免将两动作差直接解释成保持其他条件相同的公告文字增量或同一信号因果效应？"
+      ],
+      "claim_boundary": "各分支相对自己未干预原路径的固定回放动作差可定义；跨节点比较不识别公告预测力或单独的信息效果。"
+    },
+    {
+      "id": "I03",
+      "topic": "2025样本与未覆盖问题",
+      "questions": [
+        "是否把三份公告、连续持仓日、两处理账户和NOOP始终视为一个已见2025episode的局部材料？",
+        "是否避免把3账户说成3独立样本、批量验证或统计推广？",
+        "是否明确6月3日早退发生于所有2025同类公告之前，此轮没有改变该动作，也没有解释其事前识别机制？"
+      ],
+      "claim_boundary": "年末结果可以补偿先前损失，但补偿不等于已解决先前错误动作的原因。"
+    },
+    {
+      "id": "I04",
+      "topic": "共同终点与单位",
+      "questions": [
+        "是否仅使用预先固定T2025-12-31收盘，2026技术尾段没有参与选动作、选终点或主结果？",
+        "是否分别列W_arm(T)-W_original(T)的人民币差、各自D财富分母的局部比例及共同2025年初权益分母的年度百分点差？",
+        "是否避免拿不同D分母的局部百分比直接相加、排名同一状态下哪个动作最好，或直接抵扣年度52.4625pp？"
+      ],
+      "claim_boundary": "年度差应按共同原2025年初权益278758.908元计算；原差距52.4625091806pp来自要求40.1878639521%减原收益-12.2746452286%。"
+    },
+    {
+      "id": "I05",
+      "topic": "年度目标与达标范围",
+      "questions": [
+        "是否列处理后2025收益、距原年度收益要求的余缺，并仍区分原回撤、频率和完整策略目标？",
+        "若仅改善但仍未到收益要求，是否明确没有修复2025年度目标？",
+        "即使2025单年满足，是否保留原2022和2024失败及本轮未建立可部署通用策略的事实？"
+      ],
+      "claim_boundary": "不增加统计显著性硬门，也不能将某个年末财富正差自动提升为正式有效候选。"
+    },
+    {
+      "id": "I06",
+      "topic": "SKIP解释",
+      "questions": [
+        "取消一次买单后是否确实恢复原策略，后续可能重新买入，并由真实成交建立新H10时钟？",
+        "如果改善来自重新入场日期、成交价或资本路径，是否据此描述，而非说持续禁买或躲过整段下跌？",
+        "如果取消入场丢掉原次日上涨或未改善总财富，是否保留这项反证，不改禁买长度或日期挽救结论？"
+      ],
+      "claim_boundary": "固定一次取消的结果不能替代持续禁买或所有高估值入场的收益检验。"
+    },
+    {
+      "id": "I07",
+      "topic": "FORCESELL归因",
+      "questions": [
+        "是否按真实卖出日期/价格与受限顺延处理，并保留原入场、到期和reservation？",
+        "是否核对W=B+R及两路径差=(原仓真实处置或末估值差)+(后续参与残差差)？",
+        "后续参与残差是否明确包含资金规模、费用及以后行情，未称独立Alpha或全部叫提前卖出的原仓收益？"
+      ],
+      "claim_boundary": "不能用只看原仓一笔的好结果替代共同T的完整资金路径。"
+    },
+    {
+      "id": "I08",
+      "topic": "期末状态与风险",
+      "questions": [
+        "是否列各条路径T的现金、股数、同价持仓估值、未执行意图及剩余时钟？",
+        "是否避免把未平仓估值当已经兑现、把未成交指令当成交，或假设各路径T已汇合？",
+        "是否避免把删掉原PNL、冻结参考现金或局部财富差称作已回放的交易策略账户？"
+      ],
+      "claim_boundary": "唯一年末终点回答固定年度问题；它没有终结所有后续风险。"
+    },
+    {
+      "id": "I09",
+      "topic": "结论与路由",
+      "questions": [
+        "是否用首批两动作的完整结果决定下一问题，保留不利结果而不新增邻近日期、观察终点或窗口搜索？",
+        "是否把未覆盖的6月3日问题与本轮公告后动作拆开；May30待选预案不冒充已执行结果？",
+        "是否区分本轮诊断目标完成、原策略目标未达成、正式组件/候选资格保持和生产未变？"
+      ],
+      "claim_boundary": "后续选择可由主会话在现有自主授权内决定；不用过时额度制造重复批准，也不因不限数而扩张搜索。"
+    }
+  ],
+  "predeclared_interpretation_matrix": [
+    {
+      "pattern": "SKIP改善、FORCESELL不改善",
+      "interpretation": "该原路径的入场时点及后续参与值得解释；不支持从此例推出一律提前退出。"
+    },
+    {
+      "pattern": "FORCESELL改善、SKIP不改善",
+      "interpretation": "已入场后的原仓处置/资金参与有局部改善依据；入场机会成本须保留，不能变成公告后全面禁买。"
+    },
+    {
+      "pattern": "两者改善",
+      "interpretation": "各自原节点有正的局部路径差；两差不可相加，仍不能识别通用公告预测力。"
+    },
+    {
+      "pattern": "两者不改善",
+      "interpretation": "这两项固定单次动作未提供年末财富改善；保留反证，不扩大为所有公告或所有退出无效。"
+    },
+    {
+      "pattern": "不可比或技术失败",
+      "interpretation": "明确未回答；不得用现金参考或原账本删日收益补造处理结果。"
+    }
+  ],
+  "review_process": "等待真实结果及独立账本审计后，只读核对最终报告的数值、单位、证据链、路由和边界；当前未读任何新反事实结果。",
+  "resources": {
+    "new_source_calls": 0,
+    "new_accounts_dispatched": 0,
+    "new_returns_or_counterfactuals_computed": 0,
+    "new_models": 0
+  }
+}

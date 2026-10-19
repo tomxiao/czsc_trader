@@ -1,0 +1,107 @@
+{
+  "status": "PASS_EXISTING_PREPARED_EXECUTION_CONSTRAINTS",
+  "checks": 3844,
+  "existing_prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "fetched_inputs": {
+    "execution_daily": {
+      "request": {
+        "dataset": "stock.unadjusted_daily",
+        "symbol": "600722.SH",
+        "start": "2019-12-31",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "content_sha256": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+      "rows": 1643
+    },
+    "adjusted_daily": {
+      "request": {
+        "dataset": "stock.ohlcv",
+        "symbol": "600722.SH",
+        "start": "2019-12-31",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "content_sha256": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+      "rows": 1643
+    },
+    "price_limits": {
+      "request": {
+        "dataset": "security.price_limits",
+        "symbol": "600722.SH",
+        "start": "2020-01-02",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "content_sha256": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+      "rows": 1642
+    },
+    "trading_status": {
+      "request": {
+        "dataset": "security.trading_status",
+        "symbol": "600722.SH",
+        "start": "2019-12-02",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15",
+        "frequency": "daily",
+        "parameters": {},
+        "coverage": null
+      },
+      "content_sha256": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5",
+      "rows": 1664
+    }
+  },
+  "pricing": {
+    "anchor_date": "2019-12-31",
+    "anchor_factor": 5.892,
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT"
+  },
+  "maximum_derived_price_error": 0.0,
+  "maximum_projected_close_error": 0.0,
+  "arithmetic_currency_tolerance": 1e-07,
+  "joint_execution_facts": [
+    {
+      "mode": "JOINT",
+      "side": "SELL",
+      "actual_price": 6.34,
+      "quantity": 58400,
+      "raw_Open": 6.34,
+      "projected_Open": 6.34,
+      "scale": 1.0,
+      "projected_DownLimit": 5.18,
+      "projected_UpLimit": 6.34
+    },
+    {
+      "mode": "JOINT",
+      "side": "SELL",
+      "actual_price": 7.81,
+      "quantity": 48200,
+      "raw_Open": 7.81,
+      "projected_Open": 7.81,
+      "scale": 1.0,
+      "projected_DownLimit": 7.34,
+      "projected_UpLimit": 8.97
+    }
+  ],
+  "limitation": "Reapply original public resolve_fill contract; this is execution consistency, not independent market authenticity validation.",
+  "new_preparations": 0,
+  "supplier_calls": 0,
+  "new_account_dispatches": 0,
+  "market_data_copies_or_publications": 0,
+  "network_attempts": [],
+  "source_sha256": "a6fa81ee228616fd64b85a6bde9950325cde2a45748ef6d0a9026d187b98ac83"
+}

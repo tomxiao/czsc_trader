@@ -1,0 +1,123 @@
+{
+  "status": "REVIEWABLE_PROTOTYPE_HANDOFF_FOR_NEW_EX041_NOT_EXECUTED_HERE",
+  "created_at_utc": "2026-10-19T13:18:37.775303+00:00",
+  "authorization": "root latest directive authorizes C to prepare and execute independent EX041 NOOP plus H10; this author only implemented prototype and pure synthetic checks, A independently audits",
+  "question": "从原完整资金历史出发，仅原2025-05-30实际成交持仓周期屏蔽support_break提前退出，保留原H10期限和reservation，2025年末原仓处置差与后续参与差分别是多少？",
+  "selection_history": "因已披露的6月3日早退缺口选取已见周期；在本原型前已写单周期预案。不是新信号、独立样本、全市场搜索或联合June19干预。",
+  "bindings": {
+    "source": {
+      "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/prototype_runtime/strategies/early_cycle_review.py",
+      "sha256": "b18c884977580dfeace071c98bcd94fecf23a0e9369cb015f3f2e021b8f5536c"
+    },
+    "precheck_source": {
+      "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/precheck.py",
+      "sha256": "87c7748edb2096dae97804aa8ea57483c510d4d72d81403ac71e0332e8f056fa"
+    },
+    "synthetic_receipt": {
+      "path": "research/S014/materials/20261019_2025_action_execution/early_cycle_method/synthetic_precheck.json",
+      "sha256": "aff5e31c7246d38d44ecadaa50a685437c9dfe74ca7aca91a057662fe3e07b60"
+    },
+    "original_EX023_source": {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e"
+    },
+    "prior_method": {
+      "path": "research/S014/materials/20261019_2025_action_execution/official/second_wave_may30_H10_review.json",
+      "sha256": "9deafd678eb1f141e7a898ddaf23e6f57dc9b6e65fb97faa25d68f056a35bcf6"
+    },
+    "observed_original_panel": {
+      "path": "research/S014/materials/20261019_year_driver_research/state_driver_daily_panel.csv",
+      "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6"
+    },
+    "actual_SRT_observation_boundary": {
+      "path": "packages/strategy_runtime/src/strategy_runtime/observation.py",
+      "sha256": "eb3ad319bbf5987b89b590bdee629a5cffcbb8f31e19040299399eb33793d625"
+    },
+    "actual_SRT_scalar_normalization": {
+      "path": "packages/strategy_runtime/src/strategy_runtime/strategy.py",
+      "sha256": "8870ed65aa4e10405fb192cff7763693996bcb7f81ab4e19045d48c384dfdcbe"
+    }
+  },
+  "factory": {
+    "prototype_qualname": "EarlyCycleStrategy",
+    "modes": [
+      "NOOP",
+      "HOLD_ORIGINAL_CYCLE_H10"
+    ],
+    "parameters": {
+      "mode": "one exact mode string",
+      "entry_execution_date": "2025-05-30"
+    },
+    "parameters_type": "ParameterSet -> strict EarlyCycleConfig/CycleMode/date; extra keys, malformed dates, other dates and bool rejected"
+  },
+  "frozen_intervention": [
+    "固定日期定位当日实际BUY fill；只有真实bought、held状态形成原周期。失败买入不假建cycle，不选择其他入场。",
+    "原2020-01-02完整可交易窗、原执行prewindow和全部历史资金前缀；不得在May30重置本金。真实May30成交股数/价格/费用/现金须与R核对。",
+    "不硬编码1309数组位置；固定entry/deadline/reservation由运行中当日实际BUY填充索引i/i+9/i+10记录，已见panel1318/1319仅用于独立核对。",
+    "原支持位和support_break观测完全保真；仅在该周期且尚无pending、尚未到期时阻止support_break触发提前退出。最早差异为DMay30退出意图，不是EJune3补仓。",
+    "到期和已存在pending优先，suspended或跌停卖出不成交时继续pending并保留原时钟；实际卖出后原策略自动恢复。",
+    "reservation是原入场绝对i+10，不能从新卖出日重算；持有或待卖期间不另买入。",
+    "此为一个持仓周期例外，可能覆盖多个D；逐D留存全部suppressed、protected、target_seen/completed、期限与预约索引及真实卖出恢复日。",
+    "不额外改变June19动作；不与EX040 SKIP或FORCE连接。后续资金、股数、参与会自然受本周期资本差影响。"
+  ],
+  "diagnostic_observation": {
+    "columns": [
+      "cycle_mode_active",
+      "target_entry_seen",
+      "target_cycle_completed",
+      "protected_cycle_active",
+      "support_exit_suppressed",
+      "deadline_exit_pending",
+      "protected_sell_blocked",
+      "fixed_cycle_entry_index",
+      "fixed_cycle_deadline_index",
+      "fixed_cycle_reservation_index"
+    ],
+    "numeric_rule": "history diagnostics astype(float); calculate_history old+new observation columns astype(float). Evidence normalization mirrors actual SRT numpy .item(), and actual materialize_observation rejects bool negative controls.",
+    "lifecycle_dates": "行索引为真实D，新增列可从实际保存信号逐D审计；不能把observed支持位破位改成false"
+  },
+  "validation": {
+    "pure_synthetic_checks": 56,
+    "actual_SRT_materializations": 164,
+    "ruff": "PASS --no-cache",
+    "complete_original_history_and_target_NOOP": "EXACT pure synthetic normal and blocked inputs",
+    "contract_AST_checks": "InputContract/DecisionContract/ExecutionPolicy/MonitoringPolicy/RequiredCapabilities/calendar_request/derive_calculation_scope exact",
+    "new_account_runs_here": 0,
+    "network_attempts": 0,
+    "real_NOOP": "NOT_EXECUTED: must use new source identity, not reuse EX040 pass as proof"
+  },
+  "C_handoff_requirements": [
+    "以该source字节复制建立新EX041 source/runtime identity；NOOP和H10固定两参数域、相同旧数据绑定/资本/全时间窗，公开准备/执行并不可变留证。",
+    "先真实NOOP对照原R经济全账本和原始observed/targets；账户/decision ids随新source可变，不比较其字串相等。不得以EX040绿色替代新source真NOOP。",
+    "真实两臂前缀至May30 BUY后股数/价格/费用/现金一致；DMay30原support_break=1且目标周期已真实入场，H10才开始阻止support退出。",
+    "若输入/原周期不符停止并报告，不重选周期；真实NOOP不一致时先定位原因，不将差异称经济发现。",
+    "保存全部被抑制D、固定原期限、预约及实际退出/受阻/恢复生命周期；禁止6月3日买回已卖股份。"
+  ],
+  "A_audit_requirements": [
+    "独立核original/source/hash/params/data refs，检查原始observations和经济契约不变。",
+    "全前缀现金、成交和仓位一致；NOOP全账本经济相等。",
+    "实际support_break、全部suppressed D与pending/deadline/reservation/阻塞卖出/恢复对应。",
+    "分别从原资金历史独立走，不连接第一波任何臂。"
+  ],
+  "terminal_and_attribution": {
+    "T": "2025-12-31 original close; no endpoint scan or forced close",
+    "identity": "W_arm(T)=B_arm(T)+R_arm(T); DeltaW=(B_H10-B_NOOP)+(R_H10-R_NOOP)",
+    "B": "每臂原May30库存首次实际退出后的真实剩余现金冻结到T；到T仍未处置则按原同价估值并标未兑现",
+    "R": "之后原policy参与残差，包含资金规模、后续交易及费用",
+    "annual_denominator": "同一原2025年初权益，年度pp须区分年末现金差；不得用局部D分母直接抵52.462509pp原缺口",
+    "non_additivity": "不能把本臂与EX040 FORCE改善直接相加；联合路径未在此设计或执行"
+  },
+  "interpretation_limits": [
+    "已见单周期事后诊断，不能推断普遍H10规则有效。",
+    "新结果回答June3早退机会损失及后续资本传递；不证明公告预测力、独立alpha或其他年份达标。",
+    "source state-machine合成不等于真实全账户等价，必须由C执行及A独审。"
+  ],
+  "scope_prohibitions": [
+    "no platform changes",
+    "no old source or EX040 changes",
+    "no new data API",
+    "no new date/window/parameter scan",
+    "no joint action arm",
+    "no true accounts executed by this author"
+  ]
+}
