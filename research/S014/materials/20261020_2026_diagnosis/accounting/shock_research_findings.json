@@ -1,0 +1,285 @@
+{
+  "status": "COMPLETE_FIXED_PAIR_DIAGNOSIS",
+  "sources": [
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/independent_shock_audit_summary.json",
+      "sha256": "17cfe2addcfb7fc35e3c3e8bd695104d67a626f8c2431c52f1cbc1b9a784ceff"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_pause_actual_review.json",
+      "sha256": "02265baab1d282ded016d1c48ffd2546b81092fe7a910ecde340ad19ed3025cc"
+    }
+  ],
+  "implementation": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/write_shock_findings.py",
+    "sha256": "22cafa1c1c69ea9326b62b251158ca509a6bd76a168e0338b6e64b1e684afec1"
+  },
+  "goal_judgment": {
+    "SHOCK_ON": {
+      "original_return_pass": "6/7",
+      "original_drawdown_pass": "7/7",
+      "frequency_pass": true,
+      "all_original_goals_pass": false
+    },
+    "SHOCK_OFF": {
+      "original_return_pass": "5/7",
+      "original_drawdown_pass": "7/7",
+      "frequency_pass": true,
+      "all_original_goals_pass": false
+    },
+    "decision": "OFF cannot replace C9461 on this evidence: improved2026 still misses its original target and sacrifices2025."
+  },
+  "factual_2026": {
+    "SHOCK_ON": {
+      "opening_calendar_date": "2025-12-31",
+      "opening_cash": 4570.571999999927,
+      "opening_quantity": 88000,
+      "opening_equity": 527290.572,
+      "carry_actual_entry_D": "2025-12-22",
+      "carry_actual_entry_E": "2025-12-23",
+      "carry_actual_entry_price": 5.95,
+      "cutoff_E": "2026-10-15",
+      "ending_cash": 944894.5750000005,
+      "ending_quantity": 0,
+      "ending_equity": 944894.5750000005,
+      "ending_uncompleted_inventory": false,
+      "last_source_D": "2026-10-14",
+      "last_source_D_exit_pending": 0.0,
+      "last_source_D_reservation": 1647.0,
+      "post_E_cutoff_source_D_not_replayed": true,
+      "policy": "SHOCK_ON",
+      "closing_equity": 944894.5750000005,
+      "return": 0.7919807885357002,
+      "max_drawdown": 0.231778131088891,
+      "buyhold_opening_equity": 124028.57600000003,
+      "buyhold_return": 1.309762679207088,
+      "buyhold_drawdown": 0.5977359838973151,
+      "required_return": 1.964644018810632,
+      "return_pass": false,
+      "drawdown_pass": true,
+      "gap_to_required_pp": 117.26632302749319,
+      "underperformance_vs_BH_pp": 51.77818906713878,
+      "additional_original_1point5_BH_requirement_pp": 65.4881339603544,
+      "entryday_gross": -12042.999999999709,
+      "continued_hold_gross": 361323.9999999999,
+      "exit_to_actual_fill_gross": 86335.99999999994,
+      "actual_fees": 18012.997,
+      "net_pnl": 417604.00300000014,
+      "opening_carry_cycle_id": "CYC-5EC771A5FE1A3D2308C9",
+      "last_issued_D": "2026-10-14",
+      "last_execution_E": "2026-10-15",
+      "post_cutoff_D_rule_not_recomputed": true,
+      "sessions": 187,
+      "partial_year_not_annualized": true
+    },
+    "SHOCK_OFF": {
+      "opening_calendar_date": "2025-12-31",
+      "opening_cash": 3731.80999999959,
+      "opening_quantity": 67200,
+      "opening_equity": 402899.80999999965,
+      "carry_actual_entry_D": "2025-12-22",
+      "carry_actual_entry_E": "2025-12-23",
+      "carry_actual_entry_price": 5.95,
+      "cutoff_E": "2026-10-15",
+      "ending_cash": 899477.4699999996,
+      "ending_quantity": 0,
+      "ending_equity": 899477.4699999996,
+      "ending_uncompleted_inventory": false,
+      "last_source_D": "2026-10-14",
+      "last_source_D_exit_pending": 0.0,
+      "last_source_D_reservation": 1647.0,
+      "post_E_cutoff_source_D_not_replayed": true,
+      "policy": "SHOCK_OFF",
+      "closing_equity": 899477.4699999996,
+      "return": 1.2325090448665152,
+      "max_drawdown": 0.2560952118166452,
+      "buyhold_opening_equity": 124028.57600000003,
+      "buyhold_return": 1.309762679207088,
+      "buyhold_drawdown": 0.5977359838973151,
+      "required_return": 1.964644018810632,
+      "return_pass": false,
+      "drawdown_pass": true,
+      "gap_to_required_pp": 73.21349739441168,
+      "underperformance_vs_BH_pp": 7.725363434057275,
+      "additional_original_1point5_BH_requirement_pp": 65.4881339603544,
+      "entryday_gross": -52013.99999999976,
+      "continued_hold_gross": 450892.00000000006,
+      "exit_to_actual_fill_gross": 111753.99999999971,
+      "actual_fees": 14054.34,
+      "net_pnl": 496577.66000000003,
+      "opening_carry_cycle_id": "CYC-BB39EECD7D65EF8B8247",
+      "last_issued_D": "2026-10-14",
+      "last_execution_E": "2026-10-15",
+      "post_cutoff_D_rule_not_recomputed": true,
+      "sessions": 187,
+      "partial_year_not_annualized": true
+    }
+  },
+  "first_divergence": {
+    "first_feedback_state_D": "2020-04-16",
+    "first_original_state_divergence_D": "2020-07-06",
+    "first_target_divergence_D": "2020-07-06",
+    "first_funded_state_E": "2020-07-07",
+    "first_armed_D": "2020-04-16",
+    "first_feedback_difference_vs_source_control_D": "2020-07-07",
+    "feedback_definition": "First actual completion enters new known memory, including BASE; original state and wealth may remain exact.",
+    "feedback_constant_profile_flags_excluded": true,
+    "old_columns_exact_until_first_original_state_D": true,
+    "first_actual_SHOCK_suppression_D": "2020-07-06"
+  },
+  "actual_suppressed_counts": {
+    "all_window_D": 57,
+    "all_distinct_actual_cycles": 21,
+    "year2026_D": 12,
+    "year2026_distinct_actual_cycles": 5
+  },
+  "strongest_crossyear_counterexample": {
+    "year": 2025,
+    "ON_return": 0.47031980646620397,
+    "OFF_return": -0.047050062724665276,
+    "required": 0.40187863952058545,
+    "OFF_actual_suppressed_cycles": [
+      {
+        "D": "2025-03-27",
+        "cycle_id": "CYC-B25F0939F2DCB8ECFF59",
+        "actual_entry_E": "2025-03-21",
+        "D_raw_shock_condition": 1.0,
+        "D_actual_selected_shock_exit": 0.0,
+        "D_target": 1.0,
+        "D_other_support_exit": 0.0,
+        "D_other_cost_exit": 0.0,
+        "D_deadline": 0.0,
+        "D_pending_inherited": 0.0,
+        "actual_eventual_exit_D": "2025-03-31",
+        "actual_eventual_exit_E": "2025-04-01",
+        "actual_eventual_exit_flags": {
+          "pending_inherited": 0.0,
+          "deadline_exit": 0.0,
+          "selected_shock_exit": 0.0,
+          "selected_cost_exit": 1.0,
+          "ordinary_support_exit": 1.0
+        },
+        "actual_trade_status": "CLOSED",
+        "full_actual_trade_net_return": -0.08663421384269443
+      },
+      {
+        "D": "2025-06-23",
+        "cycle_id": "CYC-CBBDFB6C3A93C18C450C",
+        "actual_entry_E": "2025-06-19",
+        "D_raw_shock_condition": 1.0,
+        "D_actual_selected_shock_exit": 0.0,
+        "D_target": 1.0,
+        "D_other_support_exit": 0.0,
+        "D_other_cost_exit": 0.0,
+        "D_deadline": 0.0,
+        "D_pending_inherited": 0.0,
+        "actual_eventual_exit_D": "2025-06-25",
+        "actual_eventual_exit_E": "2025-06-26",
+        "actual_eventual_exit_flags": {
+          "pending_inherited": 0.0,
+          "deadline_exit": 0.0,
+          "selected_shock_exit": 0.0,
+          "selected_cost_exit": 1.0,
+          "ordinary_support_exit": 1.0
+        },
+        "actual_trade_status": "CLOSED",
+        "full_actual_trade_net_return": -0.10563121089436878
+      },
+      {
+        "D": "2025-08-26",
+        "cycle_id": "CYC-F9D9E49162A9908E7482",
+        "actual_entry_E": "2025-08-22",
+        "D_raw_shock_condition": 1.0,
+        "D_actual_selected_shock_exit": 0.0,
+        "D_target": 1.0,
+        "D_other_support_exit": 0.0,
+        "D_other_cost_exit": 0.0,
+        "D_deadline": 0.0,
+        "D_pending_inherited": 0.0,
+        "actual_eventual_exit_D": "2025-09-04",
+        "actual_eventual_exit_E": "2025-09-05",
+        "actual_eventual_exit_flags": {
+          "pending_inherited": 0.0,
+          "deadline_exit": 1.0,
+          "selected_shock_exit": 0.0,
+          "selected_cost_exit": 0.0,
+          "ordinary_support_exit": 0.0
+        },
+        "actual_trade_status": "CLOSED",
+        "full_actual_trade_net_return": -0.018142151965681474
+      }
+    ]
+  },
+  "remaining2026_question": {
+    "observed_new_OFF_early_loss_slot": {
+      "shock_profile": "SHOCK_OFF",
+      "diagID": "S014-C9471",
+      "slot_D": "2026-01-23",
+      "planned_first_E": "2026-01-26",
+      "slot_market_index": "1470.0",
+      "reservation_before": "1470.0",
+      "planned_until_index": "1481.0",
+      "last_completed_net_unit_known_D": "-0.6049316399999967",
+      "actual_candidate_D": "1.0",
+      "first_observed_D_at_or_after_expiry": "2026-02-09",
+      "first_actual_BUY_intent_D_after_pause": "2026-02-09",
+      "next_actual_BUY_E": "2026-02-10",
+      "next_actual_buy_price": "9.47",
+      "expiry_beyond_original_cutoff": "False",
+      "next_entry_right_censored_by_cutoff": "False",
+      "baseline_sameD_real_posture": "PLAN_BUY",
+      "baseline_sameD_actual_order_side": "BUY",
+      "baseline_sameD_order_status_POSTHOC": "FILLED",
+      "baseline_sameD_order_reason_POSTHOC": "FILLED",
+      "no_counterfactual_skipped_trade_return": "True",
+      "observed_flat_sessions_until_next_entry_or_cutoff": "11",
+      "actual_BH_up_contribution_pp_in_observed_flat_window": "61.21170011659247",
+      "actual_BH_down_contribution_pp_in_observed_flat_window": "-20.459801134861046",
+      "actual_BH_net_pp_in_observed_flat_window": "40.75189898173142"
+    },
+    "interpretation": "OFF allows Jan9 actual position to exitJan19 at a net loss, then consumes Jan23 own loss-pause slot and reentersFeb10. This establishes a changed feedback mechanism, not a hypothetical recoverable return.",
+    "minimal_discriminating_followup": "Keep SHOCK_OFF, NET1ATR cost, support, H10, clock and fees fixed; compare own-loss-pause ON versus BASE in full historical funded accounts, with a new-source exact OFF control. No parameter/date/threshold search.",
+    "evidence_for_diagnosing_not_adopting": true,
+    "counterevidence": "OFF actual pause-to-next-entry windows include both strong upward missed exposure and stronger net downward avoided exposure overall; removing pause may harm2024/25 and later2026.",
+    "no_claim_new_arm_will_improve": true
+  },
+  "resources": {
+    "actual_dispatched": 2,
+    "SUCCEEDED": 2,
+    "FAILED": 0,
+    "UNKNOWN": 0,
+    "other_status": {},
+    "retries": 0,
+    "source_specific_control_accounts": 1,
+    "new_active_profiles": 1,
+    "independent_failure_records": [],
+    "fits": 0,
+    "new_supplier_calls": 0,
+    "auditor_dispatches": 0,
+    "strategy_replays_by_auditor": 0
+  },
+  "independent_actual_checks": 672682,
+  "independent_phase_checks": 1149,
+  "observed_pause_chain_summary": {
+    "SHOCK_ON": {
+      "actual_slots": 5,
+      "right_censored_slots": 1,
+      "observed_full_flat_sessions_until_next_actual_entry": 54,
+      "observed_BH_net_pp": -53.16194229304055
+    },
+    "SHOCK_OFF": {
+      "actual_slots": 6,
+      "right_censored_slots": 1,
+      "observed_full_flat_sessions_until_next_actual_entry": 65,
+      "observed_BH_net_pp": -12.410043311309135
+    }
+  },
+  "limits": [
+    "Whole policy first diverges2020Jul6; each2026 own opening differs. Annual return changes cannot be multiplied by a shared opening or assigned to only six oldSHOCK actions.",
+    "Partial2026 remains an original unannualized hard-goal year. All seven years were seen; no holdout or automatic formal registration.",
+    "Original first five postSHOCK flat windows include four positive and one zero BH-net window, with September negative; this is only observed alternate exposure, not OFF profit proof.",
+    "Actual OFF September cycle exitsSep10 by original H10 with51.2436% full-trade net return. Old ON September flat drawdown is not proof that this OFF cycle lost.",
+    "Full-flat phase versus pause-to-next-entry window totals differ because the latter also includes post-expiry eligibility waiting. Neither defines a new action label.",
+    "New active account counts one fixed alternative, not seven independent validation samples; no fitted model, new market API or new strategy registration."
+  ]
+}

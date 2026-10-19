@@ -1,0 +1,302 @@
+{
+  "status": "COMPLETE_FIXED_INTERACTION_DIAGNOSIS",
+  "implementation": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/write_interaction_findings.py",
+    "sha256": "0ec9728bdcf800b798be8c6f744e4d1cdf15775daa915c5779b1db430a1900c1"
+  },
+  "sources": [
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/independent_interaction_audit_summary.json",
+      "sha256": "dd20ae2159700f3ec8b7838e29a54cfa86b1dbc1014ee01335a345fa8b889cd6"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_four_cell_review.json",
+      "sha256": "9215bbb9ca9ff0a6c6ead316b20a068a5ff7e6f1c8c841f35e7b6ed98f216c26"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_pause_actual_review.json",
+      "sha256": "dc29fdf907d578162e4747cffe95c83b28fcafb23daa0cb0d03db6c3f3ebd830"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_2026_new_actual_entries.csv",
+      "sha256": "6173843b75e0d09e1acdc1407d700ac9756a4b4fac330a6345a639489e25553a",
+      "rows": 6
+    }
+  ],
+  "actual_Jan23_decision_and_funding": [
+    {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1",
+      "D": "2026-01-23",
+      "completed_net_known": 1.0,
+      "last_completed_sign": -1.0,
+      "last_completed_net_unit": -0.6049316399999967,
+      "original_entry_candidate": 1.0,
+      "pause_armed_before_candidate": 1.0,
+      "pause_slot_consumed": 1.0,
+      "entry_signal": 0.0,
+      "target_position": 0.0,
+      "reservation_index": 1481.0,
+      "planned_slot_until": 1481.0,
+      "actual_order": null,
+      "actual_fill": null
+    },
+    {
+      "pause_profile": "BASE",
+      "D": "2026-01-23",
+      "completed_net_known": 1.0,
+      "last_completed_sign": -1.0,
+      "last_completed_net_unit": -0.6049316399999967,
+      "original_entry_candidate": 1.0,
+      "pause_armed_before_candidate": 0.0,
+      "pause_slot_consumed": 0.0,
+      "entry_signal": 1.0,
+      "target_position": 1.0,
+      "reservation_index": 1470.0,
+      "planned_slot_until": -1.0,
+      "actual_order": {
+        "cycle_id": "CYC-9FAADF1C5ABA3907C46C",
+        "decision_id": "DEC-52B48C9D790D95262CBD",
+        "execution_date": "2026-01-26T00:00:00.000000000",
+        "limit_price": 7.14,
+        "order_id": "ORD-DD1E6CE6DB874C80EAEC",
+        "order_type": "LIMIT",
+        "quantity": 47300,
+        "reason": "FILLED",
+        "side": "BUY",
+        "signal_date": "2026-01-23T00:00:00.000000000",
+        "status": "FILLED"
+      },
+      "actual_fill": {
+        "cycle_id": "CYC-9FAADF1C5ABA3907C46C",
+        "decision_id": "DEC-52B48C9D790D95262CBD",
+        "fees": 337.722,
+        "fill_id": "FIL-BCF434858FAFDDAD468B",
+        "fill_time": "2026-01-26T09:30:00.000000000",
+        "order_id": "ORD-DD1E6CE6DB874C80EAEC",
+        "price": 7.14,
+        "quantity": 47300,
+        "side": "BUY",
+        "signal_date": "2026-01-23T00:00:00.000000000",
+        "time_precision": "TIMESTAMP",
+        "trigger": "OPEN"
+      }
+    }
+  ],
+  "actual_new_Jan_cycle": {
+    "policy": "BASE",
+    "cycle_id": "CYC-9FAADF1C5ABA3907C46C",
+    "original_entry_E": "2026-01-26",
+    "actual_exit_E": "2026-02-09",
+    "calendar2026_carry_in": false,
+    "source_trade_status_at_original_cutoff": "CLOSED",
+    "source_trade_net_return_NOT_year_contribution": 0.2593834736691878,
+    "entryday_gross": 13717.000000000002,
+    "continued_hold_gross": 57233.00000000004,
+    "exit_to_actual_fill_gross": 17500.999999999964,
+    "buy_fee": 337.722,
+    "sell_fee": 426.173,
+    "net_pnl": 87687.10500000001,
+    "strategy_contribution_pp": 27.013536215497936,
+    "buyhold_contribution_pp": 40.75189898173142,
+    "relative_buyhold_contribution_pp": -13.73836276623349,
+    "actual_entry_price": 7.14,
+    "actual_exit_price": 9.01,
+    "quantity": 47300,
+    "exit_D": "2026-02-06",
+    "exit_D_shock": 0.0,
+    "exit_D_cost": 0.0,
+    "exit_D_support": 0.0,
+    "exit_D_deadline": 1.0
+  },
+  "new_actual_entry_dates_vs_LOSS": [
+    "2026-01-26",
+    "2026-04-08",
+    "2026-05-15",
+    "2026-06-23",
+    "2026-07-28",
+    "2026-10-12"
+  ],
+  "actual2026_failed_BUY": [
+    {
+      "pause_profile": "BASE",
+      "cycle_id": "CYC-0C83D4C7CF348F6F7F36",
+      "decision_id": "DEC-EED90D29DFA4D50AC8E0",
+      "execution_date": "2026-10-08T00:00:00.000000000",
+      "limit_price": 14.86,
+      "order_id": "ORD-E3D79F49ACCC47B6F01F",
+      "order_type": "LIMIT",
+      "quantity": 74200,
+      "reason": "DAILY_RANGE_NOT_REACHED",
+      "side": "BUY",
+      "signal_date": "2026-09-30T00:00:00.000000000",
+      "status": "UNFILLED",
+      "actual_trade_outcome": null
+    }
+  ],
+  "BASE_2026_original_return_pass_margin_pp": 0.2720589690974329,
+  "original_goal_counts": {
+    "AFTER_NET_LOSS_SKIP1": {
+      "return": 5,
+      "drawdown": 7,
+      "frequency_pass": true,
+      "all_original_goals_pass": false
+    },
+    "BASE": {
+      "return": 5,
+      "drawdown": 6,
+      "frequency_pass": true,
+      "all_original_goals_pass": false
+    }
+  },
+  "goal_judgment": "BASE repairs original2026 return but fails2024 return and2025 return plus drawdown. It cannot replace C9461 as an all-original-goals strategy.",
+  "strong_actual_counterexamples": [
+    {
+      "entry_E": "2026-05-15",
+      "exit_E": "2026-05-20",
+      "actual_trade_net_return": -0.021630828188205276,
+      "calendar2026_contribution_pp": -4.801365581341413
+    },
+    {
+      "entry_E": "2026-06-23",
+      "exit_E": "2026-06-26",
+      "actual_trade_net_return": -0.06167918460277255,
+      "calendar2026_contribution_pp": -13.087633664811563
+    },
+    {
+      "entry_E": "2026-10-12",
+      "exit_E": "2026-10-15",
+      "actual_trade_net_return": -0.13677842258244266,
+      "calendar2026_contribution_pp": -43.445491997429365
+    }
+  ],
+  "resources": {
+    "actual_dispatched": 2,
+    "SUCCEEDED": 2,
+    "FAILED": 0,
+    "UNKNOWN": 0,
+    "other_status": {},
+    "retries": 0,
+    "source_specific_control_accounts": 1,
+    "new_active_profiles": 1,
+    "independent_failure_records": [],
+    "fits": 0,
+    "new_supplier_calls": 0,
+    "auditor_dispatches": 0,
+    "strategy_replays_by_auditor": 0
+  },
+  "independent_actual_checks": 684657,
+  "independent_phase_checks": 1154,
+  "four_economic_policy_sources": [
+    {
+      "shock_profile": "SHOCK_ON",
+      "pause_profile": "BASE",
+      "diagID": "S014-C9460",
+      "source_experiment": "EX046_20261020",
+      "independent_review": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_000_independent_review.json",
+        "sha256": "6b18343c78a5a87636fc182472b32d193e644b2720e885cbafc282172dc3deaf"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4.json",
+        "sha256": "174a4f8d4ca11ccd14a44f8cfb439e046123de4e3df67da065846e323ea36ab4",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-000-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "c8762ae87e97b316c5fa82ff15b262e1ad27bcdf27d24f9530ab22f66680721f"
+    },
+    {
+      "shock_profile": "SHOCK_ON",
+      "pause_profile": "AFTER_NET_LOSS_SKIP1",
+      "diagID": "S014-C9461",
+      "source_experiment": "EX046_20261020",
+      "independent_review": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json",
+        "sha256": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+        "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-001-after_net_loss_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb"
+    },
+    {
+      "shock_profile": "SHOCK_OFF",
+      "pause_profile": "AFTER_NET_LOSS_SKIP1",
+      "diagID": "S014-C9480",
+      "source_experiment": "EX048_20261020",
+      "independent_review": {
+        "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_account_000_independent_review.json",
+        "sha256": "0dc3da72848ab275a452a375791c18a8fcf964e9bac350dd366884441993f6eb"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73.json",
+        "sha256": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73",
+        "media_type": "application/json",
+        "name": "loss-interaction-000-after_net_loss_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "09cace206b3a3237fd19fd7787e2992eb2eafabce73efe7acfadb8293c10121e"
+    },
+    {
+      "shock_profile": "SHOCK_OFF",
+      "pause_profile": "BASE",
+      "diagID": "S014-C9481",
+      "source_experiment": "EX048_20261020",
+      "independent_review": {
+        "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_account_001_independent_review.json",
+        "sha256": "d1fa71e2c274f890dca206a611751dc59a53f8e37703f87a9afa9af37dc92e1d"
+      },
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be.json",
+        "sha256": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be",
+        "media_type": "application/json",
+        "name": "loss-interaction-001-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "2c0926c4bc3f3e51dee7dc9ecbb18c795f43405f0f25914ed3b31df57332f3ef"
+    }
+  ],
+  "next_research_direction_without_new_accounts": "Keep C9461 original source/parameters and prior eligibility unchanged. Existing four cells show opposing continuation/protection duties. A later proposal would need D-known evidence distinguishing sustained rise from renewed weakness across all years, not year switches, remembered dates or threshold search.",
+  "limits": [
+    "BASE first mutable-state divergence2020Apr16, targetApr22, moneyApr23; its2026 own opening324604.318 differs fromLOSS402899.81. It is not a localJan cancellation with common starting wealth.",
+    "Actual Jan26-Feb9 trade net25.9383% and calendar contribution27.0135pp differ from observed BH40.7519pp. Neither is entire policy annual gain73.4856pp.",
+    "Other added actual entries can lose; failedBUY remains null outcome. The cutoff has no assumed future source replay or wealth.",
+    "The0.2721pp2026 margin is reported, not a new buffer veto. Original annual goals and frequency alone govern the original pass count.",
+    "Descriptive four-cell return interactions reuse old funded accounts and own annual openings, not independent samples or clean causal dose effects.",
+    "Seen history, adaptive choice of this fixed supplement, zero fit/new market calls, no automatic registration or production change."
+  ]
+}

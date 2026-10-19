@@ -1,0 +1,157 @@
+{
+  "status": "AUTHORIZED_FIXED_TWO_SHOCK_ACTION_ABLATION_BEFORE_NEW_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "shock_profile": "SHOCK_ON"
+    },
+    {
+      "shock_profile": "SHOCK_OFF"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9470",
+    "S014-C9471"
+  ],
+  "planned_account_count": 2,
+  "no_blind_retries": true,
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX046_20261020"
+    },
+    "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+    "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+    "media_type": "application/json",
+    "name": "completed-sign-pause-001-after_net_loss_skip1",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+  "baseline_control": "Fresh SHOCK_ON exactly replicates all original EX046001/C9461 observation and funded economic fields, ignoring mapped IDs and two newly declared constant/action diagnostic fields",
+  "canonical_runtime_parameter_schema": "Exactly shock_profile enum SHOCK_ON/SHOCK_OFF; all cost/GRACE/S5/own actual net-loss SKIP1 roles fixed",
+  "only_policy_change": "OFF suppresses selected positive-P SHOCK from actual risk exit. Raw legacy SHOCK and positive-P observations remain truthful; cost/support/inherited pending/H10 still cause exit, OFF is not forced H10 holding.",
+  "completed_feedback": "Each arm follows its own actual filled BUY/SELL history and strict completed net sign; no frozen future baseline labels. Matching actual loss arms one planned slot i+11; same actual SELL D may consume if original eligibility allows. No phantom entry/order/cost on a skip.",
+  "unchanged_contract": "Original 1% LimitBuyHold, one-way .001 costs, tick/lot/limits/status, initial100000 continuous account, original H10/reservation/failedBUY, anchored HFQ_RESEARCH/RESEARCH_UNIT and original input clock",
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "original_annual_acceptance_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "2026_role": "Original partial-year economic hard acceptance, not annualized; user explicitly authorized diagnosis; original return/DD/frequency goals unchanged",
+  "complete_economic_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "audit_mapping": "Inherit corrected EX046v2: D actual funded state is daily-by-D; valid_session maps next E and daily(E).signal_date=D. Initial prewindow D is cash100000/quantity0. Never zip nextE quantity into D-held.",
+  "divergence_semantics": "Separate completed-memory, armed, first original-column state difference including reservation, first target difference and first actual funded E. New constant shock profile flags are metadata, not economic divergence. Full old prefixes use first old-state D.",
+  "controls": "A/B source and runner pre-review, immutable local public API source lock, fresh SHOCK_ON internal exact and independent funded PASS publicly gated before SHOCK_OFF. Each failure/unknown retained and dependent execution stops; no blind retry.",
+  "local_publication": "Only repository-local assets/evidence/EX047_20261020 and .tmp/evidence-publication; publication ProviderConfig empty; requests/socket networking denied, no remote uploads",
+  "selection_disclosure": "Shared-seen original history and actual 2026 attribution motivated this two-arm necessity interaction test, not new alpha or pristine holdout; OFF may fail other original years. No new dates, thresholds or year gates.",
+  "prelock_synthetic_fixture_correction": "Initial intended loss toy sold later at a restored profitable open. Toy sale open corrected, unchanged source; original failing receipt and draft retained under others/prelock_failures. Zero actual accounts involved.",
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "authorization": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/authorization.json",
+    "sha256": "b44842606485f92ff87e9c1f8c8d025dd362f63b7c9cb50a35de92ed0d8eccff"
+  },
+  "method": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/design_decision.json",
+    "sha256": "4d6d77c325bdb63fb5c3c2e5e724aab2b1b9bd86ebe06e06f60e79686a82b81b"
+  },
+  "baseline_integrity": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/baseline_integrity.json",
+    "sha256": "92031638151da93d59a1c2d2a2e81084b72d7693cf66350c70620d0a7cabaee6"
+  },
+  "method_inventory": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/method/c9461_mechanism_inventory.json",
+    "sha256": "a669a939c1e082f0a78c8b445d6e530c53af429ba9ade4ddba2171775a1d8e93"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/locked_method_review.json",
+    "sha256": "80e619c6aa3f1b87e94feea2dfc3391b9034218a90e121e6708d12561b156ecc"
+  },
+  "method_evidence_gate": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/shock_ablation_evidence_gate.json",
+    "sha256": "9d419a45ca1cd027431dc6c6c0e08c467e4fdffffc668b6978a618be3e8db544"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_evaluation_protocol.json",
+    "sha256": "bb9bb1069b3ceb36e93ef89608c45cf05edc27ac9384db95fab4af1325a0a728"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/source_state_review.json",
+    "sha256": "4c5af8775600ca73a83451c7f4c15e17fab95eec8c404dae31c3d862d378abce"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_source_review.json",
+    "sha256": "1b616e81b7327b8ce83edc9e04cafa963e2d3809bd9681442f798942dbb5b2da"
+  },
+  "account_attribution": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_accounting_review.json",
+    "sha256": "c5df438d07c5a2f8d441c98a09bb4c5a9dd7a664fea430a0bd6b437a5ae4b1e9"
+  },
+  "exit_attribution": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_exit_flat_review.json",
+    "sha256": "da364210b7bbadf6129c0294270a559915153ffdde5f5df9509b9918f14ffffc"
+  },
+  "diagnosis_delivery": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_diagnosis_delivery.json",
+    "sha256": "19f457675552e09608c207b4946d3f37c020233c47175d287f165df844417d70"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+    "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+  },
+  "previous_lock": {
+    "path": "research/S014/experiments/EX046_20261020/protocols/execution_lock_v2.json",
+    "sha256": "444592dc11abf4668d7192f358b33598669f8a35de9d79ff67d2027d2196d38f"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX046_20261020/others/accounts/run-001.json",
+    "sha256": "4d909358304bad93e994ee5a796c02d7c61f4540f7ac6e9a392cd9821dc20caa"
+  },
+  "previous_final_verification": {
+    "path": "research/S014/experiments/EX046_20261020/others/final_verification.json",
+    "sha256": "9b2281edd2a27ffb35ef6f4e36aa295859aeae20bae62dacb745265314e6659f"
+  },
+  "corrected_audit_source": {
+    "path": "research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py",
+    "sha256": "b9f80bfc4f5757e00d4984a2bd7481f6835c4d4654b1b7121341851d26d47324"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}

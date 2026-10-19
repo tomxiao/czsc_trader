@@ -1,0 +1,642 @@
+{
+  "status": "READONLY_MECHANISM_AND_INTERFACE_REVIEW_NO_NEW_EXPERIMENT_OR_ACCOUNT",
+  "verified_branch": "codex/s014-jinniu-research",
+  "verified_clean_HEAD": "cbdce86125241807b2d1e57c7ebde7fb2757f587",
+  "role": "RSCH",
+  "baseline": {
+    "candidate_label": "S014-C9461",
+    "formal_candidate_registered": false,
+    "source": {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668
+    },
+    "source_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX046_20261020"
+      },
+      "evidence_id": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "media_type": "text/x-python",
+      "name": "ex046-locked-src-strategy_runtime-strategies-completed_pause_review.py",
+      "schema": null,
+      "schema_version": null
+    },
+    "parameters": {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1"
+    },
+    "account_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX046_20261020"
+      },
+      "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+      "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+      "media_type": "application/json",
+      "name": "completed-sign-pause-001-after_net_loss_skip1",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    "result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+    "actual_execution_lock_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX046_20261020"
+      },
+      "evidence_id": "444592dc11abf4668d7192f358b33598669f8a35de9d79ff67d2027d2196d38f.json",
+      "sha256": "444592dc11abf4668d7192f358b33598669f8a35de9d79ff67d2027d2196d38f",
+      "media_type": "application/json",
+      "name": "ex046-execution-lock-v2",
+      "schema": null,
+      "schema_version": null
+    },
+    "same_source_original_parent_lock_ref": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX046_20261020"
+      },
+      "evidence_id": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e.json",
+      "sha256": "3c8238e8be78b65986032143167a68a28447ce13e44fd03158d39d52c7e4871e",
+      "media_type": "application/json",
+      "name": "ex046-execution-lock-v1",
+      "schema": null,
+      "schema_version": null
+    },
+    "annual_2026_existing_audit": {
+      "year": 2026,
+      "opening_equity": 527290.572,
+      "closing_equity": 944894.5750000005,
+      "return": 0.7919807885357002,
+      "max_drawdown": 0.231778131088891,
+      "buyhold_return": 1.309762679207088,
+      "buyhold_drawdown": 0.5977359838973151,
+      "required_return": 1.964644018810632,
+      "return_pass": false,
+      "drawdown_pass": true,
+      "return_difference_vs_original": -1.5151060431417818,
+      "sessions": 187,
+      "technical_only": true,
+      "return_difference_vs_frozen": -0.09850341782340744,
+      "return_difference_vs_cost_control": -0.0990110410450531
+    },
+    "annual2020_25_original_joint_pass": "6/6 returns and6/6DD plus original frequency; allpreviouslyseen; must retain all complete-year checks in any new full-path comparison"
+  },
+  "baseline_duties": {
+    "entry": "After original60session startup: actuallyflat, original S5 supportOK, oldreservation reached and not realfailedBUYreset; plan nextE original1%limit fullcash wholelots.",
+    "hold_exit_priority": "Inherited prior SELLpending or actualH10deadline first; positivecurrent-netP and knownZ5>2 selectedSHOCK or originalNETcurrent1ATR selectedCOST next; otherwise strictS5break except actualBUY-D GRACE. A disabledSHOCK never disables cost/support/deadline/pending.",
+    "deadline": "ActualBUY indexi sets deadlinei+9 decisionclose and reservationi+10; failedSELL remains pending until actuallyfilled, withoutmovinganchors.",
+    "feedback": "ActualfullSELL completes own positive-funded BUY cycle. Strict exitfill*.999-entryfill*1.001<0 arms once; after actualSELL sameD may consume if originaleligibility holds. Originalreservation may defer. First eligibleflatD consumesi+11, noorder/entry/deadline/cost/fee and clearsarmed immediately. Persistent lastloss does not indefinitely rearm.",
+    "crossyear": "NoJanreset of held/pending/reservation/armed orcash; start originalfull2020window, not2026-only reset. AnnualPnl and anyunfinishedendposition use originalledger, no forced10/15sale.",
+    "observability": "Current history has fixed100unit reconstructed fill state, not live authoritative portfolio callback. Existing realC9461 audited perD against actualfunded fills. Any newsource must freshly recertify actualfunded flags and strict fee-adjusted complete-sign, never feed frozen futureC9461trades to a changed path."
+  },
+  "source_locators": [
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 288,
+      "anchor": "deadline = i + 9",
+      "excerpt": "                        deadline = i + 9",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 293,
+      "anchor": "reservation = i + 10",
+      "excerpt": "                            reservation = i + 10",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 301,
+      "anchor": "completed_net = float(fill.price) * .999 - entry_fill_price * 1.001",
+      "excerpt": "                        completed_net = float(fill.price) * .999 - entry_fill_price * 1.001",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 360,
+      "anchor": "shock = bool(eligible and feature.shock_known and (net_profit > 0) and (feature.z5 > 2))",
+      "excerpt": "            shock = bool(eligible and feature.shock_known and (net_profit > 0) and (feature.z5 > 2))",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 372,
+      "anchor": "cost_loss_price = entry_fill_price * (1 + 0.001) - close * (1 - 0.001)",
+      "excerpt": "            cost_loss_price = entry_fill_price * (1 + 0.001) - close * (1 - 0.001)",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 430,
+      "anchor": "if inherited or expired or risk_exit or ordinary_support:",
+      "excerpt": "            if inherited or expired or risk_exit or ordinary_support:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 448,
+      "anchor": "if armed:",
+      "excerpt": "            if armed:",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 450,
+      "anchor": "reservation = i + 11",
+      "excerpt": "                reservation = i + 11",
+      "line_basis": "LF-delimited bytes"
+    },
+    {
+      "path": "research/S014/experiments/EX046_20261020/src/strategy_runtime/strategies/completed_pause_review.py",
+      "sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846",
+      "bytes": 25668,
+      "line": 576,
+      "anchor": "\"entry\": {\"order_type\": \"LIMIT\", \"limit_parameter\": 0.01}",
+      "excerpt": "                    \"entry\": {\"order_type\": \"LIMIT\", \"limit_parameter\": 0.01},",
+      "line_basis": "LF-delimited bytes"
+    }
+  ],
+  "prior_mechanisms_and_negative_evidence": [
+    {
+      "family": "EX006 profit-and-weakness probes",
+      "evidence": {
+        "path": "research/S014/experiments/EX006_20261016/others/report.md",
+        "sha256": "1b298fd355f6c0fc8b961760baabec333cbe27dc5c636b2750bfd2edbe84e4f3",
+        "bytes": 14029,
+        "line": 86,
+        "anchor": "2026年20日持有中点",
+        "excerpt": "2026年20日持有中点，31个符合“浮盈且走弱”的尝试，下一可执行开盘退出的平均净收益约21.019%，原固定退出约41.022%，提前退出平均少约20.003个百分点。2024年同类提前退出有小幅改善，不能据此忽略强上涨阶段的代价。",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Eight once-only midpoint early exits using unrealized profit plus price weakness, next executable sale versus fixed original endpoint.",
+      "already_answered": "All8 pooled comparisons negative;2026 H20 middle31 selected attempts early sale21.019% versus fixed41.022%, roughly20.003pp sacrificed. Not continuous annual account returns.",
+      "difference_vs_current_question": "Old warning that taking profit can forfeit strong rises. Conditions differ from positiveP+Z5>2, population/endpoints differ from C9461; do not transfer old local values to its account."
+    },
+    {
+      "family": "EX024 first supportbreak currentP",
+      "evidence": {
+        "path": "research/S014/experiments/EX024_20261018/protocols/account_report.md",
+        "sha256": "0f444d63ee81462bad812eef94ab404931d93b42d4d714afcc6192e0925c41b9",
+        "bytes": 11676,
+        "line": 46,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | 105.40% | 230.71% | 113.66% | 218.02% | ≥196.46% | 43.43%／28.43% | 59.77% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "At first strictly early supportbreak freeze current buy-fee-adjusted P once; P>0 or P<=0 permits exit, otherwise wait originalH10; original reservation.",
+      "already_answered": "2026 P113.66% fails196.46%; N218.02% passes but fails otheryears; originalR230.71% passes2026 but overall originalgoals fail. Noallgoals route.",
+      "difference_vs_current_question": "Neither positiveP+highZ without supportbreak nor actual completed-loss memory; cannot rebrand P/N as the new shock interaction."
+    },
+    {
+      "family": "EX025 candle entry confirmation",
+      "evidence": {
+        "path": "research/S014/experiments/EX025_20261018/protocols/account_report.md",
+        "sha256": "c0a23aafe98b96b92860e70a106059b8af0caedfac9426fd9f069429358226a0",
+        "bytes": 12342,
+        "line": 44,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | 62.51% | 2.46% | 68.61% | ≥196.46% | 36.91%／39.35%／36.84% | 59.77% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Original support candidate additionally C_D>O_D; same originalB/R/P exit and fees.",
+      "already_answered": "New2026 returns62.51%,2.46%,68.61% allbelow196.46%; all originalgoals0/6.2024localrepair loses many other-year opportunities.",
+      "difference_vs_current_question": "Not a new2026 remedy; gating future entry is different from holding exit necessity."
+    },
+    {
+      "family": "EX026 H3/H5 full-cycle clocks",
+      "evidence": {
+        "path": "research/S014/experiments/EX026_20261018/protocols/account_report.md",
+        "sha256": "e2dd31906df0f35ef49a8471f1d69f9c10086a4b955c21f12c95876051316a2f",
+        "bytes": 11785,
+        "line": 45,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | 81.22% | 99.48% | 81.22% | 96.66% | 91.67% | 97.21% | ≥196.46% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Both actual holding deadline and reservation clock shorten toH3/H5, crossed originalB/R/P.",
+      "already_answered": "All six new2026 returns81.22..99.48% below196.46%; all originalgoals0/9. H3P/H3B economicrepeat retained.",
+      "difference_vs_current_question": "UniformshorterH is already negative and outside present requirement to retain actualH10; no neighboring horizon scan."
+    },
+    {
+      "family": "EX027 H1/H2 natural short boundary",
+      "evidence": {
+        "path": "research/S014/experiments/EX027_20261018/protocols/account_report.md",
+        "sha256": "d7532d82739383aed5e2de456670089ef2edd7bcc9132ec8f3bcb17cd23b4ff9",
+        "bytes": 12533,
+        "line": 40,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | -18.87% | 79.01% | 55.64% | 79.60% | ≥196.46% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "H1 onlyB, H2 B/R/P; realT+1 no sameD buy/sell. Deadline and post-exit opportunity clock both change.",
+      "already_answered": "2026H1-18.87%;H2 55.64..79.60% allfail; newfullaccounts allnegative and originalgoals0/10.",
+      "difference_vs_current_question": "Cannot claim more frequent participation or shorter holding is a new fix; it changed whole opportunity paths."
+    },
+    {
+      "family": "EX028 H15 extension",
+      "evidence": {
+        "path": "research/S014/experiments/EX028_20261018/protocols/account_report.md",
+        "sha256": "9b8f8205ce917cfa75b2f581a6ef43dd8691c71dcd6628abab5974ac7a7e985b",
+        "bytes": 8555,
+        "line": 36,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | 128.56% | 155.88% | 112.42% | ≥196.46% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Hold/reservationH15 with B/R/P, not conditional local continuation.",
+      "already_answered": "2026 128.56%,155.88%,112.42% allbelow196.46%; originalgoals0/6, lowerthanH10 completewealth. Same-entry profitable labels failed to carry to new full paths.",
+      "difference_vs_current_question": "Alreadynegative and outside retainedH10 requirement; longer holding labels cannot justify horizon expansion."
+    },
+    {
+      "family": "EX029 conditional reservation currentP",
+      "evidence": {
+        "path": "research/S014/experiments/EX029_20261018/protocols/account_report.md",
+        "sha256": "fa13a55d5e10ed28c88f59350ea8e80cc336f06c5c12bb11b4bab5aeef0a50ae",
+        "bytes": 12040,
+        "line": 34,
+        "anchor": "| 2026 |",
+        "excerpt": "| 2026 | 77.80% | 230.71% | 72.04% | 169.89% | ≥196.46% |",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Firstearly supportbreak freezes P sign to retain or drop actual-entry reservation, while support earlySELL stays.",
+      "already_answered": "2026 positive-reserve72.04%, nonpositive169.89%, immediate77.80% allfail; originalall-reserveR230.71% passes2026 but otheryearsgaps. Alloriginalgoals0/4.",
+      "difference_vs_current_question": "OldP belongs to still-held firstbreak, not completed loss or updated flat recovery; conditional clocks are not automatically new information."
+    },
+    {
+      "family": "EX043 holding/exit3x3",
+      "evidence": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/policy_summary.csv",
+        "sha256": "c109d17024cd3076e02a6865d69fbb08eb556b19b2a5764ebe9e834786c3256f",
+        "bytes": 2510,
+        "line": 6,
+        "anchor": "ENTRY_GRACE/SHOCK_PROFIT",
+        "excerpt": "ENTRY_GRACE/SHOCK_PROFIT,ENTRY_GRACE,SHOCK_PROFIT,2.880824909999993,388082.49099999934,275765.2409999994,275765.2409999994,1.7576524099999942,5,6,5,7,138,1642,5.0426309378806335,True,121,1455,4.989690721649485,5,4,5",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "HoldBASE/GRACE/TREND crossed exitBASE/SHOCK/GIVEBACK, costBASE and no completion pause.",
+      "already_answered": "Saved2026 audit: GRACE/BASE196.9781% passes196.4644%; GRACE/SHOCK89.0484%, GRACE/GIVEBACK110.0430% fail. GRACE/BASE only4/6 returns in2020-25 and oneDDfail; noall-originalgoals policy.",
+      "difference_vs_current_question": "Strong existing competitor for earlyprofitexit harm, but not samepopulation as currentcost+loss feedback. OFF comparison now is interaction/necessity ablation, not a newindicator or proved2026gain."
+    },
+    {
+      "family": "EX044 Z entry/ANY-P/cost5",
+      "evidence": {
+        "path": "research/S014/materials/20261019_2024_diagnosis/accounting/policy_summary.csv",
+        "sha256": "45dc500034b6cf1838238d3f73300057db925cea240034e4fa83fc56240062af",
+        "bytes": 1869,
+        "line": 6,
+        "anchor": "BASE/POSITIVE_P/NET_LOSS_1ATR",
+        "excerpt": "BASE/POSITIVE_P/NET_LOSS_1ATR,ENTRY_GRACE,SHOCK_PROFIT,BASE,POSITIVE_P,NET_LOSS_1ATR,3.392337639999993,439233.7639999993,312130.0339999996,312130.0339999996,2.121300339999996,5,6,5,7,138,1642,5.0426309378806335,True,121,1455,4.989690721649485,5,4,5",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "HighZ candidate filter2x2 with positiveP vsanyP exits; plus originalcost-stop-only arm. SameGRACE andH10.",
+      "already_answered": "Noall-goals route; cost arm5/6completeyearreturns and5/7original including2026fail, while all7DDpass. Old2024 gains cannot be called2026repair.",
+      "difference_vs_current_question": "Current C9461 retains cost arm and adds ownclosed-loss pause. Removing its pause is already EX046BASE, not a new mechanism or sufficient explanation for the2026gap."
+    },
+    {
+      "family": "EX045 highZ blocked-slot clock",
+      "evidence": {
+        "path": "research/S014/materials/20261019_2024_diagnosis/official/clock_interpretation_notes.json",
+        "sha256": "8315cd3dce886a0ff7dfc7df03ded2486e640013e9d75045f439b009a8be02d3",
+        "bytes": 7197,
+        "line": 16,
+        "anchor": "Planned-slot clock does not jointly retain2024",
+        "excerpt": "      \"finding\": \"Planned-slot clock does not jointly retain2024 flip and restore all prior passing years\",",
+        "line_basis": "LF-delimited bytes"
+      },
+      "rule": "Same highZ candidate filter with retryeveryD orconsumeplannedH10slot; no actual closing loss and costBASE.",
+      "already_answered": "Wholepathclock matters but neither solvesallgoals. KEEP2024-13.4581%/2025+34.2681% stillgaps; source blocks no2025 directRETRYcandidate, prior phasepropagation remains.",
+      "difference_vs_current_question": "Planned slot alreadytested as clock action; using C9461loss memory is different state, but arbitraryslotlength oryearreset would be repeated phase fitting."
+    }
+  ],
+  "EX043_saved_2026_grid": [
+    {
+      "index": 0,
+      "parameters": {
+        "hold_rule": "BASE",
+        "exit_rule": "BASE"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 244542.2409999995,
+        "closing_equity": 808722.4249999996,
+        "return": 2.307086831677482,
+        "max_drawdown": 0.2557816458098692,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": true,
+        "drawdown_pass": true,
+        "return_difference_vs_original": 0.0,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_000_independent_review.json",
+        "sha256": "b84e18150f5baf35f294d95d45bf8369b9aa6b2e89c47e4b9a755eb9be83476f",
+        "bytes": 22876
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 1,
+      "parameters": {
+        "hold_rule": "BASE",
+        "exit_rule": "SHOCK_PROFIT"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 275463.7129999996,
+        "closing_equity": 581149.7499999998,
+        "return": 1.1097143564604486,
+        "max_drawdown": 0.24092649314637116,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -1.1973724752170334,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_001_independent_review.json",
+        "sha256": "a2fc74003f4d6110fb295fd008c77e851f5c902dcf12f9d52dc1bda0851ec8d9",
+        "bytes": 37111
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 2,
+      "parameters": {
+        "hold_rule": "BASE",
+        "exit_rule": "PROFIT_GIVEBACK"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 255062.27399999968,
+        "closing_equity": 597632.6169999999,
+        "return": 1.3430851126184211,
+        "max_drawdown": 0.2557836978467367,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -0.9640017190590608,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_002_independent_review.json",
+        "sha256": "0f98a4261f9812c55e6117f9c2b8bb763e500cc158fbc05aca62daf8a757c084",
+        "bytes": 33419
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 3,
+      "parameters": {
+        "hold_rule": "ENTRY_GRACE",
+        "exit_rule": "BASE"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 286844.5419999993,
+        "closing_equity": 851865.4959999995,
+        "return": 1.9697810879037103,
+        "max_drawdown": 0.2686920232324641,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": true,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -0.33730574377377165,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_003_independent_review.json",
+        "sha256": "a3082308fe54424c5865de021507987990524117fd7e2d2df9f632400d2c1b3b",
+        "bytes": 39449
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 4,
+      "parameters": {
+        "hold_rule": "ENTRY_GRACE",
+        "exit_rule": "SHOCK_PROFIT"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 388082.49099999934,
+        "closing_equity": 733663.8199999993,
+        "return": 0.8904842063591076,
+        "max_drawdown": 0.24473484698415282,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -1.4166026253183743,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_004_independent_review.json",
+        "sha256": "e2d1148bededae8a4f90ba2bbd80246c965f55e3f7996d57bf732cd165ea5f4b",
+        "bytes": 57063
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 5,
+      "parameters": {
+        "hold_rule": "ENTRY_GRACE",
+        "exit_rule": "PROFIT_GIVEBACK"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 336749.59300000005,
+        "closing_equity": 707318.9520000004,
+        "return": 1.1004300129918798,
+        "max_drawdown": 0.3139658109721123,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -1.2066568186856022,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_005_independent_review.json",
+        "sha256": "2c618301b828df6536d7dbc53ffe15266ab14aebe38f860ed8a213402c07d4a6",
+        "bytes": 52427
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 6,
+      "parameters": {
+        "hold_rule": "TREND_CYCLE",
+        "exit_rule": "BASE"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 268889.1729999996,
+        "closing_equity": 691926.3279999999,
+        "return": 1.5732770132771425,
+        "max_drawdown": 0.34874909660239883,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -0.7338098184003394,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_006_independent_review.json",
+        "sha256": "bbb66687da1825bffddaf4abe469097f2faa05640b8a91d1ef0b724b41f7d3a2",
+        "bytes": 26305
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 7,
+      "parameters": {
+        "hold_rule": "TREND_CYCLE",
+        "exit_rule": "SHOCK_PROFIT"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 302657.9519999993,
+        "closing_equity": 496693.5429999994,
+        "return": 0.64110521371664,
+        "max_drawdown": 0.34854111141768773,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -1.665981617960842,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_007_independent_review.json",
+        "sha256": "0be5ec2968ce1f941ffb228daf3c46bec641010d70515c54d5762735fa8e6481",
+        "bytes": 41399
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    },
+    {
+      "index": 8,
+      "parameters": {
+        "hold_rule": "TREND_CYCLE",
+        "exit_rule": "PROFIT_GIVEBACK"
+      },
+      "original_2026_goal_audit": {
+        "year": 2026,
+        "opening_equity": 280569.6159999996,
+        "closing_equity": 511478.03599999973,
+        "return": 0.8229986671115539,
+        "max_drawdown": 0.3627778132241355,
+        "buyhold_return": 1.309762679207088,
+        "buyhold_drawdown": 0.5977359838973151,
+        "required_return": 1.964644018810632,
+        "return_pass": false,
+        "drawdown_pass": true,
+        "return_difference_vs_original": -1.484088164565928,
+        "sessions": 187,
+        "technical_only": true
+      },
+      "source": {
+        "path": "research/S014/materials/20261019_exante_hold_exit/accounting/account_008_independent_review.json",
+        "sha256": "e7e4ce91e717677eeda64e36371e183d33649b950101a5b152c34e438566aa44",
+        "bytes": 37699
+      },
+      "json_locator": "original_annual_goal_audit[year=2026]"
+    }
+  ],
+  "current_minimal_priority_question": {
+    "status": "METHOD_FEASIBILITY_ONLY_ROOT_WAITING_CURRENT_ACCOUNT_ATTRIBUTION_TO_LOCK",
+    "question": "With actual C9461 COST+GRACE+ownclosed-loss feedback fixed, is positiveP highZ SHOCK still necessary, or does it sacrifice sustained advances and alter later opportunities enough to explain the2026gap?",
+    "comparison": "New-source exact originalSHOCK-ON C9461 control plus only SHOCK-OFF; no other factor. It is a component necessity/interaction test, not a newalpha or threshold discovery.",
+    "no_new_parameters_selected": "Keep original Z5,2boundary,P>0,ATR20prior1cost,S5,fees,actualH10 andskip1 unchanged. Proposed mode ON/OFF is not an implementation or dispatch authorization here.",
+    "nonoverlap_logic": "Within originalfinite/positiveATR eligibleSHOCKdomain, netP>0 implies cost_loss_price<0 so COST cannot trigger; Z5>2 implies C_D>C_D-5>=S5, so strictsupportbreak cannot coincide; eligible already excludes inheritedpending/deadline. This is an algebraic domain statement, not a measured future effect. Changed later paths still obey allother exits.",
+    "not_force_H10": "OFF removes onlyselectedSHOCK from newSELLintent; current/future cost orsupport/deadline/pending still causes sale. Do not erase rawSHOCKcondition, manipulateZ/knownflags orpriceinputs, and do not cancel an inheritedactualpending SELL.",
+    "own_path": "A changedexit changes actualsellprice,completedprofit/loss,armed,slot,quantity andfutureentry population; recompute its own entirefundedpath. No adding oldmissedtradePnL or freezing oldcompletion feedback.",
+    "why_not_exact_repeat": "EX043 measured SHOCK inside older costBASE/noownclosedfeedback; EX044 heldSHOCKfixed when addingcost; EX046 heldSHOCKfixed when addingownfeedback. Its currentconditionalnecessity remainsunanswered; oldsupport isnot a promise about itsnewgap.",
+    "strongest_counterevidence": "SHOCK helped2022/2025 in priorGRACE routes and currentC9461alreadypasses2020-25. Removing it might restore2026butfail2025orotherpriorpassingyears. OldGRACE/BASE2026barelypasses, farfromproving currentC9461OFF; noyear-specificchoice.",
+    "route_if_later_authorized": "Newpublicexperiment andnewsource/payloadidentity, sameauthenticatedpinnedinputs/fingerprint andclock exceptnewruntime; A/Bsource+synthetic/actualSRTreview thenpublicfreeze; freshONaccount exact allC9461old economic/observationfields andAactualfundedcontrolPASS beforeOFF. Full2020..partial2026originalacceptance and originalfreq; sixprioryears checkedthroughowncontinuouspaths. Noformalregistration,stageadvance,platform/data/prod change.",
+    "current_noop_ref_is_not_new_source_control": "ExistingC9461 oroldEX046BASE audits cannot replace freshnewsourceONequivalence. Use corrected auditD/E mapping andpreserve anytechnicalfailures/additivesupplement chain."
+  },
+  "unlocked_alternative_questions_not_parallel": [
+    {
+      "question": "Does loss origin, rather than any completed loss, justify a later skip?",
+      "state": "Freeze first newSELL-intent cause from originalcost/support/shock/deadline, preserve whilepending, associate with ownactuallyclosednetloss; do not infer cause from falseflags on delayedactualSELLD.",
+      "difference": "Acrosscompletedcycle cause memory instead of currentcostthreshold. Existingcostformula/threshold unchanged.",
+      "status": "Retain only if currentattribution doesnot support theSHOCKnecessity question; no chosenclass,parameter,populationorpolicy run."
+    },
+    {
+      "question": "Is the prior loss already price-repaired when the first new original opportunity arrives?",
+      "state": "D-known flatcandidate price versus ownpreviousactualentrycost/exit reference; classify recovery before deciding whether to consumearmedonce. A recovery price doesnot undo theactualrealizedcashloss.",
+      "difference": "Updated flat-state applicability of pastloss, not EX029 frozen currentheldP or EX030 movingS5recovery. Keeps actualholdingH10 and1%execution.",
+      "status": "Unspecifiednotlocked; do not select recoverybenchmark/window to hit observed2026slots. No support meansinapplicable, not reason to tuneto2026."
+    }
+  ],
+  "corrected_calling_contract": {
+    "authoritative_old_v2_runner": {
+      "path": "research/S014/experiments/EX046_20261020/src/run_accounts_v2.py",
+      "sha256": "64994e8c8a7dccf4192e820969acf68f0b10d472ca2c8d2f8ebf005f66efb0ab",
+      "bytes": 17251
+    },
+    "corrected_internal_audit": {
+      "path": "research/S014/experiments/EX046_20261020/src/audit_accounts_v2.py",
+      "sha256": "b9f80bfc4f5757e00d4984a2bd7481f6835c4d4654b1b7121341851d26d47324",
+      "bytes": 10602
+    },
+    "mapping": "decision.signaldateD isnextE daily.signaldate; decision.valid_session equalsdaily.dateE. Dheld/cash useactualdaily_by_date[D], firstprewindowD2019-12-31 explicitinitial100000cash/0qty. NeverzipDheldtoEquantity.",
+    "dates": "First completed-memory observation, first selectedarmed, first oldstateincludingreservation divergence, firsttargetdivergence andfirstactualfundedE are separate; metadata isnot economicdifference.",
+    "publication": "Onlyauthorized localpublicAPI Material/EvaluationEvidenceWrite into repository research/S014/assets/evidence/<EX>/<SHA>, noexternalupload; previousrejection/proof/same-operationreapproval retained. Do notmodifyoldsource/refs orbypassreview."
+  },
+  "resources": {
+    "new_experiments": 0,
+    "new_market_input_loads": 0,
+    "new_strategy_replays": 0,
+    "new_accounts": 0,
+    "new_fits": 0,
+    "new_state_PnL_calculations": 0,
+    "new_parameters_chosen": 0
+  },
+  "source_sha256": "5a6a036fa1784a0e119a0ab7d2f16066f1860fa5f72d33ede734b06930dee87a"
+}

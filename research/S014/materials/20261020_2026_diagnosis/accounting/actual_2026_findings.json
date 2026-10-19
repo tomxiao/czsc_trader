@@ -1,0 +1,110 @@
+{
+  "status": "COMPLETE_READ_ONLY_ACTUAL_DIAGNOSIS",
+  "sources": [
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_accounting_review.json",
+      "sha256": "c5df438d07c5a2f8d441c98a09bb4c5a9dd7a664fea430a0bd6b437a5ae4b1e9"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_exit_flat_review.json",
+      "sha256": "da364210b7bbadf6129c0294270a559915153ffdde5f5df9509b9918f14ffffc"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_phase.csv",
+      "sha256": "450c19c514f870ff96c2dbb31eaf6cc2781a0ebf5d6d0b6a2a039dc29ac71bee"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_monthly.csv",
+      "sha256": "f522ef0063f2c95c8c421600780b0534bd10abdb16ca4c01a70fca743100777d"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_exit_decisions.csv",
+      "sha256": "feecf42b04f6b2860733575e4bce8e4aa58e8217ee41fc7c6aa689ad02f8813c"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_flat_reason_summary.csv",
+      "sha256": "3bb7fe3da0c95858bd421afde3d6a65ebfdd9a8377981ae1f13dcf480079a42e"
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_pause_slots.csv",
+      "sha256": "5c51d3ae6785ac2b4e1bc7c2d52042925c30782c4845a5a7067c6cf351e41f91"
+    }
+  ],
+  "implementation": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/write_actual_2026_findings.py",
+    "sha256": "dba90f407a577f46cf8655ec7d5b88270acdf6a1c4908b220453481224069610"
+  },
+  "fixed_candidate": "S014-C9461 EX046001 diagnostic configuration; not formally registered, source/parameters unchanged.",
+  "partial2026_original_gate": {
+    "opening_equity": 527290.572,
+    "closing_equity": 944894.5750000005,
+    "return": 0.7919807885357002,
+    "max_drawdown": 0.231778131088891,
+    "buyhold_return": 1.309762679207088,
+    "buyhold_drawdown": 0.5977359838973151,
+    "required_return": 1.964644018810632,
+    "return_pass": false,
+    "drawdown_pass": true,
+    "gap_to_required_pp": 117.26632302749319
+  },
+  "gap_decomposition_pp": {
+    "extra_original_half_BH_requirement": 65.4881339603544,
+    "actual_underperformance_vs_BH": 51.77818906713878,
+    "by_actual_phase_strategy_minus_BH": {
+      "ACTUAL_BUY": 48.42228839827239,
+      "ACTUAL_SELL": -26.51273565624291,
+      "WHOLE_SESSION_FLAT": -50.98179954916201,
+      "WHOLE_SESSION_HELD": -22.705942260006324
+    }
+  },
+  "findings": [
+    {
+      "finding": "Insufficient return is not mainly an execution-block or fee failure.",
+      "actuals": "C9461 actual2026 BUY11/SELL12, including one2025 carry; no failed BUY or blocked SELL. Fees18012.997=3.41614244pp, materially below117.26632303pp target gap. All12 sales filled first planned E.",
+      "limit": "Costs remain real; no fee/limit/timing contract alteration is proposed."
+    },
+    {
+      "finding": "The large participation gap predates the first2026 completed-loss pause.",
+      "actuals": "Jan-Mar observed strategy contribution less BH by80.8736325125pp; first actual pause D2026Apr7. Cost comparator also earns only89.09918296% vs required196.46440188%.",
+      "limit": "This rejects a single-cause all-pause story, not a causal estimate of removing SHOCK."
+    },
+    {
+      "finding": "Actual shock exits and original reservations are a discriminating next action responsibility.",
+      "actuals": "Six selectedSHOCK-only sales: DJan6/Jan9/Jan29/Feb11/Mar6/Sep1; no support/cost/deadline/pending overlap. Ages8/0/3/1/1/3; original reservation still2/10/7/9/9/7 sessions away at D. These same dates occur in original costBASE.",
+      "limit": "Actual later-flat BH net+128.12531202pp is descriptive, not hold-return. Firstfive+144.05712438pp include old reservation and price qualification; September counterexample-15.93181236pp is retained."
+    },
+    {
+      "finding": "Whole-flat days contain missed upward exposure and avoided declines.",
+      "actuals": "C9461 wholeflat141days: original actualBUY reservation79days/BH net+93.24302812pp; supportnoteligible12/+17.77654853; pauseconsumed5/+14.75788934; following activepause45/-74.79566644. TotalBHnet+50.98179955pp.",
+      "limit": "Exclusive state labels are accounting classifications; overlap, eligibility and dynamic population do not identify separate causal shares."
+    },
+    {
+      "finding": "Five actual pause slots are mixed and the last is censored at cutoff.",
+      "actuals": "DApr7/May14/Jun22/Jul27/Sep30; first four observed reentryEApr23/Jun2/Jul13/Aug12. September30 slot untilindex1647 remains unexpired at original end. CostBASE sameD BUY forOct8 actually failed; laterOct12 realBUY andOct15sale are a different actual cycle, not an imagined filled skipped slot.",
+      "limit": "No imagined trade, extended cutoff or future slot value assigned. Wholeflat observed July pause window BHnet+30.85740499pp versus negative-net windows elsewhere is a counterexample to uniform pause benefit."
+    },
+    {
+      "finding": "Cross-year capital and economic calendar are respected.",
+      "actuals": "C9461 openingcash4570.572,88000researchunits carry from2025Dec23.2026 atoms begin at2025Dec31close5.94; carry full trade return8.35450264% is not assigned wholesale to2026. Cutoffcash944894.575/zeroquantity. CostBASE also flat at cutoff.",
+      "limit": "Last stored decision D2026Oct14 maps to final EOct15. No sourceD15 decision was replayed or inferred."
+    }
+  ],
+  "most_discriminating_next_question": "Keeping current C9461 cost/support/ENTRY_GRACE/H10/reservation/completed-loss pause fixed, does disabling only the positive-P Z>2 SHOCK exit improve full funded original-goal performance, or do other exits/timing and later risk offset the observed early-sale gap?",
+  "needed_contrast": "If root locks it: fresh exact current ON source control and one date-free OFF mechanism, all original2020-2026 goals and own continuous capital, no threshold or action-date search. Existing old noSHOCK cells are background, not current-policy causal evidence.",
+  "not_claimed": [
+    "Turning SHOCK off will recover128pp or pass the original target.",
+    "No pause is always superior.",
+    "Lower whole-held annual contribution means intentional partial positions.",
+    "Independent out-of-sample validation."
+  ],
+  "original2020_25_evidence": "Frozen complete-six-year result remains intact; any future policy must be evaluated on all original years, not accepted from2026 alone.",
+  "resources": {
+    "new_accounts": 0,
+    "strategy_replays": 0,
+    "fits": 0,
+    "new_market_calls": 0,
+    "prepared_fetches": 0,
+    "new_counterfactual_labels": 0
+  },
+  "additional_semantic_checks": 1459
+}

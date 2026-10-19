@@ -1,0 +1,22 @@
+{
+  "status": "LOCAL_PUBLICATION_FIRST_LINK_PERMISSION_FAILURE_RETRY_PENDING",
+  "command": "python .tmp/s014_publish_2026_v2.py",
+  "helper_sha256": "0beeeef3ea5ad0508171522a825f779fa063852b3f35e5de6a58a437d086d2a5",
+  "execution_permissions": "Initial use_default sandbox; retry needs local filesystem hard-link permission through require_escalated",
+  "error": "PermissionError [WinError5] at evidence_service._publish_bytes os.link on first selected evidence",
+  "attempted_target": "research/S014/assets/evidence/EX048_20261020/c5df438d07c5a2f8d441c98a09bb4c5a9dd7a664fea430a0bd6b437a5ae4b1e9.json",
+  "target_exists_after_failure": false,
+  "research_intent_unchanged_exact": true,
+  "research_intent_canonical_sha256": "48aa8554d80dcde6f893783871e74a7f3ad1be32e272743304d6c324311c9f63",
+  "new_intent_key_exists": false,
+  "publication_receipt_exists": false,
+  "first_plan_preserved": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/publication_attempt_001_manifest.json",
+    "sha256": "71e16cce30b7b00eefdeaa1137a06ba6c555e2740d8e77c919873d8b2c7acb50",
+    "original_unpublished_name": "research/S014/materials/20261020_2026_diagnosis/source_integrity_manifest.json"
+  },
+  "preservation": "Rename only the unpublished preflight manifest without changing bytes; published assets, root report/judgment/review, experiment results, and prior840 files untouched.",
+  "retry": "Same exact audited helper and public API/local destinations, after readonly supplementary review and necessary execution permission. Original helper exclusively creates a fresh current manifest including this failure record and preserved plan. No account retry, platform patch, external upload, or network access.",
+  "automatic_approval_review_rejected": false,
+  "additional_funded_accounts": 0
+}

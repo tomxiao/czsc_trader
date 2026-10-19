@@ -1,0 +1,271 @@
+{
+  "records": [
+    {
+      "index": 0,
+      "mode": "AFTER_NET_LOSS_SKIP1",
+      "parameters": {
+        "pause_profile": "AFTER_NET_LOSS_SKIP1"
+      },
+      "candidate": "S014-C9480",
+      "payload_sha256": "12a41bf67eb03de6fc266b93e0ce29d0ed33c6f459b4bee068949818b57a6867",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "12a41bf67eb03de6fc266b93e0ce29d0ed33c6f459b4bee068949818b57a6867.json",
+        "sha256": "12a41bf67eb03de6fc266b93e0ce29d0ed33c6f459b4bee068949818b57a6867",
+        "media_type": "application/json",
+        "name": "ex048-payload-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "80e447c9314488d83d582765ee5310a5457f9e8de50359defa6ca63a2076d5e7",
+      "execution_source_lock_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447.json",
+        "sha256": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447",
+        "media_type": "application/json",
+        "name": "ex048-execution-lock-v1",
+        "schema": null,
+        "schema_version": null
+      },
+      "execution_source_lock_sha256": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447",
+      "runtime_sha256": "38c7308b3997b392c893a6605da1e75b6446b9540a94720ba41748ff00a24ded",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b.py",
+        "sha256": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b",
+        "media_type": "text/x-python",
+        "name": "ex048-locked-src-strategy_runtime-strategies-loss_interaction_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "e9a01b78e4ed8d147fa4a3ae84d8df4b9b5306009594535d77e7105b7bbb00a6.json",
+        "sha256": "e9a01b78e4ed8d147fa4a3ae84d8df4b9b5306009594535d77e7105b7bbb00a6",
+        "media_type": "application/json",
+        "name": "ex048-binding-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5b300c9521cc23f13a89ab6bed151e764d29070dbb6cbfec75e2519b408c61ff.json",
+        "sha256": "5b300c9521cc23f13a89ab6bed151e764d29070dbb6cbfec75e2519b408c61ff",
+        "media_type": "application/json",
+        "name": "ex048-preflight-000",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73.json",
+        "sha256": "14a866ce8df692430ddb466ff4024bb34bc982f2b71684098152e251d41eea73",
+        "media_type": "application/json",
+        "name": "loss-interaction-000-after_net_loss_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "09cace206b3a3237fd19fd7787e2992eb2eafabce73efe7acfadb8293c10121e",
+      "audit": {
+        "status": "PASS",
+        "kind": "EX048_FIXED_OFF_LOSS_FEEDBACK_INTERACTION",
+        "checks": 482788,
+        "errors": [],
+        "original_projection_numeric_tolerance": 0,
+        "identity_link_fields_mapped_separately": [
+          "cycle_id",
+          "decision_id",
+          "fill_id",
+          "order_id"
+        ],
+        "arithmetic_only_currency_epsilon": 1e-07,
+        "parameters": {
+          "pause_profile": "AFTER_NET_LOSS_SKIP1"
+        },
+        "strict_control_against_EX047001": true,
+        "baseline_result_hash": "030016c1a2438d26c3aa94a9dfbb455697b8b739d6240548430d7186295f61d8",
+        "first_feedback_state_D": "2020-04-16",
+        "first_armed_D": "2020-04-16",
+        "first_original_mutable_state_divergence_D": null,
+        "excluded_constant_profile_metadata": [
+          "pause_loss_profile",
+          "pause_profit_profile"
+        ],
+        "first_target_divergence_D": null,
+        "first_funded_state_E": null,
+        "target_path_equals_frozen": true,
+        "funded_wealth_path_equals_frozen": true,
+        "actual_funded_state_and_feature_math": "independent A/B reviews required"
+      },
+      "error": null,
+      "request_content_sha256": "7588cb872a53862813e5f99298a6c34d42a3bb38d2e5d6b761ddc18e8382854b",
+      "runtime_binding_hash": "7479aac6a56e8eda60277e4f1241dbb4be8a18c3166a0f782726a379ceaa3fc8"
+    },
+    {
+      "index": 1,
+      "mode": "BASE",
+      "parameters": {
+        "pause_profile": "BASE"
+      },
+      "candidate": "S014-C9481",
+      "payload_sha256": "98cd8e30277645d287f41a6dfca3c54a0e53d70ea5df14a5982232d5c046d61a",
+      "published_payload_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "98cd8e30277645d287f41a6dfca3c54a0e53d70ea5df14a5982232d5c046d61a.json",
+        "sha256": "98cd8e30277645d287f41a6dfca3c54a0e53d70ea5df14a5982232d5c046d61a",
+        "media_type": "application/json",
+        "name": "ex048-payload-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "runtime_implementation_sha256": "80e447c9314488d83d582765ee5310a5457f9e8de50359defa6ca63a2076d5e7",
+      "execution_source_lock_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447.json",
+        "sha256": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447",
+        "media_type": "application/json",
+        "name": "ex048-execution-lock-v1",
+        "schema": null,
+        "schema_version": null
+      },
+      "execution_source_lock_sha256": "5d92808b6948eab61861569c63833daf8a276c7b7482b4731175d92440a16447",
+      "runtime_sha256": "b7edbce9a4025921121bccbf778b2b5a6d6331b6ee0ac7d79d47b883a8d57acf",
+      "published_source_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b.py",
+        "sha256": "5a4347527aad29cb647d9c44a26cf1b970dda471af9d1419f817b39e4476a66b",
+        "media_type": "text/x-python",
+        "name": "ex048-locked-src-strategy_runtime-strategies-loss_interaction_review.py",
+        "schema": null,
+        "schema_version": null
+      },
+      "binding_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "69f9047ba2d412a071f72cc9577b1f4331df0adae882dfc095f3ef5173141c15.json",
+        "sha256": "69f9047ba2d412a071f72cc9577b1f4331df0adae882dfc095f3ef5173141c15",
+        "media_type": "application/json",
+        "name": "ex048-binding-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "preflight_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "54e9ab6bbfaaa077825e344a5b79de28d7eed3d228fd997f3a9ff2da1c919be0.json",
+        "sha256": "54e9ab6bbfaaa077825e344a5b79de28d7eed3d228fd997f3a9ff2da1c919be0",
+        "media_type": "application/json",
+        "name": "ex048-preflight-001",
+        "schema": null,
+        "schema_version": null
+      },
+      "status": "SUCCEEDED",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX048_20261020"
+        },
+        "evidence_id": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be.json",
+        "sha256": "860ba7fd0855f88b62d1d476bd28a8bab1f85de7d26388b517f4cdeb2b3963be",
+        "media_type": "application/json",
+        "name": "loss-interaction-001-base",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "2c0926c4bc3f3e51dee7dc9ecbb18c795f43405f0f25914ed3b31df57332f3ef",
+      "audit": {
+        "status": "PASS",
+        "kind": "EX048_FIXED_OFF_LOSS_FEEDBACK_INTERACTION",
+        "checks": 117263,
+        "errors": [],
+        "original_projection_numeric_tolerance": 0,
+        "identity_link_fields_mapped_separately": [
+          "cycle_id",
+          "decision_id",
+          "fill_id",
+          "order_id"
+        ],
+        "arithmetic_only_currency_epsilon": 1e-07,
+        "parameters": {
+          "pause_profile": "BASE"
+        },
+        "strict_control_against_EX047001": false,
+        "baseline_result_hash": "030016c1a2438d26c3aa94a9dfbb455697b8b739d6240548430d7186295f61d8",
+        "first_feedback_state_D": "2020-04-16",
+        "first_armed_D": null,
+        "first_original_mutable_state_divergence_D": "2020-04-16",
+        "excluded_constant_profile_metadata": [
+          "pause_loss_profile",
+          "pause_profit_profile"
+        ],
+        "first_target_divergence_D": "2020-04-22",
+        "first_funded_state_E": "2020-04-23",
+        "target_path_equals_frozen": false,
+        "funded_wealth_path_equals_frozen": false,
+        "actual_funded_state_and_feature_math": "independent A/B reviews required"
+      },
+      "error": null,
+      "request_content_sha256": "e3e67fe5a3d0f08146f05e23a2c7702347d6f3373c75e719c30d6b4c418c7ce9",
+      "runtime_binding_hash": "5809451cde4588faab367ca87c3fdd363a02f3f47705994a88569721580bc58c"
+    }
+  ],
+  "dispatched_count": 2,
+  "external_calls": 0,
+  "formal_registered_candidates": 0
+}

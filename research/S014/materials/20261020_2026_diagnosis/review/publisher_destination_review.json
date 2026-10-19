@@ -1,0 +1,39 @@
+{
+  "status": "PASS_DESTINATION_AND_APPEND_ONLY_REVIEW_PENDING_FINAL_CONTENT_GATE",
+  "blocking_findings": [],
+  "reviewed_hashes": {
+    ".tmp/s014_publish_2026.py": "81371c72c027a3c0b8466da43c7216cc4c04d4a7a4d59df310b5b81fb41e8561",
+    "src/czsc_trader/application/evidence_service.py": "28c3c29026063163be22dc445fbb096d0b907dfac10d33ed9f88d4964f0ff218",
+    "src/czsc_trader/application/research_governance_service.py": "cae83481dedaaf6034caecfc931faacd01d09080b9ac1483c7f267614bd20479",
+    "src/czsc_trader/research_tools/evidence.py": "6374c4b1584f1e0123329edb3c9e5b9daeead5eeb00c5328b33ed6a992623c2f",
+    "src/czsc_trader/application/context.py": "4798f9c4dede1f9165118ad4cfa9b44cf53e56d120dce3bd82c316f908fb0636",
+    "packages/strategy_manager/src/strategy_manager/registry.py": "a105ccf6f954fd2a3c342a78516f0ae82308d3a3cacdd6a49450d184f775797a",
+    "research/S014/materials/20261020_2026_diagnosis/publication_destination_review.json": "347e7c02e25595f122afd88114fe6a48dc111de7da73e153079cb07599c0e7e0"
+  },
+  "executed": false,
+  "writes": [
+    "research/S014/assets/evidence/EX047_20261020/<contenthash>.<suffix> immutable local bytes via managed_path, os.link; existing exactbytes reused, differentbytes rejected",
+    "research/S014/materials/20261020_2026_diagnosis/source_integrity_manifest.json and publication.json create-exclusive",
+    "research/registrations/S014/family.json only research_intent newkey year2026_diagnosis_20261020 and updated_at; oldintent all keys restored/compared",
+    "research/registrations/S014/lifecycle.jsonl one RESEARCH_INTENT_UPDATED append via local registry API",
+    ".tmp/evidence-publication/<uuid>.part local atomic publication staging removed on completion"
+  ],
+  "no_network_or_execution": "No upload/client/network dispatch, prepare/evaluate/account call, registration or phase promotion. ProviderConfig bindings empty and socket connect entrypoints explicitly blocked. Public API names publish_evidence/update_research_intent resolve to local repository writes.",
+  "guards": [
+    "840prior protected file digests checked before/after",
+    "Prior intent canonical hash and newkey absent; original researchstate RESEARCHING",
+    "Final report review PASS and all reviewed hashbytes checked before writes",
+    "Both report/judgment explicit hash equality",
+    "Formal66/component28/qualified0/deliveries22 preserved",
+    "EX047 locks exact source refs and final-verification ref required",
+    "Actual status counts reconcile with judgment before publication",
+    "No original family field changes other than intent/updated_at; prior intent nested keys exactsame afterappend"
+  ],
+  "remaining_conditions": [
+    "Finalreport/judgment/independent review not yet ready at this review. Execute only with their finalPASS bytebindings.",
+    "C source/account/finalmanifest gates remain separate; this is not account execution authorization.",
+    "After publiclocal execution independently verify publication refs/oldbytes/intent and record same helperSHA; if helperbytes change obtain successor review."
+  ],
+  "new_accounts": 0,
+  "external_uploads": 0
+}

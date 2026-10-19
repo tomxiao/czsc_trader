@@ -1,0 +1,28 @@
+{
+  "status": "READONLY_LOCAL_TWO_EXPERIMENT_PUBLICATION_SUCCESSOR",
+  "sources": {
+    "src/czsc_trader/application/evidence_service.py": "28c3c29026063163be22dc445fbb096d0b907dfac10d33ed9f88d4964f0ff218",
+    "src/czsc_trader/research_tools/evidence.py": "6374c4b1584f1e0123329edb3c9e5b9daeead5eeb00c5328b33ed6a992623c2f",
+    ".tmp/s014_publish_2026_v2.py": "0beeeef3ea5ad0508171522a825f779fa063852b3f35e5de6a58a437d086d2a5"
+  },
+  "evidence_destination": [
+    "research/S014/assets/evidence/EX047_20261020/<content-sha256>.<suffix>",
+    "research/S014/assets/evidence/EX048_20261020/<content-sha256>.<suffix>"
+  ],
+  "temporary_destination": ".tmp/evidence-publication",
+  "metadata_append": [
+    "research/registrations/S014/family.json:research_intent.year2026_diagnosis_20261020",
+    "research/registrations/S014/lifecycle.jsonl"
+  ],
+  "implementation": "Repository evidence service serializes and writes local bytes with exclusive create/fsync/os.link; EvidenceRef uses repository managed path. No upload. Aggregate publisher forbids socket connect/create_connection, supplies ProviderConfig(bindings={}), verifies exact old file bytes and old canonical intent, final reviewer hashes, all actual dispatch statuses and all declared EvidenceRefs before local append.",
+  "publication_is_not_external": true,
+  "external_uploads": 0,
+  "production_changes": 0,
+  "remote_git_actions": 0,
+  "user_authorization": "Continue2026 research and local RSCH document delivery; autonomous local Git writes allowed.",
+  "parent_proof": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/publication_destination_review.json",
+    "sha256": "347e7c02e25595f122afd88114fe6a48dc111de7da73e153079cb07599c0e7e0"
+  },
+  "incremental_reason": "Root locked targeted ownloss-pause supplement only after EX047 actualJanuary changed loss/reservation chain. Four actual accounts across two experiments, not a new data/feature/grid. Original first helper/proof retained unexecuted; same root intent key appended once by this final helper after final report review."
+}

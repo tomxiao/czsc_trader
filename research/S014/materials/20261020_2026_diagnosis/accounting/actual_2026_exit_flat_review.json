@@ -1,0 +1,236 @@
+{
+  "status": "PASS_ACTUAL_D_STATES_AND_ORDERS_ONLY",
+  "sources": [
+    {
+      "policy": "C9461",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX046_20261020"
+        },
+        "evidence_id": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0.json",
+        "sha256": "935b74f311a04b11e494d7adea80c7c9d1badb7776706e0761a77679dc8751e0",
+        "media_type": "application/json",
+        "name": "completed-sign-pause-001-after_net_loss_skip1",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "a3c398bd3f3259bbf8e46a6339a36a8bd83b2ccd924526240b0ca604b0f21bcb",
+      "original_audit": {
+        "path": "research/S014/materials/20261020_preentry_diagnosis/accounting/pause_account_001_independent_review.json",
+        "sha256": "aa8c448637c66ee42fd3882f7bb009f74a884e0c14ad8bf3579df2a887e05ce3"
+      },
+      "source_sha256": "5e775c5b27bfd7b1ac5bec9c2839ce24ae62f32f1829c21a13091868a174b846"
+    },
+    {
+      "policy": "COST_BASE",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX044_20261019"
+        },
+        "evidence_id": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b.json",
+        "sha256": "29782a9c53c1d4624b39aab6ae31bf2069a79a5747bccb7af56139e0dcf81f9b",
+        "media_type": "application/json",
+        "name": "action-role-004-base-positive_p-net_loss_1atr",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "a784d786c0fae2f64651275a653f8cdfc28c28e53048431f4d9151d2ffe07f05",
+      "original_audit": {
+        "path": "research/S014/materials/20261019_2024_diagnosis/accounting/account_004_independent_review.json",
+        "sha256": "9e29acc607799105b9efe24207d8feeb41b36b6bdd4f498cf3d360b22670573b"
+      },
+      "source_sha256": "e176e01873d67fff2c869915373f36b35f1f507524a5583c49b138b3c146b527"
+    }
+  ],
+  "implementation": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/attribute_exit_flat_2026.py",
+    "sha256": "13d2ad70011ae0823d3a4b715c5629a6abe0a443b0b980dc1f9a36388064f322"
+  },
+  "outputs": [
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_exit_decisions.csv",
+      "sha256": "feecf42b04f6b2860733575e4bce8e4aa58e8217ee41fc7c6aa689ad02f8813c",
+      "rows": 29
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_exit_flag_combinations.csv",
+      "sha256": "30aa0734f8346b2c7156af9962fa71b69e877ca69d8a7ac684431a9497827259",
+      "rows": 7
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_flat_D_states.csv",
+      "sha256": "0acb3d4006b5895a8b2a00d40ff28aa883c99c5cac94d91d3abe10f4b54fe264",
+      "rows": 253
+    },
+    {
+      "path": "research/S014/materials/20261020_2026_diagnosis/accounting/actual_2026_flat_reason_summary.csv",
+      "sha256": "3bb7fe3da0c95858bd421afde3d6a65ebfdd9a8377981ae1f13dcf480079a42e",
+      "rows": 8
+    }
+  ],
+  "checks": {
+    "S014 formal exact EvidenceRef": 2,
+    "existing authenticated actual PASS result": 2,
+    "fixed C9461 source and parameters": 1,
+    "same original benchmark ledger": 1,
+    "actual SELL intent has original saved SELL order": 29,
+    "whole flat E has flat D": 253,
+    "flat after true BUY intent means original unfilled BUY": 1,
+    "all actual sell dates mapped": 2,
+    "all observed flat BH net covered": 2
+  },
+  "check_count": 293,
+  "max_money_error": 0.0,
+  "exit_flag_combinations": [
+    {
+      "policy": "C9461",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=0|selected_cost_exit=0|ordinary_support_exit=1",
+      "actual_SELL_intents": 5,
+      "actual_filled_SELL": 5,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": -38.907162813834034
+    },
+    {
+      "policy": "C9461",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=0|selected_cost_exit=1|ordinary_support_exit=1",
+      "actual_SELL_intents": 1,
+      "actual_filled_SELL": 1,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": -38.23634966187146
+    },
+    {
+      "policy": "C9461",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=1|selected_cost_exit=0|ordinary_support_exit=0",
+      "actual_SELL_intents": 6,
+      "actual_filled_SELL": 6,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": 128.1253120248675
+    },
+    {
+      "policy": "COST_BASE",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=0|selected_cost_exit=0|ordinary_support_exit=1",
+      "actual_SELL_intents": 8,
+      "actual_filled_SELL": 8,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": -29.012668822384885
+    },
+    {
+      "policy": "COST_BASE",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=0|selected_cost_exit=1|ordinary_support_exit=1",
+      "actual_SELL_intents": 2,
+      "actual_filled_SELL": 2,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": 14.254779479206467
+    },
+    {
+      "policy": "COST_BASE",
+      "flag_combination": "pending_inherited=0|deadline_exit=0|selected_shock_exit=1|selected_cost_exit=0|ordinary_support_exit=0",
+      "actual_SELL_intents": 6,
+      "actual_filled_SELL": 6,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": 128.1253120248675
+    },
+    {
+      "policy": "COST_BASE",
+      "flag_combination": "pending_inherited=0|deadline_exit=1|selected_shock_exit=0|selected_cost_exit=0|ordinary_support_exit=0",
+      "actual_SELL_intents": 1,
+      "actual_filled_SELL": 1,
+      "actual_unfilled_SELL": 0,
+      "post_exit_observed_flat_BH_net_pp": 0
+    }
+  ],
+  "flat_reasons": [
+    {
+      "policy": "C9461",
+      "D_state_or_actual_failed_order_reason": "ORIGINAL_ACTUAL_BUY_RESERVATION_WAIT",
+      "sessions": 79,
+      "actual_BH_net_contribution_pp": 93.24302812280932,
+      "actual_BH_up_contribution_pp": 480.6376233812438,
+      "actual_BH_down_contribution_pp": -387.39459525843455,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "C9461",
+      "D_state_or_actual_failed_order_reason": "ORIGINAL_SUPPORT_NOT_ELIGIBLE",
+      "sessions": 12,
+      "actual_BH_net_contribution_pp": 17.77654852701044,
+      "actual_BH_up_contribution_pp": 45.61529433346069,
+      "actual_BH_down_contribution_pp": -27.83874580645025,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "C9461",
+      "D_state_or_actual_failed_order_reason": "PAUSE_CONSUMED_ON_D",
+      "sessions": 5,
+      "actual_BH_net_contribution_pp": 14.757889343178482,
+      "actual_BH_up_contribution_pp": 32.03132800621688,
+      "actual_BH_down_contribution_pp": -17.2734386630384,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "C9461",
+      "D_state_or_actual_failed_order_reason": "VIRTUAL_PAUSE_RESERVATION_ACTIVE",
+      "sessions": 45,
+      "actual_BH_net_contribution_pp": -74.79566644383625,
+      "actual_BH_up_contribution_pp": 96.93250045860411,
+      "actual_BH_down_contribution_pp": -171.72816690244036,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "COST_BASE",
+      "D_state_or_actual_failed_order_reason": "ORIGINAL_ACTUAL_BUY_RESERVATION_WAIT",
+      "sessions": 98,
+      "actual_BH_net_contribution_pp": 59.36696394869514,
+      "actual_BH_up_contribution_pp": 496.23402916437567,
+      "actual_BH_down_contribution_pp": -436.86706521568055,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "COST_BASE",
+      "D_state_or_actual_failed_order_reason": "ORIGINAL_FAILED_BUY_RESET",
+      "sessions": 1,
+      "actual_BH_net_contribution_pp": 11.571526871355838,
+      "actual_BH_up_contribution_pp": 11.571526871355838,
+      "actual_BH_down_contribution_pp": 0,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "COST_BASE",
+      "D_state_or_actual_failed_order_reason": "ORIGINAL_SUPPORT_NOT_ELIGIBLE",
+      "sessions": 12,
+      "actual_BH_net_contribution_pp": 17.77654852701044,
+      "actual_BH_up_contribution_pp": 45.61529433346069,
+      "actual_BH_down_contribution_pp": -27.83874580645025,
+      "strategy_contribution_pp": 0.0
+    },
+    {
+      "policy": "COST_BASE",
+      "D_state_or_actual_failed_order_reason": "TRUE_BUY_INTENT_UNFILLED_POSTHOC",
+      "sessions": 1,
+      "actual_BH_net_contribution_pp": 24.652383334627654,
+      "actual_BH_up_contribution_pp": 24.652383334627654,
+      "actual_BH_down_contribution_pp": 0,
+      "strategy_contribution_pp": 0.0
+    }
+  ],
+  "definitions": [
+    "Exclusive flat reason priority is classification of observed source state, not a new decision rule or causal share.",
+    "Failed-order classification is E-known; all remaining eligibility/clock flags are original D-known.",
+    "Post-exit-to-next-actual-entry gap may mix original reservation, entry qualification and a later pause; no hypothetical hold-to-next-buy PnL computed.",
+    "SHOCK selected alongside support remains both flags; mandatory deadline/pending preempts discretionary exits.",
+    "All same observed flat-day BH changes retain up and down directions; not only missed positive days."
+  ],
+  "resources": {
+    "new_accounts": 0,
+    "strategy_replays": 0,
+    "fits": 0,
+    "new_data_calls": 0,
+    "counterfactual_labels": 0
+  }
+}

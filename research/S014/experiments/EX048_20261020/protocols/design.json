@@ -1,0 +1,156 @@
+{
+  "status": "AUTHORIZED_FIXED_TWO_OWN_LOSS_FEEDBACK_INTERACTION_BEFORE_NEW_ACCOUNTS",
+  "execution_authorized": true,
+  "fixed_parameters": [
+    {
+      "pause_profile": "AFTER_NET_LOSS_SKIP1"
+    },
+    {
+      "pause_profile": "BASE"
+    }
+  ],
+  "candidate_ids": [
+    "S014-C9480",
+    "S014-C9481"
+  ],
+  "planned_account_count": 2,
+  "no_blind_retries": true,
+  "baseline_account_ref": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX047_20261020"
+    },
+    "evidence_id": "3c9ca87b2cec20e4bfb793c68df7d438862da67b8f6533348ac2f7f39df62bf9.json",
+    "sha256": "3c9ca87b2cec20e4bfb793c68df7d438862da67b8f6533348ac2f7f39df62bf9",
+    "media_type": "application/json",
+    "name": "shock-action-001-shock_off",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "baseline_result_hash": "030016c1a2438d26c3aa94a9dfbb455697b8b739d6240548430d7186295f61d8",
+  "baseline_control": "Fresh AFTER_NET_LOSS_SKIP1 exactly replicates all original EX047001/C9471 observation and funded economic fields including original profile constants, ignoring mapped IDs only",
+  "canonical_runtime_parameter_schema": "Exactly pause_profile enum AFTER_NET_LOSS_SKIP1/BASE; SHOCK_OFF, cost/GRACE/S5/H10 fixed, PROFIT or LOSS alias rejected",
+  "only_policy_change": "Fixed SHOCK_OFF and net-cost protection. BASE does not arm completed-loss pause; LOSS inherits original one-shot pause. Actual own completion/sign fields truthful under both profiles. All other actions unchanged.",
+  "completed_feedback": "Each arm follows its own actual filled BUY/SELL history and strict completed net sign; no frozen future baseline labels. Only LOSS matching actual loss arms one planned slot i+11; same actual SELL D may consume if original eligibility allows. BASE still records real completion but never arms/consumes. No phantom entry/order/cost on a skip.",
+  "unchanged_contract": "Original 1% LimitBuyHold, one-way .001 costs, tick/lot/limits/status, initial100000 continuous account, original H10/reservation/failedBUY, anchored HFQ_RESEARCH/RESEARCH_UNIT and original input clock",
+  "full_execution_window": [
+    "2020-01-02",
+    "2026-10-15"
+  ],
+  "original_annual_acceptance_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "2026_role": "Original partial-year economic hard acceptance, not annualized; user explicitly authorized diagnosis; original return/DD/frequency goals unchanged",
+  "complete_economic_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "audit_mapping": "Inherit corrected EX046v2: D actual funded state is daily-by-D; valid_session maps next E and daily(E).signal_date=D. Initial prewindow D is cash100000/quantity0. Never zip nextE quantity into D-held.",
+  "divergence_semantics": "Separate completed-memory, armed, first original-column state difference including reservation, first target difference and first actual funded E. Only constant pause_loss_profile/pause_profit_profile metadata is separately authenticated and excluded from mutable old-state first divergence/BASE prefix; armed/slot/reservation/target not excluded. Fresh LOSS still compares all old fields exactly. Full prefixes use first mutable old-state D.",
+  "controls": "A/B source and runner pre-review, immutable local public API source lock, fresh LOSS internal exact and independent funded PASS publicly gated before BASE. Each failure/unknown retained and dependent execution stops; no blind retry.",
+  "local_publication": "Only repository-local assets/evidence/EX048_20261020 and .tmp/evidence-publication; publication ProviderConfig empty; requests/socket networking denied, no remote uploads",
+  "selection_disclosure": "Chosen after reading EX047 two policy results and actual January OFF support-loss to pause-slot chain; only current-cost missing SHOCK_OFF/pauseBASE cell. Original Jan flat BH contribution is descriptive not realizable predicted gain. No pristine holdout, threshold or year scan; removing pause may admit losses.",
+  "new_model_fits": 0,
+  "new_supplier_calls": 0,
+  "formal_candidate_registrations": 0,
+  "authorization": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/authorization.json",
+    "sha256": "b44842606485f92ff87e9c1f8c8d025dd362f63b7c9cb50a35de92ed0d8eccff"
+  },
+  "method": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/interaction_design_decision.json",
+    "sha256": "07e29822842e997e7757bf45dc39d22f84af6af7d7f78df45c49b472b1af6da4"
+  },
+  "baseline_integrity": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/baseline_integrity.json",
+    "sha256": "92031638151da93d59a1c2d2a2e81084b72d7693cf66350c70620d0a7cabaee6"
+  },
+  "method_inventory": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/method/c9461_mechanism_inventory.json",
+    "sha256": "a669a939c1e082f0a78c8b445d6e530c53af429ba9ade4ddba2171775a1d8e93"
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "independent_method_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/interaction_locked_method_review.json",
+    "sha256": "c89960ff00fdf35dc9d158bb5e566042766950a8c664dba1ef4201491700829d"
+  },
+  "method_evidence_gate": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/shock_ablation_evidence_gate.json",
+    "sha256": "9d419a45ca1cd027431dc6c6c0e08c467e4fdffffc668b6978a618be3e8db544"
+  },
+  "evaluation_protocol": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_evaluation_protocol.json",
+    "sha256": "3b3266653059a8f4ce0ac28d97996513b166c493114baa83956cb21886f30659"
+  },
+  "observability_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/review/interaction_source_state_review.json",
+    "sha256": "bda15207e2840bad268e9dee2226c25a9124fd66be848670de982a53c99ca954"
+  },
+  "independent_source_review": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/interaction_source_review.json",
+    "sha256": "3df87e6dabe8e6b9cefb6d15e6f0c3597e8d83d03f0e4f18bb44dbd65c8040e2"
+  },
+  "account_attribution": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_account_001_independent_review.json",
+    "sha256": "553e9fed24a6455e03070b63bf5f289ebbd3c67330640c8a0e208974584a188f"
+  },
+  "exit_attribution": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_pause_actual_review.json",
+    "sha256": "02265baab1d282ded016d1c48ffd2546b81092fe7a910ecde340ad19ed3025cc"
+  },
+  "diagnosis_delivery": {
+    "path": "research/S014/materials/20261020_2026_diagnosis/accounting/shock_final_accounting_delivery.json",
+    "sha256": "f31a26581747995871f9cb7f5c282ed5858f80dd26c0c00f3025084c6d4b0a90"
+  },
+  "previous_source": {
+    "path": "research/S014/experiments/EX047_20261020/src/strategy_runtime/strategies/shock_action_review.py",
+    "sha256": "ea8f6c82dc7901b12edd00fe13cf1db6ed6d274563ac65479bf06058ed11bf4b"
+  },
+  "previous_lock": {
+    "path": "research/S014/experiments/EX047_20261020/protocols/execution_lock.json",
+    "sha256": "73582c4abed21d9dbdb408b11f8741b29b3317e5740011485eedb5a6f256ddf4"
+  },
+  "previous_control_receipt": {
+    "path": "research/S014/experiments/EX047_20261020/others/accounts/run-001.json",
+    "sha256": "370ddc9dfebc905d3b68f59ff80d52535159953ae04221c077aa6b3c6098ef73"
+  },
+  "previous_final_verification": {
+    "path": "research/S014/experiments/EX047_20261020/others/final_verification.json",
+    "sha256": "2d60431c867c977d273b9baa3a4fc04ded2e785193a159d6d084bc7350398678"
+  },
+  "corrected_audit_source": {
+    "path": "research/S014/experiments/EX047_20261020/src/audit_accounts.py",
+    "sha256": "2cdc8704da12ebbed757cc2d82d92f2284b48e9196fc9234f1c6490ae657e471"
+  },
+  "fixture_source": {
+    "path": "research/S014/experiments/EX043_20261019/src/precheck.py",
+    "sha256": "9f134a546ea4debf06fdb721fca62f1ec9c3086c74735b069e6faeffdefeec46"
+  },
+  "helper_source": {
+    "path": "research/S014/experiments/EX041_20261019/src/precheck.py",
+    "sha256": "90cf0833e9d009ffb7eca86e55ff8abcfc9295217ea8943684f28ee0a22b5d5a"
+  },
+  "shared_account_audit": {
+    "path": "research/S014/experiments/EX040_20261019/src/audit_accounts.py",
+    "sha256": "256c09cabbd7d562b085cf8599c4fac9d9bcfa422d94fde6fb501ac30721bbd3"
+  },
+  "input_provider_source": {
+    "path": "research/S014/experiments/EX017_20261017/src/pinned_inputs.py",
+    "sha256": "2812821581e5dc1d382edb34499df713b3bee064c8e80c58f9ab062ba5099a84"
+  }
+}
