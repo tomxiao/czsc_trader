@@ -1,0 +1,198 @@
+{
+  "status": "PASS_INDEPENDENT_SAVED_LEDGER_AND_STATE_ARITHMETIC",
+  "method": "Direct scalar reconstruction from original account/fill/decision/benchmark records and pinned feature bytes; independent list filtering and math.fsum; original analysis module never imported or executed.",
+  "source_references": {
+    "source": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX039_20261019"
+      },
+      "evidence_id": "7767fcc51318ae7a90e3dbc5a05de84327851fec802f5cbac84993fa600a63b3.py",
+      "sha256": "7767fcc51318ae7a90e3dbc5a05de84327851fec802f5cbac84993fa600a63b3",
+      "media_type": "text/x-python",
+      "name": "year-driver-prelock-source",
+      "schema": null,
+      "schema_version": null
+    },
+    "design": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX039_20261019"
+      },
+      "evidence_id": "17c254369b87ea1fff802a9fa17e7ebf65004e87be9ed5fef938992c2ebbc4c8.json",
+      "sha256": "17c254369b87ea1fff802a9fa17e7ebf65004e87be9ed5fef938992c2ebbc4c8",
+      "media_type": "application/json",
+      "name": "year-driver-prelock-design",
+      "schema": null,
+      "schema_version": null
+    },
+    "features20": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722.csv",
+      "sha256": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722",
+      "media_type": "text/csv",
+      "name": "ex032-others-inputs-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "features1": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX033_20261018"
+      },
+      "evidence_id": "2acb27cdff70de69c4a16776b1ffa4145da966a1239b33a727e56902a95eb605.csv",
+      "sha256": "2acb27cdff70de69c4a16776b1ffa4145da966a1239b33a727e56902a95eb605",
+      "media_type": "text/csv",
+      "name": "ex033-others-decision_features-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "calendar": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4.csv",
+      "sha256": "046902392e6c280f24242a5f1097b6e390446da33a6da99c41690143b1c665c4",
+      "media_type": "text/csv",
+      "name": "ex032-others-calendar-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "account_review": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "bd65fda1cf6571575be9e0bae29ce55a8ab17aaf0adb5859acb85ef0889461c0.json",
+      "sha256": "bd65fda1cf6571575be9e0bae29ce55a8ab17aaf0adb5859acb85ef0889461c0",
+      "media_type": "application/json",
+      "name": "c0056-coverage-review-account_review-json",
+      "schema": null,
+      "schema_version": null
+    },
+    "daily_reconciliation": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX032_20261018"
+      },
+      "evidence_id": "4506ba6c4bc913abdc30660b9f15b10e70f60fc1170f51adc6698624320a0a87.csv",
+      "sha256": "4506ba6c4bc913abdc30660b9f15b10e70f60fc1170f51adc6698624320a0a87",
+      "media_type": "text/csv",
+      "name": "c0056-coverage-review-daily_reconciliation-csv",
+      "schema": null,
+      "schema_version": null
+    },
+    "original_account_and_embedded_buyhold": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+      "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+      "media_type": "application/json",
+      "name": "account-support-exit-reserve-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  },
+  "checked_output_sha256": {
+    "analysis": "e8005d55e95f6d4beacaf454353d29bb7392a26f13279e1b27b9818c3c4a42ac",
+    "panel": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6"
+  },
+  "audit_source": {
+    "path": "research/S014/materials/20261019_year_driver_research/state_driver_independent_audit.py",
+    "sha256": "a77183b10889961fe9ff9ab324ba806efb948e0d40fe660290e1fcb8986c5e40"
+  },
+  "check_counts": {
+    "fixed result SHA": 1,
+    "fixed panel SHA": 1,
+    "S014 source": 10,
+    "source hash": 10,
+    "published source lock": 1,
+    "published design lock": 1,
+    "pre-review design identity": 1,
+    "exact original account identity": 1,
+    "research representation": 1,
+    "one fill per day": 1,
+    "same benchmark contract": 1,
+    "1642 exact calendars": 1,
+    "source calendar alignment": 6,
+    "unique original decision IDs": 1,
+    "exact D before E": 1642,
+    "D original ledger clock": 1642,
+    "known D holding exact": 1642,
+    "target matches causal posture": 1642,
+    "daily wealth identity": 1642,
+    "daily atoms identity": 1642,
+    "original phase": 1642,
+    "published atom reconciliation": 6568,
+    "published actual pnl": 1642,
+    "daily state/identity fields": 14778,
+    "daily numeric fields": 29761,
+    "daily null retained": 3079,
+    "E stock simple unit identity": 1641,
+    "stock20 simple semantics": 1622,
+    "external20 log semantics": 3244,
+    "fill fee identity": 276,
+    "HOLD exact component sum": 616,
+    "exact original planned orders": 1,
+    "order D-E-side linkage": 280,
+    "all fixed group slots": 1,
+    "group counts": 855,
+    "group phase counts": 1140,
+    "group metrics": 2280,
+    "group atoms": 1140,
+    "group hold_accounting_components": 855,
+    "annual original return": 7,
+    "annual benchmark return": 7,
+    "month original wealth return": 82,
+    "all OTHER/PAST reference slots": 1,
+    "reference counts": 392,
+    "reference calendar years": 392,
+    "reference support semantics": 392,
+    "reference means/null": 1176
+  },
+  "total_checks": 83759,
+  "maximum_absolute_errors": {
+    "currency": 4.0745362639427185e-10,
+    "ratio": 8.881784197001252e-16
+  },
+  "audited_scope": {
+    "days": 1642,
+    "annual": 7,
+    "months": 82,
+    "state_posture_year_cells": 196,
+    "OTHER_PAST_references": 392
+  },
+  "interpretation_limits": [
+    "Three HOLD components are exact contemporaneous accounting coordinates, not causal market/sector effects.",
+    "A D-known classification is not an intervention; conditional historical returns do not equal a filtered-account improvement.",
+    "OTHER-year references include future data relative to a target; PAST_ONLY uses strictly earlier complete calendar years and remains descriptive.",
+    "UNKNOWN dates and empty group/reference nulls were preserved; all seven years remain in the annual identity.",
+    "Old 2024 September and 2025 June examples are already seen, so do not claim independent confirmation."
+  ],
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_accounts": 0,
+  "new_market_data_calls": 0
+}

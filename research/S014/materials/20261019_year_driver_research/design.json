@@ -1,0 +1,74 @@
+{
+  "status": "FIXED_BEFORE_NEW_STATE_OUTCOME_COMPARISONS",
+  "role": "RSCH",
+  "authorization": "同意，请你自主开展研究，回答：三个失败年份分别有哪些主要驱动；这些驱动能否在交易当时识别，并在其他年份找到相似情形验证。",
+  "scope": "Horizontal research diagnosis: existing S014 C0056 and same-identity buyhold ledgers, fixed past-state comparisons, and official historical document clocks; no strategy activation or phase advance",
+  "selection_history": "All S014 history and old annual results already seen; ledger localization and 2025 June official warning text reviewed before choosing this plan. New comparisons are adaptive development evidence, not pristine out-of-sample confirmation.",
+  "fixed_account": "Published EX023 S014-C0056 support_exit_reserve_H10, result_hash 423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6; matching buyhold in same account evidence",
+  "window": ["2020-01-01", "2026-10-15"],
+  "focus_years": [2022, 2024, 2025],
+  "original_goals": "UNCHANGED; representative C0056 annual drawdown already passes 7/7, annual return fails three years; no claim those three all fail drawdown",
+  "new_quantitative_sources": 0,
+  "questions": [
+    "Where and when do actual account losses and benchmark-relative participation gaps arise in each failed year?",
+    "Do market/sector common movement and stock-relative movement account for different parts of existing HOLD losses?",
+    "Do the same strictly prior observable price states and decision postures have similar or opposite observed outcomes across years?",
+    "Do already disclosed abnormal-trading/risk-warning episodes distinguish subsequent original-ledger outcomes across other years, or merely mark both rising and reversing markets?"
+  ],
+  "accounting": {
+    "annual": "Reconcile every original daily NAV change to ENTRY/HOLD/EXIT marking and actual fees; calendar-year opening NAV denominator; all seven years and every calendar month",
+    "buyhold": "Use original same-run buyhold NAV and exact same dates; no theoretical close-only replacement",
+    "holding_only_contemporaneous_decomposition": "For actual E HOLD phase, exposure=quantity_before*previous ledger close. Market=exposure*market_simple_return_E; sector_relative=exposure*(sector_simple_return_E-market_simple_return_E); stock_relative=exposure*(ledger_stock_simple_return_E-sector_simple_return_E). Sum equals original HOLD marking. These are an accounting coordinate system, not structural causal contributions or E-before-close predictors.",
+    "units": "Use exact original ledger price/quantity representations and resulting currency. HFQ_RESEARCH and RESEARCH_UNIT projections must not be mixed with raw share/price fields.",
+    "drawdown": "Path-dependent original annual value retained; do not sum state losses into drawdown or claim filtering improves it",
+    "case_selection": "Months and major cycles selected for localization only; exact 2024 September case already seen in EX033 is not new independent support"
+  },
+  "causal_clock": {
+    "D": "Last completed pinned stock session strictly before E; D decision.valid_session must equal E",
+    "features": "Only D ret20, market_ret20 and sector_ret20 from formally published EX032 input, usecols excludes all future labels",
+    "return_semantics": "Stock ret20 is 20-session simple return; market/sector ret20 are 20-session log returns; only signs are compared, never mixed in magnitude",
+    "posture": "entry_signal -> PLAN_BUY; else held_at_close and exit_pending -> PLAN_SELL; else held_at_close -> HOLD; else FLAT. Independently check original orders, target_position and current holdings. Original action=SELL may instead mean failed-buy reset and is not a sell-plan feature.",
+    "unknown": "Initial E with no in-window D and missing/insufficient past20 state remains UNKNOWN; retain original date and PnL, never fill with zero",
+    "actual_E_fill_phase": "Accounting only, not a D-known predictor; PLAN_BUY includes failed fills",
+    "availability_limit": "Existing close-availability contract and original revision limitations apply; no independent first-arrival market certification claimed"
+  },
+  "fixed_price_state": {
+    "external": "BOTH_UP if market_ret20>0 and sector_ret20>0; BOTH_NONUP if both<=0; otherwise DIVERGENT",
+    "stock": "UP if ret20>0; NONUP if ret20<=0",
+    "states": "Cartesian product of three external states and two stock signs, plus explicit UNKNOWN",
+    "choice": "Existing 20-session field approximates one trading month and two H10 holding lengths; no 5/10/60 window or threshold search",
+    "analysis": "All original E days by year x state x D posture, plus year x state x actual phase. Show sample sizes, original annual currency/pp contribution, mean observed daily NAV return, mean benchmark return and sum active log return.",
+    "transport": "For each target year and its observed state x D posture cells, show exact same cells in all OTHER years and in PAST years separately: days/years, observed daily-return mean and active-log mean. Missing support stays null. State mix and within-cell outcomes separately; no selected reversal year, model fitting or synthetic account.",
+    "interpretation": "A D-observable classification is not automatically a predictive driver. Repeated negative conditional outcomes can motivate one future mechanism test; sign changes or sparse support limit portability. Past-only group means are descriptive empirical references, not a newly traded policy or untouched validation."
+  },
+  "fixed_official_warning_contrast": {
+    "domain": "2020-01-01 through 2025-12-31 only: original official full-category catalogue complete over these dates. Exclude 2026 from warning-effect inference because April catalogue is incomplete; retain 2026 in main price-state analysis.",
+    "title_rule": "Company stock-trading notices whose title contains 股票交易 and either 异常波动 or 风险提示; exclude exchange-query replies; all matching records, not selected after returns",
+    "clock": "Notice date is the official catalogue disclosure/publication date, never a PDF signature date. Date-only notice becomes available at close of first pinned stock session STRICTLY AFTER publication date, original conservative financial policy; not a claim of actual first dissemination. Retain any signature/publication discrepancy explicitly.",
+    "feature": "W=1 when a matched notice's conservative available-session index lies in [D_index-9,D_index], inclusive; 10-session window corresponds to original H10; no other window or notice-type selection. First nine in-window D sessions have incomplete pre-window history and remain UNKNOWN, as does an E without an in-window D.",
+    "primary_population": "D posture PLAN_BUY or HOLD, fixed separately; all such observations in complete-catalogue domain",
+    "primary_outcome": "Existing original next-E account daily NAV return; expectation W group can have lower return after observed overheating, tested as a hypothesis, not presumed negative news",
+    "secondary": "Same original benchmark daily NAV return, active_log_return, actual currency contributions, exact PLAN_BUY order/fill counts and visible notice dates",
+    "controls": "Report W1-W0 within each of fixed six price states and each posture, all years. A fixed pooled common-state/posture contrast uses original min(n0,n1) weights and reports excluded/unsupported cells. Report without each entire original announcement episode and annual directions, no favorable deletion or re-selection.",
+    "episode": "Union of overlapping D availability-through-9-session notice windows, fixed using time only; no outcome-based grouping",
+    "limits": "Observational next-day account outcomes are policy-conditioned and depend on realized fills. Pooled common six-state/posture comparison does not balance year mix, holding age or floating PnL. Not exact loss avoided by canceling an order or selling. No component or account acceptance from this contrast alone. W is independently UNKNOWN for incomplete pre-window and 2026 is OUT_OF_DOMAIN, never silently W0.",
+    "stop": "No useful separation, opposite cross-year relationships, concentration or lack of support means no supported warning trading component; preserve descriptive facts without changing title/window/direction."
+  },
+  "official_explanations": {
+    "annual_reports": "Separate retrospective operational explanations from their actual later publication dates; never use a next-year annual report as same-year input",
+    "event_timeline": "Record control/financing changes, business/price disclosures and abnormal-trading notices with original source/page/date and conservative usable date; distinguish company statement, accounting fact and RSCH inference",
+    "causality": "Temporal association or lack of disclosed business change cannot identify unique price catalyst, investor motives or causal market news effect; explicitly retain competing explanations"
+  },
+  "budget": {
+    "fixed_price_state_definitions": 1,
+    "fixed_warning_contrasts": 1,
+    "new_model_fits_or_parameter_search": 0,
+    "new_complete_or_diagnostic_account_runs": 0,
+    "new_counterfactual_return_labels": 0,
+    "new_candidates_or_component_definitions": 0,
+    "new_market_data_calls": 0,
+    "official_document_reads": "Only selected historical official context and existing CNINFO source/catalogue documents; counted in source receipts; no new quantitative vendor or paid data"
+  },
+  "outputs": "Fixed plan/source publication locks; original input refs; daily panel and all grouping/unsupported rows; independent numerical audit; official fact/timing inventory; plain Chinese report; local public evidence publication with historical state preserved",
+  "not_authorized_here": ["Change original economic goals or execution", "Resume old model/account quotas", "Phase advance", "Produce a filtered-account return by summing/deleting old PnL", "Create year-specific trading rules", "Claim identified causal catalysts or new independent validation", "Production changes or remote Git push"]
+}

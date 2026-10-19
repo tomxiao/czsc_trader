@@ -1,0 +1,300 @@
+{
+  "status": "EXISTING_ACCOUNTING_INVENTORY_ONLY",
+  "account_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX023_20261018"
+    },
+    "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+    "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+    "media_type": "application/json",
+    "name": "account-support-exit-reserve-h10",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "account_result_hash": "423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+  "daily_reconciliation_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX032_20261018"
+    },
+    "evidence_id": "4506ba6c4bc913abdc30660b9f15b10e70f60fc1170f51adc6698624320a0a87.csv",
+    "sha256": "4506ba6c4bc913abdc30660b9f15b10e70f60fc1170f51adc6698624320a0a87",
+    "media_type": "text/csv",
+    "name": "c0056-coverage-review-daily_reconciliation-csv",
+    "schema": null,
+    "schema_version": null
+  },
+  "ledger_inventory": {
+    "account_daily": {
+      "rows": 1642,
+      "fields": [
+        "cash",
+        "cash_before",
+        "close",
+        "date",
+        "equity",
+        "quantity",
+        "quantity_before",
+        "signal_date",
+        "target_position",
+        "trading_status",
+        "valuation_source_date"
+      ]
+    },
+    "decisions": {
+      "rows": 1642,
+      "fields": [
+        "action",
+        "buy_filled_today",
+        "deadline_index",
+        "decision_id",
+        "entry_index",
+        "entry_signal",
+        "exit_pending",
+        "failed_buy_reset",
+        "held_at_close",
+        "holding_horizon",
+        "plan_mode",
+        "ready",
+        "reservation_index",
+        "sell_filled_today",
+        "signal_date",
+        "support_break",
+        "support_floor",
+        "support_ok",
+        "target_position",
+        "valid_session",
+        "warmup_sessions"
+      ]
+    },
+    "fills": {
+      "rows": 276,
+      "fields": [
+        "cycle_id",
+        "decision_id",
+        "fees",
+        "fill_id",
+        "fill_time",
+        "order_id",
+        "price",
+        "quantity",
+        "side",
+        "signal_date",
+        "time_precision",
+        "trigger"
+      ]
+    },
+    "orders": {
+      "rows": 280,
+      "fields": [
+        "cycle_id",
+        "decision_id",
+        "execution_date",
+        "limit_price",
+        "order_id",
+        "order_type",
+        "quantity",
+        "reason",
+        "side",
+        "signal_date",
+        "status"
+      ]
+    },
+    "trades": {
+      "rows": 138,
+      "fields": [
+        "cycle_id",
+        "entry_date",
+        "entry_price",
+        "exit_date",
+        "exit_price",
+        "net_return",
+        "quantity",
+        "status"
+      ]
+    }
+  },
+  "buyhold_inventory": {
+    "account_daily": {
+      "rows": 1642,
+      "fields": [
+        "cash",
+        "cash_before",
+        "close",
+        "date",
+        "equity",
+        "quantity",
+        "quantity_before",
+        "signal_date",
+        "target_position",
+        "trading_status",
+        "valuation_source_date"
+      ]
+    },
+    "fills": {
+      "rows": 1,
+      "fields": [
+        "cycle_id",
+        "decision_id",
+        "fees",
+        "fill_id",
+        "fill_time",
+        "order_id",
+        "price",
+        "quantity",
+        "side",
+        "signal_date",
+        "time_precision",
+        "trigger"
+      ]
+    },
+    "orders": {
+      "rows": 1,
+      "fields": [
+        "cycle_id",
+        "decision_id",
+        "execution_date",
+        "limit_price",
+        "order_id",
+        "order_type",
+        "quantity",
+        "reason",
+        "side",
+        "signal_date",
+        "status"
+      ]
+    },
+    "attempts": {
+      "rows": 1,
+      "fields": [
+        "cycle_id",
+        "decision_id",
+        "execution_date",
+        "limit_price",
+        "order_id",
+        "order_type",
+        "quantity",
+        "reason",
+        "side",
+        "signal_date",
+        "status"
+      ]
+    }
+  },
+  "annual": [
+    {
+      "year": 2020,
+      "opening_equity": 100000.0,
+      "return_pp": 31.130285999999984,
+      "buyhold_return_pp": -2.8034239999999877,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": 12.447,
+        "hold_mark_pnl": 22.866,
+        "exit_mark_pnl": -0.857,
+        "fees_pnl": -3.325714,
+        "actual_pnl": 31.130286000000005,
+        "bh_pnl": -2.8034239999999846
+      }
+    },
+    {
+      "year": 2021,
+      "opening_equity": 131130.286,
+      "return_pp": 178.89079186481763,
+      "buyhold_return_pp": 47.93584498285204,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": 81.2077844472939,
+        "hold_mark_pnl": 106.65270721669897,
+        "exit_mark_pnl": -0.1517574666160646,
+        "fees_pnl": -8.81794233255924,
+        "actual_pnl": 178.8907918648176,
+        "bh_pnl": 47.935844982852046
+      }
+    },
+    {
+      "year": 2022,
+      "opening_equity": 365710.29300000006,
+      "return_pp": -4.83675749317789,
+      "buyhold_return_pp": -29.07602339701869,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": 1.5769312787704335,
+        "hold_mark_pnl": -2.4850271304778393,
+        "exit_mark_pnl": 0.006836012132712935,
+        "fees_pnl": -3.9354976536030932,
+        "actual_pnl": -4.8367574931778,
+        "bh_pnl": -29.07602339701869
+      }
+    },
+    {
+      "year": 2023,
+      "opening_equity": 348021.77299999975,
+      "return_pp": 10.21245357542615,
+      "buyhold_return_pp": 2.2435644999690973,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": 6.784058306604862,
+        "hold_mark_pnl": 7.860427743984863,
+        "exit_mark_pnl": 0.09712036034021361,
+        "fees_pnl": -4.529152835503775,
+        "actual_pnl": 10.212453575426162,
+        "bh_pnl": 2.243564499969092
+      }
+    },
+    {
+      "year": 2024,
+      "opening_equity": 383563.33499999973,
+      "return_pp": -27.323890851037724,
+      "buyhold_return_pp": -6.184029980422867,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": -13.411083726237816,
+        "hold_mark_pnl": -8.853296679152095,
+        "exit_mark_pnl": -1.2761908017094172,
+        "fees_pnl": -3.7833196439383365,
+        "actual_pnl": -27.3238908510377,
+        "bh_pnl": -6.1840299804228644
+      }
+    },
+    {
+      "year": 2025,
+      "opening_equity": 278758.90799999965,
+      "return_pp": -12.274645228557212,
+      "buyhold_return_pp": 26.791909301372364,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": 22.10010092305286,
+        "hold_mark_pnl": -29.70272792143385,
+        "exit_mark_pnl": -0.7031165439921797,
+        "fees_pnl": -3.968901686183967,
+        "actual_pnl": -12.27464522855716,
+        "bh_pnl": 26.79190930137237
+      }
+    },
+    {
+      "year": 2026,
+      "opening_equity": 244542.2409999995,
+      "return_pp": 230.7086831677482,
+      "buyhold_return_pp": 130.9762679207088,
+      "phase_contributions_pp": {
+        "entry_mark_pnl": -6.874476953860921,
+        "hold_mark_pnl": 209.5441662367039,
+        "exit_mark_pnl": 35.373438816241226,
+        "fees_pnl": -7.334444931336028,
+        "actual_pnl": 230.70868316774815,
+        "bh_pnl": 130.97626792070878
+      }
+    }
+  ],
+  "scope": "All seven years, fixed calendar months and saved ENTRY/HOLD/EXIT/FLAT accounting phases; existing full trade cycles attributed by actual daily calendar-year PnL",
+  "limits": [
+    "Daily phase accounting and top losing intervals are descriptive; not new predictive states or new return labels.",
+    "Benchmark phase allocation is same-date historical accounting, not attainable missed profits.",
+    "Trade net_return may span years; annual contribution uses only actual daily PnL inside that year.",
+    "HOLD includes overnight and intraday; ENTRY is actual fill to close; EXIT is previous close to actual sell; fees separate."
+  ],
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_accounts": 0,
+  "new_market_data_calls": 0
+}

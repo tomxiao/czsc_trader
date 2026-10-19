@@ -1,0 +1,125 @@
+{
+  "status": "AUTHORIZED_RESEARCH_QUESTIONS_ADDRESSED_WITH_CAUSAL_AND_ACTION_VALUE_LIMITS",
+  "role": "RSCH",
+  "authorization": "同意，请你自主开展研究，回答三个失败年份的主要驱动、交易当时能否识别、其他年份相似情形验证。",
+  "baseline_head": "71c1d985",
+  "branch": "codex/s014-jinniu-research",
+  "original_objectives_achieved": false,
+  "new_supported_trading_components": 0,
+  "new_qualified_candidates": 0,
+  "answer": {
+    "different_year_drivers": "Supported as different observed PnL/participation paths and competing public contexts; unique causal catalysts not identified",
+    "known_at_decision": "Strictly prior price states, original position/clock/order posture and conservatively available official notices are observable; later annual explanations are not earlier inputs",
+    "portable_across_years": "Analogous paths and strong counterexamples found; coarse price states and generic notice state do not establish a stable trading decision rule"
+  },
+  "annual_localization": [
+    {
+      "year": 2022,
+      "original_return": -0.0483675749317789,
+      "original_buyhold_return": -0.2907602339701869,
+      "price_same_path_year_pp": -0.9012598395747938,
+      "fees_year_pp": -3.9354976536030932,
+      "hold_coordinates_year_pp": {"market": 6.782076711349979, "sector_minus_market": -2.6794832384522005, "stock_minus_sector": -6.587620603375561},
+      "judgment": "Defensive benefit versus buyhold, insufficient net profitability and offsetting phases; no unique all-year catalyst established",
+      "public_context": "Methanol operating disclosures and October proposed shareholder change plus financing/glass-fiber termination; dates differ, coevents not causally separated"
+    },
+    {
+      "year": 2024,
+      "original_return": -0.27323890851037724,
+      "original_buyhold_return": -0.06184029980422867,
+      "hold_coordinates_year_pp": {"market": -1.8994627891522688, "sector_minus_market": -8.984572678190627, "stock_minus_sector": 2.030738788190802},
+      "judgment": "Loss concentrated in second half despite positive second-half benchmark contribution; entry marking, industry-relative hold weakness and participation turns all matter",
+      "public_context": "Public September policy transition and company disclosures; later operating margin improvement cannot be used as 2024 input",
+      "old_case_limit": "September13 support-exit case already selected in EX033; not new independent evidence"
+    },
+    {
+      "year": 2025,
+      "original_return": -0.12274645228557213,
+      "original_buyhold_return": 0.26791909301372363,
+      "hold_coordinates_year_pp": {"market": 17.26708204523202, "sector_minus_market": 10.756671696450624, "stock_minus_sector": -57.72648166311643},
+      "judgment": "June dominates original loss; early exit misses a rise, common later reentry encounters reversal; selected hold dates have large stock-minus-sector damage",
+      "verified_common_entry": "2025-05-30, original fill price5.12; not May12",
+      "shared_entry_limit": "R/B/P all fail June17 buy and fill June19; later losing entry not a C0056-only reservation effect",
+      "public_context": "June17 disclosure usable June18 close/June19 execution; detailed June18 selling-price statement usable June19 close/June20 execution, not before"
+    }
+  ],
+  "accounting_limits": [
+    "Coordinates are exact additive original HOLD PnL, not causal factor loadings or investor motive identification",
+    "Use same anchored ledger price and quantity units; keep original fees and valuations",
+    "Annual contribution uses each original account's year-opening equity, not independent filtered strategy return",
+    "Drawdowns are path-dependent; original C0056 passes seven annual drawdown targets"
+  ],
+  "cross_year_price_state": {
+    "fixed_definition": "Previous-session external COMMON_UP/COMMON_NONUP/DIVERGENT times stock UP/NONUP; zero boundary; 20-session window; explicit unknown",
+    "observations": 1642,
+    "annual_state_posture_cells": 196,
+    "other_or_past_reference_cells": 392,
+    "key_counterexamples": [
+      "2024 COMMON_UP+STOCK_UP PLAN_BUY mean next return -2.4614%; past-only22 observations +0.2095%",
+      "2025 COMMON_UP+STOCK_UP HOLD mean next return -0.4672%; past-only166 observations +0.3328%",
+      "COMMON_NONUP+STOCK_NONUP HOLD contributes negative2024 but positive2022 and2025"
+    ],
+    "conclusion": "Known classification does not imply predictable adverse outcome; observed same-state relationships change across years",
+    "evidence": ["state_driver_analysis.json", "state_driver_daily_panel.csv", "state_driver_independent_review.json"]
+  },
+  "fixed_notice_contrast": {
+    "complete_domain": "2020-01-01 through2025-12-31 within original official catalogue",
+    "original_catalogue_records": 450,
+    "complete_date_leaves": 30,
+    "matched_notices": 14,
+    "time_only_overlapping_episodes": 6,
+    "window": "Conservative availability D through D+9 pinned sessions; no window scan",
+    "plan_buy": {"W1_days": 7, "W0_days": 118, "W1_mean_next_return": 0.058694346325696554, "W0_mean_next_return": 0.0015003183973922194, "fixed_common_difference": 0.059121848448643884},
+    "hold": {"W1_days": 42, "W0_days": 504, "W1_mean_next_return": -0.006140145187369074, "W0_mean_next_return": 0.002029955283865392, "fixed_common_difference": -0.0058591450328738075},
+    "counterexamples": ["2022 W1 HOLD9 days positive; original same-year contrast positive", "Deleting2021 Sep/Oct episode reverses fixed pooled HOLD contrast to+0.2257pp", "Deleting2022 episode loses an original required common group and stays null", "2025 evidence is one episode, not three independent notice shocks", "2024 notices are May and December; fixed W does not cover major September-October participation sequence"],
+    "interpretation": "Reject simple lower immediate entry-day-return story; retain concentrated holding-risk lead, no generic warning trading component",
+    "action_value_limit": "A positive entry-day return does not establish buying is better than abstention over the full cycle; June19 positive day and negative cycle demonstrate this",
+    "population_status": {"W0": 1366, "W1": 79, "UNKNOWN": 10, "OUT_OF_DOMAIN": 187},
+    "evidence": ["warning_state_results.json", "warning_state_rows.csv", "warning_independent_review.json", "official/catalogue_coverage.json", "official/events_2020_2025.json"]
+  },
+  "official_narrative_review": {
+    "fact_count": 15,
+    "warning_original_documents_reviewed": 14,
+    "counterevidence": "Both2021 and2025 commonly state no material main-business change;2021 Feb notice also mentions methanol market price weakness. Do not label2021 profits as operating improvement and2025 losses as speculation from these documents.",
+    "unknowns": "No market-expectation census, complete investor-flow identification or unique causal event effect; unmentioned company selling price remains unknown",
+    "evidence": ["official/official_driver_facts.json", "official/warning_content_review.json", "policy_context.json"]
+  },
+  "next_priority": {
+    "route": "STAGE_TWO_MECHANISM_AND_ACTION_VALUE_METHOD_REVIEW",
+    "question": "Under disclosed rapid-rise/abnormal-trading context, distinguish C0056 already-held continuation value from fresh participation value, including original H10/reservation and post-sale participation",
+    "distinct_from_prior": "Use official disclosure clock and full actual decision postures; not only EX033100 paired first-break events; do not transfer C0011 E9 action labels",
+    "scope_limit": "A next method review is recommended; no new counterfactual, model, account or phase advance is automatically authorized by this diagnostic conclusion",
+    "keep_2022_separate": true,
+    "keep_2024_policy_transition_question_separate": true,
+    "year_specific_trading_rules": false,
+    "price_state_or_warning_window_search": false
+  },
+  "resources": {
+    "fixed_price_state_definitions": 1,
+    "fixed_notice_contrasts": 1,
+    "new_market_data_calls": 0,
+    "new_model_fits": 0,
+    "parameter_searches": 0,
+    "new_counterfactual_account_return_labels": 0,
+    "new_account_runs": 0,
+    "new_candidates": 0,
+    "new_component_definitions": 0,
+    "same_CNINFO_official_PDF_requests": 24,
+    "official_PDF_request_successes": 24,
+    "root_official_context_web_tool_calls": 5
+  },
+  "validation": {
+    "main_synthetic_checks": 17,
+    "warning_synthetic_checks": 14,
+    "main_independent_checks": 83759,
+    "warning_independent_checks": 90993,
+    "full_repository_regression": false,
+    "strategy_economic_reacceptance": false
+  },
+  "historical_state": {"experiments": 39, "component_definitions": 28, "strategy_candidate_accounts": 66, "EX035_diagnostic_accounts": 69, "all_original_targets_pass_count": 0, "latest_components_revision": 22},
+  "all_history_seen": true,
+  "unseen_validation_claimed": false,
+  "old_budget_renewed": false,
+  "original_goals_and_execution_changed": false,
+  "production_changed": false
+}

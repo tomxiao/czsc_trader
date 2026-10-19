@@ -1,0 +1,51 @@
+{
+  "status": "VERIFIED_EXISTING_UNITS_AND_RET20_IDENTITY",
+  "account_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX023_20261018"
+    },
+    "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+    "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+    "media_type": "application/json",
+    "name": "account-support-exit-reserve-h10",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "inherited_inputs_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX032_20261018"
+    },
+    "evidence_id": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722.csv",
+    "sha256": "5b3429c2b4eb2d7d8061bc396d911f8262a123968660b62fc9ec28faeb825722",
+    "media_type": "text/csv",
+    "name": "ex032-others-inputs-csv",
+    "schema": null,
+    "schema_version": null
+  },
+  "declared_pricing": {
+    "anchor_date": "2019-12-31",
+    "anchor_factor": 5.892,
+    "basis": "HFQ_RESEARCH",
+    "quantity_unit": "RESEARCH_UNIT"
+  },
+  "price_rows": 1642,
+  "anchor_price_max_absolute_error": 3.552713678800501e-15,
+  "ret20_rows": 1622,
+  "simple_ret20_max_absolute_error": 5.273559366969494e-16,
+  "interpretation": [
+    "Ledger prices are declared anchored HFQ research prices and quantities are research units; do not label ledger price directly as raw execution price.",
+    "Ledger quantity times ledger price is the existing cash-unit exposure; support_floor uses unnormalized HFQ and must not be directly compared with ledger.close.",
+    "Inherited ret20 is close/close_20_sessions_ago-1, a simple return, not a log return.",
+    "These are identity checks only; no state-outcome grouping or new forward return labels."
+  ],
+  "new_fits": 0,
+  "new_return_labels": 0,
+  "new_accounts": 0,
+  "new_market_data_calls": 0
+}
