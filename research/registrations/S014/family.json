@@ -671,8 +671,8 @@
         "strategy_id": "S014",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "25f65c53b131119277edaee807acb150ef2ddc152cd347cf24a6b03181a0f9c2",
-      "revision": 20,
+      "content_sha256": "d8db50020264c281184cfa82cfd2feebd351b96c1d233ed502a4880bd03a45e5",
+      "revision": 21,
       "stage": "COMPONENTS",
       "type": "DeliveryReference"
     },
@@ -5766,6 +5766,76 @@
       "diagnostics_are_additional_gates": false,
       "frequency": "60 * closed_trade_count / evaluation_exchange_session_count >= 3 across the full development pool."
     },
+    "option_etf_census": {
+      "conclusion": "普查已完成：21类接口均已尝试，11类有非空返回、5类明确无权限、5类因自动审批失败尚未核实。ETF份额变化优先、可比期权持仓结构其次，值得形成下一轮验证；当前没有新增获支持的买卖信号。",
+      "delivery": {
+        "batch": {
+          "strategy_id": "S014",
+          "type": "ResearchBatchRef"
+        },
+        "content_sha256": "d8db50020264c281184cfa82cfd2feebd351b96c1d233ed502a4880bd03a45e5",
+        "revision": 21,
+        "stage": "COMPONENTS",
+        "type": "DeliveryReference"
+      },
+      "experiment": {
+        "experiment_id": "EX038_20261019",
+        "strategy_id": "S014",
+        "type": "ExperimentRef"
+      },
+      "future_execution_authorized": false,
+      "historical_coverage_and_availability_certified": false,
+      "historical_eligibility_changed": false,
+      "inventory": {
+        "evidence_id": "64ab00c9a7dcfd92c98226e7192ea9bb6ddcfdfd56bf6d57418351fce142a20c.json",
+        "experiment": {
+          "experiment_id": "EX038_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex038-others-census_inventory-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "64ab00c9a7dcfd92c98226e7192ea9bb6ddcfdfd56bf6d57418351fce142a20c",
+        "type": "EvidenceRef"
+      },
+      "judgment": {
+        "evidence_id": "bc680901b55a6c9e0ddef04f1015e05fd5e941a0531970c1112ad53ea07b3d37.json",
+        "experiment": {
+          "experiment_id": "EX038_20261019",
+          "strategy_id": "S014",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "ex038-others-judgment-json",
+        "schema": null,
+        "schema_version": null,
+        "sha256": "bc680901b55a6c9e0ddef04f1015e05fd5e941a0531970c1112ad53ea07b3d37",
+        "type": "EvidenceRef"
+      },
+      "mcp_invocations": 41,
+      "new_accounts": 0,
+      "new_candidates": 0,
+      "new_supported_components": 0,
+      "next_step": "建议下一轮先核清历史份额折算、发布时间及完整覆盖，再固定一个ETF净赎回状态，检验它在既有价格信息之外能否区分600722.SH的H3损失风险；期权待历史合约与调整口径核清后再检验。不优先购买新权限或重复价格指标。",
+      "permission_unknown": [
+        "etf_limit",
+        "fund_adj",
+        "fund_factor_pro",
+        "fund_nav",
+        "rt_etf_min"
+      ],
+      "predictive_value_tested": false,
+      "provider_denied": [
+        "etf_auction",
+        "opt_mins",
+        "rt_etf_k",
+        "rt_etf_min_daily",
+        "rt_etf_sz_iopv"
+      ],
+      "status": "COMPLETE_BOUNDED_CENSUS_WITH_UNRESOLVED_ACCESS_AND_HISTORY"
+    },
     "original_announcement_study": {
       "analysis": {
         "evidence_id": "d82d75dd730eafebcf52b640e8c67b098512e7c0946dae2ca689f9c4ebc1854f.json",
@@ -6264,5 +6334,5 @@
     "600722.SH"
   ],
   "strategy_id": "S014",
-  "updated_at": "2026-10-19T11:39:49+08:00"
+  "updated_at": "2026-10-19T13:35:33+08:00"
 }

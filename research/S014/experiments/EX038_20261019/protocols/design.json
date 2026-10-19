@@ -1,0 +1,83 @@
+{
+  "title": "S014已有权限期权与ETF数据接口普查",
+  "role": "RSCH",
+  "experiment": "EX038_20261019",
+  "authorization": "我建议优先普查已有权限的期权、ETF类数据接口，期望能挖掘到有效信号",
+  "scope": {
+    "signal_target": "600722.SH",
+    "historical_window": [
+      "2020-01-01",
+      "2026-10-15"
+    ],
+    "metadata": "可读取当前身份资料用于识别与覆盖，禁止倒填历史成分",
+    "realtime": "仅当前接口权限/字段探测，不纳入既有研究区间信号或收益验证",
+    "adjacent_research_batches": "不读取其他研究批次",
+    "write_roots": [
+      "research/S014/experiments/EX038_20261019",
+      ".tmp"
+    ]
+  },
+  "interfaces": {
+    "core": [
+      "opt_basic",
+      "opt_daily",
+      "opt_mins",
+      "etf_basic",
+      "etf_index",
+      "etf_limit",
+      "etf_auction",
+      "etf_mins",
+      "etf_sh_cons",
+      "etf_sz_cons",
+      "etf_share_size",
+      "fund_adj",
+      "fund_daily",
+      "fund_factor_pro",
+      "rt_etf_k",
+      "rt_etf_min",
+      "rt_etf_min_daily",
+      "rt_etf_sz_iopv"
+    ],
+    "related": [
+      "fund_nav",
+      "fund_share",
+      "mkt_idx_bmk"
+    ]
+  },
+  "budget": {
+    "max_mcp_invocations": 48,
+    "includes_initial_etf_basic_probe": 1,
+    "failures_empty_results_pagination_retries_count": true,
+    "max_parallel": 2,
+    "automatic_retries": false,
+    "paid_permissions_purchase": false,
+    "wire_http_request_count": "MCP未提供传输日志，不能等同于上游HTTP请求数",
+    "retry_policy": "权限拒绝不重试；技术/审批失败保留并先定位，不绕过；因参数或样本为空的另一次定向探测独立计数"
+  },
+  "method": [
+    "先逐接口定向单标的/单日权限与返回语义探测",
+    "可用的历史关键源再核查2020/2023/2026锚点及必要近期短段；锚点不代表全期认证",
+    "保留原始MCP结果、请求参数、开始结束时刻、成功/空/失败与截断风险",
+    "ETF份额优先与净值/价格区分；PCF现金替代和最小申赎篮子不是完整实际持仓或当日成份股买卖",
+    "期权先核查合约身份、有效期、调整及价格/量/持仓；不把认沽成交直接当看跌、无IV字段不冒充实测隐含波动率",
+    "对照EX031/032甲醇期货及EX036/037财务结果，不重新包装失败定义；候选机制均待检验",
+    "不做新收益拟合、标签、连续账户、候选登记、平台变更或阶段推进"
+  ],
+  "initial_probe": {
+    "status": "SUCCESS_WITH_DATA",
+    "endpoint": "etf_basic",
+    "args": {
+      "ts_code": "510300.SH",
+      "fields": [
+        "ts_code",
+        "csname",
+        "list_date",
+        "index_code",
+        "index_name"
+      ]
+    },
+    "rows": 1,
+    "note": "本轮首次能力探测在本协议锁定前完成，只用于确认当前接口可用；纳入预算，不属于预测或收益检验。"
+  },
+  "deliverable": "接口实测清单、覆盖/时点限制、信息差异映射、优先候选问题与停止/继续建议；发现有效信号须另有实际验证，不因能取数即认定有效。"
+}

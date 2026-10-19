@@ -1,0 +1,723 @@
+{
+  "status": "PASS",
+  "experiment": "EX038_20261019",
+  "issues": [],
+  "snapshot": {
+    "frozen_mcp_calls": 41,
+    "highest_call_id": 41,
+    "unique_contiguous_ids_1_through_41": true,
+    "summary_sha256": "b8a1176a2848ec31b8934e272dd4dd4e6f38fe6e258d57b635e33c5da5cf324e",
+    "summary_hash_algorithm": "sha256(json.dumps([(filename,sha256(saved_file_bytes)),...],ensure_ascii=False,sort_keys=True,allow_nan=False).encode('utf-8')); filenames sorted",
+    "budget_cap": 48,
+    "unused_invocations_not_authorization_to_use": 7,
+    "http_requests": null,
+    "first_call_provenance": "same-thread tool response imported after initial capability check; exact transport bytes not asserted",
+    "exact_wire_bytes_claimed": false
+  },
+  "call_status_counts_independently_verified": {
+    "SUCCESS_NONEMPTY": 27,
+    "AUTOMATIC_APPROVAL_TIMEOUT": 6,
+    "AUTOMATIC_APPROVAL_FAILURE": 1,
+    "PROVIDER_PERMISSION_DENIED": 5,
+    "EMPTY_RETURN_PERMISSION_UNRESOLVED": 2
+  },
+  "interface_capability_counts": {
+    "nonempty_response_observed": 11,
+    "explicit_provider_denial": 5,
+    "unresolved": 5
+  },
+  "interfaces": {
+    "nonempty_response_observed": [
+      "opt_basic",
+      "opt_daily",
+      "etf_basic",
+      "etf_index",
+      "etf_mins",
+      "etf_sh_cons",
+      "etf_sz_cons",
+      "etf_share_size",
+      "fund_daily",
+      "fund_share",
+      "mkt_idx_bmk"
+    ],
+    "explicit_provider_denial": [
+      "opt_mins",
+      "etf_auction",
+      "rt_etf_k",
+      "rt_etf_min_daily",
+      "rt_etf_sz_iopv"
+    ],
+    "unresolved": [
+      "etf_limit",
+      "fund_adj",
+      "fund_factor_pro",
+      "rt_etf_min",
+      "fund_nav"
+    ]
+  },
+  "share_endpoint_consistency": [
+    {
+      "segment": "2020_anchor",
+      "call_ids": [
+        26,
+        28
+      ],
+      "start": "2020-01-02",
+      "end": "2020-01-10",
+      "fund_share_rows": 7,
+      "etf_share_size_rows": 7,
+      "common_dates": [
+        "2020-01-02",
+        "2020-01-03",
+        "2020-01-06",
+        "2020-01-07",
+        "2020-01-08",
+        "2020-01-09",
+        "2020-01-10"
+      ],
+      "fund_only_dates": [],
+      "size_only_dates": [],
+      "share_value_mismatch_count": 0,
+      "share_value_mismatches": [],
+      "native_size_minus_share_times_nav_max_absolute_residual": "0.00004",
+      "size_identity_note": "Provider-native numeric residual only; printed precision/units not independently certified and not used as an acceptance gate",
+      "status": "PASS"
+    },
+    {
+      "segment": "2023_anchor",
+      "call_ids": [
+        27,
+        29
+      ],
+      "start": "2023-01-03",
+      "end": "2023-01-13",
+      "fund_share_rows": 9,
+      "etf_share_size_rows": 9,
+      "common_dates": [
+        "2023-01-03",
+        "2023-01-04",
+        "2023-01-05",
+        "2023-01-06",
+        "2023-01-09",
+        "2023-01-10",
+        "2023-01-11",
+        "2023-01-12",
+        "2023-01-13"
+      ],
+      "fund_only_dates": [],
+      "size_only_dates": [],
+      "share_value_mismatch_count": 0,
+      "share_value_mismatches": [],
+      "native_size_minus_share_times_nav_max_absolute_residual": "0.000048",
+      "size_identity_note": "Provider-native numeric residual only; printed precision/units not independently certified and not used as an acceptance gate",
+      "status": "PASS"
+    },
+    {
+      "segment": "recent",
+      "call_ids": [
+        36,
+        37
+      ],
+      "start": "2026-09-01",
+      "end": "2026-10-15",
+      "fund_share_rows": 27,
+      "etf_share_size_rows": 27,
+      "common_dates": [
+        "2026-09-01",
+        "2026-09-02",
+        "2026-09-03",
+        "2026-09-04",
+        "2026-09-07",
+        "2026-09-08",
+        "2026-09-09",
+        "2026-09-10",
+        "2026-09-11",
+        "2026-09-14",
+        "2026-09-15",
+        "2026-09-16",
+        "2026-09-17",
+        "2026-09-18",
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-08",
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15"
+      ],
+      "fund_only_dates": [],
+      "size_only_dates": [],
+      "share_value_mismatch_count": 0,
+      "share_value_mismatches": [],
+      "native_size_minus_share_times_nav_max_absolute_residual": "0.000047",
+      "size_identity_note": "Provider-native numeric residual only; printed precision/units not independently certified and not used as an acceptance gate",
+      "status": "PASS"
+    }
+  ],
+  "share_independence_limit": "fund_share and etf_share_size are two interfaces to the same vendor; matching values are not independent-source replication or separate alpha information",
+  "recent_three_interface_calendar_check": {
+    "window": [
+      "2026-09-01",
+      "2026-10-15"
+    ],
+    "expected_sessions": [
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-12",
+      "2026-10-13",
+      "2026-10-14",
+      "2026-10-15"
+    ],
+    "calendar_source": {
+      "name": "calendar",
+      "request": {
+        "dataset": "calendar.trading_sessions",
+        "symbol": "SSE",
+        "start": "2020-01-01",
+        "end": "2026-10-15",
+        "required_cutoff": "2026-10-15"
+      },
+      "prepared": {
+        "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+        "preparation_id": "c951062b-e7f2-4633-bba2-9834217ac8d2",
+        "manifest_sha256": "b6d7510045c946874f20b83c05f79086288266d5ac67629c773913a2a9cafba2"
+      },
+      "content_sha256": "aa048f9e44af79f4c71ff0be5d07b99e8f32ef1f9118d6251b5127a8f1087a41",
+      "rows": 2480,
+      "snapshot_path": "research/S014/experiments/EX036_20261019/others/calendar_market.csv",
+      "snapshot_sha256": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e"
+    },
+    "calendar_path": "research/S014/experiments/EX036_20261019/others/calendar_market.csv",
+    "calendar_sha256": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e",
+    "checks": [
+      {
+        "call_id": 36,
+        "endpoint": "fund_share",
+        "rows": 27,
+        "expected_exchange_sessions": 27,
+        "missing_sessions": [],
+        "unexpected_dates": [],
+        "duplicate_symbol_date_keys": 0,
+        "status": "PASS"
+      },
+      {
+        "call_id": 37,
+        "endpoint": "etf_share_size",
+        "rows": 27,
+        "expected_exchange_sessions": 27,
+        "missing_sessions": [],
+        "unexpected_dates": [],
+        "duplicate_symbol_date_keys": 0,
+        "status": "PASS"
+      },
+      {
+        "call_id": 38,
+        "endpoint": "fund_daily",
+        "rows": 27,
+        "expected_exchange_sessions": 27,
+        "missing_sessions": [],
+        "unexpected_dates": [],
+        "duplicate_symbol_date_keys": 0,
+        "status": "PASS"
+      }
+    ],
+    "daily_vs_size_close_mismatch_dates": [],
+    "scope": "Reused existing pinned EX036 SSE calendar identity; no new calendar fetch; certifies this segment's observed dates only"
+  },
+  "option_daily_anchors": [
+    {
+      "call_id": 33,
+      "exchange": "CZCE",
+      "trade_date": "2020-01-06",
+      "selection": "ts_code starts MA within returned CZCE option rows",
+      "total_exchange_rows": 622,
+      "selected_rows": 136,
+      "vol": {
+        "zero": 44,
+        "positive": 92,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 44,
+        "positive": 92,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 20,
+        "positive": 116,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 44,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    },
+    {
+      "call_id": 34,
+      "exchange": "CZCE",
+      "trade_date": "2023-01-06",
+      "selection": "ts_code starts MA within returned CZCE option rows",
+      "total_exchange_rows": 1768,
+      "selected_rows": 362,
+      "vol": {
+        "zero": 178,
+        "positive": 184,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 178,
+        "positive": 184,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 29,
+        "positive": 333,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 178,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    },
+    {
+      "call_id": 30,
+      "exchange": "CZCE",
+      "trade_date": "2026-10-15",
+      "selection": "ts_code starts MA within returned CZCE option rows",
+      "total_exchange_rows": 4738,
+      "selected_rows": 364,
+      "vol": {
+        "zero": 185,
+        "positive": 179,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 185,
+        "positive": 179,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 28,
+        "positive": 336,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 185,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    },
+    {
+      "call_id": 31,
+      "exchange": "SSE",
+      "trade_date": "2020-01-06",
+      "selection": "all returned SSE option rows",
+      "total_exchange_rows": 240,
+      "selected_rows": 240,
+      "vol": {
+        "zero": 0,
+        "positive": 240,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 0,
+        "positive": 240,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 0,
+        "positive": 240,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 0,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    },
+    {
+      "call_id": 35,
+      "exchange": "SSE",
+      "trade_date": "2023-01-06",
+      "selection": "all returned SSE option rows",
+      "total_exchange_rows": 364,
+      "selected_rows": 364,
+      "vol": {
+        "zero": 6,
+        "positive": 358,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 0,
+        "positive": 358,
+        "negative": 0,
+        "null_or_missing": 6,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 0,
+        "positive": 364,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 0,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    },
+    {
+      "call_id": 7,
+      "exchange": "SSE",
+      "trade_date": "2026-10-15",
+      "selection": "all returned SSE option rows",
+      "total_exchange_rows": 644,
+      "selected_rows": 644,
+      "vol": {
+        "zero": 10,
+        "positive": 634,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "close": {
+        "zero": 0,
+        "positive": 644,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "oi": {
+        "zero": 0,
+        "positive": 644,
+        "negative": 0,
+        "null_or_missing": 0,
+        "nonfinite": 0
+      },
+      "zero_volume_and_zero_close": 0,
+      "identity_limit": "Returned daily observations only; not independent full contract-universe or whole-window certification"
+    }
+  ],
+  "call_manifest": [
+    {
+      "id": 1,
+      "endpoint": "etf_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/001.json",
+      "sha256": "322ddab3950a431ee72d573de313e9e825917caa9a0179ba3a4aebd052cb1b5a"
+    },
+    {
+      "id": 2,
+      "endpoint": "opt_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/002.json",
+      "sha256": "0d26fa5e9cd10d3cd86b5c6180a3a7452e95b8fddfcdc2749adee3034d35fad6"
+    },
+    {
+      "id": 3,
+      "endpoint": "etf_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/003.json",
+      "sha256": "15b227243793a50396faf4723d12bfa65a06db8b53b57c8581a8e0575d3d1ce6"
+    },
+    {
+      "id": 4,
+      "endpoint": "opt_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/004.json",
+      "sha256": "e4cfc702964ba531217f4a43654bd4311c2e0062dafc9f53a4003a016c35f9d2"
+    },
+    {
+      "id": 5,
+      "endpoint": "fund_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/005.json",
+      "sha256": "814a5ddabf931649b921635ebfe9bb36d7308d30f52b81e0c652fa437c098678"
+    },
+    {
+      "id": 6,
+      "endpoint": "etf_share_size",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/006.json",
+      "sha256": "13c54a570fc26520a392723aa4df976c69b3fad9318243a1b7379121d1846094"
+    },
+    {
+      "id": 7,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/007.json",
+      "sha256": "bf90747540f84b18a7547116c7e4cb1071edf95c27b6c7dc4d2baa77728e2f22"
+    },
+    {
+      "id": 8,
+      "endpoint": "fund_nav",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/008.json",
+      "sha256": "ebc8ea1c3b5e34f6dd06643edf0b9c970027e157eb110333c59feac27ed0ea09"
+    },
+    {
+      "id": 9,
+      "endpoint": "etf_sh_cons",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/009.json",
+      "sha256": "f64f4e502367b15820fbda1e65373ad62703869a716d55a26cc72e22e7194a33"
+    },
+    {
+      "id": 10,
+      "endpoint": "etf_sz_cons",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/010.json",
+      "sha256": "1a0b86117186634bd5217ac727c62492ccbd01bc492f1b2ffd8b5e2ea48ef565"
+    },
+    {
+      "id": 11,
+      "endpoint": "etf_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/011.json",
+      "sha256": "0fa521d0de8c258f60adb6823de7878ea7269a4d5eb1974ba61fe6f345451c07"
+    },
+    {
+      "id": 12,
+      "endpoint": "opt_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/012.json",
+      "sha256": "02ee73511c93bdb54ca63aa1e4067333b72dd329291f2206d0c43720f24ac9b8"
+    },
+    {
+      "id": 13,
+      "endpoint": "etf_mins",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/013.json",
+      "sha256": "817618e41229c55277df63c5b406cabf721e6deb04489454eb10275ccc2cedb2"
+    },
+    {
+      "id": 14,
+      "endpoint": "opt_mins",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/014.json",
+      "sha256": "d06ffc828e020062ac4ca80b6fa7c22bb02f41f0f35847378cbbdd848569d9ff"
+    },
+    {
+      "id": 15,
+      "endpoint": "etf_index",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/015.json",
+      "sha256": "5c148673b90e754e54f141cd148e02d8ed005a079e6e01385ac8b19a52c0d55f"
+    },
+    {
+      "id": 16,
+      "endpoint": "fund_share",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/016.json",
+      "sha256": "68e27e2ed561c4338bd4333632006e0b3a91d69e2c4e8a8cb440874694600658"
+    },
+    {
+      "id": 17,
+      "endpoint": "etf_limit",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/017.json",
+      "sha256": "8a02dbbf5c8d5d91e90e14067a31d6c91bf112485c115fc2768da83c7d080c98"
+    },
+    {
+      "id": 18,
+      "endpoint": "etf_auction",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/018.json",
+      "sha256": "c15cfb21bd5b1706561faeb7e0bea624a3034dcb7cd653619c2cdc276ecb07c1"
+    },
+    {
+      "id": 19,
+      "endpoint": "fund_adj",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/019.json",
+      "sha256": "e66d978c8a432fc8e8a05b5ef3f7c167ff9fca672471594a8811278cdb6d913d"
+    },
+    {
+      "id": 20,
+      "endpoint": "fund_factor_pro",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/020.json",
+      "sha256": "4b1a9f35bed21362c4206350546c58d1ac4e03bb2a054a1344504f51c3a75621"
+    },
+    {
+      "id": 21,
+      "endpoint": "rt_etf_k",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/021.json",
+      "sha256": "98f14cc488dbf4c5d4665685e7bd3d8575f7e23467f27477e2c8a28c953aae17"
+    },
+    {
+      "id": 22,
+      "endpoint": "rt_etf_min",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/022.json",
+      "sha256": "d0ffb71ee84750d1e32d6116429f12f201b17defa1606f98264c5fcc7b579137"
+    },
+    {
+      "id": 23,
+      "endpoint": "rt_etf_min_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/023.json",
+      "sha256": "610a4b74e5ef2f8e7a11fdf8e4244230de173466c3846801d6aee07d8bf3d5fa"
+    },
+    {
+      "id": 24,
+      "endpoint": "mkt_idx_bmk",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/024.json",
+      "sha256": "3a6da7918952b71e8de54a68b5814ecca3c28ef7a7cdd0843df9a5d8dcd832c7"
+    },
+    {
+      "id": 25,
+      "endpoint": "rt_etf_sz_iopv",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/025.json",
+      "sha256": "b17af03d63c048710c420d5787ec039fa5d37a8ba998e931410e884a0814830e"
+    },
+    {
+      "id": 26,
+      "endpoint": "fund_share",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/026.json",
+      "sha256": "346e46faf90ce2ae8b286ca5600ed9f87cfa05f9b873d0d6220c1fc25c0c5560"
+    },
+    {
+      "id": 27,
+      "endpoint": "fund_share",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/027.json",
+      "sha256": "6a605d868d0e06ca2b7c95ca0c7ed2ca05a93af313d5f93b401a9be2a1540c4a"
+    },
+    {
+      "id": 28,
+      "endpoint": "etf_share_size",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/028.json",
+      "sha256": "626a3d094ba0150901318cd5d7d100c755bc314a8a15de4b1438d7e6836ccaa3"
+    },
+    {
+      "id": 29,
+      "endpoint": "etf_share_size",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/029.json",
+      "sha256": "de4c7148f3e5b3166cde04fb5ca05ef48aea0e1df0b7dc09f26b53fefa47670e"
+    },
+    {
+      "id": 30,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/030.json",
+      "sha256": "78cfdb528e7a474eee739d6c5781ae49b9d3425bebe146e264c8ce2656c720d6"
+    },
+    {
+      "id": 31,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/031.json",
+      "sha256": "5e580eeb254f5cd0c3d5940a51828a5cb3eff7b435aa8851c4d0bb3975c37059"
+    },
+    {
+      "id": 32,
+      "endpoint": "opt_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/032.json",
+      "sha256": "98bbb49e66465b1e260857e217f26de43218c0c5c9db64281def6f93b7ecc9d6"
+    },
+    {
+      "id": 33,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/033.json",
+      "sha256": "4ff10e21bc3c14738cfd9ecb0aaeedb385c468a6ea75101c98bfe38527e4d30b"
+    },
+    {
+      "id": 34,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/034.json",
+      "sha256": "275873702856d2a2da2de011dcc70623c927525c08550d2828b4917299c69312"
+    },
+    {
+      "id": 35,
+      "endpoint": "opt_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/035.json",
+      "sha256": "d9663b9d0e2849ebf1d021743fd697c46495b4088cfe3f9d2fd6a7ddc668ab78"
+    },
+    {
+      "id": 36,
+      "endpoint": "fund_share",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/036.json",
+      "sha256": "4b98580e314a0f19edb622676769662789426e2c723b15818c7b4b9db02203ef"
+    },
+    {
+      "id": 37,
+      "endpoint": "etf_share_size",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/037.json",
+      "sha256": "aaddc3182de3bca56b18b8c969d6a72992339e470963a8a44afd6574b374e96f"
+    },
+    {
+      "id": 38,
+      "endpoint": "fund_daily",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/038.json",
+      "sha256": "2921b69fc4309bac08cc977ac5d7810623425ac1385664dec9ee8ddbadded1bf"
+    },
+    {
+      "id": 39,
+      "endpoint": "etf_sh_cons",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/039.json",
+      "sha256": "61819e016682eabbe6b0bfd367a2d7a481622b53a2ea9a1b6f9b720e27acab3d"
+    },
+    {
+      "id": 40,
+      "endpoint": "opt_basic",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/040.json",
+      "sha256": "fc84a14e16c0136eb5dba02d378d60c5bff971aec34a6bfc5342bd456929af64"
+    },
+    {
+      "id": 41,
+      "endpoint": "etf_sz_cons",
+      "path": "research/S014/experiments/EX038_20261019/others/calls/041.json",
+      "sha256": "cfa0a3ce9491be2a72db823664f1b23e0fea45705b3dd751af7fbc49a169f372"
+    }
+  ],
+  "source_bindings": [
+    {
+      "path": "research/S014/experiments/EX038_20261019/protocols/design.json",
+      "sha256": "84c118c6bcf42ecdc15e448b47e578289f6e32d1bdd4c44a8216b791aa2b6f0f"
+    },
+    {
+      "path": "research/S014/experiments/EX038_20261019/others/census_inventory.json",
+      "sha256": "64ab00c9a7dcfd92c98226e7192ea9bb6ddcfdfd56bf6d57418351fce142a20c"
+    },
+    {
+      "path": "research/S014/experiments/EX036_20261019/others/market_inputs.json",
+      "sha256": "b2157d58f12d26640176267887e7ba277505cd0a93bc8a78c318b9285e7131f7"
+    },
+    {
+      "path": "research/S014/experiments/EX036_20261019/others/calendar_market.csv",
+      "sha256": "1beec050f8918b35f40f1fc44f27d037cf214e600c11a31ec3915a00b3c3625e"
+    },
+    {
+      "path": "research/S014/experiments/EX038_20261019/src/check_coverage.py",
+      "sha256": "19e2d1481a154b9b5313aa0e9b108392c46156f0e2336723a18df821c1ba7e2a"
+    }
+  ],
+  "new_upstream_calls": 0,
+  "new_labels": 0,
+  "new_model_fits": 0,
+  "new_accounts": 0,
+  "limitations": [
+    "Single dates and short segments do not certify 2020-2026 whole-window history",
+    "Current identity/PCF rows do not establish historical constituents or actual daily portfolio trades",
+    "Zero volume/close rows must not be treated as active executable option prices",
+    "Availability, vendor permission and signal usefulness remain separate judgments",
+    "No private credentials read and no live/public DFLS acquisition called"
+  ]
+}

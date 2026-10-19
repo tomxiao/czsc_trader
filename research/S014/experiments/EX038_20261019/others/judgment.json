@@ -1,0 +1,74 @@
+{
+  "status": "COMPLETE_BOUNDED_CENSUS_WITH_UNRESOLVED_ACCESS_AND_HISTORY",
+  "conclusion": "普查已完成：21类接口均已尝试，11类有非空返回、5类明确无权限、5类因自动审批失败尚未核实。ETF份额变化优先、可比期权持仓结构其次，值得形成下一轮验证；当前没有新增获支持的买卖信号。",
+  "recommendation": "PRIORITIZE_ETF_SHARE_STATE_THEN_COMPARABLE_OPTION_OI",
+  "next_step": "建议下一轮先核清历史份额折算、发布时间及完整覆盖，再固定一个ETF净赎回状态，检验它在既有价格信息之外能否区分600722.SH的H3损失风险；期权待历史合约与调整口径核清后再检验。不优先购买新权限或重复价格指标。",
+  "interfaces_total": 21,
+  "interfaces_available": 11,
+  "interfaces_denied": 5,
+  "interfaces_unresolved": 5,
+  "available": [
+    "opt_basic",
+    "opt_daily",
+    "etf_basic",
+    "etf_index",
+    "etf_mins",
+    "etf_sh_cons",
+    "etf_sz_cons",
+    "etf_share_size",
+    "fund_daily",
+    "fund_share",
+    "mkt_idx_bmk"
+  ],
+  "denied": [
+    "opt_mins",
+    "etf_auction",
+    "rt_etf_k",
+    "rt_etf_min_daily",
+    "rt_etf_sz_iopv"
+  ],
+  "unresolved": [
+    "etf_limit",
+    "fund_adj",
+    "fund_factor_pro",
+    "rt_etf_min",
+    "fund_nav"
+  ],
+  "mcp_calls": 41,
+  "mcp_cap": 48,
+  "actual_budget": {
+    "mcp_invocations": 41,
+    "cap": 48,
+    "unused": 7,
+    "call_status_counts": {
+      "SUCCESS_NONEMPTY": 27,
+      "AUTOMATIC_APPROVAL_TIMEOUT": 6,
+      "AUTOMATIC_APPROVAL_FAILURE": 1,
+      "PROVIDER_PERMISSION_DENIED": 5,
+      "EMPTY_RETURN_PERMISSION_UNRESOLVED": 2
+    },
+    "wire_http_requests": null,
+    "new_model_fits": 0,
+    "new_return_labels": 0,
+    "new_continuous_accounts": 0,
+    "new_candidates": 0,
+    "new_supported_components": 0
+  },
+  "historical_window": [
+    "2020-01-01",
+    "2026-10-15"
+  ],
+  "full_history_or_first_publication_certified": false,
+  "current_metadata_not_historical_universe": true,
+  "historical_component_definitions": 28,
+  "historical_continuous_accounts": 66,
+  "historical_all_targets_pass_count": 0,
+  "historical_eligibility_changed": false,
+  "phase_three_recommended": false,
+  "future_execution_authorized": false,
+  "incomplete_items": [
+    "fund_nav、etf_limit、fund_adj、fund_factor_pro、rt_etf_min因自动审批失败尚未核实；不是供应商明确无权限。",
+    "历史锚点与短段不认证全窗覆盖、逐时可得、历史修订、ETF份额折算或期权历史调整链。",
+    "本轮仅数据可行性与研究问题排序，未做新标签、预测或账户检验，信号是否有效仍未知。"
+  ]
+}
