@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "status": "REVIEWABLE_PROPOSAL_NOT_EXECUTED",
+  "execution_authorized": false,
+  "new_candidate_objects_created": 0,
+  "new_registered_candidates": 0,
+  "new_account_evaluations": 0,
+  "real_branch_histories_generated": 0,
+  "runtime_source": "research/S014/materials/20261019_2025_action_method_review/method/prototype_runtime/strategies/repair_action_review.py",
+  "runtime_source_sha256": "264057876152bb67a49268da71e0ad1663b66a3f7a1d738e14c2d62d95fcc7a4",
+  "parameters_only_not_instantiated_payloads": [
+    {
+      "variant": "support_exit_reserve_H10",
+      "intervention_mode": "NOOP",
+      "intervention_decision_date": ""
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "intervention_mode": "SKIP_BUY_ONCE",
+      "intervention_decision_date": "2025-06-18"
+    },
+    {
+      "variant": "support_exit_reserve_H10",
+      "intervention_mode": "FORCE_SELL_ONCE",
+      "intervention_decision_date": "2025-06-19"
+    }
+  ],
+  "independent_original_path_forks": true,
+  "combine_treatments": false,
+  "account_contract": {
+    "symbol": "600722.SH",
+    "window": [
+      "2020-01-02",
+      "2026-10-15"
+    ],
+    "session_count": 1642,
+    "initial_cash": 100000,
+    "one_way_cost": 0.001,
+    "benchmark": {
+      "benchmark_id": "BuyHold",
+      "kind": "BUYHOLD",
+      "execution_version": "buyhold-execution-v1",
+      "execution": {
+        "type": "LimitBuyHold",
+        "lot_size": 100,
+        "premium": 0.01,
+        "price_tick": 0.01,
+        "price_limit_ratio": 0.1,
+        "maximum_order_quantity": 1000000
+      }
+    },
+    "price_basis": "HFQ_RESEARCH",
+    "pricing_anchor_date": "2019-12-31",
+    "pricing_anchor_factor": 5.892,
+    "quantity_unit": "RESEARCH_UNIT",
+    "terminal_force_liquidation": false
+  },
+  "primary_endpoint": {
+    "date": "2025-12-31",
+    "time": "SESSION_CLOSE",
+    "meaning": "single_action_total_effect_on_remaining_2025_terminal_wealth",
+    "secondary_economic_endpoints": [],
+    "2026_usage": "full_execution_contract_and_control_audit_only"
+  },
+  "budget": {
+    "account_dispatch_max": 3,
+    "count_FAILED_CANCELLED_UNKNOWN": true,
+    "auto_retries": 0,
+    "extra_cash_reference_accounts": 0,
+    "cost_scenarios": 1,
+    "window_count": 1,
+    "max_workers": 2,
+    "workers_per_request": 1,
+    "native_threads": 1,
+    "seed": 17,
+    "new_external_data_calls": 0
+  },
+  "source_bindings": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/method/source_bindings.json",
+    "sha256": "905dd1861b3ff8c7104387b11ae879412f53179c973d042bcbacc13b919d6e47"
+  },
+  "future_sequence": [
+    "Explicit execution authorization plus publish locked source/design",
+    "Public offline prepare and preflight; reverify source closure and strategy-specific binding/clock, original input content and node eligibility; do not dispatch on mismatch",
+    "NOOP control; exact original observed/target and complete orders/fills/attempts/daily/economic-content equivalence, allowing different research identity hashes",
+    "STOP on NOOP or any technical/control mismatch, no retry or replacement node",
+    "SKIP one-account pilot, then independent execution/accounting audit",
+    "FORCE one-account pilot, then independent execution/accounting audit",
+    "Same-price terminal wealth and current-cycle versus post-sale participation decomposition; disclose terminal holdings and pending intents; publish immutable receipts"
+  ],
+  "future_pending_gates": [
+    "unique diagnostic candidate IDs without SM registration",
+    "runtime_binding source closure hash for modified implementation",
+    "public prepare compatible execution_data and strategy-specific input_bindings",
+    "pinned original input content, prewindow, cutoff and signal clock equality",
+    "real NOOP economic equivalence",
+    "real treatment one-shot and prefix equality",
+    "fees/lots/limits and full account reconciliation"
+  ],
+  "cash_references": {
+    "flat": "W_D frozen; no account",
+    "held": "per-arm original-cycle first actual sale account cash frozen; if unsold at T same-price marked position explicitly not cash; no account",
+    "decomposition": "W_S-W_B=(F_S-F_B)+((W_S-F_S)-(W_B-F_B))",
+    "post_sale_participation_included": true
+  },
+  "restrictions": [
+    "no candidate registration",
+    "no C0056 identity mutation",
+    "no C0011 E9 value transfer",
+    "no endpoint/date/threshold search",
+    "no independent alpha/general signal claim",
+    "no platform modification",
+    "no real data branch calculation before authorization"
+  ]
+}

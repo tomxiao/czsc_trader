@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "scope": "existing_source_and_binding_metadata_only",
+  "original_strategy": "S014-C0056",
+  "original_account_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX023_20261018"
+    },
+    "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+    "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+    "media_type": "application/json",
+    "name": "account-support-exit-reserve-h10",
+    "schema": "account_evaluation",
+    "schema_version": 7
+  },
+  "original_result_hash": "423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+  "original_payload": {
+    "runtime": {
+      "module": "strategy_runtime.strategies.repair",
+      "qualname": "RepairStrategy",
+      "contract_version": 1,
+      "source_files": [
+        "strategies/repair.py"
+      ],
+      "source_sha256": "d7c3fec9c4a4fbfc0281f04ebd66ebe93950447c5ff645338e79465b5e999da0"
+    },
+    "parameters": {
+      "variant": "support_exit_reserve_H10"
+    }
+  },
+  "original_execution_prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "e46dcd6b-5a53-4367-a84e-2797bcfe229a",
+    "manifest_sha256": "2e6d537ad9ec461b6532be69f24c77493790a14339e5f12d66810b528381884d"
+  },
+  "original_execution_identities": {
+    "trading_calendar": "1889d261dc734526df6e1f45523207352d6aad93b7aacff2e7b5d8a54efd54ca",
+    "adjusted_daily": "718866fe1a7f36480a0815d92fb31aa6ab27ba03a89403b881fc40c687900f48",
+    "execution_daily": "62a4b381f5d29ef2291c2cd16c0b530fbd2b32dcaebb477946f480dd9892ad08",
+    "price_limits": "1a9e437df94c372b5de073673494f075c7d1e30affc7343a91867e5b69d01faa",
+    "trading_status": "ba7beb79817874e49acc4152cbe7021f883b21b0f6c0e15db40fa53371852ac5"
+  },
+  "original_execution_fingerprint": "2ac71e151e5493e8314c9bd7179c26cd10a00b248483a4f5c45d70ea12abad3b",
+  "original_execution_requests": {
+    "price_limits": {
+      "dataset": "security.price_limits",
+      "symbol": "600722.SH",
+      "start": "2020-01-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "adjusted_daily": {
+      "dataset": "stock.ohlcv",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "execution_daily": {
+      "dataset": "stock.unadjusted_daily",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "trading_status": {
+      "dataset": "security.trading_status",
+      "symbol": "600722.SH",
+      "start": "2019-12-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    },
+    "trading_calendar": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "start": "2020-01-02",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "coverage": null
+    }
+  },
+  "original_strategy_input_prepared": {
+    "space_id": "9b7260bb-f12c-4eab-bc37-884d0cc58c91",
+    "preparation_id": "9f5bf7a5-417e-4b21-b3a6-e1e05ccf1b49",
+    "manifest_sha256": "5d1b258cf4661f15973b06450a6360940a0d22e5d441c21fa239a311f32d4053"
+  },
+  "original_plan_strategy_identity": {
+    "strategy_id": "S014",
+    "reference_id": "S014-C0056",
+    "release_hash": "1c5bd0375e31ae2205084b7540564252374c5c5712eec7f105177a0b1943bca2",
+    "runtime_sha256": "a1d0cfead43651a54b6ef7e7457280c7f314edc0bf62a0f52d685c9584f322c5",
+    "symbol": "600722.SH"
+  },
+  "original_plan_requests": {
+    "__trading_status": {
+      "dataset": "security.trading_status",
+      "symbol": "600722.SH",
+      "start": "2019-12-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "calendar": {
+      "dataset": "calendar.trading_sessions",
+      "symbol": "SSE",
+      "start": "2019-12-01",
+      "end": "2026-10-15",
+      "required_cutoff": "2026-10-15",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "limits": {
+      "dataset": "security.price_limits",
+      "symbol": "600722.SH",
+      "start": "2020-01-01",
+      "end": "2026-10-14",
+      "required_cutoff": "2026-10-14",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "market": {
+      "dataset": "stock.ohlcv",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-14",
+      "required_cutoff": "2026-10-14",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "raw": {
+      "dataset": "stock.unadjusted_daily",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-14",
+      "required_cutoff": "2026-10-14",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    },
+    "status": {
+      "dataset": "security.trading_status",
+      "symbol": "600722.SH",
+      "start": "2019-12-31",
+      "end": "2026-10-14",
+      "required_cutoff": "2026-10-14",
+      "frequency": "daily",
+      "parameters": {},
+      "parameter_type": "NoParameters",
+      "coverage": null
+    }
+  },
+  "formal_source_refs": {
+    "ex023-others-binding_support_exit_reserve_H10-json": {
+      "path": "research/S014/experiments/EX023_20261018/others/binding_support_exit_reserve_H10.json",
+      "sha256": "eb668b61a3a0be1fefd02aafec1ab14a6c5c83b355b20ec7482bb97619f771d0",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "eb668b61a3a0be1fefd02aafec1ab14a6c5c83b355b20ec7482bb97619f771d0.json",
+        "sha256": "eb668b61a3a0be1fefd02aafec1ab14a6c5c83b355b20ec7482bb97619f771d0",
+        "media_type": "application/json",
+        "name": "ex023-others-binding_support_exit_reserve_H10-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    "ex023-protocols-payload_support_exit_reserve_H10-json": {
+      "path": "research/S014/experiments/EX023_20261018/protocols/payload_support_exit_reserve_H10.json",
+      "sha256": "d71496777d1a75c6eee8e30f02bcf376f6065c3d9d70af0fe57fb117466be92a",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "d71496777d1a75c6eee8e30f02bcf376f6065c3d9d70af0fe57fb117466be92a.json",
+        "sha256": "d71496777d1a75c6eee8e30f02bcf376f6065c3d9d70af0fe57fb117466be92a",
+        "media_type": "application/json",
+        "name": "ex023-protocols-payload_support_exit_reserve_H10-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    "ex023-src-strategy_runtime-strategies-repair-py": {
+      "path": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+      "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e.py",
+        "sha256": "bb5922d93101fcbbb793f423848ab6c48726c08f94a25dd55d187108ad8b2b8e",
+        "media_type": "text/x-python",
+        "name": "ex023-src-strategy_runtime-strategies-repair-py",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    "ex023-others-precheck-json": {
+      "path": "research/S014/experiments/EX023_20261018/others/precheck.json",
+      "sha256": "c5415b0bf3270d7dd179729c8c4ecfc6d6a9196a9681edaf960bb607e605716a",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "c5415b0bf3270d7dd179729c8c4ecfc6d6a9196a9681edaf960bb607e605716a.json",
+        "sha256": "c5415b0bf3270d7dd179729c8c4ecfc6d6a9196a9681edaf960bb607e605716a",
+        "media_type": "application/json",
+        "name": "ex023-others-precheck-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    "ex023-src-precheck-py": {
+      "path": "research/S014/experiments/EX023_20261018/src/precheck.py",
+      "sha256": "cd146ff75095f01fc62e84b343f97970023f5e133bd5aa10869df242166e95ea",
+      "evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "cd146ff75095f01fc62e84b343f97970023f5e133bd5aa10869df242166e95ea.py",
+        "sha256": "cd146ff75095f01fc62e84b343f97970023f5e133bd5aa10869df242166e95ea",
+        "media_type": "text/x-python",
+        "name": "ex023-src-precheck-py",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  },
+  "new_runtime_preparation_status": "NOT_EXECUTED_NOT_PROVEN",
+  "existing_prepared_ref_identity_is_not_modified_runtime_binding": true
+}

@@ -1,0 +1,137 @@
+{
+  "status": "METHOD_REVIEW_ONLY_NO_BRANCH_VALUES_COMPUTED",
+  "source_facts": {
+    "path": "research/S014/materials/20261019_2025_action_method_review/accounting/original_D_node_facts.json",
+    "sha256": "3c64756ecad0c3c88393bcfe0e6a7d6a0eec29acff5d5e319814b68fd9a75c5b"
+  },
+  "account_evidence_refs": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX023_20261018"
+      },
+      "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+      "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+      "media_type": "application/json",
+      "name": "account-support-exit-reserve-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX021_20261018"
+      },
+      "evidence_id": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c.json",
+      "sha256": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c",
+      "media_type": "application/json",
+      "name": "account-support-entry-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S014",
+        "experiment_id": "EX024_20261018"
+      },
+      "evidence_id": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3.json",
+      "sha256": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3",
+      "media_type": "application/json",
+      "name": "account-support-first-profit-exit-h10",
+      "schema": "account_evaluation",
+      "schema_version": 7
+    }
+  ],
+  "notice_inventory_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX039_20261019"
+    },
+    "evidence_id": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc.json",
+    "sha256": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc",
+    "media_type": "application/json",
+    "name": "year-driver-warning-prelock-events",
+    "schema": null,
+    "schema_version": null
+  },
+  "known_notice_clock": [
+    {
+      "id": "1223888518",
+      "publication_date": "2025-06-17",
+      "first_conservative_D": "2025-06-18",
+      "earliest_E": "2025-06-19"
+    },
+    {
+      "id": "1223900435",
+      "publication_date": "2025-06-18",
+      "first_conservative_D": "2025-06-19",
+      "earliest_E": "2025-06-20"
+    },
+    {
+      "id": "1223910887",
+      "publication_date": "2025-06-19",
+      "first_conservative_D": "2025-06-20",
+      "earliest_E": "2025-06-23"
+    }
+  ],
+  "facts_that_must_not_be_merged": [
+    "The May30 support exit decided before the June17/18/19 notices cannot be explained or repaired by those later notices.",
+    "D June18 is flat with a planned June19 entry; D June19 is already held following an actual fill. They are different initial states and different wealth denominators.",
+    "The June17 unfilled buy order was signalled June16, before the first notice was conservatively available June18.",
+    "T+1 permits submitting a June19-close exit for June20, but does not establish that an alternative June20 order would fill under the original limit/sell constraints.",
+    "Stored actual_original_order/fill in each D row refer to the order planned by D for E, not all fills that already happened on D; D buy_filled_today/sell_filled_today and cash/quantity record the latter."
+  ],
+  "existing_reference_branches": [
+    {
+      "question": "Hold May30 original entry to original H10 instead of early support exit",
+      "existing_evidence": "B/P share May30 entry price5.12 and actual June16 exit6.34; R exitsJune3 at4.98. These are already executed whole accounts with different capital/quantities.",
+      "boundary": "Not a notice-conditioned counterfactual, because first relevant notice is laterJune17."
+    },
+    {
+      "question": "For June19 original entry, continue after first support break to original H10",
+      "existing_evidence": "All R/B/P enterJune19 at7.03; R exitsJune26 at6.30, B/P July3 at6.34. Existing actual trade results only.",
+      "boundary": "Does not supply a June20 early-sale outcome or exact local R state wealth under B/P."
+    },
+    {
+      "question": "Cancel June18 planned entry, or exit on June19 close after successful entry",
+      "existing_evidence": "Neither intervention is present in the three original accounts.",
+      "boundary": "Requires new formally governed counterfactual matching/account-path evidence after a separate plan/budget; none calculated here."
+    }
+  ],
+  "prospective_local_questions_for_parent_review": [
+    {
+      "D": "2025-06-18",
+      "original_state": "FLAT, PLAN_BUY, target1; original May30 reservation already expired; first notice conservatively known.",
+      "candidate_question": "Suppress this one planned buy versus execute original plan, then resume the ORIGINAL policy.",
+      "state_transition_requirement": "No successful buy means no new June19 entry_index/deadline/reservation. Original expired reservation is retained; original rules may plan a new buy the next D. Do not fabricate a virtual July3 wait.",
+      "not_computed": "Cancellation value, subsequent reentry path, local terminal wealth, annual effect."
+    },
+    {
+      "D": "2025-06-19",
+      "original_state": "Held37900, cash27532.098, equity336417.098, entry1322, deadline1331, reservation1332; two notices conservatively known.",
+      "candidate_question": "Submit one original-contract T+1 exit for June20 versus continue original policy.",
+      "state_transition_requirement": "The successful entry already established the July3-close reservation. If an early exit fills, retain that original clock and resume original rules afterwards; if it fails, retain the sell intent according to the original contract.",
+      "not_computed": "AlternativeJune20 fill, fees or value; local continuation path or annual effect."
+    }
+  ],
+  "design_requirements_before_any_future_counterfactual": [
+    "Specify one-shot intervention, exact original initial cash/quantity/pending orders, frozen common endpoint and original continuation state before value calculation.",
+    "Do not compare percentages anchored to different D wealth as if they rank the same initial decision. If a joint mechanism is evaluated, define its common start and causal conditional actions explicitly.",
+    "Keep first-known notice clock; do not use June19 publication at June19 close under the conservative policy (it first enters June20 D).",
+    "Do not select the later losing holding day after observing the June20 drop. A first eligible post-fill intervention differs from scanning all holding nights.",
+    "Retain price/quantity representation, fees, T+1, failed-order behavior, reservation rules and no terminal forced liquidation.",
+    "Use only existing-data public execution/research contracts for any separately authorized new branch; three stored accounts alone do not price the missing June20 sale."
+  ],
+  "new_complete_or_diagnostic_accounts": 0,
+  "new_fits": 0,
+  "new_counterfactual_return_labels": 0,
+  "new_market_data_calls": 0
+}

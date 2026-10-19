@@ -1,0 +1,97 @@
+{
+  "status": "METHOD_REVIEW_AND_SYNTHETIC_PROTOTYPE_ONLY_NEW_ACCOUNTS_NOT_EXECUTED",
+  "role": "RSCH",
+  "authorization": "同意，请先对2025年展开研究；承接上一轮提出的2025公告相关动作方法评审。完成后一并提交RSCH文档已有修改。",
+  "user_role_document_change": "Include the existing one-line request to explain financial terminology in plain Chinese; do not expand role-document edits",
+  "fixed_question": "At predeclared original C0056 decision nodes within2025's single disclosed abnormal-trading episode, what is the year-end total path value of canceling one pending entry versus forcing one early exit, each followed by original policy?",
+  "purpose": "Determine whether new action-value evidence would change the research route; no presumed alpha, annual repair, causal catalyst or learned rule",
+  "current_execution_authorized": false,
+  "original_constraints": "All original fees, lots, limits, T+1 execution, raw-execution/research-price roles, annual goals and baseline unchanged",
+  "year_context": {
+    "C0056_original_return": -0.12274645228557213,
+    "required_return": 0.40187863952058545,
+    "gap_percentage_points": 52.462509180615754,
+    "year_open_equity": 278758.90799999965,
+    "original_year_end_equity": 244542.2409999995,
+    "not_solved_by_method": "June3 early exit predates the three June notices; other2025 dates and original annual drawdown/frequency still matter"
+  },
+  "sources": {
+    "account": "EX023 published S014-C0056 account7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab, result_hash423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+    "original_runtime": "research/S014/experiments/EX023_20261018/src/strategy_runtime/strategies/repair.py",
+    "source_binding_material": "accounting/original_account_source_inventory.json",
+    "causal_node_material": "accounting/original_D_node_facts.json",
+    "official_binding_material": "official/source_bindings.json",
+    "official_episode": "Exactly3 matched2025 documents forming1 episode in the complete current-source catalogue; prior14-document2020-2025 universe is context only"
+  },
+  "node_selection": {
+    "general_notice_trigger": "First conservative availability of the episode's original general upward abnormal-trading disclosure, not the later detailed operating statement",
+    "rule": "Within that fixed episode on ORIGINAL unmodified C0056, select first D with PLAN_BUY; separately select first D with held_at_close and original HOLD posture, including a buy filled on D that may be sold only at E=D+1",
+    "entry": {"D": "2025-06-18", "E": "2025-06-19", "decision_id": "DEC-1AF8F1553ABA629AB5B7", "quantity": 0, "equity": 294235.535, "known_notice_publication_dates": ["2025-06-17"]},
+    "held": {"D": "2025-06-19", "E": "2025-06-20", "decision_id": "DEC-1B2EF7A249C60460B8CD", "quantity": 37900, "cash": 27532.098, "equity": 336417.098, "known_notice_publication_dates": ["2025-06-17", "2025-06-18"]},
+    "detailed_notice_limit": "June18 notice's recent-company-selling-price statement only conservatively available at June19 close; after that original episode has zero PLAN_BUY nodes. It cannot be used to justify June18 entry cancellation.",
+    "interpretation": "Same episode, different decision nodes, wealth denominators and information sets. This is not an experiment holding all information constant while changing posture.",
+    "missing_or_changed_node": "Fail/unsupported, never shift to another favorable date or construct a new holding state"
+  },
+  "proposed_paths": {
+    "X_original": "Reuse authenticated unchanged C0056 full original path; no new account dispatch",
+    "NOOP": "New source with NOOP parameters must match original full-window economic ledgers and original signal columns before any intervention dispatch",
+    "S_skip_buy_once": "From original full history, at entry D only remove the original BUY intent and set target/entry_signal to zero; preserve prior flat-state reservation. Do not fabricate failed-buy reset or an entry/deadline/reservation for an unfilled position. From next session recompute unmodified original policy; subsequent real buys establish their own clocks.",
+    "H_force_sell_once": "Independently from original full history, at held D only request SELL/exit_pending in place of original HOLD. Preserve June19 actual entry, original deadline and reservation. Actual fill obeys original T+1, suspension, limits and fees; blocked sale stays pending. After actual sale resume unmodified original policy with the retained reservation.",
+    "not_combined": "H does not start from S; S may have no June19 position, so chaining would invent an impossible common state"
+  },
+  "terminal_and_normalization": {
+    "unique_primary_T": "2025-12-31 close, verified original last2025 trading session; no forced liquidation",
+    "choice": "Matches user2025 annual question and includes possible re-participation; no E9/E21 or other endpoint scan. An original H10 liquidation-day endpoint would omit later participation.",
+    "calculation_window": "Original2020-01-02 through2026-10-15 full-window account/start/cash/input contract for NOOP and historical state preservation; only2025 predeclared intervention, only2025 terminal used for the action question",
+    "future_tail": "2026 has no role in choosing the intervention, endpoint or reported action outcome; retain as original technical contract/control only",
+    "entry_effect": "Delta_entry=(W_S(T)-W_X(T))/W_X(D_entry)",
+    "held_effect": "Delta_exit=(W_H(T)-W_X(T))/W_X(D_held)",
+    "annual_context": "Also show (W_arm(T)-W_X(T))/original2025 opening equity as original annual-return difference; all arms share that opening history. Different D-normalized effects cannot rank the best action at one common state.",
+    "terminal_state": "Disclose cash, quantity, same-price mark, pending buy/sell, original/future clock and whether state paths reconverged. Year end need not mean risk is extinguished."
+  },
+  "cash_and_participation_attribution": {
+    "flat_reference": "At entry D original is cash-only. Freezing that actual D cash until T gives exact no-new-trades reference under original no-interest contract; no assumed sale or fee.",
+    "held_original_disposition_base": "For each X/H separately, identify first actual sale of the original June19 inventory; freeze actual post-sale cash through T. If current inventory has not sold by T, use its original same-price terminal wealth and explicitly mark it as unsold valuation, not cash.",
+    "identity": "For each held arm W_j(T)=B_j(T)+R_j(T), where B_j is original-position disposition/frozen-cash-or-unsold-mark base and R_j is post-disposition participation contribution. W_H-W_X=(B_H-B_X)+(R_H-R_X).",
+    "limits": "Post-sale contribution includes downstream sizing, fees and market exposure; not an independent alpha component or a pure old-position return. Derive references from actual evaluated fills, never assume June20 execution succeeds.",
+    "new_cash_accounts": 0
+  },
+  "minimum_future_execution_budget": {
+    "new_account_dispatches_cap": 3,
+    "paths": ["NOOP", "S_skip_buy_once", "H_force_sell_once"],
+    "new_registered_strategy_candidates": 0,
+    "diagnostic_candidate_identity": "Public EvaluationRequest requires StrategyCandidate; each new immutable mode/parameter identity is diagnostic and remains unregistered. Allocate distinct identities in the future authorized experiment; do not overwrite C0056.",
+    "new_market_data_calls": 0,
+    "model_fits": 0,
+    "primary_action_values": 2,
+    "primary_terminal_dates": 1,
+    "scheduling": "NOOP first; if exact equivalence passes, run S then H, single worker/native thread. Any economic/state discrepancy stops later dispatch.",
+    "failure_counting": "Each dispatched SUCCESS/FAILED/CANCELLED/UNKNOWN consumes one slot; uncertain dispatch conservatively consumes a slot. No automatic retry or replacement.",
+    "preparation": "Verify existing public dataset/source/bound identities and full source snapshot locally. A missing or incompatible asset stops before dispatch; do not claim cached reuse or silently fetch new data."
+  },
+  "prototype_checks_now": [
+    "Original toy-history NOOP target and existing observed columns identical; new audit columns separate",
+    "Skip cancels original single BUY intent, has no virtual entry anchor or failed-buy flag, then permits ordinary next-session recomputation",
+    "Force sell preserves original anchor and reservation, enforces T+1 and pending behavior through suspension/limit failure",
+    "No eligible original node, duplicate intervention or invalid mode/date fails without selecting another day",
+    "Identical original input/decision/execution definitions and source-contained implementation; no platform modification"
+  ],
+  "required_checks_if_execution_authorized": [
+    "Public input bindings and fixed source/parameters/design hashed before any run; no original candidate mutation",
+    "Full NOOP original economic ledgers and original signal columns equivalent, including failed buys, fills, fees, orders, quantity and NAV",
+    "S/H identical to original through D before intervention, same original node wealth; exactly one permitted intent change",
+    "Current-cycle identity and actual exit cash/terminal mark verified before cash attribution",
+    "Full-window account runs retained, report unique2025 year-end endpoint and original yearly target context; no filter-by-saved-PnL simulation"
+  ],
+  "decision_routes": {
+    "improvement": "A positive total path effect motivates assessing materiality against the original52.4625pp2025 shortfall, drawdown and participation attribution. It does not validate a general warning predictor or promote a candidate.",
+    "no_improvement": "Close this exact single-action design or revise its mechanism explanation using the full path; do not rescue with another date, terminal, window or blackout duration.",
+    "identification_limit": "Only one2025 announcement episode; neither statistical generalization nor new unseen evidence is available regardless of favorable local outcome.",
+    "technical_or_support_failure": "Report unavailable/failed branch honestly and stop unauthorized dispatch; no synthetic cash reset, alternate matcher or budget renewal"
+  },
+  "current_resources": {"new_account_dispatches": 0, "new_model_fits": 0, "new_counterfactual_wealth_labels": 0, "new_market_data_calls": 0, "new_component_definitions": 0, "new_registered_candidates": 0},
+  "old_budgets_renewed": false,
+  "phase_advance_authorized": false,
+  "all_history_seen": true,
+  "original_strategy_economic_objectives_met": false
+}

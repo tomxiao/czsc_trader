@@ -1,0 +1,217 @@
+{
+  "status": "PASS_ORIGINAL_NODE_IDENTITIES_WITH_REQUIRED_INTERPRETATION_REFINEMENT",
+  "reviewer": "RSCH independent diagnose_external",
+  "review_scope": "Original published panel D-known posture/holding/order identity columns and frozen official title inventory only; no counterfactual, returns, NAV outcome or branch files opened.",
+  "source_bindings": [
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/state_driver_daily_panel.csv",
+      "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+      "published_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6.csv",
+        "sha256": "d2ce4f0294a5dc5b6b8df959a15e06f3a71360ec66bdef756411fc2c2de9c4b6",
+        "media_type": "text/csv",
+        "name": "year-driver-state_driver_daily_panel-csv",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/official/events_2020_2025.json",
+      "sha256": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc",
+      "published_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc.json",
+        "sha256": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc",
+        "media_type": "application/json",
+        "name": "year-driver-official-events_2020_2025-json",
+        "schema": null,
+        "schema_version": null
+      }
+    },
+    {
+      "path": "research/S014/materials/20261019_year_driver_research/official/catalogue_coverage.json",
+      "sha256": "3640472a82e6eee59b747b3bdfa115c59539885dd028177751a144b4d3d1ff15",
+      "published_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX039_20261019"
+        },
+        "evidence_id": "3640472a82e6eee59b747b3bdfa115c59539885dd028177751a144b4d3d1ff15.json",
+        "sha256": "3640472a82e6eee59b747b3bdfa115c59539885dd028177751a144b4d3d1ff15",
+        "media_type": "application/json",
+        "name": "year-driver-official-catalogue_coverage-json",
+        "schema": null,
+        "schema_version": null
+      }
+    }
+  ],
+  "selected_panel_fields": [
+    "date",
+    "D_signal_date",
+    "D_posture",
+    "D_entry_signal",
+    "D_held_at_close",
+    "D_exit_pending",
+    "D_buy_filled_today",
+    "D_valid_session",
+    "D_decision_id",
+    "known_position_value_D"
+  ],
+  "2025_notice_episode": {
+    "documents": 3,
+    "independent_time_episodes": 1,
+    "D_start": "2025-06-18",
+    "D_end": "2025-07-03",
+    "source_only_notice_windows": [
+      {
+        "doc_id": "1223888518",
+        "start": 1320,
+        "end": 1329,
+        "first_known_D": "2025-06-18",
+        "last_active_D": "2025-07-01"
+      },
+      {
+        "doc_id": "1223900435",
+        "start": 1321,
+        "end": 1330,
+        "first_known_D": "2025-06-19",
+        "last_active_D": "2025-07-02"
+      },
+      {
+        "doc_id": "1223910887",
+        "start": 1322,
+        "end": 1331,
+        "first_known_D": "2025-06-20",
+        "last_active_D": "2025-07-03"
+      }
+    ],
+    "original_posture_day_counts": {
+      "PLAN_BUY": 1,
+      "PLAN_SELL": 1,
+      "HOLD": 4,
+      "FLAT": 6
+    },
+    "not_three_independent_events": true
+  },
+  "detailed_statement_trigger_check": {
+    "known_D": "2025-06-19",
+    "original_PLAN_BUY_nodes_on_or_after_known_D_within_original_episode": 0,
+    "original_filled_HOLD_nodes_on_or_after_known_D_within_original_episode": 4,
+    "conclusion": "若以6月18日详细经营陈述的D6月19可用时点共同触发全部动作问题，入场问题无原PLAN_BUY样本；不得延长窗口或挑未来亏损日补样本。"
+  },
+  "refined_objective_selection": {
+    "common_episode_trigger": "首份一般异常上涨公告的保守可用D=2025-06-18；沿原同一W10合并episode范围，按原决策顺序机械取节点。",
+    "entry_rule": "该episode内首个原PLAN_BUY；不按未来成交、盈亏或E日状态筛选。",
+    "holding_rule": "该episode内首个原D_posture=HOLD、D时已经持股、正原持仓市值且无退出预约的节点；不按未来E日收益或成交筛选。",
+    "entry_node": {
+      "date": "2025-06-19",
+      "D_signal_date": "2025-06-18",
+      "D_posture": "PLAN_BUY",
+      "D_entry_signal": "1.0",
+      "D_held_at_close": "0.0",
+      "D_exit_pending": "0.0",
+      "D_buy_filled_today": "0.0",
+      "D_valid_session": "2025-06-19",
+      "D_decision_id": "DEC-1AF8F1553ABA629AB5B7",
+      "known_position_value_D": "0.0"
+    },
+    "holding_node": {
+      "date": "2025-06-20",
+      "D_signal_date": "2025-06-19",
+      "D_posture": "HOLD",
+      "D_entry_signal": "0.0",
+      "D_held_at_close": "1.0",
+      "D_exit_pending": "0.0",
+      "D_buy_filled_today": "1.0",
+      "D_valid_session": "2025-06-20",
+      "D_decision_id": "DEC-1B2EF7A249C60460B8CD",
+      "known_position_value_D": "308885.0"
+    },
+    "source_verification_limit": "独立重解析已发布panel身份字段，不声称本次重新构建原成交账本；D_buy_filled_today与D_held_at_close提供原D已成交持仓认证。"
+  },
+  "information_sets": [
+    {
+      "D": "2025-06-18",
+      "node": "PLAN_BUY",
+      "known_notice_ids": [
+        "1223888518"
+      ],
+      "not_yet_known_under_fixed_policy": [
+        "1223900435",
+        "1223910887"
+      ],
+      "meaning": "一般异常上涨、相对估值及经营未重大变化口径已可用；明确近期甲醇销售价未较大变化的6月18日公告尚不可用。"
+    },
+    {
+      "D": "2025-06-19",
+      "node": "HOLD",
+      "known_notice_ids": [
+        "1223888518",
+        "1223900435"
+      ],
+      "not_yet_known_under_fixed_policy": [
+        "1223910887"
+      ],
+      "meaning": "新增供需及近期公司甲醇售价未较大变化表述此时才可用；不能倒填D6月18入场节点。"
+    }
+  ],
+  "identification_limits": [
+    "共同episode触发不等于相同信息集；两节点日期、仓位、原机会及持仓年龄都不同。",
+    "不能称同一信号在控制动作状态后的因果试验，不能从两分支差直接估计新增公告文字的独立效果。",
+    "三个相邻文件及多个持有日属于一个2025episode，不能用于批量、独立事件或跨年稳健性推断。",
+    "第一节点按既有信息只回答入场执行与跳过的问题；第二节点回答原路径已成交持仓的继续与退出问题。",
+    "6月3日先于2025所有严格匹配提示，这项公告触发不能解释或事前识别该提前退出。"
+  ],
+  "single_terminal_objective_review": {
+    "unique_T": "2025-12-31",
+    "time_selection_basis": "2025原年份末最后股票交易日，事前固定年度终点；不扫描H3/H6/H10或最佳清仓日。",
+    "primary_question": "各自唯一局部干预对共同T原剩余账户财富的影响，而非干预次日收益或某笔持仓收益。",
+    "required_conditions": [
+      "三账户继承同一原资金历史及各自干预D之前的原订单、现金和持仓；不在D重置为新10万元。",
+      "NOOP必须先与原账户身份、信号、成交及资金链对齐。",
+      "SKIP只针对D6月18原买入计划；未成交/限价与后续预约、再参与状态须事前锁定。",
+      "FORCESELL必须独立从原NOOP路径D6月19已成交持仓分支，不能接在SKIP之后，因为SKIP可能不存在该持仓。",
+      "单次干预后如何恢复原策略、受限卖出顺延、费用、T未平仓估值和T后订单处置须事前锁定。",
+      "共同T的绝对账户财富差可比较；不能把不同D分母的局部百分比直接当作同一账户改进，不能相加两项干预差。"
+    ],
+    "proposed_budget_only": {
+      "NOOP": 1,
+      "SKIP": 1,
+      "FORCESELL": 1,
+      "total_accounts": 3
+    },
+    "executed_this_method_review": 0,
+    "authorization_status": "Method proposal only; no account execution in this round.",
+    "conclusion_limit": "即使后续某个局部干预提高2025末财富，也仅回答该原路径的局部反事实；不是可直接采用的通用提示交易规则。"
+  },
+  "supersedes_prior_recommendation": {
+    "prior_review": "research/S014/materials/20261019_2025_action_method_review/official/method_adversarial_review.json",
+    "prior_review_sha256": "5e2e8ea02fcf220d59eb011c4299c9a598989467344bc7d1c483d211827dfc1c",
+    "refinement": "原先建议详细经营陈述作共同trigger会使入场问题无样本，现明确改为同episode首份一般提示触发；详细陈述仅是较晚持仓节点的已知上下文。",
+    "endpoint_refinement": "原方法曾举原H10合同终点作为待锁测量要求；当前问题明确为2025余下终值，统一T=2025末，由新方案锁定，不沿用旧示例终点。",
+    "original_files_preserved": true
+  },
+  "resources": {
+    "new_source_calls": 0,
+    "new_market_APIs": 0,
+    "new_return_calculations": 0,
+    "new_labels": 0,
+    "new_models": 0,
+    "new_accounts": 0,
+    "new_counterfactuals": 0
+  },
+  "next_step": "主会话将已核原节点、不同信息集、共同T及单次干预后的状态恢复写入具体方法/预算；本轮保持评审，不执行账户。"
+}

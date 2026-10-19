@@ -1,0 +1,809 @@
+{
+  "status": "READ_ONLY_2025_ORIGINAL_ACCOUNT_FACTS",
+  "accounts": [
+    {
+      "candidate": "S014-C0056",
+      "variant": "R",
+      "account_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX023_20261018"
+        },
+        "evidence_id": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab.json",
+        "sha256": "7d535b90bfc6edaf78833bfd2c317425e59615d50dee4464aac7be1f3eebd5ab",
+        "media_type": "application/json",
+        "name": "account-support-exit-reserve-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "423a1ccf05574d17eb4fa3d5984de02dc869c7387cbe66bf4f502b54c7510ef6",
+      "pricing": {
+        "anchor_date": "2019-12-31",
+        "anchor_factor": 5.892,
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT"
+      },
+      "source_request_hash": "bae29fbaeec6010e9ae34988b94b24b4467a8322c19cfdd470b0edab03387f64",
+      "year_2025": {
+        "calendar_days": 243,
+        "opening_equity": 278758.90799999965,
+        "closing_equity": 244542.2409999995,
+        "original_return": -0.12274645228557213,
+        "original_buyhold_return": 0.26791909301372363,
+        "required_return": 0.40187863952058545,
+        "return_gap_to_original_target_pp": 52.462509180615754,
+        "first_day_quantity_before": 0,
+        "last_day_quantity": 40800,
+        "D_posture_counts_by_E_year": {
+          "FLAT": 105,
+          "PLAN_BUY": 22,
+          "HOLD": 96,
+          "PLAN_SELL": 20
+        },
+        "monthly_existing_actual_pnl": [
+          {
+            "month": "2025-01",
+            "existing_actual_pnl": 23481.288,
+            "original_annual_contribution_pp": 8.423511258696719
+          },
+          {
+            "month": "2025-02",
+            "existing_actual_pnl": -6814.0650000000605,
+            "original_annual_contribution_pp": -2.4444295068052386
+          },
+          {
+            "month": "2025-03",
+            "existing_actual_pnl": -1178.496000000101,
+            "original_annual_contribution_pp": -0.4227653237901558
+          },
+          {
+            "month": "2025-04",
+            "existing_actual_pnl": 15760.438000000024,
+            "original_annual_contribution_pp": 5.653788111409894
+          },
+          {
+            "month": "2025-05",
+            "existing_actual_pnl": -13145.705999999947,
+            "original_annual_contribution_pp": -4.715797638294653
+          },
+          {
+            "month": "2025-06",
+            "existing_actual_pnl": -30799.03899999993,
+            "original_annual_contribution_pp": -11.048629520388266
+          },
+          {
+            "month": "2025-07",
+            "existing_actual_pnl": -8624.44200000001,
+            "original_annual_contribution_pp": -3.0938713535210223
+          },
+          {
+            "month": "2025-08",
+            "existing_actual_pnl": 8293.072000000015,
+            "original_annual_contribution_pp": 2.9749980223053627
+          },
+          {
+            "month": "2025-09",
+            "existing_actual_pnl": -21128.57400000005,
+            "original_annual_contribution_pp": -7.579515270593641
+          },
+          {
+            "month": "2025-10",
+            "existing_actual_pnl": 275.87999999991735,
+            "original_annual_contribution_pp": 0.09896724089617889
+          },
+          {
+            "month": "2025-11",
+            "existing_actual_pnl": 6044.799999999988,
+            "original_annual_contribution_pp": 2.1684688189408448
+          },
+          {
+            "month": "2025-12",
+            "existing_actual_pnl": -6381.822999999975,
+            "original_annual_contribution_pp": -2.2893700674132296
+          }
+        ]
+      },
+      "selected_existing_whole_trades_may_cross_months": [
+        {
+          "cycle_id": "CYC-D618011E28A1153453B1",
+          "entry_date": "2025-05-30T09:30:00.000000000",
+          "entry_price": 5.12,
+          "exit_date": "2025-06-03T09:30:00.000000000",
+          "exit_price": 4.98,
+          "net_return": -0.02928711913086901,
+          "quantity": 58400,
+          "status": "CLOSED"
+        },
+        {
+          "cycle_id": "CYC-12747BC4AFAECB8D2201",
+          "entry_date": "2025-06-19T09:30:00.000000000",
+          "entry_price": 7.03,
+          "exit_date": "2025-06-26T09:30:00.000000000",
+          "exit_price": 6.3,
+          "net_return": -0.10563121089436867,
+          "quantity": 37900,
+          "status": "CLOSED"
+        }
+      ],
+      "ledger_inventory": {
+        "account_daily": {
+          "rows_full": 1642,
+          "fields": [
+            "cash",
+            "cash_before",
+            "close",
+            "date",
+            "equity",
+            "quantity",
+            "quantity_before",
+            "signal_date",
+            "target_position",
+            "trading_status",
+            "valuation_source_date"
+          ]
+        },
+        "decisions": {
+          "rows_full": 1642,
+          "fields": [
+            "action",
+            "buy_filled_today",
+            "deadline_index",
+            "decision_id",
+            "entry_index",
+            "entry_signal",
+            "exit_pending",
+            "failed_buy_reset",
+            "held_at_close",
+            "holding_horizon",
+            "plan_mode",
+            "ready",
+            "reservation_index",
+            "sell_filled_today",
+            "signal_date",
+            "support_break",
+            "support_floor",
+            "support_ok",
+            "target_position",
+            "valid_session",
+            "warmup_sessions"
+          ]
+        },
+        "fills": {
+          "rows_full": 276,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "fees",
+            "fill_id",
+            "fill_time",
+            "order_id",
+            "price",
+            "quantity",
+            "side",
+            "signal_date",
+            "time_precision",
+            "trigger"
+          ]
+        },
+        "orders": {
+          "rows_full": 280,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "execution_date",
+            "limit_price",
+            "order_id",
+            "order_type",
+            "quantity",
+            "reason",
+            "side",
+            "signal_date",
+            "status"
+          ]
+        },
+        "trades": {
+          "rows_full": 138,
+          "fields": [
+            "cycle_id",
+            "entry_date",
+            "entry_price",
+            "exit_date",
+            "exit_price",
+            "net_return",
+            "quantity",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "candidate": "S014-C0034",
+      "variant": "B",
+      "account_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX021_20261018"
+        },
+        "evidence_id": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c.json",
+        "sha256": "61b2f98d885dd0f9f376e2c87aba94fc875261ebcee1a6b3443ce28541679f5c",
+        "media_type": "application/json",
+        "name": "account-support-entry-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "7a9316fadd5dddb7f02df8bbf2bc36f7d5188c91bfb1cd585a73bee275d15a20",
+      "pricing": {
+        "anchor_date": "2019-12-31",
+        "anchor_factor": 5.892,
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT"
+      },
+      "source_request_hash": "e0251cdc65225cc2910e24a810a81f38bbd4d661737796cbf1f24aced9fb59db",
+      "year_2025": {
+        "calendar_days": 243,
+        "opening_equity": 228564.09499999965,
+        "closing_equity": 263687.19399999944,
+        "original_return": 0.15366848848240955,
+        "original_buyhold_return": 0.26791909301372363,
+        "required_return": 0.40187863952058545,
+        "return_gap_to_original_target_pp": 24.82101510381759,
+        "first_day_quantity_before": 48400,
+        "last_day_quantity": 44000,
+        "D_posture_counts_by_E_year": {
+          "HOLD": 191,
+          "PLAN_SELL": 21,
+          "PLAN_BUY": 22,
+          "FLAT": 9
+        },
+        "monthly_existing_actual_pnl": [
+          {
+            "month": "2025-01",
+            "existing_actual_pnl": 40356.11400000003,
+            "original_annual_contribution_pp": 17.656366368479745
+          },
+          {
+            "month": "2025-02",
+            "existing_actual_pnl": -19395.45000000004,
+            "original_annual_contribution_pp": -8.485781636000208
+          },
+          {
+            "month": "2025-03",
+            "existing_actual_pnl": -11847.604000000138,
+            "original_annual_contribution_pp": -5.183493059135188
+          },
+          {
+            "month": "2025-04",
+            "existing_actual_pnl": 5089.200000000012,
+            "original_annual_contribution_pp": 2.2265964389551294
+          },
+          {
+            "month": "2025-05",
+            "existing_actual_pnl": -3279.168000000034,
+            "original_annual_contribution_pp": -1.4346820308763015
+          },
+          {
+            "month": "2025-06",
+            "existing_actual_pnl": 35992.622,
+            "original_annual_contribution_pp": 15.747277366552282
+          },
+          {
+            "month": "2025-07",
+            "existing_actual_pnl": -15648.506000000052,
+            "original_annual_contribution_pp": -6.8464410387817365
+          },
+          {
+            "month": "2025-08",
+            "existing_actual_pnl": 49614.956000000006,
+            "original_annual_contribution_pp": 21.70723971321921
+          },
+          {
+            "month": "2025-09",
+            "existing_actual_pnl": -25296.321999999986,
+            "original_annual_contribution_pp": -11.06749596869098
+          },
+          {
+            "month": "2025-10",
+            "existing_actual_pnl": -130.83900000015274,
+            "original_annual_contribution_pp": -0.05724389913479321
+          },
+          {
+            "month": "2025-11",
+            "existing_actual_pnl": -1996.5119999999297,
+            "original_annual_contribution_pp": -0.8735020257665285
+          },
+          {
+            "month": "2025-12",
+            "existing_actual_pnl": -18335.391999999934,
+            "original_annual_contribution_pp": -8.021991380579685
+          }
+        ]
+      },
+      "selected_existing_whole_trades_may_cross_months": [
+        {
+          "cycle_id": "CYC-CE98CFD8408A9C63E704",
+          "entry_date": "2025-05-30T09:30:00.000000000",
+          "entry_price": 5.12,
+          "exit_date": "2025-06-16T09:30:00.000000000",
+          "exit_price": 6.34,
+          "net_return": 0.23580716158841164,
+          "quantity": 47100,
+          "status": "CLOSED"
+        },
+        {
+          "cycle_id": "CYC-AE54EDCCC261D5FD2398",
+          "entry_date": "2025-06-19T09:30:00.000000000",
+          "entry_price": 7.03,
+          "exit_date": "2025-07-03T09:30:00.000000000",
+          "exit_price": 6.34,
+          "net_return": -0.09995267890004744,
+          "quantity": 38800,
+          "status": "CLOSED"
+        }
+      ],
+      "ledger_inventory": {
+        "account_daily": {
+          "rows_full": 1642,
+          "fields": [
+            "cash",
+            "cash_before",
+            "close",
+            "date",
+            "equity",
+            "quantity",
+            "quantity_before",
+            "signal_date",
+            "target_position",
+            "trading_status",
+            "valuation_source_date"
+          ]
+        },
+        "decisions": {
+          "rows_full": 1642,
+          "fields": [
+            "action",
+            "buy_filled_today",
+            "deadline_index",
+            "decision_id",
+            "entry_index",
+            "entry_signal",
+            "exit_pending",
+            "failed_buy_reset",
+            "held_at_close",
+            "holding_horizon",
+            "plan_mode",
+            "ready",
+            "sell_filled_today",
+            "signal_date",
+            "support_break",
+            "support_floor",
+            "support_ok",
+            "target_position",
+            "valid_session",
+            "warmup_sessions"
+          ]
+        },
+        "fills": {
+          "rows_full": 275,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "fees",
+            "fill_id",
+            "fill_time",
+            "order_id",
+            "price",
+            "quantity",
+            "side",
+            "signal_date",
+            "time_precision",
+            "trigger"
+          ]
+        },
+        "orders": {
+          "rows_full": 281,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "execution_date",
+            "limit_price",
+            "order_id",
+            "order_type",
+            "quantity",
+            "reason",
+            "side",
+            "signal_date",
+            "status"
+          ]
+        },
+        "trades": {
+          "rows_full": 138,
+          "fields": [
+            "cycle_id",
+            "entry_date",
+            "entry_price",
+            "exit_date",
+            "exit_price",
+            "net_return",
+            "quantity",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "candidate": "S014-C0057",
+      "variant": "P",
+      "account_evidence": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX024_20261018"
+        },
+        "evidence_id": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3.json",
+        "sha256": "81027747a584399bd97a530a573518a71a36f2895eff70204323d092b1f8a4e3",
+        "media_type": "application/json",
+        "name": "account-support-first-profit-exit-h10",
+        "schema": "account_evaluation",
+        "schema_version": 7
+      },
+      "result_hash": "cde6b9e734a111f9c051e10246ca66b1e63cddbcd7433cb2c2964029a7d9b55c",
+      "pricing": {
+        "anchor_date": "2019-12-31",
+        "anchor_factor": 5.892,
+        "basis": "HFQ_RESEARCH",
+        "quantity_unit": "RESEARCH_UNIT"
+      },
+      "source_request_hash": "5a2eb1cca847873efd1a7d17c7fab91d57fa6107739ef46f5bbfa348c7f81e5d",
+      "year_2025": {
+        "calendar_days": 243,
+        "opening_equity": 307485.1019999997,
+        "closing_equity": 379983.8979999993,
+        "original_return": 0.23577986552336982,
+        "original_buyhold_return": 0.26791909301372363,
+        "required_return": 0.40187863952058545,
+        "return_gap_to_original_target_pp": 16.60987739972156,
+        "first_day_quantity_before": 65100,
+        "last_day_quantity": 63400,
+        "D_posture_counts_by_E_year": {
+          "HOLD": 180,
+          "PLAN_SELL": 21,
+          "PLAN_BUY": 22,
+          "FLAT": 20
+        },
+        "monthly_existing_actual_pnl": [
+          {
+            "month": "2025-01",
+            "existing_actual_pnl": 71397.29899999994,
+            "original_annual_contribution_pp": 23.219758790134815
+          },
+          {
+            "month": "2025-02",
+            "existing_actual_pnl": -27929.92200000008,
+            "original_annual_contribution_pp": -9.083341540235045
+          },
+          {
+            "month": "2025-03",
+            "existing_actual_pnl": -16673.556000000157,
+            "original_annual_contribution_pp": -5.422557350437152
+          },
+          {
+            "month": "2025-04",
+            "existing_actual_pnl": 7157.633999999962,
+            "original_annual_contribution_pp": 2.3277986326635
+          },
+          {
+            "month": "2025-05",
+            "existing_actual_pnl": -4616.325000000012,
+            "original_annual_contribution_pp": -1.5013166393993345
+          },
+          {
+            "month": "2025-06",
+            "existing_actual_pnl": 50609.11699999997,
+            "original_annual_contribution_pp": 16.45904685164227
+          },
+          {
+            "month": "2025-07",
+            "existing_actual_pnl": -22022.37599999993,
+            "original_annual_contribution_pp": -7.162095287465326
+          },
+          {
+            "month": "2025-08",
+            "existing_actual_pnl": 69794.99799999996,
+            "original_annual_contribution_pp": 22.698660047601273
+          },
+          {
+            "month": "2025-09",
+            "existing_actual_pnl": -27859.14300000004,
+            "original_annual_contribution_pp": -9.060322864032633
+          },
+          {
+            "month": "2025-10",
+            "existing_actual_pnl": -2474.7690000001458,
+            "original_annual_contribution_pp": -0.8048419204388472
+          },
+          {
+            "month": "2025-11",
+            "existing_actual_pnl": 1554.524000000034,
+            "original_annual_contribution_pp": 0.5055607539646052
+          },
+          {
+            "month": "2025-12",
+            "existing_actual_pnl": -26438.68499999994,
+            "original_annual_contribution_pp": -8.598362921661149
+          }
+        ]
+      },
+      "selected_existing_whole_trades_may_cross_months": [
+        {
+          "cycle_id": "CYC-299BAD6DC3BD7F1E2DB9",
+          "entry_date": "2025-05-30T09:30:00.000000000",
+          "entry_price": 5.12,
+          "exit_date": "2025-06-16T09:30:00.000000000",
+          "exit_price": 6.34,
+          "net_return": 0.23580716158841164,
+          "quantity": 66300,
+          "status": "CLOSED"
+        },
+        {
+          "cycle_id": "CYC-8D46F52BAA66BBC33EA9",
+          "entry_date": "2025-06-19T09:30:00.000000000",
+          "entry_price": 7.03,
+          "exit_date": "2025-07-03T09:30:00.000000000",
+          "exit_price": 6.34,
+          "net_return": -0.09995267890004744,
+          "quantity": 54700,
+          "status": "CLOSED"
+        }
+      ],
+      "ledger_inventory": {
+        "account_daily": {
+          "rows_full": 1642,
+          "fields": [
+            "cash",
+            "cash_before",
+            "close",
+            "date",
+            "equity",
+            "quantity",
+            "quantity_before",
+            "signal_date",
+            "target_position",
+            "trading_status",
+            "valuation_source_date"
+          ]
+        },
+        "decisions": {
+          "rows_full": 1642,
+          "fields": [
+            "action",
+            "break_checked",
+            "buy_filled_today",
+            "deadline_index",
+            "decision_id",
+            "early_exit_selected",
+            "entry_fill_price",
+            "entry_index",
+            "entry_signal",
+            "exit_pending",
+            "failed_buy_reset",
+            "first_break_evaluated",
+            "float_pnl",
+            "held_at_close",
+            "holding_horizon",
+            "plan_mode",
+            "ready",
+            "reservation_index",
+            "sell_filled_today",
+            "signal_date",
+            "support_break",
+            "support_floor",
+            "support_ok",
+            "target_position",
+            "valid_session",
+            "warmup_sessions"
+          ]
+        },
+        "fills": {
+          "rows_full": 275,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "fees",
+            "fill_id",
+            "fill_time",
+            "order_id",
+            "price",
+            "quantity",
+            "side",
+            "signal_date",
+            "time_precision",
+            "trigger"
+          ]
+        },
+        "orders": {
+          "rows_full": 281,
+          "fields": [
+            "cycle_id",
+            "decision_id",
+            "execution_date",
+            "limit_price",
+            "order_id",
+            "order_type",
+            "quantity",
+            "reason",
+            "side",
+            "signal_date",
+            "status"
+          ]
+        },
+        "trades": {
+          "rows_full": 138,
+          "fields": [
+            "cycle_id",
+            "entry_date",
+            "entry_price",
+            "exit_date",
+            "exit_price",
+            "net_return",
+            "quantity",
+            "status"
+          ]
+        }
+      }
+    }
+  ],
+  "notice_inventory_evidence": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S014",
+      "experiment_id": "EX039_20261019"
+    },
+    "evidence_id": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc.json",
+    "sha256": "01fc106f518f875808500493282c29856e2d006dd42db52d5563abb26569c5bc",
+    "media_type": "application/json",
+    "name": "year-driver-warning-prelock-events",
+    "schema": null,
+    "schema_version": null
+  },
+  "known_clock_events_2025": [
+    {
+      "doc_id": "1223888518",
+      "title": "金牛化工股票交易异常波动公告",
+      "publication_date": "2025-06-17",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-06-17/1223888518.PDF",
+      "leaf_proof_name": "full_2025Q2_split2",
+      "catalogue_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX037_20261019"
+        },
+        "evidence_id": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60.json",
+        "sha256": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60",
+        "media_type": "application/json",
+        "name": "ex037-others-official-catalogues-full_2025Q2_split2-json",
+        "schema": null,
+        "schema_version": null
+      },
+      "availability": {
+        "policy": "Strict first stock/SSE session after official publication date at15:00 decision; following session execution",
+        "decision_date_15_00": "2025-06-18",
+        "earliest_execution_date": "2025-06-19",
+        "available_time_type": "CONSERVATIVE_DATE_POLICY_NOT_AUTHENTICATED_FIRST_PUBLICATION_OR_VENDOR_ARRIVAL",
+        "known_before_actual_strategy_trade": "NOT_JOINED_TO_TRADE_LEDGER; compare decision_date only after a separately locked design"
+      },
+      "original_body": {
+        "url": "https://static.cninfo.com.cn/finalpage/2025-06-17/1223888518.PDF",
+        "status": 200,
+        "bytes": 88732,
+        "sha256": "a540e209bc7e0869b474b3cb2bee412b57acb135c98b1ec4e1416b6873514ceb",
+        "pdf_path": "research/S014/materials/20261019_year_driver_research/official/pdfs/1223888518.pdf",
+        "pages": 3,
+        "text_path": "research/S014/materials/20261019_year_driver_research/official/texts/1223888518.texts.json",
+        "text_sha256": "c6206cff6eda5c07099afd7e6efb39b683ccec9aeb7e48b2deed3491916e669d",
+        "original_pdf_path": ".tmp/s014-year-drivers/official_pdfs/1223888518.pdf",
+        "original_text_path": ".tmp/s014-year-drivers/official_pdfs/1223888518.texts.json"
+      },
+      "event_semantics": "Disclosure of abnormal trading or trading-risk warning; not uniformly negative news; no alpha or reversal claim"
+    },
+    {
+      "doc_id": "1223900435",
+      "title": "金牛化工股票交易风险提示公告",
+      "publication_date": "2025-06-18",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-06-18/1223900435.PDF",
+      "leaf_proof_name": "full_2025Q2_split2",
+      "catalogue_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX037_20261019"
+        },
+        "evidence_id": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60.json",
+        "sha256": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60",
+        "media_type": "application/json",
+        "name": "ex037-others-official-catalogues-full_2025Q2_split2-json",
+        "schema": null,
+        "schema_version": null
+      },
+      "availability": {
+        "policy": "Strict first stock/SSE session after official publication date at15:00 decision; following session execution",
+        "decision_date_15_00": "2025-06-19",
+        "earliest_execution_date": "2025-06-20",
+        "available_time_type": "CONSERVATIVE_DATE_POLICY_NOT_AUTHENTICATED_FIRST_PUBLICATION_OR_VENDOR_ARRIVAL",
+        "known_before_actual_strategy_trade": "NOT_JOINED_TO_TRADE_LEDGER; compare decision_date only after a separately locked design"
+      },
+      "original_body": {
+        "url": "https://static.cninfo.com.cn/finalpage/2025-06-18/1223900435.PDF",
+        "status": 200,
+        "bytes": 82566,
+        "sha256": "c2ae768d2ce36984156f411bd0b98e7e63c1bf4a88e1381bfece4458edcedaf9",
+        "pdf_path": "research/S014/materials/20261019_year_driver_research/official/pdfs/1223900435.pdf",
+        "pages": 2,
+        "text_path": "research/S014/materials/20261019_year_driver_research/official/texts/1223900435.texts.json",
+        "text_sha256": "b7f4dc8a60301c5f3bce48e7a4ee813551babccd12abc0708daab0fbd6820c74",
+        "original_pdf_path": ".tmp/s014-year-drivers/official_pdfs/1223900435.pdf",
+        "original_text_path": ".tmp/s014-year-drivers/official_pdfs/1223900435.texts.json"
+      },
+      "event_semantics": "Disclosure of abnormal trading or trading-risk warning; not uniformly negative news; no alpha or reversal claim"
+    },
+    {
+      "doc_id": "1223910887",
+      "title": "金牛化工股票交易异常波动暨风险提示公告",
+      "publication_date": "2025-06-19",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-06-19/1223910887.PDF",
+      "leaf_proof_name": "full_2025Q2_split2",
+      "catalogue_evidence_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S014",
+          "experiment_id": "EX037_20261019"
+        },
+        "evidence_id": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60.json",
+        "sha256": "cee43f5c3d9d501f63e9b8e0e2440d40c9b6a637d2f3419c86fe599769732a60",
+        "media_type": "application/json",
+        "name": "ex037-others-official-catalogues-full_2025Q2_split2-json",
+        "schema": null,
+        "schema_version": null
+      },
+      "availability": {
+        "policy": "Strict first stock/SSE session after official publication date at15:00 decision; following session execution",
+        "decision_date_15_00": "2025-06-20",
+        "earliest_execution_date": "2025-06-23",
+        "available_time_type": "CONSERVATIVE_DATE_POLICY_NOT_AUTHENTICATED_FIRST_PUBLICATION_OR_VENDOR_ARRIVAL",
+        "known_before_actual_strategy_trade": "NOT_JOINED_TO_TRADE_LEDGER; compare decision_date only after a separately locked design"
+      },
+      "original_body": {
+        "url": "https://static.cninfo.com.cn/finalpage/2025-06-19/1223910887.PDF",
+        "status": 200,
+        "bytes": 93004,
+        "sha256": "4a464660d8bfd550cdcff5a292cd33b32e2a605b8b34c87e1a36fe6b54c37e19",
+        "pdf_path": "research/S014/materials/20261019_year_driver_research/official/pdfs/1223910887.pdf",
+        "pages": 3,
+        "text_path": "research/S014/materials/20261019_year_driver_research/official/texts/1223910887.texts.json",
+        "text_sha256": "12e3a065b02e81602557e1ed6cce2c644e28b2faf6ad8774250889914399f80c",
+        "original_pdf_path": ".tmp/s014-year-drivers/official_pdfs/1223910887.pdf",
+        "original_text_path": ".tmp/s014-year-drivers/official_pdfs/1223910887.texts.json"
+      },
+      "event_semantics": "Disclosure of abnormal trading or trading-risk warning; not uniformly negative news; no alpha or reversal claim"
+    }
+  ],
+  "limits": [
+    "The table records original continuous-account outcomes and original decisions; no alternate branch matching, wealth estimate, or hypothetical local return label.",
+    "B and P share many actual entry dates/prices with R but quantities/cash differ; their account outcomes cannot be spliced into a local R state.",
+    "Annual/monthly money refers to calendar dates; stored whole-trade returns can cross months or years.",
+    "Known notice lists are cumulative disclosure availability facts, not a newly optimized W window."
+  ],
+  "new_fits": 0,
+  "new_accounts": 0,
+  "new_counterfactual_return_labels": 0,
+  "new_market_data_calls": 0
+}
