@@ -1,0 +1,281 @@
+{
+  "accounts": [
+    {
+      "account_id": "s001-v1",
+      "rows": 32,
+      "status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 13,
+        "COMPONENT_BUSINESS_MATCH": 12,
+        "FULL_PATH_BUSINESS_MATCH": 7
+      },
+      "historical_status_counts": {
+        "COMPLETED": 32
+      },
+      "full_path_signal_dates": [
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19"
+      ],
+      "component_signal_dates": [
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-08"
+      ]
+    },
+    {
+      "account_id": "s001-v2",
+      "rows": 32,
+      "status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 13,
+        "COMPONENT_BUSINESS_MATCH": 12,
+        "FULL_PATH_BUSINESS_MATCH": 7
+      },
+      "historical_status_counts": {
+        "COMPLETED": 31,
+        "INCOMPLETE": 1
+      },
+      "full_path_signal_dates": [
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19"
+      ],
+      "component_signal_dates": [
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-08"
+      ]
+    },
+    {
+      "account_id": "s003-v1",
+      "rows": 26,
+      "status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 7,
+        "COMPONENT_BUSINESS_MATCH": 12,
+        "FULL_PATH_BUSINESS_MATCH": 7
+      },
+      "historical_status_counts": {
+        "INCOMPLETE": 1,
+        "COMPLETED": 24,
+        "SUPERSEDED": 1
+      },
+      "full_path_signal_dates": [
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19"
+      ],
+      "component_signal_dates": [
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-08"
+      ]
+    },
+    {
+      "account_id": "s007-v1",
+      "rows": 25,
+      "status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 5,
+        "COMPONENT_BUSINESS_MATCH": 13,
+        "FULL_PATH_BUSINESS_MATCH": 7
+      },
+      "historical_status_counts": {
+        "COMPLETED": 24,
+        "SUPERSEDED": 1
+      },
+      "full_path_signal_dates": [
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19"
+      ],
+      "component_signal_dates": [
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-08"
+      ]
+    },
+    {
+      "account_id": "s011-v1",
+      "rows": 10,
+      "status_counts": {
+        "COMPONENT_BUSINESS_MATCH": 3,
+        "FULL_PATH_BUSINESS_MATCH": 7
+      },
+      "historical_status_counts": {
+        "COMPLETED": 10
+      },
+      "full_path_signal_dates": [
+        "2026-10-09",
+        "2026-10-12",
+        "2026-10-13",
+        "2026-10-14",
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19"
+      ],
+      "component_signal_dates": [
+        "2026-09-30",
+        "2026-10-08"
+      ]
+    }
+  ],
+  "rows": 125,
+  "status_counts": {
+    "NOT_VERIFIABLE_FULL_REPLAY": 38,
+    "COMPONENT_BUSINESS_MATCH": 52,
+    "FULL_PATH_BUSINESS_MATCH": 35
+  },
+  "equality": "exact Python parsed values, recursively; no epsilon or rounding",
+  "identity_exclusions": "release/code hashes and their derived decision/plan/data IDs only; original and new values retained in detailed results",
+  "component_boundary": "Authenticated implementation calculation and shared execution planner only; current DFLS admission and full SRT/PTE path not accepted for these legacy inputs.",
+  "no_production_writes": true,
+  "no_network_acquisition": true,
+  "helper_sha256": {
+    "replay_new.py": "6792035006bb911a1da5add801a10d6b8a70716feebc28a4a2de767667999ab2",
+    "replay_components.py": "b9daee7b54e1d5b87ac31fe4fb259f426e3ac49ef7e021c0ddcbe306e3abb17a",
+    "aggregate_replay.py": "ae860a2909ad2665febc72c70b5f0acba3a3bb2496ccf9d1c7d2167f26689aa4"
+  },
+  "overall_full_window_strict_verdict": "NOT_PROVEN",
+  "observed_business_mismatches": 0,
+  "windows": [
+    {
+      "account_id": "s001-v1",
+      "signal_start": "2026-09-03",
+      "signal_end": "2026-10-19",
+      "execution_start": "2026-09-04",
+      "execution_end": "2026-10-20",
+      "last_settlement_session": "2026-10-19",
+      "signal_days": 27
+    },
+    {
+      "account_id": "s001-v2",
+      "signal_start": "2026-09-03",
+      "signal_end": "2026-10-19",
+      "execution_start": "2026-09-04",
+      "execution_end": "2026-10-20",
+      "last_settlement_session": "2026-10-19",
+      "signal_days": 27
+    },
+    {
+      "account_id": "s003-v1",
+      "signal_start": "2026-09-11",
+      "signal_end": "2026-10-19",
+      "execution_start": "2026-09-14",
+      "execution_end": "2026-10-20",
+      "last_settlement_session": "2026-10-19",
+      "signal_days": 21
+    },
+    {
+      "account_id": "s007-v1",
+      "signal_start": "2026-09-15",
+      "signal_end": "2026-10-19",
+      "execution_start": "2026-09-16",
+      "execution_end": "2026-10-20",
+      "last_settlement_session": "2026-10-19",
+      "signal_days": 19
+    },
+    {
+      "account_id": "s011-v1",
+      "signal_start": "2026-09-30",
+      "signal_end": "2026-10-19",
+      "execution_start": "2026-10-08",
+      "execution_end": "2026-10-20",
+      "last_settlement_session": "2026-10-19",
+      "signal_days": 9
+    }
+  ],
+  "historical_lifecycle_counts": {
+    "COMPLETED": 121,
+    "INCOMPLETE": 2,
+    "SUPERSEDED": 2
+  },
+  "component_signal_evidence": {
+    "stored_strategy_output_exact_match": 43,
+    "historical_strategy_output_missing": 9,
+    "observation_series_facts_replayed": false
+  },
+  "remaining_38": {
+    "legacy_data_identity_only_no_complete_context": 6,
+    "incomplete_original_input_evidence": 32
+  },
+  "runtime_snapshot_sha256": "6ec379b959b2d5acafa4fde528068180abd2ad5a40b5fbf556303f4dc0036c9c",
+  "dfls_snapshot_sha256": "a3fce2ab1465bf53f652308123c0fa67ec00417a4e7249841c13cbf288fb42f7",
+  "production_release": "v0.6.16",
+  "targets": [
+    {
+      "account_id": "s001-v1",
+      "strategy_version": "S001-v1",
+      "production_release_hash": "3dccd608cf8ee762a8f359d197aca93463183b50a4da5771ca3ca694063ab692",
+      "new_release_hash": "8891c8787ffcc96ff12a69b11b787d41b612ca0b437b5cb5587990ea3267b98a",
+      "new_package_hash": "80d7d521d1a2e0fcc929d5189f5fb656097f98e651df131955b259ef4bf629e2"
+    },
+    {
+      "account_id": "s001-v2",
+      "strategy_version": "S001-v2",
+      "production_release_hash": "2c4a339ca5dec89c03491e5fd15fc8560d7aa0424f8af2be1fcdf9b93b51a2da",
+      "new_release_hash": "c70502e8d6e203004052a6d8d423fb316de854688e80d6aea10ff32ad6aa00b1",
+      "new_package_hash": "36ce87884ed23b368893ecb071531481af711bcb667e3df80d780968895b4a3d"
+    },
+    {
+      "account_id": "s003-v1",
+      "strategy_version": "S003-v1",
+      "production_release_hash": "eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174",
+      "new_release_hash": "9d0cac314590a812cd5a6dcae69a53dd4d4437c959101aec0166faa71da58b7c",
+      "new_package_hash": "c303e0f8d1f2a09f534d3ef7a3727ad712f1bc0d7606c7c8858cc0c1e6304997"
+    },
+    {
+      "account_id": "s007-v1",
+      "strategy_version": "S007-v1",
+      "production_release_hash": "19c6bdb05c7fb1daae5bb71f0bd61cd09d7987f049e2dac6c95e3f2a063259b2",
+      "new_release_hash": "45a25272d5953775c15b078ffcc60498b7b292f796731b5ac9d1b6622373e133",
+      "new_package_hash": "945b1fbd924cef1ea8e306ce835eeca9a1a9f59ec21c69a9d7314ef266cfb337"
+    },
+    {
+      "account_id": "s011-v1",
+      "strategy_version": "S011-v1",
+      "production_release_hash": "369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c",
+      "new_release_hash": "fee15dd2fcae4484df7610f8aadbec0ab2682da55e608bc0deaa2a080000a535",
+      "new_package_hash": "483b20888a57ad548adb21090dd0ee3c4c8f1566cf2b63d39a57d6c09b891615"
+    }
+  ],
+  "production_writes": 0,
+  "pte_accounts_changed": 0,
+  "new_market_acquisitions": 0,
+  "strategy_or_sm_changes": 0,
+  "source_commit": "59388b89",
+  "scope_limit": "Replay decisions against actual historical account feedback; not an autonomous account backtest or equivalence of broker fills/returns."
+}

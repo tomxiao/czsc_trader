@@ -1,0 +1,268 @@
+{
+  "status": "PASS",
+  "reviews": {
+    "independent_review.json": {
+      "status": "PASS",
+      "review_scope": "No strategy execution. Static replay method review, exact 125 decision key coverage, source payload retention, input hashes, independently recomputed portfolio/state hashes, lifecycle reporting, independently flattened semantic fields. Release/plan/signal identity hashes are listed separately; execution_disposition is business semantics.",
+      "replay_source_sha256": "6792035006bb911a1da5add801a10d6b8a70716feebc28a4a2de767667999ab2",
+      "strict_bound_expected": 45,
+      "accounts": [
+        {
+          "account_id": "s001-v1",
+          "historical_decisions": 32,
+          "result_decisions": 32,
+          "historical_lifecycle_counts": {
+            "COMPLETED": 32
+          },
+          "result_counts": {
+            "UNVERIFIABLE_INPUT_BINDING": 23,
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "strict_bound_decisions": 9,
+          "strict_bound_result_counts": {
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "independently_reviewed_details": 7,
+          "results_sha256": "41071835e36909a61ca9eae06c8753026aa9fe90a078aebbacc04fcf1afde49a"
+        },
+        {
+          "account_id": "s001-v2",
+          "historical_decisions": 32,
+          "result_decisions": 32,
+          "historical_lifecycle_counts": {
+            "COMPLETED": 31,
+            "INCOMPLETE": 1
+          },
+          "result_counts": {
+            "UNVERIFIABLE_INPUT_BINDING": 23,
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "strict_bound_decisions": 9,
+          "strict_bound_result_counts": {
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "independently_reviewed_details": 7,
+          "results_sha256": "9b4e46a4112e7e15b0789e74e4ec67bc8cac0341147e1904ccb0cad7a132316e"
+        },
+        {
+          "account_id": "s003-v1",
+          "historical_decisions": 26,
+          "result_decisions": 26,
+          "historical_lifecycle_counts": {
+            "COMPLETED": 24,
+            "SUPERSEDED": 1,
+            "INCOMPLETE": 1
+          },
+          "result_counts": {
+            "UNVERIFIABLE_INPUT_BINDING": 17,
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "strict_bound_decisions": 9,
+          "strict_bound_result_counts": {
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "independently_reviewed_details": 7,
+          "results_sha256": "1f15b21052c73d1cba88e08bfa20aaaac98daedc69fec38c3c50a99a26fa72a6"
+        },
+        {
+          "account_id": "s007-v1",
+          "historical_decisions": 25,
+          "result_decisions": 25,
+          "historical_lifecycle_counts": {
+            "COMPLETED": 24,
+            "SUPERSEDED": 1
+          },
+          "result_counts": {
+            "UNVERIFIABLE_INPUT_BINDING": 16,
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "strict_bound_decisions": 9,
+          "strict_bound_result_counts": {
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "independently_reviewed_details": 7,
+          "results_sha256": "00082c557d88820312ab4597362e70c54c799c4870db948446e97aafd3d9e4f6"
+        },
+        {
+          "account_id": "s011-v1",
+          "historical_decisions": 10,
+          "result_decisions": 10,
+          "historical_lifecycle_counts": {
+            "COMPLETED": 10
+          },
+          "result_counts": {
+            "UNVERIFIABLE_INPUT_BINDING": 1,
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "strict_bound_decisions": 9,
+          "strict_bound_result_counts": {
+            "REPLAY_ERROR": 2,
+            "PASS": 7
+          },
+          "independently_reviewed_details": 7,
+          "results_sha256": "118d0bd744fe7384467406f9f080bb05ebb3885a030bcfbf796c7656155ce600"
+        }
+      ],
+      "component_review": [
+        {
+          "account_id": "s001-v1",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 60,
+          "results_sha256": "c77b50f1cb5970ad9fb01501d3b56ddb584146e40ade40cf590368a71201831e"
+        },
+        {
+          "account_id": "s001-v2",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 60,
+          "results_sha256": "73f6d70bdbec302e9c2311f578652853381297db879cd1988ee5530cac30ed2e"
+        },
+        {
+          "account_id": "s003-v1",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 72,
+          "results_sha256": "ba5c13a125bec9be5d42b297dfda553dfbd2b3b13eb563ef26ee9f616af93bb3"
+        },
+        {
+          "account_id": "s007-v1",
+          "rows": 13,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 13
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 104,
+          "results_sha256": "497ced2b1ffc5983035d313713706115a42c5fbdbea79506eff44c670bf39ba3"
+        },
+        {
+          "account_id": "s011-v1",
+          "rows": 3,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 3
+          },
+          "full_strategy_output_comparisons": 3,
+          "observation_target_comparisons": 3,
+          "input_role_proofs_checked": 18,
+          "results_sha256": "e4e6b4ec08d15997909b08fab5a6ebbb3e6890f3fc7aaa7435e6ec41e8a49795"
+        }
+      ],
+      "component_boundary": "52 component matches authenticate algorithm and shared execution planner only. They do not pass current DFLS/SRT/PTE admission. 43 contain comparable complete strategy_output; the other 9 retain no such historical field. Observation series/facts were not reconstructed for this layer.",
+      "pricing_review": "Dataset+symbol+daily role selection matches StrategyInstance._pricing, including S011 daily/execution. ExecutionPricing() defaults UNADJUSTED, so price_reference.execution/raw=1, planner unadjusted_reference=execution; direct scale=1 matches SRT for these accounts. Signal evidence construction matches StrategyInstance._calculate_signal.",
+      "unique_legacy_files_byte_hash_verified": 254,
+      "final_rows": 125,
+      "final_status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 38,
+        "COMPONENT_BUSINESS_MATCH": 52,
+        "FULL_PATH_BUSINESS_MATCH": 35
+      },
+      "helper_sha256": {
+        "replay_new.py": "6792035006bb911a1da5add801a10d6b8a70716feebc28a4a2de767667999ab2",
+        "replay_components.py": "b9daee7b54e1d5b87ac31fe4fb259f426e3ac49ef7e021c0ddcbe306e3abb17a",
+        "aggregate_replay.py": "ae860a2909ad2665febc72c70b5f0acba3a3bb2496ccf9d1c7d2167f26689aa4",
+        "review_replay.py": "8972bb6353567aa6d9ea0b528f197ec3d5131df1567b6b053b43301d1bf3c7ab"
+      },
+      "issues": []
+    },
+    "component_independent_review.json": {
+      "status": "PASS",
+      "component_review": [
+        {
+          "account_id": "s001-v1",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 60,
+          "results_sha256": "c77b50f1cb5970ad9fb01501d3b56ddb584146e40ade40cf590368a71201831e"
+        },
+        {
+          "account_id": "s001-v2",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 60,
+          "results_sha256": "73f6d70bdbec302e9c2311f578652853381297db879cd1988ee5530cac30ed2e"
+        },
+        {
+          "account_id": "s003-v1",
+          "rows": 12,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 12
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 72,
+          "results_sha256": "ba5c13a125bec9be5d42b297dfda553dfbd2b3b13eb563ef26ee9f616af93bb3"
+        },
+        {
+          "account_id": "s007-v1",
+          "rows": 13,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 13
+          },
+          "full_strategy_output_comparisons": 10,
+          "observation_target_comparisons": 10,
+          "input_role_proofs_checked": 104,
+          "results_sha256": "497ced2b1ffc5983035d313713706115a42c5fbdbea79506eff44c670bf39ba3"
+        },
+        {
+          "account_id": "s011-v1",
+          "rows": 3,
+          "counts": {
+            "COMPONENT_BUSINESS_MATCH": 3
+          },
+          "full_strategy_output_comparisons": 3,
+          "observation_target_comparisons": 3,
+          "input_role_proofs_checked": 18,
+          "results_sha256": "e4e6b4ec08d15997909b08fab5a6ebbb3e6890f3fc7aaa7435e6ec41e8a49795"
+        }
+      ],
+      "component_boundary": "52 component matches authenticate algorithm and shared execution planner only. They do not pass current DFLS/SRT/PTE admission. 43 contain comparable complete strategy_output; the other 9 retain no such historical field. Observation series/facts were not reconstructed for this layer.",
+      "pricing_review": "Dataset+symbol+daily role selection matches StrategyInstance._pricing, including S011 daily/execution. ExecutionPricing() defaults UNADJUSTED, so price_reference.execution/raw=1, planner unadjusted_reference=execution; direct scale=1 matches SRT for these accounts. Signal evidence construction matches StrategyInstance._calculate_signal.",
+      "unique_legacy_files_byte_hash_verified": 254,
+      "final_rows": 125,
+      "final_status_counts": {
+        "NOT_VERIFIABLE_FULL_REPLAY": 38,
+        "COMPONENT_BUSINESS_MATCH": 52,
+        "FULL_PATH_BUSINESS_MATCH": 35
+      },
+      "helper_sha256": {
+        "replay_new.py": "6792035006bb911a1da5add801a10d6b8a70716feebc28a4a2de767667999ab2",
+        "replay_components.py": "b9daee7b54e1d5b87ac31fe4fb259f426e3ac49ef7e021c0ddcbe306e3abb17a",
+        "aggregate_replay.py": "ae860a2909ad2665febc72c70b5f0acba3a3bb2496ccf9d1c7d2167f26689aa4",
+        "review_replay.py": "8972bb6353567aa6d9ea0b528f197ec3d5131df1567b6b053b43301d1bf3c7ab"
+      },
+      "issues": [],
+      "independent_combined_review_sha256": "f73c642940e1b2a43c1024a04c07ad3264526da180d92d47a4920108faa625fe"
+    }
+  },
+  "scope": "Independent evidence/method review; does not convert missing history or component matches into full-path acceptance."
+}
